@@ -35,14 +35,11 @@ import {
   crossChainLockFee,
   crossChainBurnFee,
 } from "../../src/devenv/sifnoded"
-import { v4 as uuidv4 } from "uuid"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import deepEqual = require("deep-equal")
 import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
-// import { SifnodedAdapter, SifnodedAdapter } from "./sifnodedAdapter"
-// import { createTestSifAccount, fundSifAccount } from "./sifnodedAdapter"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -118,6 +115,8 @@ enum TransactionStep {
 
   ProphecyStatus = "ProphecyStatus",
   ProphecyClaimSubmitted = "ProphecyClaimSubmitted",
+
+  EthereumMainnetLogUnlock = "EthereumMainnetLogUnlock",
 }
 
 function isTerminalState(s: State) {
@@ -153,20 +152,19 @@ function verbosityLevel(): VerbosityLevel {
 function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel): Subscription {
   return xs.subscribe({
     next: (x) => {
-      console.log("Got event")
-      // switch (verbosity) {
-      //   case "full": {
-      //     console.log("DebugPrintf", JSON.stringify(x))
-      //     break
-      //   }
-      //   case "summary": {
-      //     const p = x as any
-      //     console.log(
-      //       `${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`
-      //     )
-      //     break
-      //   }
-      // }
+      switch (verbosity) {
+        case "full": {
+          console.log("DebugPrintf", JSON.stringify(x))
+          break
+        }
+        case "summary": {
+          const p = x as any
+          console.log(
+            `${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`
+          )
+          break
+        }
+      }
     },
     error: (e) => console.log("goterror: ", e),
     complete: () => console.log("alldone"),
@@ -181,12 +179,6 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
 
 describe("lock and burn tests", () => {
   dotenv.config()
-  // const INIT_STATE: State = {
-  //   value: { kind: "initialState" },
-  //   createdAt: 0,
-  //   currentHeartbeat: 0,
-  //   transactionStep: TransactionStep.Initial,
-  // }
   // This test only works when devenv is running, and that requires a connection to localhost
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
@@ -194,9 +186,6 @@ describe("lock and burn tests", () => {
   // a generic sif address, nothing special about it
   const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
   const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
-
-  // const factories = container.resolve(SifchainContractFactories)
-  // const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
 
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,
@@ -442,7 +431,7 @@ describe("lock and burn tests", () => {
     replayedEvents.unsubscribe()
   }
 
-  it.only("should allow ceth to eth tx", async () => {
+  it("should allow ceth to eth tx", async () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -462,19 +451,17 @@ describe("lock and burn tests", () => {
       await ethers.provider.getBalance(contracts.bridgeBank.address)
     ).toString()
 
-    const sendAmount = BigNumber.from(3500 * GWEI) // 3500 gwei
+    // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
+    const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
     let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
-    // sifnodedAdapter.fundSifAccount(testSifAccount!.account, 10000000000, "rowan")
-
-    // TODO: This is temporary. I think the right thing is for them to accept a verbose level
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     await executeLock(
       contracts,
       sendAmount,
-      ethereumAccounts.availableAccounts[0],
+      ethereumAccounts.availableAccounts[1],
       web3.utils.utf8ToHex(testSifAccount.account),
       false,
       "ceth to eth"
@@ -499,7 +486,8 @@ describe("lock and burn tests", () => {
         witness: "/tmp/sifnode/witness.log",
       },
       hardhat,
-      contracts.bridgeBank
+      contracts.bridgeBank,
+      contracts.cosmosBridge
     ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
 
     // evmRelayerEvents.subscribe((event) => console.log("Subscription", event))
@@ -509,7 +497,6 @@ describe("lock and burn tests", () => {
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          console.log("State assertion machine", v)
           if (isTerminalState(acc)) {
             // we've reached a decision
             console.log("Reached terminate state", acc)
@@ -524,7 +511,14 @@ describe("lock and burn tests", () => {
               // we just store the heartbeat
               return { ...acc, currentHeartbeat: v.value } as State
             }
-
+            case "EthereumMainnetLogUnlock": {
+              return ensureCorrectTransition(
+                acc,
+                v,
+                TransactionStep.ProphecyStatus,
+                TransactionStep.EthereumMainnetLogUnlock
+              )
+            }
             // Ebrelayer side log assertions
             case "EbRelayerEvmStateTransition": {
               let ebrelayerEvent: any = v.data
@@ -565,7 +559,7 @@ describe("lock and burn tests", () => {
                   return ensureCorrectTransition(
                     acc,
                     v,
-                    TransactionStep.ProphecyStatus,
+                    TransactionStep.EthereumMainnetLogUnlock,
                     TransactionStep.ProphecyClaimSubmitted
                   )
                 }
@@ -583,14 +577,6 @@ describe("lock and burn tests", () => {
                     TransactionStep.Burn
                   )
                 }
-
-                // case "GetTokenMetadata":
-                //   return ensureCorrectTransition(
-                //     acc,
-                //     v,
-                //     TransactionStep.Burn,
-                //     TransactionStep.GetTokenMetadata
-                //   )
 
                 case "GetCrossChainFeeConfig": {
                   return ensureCorrectTransition(
@@ -692,7 +678,7 @@ describe("lock and burn tests", () => {
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
-    let newSendAmount = BigNumber.from(2300 * Math.pow(10, 9)) // 2300 gwei
+    let newSendAmount = BigNumber.from("2300000000000000000") // 2300 gwei
     await sifnodedAdapter.executeSifBurn(
       testSifAccount,
       destinationEthereumAddress,

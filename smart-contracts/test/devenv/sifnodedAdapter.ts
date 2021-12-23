@@ -76,7 +76,7 @@ export class SifnodedAdapter {
     networkDescriptor: number
   ): Promise<object> {
     let sifnodedCmd: string = `${this.gobin}/sifnoded tx ethbridge burn ${sender.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${networkDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${this.homedir} --from ${sender.name} -y `
-
+    console.log("Executing sif burn:", sifnodedCmd)
     let responseString = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8" })
     return JSON.parse(responseString)
   }

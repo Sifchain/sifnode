@@ -10,6 +10,7 @@ import { DeploymentName, HardhatRuntimeEnvironmentToken } from "../src/tsyringe/
 import { setupRopstenDeployment, setupSifchainMainnetDeployment } from "../src/hardhatFunctions"
 import {
   BridgeBankProxy,
+  BridgeBankSetup,
   BridgeRegistryProxy,
   BridgeTokenSetup,
   CosmosBridgeProxy,
@@ -40,6 +41,7 @@ async function main() {
     bridgeRegistry: bridgeRegistry.address,
     rowanContract: rowanContract.address,
   }
+  await container.resolve(BridgeBankSetup).complete
   console.log(JSON.stringify(result))
 }
 

@@ -24,7 +24,7 @@ def generate_minimal_test_account(
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
     request.sifchain_address = new_sifaddr
     request.amount = target_ceth_balance
-    request.sifchain_symbol = "ceth"
+    request.sifchain_symbol = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
     request.ethereum_symbol = "eth"
     logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
     burn_lock_functions.transfer_ethereum_to_sifchain(request, timeout)

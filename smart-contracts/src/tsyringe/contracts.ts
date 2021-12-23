@@ -14,6 +14,7 @@ import {
   BridgeToken__factory,
   CosmosBridge__factory,
 } from "../../build"
+import "@openzeppelin/hardhat-upgrades"
 
 import web3 from "web3"
 const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE")
@@ -163,7 +164,6 @@ export class BridgeBankProxy {
         }
       )) as BridgeBank
       await bridgeBankProxy.deployed()
-      const own = await bridgeBankProxy.owner()
       return bridgeBankProxy
     })
   }
@@ -238,5 +238,36 @@ export class BridgeTokenSetup {
     sifchainAccounts: SifchainAccountsPromise
   ) {
     this.complete = this.build(rowan, bridgeBankProxy, sifchainAccounts)
+  }
+}
+
+/**
+ * TODO: BridgeBank does not function unless this runs. This should be part of
+ * BridgeBankProxy. This is a temporary setup because we ran into circular
+ * dependency issue when we tried to
+ */
+@singleton()
+export class BridgeBankSetup {
+  readonly complete: Promise<boolean>
+
+  private async build(
+    bridgebankProxy: BridgeBankProxy,
+    cosmosBridgeProxy: CosmosBridgeProxy,
+    sifchainAccounts: SifchainAccountsPromise
+  ): Promise<boolean> {
+    const cosmosBridge = await cosmosBridgeProxy.contract
+    const operator = (await sifchainAccounts.accounts).operatorAccount
+    const bridgebank = await bridgebankProxy.contract
+
+    await cosmosBridge.connect(operator).setBridgeBank(bridgebank.address)
+    return true
+  }
+
+  constructor(
+    bridgebankProxy: BridgeBankProxy,
+    cosmosBridgeProxy: CosmosBridgeProxy,
+    sifchainAccounts: SifchainAccountsPromise
+  ) {
+    this.complete = this.build(bridgebankProxy, cosmosBridgeProxy, sifchainAccounts)
   }
 }
