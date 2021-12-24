@@ -790,32 +790,46 @@ func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
 }
 
 func TestKeeper_InterestRateComputation(t *testing.T) {
-	t.Skip()
-	asset := clptypes.Asset{Symbol: "rowan"}
-	pool := clptypes.Pool{
-		ExternalAsset:        &asset,
-		NativeAssetBalance:   sdk.NewUint(1000000000),
-		NativeLiabilities:    sdk.NewUint(1000000000),
-		ExternalCustody:      sdk.NewUint(1000000000),
-		ExternalAssetBalance: sdk.NewUint(1000000000),
-		ExternalLiabilities:  sdk.NewUint(1000000000),
-		NativeCustody:        sdk.NewUint(1000000000),
-		PoolUnits:            sdk.NewUint(1),
-		Health:               sdk.NewDec(1),
-	}
-
 	interestRateComputationTests := []struct {
-		name      string
-		denom     string
-		decimals  int64
-		err       error
-		errString error
+		name                 string
+		denom                string
+		decimals             int64
+		interestRate         sdk.Dec
+		interestRateIncrease sdk.Dec
+		interestRateDecrease sdk.Dec
+		interestRateMax      sdk.Dec
+		err                  error
+		errString            error
 	}{
 		{
-			name:     "denom not registered",
-			denom:    "unregistred_denom",
-			decimals: 18,
-			err:      tokenregistrytypes.ErrNotFound,
+			name:                 "interest rate change lesser than decrease and increase",
+			denom:                "unregistred_denom",
+			decimals:             18,
+			interestRate:         sdk.NewDec(1),
+			interestRateIncrease: sdk.NewDec(1),
+			interestRateDecrease: sdk.NewDec(1),
+			interestRateMax:      sdk.NewDec(5),
+			err:                  nil,
+		},
+		{
+			name:                 "interest rate change greater than increase",
+			denom:                "unregistred_denom",
+			decimals:             18,
+			interestRate:         sdk.NewDec(10),
+			interestRateIncrease: sdk.NewDec(1),
+			interestRateDecrease: sdk.NewDec(1),
+			interestRateMax:      sdk.NewDec(5),
+			err:                  nil,
+		},
+		{
+			name:                 "interest rate greater than rate max",
+			denom:                "unregistred_denom",
+			decimals:             18,
+			interestRate:         sdk.NewDec(10),
+			interestRateIncrease: sdk.NewDec(1),
+			interestRateDecrease: sdk.NewDec(1),
+			interestRateMax:      sdk.NewDec(0),
+			err:                  nil,
 		},
 	}
 
@@ -830,7 +844,34 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
+			data := types.GenesisState{Params: &types.Params{
+				LeverageMax:          sdk.NewUint(10),
+				InterestRateMax:      tt.interestRateMax,
+				InterestRateMin:      sdk.NewDec(1),
+				InterestRateIncrease: tt.interestRateIncrease,
+				InterestRateDecrease: tt.interestRateDecrease,
+				HealthGainFactor:     sdk.NewDec(1),
+				EpochLength:          1,
+			}}
+			marginKeeper.InitGenesis(ctx, data)
+
+			asset := clptypes.Asset{Symbol: "rowan"}
+			pool := clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(1000000000),
+				NativeLiabilities:    sdk.NewUint(1000000000),
+				ExternalCustody:      sdk.NewUint(1000000000),
+				ExternalAssetBalance: sdk.NewUint(1000000000),
+				ExternalLiabilities:  sdk.NewUint(1000000000),
+				NativeCustody:        sdk.NewUint(1000000000),
+				PoolUnits:            sdk.NewUint(1),
+				Health:               sdk.NewDec(1),
+				InterestRate:         tt.interestRate,
+			}
+
 			_, got := marginKeeper.InterestRateComputation(ctx, pool)
+
+			t.Logf("got %v", got)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())

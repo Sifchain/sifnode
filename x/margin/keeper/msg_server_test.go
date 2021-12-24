@@ -167,8 +167,6 @@ func TestKeeper_OpenLong(t *testing.T) {
 
 			_, got := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msg)
 
-			t.Logf("got %v", got)
-
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
@@ -190,9 +188,20 @@ func TestKeeper_CloseLong(t *testing.T) {
 		token           string
 		marginEnabled   bool
 		fundedAccount   bool
+		overrideSigner  string
 		err             error
 		errString       error
 	}{
+		{
+			name:            "mtp does not exist",
+			signer:          "xxx",
+			collateralAsset: "xxx",
+			borrowAsset:     "xxx",
+			poolAsset:       "rowan",
+			token:           "somethingelse",
+			overrideSigner:  "otheraddress",
+			errString:       types.ErrMTPDoesNotExist,
+		},
 		{
 			name:            "pool does not exist",
 			signer:          "xxx",
@@ -212,16 +221,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			errString:       sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
-			name:            "same collateral and native asset but pool exists",
-			signer:          "xxx",
-			collateralAsset: "rowan",
-			borrowAsset:     "rowan",
-			poolAsset:       "rowan",
-			token:           "somethingelse",
-			errString:       sdkerrors.Wrap(types.ErrMTPDisabled, "rowan"),
-		},
-		{
-			name:            "margin enabled but denom does not exist",
+			name:            "denom does not exist",
 			signer:          "xxx",
 			collateralAsset: "xxx",
 			borrowAsset:     "xxx",
@@ -248,7 +248,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			poolAsset:       "xxx",
 			token:           "xxx",
 			marginEnabled:   true,
-			errString:       errors.New("user does not have enough balance of the required coin"),
+			errString:       errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
 		},
 		{
 			name:            "account funded",
@@ -302,6 +302,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 				address = _signer.String()
 				nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
 				sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				marginKeeper.BankKeeper().SendCoinsFromAccountToModule(ctx, _signer, types.ModuleName, sdk.NewCoins(nativeCoin))
 			} else {
 				address = tt.signer
 			}
@@ -312,11 +313,14 @@ func TestKeeper_CloseLong(t *testing.T) {
 				BorrowAsset:     tt.borrowAsset,
 			}
 
-			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, msg.Signer)
+			var signer string = msg.Signer
+			if tt.overrideSigner != "" {
+				signer = tt.overrideSigner
+			}
+
+			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer)
 
 			_, got := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msg)
-
-			t.Logf("got %v", got)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
