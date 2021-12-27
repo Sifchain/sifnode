@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTypes_Validate(t *testing.T) {
+func TestTypes_ValidateAsset(t *testing.T) {
 	validateTests := []struct {
 		asset string
 		valid bool
