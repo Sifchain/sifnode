@@ -365,7 +365,8 @@ func TestKeeper_Borrow(t *testing.T) {
 				signer := clptest.GenerateAddress(clptest.AddressKey1)
 				address = signer.String()
 				nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-				sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(nativeCoin))
+				err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(nativeCoin))
+				require.Nil(t, err)
 			} else {
 				address = tt.address
 			}

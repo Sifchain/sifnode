@@ -153,7 +153,8 @@ func TestKeeper_OpenLong(t *testing.T) {
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
 				address = _signer.String()
 				nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-				sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				require.Nil(t, err)
 			} else {
 				address = tt.signer
 			}
@@ -301,7 +302,8 @@ func TestKeeper_CloseLong(t *testing.T) {
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
 				address = _signer.String()
 				nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-				sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				require.Nil(t, err)
 				marginKeeper.BankKeeper().SendCoinsFromAccountToModule(ctx, _signer, types.ModuleName, sdk.NewCoins(nativeCoin))
 			} else {
 				address = tt.signer
