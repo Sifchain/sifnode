@@ -12,13 +12,20 @@ import (
 )
 
 func TestKeeper_ExportGenesis(t *testing.T) {
-	t.Run("no prior import of genesis", func(t *testing.T) {
+	t.Run("no prior import of genesis, default param settings", func(t *testing.T) {
 		ctx, app := test.CreateTestAppMargin(false)
 		marginKeeper := app.MarginKeeper
 		require.NotNil(t, marginKeeper)
 		state := marginKeeper.ExportGenesis(ctx)
 		require.NotNil(t, state)
-		require.Nil(t, state.Params)
+
+		require.Equal(t, state.Params.LeverageMax, marginKeeper.GetLeverageParam(ctx))
+		require.Equal(t, state.Params.InterestRateMax, marginKeeper.GetInterestRateMax(ctx))
+		require.Equal(t, state.Params.InterestRateMin, marginKeeper.GetInterestRateMin(ctx))
+		require.Equal(t, state.Params.InterestRateIncrease, marginKeeper.GetInterestRateIncrease(ctx))
+		require.Equal(t, state.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
+		require.Equal(t, state.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
+		require.Equal(t, state.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
 	})
 
 	t.Run("prior import of genesis then export", func(t *testing.T) {
@@ -58,7 +65,13 @@ func TestKeeper_InitGenesis(t *testing.T) {
 
 		got := marginKeeper.ExportGenesis(ctx)
 
-		require.Equal(t, *got, want)
+		require.Equal(t, got.Params.LeverageMax, marginKeeper.GetLeverageParam(ctx))
+		require.Equal(t, got.Params.InterestRateMax, marginKeeper.GetInterestRateMax(ctx))
+		require.Equal(t, got.Params.InterestRateMin, marginKeeper.GetInterestRateMin(ctx))
+		require.Equal(t, got.Params.InterestRateIncrease, marginKeeper.GetInterestRateIncrease(ctx))
+		require.Equal(t, got.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
+		require.Equal(t, got.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
+		require.Equal(t, got.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
 	})
 
 	t.Run("params fields set", func(t *testing.T) {
