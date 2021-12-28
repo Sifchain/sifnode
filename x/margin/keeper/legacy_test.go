@@ -43,13 +43,6 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 		msgOther     sdk.Msg
 	)
 
-	// newMsg := types.MsgOpenLong{
-	// 	Signer:           "xxx",
-	// 	CollateralAsset:  "xxx",
-	// 	CollateralAmount: sdk.NewUint(100),
-	// 	BorrowAsset:      "xxx",
-	// }
-
 	newLegacyHandlerTests := []struct {
 		name      string
 		msg       sdk.Msg
