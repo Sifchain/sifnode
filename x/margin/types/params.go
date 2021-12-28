@@ -19,7 +19,13 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyLeverageMaxParam, &p.LeverageMax, validateLeverageMax),
+		paramtypes.NewParamSetPair(KeyLeverageMaxParam, &p.LeverageMax, validate),
+		paramtypes.NewParamSetPair(KeyInterestRateMaxParam, &p.InterestRateMax, validate),
+		paramtypes.NewParamSetPair(KeyInterestRateMinParam, &p.InterestRateMin, validate),
+		paramtypes.NewParamSetPair(KeyInterestRateIncreaseParam, &p.InterestRateIncrease, validate),
+		paramtypes.NewParamSetPair(KeyInterestRateDecreaseParam, &p.InterestRateDecrease, validate),
+		paramtypes.NewParamSetPair(KeyHealthGainFactorParam, &p.HealthGainFactor, validate),
+		paramtypes.NewParamSetPair(KeyEpochLengthParam, &p.EpochLength, validate),
 	}
 }
 
@@ -27,6 +33,6 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func validateLeverageMax(i interface{}) error {
+func validate(i interface{}) error {
 	return nil
 }
