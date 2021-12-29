@@ -12,6 +12,16 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data types.GenesisState) []abci.Val
 	return []abci.ValidatorUpdate{}
 }
 
-func (k Keeper) ExportGenesis(sdk.Context) *types.GenesisState {
-	return &types.GenesisState{}
+func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+	return &types.GenesisState{
+		Params: &types.Params{
+			LeverageMax:          k.GetLeverageParam(ctx),
+			InterestRateMax:      k.GetInterestRateMax(ctx),
+			InterestRateMin:      k.GetInterestRateMin(ctx),
+			InterestRateIncrease: k.GetInterestRateIncrease(ctx),
+			InterestRateDecrease: k.GetInterestRateDecrease(ctx),
+			HealthGainFactor:     k.GetHealthGainFactor(ctx),
+			EpochLength:          k.GetEpochLength(ctx),
+		},
+	}
 }
