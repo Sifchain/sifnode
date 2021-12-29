@@ -6,15 +6,15 @@ If you are trying to synchronize our EVM blocklist with OFAC's blocklist, you wi
 
 ```
 MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/ZGe5q0xD06oCAHiwf6ZAexnzGKSPrS5P
-MAINNET_PRIVATE_KEY_OPERATOR=e67825808c9642d98d16b5794da4582432cb159610ff3934e8a0bac074e725f2
-ACTIVE_PRIVATE_KEY=MAINNET_PRIVATE_KEY_OPERATOR
+MAINNET_PRIVATE_KEY_BLOCKLIST=e67825808c9642d98d16b5794da4582432cb159610ff3934e8a0bac074e725f2
+ACTIVE_PRIVATE_KEY=MAINNET_PRIVATE_KEY_BLOCKLIST
 ```
 
-_Please note that the values of MAINNET_URL and MAINNET_PRIVATE_KEY_OPERATOR have been redacted and won't work on the mainnet. You should change them to your actual mainnet Alchemy URL and the BridgeBank OPERATOR's private key._
+_Please note that the values of MAINNET_URL and MAINNET_PRIVATE_KEY_BLOCKLIST have been redacted and won't work on the mainnet. You should change them to your actual mainnet Alchemy URL and the Blocklist admin's private key._
 
 Important:
 
-- Make sure MAINNET_PRIVATE_KEY_OPERATOR in your .env file is the private key matching the OPERATOR address.
+- Make sure MAINNET_PRIVATE_KEY_BLOCKLIST in your .env file is the private key matching the Blocklist admin's address.
 
 - Ensure MAINNET_URL is set correctly.
 
