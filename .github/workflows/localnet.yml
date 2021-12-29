@@ -1,0 +1,38 @@
+name: Run localnet tests on localnet environment
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build Stack
+    defaults:
+      run:
+        working-directory: test/localnet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: "yarn"
+          cache-dependency-path: "test/localnet/yarn.lock"
+      - run: yarn install
+      - uses: actions/cache@v2
+        id: cache-localnet-binaries
+        with:
+          path: /tmp/localnet/bin
+          key: ${{ runner.os }}-localnet-bin-v1
+      - if: steps.cache-localnet-binaries.outputs.cache-hit != 'true'
+        run: yarn downloadBinaries
+      - uses: actions/cache@v2
+        id: cache-localnet-snapshot
+        with:
+          path: /tmp/localnet/config.tbz
+          key: ${{ runner.os }}-localnet-snapshot
+      - if: steps.cache-localnet-snapshot.outputs.cache-hit != 'true'
+        run: yarn buildLocalNet
+      - run: yarn test
