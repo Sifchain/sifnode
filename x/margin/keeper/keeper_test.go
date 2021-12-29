@@ -138,6 +138,70 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	require.NotNil(t, bank)
 }
 
+func TestKeeper_EC1(t *testing.T) {
+	// asset := clptypes.Asset{Symbol: "xxx"}
+	// pool := clptypes.Pool{
+	// 	ExternalAsset: &asset,
+
+	// 	NativeAssetBalance:   sdk.NewUint(100000),
+	// 	ExternalAssetBalance: sdk.NewUint(100),
+
+	// 	// NativeLiabilities:   sdk.NewUint(10000000),
+	// 	// NativeCustody:       sdk.NewUint(10000000),
+	// 	ExternalCustody:     sdk.NewUint(10000),
+	// 	ExternalLiabilities: sdk.NewUint(10000),
+	// 	// PoolUnits:           sdk.NewUint(1),
+	// 	// Health:              sdk.NewDec(1),
+	// }
+
+	// t.Logf("pool %v", pool)
+
+	ctx, app, marginKeeper := initKeeper(t)
+
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+		Denom:       "rowan",
+		Decimals:    18,
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+	})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+		Denom:       "xxx",
+		Decimals:    18,
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+	})
+
+	// marginKeeper.ClpKeeper().SetPool(ctx, &pool)
+
+	signer := clptest.GenerateAddress(clptest.AddressKey1)
+	//Parameters for create pool
+	nativeAssetAmount := sdk.NewUintFromString("100000")
+	externalAssetAmount := sdk.NewUintFromString("100")
+	asset := clptypes.NewAsset("xxx")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100000000)))
+	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUint(10000000)))
+	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	// Create Pool
+	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+
+	t.Logf("pool %v", *pool)
+
+	amount := uint64(float64(pool.NativeAssetBalance.Uint64()) * 0.1)
+
+	t.Logf("amount %v", amount)
+
+	swapResult, got := marginKeeper.CustodySwap(ctx, *pool, "xxx", sdk.NewUint(amount))
+
+	t.Logf("got %v", got)
+
+	t.Logf("swapResult %v", swapResult)
+
+	newPool, errPool := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
+
+	t.Logf("newPool %v", newPool)
+	t.Logf("errPool %v", errPool)
+}
+
 func TestKeeper_CustodySwap(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{
@@ -537,7 +601,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 	}
 }
 
-func TestKeeper_TestInCustody(t *testing.T) {
+func TestKeeper_TakeInCustody(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{
 		ExternalAsset:        &asset,
@@ -570,7 +634,7 @@ func TestKeeper_TestInCustody(t *testing.T) {
 	})
 }
 
-func TestKeeper_TestOutCustody(t *testing.T) {
+func TestKeeper_TakeOutCustody(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{
 		ExternalAsset:        &asset,
