@@ -43,6 +43,7 @@ import { SifnodedAdapter } from "./sifnodedAdapter"
 import { SifchainAccountsPromise } from "../../src/tsyringe/sifchainAccounts"
 import { BridgeToken } from "../../build"
 import { NIL } from "uuid"
+import { sha256 } from "ethers/lib/utils"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -120,6 +121,19 @@ enum TransactionStep {
   ProphecyClaimSubmitted = "ProphecyClaimSubmitted",
 
   EthereumMainnetLogUnlock = "EthereumMainnetLogUnlock",
+}
+
+function getDenomHash(networkId: number, contract: string) {
+  const data = String(networkId) + contract.toLowerCase()
+
+  const enc = new TextEncoder();
+
+  const denom = 'sif' + sha256(enc.encode(data)).substring(2)
+
+  console.log("network and contract is ", networkId,  contract.toLowerCase())
+  console.log("denom is ", denom)
+
+  return denom
 }
 
 function isTerminalState(s: State) {
@@ -509,12 +523,10 @@ describe("lock and burn tests", () => {
       sendAmount,
       ethereumAccounts.availableAccounts[1],
       web3.utils.utf8ToHex(testSifAccount.account),
-      "sifcf2e694ffe21c6987cf0b12846fbd1ae344aaf8fed3daddc5bdce3ba3b78f597",
+      getDenomHash(networkDescriptor, erc20.address.toString()),
       false,
       "erc20 to sifchain"
     )
-
-    const erc20Balance = await erc20.balanceOf(destinationEthereumAddress.address)
 
     const intermediateBalance = (
       await erc20.balanceOf(destinationEthereumAddress.address)
@@ -546,7 +558,6 @@ describe("lock and burn tests", () => {
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          console.log("++++++ state and event ", acc.uniqueId, v.kind)
           if (isTerminalState(acc)) {
             // we've reached a decision
             console.log("Reached terminate state", acc)
@@ -572,8 +583,6 @@ describe("lock and burn tests", () => {
             // Ebrelayer side log assertions
             case "EbRelayerEvmStateTransition": {
               let ebrelayerEvent: any = v.data
-              console.log("++++++ ebrelayerEvent ", ebrelayerEvent.kind)
-
               switch (ebrelayerEvent.kind) {
                 case "ReceiveCosmosBurnMessage": {
                   // console.log("Seeing ReceiveCosmosBurnMessage")
@@ -735,7 +744,7 @@ describe("lock and burn tests", () => {
       testSifAccount,
       destinationEthereumAddress,
       newSendAmount.sub(crossChainCethFee),
-      "sifcf2e694ffe21c6987cf0b12846fbd1ae344aaf8fed3daddc5bdce3ba3b78f597",
+      getDenomHash(networkDescriptor, erc20.address.toString()),
       String(crossChainCethFee),
       networkDescriptor
     )
