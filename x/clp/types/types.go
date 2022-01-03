@@ -40,10 +40,6 @@ func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidi
 // ----------------------------------------------------------------------------
 // Client Types
 
-func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsRes {
-	return PoolsRes{Pools: pools, Height: height, ClpModuleAddress: address}
-}
-
 func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderRes {
 	return LiquidityProviderRes{LiquidityProvider: &liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
