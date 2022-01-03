@@ -39,7 +39,7 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCreateCmd.PersistentFlags().Bool("enable-grpc", false, "enable gRPC")
 	_nodeCreateCmd.PersistentFlags().Bool("enable-api", false, "enable API")
-	_nodeCreateCmd.PersistentFlags().String("keyring-backend", "file", "keyring backend (os|file|kwallet|pass|test|memory)")
+	_nodeCreateCmd.PersistentFlags().String("keyring-backend", "test", "keyring backend (os|file|kwallet|pass|test|memory)")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()
