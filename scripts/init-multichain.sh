@@ -97,8 +97,10 @@ sifnoded collect-gentxs --home ~/.sifnode-3
 echo "Validating genesis file..."
 sifnoded validate-genesis --home ~/.sifnode-3
 
+rm -rf abci_*.log
+rm -rf hermes.log
 
-
+exit 0
 
 sleep 1
 sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> abci_1.log 2>&1  &
@@ -108,27 +110,14 @@ sleep 1
 sifnoded start --home ~/.sifnode-3 --p2p.laddr 0.0.0.0:27657  --grpc.address 0.0.0.0:9092 --grpc-web.address 0.0.0.0:9095 --address tcp://0.0.0.0:27661 --rpc.laddr tcp://127.0.0.1:27667 >> abci_3.log 2>&1  &
 sleep 1
 
-rm -rf ~/.ibc-12/last-queried-heights.json
-rm -rf ~/.ibc-23/last-queried-heights.json
-rm -rf ~/.ibc-31/last-queried-heights.json
-rm -rf ~/.ibc-12/app.yaml
-rm -rf ~/.ibc-23/app.yaml
-rm -rf ~/.ibc-31/app.yaml
-printf "src: localnet-1\ndest: localnet-2\n" > ~/.ibc-12/app.yaml
-printf "src: localnet-2\ndest: localnet-3\n" > ~/.ibc-23/app.yaml
-printf "src: localnet-3\ndest: localnet-1\n" > ~/.ibc-31/app.yaml
+# copy hermes config to the hermes directory
+mkdir ~/.hermes
+cp scripts/hermes_config.toml ~/.hermes/config.toml
 
-sleep 10
-ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-12
-sleep 1
-ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-23
-sleep 1
-ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-31
+# create hermes channels
+hermes create channel localnet-1 localnet-3 --port-a transfer --port-b transfer -o unordered
+hermes create channel localnet-1 localnet-2 --port-a transfer --port-b transfer -o unordered
+hermes create channel localnet-2 localnet-3 --port-a transfer --port-b transfer -o unordered
 
-
-sleep 1
-echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | ibc-relayer start -i -v --poll 10 --home ~/.ibc-12 >> ibc_12.log &
-sleep 1
-echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | ibc-relayer start -i -v --poll 10 --home ~/.ibc-23 >> ibc_23.log &
-sleep 1
-echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | ibc-relayer start -i -v --poll 10 --home ~/.ibc-31 >> ibc_31.log &
+# start hermes
+hermes start > hermes.log 2>&1 &
