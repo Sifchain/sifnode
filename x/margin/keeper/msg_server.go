@@ -40,13 +40,13 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 		externalAsset = msg.CollateralAsset
 	}
 
-	if !k.IsPoolEnabled(ctx, externalAsset) {
-		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
-	}
-
 	pool, err := k.ClpKeeper().GetPool(ctx, externalAsset)
 	if err != nil {
 		return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, externalAsset)
+	}
+
+	if !k.IsPoolEnabled(ctx, externalAsset) {
+		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
 	}
 
 	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))

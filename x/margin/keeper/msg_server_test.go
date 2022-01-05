@@ -141,8 +141,9 @@ func TestKeeper_OpenLong(t *testing.T) {
 				PoolUnits:            sdk.NewUint(1),
 				Health:               sdk.NewDec(1),
 			}
+
 			if tt.marginEnabled {
-				pool.MarginEnabled = true
+				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
 			marginKeeper.ClpKeeper().SetPool(ctx, &pool)
@@ -291,7 +292,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 				Health:               sdk.NewDec(1),
 			}
 			if tt.marginEnabled {
-				pool.MarginEnabled = true
+				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
 			marginKeeper.ClpKeeper().SetPool(ctx, &pool)

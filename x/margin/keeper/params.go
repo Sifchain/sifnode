@@ -55,6 +55,10 @@ func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	return pools
 }
 
+func (k Keeper) SetEnabledPools(ctx sdk.Context, pools []string) {
+	k.paramStore.Set(ctx, types.KeyPoolsParam, &pools)
+}
+
 func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 	pools := k.GetEnabledPools(ctx)
 	for _, p := range pools {
