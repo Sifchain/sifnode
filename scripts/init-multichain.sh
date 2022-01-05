@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+if ! type "hermes" > /dev/null; then
+  # install foobar here
+  echo "You need the hermes relayer to run this script. You can find it here https://github.com/informalsystems/ibc-rs"
+  exit 0
+fi
+
 ### chain init script for development purposes only ###
 killall sifnoded
 rm -rf ~/.sifnode-1
