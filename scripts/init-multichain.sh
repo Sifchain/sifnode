@@ -8,6 +8,7 @@ fi
 
 ### chain init script for development purposes only ###
 killall sifnoded
+killall hermes
 rm -rf ~/.sifnode-1
 rm -rf ~/.sifnode-2
 rm -rf ~/.sifnode-3
@@ -105,25 +106,37 @@ sifnoded validate-genesis --home ~/.sifnode-3
 
 rm -rf abci_*.log
 rm -rf hermes.log
+rm -rf ~/.hermes
 
-exit 0
+echo "Starting sifnoded's"
 
 sleep 1
 sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> abci_1.log 2>&1  &
 sleep 1
 sifnoded start --home ~/.sifnode-2 --p2p.laddr 0.0.0.0:27656  --grpc.address 0.0.0.0:9091 --grpc-web.address 0.0.0.0:9094 --address tcp://0.0.0.0:27660 --rpc.laddr tcp://127.0.0.1:27666 >> abci_2.log 2>&1  &
 sleep 1
-sifnoded start --home ~/.sifnode-3 --p2p.laddr 0.0.0.0:27657  --grpc.address 0.0.0.0:9092 --grpc-web.address 0.0.0.0:9095 --address tcp://0.0.0.0:27661 --rpc.laddr tcp://127.0.0.1:27667 >> abci_3.log 2>&1  &
-sleep 1
+sifnoded start --home ~/.sifnode-3 --p2p.laddr 0.0.0.0:27657  --grpc.address 0.0.0.0:9092 --grpc-web.address 0.0.0.0:9095 --address tcp://0.0.0.0:27661 --rpc.laddr tcp://127.0.0.1:27667 >> abci_3.log 2>&1 &
+sleep 5
 
+echo "Setting hermes"
 # copy hermes config to the hermes directory
 mkdir ~/.hermes
 cp scripts/hermes_config.toml ~/.hermes/config.toml
 
+hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-1 --name sif
+hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-2 --name sif
+hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-3 --name sif
+
 # create hermes channels
-hermes create channel localnet-1 localnet-3 --port-a transfer --port-b transfer -o unordered
+echo "Creating localnet-1 to localnet-2"
 hermes create channel localnet-1 localnet-2 --port-a transfer --port-b transfer -o unordered
+sleep 1
+echo "Creating localnet-2 to localnet-3"
 hermes create channel localnet-2 localnet-3 --port-a transfer --port-b transfer -o unordered
+sleep 1
+echo "Creating localnet-1 to localnet-3"
+hermes create channel localnet-1 localnet-3 --port-a transfer --port-b transfer -o unordered
+sleep 1
 
 # start hermes
 hermes start > hermes.log 2>&1 &
