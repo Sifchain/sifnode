@@ -34,6 +34,7 @@ message Params {
     (gogoproto.nullable) = false
   ];
   int64 epoch_length = 7;
+  repeated string pools = 8;
 }
 
 message MTP {

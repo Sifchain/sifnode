@@ -49,7 +49,6 @@ message Pool {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  bool margin_enabled = 11;
 }
 
 message LiquidityProvider {

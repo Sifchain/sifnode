@@ -31,23 +31,22 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 
 	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.CollateralAmount, msg.BorrowAsset)
 
-	var err error
-	var pool clptypes.Pool
+	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
-		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
-		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.BorrowAsset)
-		}
+		externalAsset = msg.BorrowAsset
 	} else {
-		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
-		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.CollateralAsset)
-		}
+		externalAsset = msg.CollateralAsset
 	}
-	if !pool.MarginEnabled {
-		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, msg.CollateralAsset)
+
+	pool, err := k.ClpKeeper().GetPool(ctx, externalAsset)
+	if err != nil {
+		return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, externalAsset)
+	}
+
+	if !k.IsPoolEnabled(ctx, externalAsset) {
+		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
 	}
 
 	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))
