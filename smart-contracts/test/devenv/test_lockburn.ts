@@ -1,23 +1,26 @@
 import * as chai from "chai"
-import {expect} from "chai"
-import {solidity} from "ethereum-waffle"
-import {container} from "tsyringe"
-import {HardhatRuntimeEnvironmentToken} from "../../src/tsyringe/injectionTokens"
+import { expect } from "chai"
+import { solidity } from "ethereum-waffle"
+import { container } from "tsyringe"
+import { HardhatRuntimeEnvironmentToken } from "../../src/tsyringe/injectionTokens"
 import * as hardhat from "hardhat"
-import {BigNumber} from "ethers"
-import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
-import {SifchainContractFactories} from "../../src/tsyringe/contracts"
-import {buildDevEnvContracts} from "../../src/contractSupport"
+import { BigNumber } from "ethers"
+import {
+  ethereumResultsToSifchainAccounts,
+  readDevEnvObj,
+} from "../../src/tsyringe/devenvUtilities"
+import { SifchainContractFactories } from "../../src/tsyringe/contracts"
+import { buildDevEnvContracts } from "../../src/contractSupport"
 import web3 from "web3"
-import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/devenv/sifnoded"
+import { EbRelayerAccount, crossChainFeeBase, crossChainBurnFee } from "../../src/devenv/sifnoded"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
-import {ethers} from "hardhat"
-import {SifnodedAdapter} from "./sifnodedAdapter"
-import {checkSifnodeBurnState} from "./sifnode_lock_burn"
-import {ethDenomHash} from "./context"
+import { ethers } from "hardhat"
+import { SifnodedAdapter } from "./sifnodedAdapter"
+import { checkSifnodeBurnState } from "./sifnode_lock_burn"
+import { ethDenomHash } from "./context"
 
-import {executeLock, checkEvmLockState} from "./evm_lock_burn"
+import { executeLock, checkEvmLockState } from "./evm_lock_burn"
 
 chai.use(solidity)
 
@@ -37,7 +40,7 @@ describe("lock and burn tests", () => {
   )
 
   before("register HardhatRuntimeEnvironmentToken", async () => {
-    container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
+    container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
   })
 
   it("should allow ceth to eth tx", async () => {
