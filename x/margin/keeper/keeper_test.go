@@ -139,67 +139,205 @@ func TestKeeper_BankKeeper(t *testing.T) {
 }
 
 func TestKeeper_EC1(t *testing.T) {
-	// asset := clptypes.Asset{Symbol: "xxx"}
-	// pool := clptypes.Pool{
-	// 	ExternalAsset: &asset,
+	asset := clptypes.Asset{Symbol: "xxx"}
 
-	// 	NativeAssetBalance:   sdk.NewUint(100000),
-	// 	ExternalAssetBalance: sdk.NewUint(100),
+	ec1Tests := []struct {
+		name      string
+		pool      clptypes.Pool
+		want      clptypes.Pool
+		err       error
+		errString error
+	}{
+		{
+			name: "X_A = 100000, Y_A = 100",
+			pool: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(100),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+			},
+			want: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(0),
+				ExternalAssetBalance: sdk.NewUint(100),
+				NativeLiabilities:    sdk.NewUint(10100000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			},
+		},
+		{
+			name: "X_A = 100000, Y_A = 10",
+			pool: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(10),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+			},
+			want: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(0),
+				ExternalAssetBalance: sdk.NewUint(10),
+				NativeLiabilities:    sdk.NewUint(10100000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			},
+		},
+		{
+			name: "X_A = 100000, Y_A = 1",
+			pool: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(1),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+			},
+			want: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(0),
+				ExternalAssetBalance: sdk.NewUint(1),
+				NativeLiabilities:    sdk.NewUint(10100000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			},
+		},
+	}
 
-	// 	// NativeLiabilities:   sdk.NewUint(10000000),
-	// 	// NativeCustody:       sdk.NewUint(10000000),
-	// 	ExternalCustody:     sdk.NewUint(10000),
-	// 	ExternalLiabilities: sdk.NewUint(10000),
-	// 	// PoolUnits:           sdk.NewUint(1),
-	// 	// Health:              sdk.NewDec(1),
-	// }
+	for _, tt := range ec1Tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, _, marginKeeper := initKeeper(t)
 
-	// t.Logf("pool %v", pool)
+			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-	ctx, app, marginKeeper := initKeeper(t)
+			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			require.Nil(t, err)
 
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
-		Denom:       "rowan",
-		Decimals:    18,
-		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-	})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
-		Denom:       "xxx",
-		Decimals:    18,
-		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-	})
+			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
 
-	// marginKeeper.ClpKeeper().SetPool(ctx, &pool)
+			require.Equal(t, got, tt.want)
+		})
+	}
+}
 
-	signer := clptest.GenerateAddress(clptest.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("100000")
-	externalAssetAmount := sdk.NewUintFromString("100")
-	asset := clptypes.NewAsset("xxx")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100000000)))
-	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUint(10000000)))
-	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	require.NoError(t, err)
-	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Create Pool
-	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+func TestKeeper_EC2(t *testing.T) {
+	asset := clptypes.Asset{Symbol: "xxx"}
 
-	t.Logf("pool %v", *pool)
+	ec2Tests := []struct {
+		name      string
+		pool      clptypes.Pool
+		want      clptypes.Pool
+		err       error
+		errString error
+	}{
+		{
+			name: "X_A = 100000, Y_A = 100",
+			pool: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(100),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+			},
+			want: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(100),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			},
+		},
+		{
+			name: "X_A = 100000, Y_A = 10",
+			pool: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(10),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+			},
+			want: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(10),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			},
+		},
+		{
+			name: "X_A = 100000, Y_A = 1",
+			pool: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(1),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+			},
+			want: clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(100000),
+				ExternalAssetBalance: sdk.NewUint(1),
+				NativeLiabilities:    sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(10000000),
+				ExternalCustody:      sdk.NewUint(10000),
+				ExternalLiabilities:  sdk.NewUint(10000),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			},
+		},
+	}
 
-	amount := uint64(float64(pool.NativeAssetBalance.Uint64()) * 0.1)
+	for _, tt := range ec2Tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, _, marginKeeper := initKeeper(t)
 
-	t.Logf("amount %v", amount)
+			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-	swapResult, got := marginKeeper.CustodySwap(ctx, *pool, "xxx", sdk.NewUint(amount))
+			err := marginKeeper.TakeOutCustody(ctx, mtp, tt.pool)
+			require.Nil(t, err)
 
-	t.Logf("got %v", got)
+			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
 
-	t.Logf("swapResult %v", swapResult)
-
-	newPool, errPool := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
-
-	t.Logf("newPool %v", newPool)
-	t.Logf("errPool %v", errPool)
+			require.Equal(t, got, tt.want)
+		})
+	}
 }
 
 func TestKeeper_CustodySwap(t *testing.T) {
