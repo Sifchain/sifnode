@@ -34,7 +34,7 @@ type Keeper interface {
 	BankKeeper() BankKeeper
 
 	SetMTP(ctx sdk.Context, mtp *MTP) error
-	GetMTP(sdk.Context, string, string, string) (MTP, error)
+	GetMTP(ctx sdk.Context, collateralAsset string, custodyAsset string, address string) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
 	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP

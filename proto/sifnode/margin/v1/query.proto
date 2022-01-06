@@ -8,4 +8,15 @@ import "sifnode/margin/v1/types.proto";
 option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 service Query {
+  rpc GetMTP(MTPRequest) returns (MTPResponse) {}
+}
+
+message MTPRequest {
+  string address = 1;
+  string custody_asset = 2;
+  string collateral_asset = 3;
+}
+
+message MTPResponse {
+  MTP mtp = 1;
 }
