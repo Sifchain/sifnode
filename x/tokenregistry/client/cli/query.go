@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -164,26 +165,31 @@ func GetCmdGenerateEntry() *cobra.Command {
 			var denom string
 			var path string
 			// base_denom is required.
-			// override the IBC generation with --denom if specified explicitly.
+			// override the IBC generation with --token_denom if specified explicitly.
 			// otherwise fallback to base_denom
 			if ibcChannelID != "" {
 				path = "transfer/" + ibcChannelID
+				// generate IBC hash from baseDenom and ibc channel id
+				denomTrace := transfertypes.DenomTrace{
+					Path:      path,
+					BaseDenom: baseDenom,
+				}
+				denom = denomTrace.IBCDenom()
+			} else if initialDenom == "" {
+				// either initialDenom or channel id must be specified,
+				// to prevent accidentally leaving off IBC details and
+				return errors.New("--token_denom must be specified if no IBC channel is provided")
 			}
-			// generate IBC hash from baseDenom and ibc channel id
-			denomTrace := transfertypes.DenomTrace{
-				Path:      path,
-				BaseDenom: baseDenom,
-			}
-			denom = denomTrace.IBCDenom()
+			// --token_denom always takes precendence over IBC generation if specified
 			if initialDenom != "" {
 				denom = initialDenom
-			} else if denom == "" {
-				denom = baseDenom
 			}
+
 			entry := types.RegistryEntry{
 				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
+				Path:                     path,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
