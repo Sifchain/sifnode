@@ -42,7 +42,6 @@ import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
 import { SifchainAccountsPromise } from "../../src/tsyringe/sifchainAccounts"
 import { BridgeToken } from "../../build"
-import { NIL } from "uuid"
 import { sha256 } from "ethers/lib/utils"
 
 // The hash value for ethereum on mainnet
@@ -130,9 +129,6 @@ function getDenomHash(networkId: number, contract: string) {
 
   const denom = 'sif' + sha256(enc.encode(data)).substring(2)
 
-  console.log("network and contract is ", networkId,  contract.toLowerCase())
-  console.log("denom is ", denom)
-
   return denom
 }
 
@@ -144,17 +140,13 @@ function isTerminalState(s: State) {
     default:
       return (
         s.transactionStep === TransactionStep.CoinsSent ||
-        s.transactionStep === TransactionStep.ProphecyClaimSubmitted
+        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock
       )
   }
 }
 
 function isNotTerminalState(s: State) {
   return !isTerminalState(s)
-}
-
-function computeDenom() {
-
 }
 
 type VerbosityLevel = "summary" | "full" | "none"
@@ -318,9 +310,7 @@ describe("lock and burn tests", () => {
               case "EthereumMainnetLogLock":
                 // we should see exactly one lock
                 let ethBlock = v.data.block as any
-                // if (ethBlock.transactionHash === tx.hash && v.data.value.eq(smallAmount)) {
-                if (v.data.value.eq(smallAmount)) {
-
+                if (ethBlock.transactionHash === tx.hash && v.data.value.eq(smallAmount)) {
                   const newAcc: State = {
                     ...acc,
                     fromEthereumAddress: v.data.from,
@@ -466,7 +456,7 @@ describe("lock and burn tests", () => {
     replayedEvents.unsubscribe()
   }
 
-  it("should allow erc20 back to Ethereum", async () => {
+  it.only("should allow erc20 back to Ethereum", async () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -538,7 +528,7 @@ describe("lock and burn tests", () => {
     // These are temporarily added to make the logging lvl lower
     process.env["VERBOSE"] = originalVerboseLevel
 
-    console.log("****** Lock complete")
+    console.log("Lock complete")
 
     const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
       {
@@ -555,10 +545,16 @@ describe("lock and burn tests", () => {
 
     let receivedCosmosBurnmsg: boolean = false
     let witnessSignedProphecy: boolean = false
+
+    let hasSeenEthereumLogUnlcok: boolean = false
+    let hasSeenProphecyClaimSubmitted: boolean = false
+
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          if (isTerminalState(acc)) {
+          console.log("Event: ", v)
+          // if (v.kind == "")
+          if (isTerminalState(acc) || (hasSeenEthereumLogUnlcok && hasSeenProphecyClaimSubmitted)) {
             // we've reached a decision
             console.log("Reached terminate state", acc)
             return { ...acc, value: { kind: "terminate" } as Terminate }
@@ -573,6 +569,7 @@ describe("lock and burn tests", () => {
               return { ...acc, currentHeartbeat: v.value } as State
             }
             case "EthereumMainnetLogUnlock": {
+              hasSeenEthereumLogUnlcok = true
               return ensureCorrectTransition(
                 acc,
                 v,
@@ -617,12 +614,13 @@ describe("lock and burn tests", () => {
                 }
 
                 case "ProphecyClaimSubmitted": {
-                  return ensureCorrectTransition(
-                    acc,
-                    v,
-                    TransactionStep.EthereumMainnetLogUnlock,
-                    TransactionStep.ProphecyClaimSubmitted
-                  )
+                  hasSeenProphecyClaimSubmitted = true
+                  // return ensureCorrectTransition(
+                  //   acc,
+                  //   v,
+                  //   TransactionStep.EthereumMainnetLogUnlock,
+                  //   TransactionStep.ProphecyClaimSubmitted
+                  // )
                 }
               }
             }
@@ -750,7 +748,7 @@ describe("lock and burn tests", () => {
     )
 
     const lv = await lastValueFrom(states.pipe(takeWhile((x) => x.value.kind !== "terminate")))
-    const expectedEndState: TransactionStep = TransactionStep.ProphecyClaimSubmitted
+    const expectedEndState: TransactionStep = TransactionStep.EthereumMainnetLogUnlock
     expect(
       lv.transactionStep,
       `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
