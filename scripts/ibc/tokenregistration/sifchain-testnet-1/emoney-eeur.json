@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/0193489264F41BB6C5099A28CD6A806AADB79A83A00142B7D1BC9BF5AE643E87",
       "base_denom": "eeur",
-      "path": "",
+      "path": "transfer/channel-44",
       "ibc_channel_id": "channel-44",
       "ibc_counterparty_channel_id": "channel-12",
       "display_name": "",
