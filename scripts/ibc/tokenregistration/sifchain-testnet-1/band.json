@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/0E27F87D6329E120923EF03591FA62F090005853B17D1E327D88FD03B17A5CFB",
       "base_denom": "uband",
-      "path": "",
+      "path": "transfer/channel-41",
       "ibc_channel_id": "channel-41",
       "ibc_counterparty_channel_id": "channel-28",
       "display_name": "",
