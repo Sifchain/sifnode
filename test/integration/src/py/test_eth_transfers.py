@@ -76,3 +76,36 @@ def test_transfer_eth_to_ceth_over_limit(
             rowan_source_integrationtest_env_credentials,
             target_ceth_balance=50 * 10 ** 19,
         )
+
+
+# Group 0
+# Sending eth from ethereum to sifchain
+
+def test_eth_to_ceth_valid():
+    # create/retrieve a test ethereum account
+    # create/retrieve a test sifchain account
+
+    # Verify initial balance
+
+    # Send from ethereum to sifchain by locking
+
+    # Verify final balance
+
+    pass
+
+
+def test_eth_to_ceth_and_back_to_eth_transfer_valid():
+    # create/retrieve a test ethereum account
+    # create/retrieve a test sifchain account
+
+    # Verify initial balance
+
+    # Send from ethereum to sifchain by locking
+
+    # Verify final balance
+
+    # Send from sifchain to ethereum by burning on sifchain side,
+    # > sifnoded tx ethbridge burn
+
+    # Verify final balance
+    pass
