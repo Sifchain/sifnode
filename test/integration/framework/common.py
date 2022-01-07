@@ -1,3 +1,4 @@
+import re
 import os
 import logging
 import subprocess
@@ -9,13 +10,14 @@ import urllib.request
 
 log = logging.getLogger(__name__)
 
-# TODO Obsolete, use eth.NULL_ADDRESS
-NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 ANY_ADDR = "0.0.0.0"
 
 
 def stdout(res):
     return res[1]
+
+def stderr(res):
+    return res[2]
 
 def stdout_lines(res):
     return stdout(res).splitlines()
@@ -89,6 +91,7 @@ def dict_merge(*dicts, override=True):
     return result
 
 def format_as_shell_env_vars(env, export=True):
+    # TODO escaping/quoting, e.g. shlex.quote(v)
     return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
 
 def basic_logging_setup():
@@ -100,8 +103,17 @@ def basic_logging_setup():
     logging.getLogger("websockets").setLevel(logging.WARNING)
     logging.getLogger("web3").setLevel(logging.WARNING)
 
-on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
+# Recursively transforms template strings containing "${VALUE}". Example:
+# >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
+# 'You are very late!'
+# Warning: if you use cyclic definitions, this will loop forever.
+def template_transform(s, d):
+    p = re.compile("^(.*?)(\\${(.*?)})(.*)$")
+    while True:
+        m = p.match(s)
+        if not m:
+            return s
+        s = s[0:m.start(2)] + d[m[3]] + s[m.end(2):]
 
-if on_peggy2_branch:
-    # COnditional import - at the moment only on peggy2 branch as not to break existing integration tests
-    import web3
+
+on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
