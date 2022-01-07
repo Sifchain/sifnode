@@ -222,41 +222,150 @@ func (m *MsgCloseLongResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCloseLongResponse proto.InternalMessageInfo
 
+type MsgForceCloseLong struct {
+	Signer          string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	MtpAddress      string `protobuf:"bytes,2,opt,name=mtp_address,json=mtpAddress,proto3" json:"mtp_address,omitempty"`
+	CollateralAsset string `protobuf:"bytes,3,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
+	BorrowAsset     string `protobuf:"bytes,4,opt,name=borrow_asset,json=borrowAsset,proto3" json:"borrow_asset,omitempty"`
+}
+
+func (m *MsgForceCloseLong) Reset()         { *m = MsgForceCloseLong{} }
+func (m *MsgForceCloseLong) String() string { return proto.CompactTextString(m) }
+func (*MsgForceCloseLong) ProtoMessage()    {}
+func (*MsgForceCloseLong) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dd3bc05d7e781ea, []int{4}
+}
+func (m *MsgForceCloseLong) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgForceCloseLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgForceCloseLong.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgForceCloseLong) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgForceCloseLong.Merge(m, src)
+}
+func (m *MsgForceCloseLong) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgForceCloseLong) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgForceCloseLong.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgForceCloseLong proto.InternalMessageInfo
+
+func (m *MsgForceCloseLong) GetSigner() string {
+	if m != nil {
+		return m.Signer
+	}
+	return ""
+}
+
+func (m *MsgForceCloseLong) GetMtpAddress() string {
+	if m != nil {
+		return m.MtpAddress
+	}
+	return ""
+}
+
+func (m *MsgForceCloseLong) GetCollateralAsset() string {
+	if m != nil {
+		return m.CollateralAsset
+	}
+	return ""
+}
+
+func (m *MsgForceCloseLong) GetBorrowAsset() string {
+	if m != nil {
+		return m.BorrowAsset
+	}
+	return ""
+}
+
+type MsgForceCloseLongResponse struct {
+}
+
+func (m *MsgForceCloseLongResponse) Reset()         { *m = MsgForceCloseLongResponse{} }
+func (m *MsgForceCloseLongResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgForceCloseLongResponse) ProtoMessage()    {}
+func (*MsgForceCloseLongResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4dd3bc05d7e781ea, []int{5}
+}
+func (m *MsgForceCloseLongResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgForceCloseLongResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgForceCloseLongResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgForceCloseLongResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgForceCloseLongResponse.Merge(m, src)
+}
+func (m *MsgForceCloseLongResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgForceCloseLongResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgForceCloseLongResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgForceCloseLongResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgOpenLong)(nil), "sifnode.margin.v1.MsgOpenLong")
 	proto.RegisterType((*MsgOpenLongResponse)(nil), "sifnode.margin.v1.MsgOpenLongResponse")
 	proto.RegisterType((*MsgCloseLong)(nil), "sifnode.margin.v1.MsgCloseLong")
 	proto.RegisterType((*MsgCloseLongResponse)(nil), "sifnode.margin.v1.MsgCloseLongResponse")
+	proto.RegisterType((*MsgForceCloseLong)(nil), "sifnode.margin.v1.MsgForceCloseLong")
+	proto.RegisterType((*MsgForceCloseLongResponse)(nil), "sifnode.margin.v1.MsgForceCloseLongResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/margin/v1/tx.proto", fileDescriptor_4dd3bc05d7e781ea) }
 
 var fileDescriptor_4dd3bc05d7e781ea = []byte{
-	// 373 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x92, 0x51, 0x4b, 0xc2, 0x50,
-	0x14, 0xc7, 0xb7, 0x0c, 0xc9, 0xab, 0x50, 0x2e, 0x13, 0x19, 0x34, 0xcb, 0x87, 0xac, 0xa0, 0x0d,
-	0xeb, 0x13, 0x68, 0x3d, 0x26, 0x81, 0x15, 0x41, 0x04, 0x31, 0xe7, 0xf5, 0x3a, 0xda, 0xee, 0x19,
-	0x3b, 0x57, 0xb3, 0x6f, 0xd1, 0x87, 0xe9, 0x43, 0xf8, 0x68, 0x6f, 0xd1, 0x83, 0x84, 0x7e, 0x91,
-	0x70, 0x9b, 0x3a, 0x52, 0xea, 0xa5, 0xa7, 0x6d, 0xe7, 0xff, 0xdf, 0xb9, 0xbf, 0xff, 0x3d, 0x87,
-	0xa8, 0x68, 0xb7, 0x39, 0xb4, 0xa8, 0xe1, 0x9a, 0x3e, 0xb3, 0xb9, 0xd1, 0xab, 0x18, 0xa2, 0xaf,
-	0x7b, 0x3e, 0x08, 0x50, 0xb2, 0x91, 0xa6, 0x87, 0x9a, 0xde, 0xab, 0xa8, 0x39, 0x06, 0x0c, 0x02,
-	0xd5, 0x98, 0xbe, 0x85, 0x46, 0x75, 0x77, 0x45, 0x93, 0x17, 0x8f, 0x62, 0x28, 0x97, 0xde, 0x65,
-	0x92, 0xae, 0x23, 0xbb, 0xf2, 0x28, 0xbf, 0x04, 0xce, 0x94, 0x3c, 0x49, 0xa2, 0xcd, 0x38, 0xf5,
-	0x0b, 0xf2, 0x9e, 0x7c, 0x98, 0x6a, 0x44, 0x5f, 0xca, 0x11, 0xd9, 0xb2, 0xc0, 0x71, 0x4c, 0x41,
-	0x7d, 0xd3, 0x79, 0x34, 0x11, 0xa9, 0x28, 0xac, 0x05, 0x8e, 0xcd, 0x45, 0xbd, 0x3a, 0x2d, 0x2b,
-	0x0f, 0x24, 0x1b, 0xb7, 0xba, 0xd0, 0xe5, 0xa2, 0x90, 0x98, 0x7a, 0x6b, 0xc6, 0x60, 0x54, 0x94,
-	0x3e, 0x47, 0xc5, 0x32, 0xb3, 0x45, 0xa7, 0xdb, 0xd4, 0x2d, 0x70, 0x0d, 0x0b, 0xd0, 0x05, 0x8c,
-	0x1e, 0x27, 0xd8, 0x7a, 0x8a, 0xf8, 0x6e, 0x6d, 0x2e, 0x1a, 0xb1, 0x43, 0xab, 0x41, 0x23, 0x65,
-	0x9f, 0x64, 0x9a, 0xe0, 0xfb, 0xf0, 0x1c, 0x41, 0xac, 0x07, 0x10, 0xe9, 0xb0, 0x16, 0x00, 0x94,
-	0x76, 0xc8, 0x76, 0x2c, 0x52, 0x83, 0xa2, 0x07, 0x1c, 0x69, 0x49, 0x90, 0x4c, 0x1d, 0xd9, 0xb9,
-	0x03, 0x48, 0xff, 0x2b, 0xea, 0x4f, 0x98, 0xc4, 0x32, 0x4c, 0x9e, 0xe4, 0xe2, 0xa7, 0xce, 0x68,
-	0x4e, 0xdf, 0x64, 0x92, 0xa8, 0x23, 0x53, 0x6e, 0xc8, 0xc6, 0xfc, 0xf2, 0x35, 0x7d, 0x69, 0xaa,
-	0x7a, 0x2c, 0x89, 0x7a, 0xf0, 0xbb, 0x3e, 0x4f, 0x2a, 0x29, 0x77, 0x24, 0xb5, 0x08, 0x5a, 0x5c,
-	0xfd, 0xdb, 0xdc, 0xa0, 0x96, 0xff, 0x30, 0x2c, 0x1a, 0xd7, 0x2e, 0x06, 0x63, 0x4d, 0x1e, 0x8e,
-	0x35, 0xf9, 0x6b, 0xac, 0xc9, 0xaf, 0x13, 0x4d, 0x1a, 0x4e, 0x34, 0xe9, 0x63, 0xa2, 0x49, 0xf7,
-	0xc7, 0xb1, 0x99, 0x5e, 0xdb, 0x6d, 0xab, 0x63, 0xda, 0xdc, 0x98, 0x2d, 0x5f, 0x7f, 0xb6, 0x7e,
-	0xc1, 0x6c, 0x9b, 0xc9, 0x60, 0xf9, 0xce, 0xbe, 0x03, 0x00, 0x00, 0xff, 0xff, 0x70, 0x94, 0xfc,
-	0x49, 0xe2, 0x02, 0x00, 0x00,
+	// 426 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x93, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0x86, 0xbd, 0x18, 0x55, 0x74, 0x52, 0x09, 0x62, 0x4a, 0x15, 0x8c, 0xb0, 0x21, 0x07, 0x0a,
+	0x48, 0xd8, 0x2a, 0x3c, 0x41, 0x0a, 0xe2, 0x84, 0x85, 0x14, 0x40, 0x48, 0x08, 0xa9, 0x72, 0xec,
+	0xed, 0xd6, 0xc2, 0xde, 0xb1, 0x76, 0xb6, 0x25, 0xbc, 0x05, 0x67, 0x9e, 0x83, 0x87, 0xc8, 0x31,
+	0xdc, 0x10, 0x87, 0x08, 0x25, 0x2f, 0x82, 0x62, 0x3b, 0x8e, 0x45, 0x2c, 0xc2, 0xa1, 0x27, 0xdb,
+	0xf3, 0xff, 0x9e, 0xfd, 0x66, 0x76, 0x06, 0x6c, 0x4a, 0x4e, 0x25, 0xc6, 0xdc, 0xcf, 0x42, 0x25,
+	0x12, 0xe9, 0x5f, 0x1c, 0xf9, 0x7a, 0xec, 0xe5, 0x0a, 0x35, 0x5a, 0xdd, 0x4a, 0xf3, 0x4a, 0xcd,
+	0xbb, 0x38, 0xb2, 0xf7, 0x05, 0x0a, 0x2c, 0x54, 0x7f, 0xf9, 0x56, 0x1a, 0xed, 0xbb, 0x2d, 0x49,
+	0xbe, 0xe4, 0x9c, 0x4a, 0xb9, 0xff, 0x83, 0x41, 0x27, 0x20, 0xf1, 0x3a, 0xe7, 0xf2, 0x15, 0x4a,
+	0x61, 0x1d, 0xc0, 0x0e, 0x25, 0x42, 0x72, 0xd5, 0x63, 0xf7, 0xd8, 0xc3, 0xdd, 0x61, 0xf5, 0x65,
+	0x3d, 0x82, 0x1b, 0x11, 0xa6, 0x69, 0xa8, 0xb9, 0x0a, 0xd3, 0x93, 0x90, 0x88, 0xeb, 0xde, 0x95,
+	0xc2, 0x71, 0x7d, 0x1d, 0x1f, 0x2c, 0xc3, 0xd6, 0x47, 0xe8, 0x36, 0xad, 0x19, 0x9e, 0x4b, 0xdd,
+	0x33, 0x97, 0xde, 0x63, 0x7f, 0x32, 0x73, 0x8d, 0x5f, 0x33, 0xf7, 0x50, 0x24, 0xfa, 0xec, 0x7c,
+	0xe4, 0x45, 0x98, 0xf9, 0x11, 0x52, 0x86, 0x54, 0x3d, 0x9e, 0x50, 0xfc, 0xa9, 0xe2, 0x7b, 0x97,
+	0x48, 0x3d, 0x6c, 0x1c, 0x3a, 0x28, 0x12, 0x59, 0xf7, 0x61, 0x6f, 0x84, 0x4a, 0xe1, 0xe7, 0x0a,
+	0xe2, 0x6a, 0x01, 0xd1, 0x29, 0x63, 0x05, 0x40, 0xff, 0x16, 0xdc, 0x6c, 0x94, 0x34, 0xe4, 0x94,
+	0xa3, 0x24, 0xde, 0xd7, 0xb0, 0x17, 0x90, 0x78, 0x9e, 0x22, 0xf1, 0xcb, 0x2a, 0xf5, 0x6f, 0x18,
+	0x73, 0x13, 0xe6, 0x00, 0xf6, 0x9b, 0xa7, 0xd6, 0x34, 0xdf, 0x18, 0x74, 0x03, 0x12, 0x2f, 0x51,
+	0x45, 0x7c, 0x3b, 0x93, 0x0b, 0x9d, 0x4c, 0xe7, 0x27, 0x61, 0x1c, 0x2b, 0x4e, 0x54, 0xe1, 0x40,
+	0xa6, 0xf3, 0x41, 0x19, 0x69, 0x85, 0x36, 0xff, 0x0f, 0xba, 0xa5, 0x83, 0x77, 0xe0, 0xf6, 0x06,
+	0xdb, 0x8a, 0xfc, 0xe9, 0x77, 0x06, 0x66, 0x40, 0xc2, 0x7a, 0x0b, 0xd7, 0xea, 0xb1, 0x71, 0xbc,
+	0x8d, 0x79, 0xf4, 0x1a, 0x77, 0x60, 0x3f, 0xf8, 0xb7, 0x5e, 0x77, 0xc5, 0xb0, 0xde, 0xc3, 0xee,
+	0xba, 0x1d, 0x6e, 0xfb, 0x6f, 0xb5, 0xc1, 0x3e, 0xdc, 0x62, 0x58, 0x27, 0x3e, 0x7e, 0x31, 0x99,
+	0x3b, 0x6c, 0x3a, 0x77, 0xd8, 0xef, 0xb9, 0xc3, 0xbe, 0x2e, 0x1c, 0x63, 0xba, 0x70, 0x8c, 0x9f,
+	0x0b, 0xc7, 0xf8, 0xf0, 0xb8, 0x31, 0x8d, 0x6f, 0x92, 0xd3, 0xe8, 0x2c, 0x4c, 0xa4, 0xbf, 0x5a,
+	0x9b, 0xf1, 0x6a, 0x71, 0x8a, 0xa9, 0x1c, 0xed, 0x14, 0x6b, 0xf3, 0xec, 0x4f, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0x40, 0x76, 0x6c, 0x10, 0x9c, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -519,6 +628,80 @@ func (m *MsgCloseLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgForceCloseLong) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgForceCloseLong) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgForceCloseLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.BorrowAsset) > 0 {
+		i -= len(m.BorrowAsset)
+		copy(dAtA[i:], m.BorrowAsset)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.BorrowAsset)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.CollateralAsset) > 0 {
+		i -= len(m.CollateralAsset)
+		copy(dAtA[i:], m.CollateralAsset)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CollateralAsset)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.MtpAddress) > 0 {
+		i -= len(m.MtpAddress)
+		copy(dAtA[i:], m.MtpAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.MtpAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Signer) > 0 {
+		i -= len(m.Signer)
+		copy(dAtA[i:], m.Signer)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Signer)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgForceCloseLongResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgForceCloseLongResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgForceCloseLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -584,6 +767,40 @@ func (m *MsgCloseLong) Size() (n int) {
 }
 
 func (m *MsgCloseLongResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgForceCloseLong) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Signer)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.MtpAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.CollateralAsset)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.BorrowAsset)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgForceCloseLongResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1001,6 +1218,234 @@ func (m *MsgCloseLongResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgCloseLongResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgForceCloseLong) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgForceCloseLong: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgForceCloseLong: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MtpAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.MtpAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CollateralAsset", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CollateralAsset = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BorrowAsset", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BorrowAsset = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgForceCloseLongResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgForceCloseLongResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgForceCloseLongResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

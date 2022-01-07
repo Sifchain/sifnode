@@ -125,7 +125,7 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 	return &types.MsgCloseLongResponse{}, nil
 }
 
-func (k msgServer) ForceCloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*types.MsgCloseLongResponse, error) {
+func (k msgServer) ForceCloseLong(goCtx context.Context, msg *types.MsgForceCloseLong) (*types.MsgForceCloseLongResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.MtpAddress)
