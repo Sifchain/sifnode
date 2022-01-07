@@ -30,6 +30,7 @@ class InflateTokens:
                 "is_whitelisted": value,
                 "sif_denom": self.ctx.eth_symbol_to_sif_symbol(token_symbol),
             }
+            log.debug("Whitelisted entry: {}".format(repr(token_data)))
             assert token_symbol not in result, f"Symbol {token_symbol} is being used by more than one whitelisted token"
             result.append(token)
         erowan_token = [t for t in result if t["symbol"] == "erowan"]
@@ -183,7 +184,7 @@ class InflateTokens:
             self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=send_amounts)
 
     def run(self, requested_tokens, amount, target_sif_accounts):
-        '''
+        """
         It goes like this:
         1. Starting with assets.json of your choice, It will first compare the list of tokens to existing whitelist and deploy any new tokens (ones that have not yet been whitelisted)
         2. For each token in assets.json It will mint the given amount of all listed tokens to OPERATOR account
@@ -191,13 +192,15 @@ class InflateTokens:
         4. It will distribute tokens from sif_broker_account to each of given target accounts
         The sif_broker_account and OPERATOR can be any Sifchain and Ethereum accounts, we might want to use something
         familiar so that any tokens that would get stuck in the case of interrupting the script can be recovered.
-        '''
+        """
 
         assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
 
+        self.ctx.sanity_check()
+
         amount_per_token = amount * len(target_sif_accounts)
         # sif_broker_account = self.ctx.rowan_source
-        fund_rowan = [100 * test_utils.sifnode_funds_for_transfer_peggy1, "rowan"]
+        fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1, "rowan"]
         sif_broker_account = self.ctx.create_sifchain_addr(fund_amounts=[fund_rowan])
         eth_broker_account = self.ctx.operator
 
