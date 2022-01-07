@@ -17,6 +17,7 @@ var (
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgOpenLong{}, "MsgOpenLong", nil)
 	cdc.RegisterConcrete(&MsgCloseLong{}, "MsgCloseLong", nil)
+	cdc.RegisterConcrete(&MsgForceCloseLong{}, "MsgForceCloseLong", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -24,6 +25,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgOpenLong{},
 		&MsgCloseLong{},
+		&MsgForceCloseLong{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

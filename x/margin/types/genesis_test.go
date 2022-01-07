@@ -17,4 +17,5 @@ func TestTypes_DefaultGenesis(t *testing.T) {
 	require.NotNil(t, got.Params.InterestRateDecrease)
 	require.NotNil(t, got.Params.HealthGainFactor)
 	require.NotNil(t, got.Params.EpochLength)
+	require.NotNil(t, got.Params.ForceCloseThreshold)
 }

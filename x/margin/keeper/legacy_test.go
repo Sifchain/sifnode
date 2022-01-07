@@ -38,9 +38,10 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 	require.Equal(t, reflect.TypeOf(handler).String(), "types.Handler")
 
 	var (
-		msgOpenLong  sdk.Msg = &types.MsgOpenLong{}
-		msgCloseLong sdk.Msg = &types.MsgCloseLong{}
-		msgOther     sdk.Msg
+		msgOpenLong       sdk.Msg = &types.MsgOpenLong{}
+		msgCloseLong      sdk.Msg = &types.MsgCloseLong{}
+		msgForceCloseLong sdk.Msg = &types.MsgForceCloseLong{}
+		msgOther          sdk.Msg
 	)
 
 	newLegacyHandlerTests := []struct {
@@ -57,6 +58,11 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 		{
 			name:      "msg close long",
 			msg:       msgCloseLong,
+			errString: errors.New("mtp not found"),
+		},
+		{
+			name:      "msg force close long",
+			msg:       msgForceCloseLong,
 			errString: errors.New("mtp not found"),
 		},
 		{

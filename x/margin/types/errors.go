@@ -7,4 +7,5 @@ var (
 	ErrMTPInvalid      = sdkerrors.Register(ModuleName, 2, "mtp invalid")
 	ErrMTPDisabled     = sdkerrors.Register(ModuleName, 3, "margin not enabled for pool")
 	ErrUnknownRequest  = sdkerrors.Register(ModuleName, 4, "unknown request")
+	ErrMTPHealthy      = sdkerrors.Register(ModuleName, 5, "mtp health above force close threshold")
 )

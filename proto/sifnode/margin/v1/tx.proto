@@ -30,3 +30,12 @@ message MsgCloseLong {
 }
 
 message MsgCloseLongResponse {}
+
+message MsgForceCloseLong {
+  string signer = 1;
+  string mtp_address = 2;
+  string collateral_asset = 2;
+  string borrow_asset = 3;
+}
+
+message MsgForceCloseLongResponse {}

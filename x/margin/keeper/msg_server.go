@@ -124,3 +124,66 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 
 	return &types.MsgCloseLongResponse{}, nil
 }
+
+func (k msgServer) ForceCloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*types.MsgCloseLongResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.MtpAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	var pool clptypes.Pool
+
+	nativeAsset := types.GetSettlementAsset()
+	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
+		if err != nil {
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.BorrowAsset)
+		}
+	} else {
+		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
+		if err != nil {
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.CollateralAsset)
+		}
+	}
+
+	// check MTP health against threshold
+	forceCloseThreshold := k.GetForceCloseThreshold(ctx)
+
+	interestRate, err := k.InterestRateComputation(ctx, pool)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
+	if err != nil {
+		return nil, err
+	}
+
+	mtpHealth, err := k.UpdateMTPHealth(ctx, mtp, pool)
+	if err != nil {
+		return nil, err
+	}
+
+	if mtpHealth.GT(forceCloseThreshold) {
+		return nil, sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
+	}
+
+	err = k.TakeOutCustody(ctx, mtp, pool)
+	if err != nil {
+		return nil, err
+	}
+
+	repayAmount, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.Repay(ctx, mtp, pool, repayAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgForceCloseLongResponse{}, nil
+}

@@ -853,6 +853,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 				InterestRateDecrease: tt.interestRateDecrease,
 				HealthGainFactor:     sdk.NewDec(1),
 				EpochLength:          1,
+				ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
 			}}
 			marginKeeper.InitGenesis(ctx, data)
 

@@ -24,6 +24,9 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgCloseLong:
 			res, err := msgServer.CloseLong(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgForceCloseLong:
+			res, err := msgServer.ForceCloseLong(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			return nil, sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request")
 		}

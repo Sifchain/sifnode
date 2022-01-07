@@ -250,3 +250,116 @@ func TestTypes_MsgCloseLongGetSigners(t *testing.T) {
 		})
 	}
 }
+
+func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
+	validateBasicTests := []struct {
+		name              string
+		msgForceCloseLong types.MsgForceCloseLong
+		err               error
+		errString         error
+	}{
+		{
+			name:              "no signer",
+			msgForceCloseLong: types.MsgForceCloseLong{},
+			err:               sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
+		},
+		{
+			name: "no mtp address",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxxx",
+				BorrowAsset:     "xxxx",
+			},
+			err: sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
+		},
+		{
+			name: "collateral asset invalid",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			},
+			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+		},
+		{
+			name: "borrow asset invalid",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			},
+			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+		},
+		{
+			name: "all valid",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer:          "xxx",
+				MtpAddress:      "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+			},
+			err: nil,
+		},
+	}
+	for _, tt := range validateBasicTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.msgForceCloseLong.ValidateBasic()
+
+			if tt.errString != nil {
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
+			} else {
+				require.ErrorIs(t, got, tt.err)
+			}
+		})
+	}
+}
+
+func TestTypes_MsgForceCloseLongGetSigners(t *testing.T) {
+	getSignersTests := []struct {
+		name              string
+		msgForceCloseLong types.MsgForceCloseLong
+		errString         string
+	}{
+		{
+			name:              "no signer",
+			msgForceCloseLong: types.MsgForceCloseLong{},
+			errString:         "empty address string is not allowed",
+		},
+		{
+			name: "wrong address",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer: "xxx",
+			},
+			errString: "decoding bech32 failed: invalid bech32 string length 3",
+		},
+		{
+			name: "wrong prefix",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+			},
+			errString: "invalid Bech32 prefix; expected cosmos, got sif",
+		},
+		{
+			name: "returned address",
+			msgForceCloseLong: types.MsgForceCloseLong{
+				Signer: "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
+			},
+			errString: "",
+		},
+	}
+	for _, tt := range getSignersTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.errString != "" {
+				require.PanicsWithError(t, tt.errString, func() {
+					tt.msgForceCloseLong.GetSigners()
+				})
+			} else {
+				got := tt.msgForceCloseLong.GetSigners()
+				require.Equal(t, got[0].String(), tt.msgForceCloseLong.Signer)
+			}
+		})
+	}
+}

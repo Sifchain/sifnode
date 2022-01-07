@@ -11,6 +11,7 @@ import (
 var (
 	_ sdk.Msg = &MsgOpenLong{}
 	_ sdk.Msg = &MsgCloseLong{}
+	_ sdk.Msg = &MsgForceCloseLong{}
 )
 
 func Validate(asset string) bool {
@@ -62,6 +63,31 @@ func (m MsgCloseLong) ValidateBasic() error {
 }
 
 func (m MsgCloseLong) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgForceCloseLong) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if len(m.MtpAddress) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.MtpAddress)
+	}
+	if !Validate(m.CollateralAsset) {
+		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.CollateralAsset)
+	}
+	if !Validate(m.BorrowAsset) {
+		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
+	}
+
+	return nil
+}
+
+func (m MsgForceCloseLong) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
