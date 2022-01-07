@@ -19,6 +19,7 @@ import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
 import { checkSifnodeBurnState } from "./sifnode_lock_burn"
 import { ethDenomHash } from "./context"
+import { StateMachineVerifier, StateMachineVerifierBuilder } from "./stateMachineVerifier"
 
 import { executeLock, checkEvmLockState } from "./evm_lock_burn"
 
@@ -129,5 +130,58 @@ describe("lock and burn tests", () => {
 
     tx = await executeLock(contracts, smallAmount, sender1, recipient)
     await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
+  })
+
+  it("Should send ceth back to eth using builder", async () => {
+    const factories = container.resolve(SifchainContractFactories)
+    const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+
+    const ethereumAccounts = await ethereumResultsToSifchainAccounts(
+      devEnvObject.ethResults!,
+      hardhat.ethers.provider
+    )
+    const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
+
+    const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
+    // const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
+
+    let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
+    let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
+    process.env["VERBOSE"] = "summary"
+    // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
+    await executeLock(
+      contracts,
+      sendAmount,
+      ethereumAccounts.availableAccounts[1],
+      web3.utils.utf8ToHex(testSifAccount.account),
+      false,
+      "ceth to eth"
+    )
+
+    const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
+      {
+        evmrelayer: "/tmp/sifnode/evmrelayer.log",
+        sifnoded: "/tmp/sifnode/sifnoded.log",
+        witness: "/tmp/sifnode/witness.log",
+      },
+      hardhat,
+      contracts.bridgeBank,
+      contracts.cosmosBridge
+    ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
+
+    const smVerifierBuilder: StateMachineVerifierBuilder = new StateMachineVerifierBuilder()
+    const smVerifier: StateMachineVerifier = smVerifierBuilder
+      .initial(TransactionStep.Initial)
+      .then(TransactionStep.Burn)
+      .then(TransactionStep.SendCoinsFromAccountToModule)
+      .finally(TransactionStep.BurnCoins)
+      .build()
+
+    const states: Observable<State> = evmRelayerEvents.pipe(
+      scan((acc: State, v: SifEvent) => {
+        console.log(v)
+        return null
+      }, INIT_STATE)
+    )
   })
 })

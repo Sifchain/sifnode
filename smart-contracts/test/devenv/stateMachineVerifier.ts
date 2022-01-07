@@ -1,7 +1,8 @@
+import { boolean } from "fp-ts"
 import { SifEvent } from "../../src/watcher/watcher"
 import { State, TransactionStep } from "./test_lockburn"
 
-class StateMachineVerifierBuilder {
+export class StateMachineVerifierBuilder {
   constructor() {}
 
   initial(step: TransactionStep): StateMachineVerifierBuilder {
@@ -11,6 +12,8 @@ class StateMachineVerifierBuilder {
   then(step: TransactionStep): StateMachineVerifierBuilder {
     return this
   }
+
+  stateEventAssertion(step: TransactionStep, assertionFn: (event: SifEvent) => boolean) {}
 
   finally(step: TransactionStep): StateMachineVerifierBuilder {
     return this
@@ -22,11 +25,13 @@ class StateMachineVerifierBuilder {
   }
 }
 
-class StateMachineVerifier {
+export class StateMachineVerifier {
   // Need function to convert
   private currentState: State
 
   // Option: Store expected state as map currentState -> expectedNextState
+
+  // transactionStep -> assertionFunctions
 
   verify(event: SifEvent): State {
     return null
