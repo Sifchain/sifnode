@@ -6,7 +6,7 @@ import test_utilities
 from integration_framework import main
 
 
-# TODO This class is obsolete, transitioning to peggy1_test_utils.Peggy1EnvCtx
+# TODO This class is obsolete, transitioning to test_utils.Peggy1EnvCtx
 #      At the moment it is only used for test_random_currency_roundtrip_with_snapshot.py
 class IntegrationTestContext:
     def __init__(self, snapshot_name):

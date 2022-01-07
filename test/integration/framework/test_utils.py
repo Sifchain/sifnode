@@ -1,26 +1,97 @@
 import json
 import os
 import time
+import web3
 
 import main
 import eth
+import sifchain
 from common import *
 
 
-# These are utilities to interact with running Peggy1 environment (running agains local ganache-cli/hardhat/sifnoded).
+# These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
 # This is to replace test_utilities.py, conftest.py, burn_lock_functions.py and integration_test_context.py.
 # Also to replace smart-contracts/scripts/...
 
 
+# Peggy1 only (Peggy2.0 uses denom hash)
 CETH = "ceth"
 ROWAN = "rowan"
 
 sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
 
-def get_peggy1_env_ctx_test(cmd=None, env_file=None, env_vars=None):
-    return get_env_ctx(cmd=cmd, env_file=env_file, env_vars=env_vars)
+def get_test_env_ctx():
+    return get_env_ctx()
 
 def get_env_ctx(cmd=None, env_file=None, env_vars=None):
+    assert cmd is None
+    assert env_file is None
+    assert env_vars is None
+    if on_peggy2_branch:
+        return get_peggy2_env_ctx_test()
+    else:
+        return get_env_ctx_peggy1()
+
+def get_peggy2_env_ctx_test():
+    cmd = main.Integrator()
+    dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
+    environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
+
+    tmp = environment_vars["contractResults"]["contractAddresses"]
+    deployed_contract_addresses = {
+        "BridgeBank": tmp["bridgeBank"],
+        "CosmosBridge": tmp["cosmosBridge"],
+        "BridgeRegistry": tmp["bridgeRegistry"],
+        "Rowan": tmp["rowanContract"],
+    }
+    abi_provider = HardhatAbiProvider(cmd, deployed_contract_addresses)
+
+    # TODO We're mixing "OPERATOR" vs. "OWNER"
+    # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
+    # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
+    # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
+    owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
+    owner_private_key = dot_env_vars["ETH_ACCOUNT_OWNER_PRIVATEKEY"][2:]
+    rowan_source = dot_env_vars["ROWAN_SOURCE"]
+
+    w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
+    w3_conn = eth.web3_connect(w3_url)
+
+    sifnode_url = dot_env_vars["TCP_URL"]
+    sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
+    assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
+    sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
+    ethereum_network_descriptor = dot_env_vars["ETH_CHAIN_ID"]
+
+    eth_node_is_local = True
+
+    ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
+    ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source)
+    ctx.eth.set_private_key(owner_address, owner_private_key)
+
+    ctx.eth.fixed_gas_args = {
+        # For ganache:
+        # 10000000 exceeds default block limit 6721975 ("--gasLimit")
+        # 1000000 out of gas
+        "gas": 5000000,
+        "gasPrice": ctx.eth.w3_conn.eth.gas_price,
+    }
+    # Hardhat uses base fee of 7 + 1 GWEI
+    assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
+
+    # Monkeypatching for peggy2 extras
+    # TODO These are set in main.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
+    # Consider passing them via environment
+    ctx.cross_chain_fee_base = 1
+    ctx.cross_chain_lock_fee = 1
+    ctx.cross_chain_burn_fee = 1
+    ctx.ethereum_network_descriptor = ethereum_network_descriptor
+    ctx.ceth_symbol = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, eth.NULL_ADDRESS)
+    assert ctx.ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+
+    return ctx
+
+def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     cmd = cmd or main.Integrator()
 
     if "ENV_FILE" in os.environ:
@@ -89,6 +160,7 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
         artifacts_dir = cmd.project.project_dir("smart-contracts/build")
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
+    sifnoded_home = None  # Implies default ~/.sifnoded
 
     w3_conn = eth.web3_connect(w3_url, websocket_timeout=30)
 
@@ -100,23 +172,23 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     # - additional cleanup after running tests (reclaiming ether from temporary accounts, restoring whitelists/blocklists etc.)
     eth_node_is_local = deployment_name is None
 
-    ctx = get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, sifnode_url, sifnode_chain_id,
-        rowan_source, operator_private_key, eth_node_is_local)
+    ctx = get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, sifnoded_home, sifnode_url,
+        sifnode_chain_id, rowan_source, operator_private_key, eth_node_is_local)
 
     for addr, private_key in collected_private_keys.items():
-        ctx.w3_tx.set_private_key(addr, private_key)
+        ctx.eth.set_private_key(addr, private_key)
 
     if eth_node_is_local:
-        ctx.w3_tx.fixed_gas_args = {
+        ctx.eth.fixed_gas_args = {
             # For ganache
             # 10000000 exceeds default block limit 6721975 ("--gasLimit")
             # 1000000 out of gas
             "gas": 5000000,
-            "gasPrice": ctx.w3_tx.w3_conn.eth.gas_price,
+            "gasPrice": ctx.eth.w3_conn.eth.gas_price,
         }
-        assert ctx.w3_tx.fixed_gas_args["gasPrice"] == 20 * eth.GWEI
+        assert ctx.eth.fixed_gas_args["gasPrice"] == 20 * eth.GWEI
         # For Ropsten etc. (takes ~30 seconds):
-        # web3.gas_strategies.time_based.fast_gas_price_strategy(ctx.w3_tx.w3_conn, {})
+        # web3.gas_strategies.time_based.fast_gas_price_strategy(ctx.eth.w3_conn, {})
     else:
         max_gas = 5000000
         estimator = eth.ExponentiallyWeightedAverageFeeEstimator(w3_conn)
@@ -127,25 +199,25 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
             [0, 0, 1, 0, 0, 0],  # max_priority_fee_per_gas returned = avg_reward
             [0, 0, 0, 0, 1, 0],  # gas_price returned = gas_price
         ]
-        ctx.w3_tx.gas_estimate_fn = estimator.estimate_fees
+        ctx.eth.gas_estimate_fn = estimator.estimate_fees
 
     user_private_keys = ctx.cmd.project.read_peruser_config_file("user_private_keys")
     if user_private_keys:
         available_test_accounts = []
         for address, key in [[entry["address"], entry["key"]] for entry in user_private_keys]:
             available_test_accounts.append(address)
-            ctx.w3_tx.set_private_key(address, key)
+            ctx.eth.set_private_key(address, key)
         ctx.available_test_eth_accounts = available_test_accounts
 
     return ctx
 
-def get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, sifnode_url, sifnode_chain_id,
-    rowan_source, operator_private_key, eth_node_is_local
+def get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, sifnoded_home, sifnode_url,
+    sifnode_chain_id, rowan_source, operator_private_key, eth_node_is_local
 ):
-    w3_tx = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
+    ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
-    ctx = Peggy1EnvCtx(cmd, w3_conn, w3_tx, abi_provider, operator_address, sifnode_url, sifnode_chain_id, rowan_source)
-    ctx.w3_tx.set_private_key(operator_address, operator_private_key)
+    ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source)
+    ctx.eth.set_private_key(operator_address, operator_private_key)
     return ctx
 
 def sif_addr_to_evm_arg(sif_address):
@@ -158,32 +230,45 @@ class GanacheAbiProvider:
         self.artifacts_dir = artifacts_dir
         self.ethereum_default_network_id = ethereum_network_id
 
-    def get_compiled_sc(self, sc_name):
-        path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
-        return json.loads(self.cmd.read_text_file(path))
-
-    def get_sc_abi(self, sc_name):
-        tmp = self.get_compiled_sc(sc_name)
-        return tmp["networks"][str(self.ethereum_default_network_id)]["address"], tmp["abi"]
-
     def get_descriptor(self, sc_name):
-        tmp = self.get_compiled_sc(sc_name)
+        path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
+        tmp = json.loads(self.cmd.read_text_file(path))
         abi = tmp["abi"]
         bytecode = tmp["bytecode"]
         deployed_address = None
         if ("networks" in tmp) and (self.ethereum_default_network_id is not None):
-            if self.ethereum_default_network_id in tmp["networks"]:
-                deployed_address = tmp["networks"][str(self.ethereum_default_network_id)]["address"]
+            str_network_id = str(self.ethereum_default_network_id)
+            if str_network_id in tmp["networks"]:
+                deployed_address = tmp["networks"][str_network_id]["address"]
         return abi, bytecode, deployed_address
 
 
-class Peggy1EnvCtx:
-    def __init__(self, cmd, w3_conn, w3_tx, abi_provider, operator, sifnode_url, sifnode_chain_id, rowan_source):
+class HardhatAbiProvider:
+    def __init__(self, cmd, deployed_contract_addresses):
+        self.cmd = cmd
+        self.deployed_contract_addresses = deployed_contract_addresses
+
+    def get_descriptor(self, sc_name):
+        relpath = {
+            "BridgeBank": "BridgeBank/BridgeBank.sol/BridgeBank.json",
+            "BridgeToken": "BridgeBank/BridgeToken.sol/BridgeToken.json",
+        }[sc_name]
+        path = os.path.join(self.cmd.project.project_dir("smart-contracts/artifacts/contracts"), relpath)
+        tmp = json.loads(self.cmd.read_text_file(path))
+        abi = tmp["abi"]
+        bytecode = tmp["bytecode"]
+        deployed_address = self.deployed_contract_addresses.get(sc_name)
+        return abi, bytecode, deployed_address
+
+
+class EnvCtx:
+    def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source):
         self.cmd = cmd
         self.w3_conn = w3_conn
-        self.w3_tx = w3_tx
+        self.eth = ctx_eth
         self.abi_provider = abi_provider
         self.operator = operator
+        self.sifnoded_home = sifnoded_home
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         self.rowan_source = rowan_source
@@ -199,30 +284,38 @@ class Peggy1EnvCtx:
         self.cmd.execst(args, cwd=main.project_dir("smart-contracts"))
 
     def advance_block(self, number):
-        self.advance_block_truffle(number)
+        if on_peggy2_branch:
+            self.advance_block_w3(number)
+        else:
+            self.advance_block_truffle(number)  # TODO Probably calls the same, check and remove
 
     def advance_blocks(self):
-        if self.w3_tx.is_local_node:
+        # TODO Move to eth (it should be per-w3_conn)
+        if self.eth.is_local_node:
             self.advance_block(50)
         # Otherwise just wait
 
     def get_blocklist_sc(self):
-        address, abi = self.abi_provider.get_sc_abi("Blocklist")
+        abi, _, address = self.abi_provider.get_descriptor("Blocklist")
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
     def get_bridge_bank_sc(self):
-        address, abi = self.abi_provider.get_sc_abi("BridgeBank")
-        # assert address == test_utilities.get_required_env_var("BRIDGE_BANK_ADDRESS")
+        abi, _, address = self.abi_provider.get_descriptor("BridgeBank")
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
     def get_bridge_token_sc(self, address=None):
-        _address, abi = self.abi_provider.get_sc_abi("BridgeToken")
+        abi, _, _ = self.abi_provider.get_descriptor("BridgeToken")
         return self.w3_conn.eth.contract(address=address, abi=abi)
 
     def get_generic_erc20_sc(self, address):
-        return self.get_bridge_token_sc(address=address)
+        if on_peggy2_branch:
+            sc_name = "BridgeToken"
+        else:
+            sc_name = "SifchainTestToken"
+        abi, _, _ = self.abi_provider.get_descriptor(sc_name)
+        return self.w3_conn.eth.contract(abi=abi, address=address)
 
     def get_erc20_token_balance(self, token_addr, eth_addr):
         token_sc = self.get_generic_erc20_sc(token_addr)
@@ -230,7 +323,7 @@ class Peggy1EnvCtx:
 
     def send_erc20_tokens(self, token_addr, from_addr, to_addr, amount):
         token_sc = self.get_generic_erc20_sc(token_addr)
-        return self.w3_tx.transact_sync(token_sc.functions.transfer, from_addr)(to_addr, amount)
+        return self.eth.transact_sync(token_sc.functions.transfer, from_addr)(to_addr, amount)
 
     # Tries to return any ether on the account to operator
     def scavenge_ether(self, account_addr):
@@ -240,9 +333,8 @@ class Peggy1EnvCtx:
 
     def tx_deploy(self, sc_name, deployer, constructor_args):
         abi, bytecode, _ = self.abi_provider.get_descriptor(sc_name)
-        sc_json = self.abi_provider.get_compiled_sc(sc_name)
-        token_sc = self.w3_conn.eth.contract(abi=sc_json["abi"], bytecode=sc_json["bytecode"])
-        return self.w3_tx.transact(token_sc.constructor, deployer, tx_opts={"from": deployer})(*constructor_args)
+        token_sc = self.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+        return self.eth.transact(token_sc.constructor, deployer, tx_opts={"from": deployer})(*constructor_args)
 
     def tx_get_sc_at(self, sc_name, address):
         abi, _, deployed_address = self.abi_provider.get_descriptor(sc_name)
@@ -258,21 +350,34 @@ class Peggy1EnvCtx:
         finally:
             self.w3_conn.eth.uninstall_filter(filter.filter_id)
 
-    def tx_deploy_new_token_for_testing(self, name, symbol, decimals):
-        return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
+    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals):
+        # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
+        if on_peggy2_branch:
+            # Use BridgeToken
+            token_sc_name = "BridgeToken"
+            cosmosDenom = "erc20denom"  # TODO Dummy variable since we're using BridgeToken instead of SifchainTestToken
+            constructor_args = [name, symbol, decimals, cosmosDenom]
+        else:
+            # Use SifchainTestToken
+            token_sc_name = self.generic_erc20_contract
+            constructor_args = [name, symbol, decimals]
+        abi, bytecode, _ = self.abi_provider.get_descriptor(token_sc_name)
+        token_sc = self.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+        return self.eth.transact(token_sc.constructor, deployer_addr)(*constructor_args)
 
-    def tx_get_testing_token_at(self, address):
-        return self.tx_get_sc_at("SifchainTestToken", address)
+    def tx_get_generic_erc20_token_at(self, address):
+        token_sc_name = "BridgeToken" if on_peggy2_branch else self.generic_erc20_contract
+        return self.tx_get_sc_at(token_sc_name, address)
 
     def tx_testing_token_mint(self, token_sc, minter_account, amount, minted_tokens_recipient):
-        return self.w3_tx.transact(token_sc.functions.mint, minter_account)(minted_tokens_recipient, amount)
+        return self.eth.transact(token_sc.functions.mint, minter_account)(minted_tokens_recipient, amount)
 
     def tx_update_bridge_bank_whitelist(self, token_addr, value=True):
         bridge_bank = self.get_bridge_bank_sc()
-        return self.w3_tx.transact(bridge_bank.functions.updateEthWhiteList, self.operator)(token_addr, value)
+        return self.eth.transact(bridge_bank.functions.updateEthWhiteList, self.operator)(token_addr, value)
 
     def tx_approve(self, token_sc, from_addr, to_addr, amount):
-        return self.w3_tx.transact(token_sc.functions.approve, from_addr)(to_addr, amount)
+        return self.eth.transact(token_sc.functions.approve, from_addr)(to_addr, amount)
 
     def tx_bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount):
         recipient = sif_addr_to_evm_arg(to_sif_acct)
@@ -281,14 +386,14 @@ class Peggy1EnvCtx:
         # Mandatory tx_opts: {"from": from_eth_acct, "gas": max_gas_required, "value": amount}
         # If "value" is missing, we get "call to non-contract"
         tx_opts = {"value": amount}
-        return self.w3_tx.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
+        return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
     def tx_bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
         recipient = sif_addr_to_evm_arg(to_sif_acct)
         bridge_bank = self.get_bridge_bank_sc()
         # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
         tx_opts = {"value": 0}
-        return self.w3_tx.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
+        return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
     def tx_approve_and_lock(self, token_sc, from_eth_acct, to_sif_acct, amount):
         bridge_bank_sc = self.get_bridge_bank_sc()
@@ -298,50 +403,40 @@ class Peggy1EnvCtx:
 
     # </editor-fold>
 
-    # TODO Merge with test_ofac_blocklist.py and move into standalone module
-    def deploy_new_token(self, erc20_contract_name, deployer_addr, constructor_args):
-        new_token_sc_json = self.abi_provider.get_compiled_sc(erc20_contract_name)
-        new_token_abi = new_token_sc_json["abi"]
-        new_token_bytecode = new_token_sc_json["bytecode"]
-        new_token_sc = self.w3_conn.eth.contract(abi=new_token_abi, bytecode=new_token_bytecode)
-        txrcpt = self.w3_tx.transact_sync(new_token_sc.constructor, deployer_addr)(*constructor_args)
-        new_token_sc = self.w3_conn.eth.contract(abi=new_token_abi, address=txrcpt.contractAddress)
-        return new_token_sc
-
-    # Called ONLY from test_ofac_blocklist.py
-    # TODO Prefer SifchainTestToken / create_new_currency
-    def deploy_bridge_token_for_testing(self, token_symbol, mint_amount):
-        # Get BridgeToken contract; on peggy1 branch it is already deployed by truffle migrate.
-        sc_json = self.abi_provider.get_compiled_sc("BridgeToken")
-        abi = sc_json["abi"]
-        bytecode = sc_json["bytecode"]
-        bridge_token = self.w3_tx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
-        txrcpt = self.w3_tx.transact_sync(bridge_token.constructor, self.operator)(token_symbol)
-        address = txrcpt.contractAddress
-
-        bridge_token = self.w3_tx.w3_conn.eth.contract(address=address, abi=abi)
-        self.w3_tx.transact_sync(bridge_token.functions.mint, self.operator)(self.operator, mint_amount)
-
-        # assert bridge_token.functions.balanceOf(owner_address).call() == mint_amount
-        assert self.get_erc20_token_balance(address, self.operator) == mint_amount
-        assert bridge_token.functions.totalSupply().call() == mint_amount
-        assert bridge_token.functions.symbol().call() == token_symbol
-        assert bridge_token.address == address
-
-        return bridge_token
-
-    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None):
+    # Used from test_integration_framework.py, test_eth_transfers.py
+    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None, mint_amount=None, mint_recipient=None):
         owner = self.operator if owner is None else owner
-        token_sc = self.deploy_new_token(self.generic_erc20_contract, owner, [name, symbol, decimals])
-        # TODO We might want to do self.update_bridge_bank_whitelist() here too
-        #      In that case, update test_integration_framework (to assert that it's whitelisted)
+        txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals)
+        txrcpt = self.eth.wait_for_transaction_receipt(txhash)
+        token_addr = txrcpt.contractAddress
+        token_sc = self.tx_get_generic_erc20_token_at(token_addr)
         assert token_sc.functions.name().call() == name
         assert token_sc.functions.symbol().call() == symbol
         assert token_sc.functions.decimals().call() == decimals
+        if mint_amount:
+            mint_recipient = mint_recipient or owner
+            self.mint_generic_erc20_token(token_sc.address, mint_amount, mint_recipient, minter=owner)
+        if not on_peggy2_branch:
+            self.update_bridge_bank_whitelist(token_sc.address, True)
         return token_sc
 
+    def mint_generic_erc20_token(self, token_addr, amount, recipient, minter=None):
+        token_sc = self.get_generic_erc20_sc(token_addr)
+        balance_before = self.get_erc20_token_balance(token_addr, recipient)
+        total_supply_before = token_sc.functions.totalSupply().call()
+        txhash = self.tx_testing_token_mint(token_sc, minter, amount, recipient)
+        txrcpt = self.eth.wait_for_transaction_receipt(txhash)
+        assert self.get_erc20_token_balance(token_addr, recipient) == balance_before + amount
+        assert token_sc.functions.totalSupply().call() == total_supply_before + amount
+        return txrcpt
+
+    # Token symbol must be unique on the blocklist
     def update_bridge_bank_whitelist(self, token_addr, value):
-        return self.w3_tx.wait_for_transaction_receipt(self.tx_update_bridge_bank_whitelist(token_addr, value))
+        assert not on_peggy2_branch
+        # Token needs to be whitelisted, if it is not, then the transaction will be reverted with a message like this:
+        # "Only token in whitelist can be transferred to cosmos"
+        # Call of updateEthWhiteList will fail if we try to remove an item from whitelist which is not on the whitelist.
+        return self.eth.wait_for_transaction_receipt(self.tx_update_bridge_bank_whitelist(token_addr, value))
 
     def get_whitelisted_tokens_from_bridge_bank_past_events(self):
         bridge_bank = self.get_bridge_bank_sc()
@@ -350,7 +445,7 @@ class Peggy1EnvCtx:
         for e in past_events:
             token_addr = e.args["_token"]
             value = e.args["_value"]
-            assert self.w3_tx.w3_conn.toChecksumAddress(token_addr) == token_addr
+            assert self.eth.w3_conn.toChecksumAddress(token_addr) == token_addr
             # Logically the whitelist only consists of entries that have the last value of True.
             # If the data is clean, then for each token_addr we should first see a True event, possibly
             # followed by alternating False and True. The last value is the active one.
@@ -379,7 +474,7 @@ class Peggy1EnvCtx:
 
     def approve_erc20_token(self, token_sc, account_owner, amount):
         bridge_bank_sc = self.get_bridge_bank_sc()
-        self.w3_tx.transact_sync(token_sc.functions.approve, account_owner)(bridge_bank_sc.address, amount)
+        self.eth.transact_sync(token_sc.functions.approve, account_owner)(bridge_bank_sc.address, amount)
 
     # TODO Used from integration tests and several other places - do not change
     def create_new_currency(self, symbol, name, decimals, amount, minted_tokens_recipient):
@@ -393,7 +488,7 @@ class Peggy1EnvCtx:
         assert self.generic_erc20_contract == "SifchainTestToken"  # Preserve compatibiliy with integration tests and inflate_tokens.sh
         token_sc = self.deploy_new_generic_erc20_token(name, symbol, decimals)
         self.update_bridge_bank_whitelist(token_sc.address, True)
-        self.w3_tx.transact_sync(token_sc.functions.mint, self.operator)(minted_tokens_recipient, amount)
+        self.eth.transact_sync(token_sc.functions.mint, self.operator)(minted_tokens_recipient, amount)
         self.approve_erc20_token(token_sc, self.operator, amount)
         return token_sc.address
 
@@ -425,13 +520,36 @@ class Peggy1EnvCtx:
         #     "from": self.operator,
         #     "nonce": self.w3_conn.eth.get_transaction_count(self.operator)
         # })
-        # txhash = self.w3_tx.transact(bridge_bank.functions.lock, self.operator)(recipient, erc20_token_addr, amount)
+        # txhash = self.eth.transact(bridge_bank.functions.lock, self.operator)(recipient, erc20_token_addr, amount)
         # # .transact({"from": from_eth_addr, "gas": max_gas_required})
         # txrcpt = self.w3_conn.eth.wait_for_transaction_receipt(txhash)
         # return txrcpt
         token_sc = self.get_generic_erc20_sc(erc20_token_addr)
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
+
+    def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom):
+        """ Sends ETH from Sifchain to Ethereum (burn) """
+
+        # TODO Move to sifchain.py
+
+        assert on_peggy2_branch, "Only for Peggy2.0"
+
+        direction = "burn"
+        cross_chain_ceth_fee = self.cross_chain_fee_base * self.cross_chain_burn_fee  # TODO
+        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+                "--network-descriptor", str(self.ethereum_network_descriptor),  # Mandatory
+                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+                "--gas-prices", "0.5rowan",
+                "--gas-adjustment", "1.5",
+                "-y"
+            ] + \
+            self._sifnoded_home_arg() + \
+            self._sifnoded_chain_id_and_node_arg()
+        res = self.cmd.sifnoded_exec(args, keyring_backend="test")
+        result = json.loads(stdout(res))
+        assert "failed to execute message" not in result["raw_log"]
+        return json.loads(stdout(res))
 
     def create_sifchain_addr(self, moniker=None, fund_amounts=None):
         """
@@ -440,7 +558,7 @@ class Peggy1EnvCtx:
         from rowan_source to the account before returning.
         """
         moniker = moniker or "test-" + random_string(20)
-        acct = self.cmd.sifnoded_keys_add_1(moniker)
+        acct = self.cmd.sifnoded_keys_add_1(moniker, sifnoded_home=self.sifnoded_home)
         sif_address = acct["address"]
         if fund_amounts:
             old_balances = self.get_sifchain_balance(sif_address)
@@ -459,7 +577,7 @@ class Peggy1EnvCtx:
             self._sifnoded_chain_id_and_node_arg() + \
             self._sifnoded_fees_arg() + \
             ["--yes", "--output", "json"]
-        res = self.cmd.sifnoded_exec(args, keyring_backend="test")
+        res = self.cmd.sifnoded_exec(args, sifnoded_home=self.sifnoded_home, keyring_backend="test")
         retval = json.loads(stdout(res))
         raw_log = retval["raw_log"]
         if "insufficient funds" in raw_log:
@@ -476,7 +594,7 @@ class Peggy1EnvCtx:
     def get_sifchain_balance(self, sif_addr):
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
             self._sifnoded_chain_id_and_node_arg()
-        res = self.cmd.sifnoded_exec(args)
+        res = self.cmd.sifnoded_exec(args, sifnoded_home=self.sifnoded_home)
         res = json.loads(stdout(res))["balances"]
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
@@ -487,6 +605,16 @@ class Peggy1EnvCtx:
                 return False
             d2k.remove(k)
         return len(d2k) == 0
+
+    def sif_balance_delta(self, balances1, balances2):
+        all_denoms = set(balances1.keys())
+        all_denoms.update(balances2.keys())
+        result = {}
+        for denom in all_denoms:
+            change = balances2.get(denom, 0) - balances1.get(denom, 0)
+            if change != 0:
+                result[denom] = change
+        return result
 
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90):
         start_time = time.time()
@@ -569,6 +697,18 @@ class Peggy1EnvCtx:
             (["--node", self.sifnode_url] if self.sifnode_url else []) + \
             (["--chain-id", self.sifnode_chain_id] if self.sifnode_chain_id else [])
 
+    def _sifnoded_home_arg(self):
+        return [] + \
+            (["--home", self.sifnoded_home] if self.sifnoded_home else [])
+
+    # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+    # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
+    # See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    # The corresponding denom should be "rowan".
+    @property
+    def sifchain_fees(self):
+        return 200000
+
     def _sifnoded_fees_arg(self):
         sifnode_tx_fees = [10**17, "rowan"]
         return [
@@ -581,49 +721,59 @@ class Peggy1EnvCtx:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # If we'running Ropsten and not local hardhat/ganache, try to reclaim any remaining eth.
-        if not self.w3_tx.is_local_node:
+        if not self.eth.is_local_node:
             # self.scavenge_ether()
             pass
 
-    def pop_test_eth_account(self):
+    def wait_for_eth_balance_change(self, eth_addr, old_balance, timeout=90, polling_time=1, token_addr=None):
+        start_time = time.time()
+        while True:
+            new_balance = self.get_erc20_token_balance(token_addr, eth_addr) if token_addr \
+                else self.eth.get_eth_balance(eth_addr)
+            if new_balance != old_balance:
+                return new_balance
+            time.sleep(polling_time)
+            now = time.time()
+            if now - start_time > timeout:
+                raise Exception("Timeout waiting for Ethereum balance to change")
+
+    def create_and_fund_eth_account(self, fund_amount=None):
         if self.available_test_eth_accounts is not None:
             address = self.available_test_eth_accounts.pop(0)
         else:
             # If None, we're generating non-repeatable accounts.
-            address, key = self.w3_tx.create_new_eth_account()
-            self.w3_tx.set_private_key(address, key)
-        return address
-
-    def create_and_fund_eth_account(self, amount_to_fund=None):
-        address = self.pop_test_eth_account()
-        if amount_to_fund is not None:
-            balance_before = self.w3_tx.get_eth_balance(address)
-            difference = amount_to_fund - balance_before
+            address, key = self.eth.create_new_eth_account()
+            self.eth.set_private_key(address, key)
+            assert self.eth.get_eth_balance(address) == 0
+        if fund_amount is not None:
+            start_before = self.eth.get_eth_balance(address)
+            difference = fund_amount - start_before
             if difference > 0:
-                self.w3_tx.send_eth(self.operator, address, difference)
-                assert self.w3_tx.get_eth_balance(address) == amount_to_fund
+                self.eth.send_eth(self.operator, address, difference)
+                assert self.eth.get_eth_balance(address) == fund_amount
         return address
 
     def bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount):
+        """ Sends ETH from Ethereum to Sifchain (lock) """
         txhash = self.tx_bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
-        return self.w3_tx.wait_for_transaction_receipt(txhash)
+        return self.eth.wait_for_transaction_receipt(txhash)
 
     def bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
         txhash = self.tx_bridge_bank_lock_erc20(token_addr, from_eth_acct, to_sif_acct, amount)
-        return self.w3_tx.wait_for_transaction_receipt(txhash)
+        return self.eth.wait_for_transaction_receipt(txhash)
 
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
         blocklist_sc = self.get_blocklist_sc()
-        addrs = [self.w3_tx.w3_conn.toChecksumAddress(addr) for addr in addrs]
+        addrs = [self.eth.w3_conn.toChecksumAddress(addr) for addr in addrs]
         existing_entries = blocklist_sc.functions.getFullList().call()
         to_add = [addr for addr in addrs if addr not in existing_entries]
         to_remove = [addr for addr in existing_entries if addr not in addrs]
         result = [None, None]
         if to_add:
-            result[0] = self.w3_tx.transact_sync(blocklist_sc.functions.batchAddToBlocklist, self.operator)(to_add)
+            result[0] = self.eth.transact_sync(blocklist_sc.functions.batchAddToBlocklist, self.operator)(to_add)
         if to_remove:
-            result[1] = self.w3_tx.transact_sync(blocklist_sc.functions.batchRemoveFromBlocklist, self.operator)(to_remove)
+            result[1] = self.eth.transact_sync(blocklist_sc.functions.batchRemoveFromBlocklist, self.operator)(to_remove)
         current_entries = blocklist_sc.functions.getFullList().call()
         assert set(addrs) == set(current_entries)
         return result
@@ -637,17 +787,17 @@ class ERC20TokenData:
 
 
 def recover_eth_from_test_accounts():
-    ctx = get_peggy1_env_ctx_test()
+    ctx = get_test_env_ctx()
     w = eth.ExponentiallyWeightedAverageFeeEstimator()
 
     gas_price = 20 * eth.GWEI
     tx_cost = eth.MIN_TX_GAS * gas_price
     total_recovered = 0
     for addr in ctx.available_test_eth_accounts:
-        balance = ctx.w3_tx.get_eth_balance(addr)
+        balance = ctx.eth.get_eth_balance(addr)
         to_recover = balance - tx_cost
         if to_recover > 0:
             log.info("Account {}: balance={}, to_recover={}".format(addr, balance//eth.GWEI, to_recover//eth.GWEI))
-            ctx.w3_tx.send_eth(addr, ctx.operator, to_recover)
+            ctx.eth.send_eth(addr, ctx.operator, to_recover)
             total_recovered += to_recover
     log.info("Total recovered: {} ETH".format(total_recovered/eth.ETH))

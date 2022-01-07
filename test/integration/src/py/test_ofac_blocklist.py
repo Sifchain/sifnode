@@ -1,4 +1,6 @@
-from integration_framework import main, common, eth, peggy1_test_utils, inflate_tokens
+import pytest
+
+from integration_framework import main, common, eth, test_utils, inflate_tokens
 from common import *
 
 
@@ -8,48 +10,39 @@ max_gas_price = 500 * eth.GWEI
 
 def deploy_new_erc20_token_for_testing(ctx):
     # Symbol must be unique on the blocklist
-    token_symbol = "MOCK" + random_string(6)
-
-    # TODO Use create_new_currency or something similar.
-    # TODO Avoid using BridgeToken since it lacks token_name and token_decimals.
-    new_token = ctx.deploy_bridge_token_for_testing(token_symbol, 10**18)
-    assert token_symbol == new_token.functions.symbol().call()
-
-    # Token needs to be whitelisted, if it is not, then the transaction will be reverted with a message like this:
-    # "Only token in whitelist can be transferred to cosmos"
-    # Call of updateEthWhiteList will fail if we try to remove an item from whitelist which is not on the whitelist.
-    # txhash = bridge_bank.functions.updateEthWhiteList(bridge_token.address, True).transact()
-    # txrcpt = w3.eth.wait_for_transaction_receipt(txhash)
-    ctx.update_bridge_bank_whitelist(new_token.address, True)
-
-    return new_token
+    token = ctx.generate_random_erc20_token_data()
+    token.decimals = 0
+    mint_amount = 1000 * 10**token.decimals
+    token_sc = ctx.deploy_new_generic_erc20_token(token.name, token.symbol, token.decimals, mint_amount=mint_amount)
+    return token_sc
 
 def bridge_bank_lock_eth(ctx, from_eth_acct, to_sif_acct, amount):
-    assert ctx.w3_tx.get_eth_balance(from_eth_acct) > max_gas_required * max_gas_price, "Not enough gas for test"
+    assert ctx.eth.get_eth_balance(from_eth_acct) > max_gas_required * max_gas_price, "Not enough gas for test"
     return ctx.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
 
 def bridge_bank_lock_erc20(ctx, bridge_token, from_eth_acct, to_sif_acct, amount):
-    assert ctx.w3_tx.get_eth_balance(from_eth_acct) > max_gas_required * max_gas_price, "Not enough gas for test"
+    assert ctx.eth.get_eth_balance(from_eth_acct) > max_gas_required * max_gas_price, "Not enough gas for test"
     assert ctx.get_erc20_token_balance(bridge_token.address, from_eth_acct) >= amount, "Not enough tokens for test"
     return ctx.bridge_bank_lock_erc20(bridge_token.address, from_eth_acct, to_sif_acct, amount)
 
 def is_blocklisted_exception(ctx, exception):
-    return ctx.w3_tx.is_contract_logic_error(exception, "Address is blocklisted")
+    return ctx.eth.is_contract_logic_error(exception, "Address is blocklisted")
 
+@pytest.mark.skipif("on_peggy2_branch")
 def test_blocklist_eth():
-    with peggy1_test_utils.get_peggy1_env_ctx_test() as ctx:
+    with test_utils.get_test_env_ctx() as ctx:
         _test_blocklist_eth(ctx)
 
 def _test_blocklist_eth(ctx):
-    w3 = ctx.w3_tx.w3_conn
+    w3 = ctx.eth.w3_conn
 
     amount_to_fund = 1 * eth.ETH
     amount_to_send = eth.ETH // 100
 
-    acct1, acct2 = [ctx.create_and_fund_eth_account(amount_to_fund) for _ in range(2)]
+    acct1, acct2 = [ctx.create_and_fund_eth_account(fund_amount=amount_to_fund) for _ in range(2)]
 
     to_sif_acct = ctx.create_sifchain_addr()
-    sif_symbol = peggy1_test_utils.CETH
+    sif_symbol = test_utils.CETH
 
     bridge_bank = ctx.get_bridge_bank_sc()
 
@@ -84,7 +77,7 @@ def _test_blocklist_eth(ctx):
         assert entries[0].transactionHash == txrcpt.transactionHash
         assert entries[0].address == bridge_bank.address
         assert entries[0].args["_from"] == addr
-        assert entries[0].args["_to"] == peggy1_test_utils.sif_addr_to_evm_arg(to_sif_acct)
+        assert entries[0].args["_to"] == test_utils.sif_addr_to_evm_arg(to_sif_acct)
         assert entries[0].args["_value"] == amount_to_send
 
     try:
@@ -100,8 +93,9 @@ def _test_blocklist_eth(ctx):
         w3.eth.uninstall_filter(filter.filter_id)
 
 
+@pytest.mark.skipif("on_peggy2_branch")
 def test_blocklist_erc20():
-    with peggy1_test_utils.get_peggy1_env_ctx_test() as ctx:
+    with test_utils.get_test_env_ctx() as ctx:
         _test_blocklist_erc20(ctx)
 
 # For ERC20 tokens, we need to create a new instance of Blocklist smart contract, deploy it and whitelist it with
@@ -109,7 +103,7 @@ def test_blocklist_erc20():
 # symbol such as TEST or MOCK + random suffix + call updateEthWtiteList() + mint() + approve().
 # See smart-contracts/test/test_bridgeBank.js:131-160 for example.
 def _test_blocklist_erc20(ctx):
-    w3 = ctx.w3_tx.w3_conn
+    w3 = ctx.eth.w3_conn
 
     test_token = deploy_new_erc20_token_for_testing(ctx)
 
@@ -121,17 +115,17 @@ def _test_blocklist_erc20(ctx):
     amount_to_fund = 1 * eth.ETH
     amount_to_send = 1
 
-    acct1, acct2 = [ctx.create_and_fund_eth_account(amount_to_fund) for _ in range(2)]
+    acct1, acct2 = [ctx.create_and_fund_eth_account(fund_amount=amount_to_fund) for _ in range(2)]
 
     for acct in [acct1, acct2]:
         # Transfer 10 tokens from operator to acct
         # TODO This would be better done as ctx.send_erc20_tokens(), but we're currently using BridgeToken
-        ctx.w3_tx.transact_sync(test_token.functions.transfer, ctx.operator)(acct, 10)
+        ctx.eth.transact_sync(test_token.functions.transfer, ctx.operator)(acct, 10)
 
         # Set allowance for BridgeBank to spend 10 tokens on behalf of acct1 and acct2
         # Without this we get transaction rejected with "SafeERC20: low-level call failed"
         # TODO Move to Peggy1EnvCtx.bridge_bank_lock_erc20() as they should always be together
-        ctx.w3_tx.transact_sync(test_token.functions.approve, acct)(bridge_bank.address, 10)
+        ctx.eth.transact_sync(test_token.functions.approve, acct)(bridge_bank.address, 10)
 
     to_sif_acct = ctx.create_sifchain_addr()
 
@@ -164,7 +158,7 @@ def _test_blocklist_erc20(ctx):
         assert entries[0].transactionHash == txrcpt.transactionHash
         assert entries[0].address == bridge_bank.address
         assert entries[0].args["_from"] == addr
-        assert entries[0].args["_to"] == peggy1_test_utils.sif_addr_to_evm_arg(to_sif_acct)
+        assert entries[0].args["_to"] == test_utils.sif_addr_to_evm_arg(to_sif_acct)
         assert entries[0].args["_value"] == amount_to_send
 
     try:
