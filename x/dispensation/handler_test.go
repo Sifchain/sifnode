@@ -110,12 +110,6 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msgAirdrop.Distributor)
 	msgRun := types.NewMsgRunDistribution(runner.String(), distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	res, err = handler(ctx, &msgRun)
-	for i := 0; i < len(outputList); i++ {
-		lpAddess, _ := sdk.AccAddressFromBech32(outputList[i].Address)
-		assert.True(t, keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "ceth").Amount.Equal(sdk.NewInt(10)) ||
-			keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "catk").Amount.Equal(sdk.NewInt(10)) || keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "rowan").Amount.Equal(sdk.NewInt(10)))
-	}
-
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	records := keeper.GetRecordsForNameAndStatus(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
