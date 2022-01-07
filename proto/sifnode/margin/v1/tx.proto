@@ -9,6 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 service Msg {
   rpc OpenLong(MsgOpenLong) returns (MsgOpenLongResponse) {}
   rpc CloseLong(MsgCloseLong) returns (MsgCloseLongResponse) {}
+  rpc ForceCloseLong(MsgForceCloseLong) returns (MsgForceCloseLongResponse) {}
 }
 
 message MsgOpenLong {
