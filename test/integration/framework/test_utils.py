@@ -28,11 +28,31 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     assert env_file is None
     assert env_vars is None
     if on_peggy2_branch:
-        return get_peggy2_env_ctx_test()
+        ctx = get_env_ctx_peggy2()
     else:
-        return get_env_ctx_peggy1()
+        ctx = get_env_ctx_peggy1()
 
-def get_peggy2_env_ctx_test():
+    # Add any Ethereum private keys to memory
+    eth_user_private_keys = ctx.cmd.project.read_peruser_config_file("eth-keys")
+    if eth_user_private_keys:
+        available_test_accounts = []
+        for address, key in [[e["address"], e["key"]] for e in eth_user_private_keys]:
+            available_test_accounts.append(address)
+            ctx.eth.set_private_key(address, key)
+        ctx.available_test_eth_accounts = available_test_accounts
+
+    # Add any Sifchain private keys to test keystore
+    sif_user_private_keys = ctx.cmd.project.read_peruser_config_file("sif-keys")
+    if sif_user_private_keys:
+        available_sif_accounts = ctx.cmd.sifnoded_keys_list(keyring_backend="test")
+        for name, address, mnemonic in [[e["name"], e["address"], e["mnemonic"].split(" ")] for e in sif_user_private_keys]:
+            existing_acct = [a for a in available_sif_accounts if a["address"] == address]
+            if not existing_acct:
+                acct = ctx.cmd.sifnoded_keys_add(name, mnemonic, sifnoded_home=ctx.sifnoded_home)
+                assert acct["address"] == address, "Invalid address for sif account {}".format(name)
+    return ctx
+
+def get_env_ctx_peggy2():
     cmd = main.Integrator()
     dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
     environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
@@ -55,7 +75,7 @@ def get_peggy2_env_ctx_test():
     rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
     w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
-    w3_conn = eth.web3_connect(w3_url)
+    w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
 
     sifnode_url = dot_env_vars["TCP_URL"]
     sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
@@ -162,7 +182,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
 
-    w3_conn = eth.web3_connect(w3_url, websocket_timeout=30)
+    w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
 
     # This variable enables behaviour that is specific to running local Ethereum node (ganache, hardhat):
     # - low-level "advance blocks" command that forces mining of 50 blocks
@@ -200,14 +220,6 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
             [0, 0, 0, 0, 1, 0],  # gas_price returned = gas_price
         ]
         ctx.eth.gas_estimate_fn = estimator.estimate_fees
-
-    user_private_keys = ctx.cmd.project.read_peruser_config_file("user_private_keys")
-    if user_private_keys:
-        available_test_accounts = []
-        for address, key in [[entry["address"], entry["key"]] for entry in user_private_keys]:
-            available_test_accounts.append(address)
-            ctx.eth.set_private_key(address, key)
-        ctx.available_test_eth_accounts = available_test_accounts
 
     return ctx
 
@@ -777,6 +789,30 @@ class EnvCtx:
         current_entries = blocklist_sc.functions.getFullList().call()
         assert set(addrs) == set(current_entries)
         return result
+
+    def sanity_check(self):
+        """ Tries to catch some common configurtion errors. """
+        bridge_bank_sc = self.get_bridge_bank_sc()
+        if on_peggy2_branch:
+            pass
+        else:
+            assert (self.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
+            assert (self.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
+            assert (self.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
+        assert bridge_bank_sc.functions.owner().call() == self.operator
+        operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
+        assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
+
+        available_accounts = self.cmd.sifnoded_keys_list(keyring_backend="test")
+        rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
+        assert len(rowan_source_account) == 1, "There should be exaclt one key in test keystore corresponding to " \
+"           ROWAN_SOURCE {}".format(self.rowan_source)
+        if len(rowan_source_account) != 1:
+            raise Exception
+        rowan_source_balance = self.get_sifchain_balance(self.rowan_source).get(ROWAN, 0)
+        min_rowan_source_balance = 10 * 10**18
+        assert rowan_source_balance > 100 * 10**18, "ROWAN_SOURCE should have at least {}rowan balance, but has " \
+            "only {}rowan".format(min_rowan_source_balance, rowan_source_balance)
 
 
 class ERC20TokenData:

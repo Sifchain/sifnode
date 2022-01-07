@@ -27,17 +27,7 @@ def test_sanity_checks():
         _test_sanity_checks(ctx)
 
 def _test_sanity_checks(ctx):
-    bridge_bank_sc = ctx.get_bridge_bank_sc()
-    if on_peggy2_branch:
-        pass
-    else:
-        assert (ctx.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
-        assert (ctx.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
-        assert (ctx.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
-    assert bridge_bank_sc.functions.owner().call() == ctx.operator
-    operator_balance = ctx.eth.get_eth_balance(ctx.operator) / eth.ETH
-    assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
-
+    ctx.sanity_check()
 
 def test_eth_fee_functions():
     with test_utils.get_test_env_ctx() as ctx:
