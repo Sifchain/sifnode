@@ -298,20 +298,16 @@ Binance Smart Chain Import/Export Functionality (Peggy2 end-to-end)
 
 - [x] Initial Development
 - [x] Integration Testing Group 0
-- [ ] Documentation for Auditing (current phase) - ETA end of December 2021 https://app.zenhub.com/workspaces/current-sprint---engineering-615a2e9fe2abd5001befc7f9/issues/sifchain/sifnode/1908
+- [x] Documentation for Auditing (current phase) 
 - [ ] Integration Testing Group 1 - 4 weeks
-- [ ] Merge Develop to Future/Peggy2 - 1 week
 - [ ] Integration Testing Group 2 - 2 weeks
-- [ ] Halborn Audit 1 and Subsequent Fixes (sync w/Kevin) - Need estimate from Halborn est 1 month?
+- [ ] Merge Develop to Future/Peggy2 - 1 week
+- [ ] Halborn Audit 1 and Subsequent Fixes - Need estimate from Halborn est 1 month?
 - [ ] Migration/Load Testing - 2-8 weeks
 - [ ] Migration
-- [ ] https://docs.google.com/document/d/1USqhgfnEBs0b7wE0h3r0fbyzl2Jd-u-6bQ-4pD3iPsc/edit#heading=h.ut8fcts89lk2
 - [ ] Halborn Audit 2 - Mid March
-- [ ] Deployment/Devops (Brent)
-- [ ] (Need to re-sync w/Brent on deployment steps when closer to launch. Last estimate was they needed 2-3 weeks lead time)
-- [ ] UI (McCall)
-- [ ] (Need to re-sync w/McCall on Implementing Token Lists on front end when a month from launch. Need estimate on lead time)
-- [ ] Sifnode (Tim)
-- [ ] Need to re-sync w/Tim on impacts to CLPs, denoms when a month from launch.
-- [ ] Data Pipeline (Niko)
+- [ ] Deployment/Devops 
+- [ ] UI 
+- [ ] Sifnode
+- [ ] Data Pipeline 
 - [ ] Deploy / Launch Peggy 2.0
