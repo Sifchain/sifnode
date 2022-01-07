@@ -1,6 +1,7 @@
 import logging
 import time
 import web3
+from web3.main import Web3
 
 from common import *
 
@@ -36,7 +37,7 @@ class EthereumTxWrapper:
     directly.
     """
 
-    def __init__(self, w3_conn, is_local_node):
+    def __init__(self, w3_conn: Web3, is_local_node):
         self.w3_conn = w3_conn
         self.use_eip_1559 = True
         self.private_keys = {}

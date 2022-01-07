@@ -2,6 +2,8 @@ import json
 import os
 import time
 import web3
+from web3.contract import Contract
+from web3.main import Web3
 
 import main
 import eth
@@ -262,7 +264,7 @@ class HardhatAbiProvider:
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source):
+    def __init__(self, cmd, w3_conn: Web3, ctx_eth: eth.EthereumTxWrapper, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source):
         self.cmd = cmd
         self.w3_conn = w3_conn
         self.eth = ctx_eth
@@ -404,7 +406,7 @@ class EnvCtx:
     # </editor-fold>
 
     # Used from test_integration_framework.py, test_eth_transfers.py
-    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None, mint_amount=None, mint_recipient=None):
+    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None, mint_amount=None, mint_recipient=None) -> Contract:
         owner = self.operator if owner is None else owner
         txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals)
         txrcpt = self.eth.wait_for_transaction_receipt(txhash)
