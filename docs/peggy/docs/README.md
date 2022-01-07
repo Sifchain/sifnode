@@ -275,7 +275,7 @@ Incrmental increases in the following
 
 ## Peggy 2.0
 
-- New Sifchain Token Denoms (​​Coin Metadata Conventions - Documentation Needs update [Brandon] - Peggy 2.0 Lock/Burn Architecture RFC)
+- New Sifchain Token Denoms (​​Coin Metadata Conventions - Documentation Needs update - Peggy 2.0 Lock/Burn Architecture RFC)
 - Stateless Signature Aggregation (Peggy Future Features) - Gas Savings
 - Transaction Ordering (Connecting Sifchain to Many EVM Chains) - Fewer dropped txns
 - EVM to EVM double pegging (Peggy2 end-to-end)
@@ -298,7 +298,7 @@ Binance Smart Chain Import/Export Functionality (Peggy2 end-to-end)
 
 - [x] Initial Development
 - [x] Integration Testing Group 0
-- [x] Documentation for Auditing (current phase) 
+- [x] Documentation for Auditing (current phase)
 - [ ] Integration Testing Group 1 - 4 weeks
 - [ ] Integration Testing Group 2 - 2 weeks
 - [ ] Merge Develop to Future/Peggy2 - 1 week
@@ -306,8 +306,8 @@ Binance Smart Chain Import/Export Functionality (Peggy2 end-to-end)
 - [ ] Migration/Load Testing - 2-8 weeks
 - [ ] Migration
 - [ ] Halborn Audit 2 - Mid March
-- [ ] Deployment/Devops 
-- [ ] UI 
+- [ ] Deployment/Devops
+- [ ] UI
 - [ ] Sifnode
-- [ ] Data Pipeline 
+- [ ] Data Pipeline
 - [ ] Deploy / Launch Peggy 2.0
