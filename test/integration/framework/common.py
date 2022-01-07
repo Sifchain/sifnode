@@ -97,7 +97,7 @@ def format_as_shell_env_vars(env, export=True):
 def basic_logging_setup():
     import sys
     # logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="%(name)s: %(message)s")
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(name)s: %(message)s")
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s")
     # logging.getLogger(__name__).setLevel(logging.DEBUG)
     logging.getLogger("eth").setLevel(logging.WARNING)
     logging.getLogger("websockets").setLevel(logging.WARNING)
