@@ -1,4 +1,4 @@
-from integration_framework import main, common, eth, peggy1_test_utils, inflate_tokens
+from integration_framework import main, common, eth, test_utils, inflate_tokens
 from inflate_tokens import InflateTokens
 from common import *
 
@@ -129,7 +129,7 @@ assets = [
 
 
 def test_inflate_tokens_short():
-    with peggy1_test_utils.get_peggy1_env_ctx_test() as ctx:
+    with test_utils.get_test_env_ctx() as ctx:
         _test_inflate_tokens_short(ctx)
 
 def _test_inflate_tokens_short(ctx):
@@ -151,7 +151,7 @@ def _test_inflate_tokens_short(ctx):
 
 
 def disabled_test_inflate_tokens_full():
-    with peggy1_test_utils.get_peggy1_env_ctx_test() as ctx:
+    with test_utils.get_peggy1_env_ctx_test() as ctx:
         _test_inflate_tokens_full(ctx)
 
 def _test_inflate_tokens_full(ctx):

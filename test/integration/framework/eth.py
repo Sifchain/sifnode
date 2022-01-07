@@ -1,6 +1,6 @@
+import logging
 import time
 import web3
-import logging
 
 from common import *
 
@@ -235,6 +235,12 @@ class EthereumTxWrapper:
         return txrcpt
 
     def is_contract_logic_error(self, exception, expected_message):
+        if on_peggy2_branch:
+            # Hardhat
+            import re
+            return isinstance(exception, ValueError) and \
+                len(exception.args) == 1 and \
+                re.match(expected_message, exception.args[0]["message"])
         if self.is_legacy or True:
             return isinstance(exception, ValueError) and \
                 len(exception.args) == 1 and \
@@ -244,6 +250,24 @@ class EthereumTxWrapper:
                 isinstance(exception, web3.exceptions.ContractLogicError) and \
                 len(exception.args) == 1 and \
                 expected_message in exception.args[0]
+
+    def is_contract_logic_error_method_not_found(self, exception, method_name):
+        if on_peggy2_branch:
+            # Hardhat
+            return self.is_contract_logic_error(exception, "Method {} not found".format(method_name))
+        else:
+            return self.is_contract_logic_error(exception, "not supported")
+
+    def is_contract_logic_error_not_in_minter_role(self, exception):
+        if on_peggy2_branch:
+            return self.is_contract_logic_error(exception, "^Error: VM Exception while processing transaction: reverted with reason string 'AccessControl: account 0x(.{40}) is missing role 0x(.{64})'$")
+        return self.is_contract_logic_error(exception, "MinterRole: caller does not have the Minter role")
+
+    def is_contract_logic_error_amount_exceeds_balance(self, exception):
+        if on_peggy2_branch:
+            return self.is_contract_logic_error(exception, "^Error: VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'$")
+        else:
+            return self.is_contract_logic_error(exception, "transfer amount exceeds balance")
 
 
 class ExponentiallyWeightedAverageFeeEstimator:

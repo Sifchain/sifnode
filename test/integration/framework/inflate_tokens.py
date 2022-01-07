@@ -5,7 +5,7 @@
 import json
 import logging
 
-import peggy1_test_utils
+import test_utils
 from common import *
 
 log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class InflateTokens:
     def wait_for_all(self, pending_txs):
         result = []
         for txhash in pending_txs:
-            txrcpt = self.ctx.w3_tx.wait_for_transaction_receipt(txhash)
+            txrcpt = self.ctx.eth.wait_for_transaction_receipt(txhash)
             result.append(txrcpt)
         return result
 
@@ -65,12 +65,12 @@ class InflateTokens:
         # TODO It would be better if the requested tokens didn't have "c" prefixes. For now we keep it for
         #      compatibility. Ask people who use this script.
         token_symbols_to_skip = set()
-        token_symbols_to_skip.add(peggy1_test_utils.CETH)  # ceth is special since we can't just mint it or create an ERC20 contract for it
-        token_symbols_to_skip.add(peggy1_test_utils.ROWAN)
+        token_symbols_to_skip.add(test_utils.CETH)  # ceth is special since we can't just mint it or create an ERC20 contract for it
+        token_symbols_to_skip.add(test_utils.ROWAN)
         tokens_to_create = []  # = requested - existing - {rowan, ceth}
         for token in requested_tokens:
             token_symbol = token["symbol"]
-            if (token_symbol == peggy1_test_utils.CETH) or (token_symbol == peggy1_test_utils.ROWAN):
+            if (token_symbol == test_utils.CETH) or (token_symbol == test_utils.ROWAN):
                 assert False, f"Token {token_symbol} cannot be used by this procedure, please remove it from list of requested assets"
             if not token_symbol.startswith("c"):
                 assert False, f"Token {token_symbol} is invalid - should start with 'c'"
@@ -111,10 +111,10 @@ class InflateTokens:
 
             # token_addr = self.ctx.create_new_currency(token_symbol, token_name, token_decimals, amount, minted_tokens_recipient)
 
-            txhash = self.ctx.tx_deploy_new_token_for_testing(token_name, token_symbol, token_decimals)
+            txhash = self.ctx.tx_deploy_new_generic_erc20_token(self.ctx.operator, token_name, token_symbol, token_decimals)
             pending_txs.append(txhash)
 
-        token_contracts = [self.ctx.tx_get_testing_token_at(txrcpt.contractAddress) for txrcpt in self.wait_for_all(pending_txs)]
+        token_contracts = [self.ctx.tx_get_generic_erc20_token_at(txrcpt.contractAddress) for txrcpt in self.wait_for_all(pending_txs)]
 
         new_tokens = []
         pending_txs = []
@@ -143,7 +143,7 @@ class InflateTokens:
     def mint(self, list_of_tokens_addrs, amount_in_tokens, mint_recipient):
         pending_txs = []
         for token_addr in list_of_tokens_addrs:
-            token_sc = self.ctx.tx_get_testing_token_at(token_addr)
+            token_sc = self.ctx.tx_get_generic_erc20_token_at(token_addr)
             decimals = token_sc.functions.decimals().call()
             amount = amount_in_tokens * 10**decimals
             txhash = self.ctx.tx_testing_token_mint(token_sc, self.ctx.operator, amount, mint_recipient)
@@ -153,7 +153,7 @@ class InflateTokens:
     def approve_and_lock(self, token_addr_list, eth_addr, to_sif_addr, amount):
         pending_txs = []
         for token_addr in token_addr_list:
-            token_sc = self.ctx.tx_get_testing_token_at(token_addr)
+            token_sc = self.ctx.tx_get_generic_erc20_token_at(token_addr)
             pending_txs.extend(self.ctx.tx_approve_and_lock(token_sc, eth_addr, to_sif_addr, amount))
         return self.wait_for_all(pending_txs)
 
@@ -192,9 +192,12 @@ class InflateTokens:
         The sif_broker_account and OPERATOR can be any Sifchain and Ethereum accounts, we might want to use something
         familiar so that any tokens that would get stuck in the case of interrupting the script can be recovered.
         '''
+
+        assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
+
         amount_per_token = amount * len(target_sif_accounts)
         # sif_broker_account = self.ctx.rowan_source
-        fund_rowan = [100 * peggy1_test_utils.sifnode_funds_for_transfer_peggy1, "rowan"]
+        fund_rowan = [100 * test_utils.sifnode_funds_for_transfer_peggy1, "rowan"]
         sif_broker_account = self.ctx.create_sifchain_addr(fund_amounts=[fund_rowan])
         eth_broker_account = self.ctx.operator
 
@@ -202,7 +205,7 @@ class InflateTokens:
         log.info("Using sif_broker_account {}".format(sif_broker_account))
 
         # Check first that we have the key for ROWAN_SOURCE since the script uses it as an intermediate address
-        keys = self.ctx.cmd.sifnoded_keys_list(keyring_backend="test")
+        keys = self.ctx.cmd.sifnoded_keys_list(keyring_backend="test", sifnoded_home=self.ctx.sifnoded_home)
         rowan_source_key = zero_or_one([k for k in keys if k["address"] == sif_broker_account])
         assert rowan_source_key is not None, "Need private key of broker account {} in sifnoded test keyring".format(sif_broker_account)
 
@@ -221,7 +224,7 @@ class InflateTokens:
 
 
 def run(assets_file, amount, target_accounts_file):
-    ctx = peggy1_test_utils.get_env_ctx()
+    ctx = test_utils.get_env_ctx()
     requested_tokens = json.loads(ctx.cmd.read_text_file(assets_file))
     target_accounts = json.loads(ctx.cmd.read_text_file(target_accounts_file))
     amount = int(amount)

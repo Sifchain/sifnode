@@ -19,5 +19,5 @@ import project
 import geth
 import hardhat
 import truffle
-import peggy1_test_utils
+import test_utils
 import inflate_tokens

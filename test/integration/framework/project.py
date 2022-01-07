@@ -68,6 +68,8 @@ class Project:
         # self.cmd.rmdir(self.project_dir("deploy/networks"))
         # self.cmd.rmdir(self.project_dir("smart-contracts/.openzeppelin"))
 
+        # docker image rm tendermintdev/sdk-proto-gen (used by Makefile on peggy2, used for "buf" command to build go bindings from ABI)
+
         # rmdir ~/.cache/yarn
 
     def fullclean(self):
@@ -89,12 +91,36 @@ class Project:
         # self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
         self.install_smart_contracts_dependencies()
 
+        # Remove go dependencies and re-download them (GOPATH=~/go)
+        # rm -rv ~/go
+        # mkdir ~/go
+        # cd $PROJECT_DIR && go get -v -t -d ./...
+
+        # On future/peggy2 these files are also created:
+        # .proto-gen
+        # .run/
+        # cmd/ebrelayer/contract/generated/artifacts/
+        # docs/peggy/node_modules/
+        # smart-contracts/.hardhat-compile
+        # smart-contracts/env.json
+        # smart-contracts/environment.json
+
     def yarn(self, args, cwd=None, env=None):
         return self.cmd.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
 
     def npx(self, args, env=None, cwd=None, pipe=True):
         # Typically we want any npx commands to inherit stdout and strerr
         return self.cmd.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
+
+    def run_peggy2_js_tests(self):
+        # See smart-contracts/TEST.md:
+        # 1. start environment
+        # 2. npx hardhat test test/devenv/test_lockburn.ts --network localhost
+        pass
+
+    # Top-level "make install" should build everything, such as after git clone. If it does not, it's a bug.
+    def make_all(self):
+        self.cmd.execst(["make"], cwd=project_dir(), pipe=False)
 
     # IntegrationEnvironment
     # TODO Merge

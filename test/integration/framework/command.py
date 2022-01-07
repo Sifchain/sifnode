@@ -1,6 +1,14 @@
 import shutil
 from common import *
 
+
+def buildcmd(args, cwd=None, env=None):
+    return dict((("args", args),) +
+        ((("cwd", cwd),) if cwd is not None else ()) +
+        ((("env", env),) if env is not None else ())
+    )
+
+
 class Command:
     def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
         fd_stdout = subprocess.PIPE if pipe else None
@@ -23,6 +31,11 @@ class Command:
         stdout = log_file or None
         stderr = log_file or None
         return popen(args, stdout=stdout, stderr=stderr, **kwargs)
+
+    # Starts a process asynchronously (for sifnoded, hardhat, ebrelayer etc.)
+    # The arguments should correspond to what buildcmd() returns.
+    def spawn_asynchronous_process(self, exec_args, log_file=None):
+        return self.popen(**exec_args, log_file=log_file)
 
     def rm(self, path):
         if os.path.exists(path):
