@@ -81,9 +81,10 @@ def disabled_test_transfer_eth_to_ceth_over_limit(
 # Group 0
 # Sending eth from ethereum to sifchain
 
-from integration_framework import main, common, eth, test_utils, inflate_tokens
+from integration_framework import main, common, eth, test_utils, inflate_tokens, sifchain
 import eth
 import test_utils
+import sifchain
 from common import *
 
 
@@ -104,7 +105,7 @@ def disabled_test_eth_to_ceth_valid():
     pass
 
 
-def test_eth_to_ceth_and_back_to_eth_transfer_valid():
+def disabled_test_eth_to_ceth_and_back_to_eth_transfer_valid():
     with test_utils.get_test_env_ctx() as ctx:
         _test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx)
 
@@ -140,7 +141,7 @@ def _test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before)
 
 
-def disabled_test_erc20_to_sifnode_and_back():
+def test_erc20_to_sifnode_and_back():
     with test_utils.get_test_env_ctx() as ctx:
         _test_erc20_to_sifnode_and_back(ctx)
 
@@ -151,9 +152,46 @@ def _test_erc20_to_sifnode_and_back(ctx):
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
     # create/retrieve a test sifchain account
-    fund_amount_sif = [1 * 10**18, "rowan"]  # TODO How much do we need?
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[fund_amount_sif])
 
-    # TODO
+    # We must give test_sif_account some ceth to pay for transaction
+    amount_to_send = 3 * eth.ETH
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
+    ctx.bridge_bank_lock_eth(test_eth_account, test_sif_account, amount_to_send)
+    ctx.advance_blocks()
+    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    balance_diff = ctx.sif_balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
+    assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
+    assert balance_diff[ctx.ceth_symbol] == amount_to_send
 
-    return
+    mint_amount = 100
+    send_amount = 10
+    send2_amount = 3
+    assert send2_amount < send_amount
+
+    token = ctx.generate_random_erc20_token_data()
+    token_sc = ctx.deploy_new_generic_erc20_token(token.name, token.symbol, token.decimals)
+    token_addr = token_sc.address
+    ctx.mint_generic_erc20_token(token_addr, mint_amount, test_eth_account)
+    ctx.approve_erc20_token(token_sc, test_eth_account, send_amount)
+
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
+    ctx.bridge_bank_lock_erc20(token_addr, test_eth_account, test_sif_account, send_amount)
+    ctx.advance_blocks()
+    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+    delta = exactly_one([[v, k] for k, v in ctx.sif_balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance).items()])
+
+    assert delta[0] == send_amount
+    assert delta[1] == sif_denom_hash
+
+    test_eth_account2 = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+    eth_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_account2)
+
+    ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account2, send2_amount, sif_denom_hash)
+
+    ctx.wait_for_eth_balance_change(test_eth_account2, eth_balance_before, token_addr=token_addr)
+
+    assert ctx.get_erc20_token_balance(token_addr, test_eth_account) == mint_amount - send_amount
+    assert ctx.get_erc20_token_balance(token_addr, test_eth_account2) == send2_amount
