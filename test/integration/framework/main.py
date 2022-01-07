@@ -34,7 +34,7 @@ class Integrator(Ganache, Sifnoded, Command):
         tmp1 = self.mktempfile()
         tmp2 = self.mktempfile()
         try:
-            self.execst(["bash", "-c", "set -o posix; IFS=' '; set > {}; source {}; set > {}".format(tmp1, path, tmp2)])
+            self.execst(["env", "-i", "bash", "-c", "set -o posix; IFS=' '; set > {}; source {}; set > {}".format(tmp1, path, tmp2)])
             t1 = self.read_text_file(tmp1).splitlines()
             t2 = self.read_text_file(tmp2).splitlines()
         finally:
@@ -137,24 +137,9 @@ class Integrator(Ganache, Sifnoded, Command):
         valoper = self.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", home=sifnoded_home)[0]["address"]
         assert valoper == self.sifnoded_get_val_address(validator_moniker)  # This does not use "home"; if it the assertion holds it could be grouped with sifchain_init_peggy
 
+        # This was deleted in commit f00242302dd226bc9c3060fb78b3de771e3ff429 from sifchain_start_daemon.sh because
+        # it was not working. But we assume that we want to keep it.
         self.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
-
-        # This was not working in sifchain_start_daemon.sh and has been removed
-        # try:
-        #     # Probable bug in test/integration/sifchain_start_daemon.sh:
-        #     # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a \
-        #     #     --bech val $MONIKER --home $CHAINDIR/.sifnoded)
-        #     # TODO We probably don't need validator1_passsword
-        #     # TODO This could then be merged with "sifnoded_keys_show"
-        #     whitelisted_validator = exactly_one(stdout_lines(self.execst(["sifnoded", "keys", "show",
-        #         "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
-        #         stdin=[validator1_password])))
-        #     assert False
-        #     log.info(f"Whitelisted validator: {whitelisted_validator}")
-        #     self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
-        # except:
-        #     log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
-        #     assert True
 
         adminuser_addr = self.sifchain_init_common(denom_whitelist_file, sifnoded_home)
         return adminuser_addr
@@ -1031,7 +1016,7 @@ def main(argv):
     # tmux split-window -h -t env1
     # tmux select-layout -t env1 even-vertical
     # OR: tmux select-layout main-horizontal
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
+    basic_logging_setup()
     what = argv[0] if argv else None
     cmd = Integrator()
     project = cmd.project
@@ -1045,7 +1030,7 @@ def main(argv):
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
         e.stack_push()
-    elif what == "run-integration-env":
+    elif what == "run-peggy1-env":
         env = IntegrationTestsEnvironment(cmd)
         project.cleanup_and_reset_state()
         # deploy/networks already included in run()
@@ -1120,6 +1105,12 @@ def main(argv):
                 assert addr == expected_addr
             input("Press ENTER to exit...")
             killall((geth_proc,))
+    elif what == "inflate-tokens":
+        import inflate_tokens
+        inflate_tokens.run(*argv[1:])
+    elif what == "recover-eth":
+        import peggy1_test_utils
+        peggy1_test_utils.recover_eth_from_test_accounts()
     else:
         raise Exception("Missing/unknown command")
 
