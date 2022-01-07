@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/A2E0EFABD035F5460225E92C0F604F7C01AE3A9DF0CFF18FB08519CCD23AAE9D",
       "base_denom": "uusd",
-      "path": "",
+      "path": "transfer/channel-45",
       "ibc_channel_id": "channel-45",
       "ibc_counterparty_channel_id": "channel-27",
       "display_name": "",
