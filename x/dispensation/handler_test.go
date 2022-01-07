@@ -110,17 +110,11 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msgAirdrop.Distributor)
 	msgRun := types.NewMsgRunDistribution(runner.String(), distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	res, err = handler(ctx, &msgRun)
-	lpAddess, err := sdk.AccAddressFromBech32(outputList[0].Address)
-	money := keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "ceth")
-	money1 := keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "catk")
-	money2 := keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "rowan")
-	money3 := app.BankKeeper.GetAccountsBalances(ctx)
-	money4 := app.BankKeeper.GetAllBalances(ctx, lpAddess)
-	assert.Equal(t, money, 100)
-	assert.Equal(t, money1, 100)
-	assert.Equal(t, money2, 100)
-	assert.Equal(t, money3, 100)
-	assert.Equal(t, money4, 100)
+	for i := 0; i < len(outputList); i++ {
+		lpAddess, _ := sdk.AccAddressFromBech32(outputList[i].Address)
+		assert.True(t, keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "ceth").Amount.Equal(sdk.NewInt(10)) ||
+			keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "catk").Amount.Equal(sdk.NewInt(10)) || keeper.GetBankKeeper().GetBalance(ctx, lpAddess, "rowan").Amount.Equal(sdk.NewInt(10)))
+	}
 
 	require.NoError(t, err)
 	require.NotNil(t, res)
