@@ -43,6 +43,13 @@ class Command:
         if os.path.exists(path):
             shutil.rmtree(path)  # TODO Convert to exec
 
+    def rmf(self, path):
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                self.rmdir(path)
+            else:
+                self.rm(path)
+
     def copy_file(self, src, dst):
         shutil.copy(src, dst)
 

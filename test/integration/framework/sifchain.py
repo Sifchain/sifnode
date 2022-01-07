@@ -15,6 +15,11 @@ class Sifnoded(Command):
         res = self.execst(args)
         return json.loads(res[2])  # output is on stderr
 
+    def sifnoded_keys_list(self, keyring_backend=None, home=None):
+        args = ["keys", "list", "--output", "json"]
+        res = self.sifnoded_exec(args, keyring_backend=keyring_backend, sifnoded_home=home)
+        return json.loads(stdout(res))
+
     def sifnoded_keys_show(self, name, bech=None, keyring_backend=None, home=None):
         keyring_backend = keyring_backend or "test"
         args = ["keys", "show", name] + \
@@ -223,7 +228,7 @@ class Ebrelayer:
     def init(self, tendermind_node, web3_provider, bridge_registry_contract_address, validator_moniker,
         validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None, gas_prices=None,
         node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None, relayerdb_path=None,
-        cwd=None, log_file=None
+        trace=True, cwd=None, log_file=None
     ):
         env = {}
         if ethereum_private_key:
@@ -241,5 +246,6 @@ class Ebrelayer:
             (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
             (["--from", sign_with] if sign_with is not None else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
+            (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
+            (["--trace"] if trace else [])
         return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)

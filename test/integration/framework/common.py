@@ -9,6 +9,7 @@ import urllib.request
 
 log = logging.getLogger(__name__)
 
+# TODO Obsolete, use eth.NULL_ADDRESS
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 ANY_ADDR = "0.0.0.0"
 
@@ -22,6 +23,14 @@ def stdout_lines(res):
 def joinlines(lines):
     return "".join([x + os.linesep for x in lines])
 
+def zero_or_one(items):
+    if len(items) == 0:
+        return None
+    elif len(items) > 1:
+        raise ValueError("Multiple items")
+    else:
+        return items[0]
+
 def exactly_one(items):
     if len(items) == 0:
         raise ValueError("Zero items")
@@ -29,6 +38,9 @@ def exactly_one(items):
         raise ValueError("Multiple items")
     else:
         return items[0]
+
+def find_by_value(list_of_dicts, field, value):
+    return [t for t in list_of_dicts if t[field] == value]
 
 def random_string(length):
     chars = string.ascii_letters + string.digits
@@ -40,6 +52,7 @@ def project_dir(*paths):
 def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)
 
+# TODO Move to sifchain.py
 def sif_format_amount(amount, denom):
     return "{}{}".format(amount, denom)
 
@@ -67,16 +80,25 @@ def popen(args, cwd=None, env=None, text=None, stdin=None, stdout=None, stderr=N
     logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
-def dict_merge(*dicts):
+def dict_merge(*dicts, override=True):
     result = {}
     for d in dicts:
         for k, v in d.items():
-            result[k] = v
+            if override or (k not in result):
+                result[k] = v
     return result
 
 def format_as_shell_env_vars(env, export=True):
     return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
 
+def basic_logging_setup():
+    import sys
+    # logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="%(name)s: %(message)s")
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(name)s: %(message)s")
+    # logging.getLogger(__name__).setLevel(logging.DEBUG)
+    logging.getLogger("eth").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+    logging.getLogger("web3").setLevel(logging.WARNING)
 
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
 
