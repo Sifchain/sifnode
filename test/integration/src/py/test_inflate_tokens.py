@@ -1,3 +1,5 @@
+import pytest
+
 from integration_framework import main, common, eth, test_utils, inflate_tokens
 from inflate_tokens import InflateTokens
 from common import *
@@ -128,6 +130,7 @@ assets = [
 ]
 
 
+@pytest.mark.skipif("on_peggy2_branch")
 def test_inflate_tokens_short():
     with test_utils.get_test_env_ctx() as ctx:
         _test_inflate_tokens_short(ctx)
@@ -150,6 +153,7 @@ def _test_inflate_tokens_short(ctx):
     script.run(requested_tokens, amount, wallets)
 
 
+@pytest.mark.skipif("on_peggy2_branch")
 def disabled_test_inflate_tokens_full():
     with test_utils.get_peggy1_env_ctx_test() as ctx:
         _test_inflate_tokens_full(ctx)
