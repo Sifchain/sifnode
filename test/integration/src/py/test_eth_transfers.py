@@ -144,7 +144,7 @@ def disabled_test_erc20_to_sifnode_and_back():
     with test_utils.get_test_env_ctx() as ctx:
         _test_erc20_to_sifnode_and_back(ctx)
 
-def _test_erc20_to_sifnode_and_back(ctx):
+def _test_erc20_to_sifnode_and_back(ctx: test_utils.EnvCtx):
     token_data = ctx.generate_random_erc20_token_data()
     token_sc = ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, token_data.decimals)
 
@@ -155,5 +155,6 @@ def _test_erc20_to_sifnode_and_back(ctx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[fund_amount_sif])
 
     # TODO
+
 
     return
