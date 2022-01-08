@@ -806,14 +806,14 @@ class EnvCtx:
 
         available_accounts = self.cmd.sifnoded_keys_list(keyring_backend="test")
         rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
-        assert len(rowan_source_account) == 1, "There should be exaclt one key in test keystore corresponding to " \
-"           ROWAN_SOURCE {}".format(self.rowan_source)
+        assert len(rowan_source_account) == 1, "There should be exactly one key in test keystore corresponding to " \
+            "ROWAN_SOURCE {}".format(self.rowan_source)
         if len(rowan_source_account) != 1:
             raise Exception
         rowan_source_balance = self.get_sifchain_balance(self.rowan_source).get(ROWAN, 0)
         min_rowan_source_balance = 10 * 10**18
-        assert rowan_source_balance > 100 * 10**18, "ROWAN_SOURCE should have at least {}rowan balance, but has " \
-            "only {}rowan".format(min_rowan_source_balance, rowan_source_balance)
+        assert rowan_source_balance > min_rowan_source_balance, "ROWAN_SOURCE should have at least {}rowan balance, " \
+            "but has only {}rowan".format(min_rowan_source_balance, rowan_source_balance)
 
 
 class ERC20TokenData:
