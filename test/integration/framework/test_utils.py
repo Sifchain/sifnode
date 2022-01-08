@@ -44,11 +44,11 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     # Add any Sifchain private keys to test keystore
     sif_user_private_keys = ctx.cmd.project.read_peruser_config_file("sif-keys")
     if sif_user_private_keys:
-        available_sif_accounts = ctx.cmd.sifnoded_keys_list(keyring_backend="test")
+        available_sif_accounts = ctx.sifnode.keys_list()
         for name, address, mnemonic in [[e["name"], e["address"], e["mnemonic"].split(" ")] for e in sif_user_private_keys]:
             existing_acct = [a for a in available_sif_accounts if a["address"] == address]
             if not existing_acct:
-                acct = ctx.cmd.sifnoded_keys_add(name, mnemonic, sifnoded_home=ctx.sifnoded_home)
+                acct = ctx.sifnode.keys_add(name, mnemonic)
                 assert acct["address"] == address, "Invalid address for sif account {}".format(name)
     return ctx
 
@@ -280,7 +280,7 @@ class EnvCtx:
         self.eth = ctx_eth
         self.abi_provider = abi_provider
         self.operator = operator
-        self.sifnoded_home = sifnoded_home
+        self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         self.rowan_source = rowan_source
@@ -559,7 +559,7 @@ class EnvCtx:
             ] + \
             self._sifnoded_home_arg() + \
             self._sifnoded_chain_id_and_node_arg()
-        res = self.cmd.sifnoded_exec(args, keyring_backend="test")
+        res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
         result = json.loads(stdout(res))
         assert "failed to execute message" not in result["raw_log"]
         return json.loads(stdout(res))
@@ -571,7 +571,7 @@ class EnvCtx:
         from rowan_source to the account before returning.
         """
         moniker = moniker or "test-" + random_string(20)
-        acct = self.cmd.sifnoded_keys_add_1(moniker, sifnoded_home=self.sifnoded_home)
+        acct = self.sifnode.keys_add_1(moniker)
         sif_address = acct["address"]
         if fund_amounts:
             old_balances = self.get_sifchain_balance(sif_address)
@@ -590,7 +590,7 @@ class EnvCtx:
             self._sifnoded_chain_id_and_node_arg() + \
             self._sifnoded_fees_arg() + \
             ["--yes", "--output", "json"]
-        res = self.cmd.sifnoded_exec(args, sifnoded_home=self.sifnoded_home, keyring_backend="test")
+        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
         retval = json.loads(stdout(res))
         raw_log = retval["raw_log"]
         if "insufficient funds" in raw_log:
@@ -607,7 +607,7 @@ class EnvCtx:
     def get_sifchain_balance(self, sif_addr):
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
             self._sifnoded_chain_id_and_node_arg()
-        res = self.cmd.sifnoded_exec(args, sifnoded_home=self.sifnoded_home)
+        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
@@ -712,7 +712,7 @@ class EnvCtx:
 
     def _sifnoded_home_arg(self):
         return [] + \
-            (["--home", self.sifnoded_home] if self.sifnoded_home else [])
+            (["--home", self.sifnode.home] if self.sifnode.home else [])
 
     # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
     # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
@@ -804,7 +804,7 @@ class EnvCtx:
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
         assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
 
-        available_accounts = self.cmd.sifnoded_keys_list(keyring_backend="test")
+        available_accounts = self.sifnode.keys_list()
         rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
         assert len(rowan_source_account) == 1, "There should be exactly one key in test keystore corresponding to " \
             "ROWAN_SOURCE {}".format(self.rowan_source)

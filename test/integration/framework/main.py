@@ -11,18 +11,10 @@ from project import Project, killall, force_kill_processes
 from common import *
 
 
-class Integrator(Ganache, Sifnoded, Command):
+class Integrator(Ganache, Command):
     def __init__(self):
         super().__init__()  # TODO Which super is this? All of them?
         self.project = Project(self, project_dir())
-
-    def sif_wait_up(self, host, port):
-        while True:
-            from urllib.error import URLError
-            try:
-                return self.sifnoded_get_status(host, port)
-            except URLError:
-                time.sleep(1)
 
     def primitive_parse_env_file(self, path):
         def split(lines):
@@ -132,51 +124,53 @@ class Integrator(Ganache, Sifnoded, Command):
         self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
 
     # @TODO Merge
-    def sifchain_init_integration(self, validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password):
+    def sifchain_init_integration(self, sifnode, validator_moniker, validator_mnemonic, denom_whitelist_file):
         # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
-        self.sifnoded_keys_add(validator_moniker, validator_mnemonic)
-        valoper = self.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", sifnoded_home=sifnoded_home)[0]["address"]
-        assert valoper == self.sifnoded_get_val_address(validator_moniker)  # This does not use "home"; if it the assertion holds it could be grouped with sifchain_init_peggy
+        sifnode0 = Sifnoded(self)
+        sifnode0.keys_add(validator_moniker, validator_mnemonic)
+        valoper = sifnode.keys_show(validator_moniker, bech="val")[0]["address"]
+        assert valoper == sifnode0.get_val_address(validator_moniker)  # This does not use "home"; if it the assertion holds it could be grouped with sifchain_init_peggy
 
         # This was deleted in commit f00242302dd226bc9c3060fb78b3de771e3ff429 from sifchain_start_daemon.sh because
         # it was not working. But we assume that we want to keep it.
-        self.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
+        sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnode.home)
 
-        adminuser_addr = self.sifchain_init_common(denom_whitelist_file, sifnoded_home)
+        adminuser_addr = self.sifchain_init_common(sifnode, denom_whitelist_file)
         return adminuser_addr
 
-    def sifnoded_peggy2_init_validator(self, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base):
-        sifnoded_home = os.path.join(chain_dir_base, validator_moniker, ".sifnoded")
-
+    def sifnoded_peggy2_init_validator(self, sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base):
         # Add validator key to test keyring
-        # This effectively copies key for validator_moniker from what sifgen creates in /tmp/sifnodedNetwor/validators
+        # This effectively copies key for validator_moniker from what sifgen creates in /tmp/sifnodedNetwork/validators
         # to ~/.sifnoded (note absence of explicit sifnoded_home, therefore it's ~/.sifnoded)
-        self.sifnoded_keys_add(validator_moniker, validator_mnemonic)
+        sifnode0 = Sifnoded(self)
+        sifnode0.keys_add(validator_moniker, validator_mnemonic)
 
         # Read valoper key
         # (Since we now copied the key to main keyring we could also read it from there)
-        valoper = self.sifnoded_get_val_address(validator_moniker, sifnoded_home=sifnoded_home)
+        valoper = sifnode.get_val_address(validator_moniker)
 
         # Add genesis validator
-        self.sifnoded_add_genesis_validators_peggy(evm_network_descriptor, valoper, validator_power, sifnoded_home=sifnoded_home)
+        sifnode.add_genesis_validators_peggy(evm_network_descriptor, valoper, validator_power)
 
         # Get whitelisted validator
         # TODO Value is not being used
         # TODO We're using default home here instead of sifnoded_home above. Does this even work?
-        _whitelisted_validator = self.sifnoded_get_val_address(validator_moniker)
+        _whitelisted_validator = sifnode.get_val_address(validator_moniker)
         assert valoper == _whitelisted_validator
 
     # TODO Not any longer shared between IntegrationEnvironment and PeggyEnvironment
     # Peggy2Environment calls sifnoded_peggy2_add_account
-    def sifchain_init_common(self, denom_whitelist_file, sifnoded_home):
-        sifnodeadmin_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
+    def sifchain_init_common(self, sifnode, denom_whitelist_file):
+        # Add sifnodeadmin to ~/.sifnoded
+        sifnode0 = Sifnoded(self)
+        sifnodeadmin_addr = sifnode0.keys_add_1("sifnodeadmin")["address"]
         tokens = [[10**20, "rowan"]]
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
-        self.sifnoded_add_genesis_account(sifnodeadmin_addr, tokens, sifnoded_home=sifnoded_home)
-        self.sifnoded_set_genesis_oracle_admin(sifnodeadmin_addr, sifnoded_home=sifnoded_home)
-        self.sifnoded_set_genesis_oracle_admin(sifnodeadmin_addr, sifnoded_home=sifnoded_home)
-        self.sifnoded_set_gen_denom_whitelist(denom_whitelist_file, sifnoded_home=sifnoded_home)
+        sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
+        sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
+        sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
+        sifnode.set_gen_denom_whitelist(denom_whitelist_file)
         return sifnodeadmin_addr
 
     # @TODO Move to Sifgen class
@@ -201,7 +195,7 @@ class Integrator(Ganache, Sifnoded, Command):
     def wait_for_sif_account_up(self, address, tcp_url=None):
         # TODO Deduplicate: this is also in run_ebrelayer()
         # netdef_json is path to file containing json_dump(netdef)
-        # while not self.tcp_probe_connect("localhost", tendermint_port):
+        # while not self.cmd.tcp_probe_connect("localhost", tendermint_port):
         #     time.sleep(1)
         # self.wait_for_sif_account(netdef_json, validator1_address)
 
@@ -229,6 +223,7 @@ class UIStackEnvironment:
         self.keyring_backend = "test"
         self.ganache_db_path = self.cmd.get_user_home(".ganachedb")
         self.sifnoded_path = self.cmd.get_user_home(".sifnoded")
+        self.sifnode = Sifnoded(cmd)
 
         # From ui/chains/credentials.sh
         self.shadowfiend_name = "shadowfiend"
@@ -270,30 +265,31 @@ class UIStackEnvironment:
         ganache_proc = Ganache.start_ganache_cli(self.cmd, mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
             port=7545, network_id=self.network_id, gas_price=20000000000, gas_limit=6721975, host=ANY_ADDR)
 
+        sifnode = Sifnoded(self.cmd)
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
-        self.cmd.sifnoded_init("test", self.chain_id)
+        sifnode.sifnoded_init("test", self.chain_id)
         self.cmd.copy_file(project_dir("ui/chains/sif/app.toml"), os.path.join(self.sifnoded_path, "config/app.toml"))
         log.info(f"Generating deterministic account - {self.shadowfiend_name}...")
         shadowfiend_account = self.cmd.sifnoded_keys_add(self.shadowfiend_name, self.shadowfiend_mnemonic)
         log.info(f"Generating deterministic account - {self.akasha_name}...")
-        akasha_account = self.cmd.sifnoded_keys_add(self.akasha_name, self.akasha_mnemonic)
+        akasha_account = self.sifnode.keys_add(self.akasha_name, self.akasha_mnemonic)
         log.info(f"Generating deterministic account - {self.juniper_name}...")
         juniper_account = self.cmd.sifnoded_keys_add(self.juniper_name, self.juniper_mnemonic)
         shadowfiend_address = shadowfiend_account["address"]
         akasha_address = akasha_account["address"]
         juniper_address = juniper_account["address"]
-        assert shadowfiend_address == self.cmd.sifnoded_keys_show(self.shadowfiend_name)[0]["address"]
-        assert akasha_address == self.cmd.sifnoded_keys_show(self.akasha_name)[0]["address"]
-        assert juniper_address == self.cmd.sifnoded_keys_show(self.juniper_name)[0]["address"]
+        assert shadowfiend_address == self.sifnode.keys_show(self.shadowfiend_name)[0]["address"]
+        assert akasha_address == self.sifnode.keys_show(self.akasha_name)[0]["address"]
+        assert juniper_address == self.sifnode.keys_show(self.juniper_name)[0]["address"]
 
         tokens_shadowfiend = [[10**29, "rowan"], [10**29, "catk"], [10**29, "cbtk"], [10**29, "ceth"], [10**29, "cusdc"], [10**29, "clink"], [10**26, "stake"]]
         tokens_akasha = [[10**29, "rowan"], [10**29, "catk"], [10**29, "cbtk"], [10**29, "ceth"], [10**29, "cusdc"], [10**29, "clink"], [10**26, "stake"]]
         tokens_juniper = [[10**22, "rowan"], [10**22, "cusdc"], [10**20, "clink"], [10**20, "ceth"]]
-        self.cmd.sifnoded_add_genesis_account(shadowfiend_address, tokens_shadowfiend)
-        self.cmd.sifnoded_add_genesis_account(akasha_address, tokens_akasha)
-        self.cmd.sifnoded_add_genesis_account(juniper_address, tokens_juniper)
+        sifnode.add_genesis_account(shadowfiend_address, tokens_shadowfiend)
+        sifnode.add_genesis_account(akasha_address, tokens_akasha)
+        sifnode.add_genesis_account(juniper_address, tokens_juniper)
 
-        shadowfiend_address_bech_val = self.cmd.sifnoded_keys_show(self.shadowfiend_name, bech="val")[0]["address"]
+        shadowfiend_address_bech_val = sifnode.keys_show(self.shadowfiend_name, bech="val")[0]["address"]
         self.cmd.sifnoded_add_genesis_validators(shadowfiend_address_bech_val)
 
         amount = sif_format_amount(10**24, "stake")
@@ -322,24 +318,24 @@ class UIStackEnvironment:
         # Original scripts say "if we don't sleep there are issues"
         time.sleep(10)
         log.info("Creating liquidity pool from catk:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "catk", [10**5, "rowan"], 10**25, 10**25)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "catk", [10**5, "rowan"], 10**25, 10**25)
         time.sleep(5)
         log.info("Creating liquidity pool from cbtk:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cbtk", [10**5, "rowan"], 10**25, 10**25)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cbtk", [10**5, "rowan"], 10**25, 10**25)
         # should now be able to swap from catk:cbtk
         time.sleep(5)
         log.info("Creating liquidity pool from ceth:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ceth", [10**5, "rowan"], 10**25, 83*10**20)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ceth", [10**5, "rowan"], 10**25, 83*10**20)
         # should now be able to swap from x:ceth
         time.sleep(5)
         log.info("Creating liquidity pool from cusdc:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cusdc", [10**5, "rowan"], 10**25, 10**25)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cusdc", [10**5, "rowan"], 10**25, 10**25)
         time.sleep(5)
         log.info("Creating liquidity pool from clink:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "clink", [10**5, "rowan"], 10**25, 588235*10**18)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "clink", [10**5, "rowan"], 10**25, 588235*10**18)
         time.sleep(5)
         log.info("Creating liquidity pool from ctest:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
 
         # ui/scripts/_migrate.sh -> ui/chains/post_migrate.sh
 
@@ -584,11 +580,14 @@ class IntegrationTestsEnvironment:
         denom_whitelist_file = os.path.join(self.test_integration_dir, "whitelisted-denoms.json")
         # SIFNODED_LOG=$datadir/logs/sifnoded.log
 
-        adminuser_addr = self.cmd.sifchain_init_integration(validator1_moniker, validator1_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
+        sifnode = Sifnoded(self.cmd, home=sifnoded_home)
+
+        adminuser_addr = self.cmd.sifchain_init_integration(sifnode, validator1_moniker, validator1_mnemonic,
+            denom_whitelist_file)
 
         # Start sifnoded
-        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"],
-            sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
+        sifnoded_proc = sifnode.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"],
+            log_file=sifnoded_log_file)
 
         # TODO: wait for sifnoded to come up before continuing
         # in sifchain_start_daemon.sh: "sleep 10"
@@ -649,8 +648,9 @@ class IntegrationTestsEnvironment:
         # This is not neccessary during start-integration-env.sh (as the key does not exist yet), but is neccessary
         # during tests that restart ebrelayer
         # res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])
-        self.cmd.sifnoded_keys_delete(moniker)
-        self.cmd.sifnoded_keys_add(moniker, mnemonic)
+        sifnode = Sifnoded(self.cmd)
+        sifnode.keys_delete(moniker)
+        sifnode.keys_add(moniker, mnemonic)
 
     def process_netdef(self, network_definition_file):
         # networks_dir = deploy/networks
@@ -937,7 +937,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             # TODO Not used
             # validator_password = validator["password"]
             evm_network_descriptor = 1  # TODO Why not hardhat_chain_id?
-            self.cmd.sifnoded_peggy2_init_validator(validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base)
+            sifnoded_home = os.path.join(chain_dir_base, validator_moniker, ".sifnoded")
+            sifnode = Sifnoded(self.cmd, home=sifnoded_home)
+            self.cmd.sifnoded_peggy2_init_validator(sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base)
 
         # TODO Needs to be fixed when we support more than 1 validator
         validator0 = exactly_one(validators)
@@ -945,9 +947,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         validator0_address = validator0["address"]
         chain_dir = os.path.join(chain_dir_base, validator0["moniker"])
 
+        sifnode = Sifnoded(self.cmd, home=validator0_home)
+
         # Create an ADMIN account on sifnode with name admin_account_name (e.g. "sifnodeadmin")
-        admin_account_address = self.cmd.sifnoded_peggy2_add_account(admin_account_name, tokens, is_admin=True,
-            sifnoded_home=validator0_home)
+        admin_account_address = sifnode.peggy2_add_account(admin_account_name, tokens, is_admin=True)
 
         # TODO Check if sifnoded_peggy2_add_relayer_witness_account can be executed offline (without sifnoded running)
         # TODO Check if sifnoded_peggy2_set_cross_chain_fee can be executed offline (without sifnoded running)
@@ -956,8 +959,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: "--home" is shared with sifnoded's "--home"
         relayers = [{
             "name": name,
-            "address": self.cmd.sifnoded_peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
-                validator_power, denom_whitelist_file, sifnoded_home=validator0_home),
+            "address": sifnode.peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
+                validator_power, denom_whitelist_file),
             "home": validator0_home,
         } for name in [f"relayer-{i}" for i in range(relayer_count)]]
 
@@ -965,8 +968,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: "--home" is shared with sifnoded's "--home"
         witnesses = [{
             "name": name,
-            "address": self.cmd.sifnoded_peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
-                validator_power, denom_whitelist_file, sifnoded_home=validator0_home),
+            "address": sifnode.peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
+                validator_power, denom_whitelist_file),
             "home": validator0_home,
             "db_path": project_dir("smart-contracts", "witnessdb"),
         } for name in [f"witness-{i}" for i in range(witness_count)]]
@@ -980,16 +983,16 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         #     --rpc.laddr tcp://0.0.0.0:26657
         #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
         # @TODO Detect if sifnoded is already running, for now it fails silently and we wait forever in wait_for_sif_account_up
-        sifnoded_exec_args = self.cmd.sifnoded_build_start_cmd(tcp_url=tcp_url,minimum_gas_prices=[0.5, "rowan"],
-            sifnoded_home=validator0_home, log_format_json=True)
+        sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=[0.5, "rowan"],
+            log_format_json=True)
         sifnoded_proc = self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=sifnoded_log_file)
 
         self.cmd.wait_for_sif_account_up(validator0_address, tcp_url)
 
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
-        res = self.cmd.sifnoded_peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
-            chain_id, sifnoded_home=validator0_home)
+        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
+            chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 2
         assert res[0]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
@@ -1001,9 +1004,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         ethereum_cross_chain_fee_token = sifchain_denom_hash(hardhat_chain_id, NULL_ADDRESS)
         gas_prices = [0.5, "rowan"]
         gas_adjustment = 1.5
-        self.cmd.sifnoded_peggy2_set_cross_chain_fee(admin_account_address, hardhat_chain_id,
+        sifnode.peggy2_set_cross_chain_fee(admin_account_address, hardhat_chain_id,
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
-            admin_account_name, chain_id, gas_prices, gas_adjustment, sifnoded_home=validator0_home)
+            admin_account_name, chain_id, gas_prices, gas_adjustment)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
