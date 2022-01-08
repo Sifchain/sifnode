@@ -208,7 +208,7 @@ class InflateTokens:
         log.info("Using sif_broker_account {}".format(sif_broker_account))
 
         # Check first that we have the key for ROWAN_SOURCE since the script uses it as an intermediate address
-        keys = self.ctx.cmd.sifnoded_keys_list(keyring_backend="test", sifnoded_home=self.ctx.sifnoded_home)
+        keys = self.ctx.sifnode.keys_list()
         rowan_source_key = zero_or_one([k for k in keys if k["address"] == sif_broker_account])
         assert rowan_source_key is not None, "Need private key of broker account {} in sifnoded test keyring".format(sif_broker_account)
 
