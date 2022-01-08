@@ -1,4 +1,5 @@
 import shutil
+import time
 from common import *
 
 
@@ -106,3 +107,11 @@ class Command:
         if not self.exists(path):
             self.mkdir(path)
         self.execst(["tar", "xf" + comp, tarfile], cwd=path)
+
+    def wait_for_file(self, path):
+        while not self.exists(path):
+            time.sleep(1)
+
+    def tcp_probe_connect(self, host, port):
+        res = self.execst(["nc", "-z", host, str(port)], check_exit=False)
+        return res[0] == 0
