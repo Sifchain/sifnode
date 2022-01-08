@@ -180,7 +180,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				// to prevent accidentally leaving off IBC details and
 				return errors.New("--token_denom must be specified if no IBC channel is provided")
 			}
-			// --token_denom always takes precendence over IBC generation if specified
+			// --token_denom always takes precedence over IBC generation if specified
 			if initialDenom != "" {
 				denom = initialDenom
 			}
