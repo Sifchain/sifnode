@@ -14,8 +14,7 @@ from common import *
 # Also to replace smart-contracts/scripts/...
 
 
-# Peggy1 only (Peggy2.0 uses denom hash)
-CETH = "ceth"
+CETH = "ceth"  # Peggy1 only (Peggy2.0 uses denom hash)
 ROWAN = "rowan"
 
 sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
@@ -750,7 +749,7 @@ class EnvCtx:
             if now - start_time > timeout:
                 raise Exception("Timeout waiting for Ethereum balance to change")
 
-    def create_and_fund_eth_account(self, fund_amount=None):
+    def create_and_fund_eth_account(self, fund_from=None, fund_amount=None):
         if self.available_test_eth_accounts is not None:
             address = self.available_test_eth_accounts.pop(0)
         else:
@@ -759,11 +758,15 @@ class EnvCtx:
             self.eth.set_private_key(address, key)
             assert self.eth.get_eth_balance(address) == 0
         if fund_amount is not None:
-            start_before = self.eth.get_eth_balance(address)
-            difference = fund_amount - start_before
+            fund_from = fund_from or self.operator
+            funder_balance_before = self.eth.get_eth_balance(fund_from)
+            assert funder_balance_before >= fund_amount
+            target_balance_before = self.eth.get_eth_balance(address)
+            difference = fund_amount - target_balance_before
             if difference > 0:
-                self.eth.send_eth(self.operator, address, difference)
+                self.eth.send_eth(fund_from, address, difference)
                 assert self.eth.get_eth_balance(address) == fund_amount
+                assert self.eth.get_eth_balance(fund_from) < funder_balance_before - difference
         return address
 
     def bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount):
