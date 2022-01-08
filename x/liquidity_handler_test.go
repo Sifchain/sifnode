@@ -147,6 +147,20 @@ func TestSwap(t *testing.T) {
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	msgCreatePool := types.NewMsgCreatePool(signer, assetEth, nativeAssetAmount, externalAssetAmount)
+
+	asset := types.NewAsset("eth")
+	asset1 := types.NewAsset("xxx")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
+	externalCoin1 := sdk.NewCoin(asset1.Symbol, sdk.Int(sdk.NewUint(10000000000000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err := app.ClpKeeper.InitiateSwap(ctx, externalCoin, signer)
+	require.NoError(t, err)
+	ok := app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
+	assert.True(t, ok, "")
+	err = app.ClpKeeper.InitiateSwap(ctx, externalCoin1, signer)
+	assert.Error(t, err, "user does not have enough balance of the required coin")
+
 	// Create Pool
 	_, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	if err != nil {
