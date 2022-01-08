@@ -1456,10 +1456,10 @@ def main(argv):
     project = cmd.project
     if what == "project-init":
         project.init()
-    elif what == "project-clean":
-        project.cleanup_and_reset_state()
-    elif what == "project-fullclean":
-        project.fullclean()
+    elif what == "clean":
+        project.clean(*argv[1:])
+    elif what == "rebuild":
+        cmd.project.rebuild()
     elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
@@ -1472,7 +1472,7 @@ def main(argv):
             processes = env.run()
         else:
             env = IntegrationTestsEnvironment(cmd)
-            project.cleanup_and_reset_state()
+            project.clean()
             # deploy/networks already included in run()
             processes = env.run()
             # TODO Cleanup:
@@ -1482,10 +1482,12 @@ def main(argv):
             #   as it might have been killed and started outside of our control
         input("Press ENTER to exit...")
         killall(processes)
+    elif what == "devenv":
+        project.npx(["hardhat", "run", "scripts/devenv.ts"], cwd=project.smart_contracts_dir, pipe=False)
     elif what == "create_snapshot":
         # Snapshots are only supported in IntegrationTestEnvironment
         snapshot_name = argv[1]
-        project.cleanup_and_reset_state()
+        project.clean()
         env = IntegrationTestsEnvironment(cmd)
         processes = env.run()
         # Give processes some time to settle, for example relayerdb must init and create its "relayerdb"
