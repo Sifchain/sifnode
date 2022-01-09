@@ -144,4 +144,4 @@ hermes create channel localnet-1 localnet-3 --port-a transfer --port-b transfer 
 sleep 1
 
 # start hermes
-#hermes start > hermes.log 2>&1 &
+hermes start > hermes.log 2>&1 &
