@@ -9,12 +9,7 @@ fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
 
 
-def test_eth_to_ceth_and_back_to_eth_transfer_valid():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx)
-
-
-def _test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
+def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     # Create/retrieve a test ethereum account
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
@@ -48,17 +43,15 @@ def _test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before)
 
 
-def test_erc20_to_sifnode_and_back_first_time():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_erc20_to_sifnode_and_back(ctx, 1)
+def test_erc20_to_sifnode_and_back_first_time(ctx):
+    transfer_erc20_to_sifnode_and_back(ctx, 1)
 
 
-def test_erc20_to_sifnode_and_back_multiple_times():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_erc20_to_sifnode_and_back(ctx, 5)
+def test_erc20_to_sifnode_and_back_multiple_times(ctx):
+    transfer_erc20_to_sifnode_and_back(ctx, 5)
 
 
-def _test_erc20_to_sifnode_and_back(ctx, number_of_times):
+def transfer_erc20_to_sifnode_and_back(ctx, number_of_times):
     # Create/retrieve 2 test ethereum accounts
     test_eth_acct_0, test_eth_acct_1 = [ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth) for _ in range(2)]
 
