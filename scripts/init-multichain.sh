@@ -108,6 +108,11 @@ rm -rf abci_*.log
 rm -rf hermes.log
 rm -rf ~/.hermes
 
+echo "Chainging voting period to 60 seconds"
+sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.sifnode-1/config/genesis.json
+sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.sifnode-2/config/genesis.json
+sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.sifnode-3/config/genesis.json
+
 echo "Starting sifnoded's"
 
 sleep 1
@@ -139,4 +144,4 @@ hermes create channel localnet-1 localnet-3 --port-a transfer --port-b transfer 
 sleep 1
 
 # start hermes
-hermes start > hermes.log 2>&1 &
+#hermes start > hermes.log 2>&1 &
