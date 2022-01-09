@@ -433,6 +433,7 @@ class EnvCtx:
         return token_sc
 
     def mint_generic_erc20_token(self, token_addr, amount, recipient, minter=None):
+        minter = minter or self.operator
         token_sc = self.get_generic_erc20_sc(token_addr)
         balance_before = self.get_erc20_token_balance(token_addr, recipient)
         total_supply_before = token_sc.functions.totalSupply().call()
