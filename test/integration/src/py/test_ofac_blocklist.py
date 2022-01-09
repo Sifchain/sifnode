@@ -29,11 +29,7 @@ def is_blocklisted_exception(ctx, exception):
     return ctx.eth.is_contract_logic_error(exception, "Address is blocklisted")
 
 @pytest.mark.skipif("on_peggy2_branch")
-def test_blocklist_eth():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_blocklist_eth(ctx)
-
-def _test_blocklist_eth(ctx):
+def test_blocklist_eth(ctx):
     w3 = ctx.eth.w3_conn
 
     amount_to_fund = 1 * eth.ETH
@@ -94,15 +90,12 @@ def _test_blocklist_eth(ctx):
 
 
 @pytest.mark.skipif("on_peggy2_branch")
-def test_blocklist_erc20():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_blocklist_erc20(ctx)
+def test_blocklist_erc20(ctx):
+    # For ERC20 tokens, we need to create a new instance of Blocklist smart contract, deploy it and whitelist it with
+    # BridgeBank. In peggy1, the token matching in BridgeBank is done by symbol, so we need to give our token a unique
+    # symbol such as TEST or MOCK + random suffix + call updateEthWtiteList() + mint() + approve().
+    # See smart-contracts/test/test_bridgeBank.js:131-160 for example.
 
-# For ERC20 tokens, we need to create a new instance of Blocklist smart contract, deploy it and whitelist it with
-# BridgeBank. In peggy1, the token matching in BridgeBank is done by symbol, so we need to give our token a unique
-# symbol such as TEST or MOCK + random suffix + call updateEthWtiteList() + mint() + approve().
-# See smart-contracts/test/test_bridgeBank.js:131-160 for example.
-def _test_blocklist_erc20(ctx):
     w3 = ctx.eth.w3_conn
 
     test_token = deploy_new_erc20_token_for_testing(ctx)
