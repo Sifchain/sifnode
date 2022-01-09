@@ -145,3 +145,6 @@ sleep 1
 
 # start hermes
 hermes start > hermes.log 2>&1 &
+
+echo "Sleeping to let hermes boot"
+sleep 10
