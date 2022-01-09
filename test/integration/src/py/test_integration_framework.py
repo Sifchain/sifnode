@@ -22,18 +22,10 @@ min_tx_cost = min_tx_gas * min_gas_price
 max_tx_cost = max_tx_gas * max_gas_price
 
 
-def test_sanity_checks():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_sanity_checks(ctx)
-
-def _test_sanity_checks(ctx):
+def test_sanity_checks(ctx):
     ctx.sanity_check()
 
-def test_eth_fee_functions():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_eth_fee_functions(ctx)
-
-def _test_eth_fee_functions(ctx):
+def test_eth_fee_functions(ctx):
     e = ctx.eth.w3_conn.eth
     null_txn = {"to": eth.NULL_ADDRESS}
     gas_price = None
@@ -80,11 +72,7 @@ def _test_eth_fee_functions(ctx):
         gas, max_fee_per_gas, max_priority_fee_per_gas, gas_price = ctx.eth.gas_estimate_fn(null_txn)
     return
 
-def test_send_ether():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_send_ether(ctx)
-
-def _test_send_ether(ctx):
+def test_send_ether(ctx):
     operator = ctx.operator
 
     test_account_addr = ctx.create_and_fund_eth_account()
@@ -130,11 +118,7 @@ def _test_send_ether(ctx):
     send(test_account_addr, operator, amount_to_transfer)
 
 
-def test_deploy_erc20_token():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_deploy_erc20_token(ctx)
-
-def _test_deploy_erc20_token(ctx):
+def test_deploy_erc20_token(ctx):
     operator = ctx.operator
 
     # TODO Cannot assume that initial balances will be 0 unless we're running in a snapshot

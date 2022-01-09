@@ -19,9 +19,12 @@ ROWAN = "rowan"
 
 sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
 
-def get_test_env_ctx():
+# This is called from test fixture and will optionally set a snapshot to run the test in.
+def get_test_env_ctx(snapshot_name=None):
+    assert snapshot_name is None, "Not implemented yet"
     return get_env_ctx()
 
+# This returns an EnvCtx connected to a running environment.
 def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     assert cmd is None
     assert env_file is None
