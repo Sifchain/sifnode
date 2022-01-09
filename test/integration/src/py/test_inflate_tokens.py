@@ -131,11 +131,7 @@ assets = [
 
 
 @pytest.mark.skipif("on_peggy2_branch")
-def test_inflate_tokens_short():
-    with test_utils.get_test_env_ctx() as ctx:
-        _test_inflate_tokens_short(ctx)
-
-def _test_inflate_tokens_short(ctx):
+def test_inflate_tokens_short(ctx):
     amount =  12 * 10**10
     wallets = test_wallets[:2]
 
@@ -154,11 +150,7 @@ def _test_inflate_tokens_short(ctx):
 
 
 @pytest.mark.skipif("on_peggy2_branch")
-def disabled_test_inflate_tokens_full():
-    with test_utils.get_peggy1_env_ctx_test() as ctx:
-        _test_inflate_tokens_full(ctx)
-
-def _test_inflate_tokens_full(ctx):
+def disabled_test_inflate_tokens_full(ctx):
     amount =  12 * 10**10
     script = InflateTokens(ctx)
     script.run(assets, amount, test_wallets)
