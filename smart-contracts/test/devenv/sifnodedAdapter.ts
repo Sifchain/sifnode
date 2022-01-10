@@ -3,11 +3,19 @@
 
 import { EbRelayerAccount } from "../../src/devenv/sifnoded"
 import { v4 as uuidv4 } from "uuid"
-import { DevEnvObject } from "../../src/devenv/outputWriter"
 import * as ChildProcess from "child_process"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { BigNumber } from "ethers"
 import { exit } from "process"
+
+interface Balance {
+  denom: string;
+  amount: string;
+}
+
+interface Balances {
+  balances: Balance[];
+}
 
 /**
  * This class is the interface to interact with sifnoded CLI.
@@ -79,5 +87,22 @@ export class SifnodedAdapter {
     console.log("Executing sif burn:", sifnodedCmd)
     let responseString = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8" })
     return JSON.parse(responseString)
+  }
+
+  async getBalance(account: string, denomHash: string): Promise<BigNumber> {
+    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --output json`
+    let result = BigNumber.from(0)
+    const responseString: string = ChildProcess.execSync(bankSendCmd, {
+      encoding: "utf8",
+    })
+    const balancesJson = JSON.parse(responseString) as Balances
+
+    balancesJson["balances"].forEach(element => {
+       if (element["denom"] === denomHash) {
+        result = BigNumber.from(element["amount"])
+       }
+  
+    });
+    return result
   }
 }
