@@ -146,14 +146,14 @@ def test_inflate_tokens_short(ctx):
     } for t in [ctx.generate_random_erc20_token_data() for _ in range(3)]]
 
     script = InflateTokens(ctx)
-    script.run(requested_tokens, amount, wallets)
+    script.transfer(requested_tokens, amount, wallets)
 
 
 @pytest.mark.skipif("on_peggy2_branch")
 def disabled_test_inflate_tokens_full(ctx):
     amount =  12 * 10**10
     script = InflateTokens(ctx)
-    script.run(assets, amount, test_wallets)
+    script.transfer(assets, amount, test_wallets)
 
 
 # TODO

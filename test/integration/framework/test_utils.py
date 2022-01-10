@@ -652,6 +652,7 @@ class EnvCtx:
                 raise Exception("Timeout waiting for sif balance to change")
 
     def eth_symbol_to_sif_symbol(self, eth_token_symbol):
+        # TODO sifchain.use sifchain_denom_hash() if on_peggy2_branch
         # E.g. "usdt" -> "cusdt"
         if eth_token_symbol == "erowan":
             return ROWAN
