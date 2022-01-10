@@ -183,7 +183,14 @@ class InflateTokens:
             self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, send_amounts)
             self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=send_amounts)
 
-    def run(self, requested_tokens, amount, target_sif_accounts):
+    def export(self):
+        return [{
+            "symbol": self.ctx.eth_symbol_to_sif_symbol(token["symbol"]),
+            "name": token["name"],
+            "decimals": token["decimals"]
+        } for token in self.get_whitelisted_tokens()]
+
+    def transfer(self, requested_tokens, amount, target_sif_accounts):
         """
         It goes like this:
         1. Starting with assets.json of your choice, It will first compare the list of tokens to existing whitelist and deploy any new tokens (ones that have not yet been whitelisted)
@@ -194,9 +201,7 @@ class InflateTokens:
         familiar so that any tokens that would get stuck in the case of interrupting the script can be recovered.
         """
 
-        assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
-
-        self.ctx.sanity_check()
+        # TODO Add support for "ceth" and "rowan"
 
         amount_per_token = amount * len(target_sif_accounts)
         # sif_broker_account = self.ctx.rowan_source
@@ -226,13 +231,25 @@ class InflateTokens:
         self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, amount, target_sif_accounts)
 
 
-def run(assets_file, amount, target_accounts_file):
+def run(*args):
+    assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
     ctx = test_utils.get_env_ctx()
-    requested_tokens = json.loads(ctx.cmd.read_text_file(assets_file))
-    target_accounts = json.loads(ctx.cmd.read_text_file(target_accounts_file))
-    amount = int(amount)
+    ctx.sanity_check()
     script = InflateTokens(ctx)
-    script.run(requested_tokens, amount, target_accounts)
+    cmd = args[0]
+    args = args[1:]
+    if cmd == "export":
+        # Usage: inflate_tokens.py export assets.json
+        ctx.cmd.write_text_file(args[0], json.dumps(script.export(), indent=4))
+    elif cmd == "transfer":
+        # Usage: inflate_tokens.py transfer assets.json amount accounts.json
+        assets_json_file, amount, accounts_json_file = args
+        tokens = json.loads(ctx.cmd.read_text_file(assets_json_file))
+        accounts = json.loads(ctx.cmd.read_text_file(accounts_json_file))
+        script.transfer(tokens, int(amount), accounts)
+    else:
+        raise Exception("Invalid usage")
+
 
 if __name__ == "__main__":
     import sys
