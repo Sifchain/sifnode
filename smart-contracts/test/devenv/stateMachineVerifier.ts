@@ -5,6 +5,8 @@ import { State, TransactionStep } from "./test_lockburn"
 export class StateMachineVerifierBuilder {
   constructor() {}
 
+  setVerboseLevel(level: string): void {}
+
   initial(step: TransactionStep): StateMachineVerifierBuilder {
     return this
   }
@@ -28,12 +30,26 @@ export class StateMachineVerifierBuilder {
 export class StateMachineVerifier {
   // Need function to convert
   private currentState: State
+  private terminalState: TransactionStep
 
   // Option: Store expected state as map currentState -> expectedNextState
 
   // transactionStep -> assertionFunctions
+  private assertionFunctions: Map<TransactionStep, (event: SifEvent) => boolean>
 
   verify(event: SifEvent): State {
+    const currentTransactionStep = this.sifEventToTransactionStep(event)
+
+    // TODO: Lookup transaction step for extra verification
+
+    if (currentTransactionStep == this.terminalState) {
+      return {
+        ...this.currentState,
+        value: {
+          kind: "terminate",
+        },
+      }
+    }
     return null
   }
 
@@ -50,5 +66,11 @@ export class StateMachineVerifier {
  * const stateMachienBuilder = new StateMachineVerifierBuilder()
  * stateMachineBuilder.then(TransactionStep.Prophecy)
  *                    .then(TransactionStep.EthereumMainnetLogUnlock)
+ *                    .assert((sifevent) -> {})
+ *                    .assert()
+ *                   .then(TransactionStep.fdfs)
+ *                      .assert(//fdfs is good)
  *                    .finally(TransactionStep.ProphecyClaimSubmitted)
+ *
+ * let verifier: StateMachineVerifier = stateMachienBuilder.build()
  */
