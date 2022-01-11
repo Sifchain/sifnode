@@ -26,106 +26,48 @@ test_wallets = [
 assets = [
     {
         "decimals": 6,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707](https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707)",
         "name": "Tether USDT",
-        "network": "sifchain",
-        "symbol": "cusdt"
+        "symbol": "usdt"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427](https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427)",
         "name": "Basic Attention Token",
-        "network": "sifchain",
-        "symbol": "cbat"
+        "symbol": "bat"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/9545/thumb/band-protocol.png?1568730326](https://assets.coingecko.com/coins/images/9545/thumb/band-protocol.png?1568730326)",
         "name": "Band Protocol",
-        "network": "sifchain",
-        "symbol": "cband"
+        "symbol": "band"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774](https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774)",
-        "name": "Dai Stablecoin",
-        "network": "sifchain",
-        "symbol": "cdai"
-    }, {
-        "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1592625425](https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1592625425)",
-        "name": "Compound",
-        "network": "sifchain",
-        "symbol": "ccomp"
-    }, {
-        "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/10951/thumb/UMA.png?1586307916](https://assets.coingecko.com/coins/images/10951/thumb/UMA.png?1586307916)",
-        "name": "UMA",
-        "network": "sifchain",
-        "symbol": "cuma"
-    }, {
-        "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958](https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958)",
         "name": "Balancer",
-        "network": "sifchain",
-        "symbol": "cbal"
+        "symbol": "bal"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/11849/thumb/yfi-192x192.png?1598325330](https://assets.coingecko.com/coins/images/11849/thumb/yfi-192x192.png?1598325330)",
         "name": "yearn finance",
-        "network": "sifchain",
-        "symbol": "cyfi"
-    }, {
-        "decimals": 6,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/11970/thumb/serum-logo.png?1597121577](https://assets.coingecko.com/coins/images/11970/thumb/serum-logo.png?1597121577)",
-        "name": "Serum",
-        "network": "sifchain",
-        "symbol": "csrm"
+        "symbol": "yfi"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/11976/thumb/Cream.png?1596593418](https://assets.coingecko.com/coins/images/11976/thumb/Cream.png?1596593418)",
         "name": "Cream",
-        "network": "sifchain",
-        "symbol": "ccream"
+        "symbol": "cream"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/12129/thumb/sandbox_logo.jpg?1597397942](https://assets.coingecko.com/coins/images/12129/thumb/sandbox_logo.jpg?1597397942)",
-        "name": "SAND",
-        "network": "sifchain",
-        "symbol": "csand"
-    }, {
-        "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1606986688](https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1606986688)",
         "name": "Sushi",
-        "network": "sifchain",
-        "symbol": "csushi"
+        "symbol": "sushi"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/12440/thumb/esd_logo_circle.png?1603676421](https://assets.coingecko.com/coins/images/12440/thumb/esd_logo_circle.png?1603676421)",
-        "name": "Empty Set Dollar",
-        "network": "sifchain",
-        "symbol": "cesd"
-    }, {
-        "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604](https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604)",
         "name": "Uniswap",
-        "network": "sifchain",
-        "symbol": "cuni"
+        "symbol": "uni"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110](https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110)",
         "name": "Aave",
-        "network": "sifchain",
-        "symbol": "caave"
+        "symbol": "aave"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://assets.coingecko.com/coins/images/14460/small/Tidal-mono.png?1616233894](https://assets.coingecko.com/coins/images/14460/small/Tidal-mono.png?1616233894)",
         "name": "Tidal",
-        "network": "sifchain",
-        "symbol": "ctidal"
+        "symbol": "tidal"
     }, {
         "decimals": 18,
-        "imageUrl": "[https://etherscan.io/token/images/dogekiller_32.png](https://etherscan.io/token/images/dogekiller_32.png)",
         "name": "DOGE KILLER",
-        "network": "sifchain",
-        "symbol": "cleash"
+        "symbol": "leash"
     }
 ]
 

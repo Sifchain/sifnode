@@ -44,7 +44,6 @@ class Sifnoded:
         assert result == expected
         return result
 
-    # Why we need several different functions here?
     # How "sifnoded keys add <name> --keyring-backend test" works:
     # If name does not exist yet, it creates it and returns a yaml
     # If name alredy exists, prompts for overwrite (y/n) on standard input, generates new address/pubkey/mnemonic
@@ -65,18 +64,6 @@ class Sifnoded:
         account = exactly_one(yaml_load(stdout(res)))
         unused_mnemonic = stderr(res).splitlines()[-1].split(" ")
         return account
-
-    # # This is without "--recover", it will generate a new mnemonic.
-    # # Using this is probably a bug.
-    # # From peggy
-    # # @TODO Passing mnemonic to stdin is useless, only "y/n" makes sense, probably could use sifnoded_keys_add_1
-    # # See smart-contracts/src/devenv/sifnoded.ts:addValidatorKeysToTestKeyring
-    # def sifnoded_keys_add_2(self, moniker, mnemonic):
-    #     stdin = [" ".join(mnemonic)]
-    #     res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend="test", stdin=stdin)
-    #     result = exactly_one(yaml_load(stdout(res)))
-    #     # {"name": "<moniker>", "type": "local", "address": "sif1...", "pubkey": "sifpub1...", "mnemonic": "", "threshold": 0, "pubkeys": []}
-    #     return result
 
     def keys_delete(self, name):
         self.cmd.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", self.keyring_backend], stdin=["y"], check_exit=False)

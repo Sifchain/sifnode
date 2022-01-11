@@ -8,6 +8,7 @@ from command import Command
 from hardhat import Hardhat
 from sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
 from project import Project, killall, force_kill_processes
+from test_utils import get_env_ctx
 from common import *
 
 
@@ -1522,6 +1523,9 @@ def main(argv):
             killall(processes)
             force_kill_processes(cmd)  # Some processes are restarted during integration tests so we don't own them
         log.info("Everything OK")
+    elif what == "check-env":
+        ctx = get_env_ctx()
+        ctx.sanity_check()
     elif what == "test-logging":
         ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
         res = stdout_lines(cmd.execst(**ls_cmd))

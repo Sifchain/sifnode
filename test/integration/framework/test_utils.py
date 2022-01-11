@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import time
 import web3
 
@@ -73,7 +74,9 @@ def get_env_ctx_peggy2():
     # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
     # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
     owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
-    owner_private_key = dot_env_vars["ETH_ACCOUNT_OWNER_PRIVATEKEY"][2:]
+    owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
+    if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
+        owner_private_key = owner_private_key[2:]
     rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
     w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
@@ -86,10 +89,13 @@ def get_env_ctx_peggy2():
     ethereum_network_descriptor = dot_env_vars["ETH_CHAIN_ID"]
 
     eth_node_is_local = True
+    generic_erc20_contract = "BridgeToken"
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source)
-    ctx.eth.set_private_key(owner_address, owner_private_key)
+    ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
+        rowan_source, generic_erc20_contract)
+    if owner_private_key:
+        ctx.eth.set_private_key(owner_address, owner_private_key)
 
     ctx.eth.fixed_gas_args = {
         # For ganache:
@@ -154,10 +160,10 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     if "OWNER" in env_vars:
         # vagrantenv.sh uses OWNER and ETHEREUM_PRIVATE_KEY
         operator_address = env_vars["OWNER"]
-        operator_private_key = env_vars["ETHEREUM_PRIVATE_KEY"]
+        operator_private_key = env_vars.get("ETHEREUM_PRIVATE_KEY")
     else:
         operator_address = env_vars["OPERATOR_ADDRESS"]
-        operator_private_key = env_vars["OPERATOR_PRIVATE_KEY"]
+        operator_private_key = env_vars.get("OPERATOR_PRIVATE_KEY")
 
     # Already added below
     # collected_private_keys[operator_address] = operator_private_key
@@ -174,10 +180,16 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
     ethereum_network_id = int(env_vars.get("ETHEREUM_NETWORK_ID", 5777))
 
+    generic_erc20_contract_name = "SifchainTestToken"
     if "SMART_CONTRACT_ARTIFACT_DIR" in env_vars:
         artifacts_dir = env_vars["SMART_CONTRACT_ARTIFACT_DIR"]
     elif deployment_name:
         artifacts_dir = cmd.project.project_dir("smart-contracts/deployments/{}/build".format(deployment_name))
+        if deployment_name == "sifchain-1":
+            # Special case for Betanet because SifchainTestToken is not deployed there.
+            # It's only available on Testnet, Devnet and in local environment.
+            # However, BridgeToken will work on Betanet meaning that name(), symbol() and decimals() return meaningful values.
+            generic_erc20_contract_name = "BridgeToken"
     else:
         artifacts_dir = cmd.project.project_dir("smart-contracts/build")
 
@@ -194,8 +206,12 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     # - additional cleanup after running tests (reclaiming ether from temporary accounts, restoring whitelists/blocklists etc.)
     eth_node_is_local = deployment_name is None
 
-    ctx = get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, sifnoded_home, sifnode_url,
-        sifnode_chain_id, rowan_source, operator_private_key, eth_node_is_local)
+    ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
+    abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
+    ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
+        rowan_source, generic_erc20_contract_name)
+    if operator_private_key:
+        ctx.eth.set_private_key(operator_address, operator_private_key)
 
     for addr, private_key in collected_private_keys.items():
         ctx.eth.set_private_key(addr, private_key)
@@ -225,15 +241,6 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
     return ctx
 
-def get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, sifnoded_home, sifnode_url,
-    sifnode_chain_id, rowan_source, operator_private_key, eth_node_is_local
-):
-    ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
-    ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source)
-    if operator_private_key is not None:
-        ctx.eth.set_private_key(operator_address, operator_private_key)
-    return ctx
 
 def sif_addr_to_evm_arg(sif_address):
     return sif_address.encode("UTF-8")
@@ -278,7 +285,9 @@ class HardhatAbiProvider:
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source):
+    def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
+        rowan_source, generic_erc20_contract
+    ):
         self.cmd = cmd
         self.w3_conn = w3_conn
         self.eth = ctx_eth
@@ -288,7 +297,7 @@ class EnvCtx:
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         self.rowan_source = rowan_source
-        self.generic_erc20_contract = "SifchainTestToken"  # TODO Cleanup + consolidate
+        self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
 
     def advance_block_w3(self, number):
@@ -321,16 +330,8 @@ class EnvCtx:
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
-    def get_bridge_token_sc(self, address=None):
-        abi, _, _ = self.abi_provider.get_descriptor("BridgeToken")
-        return self.w3_conn.eth.contract(address=address, abi=abi)
-
     def get_generic_erc20_sc(self, address):
-        if on_peggy2_branch:
-            sc_name = "BridgeToken"
-        else:
-            sc_name = "SifchainTestToken"
-        abi, _, _ = self.abi_provider.get_descriptor(sc_name)
+        abi, _, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         return self.w3_conn.eth.contract(abi=abi, address=address)
 
     def get_erc20_token_balance(self, token_addr, eth_addr):
@@ -370,20 +371,16 @@ class EnvCtx:
         # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
         if on_peggy2_branch:
             # Use BridgeToken
-            token_sc_name = "BridgeToken"
+            assert self.generic_erc20_contract == "BridgeToken"
             cosmosDenom = "erc20denom"  # TODO Dummy variable since we're using BridgeToken instead of SifchainTestToken
             constructor_args = [name, symbol, decimals, cosmosDenom]
         else:
-            # Use SifchainTestToken
+            # Use SifchainTestToken for TestNet and Devnet, and BridgeToken for Betanet
             token_sc_name = self.generic_erc20_contract
             constructor_args = [name, symbol, decimals]
-        abi, bytecode, _ = self.abi_provider.get_descriptor(token_sc_name)
+        abi, bytecode, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         token_sc = self.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
         return self.eth.transact(token_sc.constructor, deployer_addr)(*constructor_args)
-
-    def tx_get_generic_erc20_token_at(self, address):
-        token_sc_name = "BridgeToken" if on_peggy2_branch else self.generic_erc20_contract
-        return self.tx_get_sc_at(token_sc_name, address)
 
     def tx_testing_token_mint(self, token_sc, minter_account, amount, minted_tokens_recipient):
         return self.eth.transact(token_sc.functions.mint, minter_account)(minted_tokens_recipient, amount)
@@ -425,7 +422,7 @@ class EnvCtx:
         txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals)
         txrcpt = self.eth.wait_for_transaction_receipt(txhash)
         token_addr = txrcpt.contractAddress
-        token_sc = self.tx_get_generic_erc20_token_at(token_addr)
+        token_sc = self.get_generic_erc20_sc(token_addr)
         assert token_sc.functions.name().call() == name
         assert token_sc.functions.symbol().call() == symbol
         assert token_sc.functions.decimals().call() == decimals
@@ -479,7 +476,7 @@ class EnvCtx:
 
     def generate_random_erc20_token_data(self):
         id = random_string(6)
-        return ERC20TokenData("test-{}".format(id.lower()), "Test Token {}".format(id), 18)
+        return ERC20TokenData("test-{}".format(id.lower()), "Test Token {}".format(id), random.choice([0, 4, 6, 9, 18]))
 
     def get_generic_erc20_token_data(self, token_address):
         token_sc = self.get_generic_erc20_sc(token_address)
