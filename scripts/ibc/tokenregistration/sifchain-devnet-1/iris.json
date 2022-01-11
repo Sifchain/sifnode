@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/F7F28FF3C09024A0225EDBBDB207E5872D2B4EF2FB874FE47B05EF9C9A7D211C",
       "base_denom": "unyan",
-      "path": "",
+      "path": "transfer/channel-1",
       "ibc_channel_id": "channel-1",
       "ibc_counterparty_channel_id": "channel-6",
       "display_name": "",
