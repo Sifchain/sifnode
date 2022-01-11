@@ -19,7 +19,8 @@ output = subprocess.check_output(["sifnoded", "q", "block", current_block_number
 current_block = json.loads(output.decode('utf-8'))
 current_block_time = parse(current_block['block']['header']['time'])
 
-print("Current block time: " + str(current_block_time))
+print(f"Current block time {str(current_block_time)} and number {current_block_number}")
+print("")
 
 
 for client_data in clients['client_states']:
@@ -29,24 +30,32 @@ for client_data in clients['client_states']:
 
   # now get the time from the block at the revision height
   # and compare to the time at the current block
+  print("client_id: " + client_id)
+  print("chain_id: " + client_data['client_state']['chain_id'])
+  print("revison height: " + revision_height)
+  print('trusting period: ' + trusting_period)
+
+  if int(revision_height) > int(current_block_number):
+    print(f"revision height {revision_height} is greater than current block number {current_block_number}")
+    print("")
+    continue
+
   output = subprocess.check_output(["sifnoded", "q", "block", revision_height, "--node", sys.argv[1]])
   block = json.loads(output.decode('utf-8'))
 
   block_time = parse(block['block']['header']['time'])
 
-  print("client_id: " + client_id)
   print("RPC endpoint block time: " + str(current_block_time))
   print("consensus block time: " + str(block_time))
-  print("revison height: " + revision_height)
-  print('trusting period: ' + trusting_period)
 
   difference = (current_block_time - block_time).total_seconds()
   trust_period_int = int("".join(filter(str.isdigit, trusting_period)))
 
   if difference > int(trust_period_int):
-    print("ERROR: Trusting period exceeded")
+    print(f"ERROR: Trusting period {trust_period_int} exceeded by {difference} seconds")
   else:
-    print("client_id within trusting period: " + client_id)
+    print(f"{client_id} within trusting period {trust_period_int} with {difference}")
 
+  print("")
 
 
