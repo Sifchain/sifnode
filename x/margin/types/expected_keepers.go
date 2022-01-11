@@ -34,7 +34,7 @@ type Keeper interface {
 	BankKeeper() BankKeeper
 
 	SetMTP(ctx sdk.Context, mtp *MTP) error
-	GetMTP(sdk.Context, string, string, string) (MTP, error)
+	GetMTP(ctx sdk.Context, collateralAsset string, custodyAsset string, address string) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
 	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP
@@ -48,6 +48,9 @@ type Keeper interface {
 	GetInterestRateDecrease(ctx sdk.Context) sdk.Dec
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
+	GetEnabledPools(ctx sdk.Context) []string
+	SetEnabledPools(ctx sdk.Context, pools []string)
+	IsPoolEnabled(ctx sdk.Context, asset string) bool
 
 	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp MTP, pool clptypes.Pool, leverage sdk.Uint) error

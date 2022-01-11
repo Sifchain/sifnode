@@ -9,7 +9,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	if currentHeight%epochLength == 0 { // if epoch has passed
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
-			if pool.MarginEnabled {
+			if k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol) {
 				rate, err := k.InterestRateComputation(ctx, *pool)
 				if err != nil {
 					ctx.Logger().Error(err.Error())

@@ -13,6 +13,7 @@ var (
 	KeyInterestRateDecreaseParam = []byte("InterestRateDecrease")
 	KeyHealthGainFactorParam     = []byte("HealthGainFactor")
 	KeyEpochLengthParam          = []byte("EpochLength")
+	KeyPoolsParam                = []byte("Pools")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -26,6 +27,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyInterestRateDecreaseParam, &p.InterestRateDecrease, validate),
 		paramtypes.NewParamSetPair(KeyHealthGainFactorParam, &p.HealthGainFactor, validate),
 		paramtypes.NewParamSetPair(KeyEpochLengthParam, &p.EpochLength, validate),
+		paramtypes.NewParamSetPair(KeyPoolsParam, &p.Pools, validate),
 	}
 }
 
