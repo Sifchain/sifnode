@@ -1,3 +1,4 @@
+import os
 import json
 from common import *
 
@@ -23,64 +24,107 @@ class Project:
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
         self.test_integration_dir = project_dir("test", "integration")
-        self.go_bin_dir = os.environ["GOBIN"]
+        self.go_path = os.environ.get("GOPATH")
+        if self.go_path is None:
+            # https://pkg.go.dev/cmd/go#hdr-GOPATH_and_Modules
+            self.go_path = os.path.join(os.environ["HOME"], "go")
+        self.go_bin_dir = os.environ.get("GOBIN")
+        if self.go_bin_dir is None:
+            self.go_bin_dir = os.path.join(self.go_path, "bin")
 
     def project_dir(self, *paths):
         return os.path.abspath(os.path.join(self.base_dir, *paths))
 
-    def __rmdir(self, path):
+    def __rm(self, path):
         if self.cmd.exists(path):
             log.info("Removing '{}'...".format(path))
-            self.cmd.rmdir(path)
+            self.cmd.rmf(path)
         else:
-            log.info("Nothing to delete for '{}'".format(path))
+            log.debug("Nothing to delete for '{}'".format(path))
 
-    def cleanup_and_reset_state(self):
-        force_kill_processes(self.cmd)
-
-        # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-        self.__rmdir(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
-        self.__rmdir(self.project_dir("smart-contracts", "build"))  # truffle deploy
-        self.__rmdir(self.project_dir("test", "integration", "vagrant", "data"))
-        self.__rmdir(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
-
-        self.__rmdir(self.project_dir("deploy", "networks"))  # from running integration tests
-
-        # Peggy/devenv/hardhat cleanup
-        # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
-        # TODO Difference between yarn vs. npm install?
-        # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
-        # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-        self.__rmdir(self.project_dir("smart-contracts", "build"))  # (1)
-        self.__rmdir(self.project_dir("smart-contracts", "artifacts"))  # (1)
-        self.__rmdir(self.project_dir("smart-contracts", "cache"))  # (1)
-        self.__rmdir(self.project_dir("smart-contracts", ".openzeppelin"))  # (1)
-        self.__rmdir(self.project_dir("smart-contracts", "relayerdb"))  # (2)
-        self.__rmdir(self.project_dir("smart-contracts", "venv"))
-
-        # Additional cleanup (not neccessary to make it work)
-        # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
-        # self.cmd.rmdir(self.project_dir("test/integration/.pytest_cache"))
-        # self.cmd,rm(self.project_dir("smart-contracts/.env"))
-        # self.cmd.rmdir(self.project_dir("deploy/networks"))
-        # self.cmd.rmdir(self.project_dir("smart-contracts/.openzeppelin"))
-
-        # rmdir ~/.cache/yarn
-
-    def fullclean(self):
-        go_home = self.cmd.get_user_home("go")
-        self.cmd.execst(["chmod", "-R", "+w", go_home])
-        self.__rmdir(go_home)
-        self.__rmdir(self.cmd.get_user_home("go"))
-        self.__rmdir(self.cmd.get_user_home(".npm"))
-        self.__rmdir(self.cmd.get_user_home(".npm-global"))
-        self.__rmdir(self.cmd.get_user_home(".npm-global"))
-        self.__rmdir(self.cmd.get_user_home(".cache/yarn"))
-        self.__rmdir(self.cmd.get_user_home(".sifnoded"))
-        self.__rmdir(self.cmd.get_user_home(".sifnode-integration"))
-        self.__rmdir(project_dir("smart-contracts/node_modules"))
-        self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
+    def rebuild(self):
+        # Use this after switching branches (i.e. develop vs. future/peggy2)
+        self.clean(1)
+        # self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
         self.install_smart_contracts_dependencies()
+        self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
+
+    def __rm_files(self, level):
+        if level >= 0:
+            # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
+            self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
+            self.__rm(self.project_dir("smart-contracts", "build"))  # truffle deploy
+            self.__rm(self.project_dir("test", "integration", "vagrant", "data"))
+            self.__rm(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
+
+            self.__rm(self.project_dir("deploy", "networks"))  # from running integration tests
+
+            # Peggy/devenv/hardhat cleanup
+            # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
+            # TODO Difference between yarn vs. npm install?
+            # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
+            # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
+            self.__rm(self.project_dir("smart-contracts", "build"))             # (1)
+            self.__rm(self.project_dir("smart-contracts", "artifacts"))         # (1)
+            self.__rm(self.project_dir("smart-contracts", "cache"))             # (1)
+            self.__rm(self.project_dir("smart-contracts", ".openzeppelin"))     # (1)
+            self.__rm(self.project_dir("smart-contracts", "relayerdb"))         # (2)
+            self.__rm(self.project_dir("smart-contracts", "environment.json"))  # (2)
+            self.__rm(self.project_dir("smart-contracts", "env.json"))          # (2)
+            self.__rm(self.project_dir("smart-contracts", ".env"))              # (2)
+            self.__rm(self.project_dir("smart-contracts", "venv"))
+
+            # Additional cleanup (not neccessary to make it work)
+            # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
+            # self.cmd.rmdir(self.project_dir("test/integration/.pytest_cache"))
+            # self.cmd,rm(self.project_dir("smart-contracts/.env"))
+            # self.cmd.rmdir(self.project_dir("deploy/networks"))
+            # self.cmd.rmdir(self.project_dir("smart-contracts/.openzeppelin"))
+
+            # docker image rm tendermintdev/sdk-proto-gen (used by Makefile on peggy2, used for "buf" command to build go bindings from ABI)
+
+            # rmdir ~/.cache/yarn
+        if level >= 1:
+            for file in ["sifnoded", "ebrelayer", "sifgen"]:
+                self.__rm(os.path.join(self.go_bin_dir, file))
+            self.__rm(self.project_dir("smart-contracts", "node_modules"))
+
+        if level >= 2:
+            if self.cmd.exists(self.go_path):
+                self.cmd.execst(["chmod", "-R", "+w", self.go_path])
+                self.__rm(self.go_path)
+            self.__rm(self.cmd.get_user_home("go"))
+            self.__rm(self.cmd.get_user_home(".npm"))
+            self.__rm(self.cmd.get_user_home(".npm-global"))
+            self.__rm(self.cmd.get_user_home(".cache/yarn"))
+            self.__rm(self.cmd.get_user_home(".sifnoded"))
+            self.__rm(self.cmd.get_user_home(".sifnode-integration"))
+            self.__rm(project_dir("smart-contracts/node_modules"))
+
+            # Peggy2
+            # Generated Go stubs (by smart-contracts/Makefile)
+            self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+            self.__rm(self.project_dir("smart-contracts", ".hardhat-compile"))
+
+            # Remove go dependencies and re-download them (GOPATH=~/go)
+            # rm -rv ~/go
+            # mkdir ~/go
+            # cd $PROJECT_DIR && go get -v -t -d ./...
+
+            # On future/peggy2 these files are also created:
+            # .proto-gen
+            # .run/
+            # cmd/ebrelayer/contract/generated/artifacts/
+            # docs/peggy/node_modules/
+            # smart-contracts/.hardhat-compile
+            # smart-contracts/env.json
+            # smart-contracts/environment.json
+
+    # Use this between run-env.
+    def clean(self, level=None):
+        level = 0 if level is None else int(level)
+        force_kill_processes(self.cmd)
+        self.__rm_files(level)
 
     def yarn(self, args, cwd=None, env=None):
         return self.cmd.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
@@ -88,6 +132,16 @@ class Project:
     def npx(self, args, env=None, cwd=None, pipe=True):
         # Typically we want any npx commands to inherit stdout and strerr
         return self.cmd.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
+
+    def run_peggy2_js_tests(self):
+        # See smart-contracts/TEST.md:
+        # 1. start environment
+        # 2. npx hardhat test test/devenv/test_lockburn.ts --network localhost
+        pass
+
+    # Top-level "make install" should build everything, such as after git clone. If it does not, it's a bug.
+    def make_all(self):
+        self.cmd.execst(["make"], cwd=project_dir(), pipe=False)
 
     # IntegrationEnvironment
     # TODO Merge
@@ -159,7 +213,21 @@ class Project:
         self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(env))
 
     def init(self):
-        self.cleanup_and_reset_state()
+        self.clean()
         self.cmd.rmdir(project_dir("smart-contracts/node_modules"))
         self.make_go_binaries_2()
         self.install_smart_contracts_dependencies()
+
+    def get_peruser_config_dir(self):
+        return self.cmd.get_user_home(".config", "siftool")
+
+    def get_user_env_vars(self):
+        env_file = os.environ["ENV_FILE"]
+        return json.loads(self.cmd.read_text_file(env_file))
+
+    def read_peruser_config_file(self, name):
+        path = os.path.join(self.get_peruser_config_dir(), name + ".json")
+        if self.cmd.exists(path):
+            return json.loads(self.cmd.read_text_file(path))
+        else:
+            return None
