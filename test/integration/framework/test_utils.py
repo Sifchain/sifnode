@@ -231,7 +231,8 @@ def get_ctx(w3_conn, cmd, artifacts_dir, ethereum_network_id, operator_address, 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id, rowan_source)
-    ctx.eth.set_private_key(operator_address, operator_private_key)
+    if operator_private_key is not None:
+        ctx.eth.set_private_key(operator_address, operator_private_key)
     return ctx
 
 def sif_addr_to_evm_arg(sif_address):
