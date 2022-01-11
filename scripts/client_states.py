@@ -40,5 +40,13 @@ for client_data in clients['client_states']:
   print("revison height: " + revision_height)
   print('trusting period: ' + trusting_period)
 
+  difference = (current_block_time - block_time).total_seconds()
+  trust_period_int = int("".join(filter(str.isdigit, trusting_period)))
+
+  if difference > int(trust_period_int):
+    print("ERROR: Trusting period exceeded")
+  else:
+    print("client_id within trusting period: " + client_id)
+
 
 
