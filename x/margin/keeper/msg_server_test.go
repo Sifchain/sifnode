@@ -26,92 +26,117 @@ func TestKeeper_NewMsgServerImpl(t *testing.T) {
 
 func TestKeeper_OpenLong(t *testing.T) {
 	openLongTests := []struct {
-		name             string
-		signer           string
-		collateralAsset  string
-		collateralAmount sdk.Uint
-		borrowAsset      string
-		poolAsset        string
-		token            string
-		marginEnabled    bool
-		fundedAccount    bool
-		err              error
-		errString        error
+		name          string
+		msgOpenLong   types.MsgOpenLong
+		poolAsset     string
+		token         string
+		poolEnabled   bool
+		fundedAccount bool
+		err           error
+		errString     error
 	}{
 		{
-			name:             "pool does not exist",
-			signer:           "xxx",
-			collateralAsset:  "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "xxx",
-			poolAsset:        "rowan",
-			token:            "somethingelse",
-			errString:        sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+			name: "pool does not exist",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "xxx",
+				CollateralAsset:  "xxx",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "xxx",
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
-			name:             "same collateral and native asset but pool does not exist",
-			signer:           "xxx",
-			collateralAsset:  "rowan",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "xxx",
-			poolAsset:        "rowan",
-			token:            "somethingelse",
-			errString:        sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+			name: "same collateral and native asset but pool does not exist",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "xxx",
+				CollateralAsset:  "rowan",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "xxx",
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
-			name:             "same collateral and native asset but pool exists",
-			signer:           "xxx",
-			collateralAsset:  "rowan",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "rowan",
-			poolAsset:        "rowan",
-			token:            "somethingelse",
-			errString:        sdkerrors.Wrap(types.ErrMTPDisabled, "rowan"),
+			name: "same collateral and native asset but pool exists",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "xxx",
+				CollateralAsset:  "rowan",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "rowan",
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(types.ErrMTPDisabled, "rowan"),
 		},
 		{
-			name:             "margin enabled but denom does not exist",
-			signer:           "xxx",
-			collateralAsset:  "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "xxx",
-			poolAsset:        "xxx",
-			token:            "somethingelse",
-			marginEnabled:    true,
-			err:              tokenregistrytypes.ErrNotFound,
+			name: "margin enabled but denom does not exist",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "xxx",
+				CollateralAsset:  "xxx",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "xxx",
+			},
+			poolAsset:   "xxx",
+			token:       "somethingelse",
+			poolEnabled: true,
+			err:         tokenregistrytypes.ErrNotFound,
 		},
 		{
-			name:             "wrong address",
-			signer:           "xxx",
-			collateralAsset:  "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "xxx",
-			poolAsset:        "xxx",
-			token:            "xxx",
-			marginEnabled:    true,
-			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
+			name: "wrong address",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "xxx",
+				CollateralAsset:  "xxx",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "xxx",
+			},
+			poolAsset:   "xxx",
+			token:       "xxx",
+			poolEnabled: true,
+			errString:   errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
 		{
-			name:             "insufficient funds",
-			signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-			collateralAsset:  "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "xxx",
-			poolAsset:        "xxx",
-			token:            "xxx",
-			marginEnabled:    true,
-			errString:        errors.New("user does not have enough balance of the required coin"),
+			name: "insufficient funds",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				CollateralAsset:  "xxx",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "xxx",
+			},
+			poolAsset:   "xxx",
+			token:       "xxx",
+			poolEnabled: true,
+			errString:   errors.New("user does not have enough balance of the required coin"),
 		},
 		{
-			name:             "account funded",
-			signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-			collateralAsset:  "rowan",
-			collateralAmount: sdk.NewUint(1000),
-			borrowAsset:      "rowan",
-			poolAsset:        "rowan",
-			token:            "rowan",
-			marginEnabled:    true,
-			fundedAccount:    true,
-			err:              nil,
+			name: "account funded",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				CollateralAsset:  "rowan",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "rowan",
+			},
+			poolAsset:     "rowan",
+			token:         "rowan",
+			poolEnabled:   true,
+			fundedAccount: true,
+			err:           nil,
+		},
+		{
+			name: "account funded",
+			msgOpenLong: types.MsgOpenLong{
+				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				CollateralAsset:  "rowan",
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      "rowan",
+			},
+			poolAsset:     "rowan",
+			token:         "rowan",
+			poolEnabled:   true,
+			fundedAccount: true,
+			err:           nil,
 		},
 	}
 
@@ -142,7 +167,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 				Health:               sdk.NewDec(1),
 			}
 
-			if tt.marginEnabled {
+			if tt.poolEnabled {
 				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
@@ -157,15 +182,11 @@ func TestKeeper_OpenLong(t *testing.T) {
 				err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
 				require.Nil(t, err)
 			} else {
-				address = tt.signer
+				address = tt.msgOpenLong.Signer
 			}
 
-			msg := types.MsgOpenLong{
-				Signer:           address,
-				CollateralAsset:  tt.collateralAsset,
-				CollateralAmount: sdk.NewUint(1000),
-				BorrowAsset:      tt.borrowAsset,
-			}
+			msg := tt.msgOpenLong
+			msg.Signer = address
 
 			_, got := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msg)
 
@@ -182,86 +203,98 @@ func TestKeeper_OpenLong(t *testing.T) {
 
 func TestKeeper_CloseLong(t *testing.T) {
 	openLongTests := []struct {
-		name            string
-		signer          string
-		collateralAsset string
-		borrowAsset     string
-		poolAsset       string
-		token           string
-		marginEnabled   bool
-		fundedAccount   bool
-		overrideSigner  string
-		err             error
-		errString       error
+		name           string
+		msgCloseLong   types.MsgCloseLong
+		poolAsset      string
+		token          string
+		poolEnabled    bool
+		fundedAccount  bool
+		overrideSigner string
+		err            error
+		errString      error
 	}{
 		{
-			name:            "mtp does not exist",
-			signer:          "xxx",
-			collateralAsset: "xxx",
-			borrowAsset:     "xxx",
-			poolAsset:       "rowan",
-			token:           "somethingelse",
-			overrideSigner:  "otheraddress",
-			errString:       types.ErrMTPDoesNotExist,
+			name: "mtp does not exist",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+			},
+			poolAsset:      "rowan",
+			token:          "somethingelse",
+			overrideSigner: "otheraddress",
+			errString:      types.ErrMTPDoesNotExist,
 		},
 		{
-			name:            "pool does not exist",
-			signer:          "xxx",
-			collateralAsset: "xxx",
-			borrowAsset:     "xxx",
-			poolAsset:       "rowan",
-			token:           "somethingelse",
-			errString:       sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+			name: "pool does not exist",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
-			name:            "same collateral and native asset but pool does not exist",
-			signer:          "xxx",
-			collateralAsset: "rowan",
-			borrowAsset:     "xxx",
-			poolAsset:       "rowan",
-			token:           "somethingelse",
-			errString:       sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+			name: "same collateral and native asset but pool does not exist",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "rowan",
+				BorrowAsset:     "xxx",
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
-			name:            "denom does not exist",
-			signer:          "xxx",
-			collateralAsset: "xxx",
-			borrowAsset:     "xxx",
-			poolAsset:       "xxx",
-			token:           "somethingelse",
-			marginEnabled:   true,
-			err:             tokenregistrytypes.ErrNotFound,
+			name: "denom does not exist",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+			},
+			poolAsset:   "xxx",
+			token:       "somethingelse",
+			poolEnabled: true,
+			err:         tokenregistrytypes.ErrNotFound,
 		},
 		{
-			name:            "wrong address",
-			signer:          "xxx",
-			collateralAsset: "xxx",
-			borrowAsset:     "xxx",
-			poolAsset:       "xxx",
-			token:           "xxx",
-			marginEnabled:   true,
-			errString:       errors.New("decoding bech32 failed: invalid bech32 string length 3"),
+			name: "wrong address",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+			},
+			poolAsset:   "xxx",
+			token:       "xxx",
+			poolEnabled: true,
+			errString:   errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
 		{
-			name:            "insufficient funds",
-			signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-			collateralAsset: "xxx",
-			borrowAsset:     "xxx",
-			poolAsset:       "xxx",
-			token:           "xxx",
-			marginEnabled:   true,
-			errString:       errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
+			name: "insufficient funds",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+			},
+			poolAsset:   "xxx",
+			token:       "xxx",
+			poolEnabled: true,
+			errString:   errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
 		},
 		{
-			name:            "account funded",
-			signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-			collateralAsset: "rowan",
-			borrowAsset:     "rowan",
-			poolAsset:       "rowan",
-			token:           "rowan",
-			marginEnabled:   true,
-			fundedAccount:   true,
-			err:             nil,
+			name: "account funded",
+			msgCloseLong: types.MsgCloseLong{
+				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				CollateralAsset: "rowan",
+				BorrowAsset:     "rowan",
+			},
+			poolAsset:     "rowan",
+			token:         "rowan",
+			poolEnabled:   true,
+			fundedAccount: true,
+			err:           nil,
 		},
 	}
 
@@ -291,7 +324,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 				PoolUnits:            sdk.NewUint(1),
 				Health:               sdk.NewDec(1),
 			}
-			if tt.marginEnabled {
+			if tt.poolEnabled {
 				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
@@ -307,14 +340,11 @@ func TestKeeper_CloseLong(t *testing.T) {
 				require.Nil(t, err)
 				marginKeeper.BankKeeper().SendCoinsFromAccountToModule(ctx, _signer, types.ModuleName, sdk.NewCoins(nativeCoin))
 			} else {
-				address = tt.signer
+				address = tt.msgCloseLong.Signer
 			}
 
-			msg := types.MsgCloseLong{
-				Signer:          address,
-				CollateralAsset: tt.collateralAsset,
-				BorrowAsset:     tt.borrowAsset,
-			}
+			msg := tt.msgCloseLong
+			msg.Signer = address
 
 			var signer string = msg.Signer
 			if tt.overrideSigner != "" {
