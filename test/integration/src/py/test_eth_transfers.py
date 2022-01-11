@@ -44,14 +44,29 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
 
 
 def test_erc20_to_sifnode_and_back_first_time(ctx):
-    transfer_erc20_to_sifnode_and_back(ctx, 1)
+    token_decimals = 18
+    token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
 
 
 def test_erc20_to_sifnode_and_back_multiple_times(ctx):
-    transfer_erc20_to_sifnode_and_back(ctx, 5)
+    token_decimals = 18
+    token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 5, False)
 
 
-def transfer_erc20_to_sifnode_and_back(ctx, number_of_times):
+def test_trolltoken_to_sifnode_and_back(ctx):
+    token_decimals = 0
+    token_sc = deploy_trolltoken_for_test(ctx)
+    # TODO Depending on timeout is not reliable confirmation of test passing. Timeout can happen for many other reasons
+    #      such as slow machine, Ethereum chain congestion, relayer crashing etc. It would be much better if we could
+    #      use some specific information to confirm that we did in fact handle the token correctly (i.e. seeing a
+    #      particular message in logs, or a specific event being emitted by BridgeBank etc.)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, True)
+
+
+# Shared code used by different test scenarios
+def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_times, is_troll_token):
     # Create/retrieve 2 test ethereum accounts
     test_eth_acct_0, test_eth_acct_1 = [ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth) for _ in range(2)]
 
@@ -69,10 +84,6 @@ def transfer_erc20_to_sifnode_and_back(ctx, number_of_times):
     assert len(sif_balance_delta) == 1
     assert sif_balance_delta[ctx.ceth_symbol] == amount_to_send
 
-    # Deploy new ERC20 token
-    token_data = ctx.generate_random_erc20_token_data()
-    token_symbol, token_name, token_decimals = token_data.symbol, token_data.name, 18
-    token_sc = ctx.deploy_new_generic_erc20_token(token_name, token_symbol, token_decimals)
     token_addr = token_sc.address
     sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_addr)
 
@@ -104,7 +115,20 @@ def transfer_erc20_to_sifnode_and_back(ctx, number_of_times):
         eth_balance_before_1 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_1)
         sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
         ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct_1, send_amount_1, sif_denom_hash)
-        eth_balance_after_1 = ctx.wait_for_eth_balance_change(test_eth_acct_1, eth_balance_before_1, token_addr=token_addr)
+
+        # TrollToken should time out, any legit ERC20 should pass.
+        # Timeout needs to be long enough for any legit token (90s works for Hardhat, but might not work for Ropsten).
+        try:
+            eth_balance_after_1 = ctx.wait_for_eth_balance_change(test_eth_acct_1, eth_balance_before_1,
+                token_addr=token_addr, timeout=90)
+            assert not is_troll_token
+        except Exception as e:
+            assert is_troll_token
+            assert e.__class__ == Exception
+            assert len(e.args) == 1
+            assert e.args[0] == "Timeout waiting for Ethereum balance to change"
+            return
+
         sif_balance_after = ctx.get_sifchain_balance(test_sif_account)
         sif_balance_delta = ctx.sif_balance_delta(sif_balance_before, sif_balance_after)
 
@@ -113,3 +137,16 @@ def transfer_erc20_to_sifnode_and_back(ctx, number_of_times):
         assert sif_balance_delta[ctx.ceth_symbol] == -1  # TODO Where is this value from?
         assert eth_balance_after_1 == eth_balance_before_1 + send_amount_1
         assert eth_balance_after_1 == send_amount_1 * (i + 1)
+
+
+def deploy_erc20_token_for_test(ctx, token_decimals):
+    token_data = ctx.generate_random_erc20_token_data()
+    return ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, token_decimals)
+
+
+def deploy_trolltoken_for_test(ctx):
+    token = ctx.generate_random_erc20_token_data()
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("TrollToken")
+    token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+    txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)(token.name, token.symbol)
+    return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)
