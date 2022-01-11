@@ -73,6 +73,7 @@ func InitRelayConfig(
 	if err != nil {
 		sugaredLogger.Errorw("failed to get cosmos bridger contract address from registry.",
 			errorMessageKey, err.Error())
+		client.Close()
 		return nil, nil, common.Address{}, err
 
 	}

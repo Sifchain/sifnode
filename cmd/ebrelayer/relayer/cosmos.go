@@ -324,6 +324,7 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	if err != nil {
 		return 0, 0, err
 	}
+	defer gRpcClientConn.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

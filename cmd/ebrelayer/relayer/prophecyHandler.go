@@ -72,6 +72,7 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 			errorMessageKey, err.Error())
 		return
 	}
+	defer ethClient.Close()
 
 	cosmosBridgeAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.CosmosBridge, sub.SugaredLogger)
 	if err != nil {
@@ -122,6 +123,7 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 			errorMessageKey, err.Error())
 		return false
 	}
+	defer client.Close()
 
 	// Initialize CosmosBridge instance
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
@@ -163,6 +165,7 @@ func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.Ne
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
 	}
+	defer conn.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

@@ -38,12 +38,3 @@ func TestSetupWebsocketEthClient(t *testing.T) {
 	_, err = SetupWebsocketEthClient("")
 	require.NoError(t, err)
 }
-
-func TestSetupRpcEthClient(t *testing.T) {
-	_, err := SetupRPCEthClient(ValidLocalRPC)
-	require.Equal(t, err, nil)
-	_, err = SetupRPCEthClient(InvalidSocketURL)
-	require.Error(t, err, "invalid websocket eth client URL: "+InvalidWebSocket)
-	_, err = SetupRPCEthClient("")
-	require.NoError(t, err)
-}
