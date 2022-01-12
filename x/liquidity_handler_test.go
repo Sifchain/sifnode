@@ -195,12 +195,11 @@ func TestPoolMultiplyCases(t *testing.T) {
 	swMsg = clptypes.NewMsgSwap(signer, assetDash, assetEth, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
 	res, err = handler(ctx, &swMsg)
 	require.Error(t, err, "Unable to swap, received amount is below expected")
-	// check for failure if we try to swap too much for pool
+	// // now try to do a swap that works
 	swapSentAssetETH = sdk.NewUintFromString("10000000000009000009")
 	swMsg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("100000000009"))
 	res, err = handler(ctx, &swMsg)
 	require.NoError(t, err)
-	// now try to do a swap that works
 }
 
 func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, asset clptypes.Asset, signer string, wBasisPoints string, asymmetry sdk.Int) sdk.Coins {
