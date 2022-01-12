@@ -40,6 +40,8 @@ func OnRecvPacketWhitelistConvert(
 	registry := whitelistKeeper.GetRegistry(ctx)
 	mintedDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenom)
 	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
+		fmt.Printf("XXX denom %s is not allowed to be minted with err %v", mintedDenom, err)
+		fmt.Printf("XXX reg %v", registry)
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
 		)
