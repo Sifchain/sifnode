@@ -47,14 +47,25 @@ echo "Sif balances before transfers"
 echo $SIF_BEFORE_TRANSFERS
 
 echo "Current Sif balances (should go up for rowan)"
+echo "localhet-1"
 sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665
+echo ""
+echo "localnet-2"
 sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666
+echo ""
+echo "localnet-3"
 sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667
+echo ""
 
 echo "Akasha balances before transfers"
 echo $AKASHA_BEFORE_TRANSFERS
 
 echo "Current Akaha balances (should go down for rowan)"
+echo "localnet-1"
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665
+echo ""
+echo "localnet-2"
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666
+echo ""
+echo "localnet-3"
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667
