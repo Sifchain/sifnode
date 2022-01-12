@@ -1,7 +1,6 @@
 package clp_test
 
 import (
-	"fmt"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -11,183 +10,228 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/clp"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
-	"github.com/Sifchain/sifnode/x/clp/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func TestHandler(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(app.ClpKeeper)
-	res, err := handler(ctx, nil)
-	require.Error(t, err)
-	require.Nil(t, res)
-}
-
 func TestCreatePool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth0123456789012345678901234567890123456789012345678901234567890123456789")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("10000")))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	asset := clptypes.NewAsset("eth")
+	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
+	handler := clp.NewHandler(app.ClpKeeper)
+	signer := test.GenerateAddress("")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
+	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	ok := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
+	assert.True(t, ok, "")
+	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
+	assert.True(t, ok, "")
+	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
+	res, err := handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Test Create Pool with invalid pool asset name
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	assert.Error(t, err, "Invalid pool asset name.")
+	// check for failure if we try to create a pool twice
+	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
+	_, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err, "Unable to create pool")
 }
 
 func TestGetPool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(app.ClpKeeper)
-	signer := test.GenerateAddress("")
-	//Parameters for create pool
+	asset := clptypes.NewAsset("eth")
+	_, err := app.ClpKeeper.GetPool(ctx, asset.Symbol)
+	assert.Error(t, err, "pool does not exist")
+
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
-	asset := clptypes.NewAsset("eth")
+	handler := clp.NewHandler(app.ClpKeeper)
+	signer := test.GenerateAddress("")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
 	ok := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
 	assert.True(t, ok, "")
 	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
-}
-
-func TestGenerate_new_currency(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(app.ClpKeeper)
-	signer := test.GenerateAddress("")
-	//Parameters for create pool
-	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
-	asset := clptypes.NewAsset("eth")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
-	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
+	res, err := handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
-	ok := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
-	assert.True(t, ok, "")
-	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
-	assert.True(t, ok, "")
-}
-
-func TestDeletePool(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(app.ClpKeeper)
-	signer := test.GenerateAddress("")
-	//Parameters for create pool
-	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
-	asset := clptypes.NewAsset("eth")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
-	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	require.NoError(t, err)
-	ok := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
-	assert.True(t, ok, "")
-	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
-	assert.True(t, ok, "")
-}
-
-func TestAddLiquidity(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
-	asset := types.NewAsset("eth")
-	lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-	if err != nil {
-		fmt.Println("Error Creating Liquidity Provider :", err)
-	}
-	lp := app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), lpAddess)
+	require.NotNil(t, res)
+	_, err = app.ClpKeeper.GetPool(ctx, asset.Symbol)
 	assert.NoError(t, err)
-	assert.Equal(t, lp.LiquidityProviderAddress, "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+
 }
 
-func TestRemoveLiquidity(t *testing.T) {
+func TestAddLiquidityErrorCases(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth")
-	asset2 := types.NewAsset("xxx")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
-	subCoin := sdk.NewUintFromString("1")
-	newAssetCoin := sdk.NewCoin(asset.Symbol, sdk.Int(subCoin))
-	newAssetCoin2 := sdk.NewCoin(asset2.Symbol, sdk.Int(subCoin))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Create Pool
-	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
-	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
-	lp, _ := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
-	getlp, _ := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	lp1, _ := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	assert.True(t, app.ClpKeeper.GetLiquidityProviderIterator(ctx).Valid())
-	app.ClpKeeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	_, err := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	assert.Error(t, err, "LiquidityProvider has been deleted")
+	signer := test.GenerateAddress("")
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper)
+	//Parameters for add liquidity
+	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
+	addLiquidityAmount := sdk.NewUintFromString("1000000000000000000")
+	asset := clptypes.NewAsset("eth")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
+	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
+	res, err := handler(ctx, &msgCreatePool)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msg := clptypes.NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), addLiquidityAmount)
+	res, err = handler(ctx, &msg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
+	asset1 := clptypes.NewAsset("btc")
+	msg1 := clptypes.NewMsgAddLiquidity(signer, asset1, sdk.ZeroUint(), addLiquidityAmount)
+	_, err = handler(ctx, &msg1)
+	assert.Error(t, err, "Token not supported by sifchain")
+
+	asset1 = clptypes.NewAsset("eth")
+	msg1 = clptypes.NewMsgAddLiquidity(signer, asset1, sdk.ZeroUint(), addLiquidityAmount)
+	_, err = handler(ctx, &msg1)
+	require.NoError(t, err)
+
 }
 
-func TestSwap(t *testing.T) {
+func TestPoolMultiplyCases(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	assetEth := types.NewAsset("eth")
-	assetDash := types.NewAsset("dash")
-	externalCoin := sdk.NewCoin(assetEth.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	msgCreatePool := types.NewMsgCreatePool(signer, assetEth, nativeAssetAmount, externalAssetAmount)
-
-	asset := types.NewAsset("eth")
-	asset1 := types.NewAsset("xxx")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	externalCoin1 := sdk.NewCoin(asset1.Symbol, sdk.Int(sdk.NewUint(10000000000000)))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	err := app.ClpKeeper.InitiateSwap(ctx, externalCoin, signer)
+	signer := test.GenerateAddress("")
+	newLP := test.GenerateAddress(test.AddressKey2)
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper)
+	externalDenom := "eth"
+	assetDash := clptypes.NewAsset("dash")
+	initialBalance := sdk.NewUintFromString("9999999999999")      // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("100000000000000000000") // Amount funded to pool , This same amount is used both for native and external asset
+	wBasis := sdk.NewInt(1000)
+	asymmetry := sdk.NewInt(10000)
+	asset := clptypes.NewAsset(externalDenom)
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
+	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
-	ok := app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
-	assert.True(t, ok, "")
-	err = app.ClpKeeper.InitiateSwap(ctx, externalCoin1, signer)
-	assert.Error(t, err, "user does not have enough balance of the required coin")
-
-	// Create Pool
-	_, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
-	externalCoin = sdk.NewCoin(assetDash.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin = sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-
-	msgCreatePool = types.NewMsgCreatePool(signer, assetDash, nativeAssetAmount, externalAssetAmount)
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
-	// Test Parameters for swap
-	// initialBalance: Initial account balance for all assets created.
-	initialBalance := sdk.NewUintFromString("1000000000000000000000")
-	// poolBalance: Amount funded to pool. The same amount is used both for native and external asset.
-	externalCoin1 := sdk.NewCoin("eth", sdk.Int(initialBalance))
-	externalCoin2 := sdk.NewCoin("dash", sdk.Int(initialBalance))
-	// Signer is given ETH and RWN (Signer will creat pool and become LP)
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin2, nativeCoin))
-	msg := types.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
-	err = app.ClpKeeper.FinalizeSwap(ctx, "", *pool, msg)
-	assert.Error(t, err, "Unable to parse to Int")
-
-	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
+	// Fail if amount is greater than user has
+	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
+	_, err = handler(ctx, &msgCreatePool)
+	require.Error(t, err, "user does not have enough balance of the required coin: Unable to set pool")
+	// Fail if amount is less than or equal to minimum
+	poolBalance = sdk.NewUintFromString("100000") // Amount funded to pool , This same amount is used both for native and external asset
+	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
+	_, err = handler(ctx, &msgCreatePool)
+	require.Error(t, err, "total amount is less than minimum threshold")
+	// Only works the first time, fails later
+	initialBalance = sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
+	poolBalance = sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
+	addLiquidityAmount := sdk.NewUintFromString("1000000000000000000")
+	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
+	nativeCoin = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	externalCoin = sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance))
+	nativeCoin = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
+	_, err = handler(ctx, &msgCreatePool)
+	require.NoError(t, err)
+	// check for failure if we try to create a pool twice
+	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
+	_, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err, "Unable to create pool")
+	// ensure we can add liquidity, money gets transferred
+	msg := clptypes.NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), addLiquidityAmount)
+	res, err := handler(ctx, &msg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	// ensure we can remove liquidity, money gets transferred
+	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
+	reMsg := clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handler(ctx, &reMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	for _, coin := range coins {
+		ok := clpKeeper.HasBalance(ctx, signer, coin)
+		assert.True(t, ok, "")
+	}
+	// check for failure if we try to remove more
+	wBasis = sdk.NewInt(10000)
+	asymmetry = sdk.ZeroInt()
+	reMsg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handler(ctx, &reMsg)
+	require.Error(t, err)
+	require.Nil(t, res, "Cannot withdraw pool is too shallow")
+	// check for failure if we try to add too much liquidity: TestAddLiquidity_LargeValue
+	// check for failure if we try to swap too much for user
+	swapSentAssetETH := sdk.NewUintFromString("1000000000000000000000000000")
+	assetEth := clptypes.NewAsset("eth")
+	swMsg := clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
+	_, err = handler(ctx, &swMsg)
+	require.Error(t, err, "symbol:'dash' : pool does not exist")
+
+	poolBalance = sdk.NewUintFromString("1000000000000000000")
+	msgCreatePool = clptypes.NewMsgCreatePool(signer, assetDash, poolBalance, poolBalance)
+	_, err = handler(ctx, &msgCreatePool)
+	require.NoError(t, err)
+	swMsg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
+	_, err = handler(ctx, &swMsg)
+	require.Error(t, err, "user does not have enough balance of the required coin: Unable to swap")
+	// check for failure if we try to swap and receive amount is below expected
+	swapSentAssetETH = sdk.NewUintFromString("99999999")
+	swMsg = clptypes.NewMsgSwap(signer, assetDash, assetEth, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
+	_, err = handler(ctx, &swMsg)
+	require.Error(t, err, "Unable to swap, received amount is below expected")
+	// now try to do a swap that works
+	swapSentAssetETH = sdk.NewUintFromString("10000000000009000009")
+	swMsg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("100000000009"))
+	_, err = handler(ctx, &swMsg)
+	require.NoError(t, err)
+}
+
+func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, asset clptypes.Asset, signer string, wBasisPoints string, asymmetry sdk.Int) sdk.Coins {
+	pool, err := keeper.GetPool(ctx, asset.Symbol)
+	assert.NoError(t, err)
+	lp, err := keeper.GetLiquidityProvider(ctx, asset.Symbol, signer)
+	assert.NoError(t, err)
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
+		wBasisPoints, asymmetry)
+	externalAssetCoin := sdk.Coin{}
+	nativeAssetCoin := sdk.Coin{}
+	ctx, app := test.CreateTestAppClp(false)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, err := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	assert.NoError(t, err)
+	if asymmetry.IsPositive() {
+		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
+		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, normalizationFactor, adjustExternalToken)
+		assert.NoError(t, err)
+		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount.Add(swapResult)))
+		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
+	}
+	if asymmetry.IsNegative() {
+		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
+		swapResult, _, _, _, err := clpkeeper.SwapOne(asset, swapAmount, clptypes.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken)
+		assert.NoError(t, err)
+		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
+		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount.Add(swapResult)))
+	}
+	if asymmetry.IsZero() {
+		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
+		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
+	}
+	return sdk.NewCoins(externalAssetCoin, nativeAssetCoin)
 }
