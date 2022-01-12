@@ -129,10 +129,22 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 		return nil, err
 	}
 
-	err = k.Repay(ctx, mtp, pool, repayAmount)
+	err = k.Repay(ctx, &mtp, pool, repayAmount)
 	if err != nil {
 		return nil, err
 	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventCloseLong,
+		sdk.NewAttribute("address", mtp.Address),
+		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
+		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
+		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
+		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
+		sdk.NewAttribute("leverage", mtp.Leverage.String()),
+		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
+		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
+		sdk.NewAttribute("health", mtp.MtpHealth.String()),
+	))
 
 	return &types.MsgCloseLongResponse{}, nil
 }

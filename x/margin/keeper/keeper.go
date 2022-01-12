@@ -324,14 +324,14 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Poo
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
-func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	CollateralAmount := mtp.CollateralAmount
 	LiabilitiesP := mtp.LiabilitiesP
 	LiabilitiesI := mtp.LiabilitiesI
 
 	var err error
-	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, pool)
 	if err != nil {
 		return err
 	}
