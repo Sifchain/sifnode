@@ -25,13 +25,11 @@ func OnRecvPacketWhitelistConvert(
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
-		fmt.Println("XXX h1")
 		return acknowledgement
 	}
 	err := sdkTransferKeeper.OnRecvPacket(ctx, packet, data)
 	if err != nil {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
-		fmt.Println("XXX h2")
 		return acknowledgement
 	}
 	// Get the denom that will be minted by sdk transfer module,
@@ -40,11 +38,8 @@ func OnRecvPacketWhitelistConvert(
 	// which will be on the whitelist.
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
 	registry := whitelistKeeper.GetRegistry(ctx)
-	fmt.Printf("XXXX registry=%v\n", registry)
-	fmt.Printf("XXXX mintedDenom=%v\n", mintedDenom)
 	mintedDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenom)
 	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
-		fmt.Printf("XXX h3 %v\n", err)
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
 		)
@@ -58,7 +53,6 @@ func OnRecvPacketWhitelistConvert(
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
-		fmt.Println("XXX h4")
 		return acknowledgement
 	}
 	// TODO Add entries fpr Non-X versions of tokens to tokenRegistry
@@ -67,7 +61,6 @@ func OnRecvPacketWhitelistConvert(
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
-			fmt.Println("XXX h5")
 			acknowledgement := channeltypes.NewErrorAcknowledgement(
 				sdkerrors.Wrapf(sctransfertypes.ErrConvertingToUnitDenom, err.Error()).Error(),
 			)
@@ -75,7 +68,6 @@ func OnRecvPacketWhitelistConvert(
 		}
 	}
 
-	fmt.Println("XXX h6")
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypePacket,
@@ -87,6 +79,5 @@ func OnRecvPacketWhitelistConvert(
 		),
 	)
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
-	fmt.Println("XXX h7")
 	return acknowledgement
 }
