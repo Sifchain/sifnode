@@ -228,7 +228,6 @@ class Ebrelayer:
             (["--node", node] if node else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
             (["--from", sign_with] if sign_with else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--home", home] if home else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
@@ -250,7 +249,6 @@ class Ebrelayer:
             (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
             (["--from", sign_with] if sign_with is not None else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--trace"] if trace else [])
         return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
 

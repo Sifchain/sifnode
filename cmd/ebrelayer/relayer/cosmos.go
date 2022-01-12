@@ -60,11 +60,12 @@ type CosmosSub struct {
 	ValidatorName           string
 	MaxFeePerGas            *big.Int
 	MaxPriorityFeePerGas    *big.Int
+	EthereumChainId         *big.Int
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger, maxFeePerGas, maxPriorityFeePerGas *big.Int) CosmosSub {
+	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger, maxFeePerGas, maxPriorityFeePerGas, ethereumChainId *big.Int) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -77,6 +78,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		SugaredLogger:           sugaredLogger,
 		MaxFeePerGas:            maxFeePerGas,
 		MaxPriorityFeePerGas:    maxPriorityFeePerGas,
+		EthereumChainId:         ethereumChainId,
 	}
 }
 
@@ -259,6 +261,7 @@ func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, c
 		sub.PrivateKey,
 		sub.MaxFeePerGas,
 		sub.MaxPriorityFeePerGas,
+		sub.EthereumChainId,
 		sub.SugaredLogger,
 	)
 
