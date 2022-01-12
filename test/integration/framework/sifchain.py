@@ -197,8 +197,8 @@ class Ebrelayer:
 
     def peggy2_build_ebrelayer_cmd(self, init_what, network_descriptor, tendermint_node, web3_provider,
         bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,
-        sign_with=None, symbol_translator_file=None, relayerdb_path=None, log_format=None, extra_args=None,
-        ethereum_private_key=None, ethereum_address=None, home=None, cwd=None
+        sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None, ethereum_private_key=None,
+        ethereum_address=None, home=None, cwd=None
     ):
         env = _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key)
         args = [
@@ -215,7 +215,6 @@ class Ebrelayer:
             (["--node", node] if node else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
             (["--from", sign_with] if sign_with else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--home", home] if home else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
