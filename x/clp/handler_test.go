@@ -49,8 +49,6 @@ func TestCreatePool(t *testing.T) {
 	res, err := handler(ctx, &msgCreatePool) //clp.handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.Error(t, err)
 	require.Nil(t, res)
-	msgCreatePool := clptypes.NewPool(signer, asset, MinThreshold.Sub(sdk.NewUint(1)), sdk.ZeroUint())
-
 	// Will fail if we ask for too much.
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance.Add(sdk.NewUint(1)), initialBalance.Add(sdk.NewUint(1)))
 	res, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
