@@ -347,6 +347,6 @@ sifnoded q tokenregistry generate -o json \
 	--token_permission_ibc_export=true \
 	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/cdmx.json
 
-echo "\n\ngenerated entry for SECRET $SECRET_CHAIN_ID"
+echo "\n\ngenerated entry for $COMDEX_CHAIN_ID"
 
-cat $SIFCHAIN_ID/scrt.json | jq
+cat $SIFCHAIN_ID/cmdx.json | jq
