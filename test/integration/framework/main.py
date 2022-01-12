@@ -1088,6 +1088,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         #     --node tcp://0.0.0.0:26657
         #     --from sif1l7025ps7lt24effpduwxhk45sd977djvu38lhr
         #     --symbol-translator-file ../test/integration/config/symbol_translator.json
+        #     --relayerdb-path ./witnessdb
         #     --log_format json
         #     --keyring-backend test
         #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
@@ -1304,6 +1305,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "--keyring-backend", "test",
                         "--from", witness["address"],
                         "--symbol-translator-file", "${workspaceFolder}/test/integration/config/symbol_translator.json",
+                        "--relayerdb-path", witness["db_path"],
                         "--home", witness["home"]
                     ]
                 } for i, witness in enumerate(sifnode_witnesses)], {
