@@ -972,7 +972,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             "address": sifnode.peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
                 validator_power, denom_whitelist_file),
             "home": validator0_home,
-            "db_path": project_dir("smart-contracts", "witnessdb"),
         } for name in [f"witness-{i}" for i in range(witness_count)]]
 
         tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
@@ -1030,9 +1029,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         sifnode_witness0_mnemonic = sifnode_witness0["name"]
         sifnode_witness0_address = sifnode_witness0["address"]
         sifnode_witness0_home = sifnode_witness0["home"]
-        sifnode_witness0_db_path = sifnode_witness0["db_path"]
-        self.cmd.rmdir(sifnode_witness0_db_path)
-        self.cmd.mkdir(sifnode_witness0_db_path)
 
         bridge_registry_contract_addr = peggy_sc_addrs.bridge_registry
         # bridge_bank_contract_addr = peggy_sc_addrs.bridge_bank
@@ -1089,7 +1085,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         #     --node tcp://0.0.0.0:26657
         #     --from sif1l7025ps7lt24effpduwxhk45sd977djvu38lhr
         #     --symbol-translator-file ../test/integration/config/symbol_translator.json
-        #     --relayerdb-path ./witnessdb
         #     --log_format json
         #     --keyring-backend test
         #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
@@ -1104,7 +1099,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             node=tcp_url,
             sign_with=sifnode_witness0_address,
             symbol_translator_file=symbol_translator_file,
-            relayerdb_path=sifnode_witness0_db_path,
             ethereum_address=evm_validator0_addr,
             ethereum_private_key=evm_validator0_key,
             keyring_backend="test",
@@ -1306,7 +1300,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "--keyring-backend", "test",
                         "--from", witness["address"],
                         "--symbol-translator-file", "${workspaceFolder}/test/integration/config/symbol_translator.json",
-                        "--relayerdb-path", witness["db_path"],
                         "--home", witness["home"]
                     ]
                 } for i, witness in enumerate(sifnode_witnesses)], {
