@@ -34,7 +34,21 @@ func TestNewCosmosSub(t *testing.T) {
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 
-	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
-		client.Context{}, validatorMoniker, sugaredLogger, big.NewInt(30000), big.NewInt(1))
+	ethereumChainId := big.NewInt(1)
+	maxFeePerGas := big.NewInt(3000)
+	maxPriorityFeePerGas := big.NewInt(3000)
+
+	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+		privateKey,
+		tmProvider,
+		ethProvider,
+		registryContractAddress,
+		client.Context{},
+		validatorMoniker,
+		sugaredLogger,
+		maxFeePerGas,
+		maxPriorityFeePerGas,
+		ethereumChainId)
+
 	require.NotEqual(t, sub, nil)
 }

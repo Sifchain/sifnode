@@ -64,8 +64,17 @@ type CosmosSub struct {
 }
 
 // NewCosmosSub initializes a new CosmosSub
-func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger, maxFeePerGas, maxPriorityFeePerGas, ethereumChainId *big.Int) CosmosSub {
+func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
+	privateKey *ecdsa.PrivateKey,
+	tmProvider,
+	ethProvider string,
+	registryContractAddress common.Address,
+	cliContext client.Context,
+	validatorName string,
+	sugaredLogger *zap.SugaredLogger,
+	maxFeePerGas,
+	maxPriorityFeePerGas,
+	ethereumChainId *big.Int) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
