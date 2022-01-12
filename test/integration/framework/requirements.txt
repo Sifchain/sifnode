@@ -1,3 +1,4 @@
 PyYAML==5.4.1
 pytest==6.2.5
-web3==5.23.1
+rusty-rlp==0.2.1
+web3==5.25.0
