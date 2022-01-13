@@ -1,7 +1,6 @@
 package ibctransfer
 
 import (
-	"fmt"
 	"encoding/json"
 	// "context"
 
@@ -126,7 +125,6 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 }
 
 func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet, relayer sdk.AccAddress) exported.Acknowledgement {
-	fmt.Println("XXX OnRecvPacket")
 	return OnRecvPacketWhitelistConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
 }
 

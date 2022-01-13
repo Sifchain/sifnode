@@ -1,9 +1,9 @@
 #!/bin/zsh
 
 # save balances to examine later
-SIF_BEFORE_TRANSFERS=$(sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665; sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666; sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667)
+SIF_BEFORE_TRANSFERS=$(echo "localnet-1"; sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665; echo ""; echo "localnet-2"; sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666; echo ""; echo "localnet-3";  sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667)
 
-AKASHA_BEFORE_TRANSFERS=$(sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667)
+AKASHA_BEFORE_TRANSFERS=$(echo "localnet-1"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665; echo ""; echo "localnet-2"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666; echo ""; echo "localnet-3"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667)
 
 
 sifnoded tx ibc-transfer transfer transfer channel-1 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) 50000000000000000000rowan --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug  --keyring-backend test --gas-prices 10000000000000000rowan  --home ~/.sifnode-2 --yes --broadcast-mode block
@@ -47,7 +47,7 @@ echo "Sif balances before transfers"
 echo $SIF_BEFORE_TRANSFERS
 
 echo "Current Sif balances (should go up for rowan)"
-echo "localhet-1"
+echo "localnet-1"
 sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665
 echo ""
 echo "localnet-2"
