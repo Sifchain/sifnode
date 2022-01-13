@@ -631,10 +631,11 @@ class EnvCtx:
                 result[denom] = change
         return result
 
-    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90):
+    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
         start_time = time.time()
-        result = None
-        while result is None:
+        last_change_time = None
+        last_change_state = None
+        while True:
             new_balances = self.get_sifchain_balance(sif_addr)
             if min_changes is not None:
                 have_all = True
@@ -646,10 +647,21 @@ class EnvCtx:
             else:
                 if not self.sif_balances_equal(old_balances, new_balances):
                     return new_balances
-            time.sleep(polling_time)
             now = time.time()
-            if now - start_time > timeout:
+            if (timeout is not None) and (now - start_time > timeout):
                 raise Exception("Timeout waiting for sif balance to change")
+            if last_change_time is None:
+                last_change_state = new_balances
+                last_change_time = now
+            else:
+                delta = self.sif_balance_delta(new_balances, last_change_state)
+                if delta:
+                    last_change_state = new_balances
+                    last_change_time = now
+                    log.debug("New state detected: {}".format(delta))
+                if (change_timeout is not None) and (now - last_change_time > change_timeout):
+                    raise Exception("Timeout waiting for sif balance to change")
+            time.sleep(polling_time)
 
     def eth_symbol_to_sif_symbol(self, eth_token_symbol):
         # TODO sifchain.use sifchain_denom_hash() if on_peggy2_branch
