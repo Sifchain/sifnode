@@ -66,8 +66,6 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
         this.args.sifnodeAccount.account,
         "--symbol-translator-file",
         this.symbolTranslatorFile,
-        "--relayerdb-path",
-        this.relayerdbPath,
         "--home",
         this.args.sifnodeAccount.homeDir,
         "--log_format",
@@ -155,8 +153,6 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
         this.symbolTranslatorFile,
         "--home",
         this.args.sifnodeAccount.homeDir,
-        // "--relayerdb-path",
-        // this.relayerdbPath
       ],
     ]
     console.log("Running relayer command", relayerCmd)

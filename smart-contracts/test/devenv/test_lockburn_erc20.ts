@@ -4,12 +4,12 @@ import { solidity } from "ethereum-waffle"
 import { container } from "tsyringe"
 import { HardhatRuntimeEnvironmentToken } from "../../src/tsyringe/injectionTokens"
 import * as hardhat from "hardhat"
-import { BigNumber } from "ethers"
+import { BigNumber, ContractTransaction } from "ethers"
 import {
   ethereumResultsToSifchainAccounts,
   readDevEnvObj,
 } from "../../src/tsyringe/devenvUtilities"
-import { SifchainContractFactories } from "../../src/tsyringe/contracts"
+import { SifchainContractFactories, MINTER_ROLE } from "../../src/tsyringe/contracts"
 import { buildDevEnvContracts, DevEnvContracts } from "../../src/contractSupport"
 import web3 from "web3"
 import * as ethereumAddress from "../../src/ethereumAddress"
@@ -40,6 +40,9 @@ import "@nomiclabs/hardhat-ethers"
 import deepEqual = require("deep-equal")
 import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
+import { SifchainAccountsPromise } from "../../src/tsyringe/sifchainAccounts"
+import { BridgeToken } from "../../build"
+import { sha256 } from "ethers/lib/utils"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -117,6 +120,16 @@ enum TransactionStep {
   ProphecyClaimSubmitted = "ProphecyClaimSubmitted",
 
   EthereumMainnetLogUnlock = "EthereumMainnetLogUnlock",
+}
+
+function getDenomHash(networkId: number, contract: string) {
+  const data = String(networkId) + contract.toLowerCase()
+
+  const enc = new TextEncoder();
+
+  const denom = 'sif' + sha256(enc.encode(data)).substring(2)
+
+  return denom
 }
 
 function isTerminalState(s: State) {
@@ -245,9 +258,11 @@ describe("lock and burn tests", () => {
 
   async function executeLock(
     contracts: DevEnvContracts,
+    tokenContract: undefined | BridgeToken,
     smallAmount: BigNumber,
     sender1: SignerWithAddress,
     sifchainRecipient: string,
+    denomHash: string,
     verbose: boolean,
     identifier: string
   ) {
@@ -260,11 +275,21 @@ describe("lock and burn tests", () => {
       contracts.bridgeBank
     )
 
-    const tx = await contracts.bridgeBank
+    let tx: ContractTransaction
+    if (tokenContract === undefined) {
+      tx = await contracts.bridgeBank
+        .connect(sender1)
+        .lock(sifchainRecipient, ethereumAddress.eth.address, smallAmount, {
+          value: smallAmount,
+        })
+    } else {
+      await tokenContract.connect(sender1).approve(contracts.bridgeBank.address, smallAmount)
+      tx = await contracts.bridgeBank
       .connect(sender1)
-      .lock(sifchainRecipient, ethereumAddress.eth.address, smallAmount, {
-        value: smallAmount,
+      .lock(sifchainRecipient, tokenContract.address, smallAmount, {
+        value: 0,
       })
+    }
 
     const states: Observable<State> = evmRelayerEvents
       .pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
@@ -353,7 +378,7 @@ describe("lock and burn tests", () => {
                 switch ((v.data as any).kind) {
                   case "coinsSent":
                     const coins = ((v.data as any).coins as any)[0]
-                    if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
+                    if (coins["denom"] === denomHash && smallAmount.eq(coins["amount"]))
                       return ensureCorrectTransition(
                         acc,
                         v,
@@ -431,10 +456,14 @@ describe("lock and burn tests", () => {
     replayedEvents.unsubscribe()
   }
 
-  it.only("should allow ceth to eth tx", async () => {
+  it.only("should allow erc20 back to Ethereum", async () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+
+    // deploy a new erc20 token
+    const bridgeToken = await factories.bridgeToken
+    const erc20 = await bridgeToken.deploy("erc20", "erc20", 18, "erc20denom")
 
     const ethereumAccounts = await ethereumResultsToSifchainAccounts(
       devEnvObject.ethResults!,
@@ -460,18 +489,40 @@ describe("lock and burn tests", () => {
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     await executeLock(
       contracts,
+      undefined,
       sendAmount,
       ethereumAccounts.availableAccounts[1],
       web3.utils.utf8ToHex(testSifAccount.account),
+      ethDenomHash,
       false,
       "ceth to eth"
     )
 
+    // grant the miner
+    const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)
+    const ownerAccount = (await sifchainAccountsPromise.accounts).ownerAccount
+    await erc20.grantRole(String(MINTER_ROLE), ownerAccount.address);
+
+    // mint token to sender
+    await erc20.connect(ownerAccount).mint(ethereumAccounts.availableAccounts[1].address, sendAmount)
+
+    // lock the erc20 token
+    await executeLock(
+      contracts,
+      erc20,
+      sendAmount,
+      ethereumAccounts.availableAccounts[1],
+      web3.utils.utf8ToHex(testSifAccount.account),
+      getDenomHash(networkDescriptor, erc20.address.toString()),
+      false,
+      "erc20 to sifchain"
+    )
+
     const intermediateBalance = (
-      await ethers.provider.getBalance(destinationEthereumAddress.address)
+      await erc20.balanceOf(destinationEthereumAddress.address)
     ).toString()
     let contractIntermediateBalance = (
-      await ethers.provider.getBalance(contracts.bridgeBank.address)
+      await erc20.balanceOf(contracts.bridgeBank.address)
     ).toString()
 
     // These are temporarily added to make the logging lvl lower
@@ -691,7 +742,7 @@ describe("lock and burn tests", () => {
       testSifAccount,
       destinationEthereumAddress,
       newSendAmount.sub(crossChainCethFee),
-      ethDenomHash,
+      getDenomHash(networkDescriptor, erc20.address.toString()),
       String(crossChainCethFee),
       networkDescriptor
     )
@@ -705,10 +756,11 @@ describe("lock and burn tests", () => {
 
     // Here we verify the user balance is correct
     const finalBalance = (
-      await ethers.provider.getBalance(destinationEthereumAddress.address)
+      await erc20.balanceOf(destinationEthereumAddress.address)
     ).toString()
+
     let contractFinalBalance = (
-      await ethers.provider.getBalance(contracts.bridgeBank.address)
+      await erc20.balanceOf(contracts.bridgeBank.address)
     ).toString()
 
     console.log("Initial Balance     ", initialBalance)
@@ -720,20 +772,5 @@ describe("lock and burn tests", () => {
     console.log("Contract Final Balance       ", contractFinalBalance)
 
     // verboseSubscription.unsubscribe()
-  })
-
-  it("should send two locks of ethereum", async () => {
-    const ethereumAccounts = await ethereumResultsToSifchainAccounts(
-      devEnvObject.ethResults!,
-      hardhat.ethers.provider
-    )
-    const factories = container.resolve(SifchainContractFactories)
-    const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
-    const sender1 = ethereumAccounts.availableAccounts[0]
-    const smallAmount = BigNumber.from(1017)
-
-    // Do two locks of ethereum
-    await executeLock(contracts, smallAmount, sender1, recipient, true, "lock of eth")
-    await executeLock(contracts, smallAmount, sender1, recipient, true, "second lock of eth")
   })
 })

@@ -94,7 +94,6 @@ export function EnvJSONWriter(args: DevEnvObject) {
       path.resolve(__dirname, "../../../", ".vscode", "launch.json"),
       output
     )
-    console.log("dirname is: ", __dirname)
     renderIntellijFiles(path.join(__dirname, "../../.."))
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname))
   } catch (error) {

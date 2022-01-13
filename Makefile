@@ -60,6 +60,9 @@ lint-verbose: lint-pre
 install: go.sum ${smart_contract_file} .proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+install-bin: go.sum
+	go install ${BUILD_FLAGS} ${BINARIES}
+
 build-sifd: go.sum
 	go build  ${BUILD_FLAGS} ./cmd/sifnoded
 

@@ -60,11 +60,21 @@ type CosmosSub struct {
 	ValidatorName           string
 	MaxFeePerGas            *big.Int
 	MaxPriorityFeePerGas    *big.Int
+	EthereumChainId         *big.Int
 }
 
 // NewCosmosSub initializes a new CosmosSub
-func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger, maxFeePerGas, maxPriorityFeePerGas *big.Int) CosmosSub {
+func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
+	privateKey *ecdsa.PrivateKey,
+	tmProvider,
+	ethProvider string,
+	registryContractAddress common.Address,
+	cliContext client.Context,
+	validatorName string,
+	sugaredLogger *zap.SugaredLogger,
+	maxFeePerGas,
+	maxPriorityFeePerGas,
+	ethereumChainId *big.Int) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -77,6 +87,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		SugaredLogger:           sugaredLogger,
 		MaxFeePerGas:            maxFeePerGas,
 		MaxPriorityFeePerGas:    maxPriorityFeePerGas,
+		EthereumChainId:         ethereumChainId,
 	}
 }
 
@@ -259,6 +270,7 @@ func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, c
 		sub.PrivateKey,
 		sub.MaxFeePerGas,
 		sub.MaxPriorityFeePerGas,
+		sub.EthereumChainId,
 		sub.SugaredLogger,
 	)
 
@@ -324,6 +336,7 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	if err != nil {
 		return 0, 0, err
 	}
+	defer gRpcClientConn.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

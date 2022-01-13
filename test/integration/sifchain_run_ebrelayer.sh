@@ -57,5 +57,4 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $NETWORK_ID $T
   --keyring-backend test \
   --from $MONIKER \
   --symbol-translator-file ${TEST_INTEGRATION_DIR}/config/symbol_translator.json \
-  --relayerdb-path "$EBRELAYER_DB" \
   # --home $CHAINDIR/.sifnoded \

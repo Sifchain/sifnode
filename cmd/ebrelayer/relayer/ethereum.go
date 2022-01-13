@@ -475,6 +475,7 @@ func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	if err != nil {
 		return 0, err
 	}
+	defer conn.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second*10)
 	defer cancel()

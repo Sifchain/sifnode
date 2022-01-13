@@ -41,6 +41,7 @@ const (
 	validatorMnemonicFlag             = "validator-mnemonic"
 	maxFeePerGasFlag                  = "maxFeePerGasFlag"
 	maxPriorityFeePerGasFlag          = "maxPriorityFeePerGasFlag"
+	ethereumChainIdFlag               = "ethereum-chain-id"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -98,11 +99,6 @@ func buildRootCmd() *cobra.Command {
 		"",
 		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
 	)
-	rootCmd.PersistentFlags().String(
-		ebrelayertypes.FlagRelayerDbPath,
-		"./relayerdb",
-		"Path to the relayerdb directory",
-	)
 	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
@@ -144,7 +140,7 @@ func initWitnessCmd() *cobra.Command {
 	return initWitnessCmd
 }
 
-func parseGasArguments(cmd *cobra.Command) (maxFeePerGas, maxPriorityFeePerGas *big.Int) {
+func parseGasArguments(cmd *cobra.Command, networkDescriptor *big.Int) (maxFeePerGas, maxPriorityFeePerGas, ethereumChainId *big.Int) {
 	maxFeePerGasString, err := cmd.Flags().GetString(maxFeePerGasFlag)
 	if err != nil {
 		log.Fatalln("failed to parse maxFeePerGasFlag")
@@ -155,10 +151,19 @@ func parseGasArguments(cmd *cobra.Command) (maxFeePerGas, maxPriorityFeePerGas *
 		log.Fatalln("failed to parse maxPriorityFeePerGasFlag")
 	}
 
+	ethereumChainIdString, err := cmd.Flags().GetString(ethereumChainIdFlag)
+	if err != nil {
+		log.Fatalln("failed to parse ethereumChainIdFlag", ethereumChainIdFlag)
+	}
+
 	maxFeePerGas, _ = (&big.Int{}).SetString(maxFeePerGasString, 10)
 	maxPriorityFeePerGas, _ = (&big.Int{}).SetString(maxPriorityFeePerGasString, 10)
+	ethereumChainId, _ = (&big.Int{}).SetString(ethereumChainIdString, 10)
+	if ethereumChainId == nil {
+		ethereumChainId = big.NewInt(0).Set(networkDescriptor)
+	}
 
-	return maxFeePerGas, maxPriorityFeePerGas
+	return maxFeePerGas, maxPriorityFeePerGas, ethereumChainId
 }
 
 // RunInitRelayerCmd executes initRelayerCmd
@@ -286,7 +291,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 	)
 
-	maxFeePerGas, maxPriorityFeePerGas := parseGasArguments(cmd)
+	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
+	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
@@ -299,6 +305,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 		maxFeePerGas,
 		maxPriorityFeePerGas,
+		ethereumChainId,
 	)
 
 	waitForAll := sync.WaitGroup{}
@@ -429,7 +436,8 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 	)
 
-	maxFeePerGas, maxPriorityFeePerGas := parseGasArguments(cmd)
+	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
+	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
@@ -442,6 +450,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 		maxFeePerGas,
 		maxPriorityFeePerGas,
+		ethereumChainId,
 	)
 
 	waitForAll := sync.WaitGroup{}
@@ -490,6 +499,11 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		maxPriorityFeePerGasFlag,
 		"1000000000",
 		"maxFeePerGasFlag for ethereum in wei",
+	)
+	cmd.Flags().String(
+		ethereumChainIdFlag,
+		"",
+		"the Ethereum chain id (defaults to --network-descriptor)",
 	)
 }
 

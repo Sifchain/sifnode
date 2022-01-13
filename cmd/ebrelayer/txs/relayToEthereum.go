@@ -22,7 +22,6 @@ const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit = uint64(2000000)
 	// MaxGasPrice for max gas price 500 gwei
-	MaxGasPrice = int64(500 * 1000000000)
 )
 
 func sleepThread(seconds time.Duration) {
@@ -34,8 +33,9 @@ func InitRelayConfig(
 	provider string,
 	registry common.Address,
 	key *ecdsa.PrivateKey,
-	maxFeePerGas *big.Int,
-	maxPriorityFeePerGas *big.Int,
+	maxFeePerGas,
+	maxPriorityFeePerGas,
+	ethereumChainID *big.Int,
 	sugaredLogger *zap.SugaredLogger,
 ) (
 	*ethclient.Client,
@@ -52,18 +52,17 @@ func InitRelayConfig(
 	}
 
 	// Set up TransactOpts auth's tx signature authorization
-	transactOptsAuth := bind.NewKeyedTransactor(key)
-
+	transactOptsAuth, err := bind.NewKeyedTransactorWithChainID(key, ethereumChainID)
+	if err != nil {
+		return nil, nil, common.Address{}, err
+	}
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 
 	// TODO now, the transaction only works with the gasPrice set.
-	// need to investigate if it is a feature not supported by hardhat.
-	// revert to gas price set temporarily.
-	transactOptsAuth.GasPrice = big.NewInt(150000)
-	// GasFeeCap is maxFeePerGas; GasTipCap is maxPriorityFeePerGas
-	// transactOptsAuth.GasFeeCap = maxFeePerGas
-	// transactOptsAuth.GasTipCap = maxPriorityFeePerGas
+	//GasFeeCap is maxFeePerGas; GasTipCap is maxPriorityFeePerGas
+	transactOptsAuth.GasFeeCap = maxFeePerGas
+	transactOptsAuth.GasTipCap = maxPriorityFeePerGas
 	transactOptsAuth.Context = context.Background()
 
 	targetContract := CosmosBridge
@@ -73,6 +72,7 @@ func InitRelayConfig(
 	if err != nil {
 		sugaredLogger.Errorw("failed to get cosmos bridger contract address from registry.",
 			errorMessageKey, err.Error())
+		client.Close()
 		return nil, nil, common.Address{}, err
 
 	}
