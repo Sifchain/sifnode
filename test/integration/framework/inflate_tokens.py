@@ -78,17 +78,10 @@ class InflateTokens:
             token_symbol = token["symbol"]
             if (token_symbol == test_utils.CETH) or (token_symbol == test_utils.ROWAN):
                 assert False, f"Token {token_symbol} cannot be used by this procedure, please remove it from list of requested assets"
-            if not token_symbol.startswith("c"):
-                assert False, f"Token {token_symbol} is invalid - should start with 'c'"
-            eth_token_symbol = token_symbol[1:]  # Strip "c", e.g. "cusdt" -> "usdt"
 
-            existing_token = zero_or_one(find_by_value(existing_tokens, "symbol", eth_token_symbol))
+            existing_token = zero_or_one(find_by_value(existing_tokens, "symbol", token_symbol))
             if existing_token is None:
-                tokens_to_create.append({
-                    "name": token["name"],
-                    "symbol": eth_token_symbol,
-                    "decimals": token["decimals"],
-                })
+                tokens_to_create.append(token)
             else:
                 if not all([existing_token[f] == token[f] for f in ["name", "decimals"]]):
                     assert False, "Existing token's name/decimals does not match requested for token: " \
@@ -100,23 +93,12 @@ class InflateTokens:
         return tokens_to_create
 
     def create_new_tokens(self, tokens_to_create):
-        amount_in_token_units = 0
         pending_txs = []
         for token in tokens_to_create:
             token_name = token["name"]
             token_symbol = token["symbol"]
             token_decimals = token["decimals"]
             log.info(f"Creating token {token_symbol}...")
-            amount = amount_in_token_units * (10**token_decimals)
-            # Deploy a SifchainTestToken
-            # call BridgeBank.updateEthWhiteList with its address
-            # Mint amount_in_token_units to operator_address
-            # Approve entire minted amount to BridgeBank
-            # TODO We don't really need create_new_currency here, we only need to deploy the smart contract
-            #      since we do the minting and approval in next step (token_refresh).
-
-            # token_addr = self.ctx.create_new_currency(token_symbol, token_name, token_decimals, amount, minted_tokens_recipient)
-
             txhash = self.ctx.tx_deploy_new_generic_erc20_token(self.ctx.operator, token_name, token_symbol, token_decimals)
             pending_txs.append(txhash)
 
@@ -140,8 +122,9 @@ class InflateTokens:
                 "is_whitelisted": True,
                 "sif_denom": self.ctx.eth_symbol_to_sif_symbol(token_symbol),
             })
-            txhash = self.ctx.tx_update_bridge_bank_whitelist(token_sc.address, True)
-            pending_txs.append(txhash)
+            if not on_peggy2_branch:
+                txhash = self.ctx.tx_update_bridge_bank_whitelist(token_sc.address, True)
+                pending_txs.append(txhash)
 
         self.wait_for_all(pending_txs)
         return new_tokens
@@ -226,7 +209,9 @@ class InflateTokens:
         new_tokens = self.create_new_tokens(tokens_to_create)
         existing_tokens.extend(new_tokens)
 
-        tokens_to_transfer = [exactly_one(find_by_value(existing_tokens, "sif_denom", t["symbol"]))
+        # At this point, all tokens that we want to transfer should exist both on Ethereum blockchain as well as in
+        # existing_tokens.
+        tokens_to_transfer = [exactly_one(find_by_value(existing_tokens, "symbol", t["symbol"]))
             for t in requested_tokens]
 
         self.mint([t["address"] for t in tokens_to_transfer], amount_per_token, eth_broker_account)
