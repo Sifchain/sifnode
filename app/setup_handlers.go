@@ -43,6 +43,9 @@ func SetupHandlers(app *SifchainApp) {
 		delete(vm, crisistypes.ModuleName)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
+	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.5", func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
+	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		panic(err)
