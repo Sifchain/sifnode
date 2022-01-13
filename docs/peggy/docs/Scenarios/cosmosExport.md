@@ -123,6 +123,8 @@ Variables
 #### Comsos module receiving lock/burn request
 ```mermaid
 sequenceDiagram
+    User ->> ethbridge_module: MsgBurn/MsgLock
+
     %% ethbridge.keeper.msg_server::Burn
     ethbridge_module ->> keeper.globalSequence: getSequence(networkDescriptor)
 
@@ -141,7 +143,6 @@ Peggy Witness node repeats the following flow at regular interval
 sequenceDiagram
     %% cmd.ebrelayer.relayer.cosmos::CheckSequenceAndProcess
     ebrelayer ->> sifnoded grpcInterface: witnessLockBurnSequenceRequest(networkDescriptor, relayerAddress)
-    %% TODO: Should i add detail here? This is fulfilled by oracle.keeper
     sifnoded grpcInterface ->> ebrelayer: sequence
     Note over sifnoded grpcInterface, ebrelayer: 0 if not found
     ebrelayer ->> sifnoded grpcInterface: globalSequenceBlockNumberRequest(networkDescriptor, sequence+1)
@@ -187,7 +188,6 @@ Variables: nonce: globalSequence the contract has processed
 ```mermaid
 sequenceDiagram
     loop interval
-        %% TODO: Why doesnt this take contract address, or networkdescriptor? %%
         ebrelayer ->> cosmosBridgeEvmContract: GetLastNonceSubmitted()
         cosmosBridgeEvmContract ->> ebrelayer: nonce
         ebrelayer ->> keeper: ProphciesCompletedRequest(networkDescriptor, nonce+1)

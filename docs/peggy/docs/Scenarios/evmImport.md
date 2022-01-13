@@ -228,7 +228,6 @@ sequenceDiagram
       EVM Node ->> ebrelayer: ethLogs{firstBlock}
 
       loop events in [firstBlock -> endBlock]
-          %% TODO: This is inprecise. Revise this
           ebrelayer ->> Cosmos Msg Server: MsgCreateEthBridgeClaim{EthereumLockBurnSequence=event.Nonce}
       end
     end
