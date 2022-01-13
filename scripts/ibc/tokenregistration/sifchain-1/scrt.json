@@ -1,13 +1,13 @@
-{
+ {
   "entries": [
     {
-      "decimals": "6",
-      "denom": "ibc/066F76D25D87E549F7EC9BD7BCB524933FD2576EE9D039113F60A80BA290AD99",
-      "base_denom": "ubtsg",
-      "path": "transfer/channel-42",
-      "ibc_channel_id": "channel-42",
+      "decimals": "18",
+      "denom": "ibc/3313DFB885C0C0EBE85E307A529985AFF7CA82239D404329BDF294E357FBC73A",
+      "base_denom": "scrt",
+      "path": "transfer/channel-33",
+      "ibc_channel_id": "channel-33",
       "ibc_counterparty_channel_id": "channel-4",
-      "display_name": "",
+      "display_name": "Secret",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "bitsong-testnet-6"
+      "ibc_counterparty_chain_id": "secret-4"
     }
   ]
 }

@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/2915CCA550DA6840CB2D4F5BC95A067A7924A767B2EBEB3227DD66124AA8A626",
+      "denom": "ibc/1DA0D68FA3369C706C7FD8F2EDF0F35BD32EB9F02887B050622AE034E93523D0",
       "base_denom": "uxprt",
-      "path": "transfer/channel-15",
-      "ibc_channel_id": "channel-15",
-      "ibc_counterparty_channel_id": "channel-24",
+      "path": "transfer/channel-1",
+      "ibc_channel_id": "channel-1",
+      "ibc_counterparty_channel_id": "channel-39",
       "display_name": "uXPRT",
       "display_symbol": "",
       "network": "",
