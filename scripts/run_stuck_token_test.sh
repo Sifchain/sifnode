@@ -4,7 +4,7 @@ echo "initializing sifnoded and doing initial IBC transfers"
 scripts/init-multichain.sh > /dev/null 2>&1
 scripts/do_ibc_transfers.sh > /dev/null 2>&1
 echo "killing sifnoded"
-ps auxww | grep sifnode-1 | egrep -v grep | awk '{ print $2 }' | xargs kill
+ps auxww | grep terranode-1 | egrep -v grep | awk '{ print $2 }' | xargs kill
 sleep 60
 echo "killing hermes"
 killall hermes
@@ -23,7 +23,7 @@ echo "sleeping to let the localnet-1 expire"
 sleep 850
 
 echo "restarting localnet-1"
-sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655 --grpc.address 0.0.0.0:9090 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> abci_1.log 2>&1 &
+terrad start --home ~/.terranode-1 --p2p.laddr 0.0.0.0:27655 --grpc.address 0.0.0.0:9090 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> abci_1.log 2>&1 &
 sleep 10
 
 echo "bouncing hermes"
@@ -49,7 +49,7 @@ scripts/create_clonable_hermes_channels.sh > /dev/null 2>&1
 
 echo "Current Sif balances"
 echo "localnet-1"
-sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665
+terrad q bank balances $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665
 echo ""
 echo "localnet-2"
 sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666
@@ -60,7 +60,7 @@ echo ""
 
 echo "Current Akasha balances"
 echo "localnet-1"
-sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27665
+terrad q bank balances $(terrad keys show akasha -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665
 echo ""
 echo "localnet-2"
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666
@@ -71,4 +71,4 @@ echo ""
 
 echo "voting on proposals"
 scripts/vote.sh > /dev/null 2>&1
-scripts/vote_localnet_1.sh > /dev/null 2>&1
+#scripts/vote_localnet_1.sh > /dev/null 2>&1

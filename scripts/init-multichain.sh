@@ -8,39 +8,33 @@ fi
 
 ### chain init script for development purposes only ###
 killall sifnoded
+killall terrad
 killall hermes
-rm -rf ~/.sifnode-1
+rm -rf ~/.terranode-1
 rm -rf ~/.sifnode-2
 rm -rf ~/.sifnode-3
 make clean install
-sifnoded init test --chain-id=localnet-1 -o --home ~/.sifnode-1
+terrad init test --chain-id=localnet-1 -o --home ~/.terranode-1
 
-echo "Generating deterministic account - sif"
-echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover --keyring-backend=test --home ~/.sifnode-1
+echo "Generating deterministic account - terra"
+echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | terrad keys add terra --recover --keyring-backend=test --home ~/.terranode-1
 
 echo "Generating deterministic account - akasha"
-echo "hand inmate canvas head lunar naive increase recycle dog ecology inhale december wide bubble hockey dice worth gravity ketchup feed balance parent secret orchard" | sifnoded keys add akasha --recover --keyring-backend=test --home ~/.sifnode-1
+echo "hand inmate canvas head lunar naive increase recycle dog ecology inhale december wide bubble hockey dice worth gravity ketchup feed balance parent secret orchard" | terrad keys add akasha --recover --keyring-backend=test --home ~/.terranode-1
 
 
-sifnoded keys add mkey --multisig sif,akasha --multisig-threshold 2 --keyring-backend=test --home ~/.sifnode-1
+terrad keys add mkey --multisig terra,akasha --multisig-threshold 2 --keyring-backend=test --home ~/.terranode-1
 
-sifnoded add-genesis-account $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) 50000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test --home ~/.sifnode-1
-sifnoded add-genesis-account $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test --home ~/.sifnode-1
+terrad add-genesis-account $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) 50000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000uluna,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test --home ~/.terranode-1
+terrad add-genesis-account $(terrad keys show akasha -a --keyring-backend=test --home ~/.terranode-1) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000uluna,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test --home ~/.terranode-1
 
-sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --keyring-backend=test --home ~/.sifnode-1
-sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1 ) --keyring-backend=test --home ~/.sifnode-1
-sifnoded set-genesis-whitelister-admin $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --keyring-backend=test --home ~/.sifnode-1
-sifnoded set-gen-denom-whitelist scripts/denoms.json --home ~/.sifnode-1
-
-sifnoded add-genesis-validators $(sifnoded keys show sif -a --bech val --keyring-backend=test --home ~/.sifnode-1) --keyring-backend=test --home ~/.sifnode-1
-
-sifnoded gentx sif 1000000000000000000000000stake --keyring-backend=test --home ~/.sifnode-1 --chain-id=localnet-1
+terrad gentx terra 1000000000000000000000000uluna --keyring-backend=test --home ~/.terranode-1 --chain-id=localnet-1
 
 echo "Collecting genesis txs..."
-sifnoded collect-gentxs --home ~/.sifnode-1
+terrad collect-gentxs --home ~/.terranode-1
 
 echo "Validating genesis file..."
-sifnoded validate-genesis --home ~/.sifnode-1
+terrad validate-genesis --home ~/.terranode-1
 
 
 
@@ -110,14 +104,14 @@ rm -rf hermes.log
 rm -rf ~/.hermes
 
 echo "Chainging voting period to 60 seconds"
-sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.sifnode-1/config/genesis.json
+sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.terranode-1/config/genesis.json
 sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.sifnode-2/config/genesis.json
 sed -i -s 's/        "voting_period": "172800s"/        "voting_period": "60s"/g' ~/.sifnode-3/config/genesis.json
 
 echo "Starting sifnoded's"
 
 sleep 1
-sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> abci_1.log 2>&1  &
+terrad start --home ~/.terranode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> abci_1.log 2>&1  &
 sleep 1
 sifnoded start --home ~/.sifnode-2 --p2p.laddr 0.0.0.0:27656  --grpc.address 0.0.0.0:9091 --grpc-web.address 0.0.0.0:9094 --address tcp://0.0.0.0:27660 --rpc.laddr tcp://127.0.0.1:27666 >> abci_2.log 2>&1  &
 sleep 1
@@ -125,13 +119,6 @@ sifnoded start --home ~/.sifnode-3 --p2p.laddr 0.0.0.0:27657  --grpc.address 0.0
 sleep 10
 
 echo "updating token registries with IBC paths"
-echo "doing localnet-1"
-sifnoded tx tokenregistry register scripts/rowan-localnet-1-localnet-2.json --node tcp://127.0.0.1:27665 --keyring-backend test --chain-id localnet-1 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-1 --yes
-sleep 10
-sifnoded tx tokenregistry register scripts/rowan-localnet-1-localnet-3.json --node tcp://127.0.0.1:27665 --keyring-backend test --chain-id localnet-1 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-1 --yes
-echo ""
-sleep 10
-
 echo "Doing localnet-2"
 sifnoded tx tokenregistry register scripts/rowan-localnet-2-localnet-1.json --node tcp://127.0.0.1:27666 --keyring-backend test --chain-id localnet-2 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-2 --yes
 sleep 10
@@ -152,7 +139,7 @@ echo "Setting hermes"
 mkdir ~/.hermes
 cp scripts/hermes_config.toml ~/.hermes/config.toml
 
-hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-1 --name sif
+hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-1 --name terra
 hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-2 --name sif
 hermes keys restore -m "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" localnet-3 --name sif
 

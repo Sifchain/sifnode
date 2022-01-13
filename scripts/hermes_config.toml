@@ -15,11 +15,11 @@ rpc_addr='http://localhost:27665'
 grpc_addr='http://localhost:9090'
 websocket_addr='ws://localhost:27665/websocket'
 rpc_timeout='10s'
-account_prefix='sif'
-key_name='sif'
+account_prefix='terra'
+key_name='terra'
 store_prefix='ibc'
 max_gas=3000000
-gas_price={ price = 0.5, denom = 'rowan' }
+gas_price={ price = 0.5, denom = 'uluna' }
 gas_adjustment=0.1
 clock_drift='20s'
 trusting_period='15minutes'
