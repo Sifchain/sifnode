@@ -17,6 +17,7 @@ class InflateTokens:
     def __init__(self, ctx):
         self.ctx = ctx
         self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 mins
+        self.excluded_token_symbols = ["erowan"]
 
     def get_whitelisted_tokens(self):
         whitelist = self.ctx.get_whitelisted_tokens_from_bridge_bank_past_events()
@@ -40,7 +41,7 @@ class InflateTokens:
             assert token_symbol not in result, f"Symbol {token_symbol} is being used by more than one whitelisted token"
             result.append(token)
         erowan_token = [t for t in result if t["symbol"] == "erowan"]
-        assert len(erowan_token) == 1, "erowan is not whitelisted"
+        assert len(erowan_token) == 1, "erowan is not whitelisted, probably bad/incomplete deployment"
         assert erowan_token[0]["is_whitelisted"], "erowan is un-whitelisted"
         return result
 
@@ -66,13 +67,10 @@ class InflateTokens:
         # their addresses appear in BridgeBank's past events implies that the corresponding ERC20 smart contracts have
         # been deployed, hence there is no need to deploy them.
 
-        token_symbols_to_skip = set()
-        token_symbols_to_skip.add(test_utils.CETH)  # ceth is special since we can't just mint it or create an ERC20 contract for it
-        token_symbols_to_skip.add(test_utils.ROWAN)
-        tokens_to_create = []  # = requested - existing - {rowan, ceth}
+        tokens_to_create = []
         for token in requested_tokens:
             token_symbol = token["symbol"]
-            if (token_symbol == test_utils.CETH) or (token_symbol == test_utils.ROWAN):
+            if token_symbol in self.excluded_token_symbols:
                 assert False, f"Token {token_symbol} cannot be used by this procedure, please remove it from list of requested assets"
 
             existing_token = zero_or_one(find_by_value(existing_tokens, "symbol", token_symbol))
@@ -154,8 +152,8 @@ class InflateTokens:
 
         # Wait for intermediate_sif_account to receive all funds across the bridge
         self.ctx.advance_blocks()
-        self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before,
-            min_changes=sent_amounts, timeout=self.wait_for_account_change_timeout)
+        self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
+            polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
     def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):
         # Distribute from intermediate_sif_account to each individual account
@@ -170,15 +168,15 @@ class InflateTokens:
         for sif_acct in target_sif_accounts:
             sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
             self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, send_amounts)
-            self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=send_amounts)
+            self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=send_amounts,
+                polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
     def export(self):
-        excluded = ["erowan"]
         return [{
             "symbol": token["symbol"],
             "name": token["name"],
             "decimals": token["decimals"]
-        } for token in self.get_whitelisted_tokens() if ("ibc" not in token) and (token["symbol"] not in excluded)]
+        } for token in self.get_whitelisted_tokens() if ("ibc" not in token) and (token["symbol"] not in self.excluded_token_symbols)]
 
     def transfer(self, requested_tokens, token_amount, target_sif_accounts, eth_amount_gwei):
         """
@@ -193,9 +191,10 @@ class InflateTokens:
 
         # TODO Add support for "ceth" and "rowan"
 
-        total_token_amount = token_amount * len(target_sif_accounts)
-        total_eth_amount_gwei = eth_amount_gwei * len(target_sif_accounts)
-        fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1, "rowan"]
+        n_accounts = len(target_sif_accounts)
+        total_token_amount = token_amount * n_accounts
+        total_eth_amount_gwei = eth_amount_gwei * n_accounts
+        fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1 * n_accounts, "rowan"]
         ether_faucet_account = self.ctx.operator
         sif_broker_account = self.ctx.create_sifchain_addr(fund_amounts=[fund_rowan])
         eth_broker_account = self.ctx.operator
