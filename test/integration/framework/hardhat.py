@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from common import *
+from command import buildcmd
 
 
 # Peggy uses different smart contracts (e.g. in Peggy2.0 there is no BridgeToken, there is CosmosBridge etc.)
@@ -57,18 +58,23 @@ class Hardhat:
             "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
         ]]]
 
-    def start(self, hostname, port, log_file=None):
+    def build_start_args(self, hostname=None, port=None, fork=None, fork_block_number=None):
         # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
         # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
         # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
-        proc = self.cmd.popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
-            str(port)], cwd=self.project.smart_contracts_dir, log_file=log_file)
-        return proc
+        args = [os.path.join("node_modules", ".bin", "hardhat"), "node"] + \
+            (["--hostname", hostname] if hostname else []) + \
+            (["--port", str(port)] if port is not None else []) + \
+            (["--fork", fork] if fork else []) + \
+            (["--fork-block-number", str(fork_block_number)] if fork_block_number is not None else [])
+        return buildcmd(args, cwd=self.project.smart_contracts_dir)
 
     def compile_smart_contracts(self):
         self.project.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
 
     def deploy_smart_contracts(self) -> Peggy2SmartContractAddresses:
+        # If this fails with tsyringe complaining about missing "../../build" directory, do this:
+        # rm -rf smart-contracts/artifacts.
         res = self.project.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
@@ -81,6 +87,9 @@ class Hardhat:
         # via "npx hardhat run scripts/devenv.ts" instead of "npx ts-node scripts/devenv.ts", so normally this would
         # not happen.
         # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
-        m = json.loads(stdout(res).splitlines()[1])
-        return Peggy2SmartContractAddresses(cosmos_bridge=m["cosmosBridge"], bridge_bank=m["bridgeBank"],
-            bridge_registry=m["bridgeRegistry"], rowan=m["rowanContract"])
+        stdout_lines = stdout(res).splitlines()
+        assert len(stdout_lines) == 2
+        assert stdout_lines[0] == "No need to generate any newer typings."
+        tmp = json.loads(stdout_lines[1])
+        return Peggy2SmartContractAddresses(cosmos_bridge=tmp["cosmosBridge"], bridge_bank=tmp["bridgeBank"],
+            bridge_registry=tmp["bridgeRegistry"], rowan=tmp["rowanContract"])

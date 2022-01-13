@@ -14,6 +14,20 @@
 
 5. https://github.com/Sifchain/sifnode/commit/9ab620e148be8f4850eef59d39b0e869956f87a4
 
+6. sifchain-devops script to deploy TestNet (by _IM): https://github.com/Sifchain/sifchain-devops/blob/main/scripts/testnet/launch.sh#L19
+
+7. Tempnet scripts by chainops
+
+8. In Sifchain/sifnode/scripts there's init.sh which, if you have everything installed, will run a single node. Ping
+   @Brianosaurus for more info.
+
+9. erowan should be deployed and whitelisted (assumption)
+
+# RPC endpoints:
+e.g. SIFNODE="https://api-testnet.sifchain.finance"
+- $SIFNODE/node_info
+- $SIFNODE/tokenregistry/entries
+
 # Peggy2 devenv
 - Directory: smart-contracts/scripts/src/devenv
 - Init: cd smart-contracts; rm -rf node_modules; npm install (plan is to move to yarn eventually)

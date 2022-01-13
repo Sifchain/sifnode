@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/7EABFE14CD2B6F8B0444A0ED0D7BCB947A81D0B74CE5B571C73DE61DFA261193",
+      "denom": "ibc/E7233BEFCCCA556A10978923A74FEF5AE0FFA6403AFE3F59CD3B27D4883053E4",
       "base_denom": "unyan",
-      "path": "transfer/channel-14",
-      "ibc_channel_id": "channel-14",
-      "ibc_counterparty_channel_id": "channel-25",
+      "path": "transfer/channel-6",
+      "ibc_channel_id": "channel-6",
+      "ibc_counterparty_channel_id": "channel-8",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-8"
+      "ibc_counterparty_chain_id": "nyancat-9"
     }
   ]
 }
