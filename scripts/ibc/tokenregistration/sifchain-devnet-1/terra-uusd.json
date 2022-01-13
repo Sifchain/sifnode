@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/E7233BEFCCCA556A10978923A74FEF5AE0FFA6403AFE3F59CD3B27D4883053E4",
-      "base_denom": "unyan",
-      "path": "transfer/channel-6",
-      "ibc_channel_id": "channel-6",
-      "ibc_counterparty_channel_id": "channel-8",
+      "denom": "ibc/217BC2C4AD4953D957243A8D0ED015E6689E9C88ADE3D04C9F7BE48916A00457",
+      "base_denom": "uusd",
+      "path": "transfer/channel-123",
+      "ibc_channel_id": "channel-123",
+      "ibc_counterparty_channel_id": "channel-3",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-9"
+      "ibc_counterparty_chain_id": "bombay-10"
     }
   ]
 }
