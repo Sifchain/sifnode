@@ -79,12 +79,9 @@ def test_inflate_tokens_short(ctx):
 
     # TODO Read tokens from file
     requested_tokens = [{
-        "symbol": ctx.eth_symbol_to_sif_symbol(t.symbol),
+        "symbol": t.symbol,
         "name": t.name,
         "decimals": t.decimals,
-        # Those are ignored
-        # "imageUrl": None,
-        # "network": None,
     } for t in [ctx.generate_random_erc20_token_data() for _ in range(3)]]
 
     script = InflateTokens(ctx)
