@@ -1,36 +1,36 @@
 #!/bin/zsh
 
 # save balances to examine later
-SIF_BEFORE_TRANSFERS=$(echo "localnet-1"; terrad q bank balances $(terrad keys show terra -a --keyring-backend=test --home ~/.terra-1) --node tcp://127.0.0.1:27665; echo ""; echo "localnet-2"; sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666; echo ""; echo "localnet-3";  sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667)
+SIF_BEFORE_TRANSFERS=$(echo "localnet-1"; terrad q bank balances $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665; echo ""; echo "localnet-2"; sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27666; echo ""; echo "localnet-3";  sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27667)
 
-AKASHA_BEFORE_TRANSFERS=$(echo "localnet-1"; terrad q bank balances $(terrad keys show akasha -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665; echo ""; echo "localnet-2"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666; echo ""; echo "localnet-3"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667)
+AKASHA_BEFORE_TRANSFERS=$(echo "localnet-1"; terrad q bank balances $(terrad keys show akasha -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665; echo ""; echo "localnet-2"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27666; echo ""; echo "localnet-3"; sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27667)
 
 
-sifnoded tx ibc-transfer transfer transfer channel-1 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) 50000000000000000000rowan --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug  --keyring-backend test --gas-prices 10000000000000000rowan  --home ~/.sifnode-2 --yes --broadcast-mode block
+sifnoded tx ibc-transfer transfer transfer channel-1 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) 50000000000000000000rowan --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug  --keyring-backend test --fees 10000000000000000rowan  --home ~/.sifnode-2 --yes --broadcast-mode block
 echo "Tried localnet-2 -> localnet-3"
 echo ""
 
 sleep 5
 
-sifnoded tx ibc-transfer transfer transfer channel-0 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) 50000000000000000000rowan --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug  --keyring-backend test --gas-prices 10000000000000000rowan  --home ~/.sifnode-2 --yes --broadcast-mode block
+sifnoded tx ibc-transfer transfer transfer channel-0 $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) 50000000000000000000rowan --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug  --keyring-backend test --fees 10000000000000000rowan  --home ~/.sifnode-2 --yes --broadcast-mode block
 echo "Tried localnet-2 -> localnet-1"
 echo ""
 
 sleep 5
 
-terrad tx ibc-transfer transfer transfer channel-0 $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) 50000000000000000000uluna --node tcp://127.0.0.1:27665 --chain-id=localnet-1 --from=akasha --log_level=debug  --keyring-backend test --gas-prices 10000000000000000uluna  --home ~/.terra-1 --yes --broadcast-mode block
+terrad tx ibc-transfer transfer transfer channel-0 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) 1000000uluna --node tcp://127.0.0.1:27665 --chain-id=localnet-1 --from=akasha --log_level=debug  --keyring-backend test --gas-prices=0.015uluna --gas=auto --gas-adjustment=1.4 --home ~/.terranode-1 --yes --broadcast-mode block
 echo "Tried localnet-1 -> localnet-2"
 echo ""
 
 sleep 5
 
-sifnoded tx ibc-transfer transfer transfer channel-1 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) 50000000000000000000rowan --node tcp://127.0.0.1:27667 --chain-id=localnet-3 --from=akasha --log_level=debug  --keyring-backend test --gas-prices 10000000000000000rowan  --home ~/.sifnode-3 --yes --broadcast-mode block
+sifnoded tx ibc-transfer transfer transfer channel-1 $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) 50000000000000000000rowan --node tcp://127.0.0.1:27667 --chain-id=localnet-3 --from=akasha --log_level=debug  --keyring-backend test --fees 10000000000000000rowan  --home ~/.sifnode-3 --yes --broadcast-mode block
 echo "Tried localnet-3 -> localnet-1"
 echo ""
 
 sleep 5
 
-terrad tx ibc-transfer transfer transfer channel-1 $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) 50000000000000000000uluna --node tcp://127.0.0.1:27665 --chain-id=localnet-1 --from=akasha --log_level=debug  --keyring-backend test --gas-prices 10000000000000000uluna  --home ~/.sifnode-1 --yes --broadcast-mode block
+terrad tx ibc-transfer transfer transfer channel-1 $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) 1000000uluna --node tcp://127.0.0.1:27665 --chain-id=localnet-1 --from=akasha --log_level=debug  --keyring-backend test --gas-prices=0.015uluna --gas=auto --gas-adjustment=1.4 --home ~/.terranode-1 --yes --broadcast-mode block
 echo "Tried localnet-1 -> localnet-3"
 
 sleep 10
@@ -51,10 +51,10 @@ echo "localnet-1"
 terrad q bank balances $(terrad keys show terra -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665
 echo ""
 echo "localnet-2"
-sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666
+sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27666
 echo ""
 echo "localnet-3"
-sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667
+sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27667
 echo ""
 
 echo "Akasha balances before transfers"
@@ -65,7 +65,7 @@ echo "localnet-1"
 terrad q bank balances $(terrad keys show akasha -a --keyring-backend=test --home ~/.terranode-1) --node tcp://127.0.0.1:27665
 echo ""
 echo "localnet-2"
-sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27666
+sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27666
 echo ""
 echo "localnet-3"
-sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-1) --node tcp://127.0.0.1:27667
+sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test --home ~/.sifnode-2) --node tcp://127.0.0.1:27667
