@@ -1,25 +1,22 @@
 import * as chai from "chai"
-import { expect } from "chai"
-import { solidity } from "ethereum-waffle"
-import { container } from "tsyringe"
-import { HardhatRuntimeEnvironmentToken } from "../../src/tsyringe/injectionTokens"
+import {expect} from "chai"
+import {solidity} from "ethereum-waffle"
+import {container} from "tsyringe"
+import {HardhatRuntimeEnvironmentToken} from "../../src/tsyringe/injectionTokens"
 import * as hardhat from "hardhat"
-import { BigNumber } from "ethers"
-import {
-  ethereumResultsToSifchainAccounts,
-  readDevEnvObj,
-} from "../../src/tsyringe/devenvUtilities"
-import { SifchainContractFactories, MINTER_ROLE } from "../../src/tsyringe/contracts"
-import { buildDevEnvContracts, DevEnvContracts } from "../../src/contractSupport"
+import {BigNumber} from "ethers"
+import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
+import {SifchainContractFactories, MINTER_ROLE} from "../../src/tsyringe/contracts"
+import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport"
 import web3 from "web3"
-import { EbRelayerAccount } from "../../src/devenv/sifnoded"
+import {EbRelayerAccount} from "../../src/devenv/sifnoded"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
-import { ethers } from "hardhat"
-import { SifnodedAdapter } from "./sifnodedAdapter"
-import { SifchainAccountsPromise } from "../../src/tsyringe/sifchainAccounts"
-import { executeLock, checkEvmLockState } from "./evm_lock_burn"
-import { getDenomHash, ethDenomHash } from "./context"
+import {ethers} from "hardhat"
+import {SifnodedAdapter} from "./sifnodedAdapter"
+import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
+import {executeLock, checkEvmLockState} from "./evm_lock_burn"
+import {getDenomHash, ethDenomHash} from "./context"
 
 chai.use(solidity)
 
@@ -38,7 +35,7 @@ describe("lock eth tests", () => {
   )
 
   before("register HardhatRuntimeEnvironmentToken", async () => {
-    container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
+    container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
   })
 
   it.only("should allow eth to sifchain", async () => {
@@ -59,18 +56,21 @@ describe("lock eth tests", () => {
     // record the init balance before lock
     const initialEthSenderBalance = await ethers.provider.getBalance(senderEthereumAccount.address)
     const initialContractBalance = await ethers.provider.getBalance(contracts.bridgeBank.address)
-    const initialEthReceiverBalance = await sifnodedAdapter.getBalance(testSifAccount.account, ethDenomHash)
+    const initialEthReceiverBalance = await sifnodedAdapter.getBalance(
+      testSifAccount.account,
+      ethDenomHash
+    )
 
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
-    let tx  = await executeLock(
+    let tx = await executeLock(
       contracts,
       // undefined for Ethereum native token
       undefined,
       sendAmount,
       ethereumAccounts.availableAccounts[1],
-      web3.utils.utf8ToHex(testSifAccount.account),
+      web3.utils.utf8ToHex(testSifAccount.account)
     )
 
     await checkEvmLockState(contracts, tx, sendAmount, ethDenomHash)
@@ -83,7 +83,10 @@ describe("lock eth tests", () => {
     // get the balance after lock
     const finalEthSenderBalance = await ethers.provider.getBalance(senderEthereumAccount.address)
     const finalContractBalance = await ethers.provider.getBalance(contracts.bridgeBank.address)
-    const finalEthReceiverBalance = await sifnodedAdapter.getBalance(testSifAccount.account, ethDenomHash)
+    const finalEthReceiverBalance = await sifnodedAdapter.getBalance(
+      testSifAccount.account,
+      ethDenomHash
+    )
 
     console.log("Before lock the sender's balance is ", initialEthSenderBalance)
     console.log("Before lock the contract's balance is ", initialContractBalance)
@@ -93,7 +96,9 @@ describe("lock eth tests", () => {
     console.log("After lock the contract's balance is ", finalContractBalance)
     console.log("After lock the receiver's balance is ", finalEthReceiverBalance)
 
-    expect(initialEthReceiverBalance.add(sendAmount), 'should be equal ').eq(finalEthReceiverBalance)
+    expect(initialEthReceiverBalance.add(sendAmount), "should be equal ").eq(
+      finalEthReceiverBalance
+    )
   })
 
   it.only("should allow erc20 to sifchain", async () => {
@@ -110,7 +115,7 @@ describe("lock eth tests", () => {
       devEnvObject.ethResults!,
       hardhat.ethers.provider
     )
-    
+
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
@@ -119,7 +124,7 @@ describe("lock eth tests", () => {
     // grant the miner
     const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)
     const ownerAccount = (await sifchainAccountsPromise.accounts).ownerAccount
-    await erc20.grantRole(String(MINTER_ROLE), ownerAccount.address);
+    await erc20.grantRole(String(MINTER_ROLE), ownerAccount.address)
 
     const senderEthereumAccount = ethereumAccounts.availableAccounts[0]
 
@@ -129,11 +134,14 @@ describe("lock eth tests", () => {
     // record the init balance before lock
     const initialErc20SenderBalance = await erc20.balanceOf(senderEthereumAccount.address)
     const initialContractBalance = await erc20.balanceOf(contracts.bridgeBank.address)
-    const initialErc20ReceiverBalance = await sifnodedAdapter.getBalance(testSifAccount.account, erc20Denom)
+    const initialErc20ReceiverBalance = await sifnodedAdapter.getBalance(
+      testSifAccount.account,
+      erc20Denom
+    )
 
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
-    
+
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     // lock the erc20 token
     const tx = await executeLock(
@@ -141,7 +149,7 @@ describe("lock eth tests", () => {
       erc20,
       sendAmount,
       senderEthereumAccount,
-      web3.utils.utf8ToHex(testSifAccount.account),
+      web3.utils.utf8ToHex(testSifAccount.account)
     )
 
     await checkEvmLockState(contracts, tx, sendAmount, erc20Denom)
@@ -154,7 +162,10 @@ describe("lock eth tests", () => {
     // get the balance after lock
     const finalErc20SenderBalance = await erc20.balanceOf(senderEthereumAccount.address)
     const finalContractBalance = await erc20.balanceOf(contracts.bridgeBank.address)
-    const finalErc20ReceiverBalance = await sifnodedAdapter.getBalance(testSifAccount.account, erc20Denom)
+    const finalErc20ReceiverBalance = await sifnodedAdapter.getBalance(
+      testSifAccount.account,
+      erc20Denom
+    )
 
     console.log("Before lock the sender's balance is ", initialErc20SenderBalance)
     console.log("Before lock the contract's balance is ", initialContractBalance)
@@ -164,8 +175,11 @@ describe("lock eth tests", () => {
     console.log("After lock the contract's balance is ", finalContractBalance)
     console.log("After lock the receiver's balance is ", finalErc20ReceiverBalance)
 
-    expect(initialErc20SenderBalance.sub(sendAmount), 'should be equal ').eq(finalErc20SenderBalance)
-    expect(initialErc20ReceiverBalance.add(sendAmount), 'should be equal ').eq(finalErc20ReceiverBalance)
-
+    expect(initialErc20SenderBalance.sub(sendAmount), "should be equal ").eq(
+      finalErc20SenderBalance
+    )
+    expect(initialErc20ReceiverBalance.add(sendAmount), "should be equal ").eq(
+      finalErc20ReceiverBalance
+    )
   })
 })

@@ -1,11 +1,11 @@
 import * as chai from "chai"
-import { solidity } from "ethereum-waffle"
-import { SifEvent } from "../../src/watcher/watcher"
-import { EthereumMainnetEvent } from "../../src/watcher/ethereumMainnet"
-import { BigNumber } from "ethers"
-import { Observable, Subscription } from "rxjs"
-import { EbRelayerEvmEvent } from "../../src/watcher/ebrelayer"
-import { sha256 } from "ethers/lib/utils"
+import {solidity} from "ethereum-waffle"
+import {SifEvent} from "../../src/watcher/watcher"
+import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet"
+import {BigNumber} from "ethers"
+import {Observable, Subscription} from "rxjs"
+import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer"
+import {sha256} from "ethers/lib/utils"
 
 // The hash value for ethereum on mainnet
 export const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -142,52 +142,52 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
 }
 
 export function ensureCorrectTransition(
-    acc: State,
-    v: SifEvent,
-    predecessor: TransactionStep | TransactionStep[],
-    successor: TransactionStep
-  ): State {
-    var stepIsCorrect: boolean
-    if (Array.isArray(predecessor)) {
-      stepIsCorrect = (predecessor as string[]).indexOf(acc.transactionStep) >= 0
-    } else {
-      stepIsCorrect = predecessor === acc.transactionStep
-    }
-    if (stepIsCorrect) {
-      // console.log("Setting transactionStep", successor)
-      return {
-        ...acc,
-        value: v,
-        createdAt: acc.currentHeartbeat,
-        transactionStep: successor,
-      }
-    } else {
-      // console.log("Step is incorrect", successor)
-      return buildFailure(
-        acc,
-        v,
-        `bad transition: expected ${predecessor}, got ${acc.transactionStep} before transition to ${successor}`
-      )
-    }
+  acc: State,
+  v: SifEvent,
+  predecessor: TransactionStep | TransactionStep[],
+  successor: TransactionStep
+): State {
+  var stepIsCorrect: boolean
+  if (Array.isArray(predecessor)) {
+    stepIsCorrect = (predecessor as string[]).indexOf(acc.transactionStep) >= 0
+  } else {
+    stepIsCorrect = predecessor === acc.transactionStep
   }
-
-export function buildFailure(acc: State, v: SifEvent, message: string): State {
+  if (stepIsCorrect) {
+    // console.log("Setting transactionStep", successor)
     return {
       ...acc,
-      value: {
-        kind: "failure",
-        value: v,
-        message: message,
-      },
+      value: v,
+      createdAt: acc.currentHeartbeat,
+      transactionStep: successor,
     }
+  } else {
+    // console.log("Step is incorrect", successor)
+    return buildFailure(
+      acc,
+      v,
+      `bad transition: expected ${predecessor}, got ${acc.transactionStep} before transition to ${successor}`
+    )
   }
+}
+
+export function buildFailure(acc: State, v: SifEvent, message: string): State {
+  return {
+    ...acc,
+    value: {
+      kind: "failure",
+      value: v,
+      message: message,
+    },
+  }
+}
 
 export function getDenomHash(networkId: number, contract: string) {
   const data = String(networkId) + contract.toLowerCase()
 
-  const enc = new TextEncoder();
+  const enc = new TextEncoder()
 
-  const denom = 'sif' + sha256(enc.encode(data)).substring(2)
+  const denom = "sif" + sha256(enc.encode(data)).substring(2)
 
   return denom
 }
