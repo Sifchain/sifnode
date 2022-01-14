@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
+	_ = "A58856F0FD53BF058B4909A21AEC019107BA6"
 )
 
 func Test_NewPool(t *testing.T) {

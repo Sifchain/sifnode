@@ -1,13 +1,13 @@
 {
   "entries": [
     {
-      "decimals": "6",
-      "denom": "ibc/E7233BEFCCCA556A10978923A74FEF5AE0FFA6403AFE3F59CD3B27D4883053E4",
-      "base_denom": "unyan",
-      "path": "transfer/channel-6",
-      "ibc_channel_id": "channel-6",
+      "decimals": "18",
+      "denom": "ibc/6A5D6AB31758B27B3703FF0069C6F6EE4AA447BCDBB05C60DB5D59AB0D8A271E",
+      "base_denom": "cdmx",
+      "path": "transfer/channel-30",
+      "ibc_channel_id": "channel-30",
       "ibc_counterparty_channel_id": "channel-8",
-      "display_name": "",
+      "display_name": "Comdex",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-9"
+      "ibc_counterparty_chain_id": "comdex-1"
     }
   ]
 }
