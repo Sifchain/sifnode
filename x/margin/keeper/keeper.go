@@ -214,7 +214,7 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 	return X, XL, x, Y, YL, toRowan
 }
 
-func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
+func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
 	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
 	if err != nil {
 		return err
@@ -230,7 +230,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
-	h, err := k.UpdateMTPHealth(ctx, mtp, pool) // set mtp in func or return h?
+	h, err := k.UpdateMTPHealth(ctx, *mtp, pool) // set mtp in func or return h?
 	if err != nil {
 		return err
 	}
@@ -242,7 +242,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 		return err
 	}
 
-	return k.SetMTP(ctx, &mtp)
+	return k.SetMTP(ctx, mtp)
 }
 
 func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error {
@@ -324,14 +324,14 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Poo
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
-func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	CollateralAmount := mtp.CollateralAmount
 	LiabilitiesP := mtp.LiabilitiesP
 	LiabilitiesI := mtp.LiabilitiesI
 
 	var err error
-	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, pool)
 	if err != nil {
 		return err
 	}
