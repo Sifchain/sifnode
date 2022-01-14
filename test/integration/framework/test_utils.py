@@ -90,10 +90,12 @@ def get_env_ctx_peggy2():
 
     eth_node_is_local = True
     generic_erc20_contract = "BridgeToken"
+    ceth_symbol = sifchain.sifchain_denom_hash(ethereum_network_descriptor, eth.NULL_ADDRESS)
+    assert ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, generic_erc20_contract)
+        rowan_source, ceth_symbol, generic_erc20_contract)
     if owner_private_key:
         ctx.eth.set_private_key(owner_address, owner_private_key)
 
@@ -114,8 +116,6 @@ def get_env_ctx_peggy2():
     ctx.cross_chain_lock_fee = 1
     ctx.cross_chain_burn_fee = 1
     ctx.ethereum_network_descriptor = ethereum_network_descriptor
-    ctx.ceth_symbol = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, eth.NULL_ADDRESS)
-    assert ctx.ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
     return ctx
 
@@ -209,7 +209,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, generic_erc20_contract_name)
+        rowan_source, CETH, generic_erc20_contract_name)
     if operator_private_key:
         ctx.eth.set_private_key(operator_address, operator_private_key)
 
@@ -286,7 +286,7 @@ class HardhatAbiProvider:
 
 class EnvCtx:
     def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, generic_erc20_contract
+        rowan_source, ceth_symbol, generic_erc20_contract
     ):
         self.cmd = cmd
         self.w3_conn = w3_conn
@@ -297,6 +297,7 @@ class EnvCtx:
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         self.rowan_source = rowan_source
+        self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
 
