@@ -120,6 +120,8 @@ sleep 10
 
 echo "updating token registries with IBC paths"
 echo "Doing localnet-2"
+sifnoded tx tokenregistry register scripts/uluna-localnet-2-localnet-1.json --node tcp://127.0.0.1:27666 --keyring-backend test --chain-id localnet-2 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-2 --yes
+sleep 10
 sifnoded tx tokenregistry register scripts/rowan-localnet-2-localnet-1.json --node tcp://127.0.0.1:27666 --keyring-backend test --chain-id localnet-2 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-2 --yes
 sleep 10
 sifnoded tx tokenregistry register scripts/rowan-localnet-2-localnet-3.json --node tcp://127.0.0.1:27666 --keyring-backend test --chain-id localnet-2 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-2 --yes
@@ -127,6 +129,8 @@ echo ""
 sleep 10
 
 echo "Doing localnet-3"
+sifnoded tx tokenregistry register scripts/uluna-localnet-3-localnet-1.json --node tcp://127.0.0.1:27667 --keyring-backend test --chain-id localnet-3 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-3 --yes
+sleep 10
 sifnoded tx tokenregistry register scripts/rowan-localnet-3-localnet-1.json --node tcp://127.0.0.1:27667 --keyring-backend test --chain-id localnet-3 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-3 --yes
 sleep 10
 sifnoded tx tokenregistry register scripts/rowan-localnet-3-localnet-2.json --node tcp://127.0.0.1:27667 --keyring-backend test --chain-id localnet-3 --from sif --gas 200000 --gas-prices 0.5rowan --home ~/.sifnode-3 --yes
