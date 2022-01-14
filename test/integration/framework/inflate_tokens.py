@@ -6,6 +6,7 @@ import json
 import logging
 import re
 
+import eth
 import test_utils
 from common import *
 
@@ -65,11 +66,6 @@ class InflateTokens:
         # their addresses appear in BridgeBank's past events implies that the corresponding ERC20 smart contracts have
         # been deployed, hence there is no need to deploy them.
 
-        # This assumes that requested token symbols are in sifchain format (c-prefixed, i.e. "cusdt", "csushi" etc.).
-        # There can also be "ceth" and "rowan" in this list, which we ignore as they represent special cases.
-        # To compare it to entries on existing_whitelist, we need to prefix entries on existing_whitelist with "c".
-        # TODO It would be better if the requested tokens didn't have "c" prefixes. For now we keep it for
-        #      compatibility. Ask people who use this script.
         token_symbols_to_skip = set()
         token_symbols_to_skip.add(test_utils.CETH)  # ceth is special since we can't just mint it or create an ERC20 contract for it
         token_symbols_to_skip.add(test_utils.ROWAN)
@@ -139,31 +135,38 @@ class InflateTokens:
             pending_txs.append(txhash)
         self.wait_for_all(pending_txs)
 
-    def approve_and_lock(self, token_addr_list, eth_addr, to_sif_addr, amount):
+    def transfer_from_eth_to_sifnode(self, from_eth_addr, to_sif_addr, tokens_to_transfer, amount_in_tokens, amount_eth_gwei):
+        sif_balances_before = self.ctx.get_sifchain_balance(to_sif_addr)
+        sent_amounts = []
         pending_txs = []
-        for token_addr in token_addr_list:
+        for token in tokens_to_transfer:
+            token_addr = token["address"]
+            decimals = token["decimals"]
             token_sc = self.ctx.get_generic_erc20_sc(token_addr)
-            pending_txs.extend(self.ctx.tx_approve_and_lock(token_sc, eth_addr, to_sif_addr, amount))
-        return self.wait_for_all(pending_txs)
-
-    def transfer_from_eth_to_sifnode(self, eth_addr, sif_addr, tokens_to_transfer, amount):
-        sif_balances_before = self.ctx.get_sifchain_balance(sif_addr)
-        self.approve_and_lock([t["address"] for t in tokens_to_transfer], eth_addr, sif_addr, amount)
+            amount = amount_in_tokens * 10**decimals
+            pending_txs.extend(self.ctx.tx_approve_and_lock(token_sc, from_eth_addr, to_sif_addr, amount))
+            sent_amounts.append([amount, token["sif_denom"]])
+        if amount_eth_gwei > 0:
+            amount = amount_eth_gwei * eth.GWEI
+            pending_txs.append(self.ctx.tx_bridge_bank_lock_eth(from_eth_addr, to_sif_addr, amount))
+            sent_amounts.append([amount, self.ctx.ceth_symbol])
+        self.wait_for_all(pending_txs)
 
         # Wait for intermediate_sif_account to receive all funds across the bridge
         self.ctx.advance_blocks()
-        send_amounts = [[amount, t["sif_denom"]] for t in tokens_to_transfer]
-        self.ctx.wait_for_sif_balance_change(sif_addr, sif_balances_before,
-            min_changes=send_amounts, timeout=self.wait_for_account_change_timeout)
+        self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before,
+            min_changes=sent_amounts, timeout=self.wait_for_account_change_timeout)
 
-    def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount, target_sif_accounts):
+    def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):
         # Distribute from intermediate_sif_account to each individual account
         # Note: firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
         # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
         # Instead, we take advantage of batching multiple denoms to single account with single send command (amounts
         # separated by by comma: "sifnoded tx bank send ... 100denoma,100denomb,100denomc") and wait for destination
         # account to show changes for all denoms after each send.
-        send_amounts = [[amount, t["sif_denom"]] for t in tokens_to_transfer]
+        send_amounts = [[amount_in_tokens * 10**t["decimals"], t["sif_denom"]] for t in tokens_to_transfer]
+        if amount_eth_gwei > 0:
+            send_amounts.append([amount_eth_gwei * eth.GWEI, self.ctx.ceth_symbol])
         for sif_acct in target_sif_accounts:
             sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
             self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, send_amounts)
@@ -177,7 +180,7 @@ class InflateTokens:
             "decimals": token["decimals"]
         } for token in self.get_whitelisted_tokens() if ("ibc" not in token) and (token["symbol"] not in excluded)]
 
-    def transfer(self, requested_tokens, amount, target_sif_accounts):
+    def transfer(self, requested_tokens, token_amount, target_sif_accounts, eth_amount_gwei):
         """
         It goes like this:
         1. Starting with assets.json of your choice, It will first compare the list of tokens to existing whitelist and deploy any new tokens (ones that have not yet been whitelisted)
@@ -190,10 +193,15 @@ class InflateTokens:
 
         # TODO Add support for "ceth" and "rowan"
 
-        amount_per_token = amount * len(target_sif_accounts)
+        total_token_amount = token_amount * len(target_sif_accounts)
+        total_eth_amount_gwei = eth_amount_gwei * len(target_sif_accounts)
         fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1, "rowan"]
+        ether_faucet_account = self.ctx.operator
         sif_broker_account = self.ctx.create_sifchain_addr(fund_amounts=[fund_rowan])
         eth_broker_account = self.ctx.operator
+
+        if (total_eth_amount_gwei > 0) and (ether_faucet_account != eth_broker_account):
+            self.ctx.eth.send_eth(ether_faucet_account, eth_broker_account, total_eth_amount_gwei)
 
         log.info("Using eth_broker_account {}".format(eth_broker_account))
         log.info("Using sif_broker_account {}".format(sif_broker_account))
@@ -214,9 +222,16 @@ class InflateTokens:
         tokens_to_transfer = [exactly_one(find_by_value(existing_tokens, "symbol", t["symbol"]))
             for t in requested_tokens]
 
-        self.mint([t["address"] for t in tokens_to_transfer], amount_per_token, eth_broker_account)
-        self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, amount_per_token)
-        self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, amount, target_sif_accounts)
+        self.mint([t["address"] for t in tokens_to_transfer], total_token_amount, eth_broker_account)
+        self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, total_token_amount, total_eth_amount_gwei)
+        self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, token_amount, target_sif_accounts, eth_amount_gwei)
+
+    def transfer_eth(self, from_eth_addr, amount_gewi, target_sif_accounts):
+        pending_txs = []
+        for sif_acct in target_sif_accounts:
+            txrcpt = self.ctx.eth.tx_bridge_bank_lock_eth(from_eth_addr, sif_acct, amount_gewi * eth.GWEI)
+            pending_txs.append(txrcpt)
+        self.wait_for_all(pending_txs)
 
 
 def run(*args):
@@ -230,10 +245,10 @@ def run(*args):
         ctx.cmd.write_text_file(args[0], json.dumps(script.export(), indent=4))
     elif cmd == "transfer":
         # Usage: inflate_tokens.py transfer assets.json amount accounts.json
-        assets_json_file, amount, accounts_json_file = args
+        assets_json_file, token_amount, accounts_json_file, amount_eth_gwei = args
         tokens = json.loads(ctx.cmd.read_text_file(assets_json_file))
         accounts = json.loads(ctx.cmd.read_text_file(accounts_json_file))
-        script.transfer(tokens, int(amount), accounts)
+        script.transfer(tokens, int(token_amount), accounts, int(amount_eth_gwei))
     else:
         raise Exception("Invalid usage")
 
