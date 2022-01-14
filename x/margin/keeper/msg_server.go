@@ -71,7 +71,8 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventOpenLong,
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventOpen,
+		sdk.NewAttribute("position", "long"),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
@@ -134,7 +135,8 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventCloseLong,
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventClose,
+		sdk.NewAttribute("position", "long"),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),

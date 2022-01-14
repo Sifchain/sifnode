@@ -1,4 +1,4 @@
 package types
 
-const EventOpenLong = "open_long"
-const EventCloseLong = "close_long"
+const EventOpen = "open"
+const EventClose = "close"
