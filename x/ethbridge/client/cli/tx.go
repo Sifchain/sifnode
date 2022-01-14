@@ -392,19 +392,19 @@ func GetCmdSetBlacklist() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			var addresses []string
 			contents, err := ioutil.ReadFile(file)
 			if err != nil {
 				return err
 			}
 
-			err = json.Unmarshal(contents, &msg)
+			err = json.Unmarshal(contents, &addresses)
 			if err != nil {
 				return err
 			}
 
 			msg.From = clientCtx.FromAddress.String()
-
+			msg.Addresses = addresses
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
