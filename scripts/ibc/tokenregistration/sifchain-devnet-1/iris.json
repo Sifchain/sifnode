@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/F7F28FF3C09024A0225EDBBDB207E5872D2B4EF2FB874FE47B05EF9C9A7D211C",
+      "denom": "ibc/96F569ACD14BC391AF3A9A81C1ACB03E8BF3F8FDF7A97CAC05EBAAE2095397B6",
       "base_denom": "unyan",
-      "path": "transfer/channel-1",
-      "ibc_channel_id": "channel-1",
-      "ibc_counterparty_channel_id": "channel-6",
+      "path": "transfer/channel-4",
+      "ibc_channel_id": "channel-4",
+      "ibc_counterparty_channel_id": "channel-9",
       "display_name": "",
       "display_symbol": "",
       "network": "",
