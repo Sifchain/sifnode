@@ -5,7 +5,6 @@ import (
 
 	sifapp "github.com/Sifchain/sifnode/app"
 
-	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,14 +38,14 @@ func TestCreatePool(t *testing.T) {
 	// check for failure if we try to create a pool twice
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
 	_, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
-	require.Error(t, err, types.ErrPoolTooShallow)
+	require.Error(t, err, clptypes.ErrPoolTooShallow)
 }
 
 func TestGetPool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	asset := clptypes.NewAsset("eth")
 	_, err := app.ClpKeeper.GetPool(ctx, asset.Symbol)
-	require.Error(t, err, types.ErrPoolDoesNotExist)
+	require.Error(t, err, clptypes.ErrPoolDoesNotExist)
 
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
@@ -95,7 +94,7 @@ func TestAddLiquidityErrorCases(t *testing.T) {
 	asset1 := clptypes.NewAsset("btc")
 	msg1 := clptypes.NewMsgAddLiquidity(signer, asset1, sdk.ZeroUint(), addLiquidityAmount)
 	_, err = handler(ctx, &msg1)
-	require.Error(t, err, types.ErrTokenNotSupported)
+	require.Error(t, err, clptypes.ErrTokenNotSupported)
 	asset1 = clptypes.NewAsset("eth")
 	msg1 = clptypes.NewMsgAddLiquidity(signer, asset1, sdk.ZeroUint(), addLiquidityAmount)
 	_, err = handler(ctx, &msg1)
@@ -125,13 +124,13 @@ func TestPoolMultiplyCases(t *testing.T) {
 	// Fail if amount is greater than user has
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	_, err = handler(ctx, &msgCreatePool)
-	require.Error(t, err, types.ErrBalanceNotAvailable)
+	require.Error(t, err, clptypes.ErrBalanceNotAvailable)
 
 	// Fail if amount is less than or equal to minimum
 	poolBalance = sdk.NewUintFromString("100000") // Amount funded to pool , This same amount is used both for native and external asset
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	_, err = handler(ctx, &msgCreatePool)
-	require.Error(t, err, types.ErrTotalAmountTooLow)
+	require.Error(t, err, clptypes.ErrTotalAmountTooLow)
 	// Only works the first time, fails later
 	initialBalance = sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance = sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
@@ -152,7 +151,7 @@ func TestPoolMultiplyCases(t *testing.T) {
 	// check for failure if we try to create a pool twice
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
 	_, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
-	require.Error(t, err, types.ErrUnableToCreatePool)
+	require.Error(t, err, clptypes.ErrUnableToCreatePool)
 	// ensure we can add liquidity, money gets transferred
 	msg := clptypes.NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), addLiquidityAmount)
 	res, err := handler(ctx, &msg)
@@ -172,15 +171,15 @@ func TestPoolMultiplyCases(t *testing.T) {
 	wBasis = sdk.NewInt(10000)
 	asymmetry = sdk.ZeroInt()
 	reMsg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
-	res, err = handler(ctx, &reMsg)
-	require.Error(t, err, types.ErrPoolTooShallow)
+	_, err = handler(ctx, &reMsg)
+	require.Error(t, err, clptypes.ErrPoolTooShallow)
 	// check for failure if we try to add too much liquidity: TestAddLiquidity_LargeValue
 	// check for failure if we try to swap too much for user
 	swapSentAssetETH := sdk.NewUintFromString("1000000000000000000000000000")
 	assetEth := clptypes.NewAsset("eth")
 	swMsg := clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
 	_, err = handler(ctx, &swMsg)
-	require.Error(t, err, types.ErrPoolDoesNotExist)
+	require.Error(t, err, clptypes.ErrPoolDoesNotExist)
 
 	poolBalance = sdk.NewUintFromString("1000000000000000000")
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, assetDash, poolBalance, poolBalance)
@@ -188,12 +187,12 @@ func TestPoolMultiplyCases(t *testing.T) {
 	require.NoError(t, err)
 	swMsg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
 	_, err = handler(ctx, &swMsg)
-	require.Error(t, err, types.ErrBalanceNotAvailable)
+	require.Error(t, err, clptypes.ErrBalanceNotAvailable)
 	// check for failure if we try to swap and receive amount is below expected
 	swapSentAssetETH = sdk.NewUintFromString("99999999")
 	swMsg = clptypes.NewMsgSwap(signer, assetDash, assetEth, swapSentAssetETH, sdk.NewUintFromString("10000000000000"))
 	_, err = handler(ctx, &swMsg)
-	require.Error(t, err, types.ErrReceivedAmountBelowExpected)
+	require.Error(t, err, clptypes.ErrReceivedAmountBelowExpected)
 	// now try to do a swap that works
 	swapSentAssetETH = sdk.NewUintFromString("10000000000009000009")
 	swMsg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, sdk.NewUintFromString("100000000009"))
