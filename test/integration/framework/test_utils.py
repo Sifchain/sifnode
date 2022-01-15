@@ -6,6 +6,8 @@ import web3
 
 import main
 import eth
+import truffle
+import hardhat
 import sifchain
 from common import *
 
@@ -67,7 +69,7 @@ def get_env_ctx_peggy2():
         "BridgeRegistry": tmp["bridgeRegistry"],
         "Rowan": tmp["rowanContract"],
     }
-    abi_provider = HardhatAbiProvider(cmd, deployed_contract_addresses)
+    abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
 
     # TODO We're mixing "OPERATOR" vs. "OWNER"
     # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
@@ -207,7 +209,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     eth_node_is_local = deployment_name is None
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
+    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
         rowan_source, CETH, generic_erc20_contract_name)
     if operator_private_key:
@@ -244,44 +246,6 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
 def sif_addr_to_evm_arg(sif_address):
     return sif_address.encode("UTF-8")
-
-
-class GanacheAbiProvider:
-    def __init__(self, cmd, artifacts_dir, ethereum_network_id):
-        self.cmd = cmd
-        self.artifacts_dir = artifacts_dir
-        self.ethereum_default_network_id = ethereum_network_id
-
-    def get_descriptor(self, sc_name):
-        path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
-        tmp = json.loads(self.cmd.read_text_file(path))
-        abi = tmp["abi"]
-        bytecode = tmp["bytecode"]
-        deployed_address = None
-        if ("networks" in tmp) and (self.ethereum_default_network_id is not None):
-            str_network_id = str(self.ethereum_default_network_id)
-            if str_network_id in tmp["networks"]:
-                deployed_address = tmp["networks"][str_network_id]["address"]
-        return abi, bytecode, deployed_address
-
-
-class HardhatAbiProvider:
-    def __init__(self, cmd, deployed_contract_addresses):
-        self.cmd = cmd
-        self.deployed_contract_addresses = deployed_contract_addresses
-
-    def get_descriptor(self, sc_name):
-        relpath = {
-            "BridgeBank": ["BridgeBank"],
-            "BridgeToken": ["BridgeBank"],
-            "TrollToken": ["Mocks"],
-        }.get(sc_name, []) + [f"{sc_name}.sol", f"{sc_name}.json"]
-        path = os.path.join(self.cmd.project.project_dir("smart-contracts/artifacts/contracts"), *relpath)
-        tmp = json.loads(self.cmd.read_text_file(path))
-        abi = tmp["abi"]
-        bytecode = tmp["bytecode"]
-        deployed_address = self.deployed_contract_addresses.get(sc_name)
-        return abi, bytecode, deployed_address
 
 
 class EnvCtx:
@@ -462,7 +426,7 @@ class EnvCtx:
         for e in past_events:
             token_addr = e.args["_token"]
             value = e.args["_value"]
-            assert self.eth.w3_conn.toChecksumAddress(token_addr) == token_addr
+            assert web3.Web3.toChecksumAddress(token_addr) == token_addr
             # Logically the whitelist only consists of entries that have the last value of True.
             # If the data is clean, then for each token_addr we should first see a True event, possibly
             # followed by alternating False and True. The last value is the active one.
@@ -770,7 +734,7 @@ class EnvCtx:
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
         blocklist_sc = self.get_blocklist_sc()
-        addrs = [self.eth.w3_conn.toChecksumAddress(addr) for addr in addrs]
+        addrs = [web3.Web3.toChecksumAddress(addr) for addr in addrs]
         existing_entries = blocklist_sc.functions.getFullList().call()
         to_add = [addr for addr in addrs if addr not in existing_entries]
         to_remove = [addr for addr in existing_entries if addr not in addrs]
