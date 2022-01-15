@@ -1,6 +1,6 @@
 import pytest
 
-from integration_framework import main, common, eth, test_utils, inflate_tokens
+from integration_framework import main, common, eth, test_utils, sifchain, inflate_tokens
 from inflate_tokens import InflateTokens
 from common import *
 
@@ -89,7 +89,7 @@ def test_inflate_tokens_short(ctx):
 
     balances_before = [ctx.get_sifchain_balance(w) for w in wallets]
     script.transfer(requested_tokens, amount_in_tokens, wallets, amount_gwei)
-    balances_delta = [ctx.sif_balance_delta(balances_before[i], ctx.get_sifchain_balance(w)) for i, w in enumerate(wallets)]
+    balances_delta = [sifchain.balance_delta(balances_before[i], ctx.get_sifchain_balance(w)) for i, w in enumerate(wallets)]
 
     for balances_delta in balances_delta:
         for t in requested_tokens:
@@ -114,7 +114,7 @@ def test_inflate_tokens_long(ctx):
 
     balances_before = [ctx.get_sifchain_balance(w) for w in wallets]
     script.transfer(requested_tokens, amount_in_tokens, wallets, amount_gwei)
-    balances_delta = [ctx.sif_balance_delta(balances_before[i], ctx.get_sifchain_balance(w)) for i, w in enumerate(wallets)]
+    balances_delta = [sifchain.balance_delta(balances_before[i], ctx.get_sifchain_balance(w)) for i, w in enumerate(wallets)]
 
     for balances_delta in balances_delta:
         for t in requested_tokens:
