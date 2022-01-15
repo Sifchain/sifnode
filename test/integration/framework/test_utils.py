@@ -315,10 +315,12 @@ class EnvCtx:
         else:
             self.advance_block_truffle(number)  # TODO Probably calls the same, check and remove
 
-    def advance_blocks(self):
+    def advance_blocks(self, number=50):
         # TODO Move to eth (it should be per-w3_conn)
         if self.eth.is_local_node:
-            self.advance_block(50)
+            previous_block = self.eth.w3_conn.eth.block_number
+            self.advance_block(number)
+            assert self.eth.w3_conn.eth.block_number - previous_block >= number
         # Otherwise just wait
 
     def get_blocklist_sc(self):
@@ -599,13 +601,6 @@ class EnvCtx:
             raise Exception(raw_log)
         return retval
 
-    # TODO
-    # def generate_test_account(self, target_ceth_balance=10**18, target_rowan_balance=10**18):
-    #     sifchain_addr = self.create_sifchain_addr()
-    #     self.send_eth_from_ethereum_to_sifchain(self.operator, sifchain_addr, target_ceth_balance)
-    #     self.send_from_sifchain_to_sifchain(self.rowan_source, sifchain_addr, target_rowan_balance)
-    #     return sifchain_addr
-
     def get_sifchain_balance(self, sif_addr):
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
             self._sifnoded_chain_id_and_node_arg()
@@ -613,40 +608,18 @@ class EnvCtx:
         res = json.loads(stdout(res))["balances"]
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
-    def sif_balances_equal(self, dict1, dict2):
-        d2k = set(dict2.keys())
-        for k in dict1.keys():
-            if (k not in dict2) or (dict1[k] != dict2[k]):
-                return False
-            d2k.remove(k)
-        return len(d2k) == 0
-
-    def sif_balance_delta(self, balances1, balances2):
-        all_denoms = set(balances1.keys())
-        all_denoms.update(balances2.keys())
-        result = {}
-        for denom in all_denoms:
-            change = balances2.get(denom, 0) - balances1.get(denom, 0)
-            if change != 0:
-                result[denom] = change
-        return result
-
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
         start_time = time.time()
         last_change_time = None
         last_change_state = None
         while True:
             new_balances = self.get_sifchain_balance(sif_addr)
+            delta = sifchain.balance_delta(old_balances, new_balances)
             if min_changes is not None:
-                have_all = True
-                for amount, denom in min_changes:
-                    change = new_balances.get(denom, 0) - old_balances.get(denom, 0)
-                    have_all = have_all and change >= amount
-                if have_all:
+                if all([delta.get(denom, 0) >= amount for amount, denom in min_changes]):
                     return new_balances
-            else:
-                if not self.sif_balances_equal(old_balances, new_balances):
-                    return new_balances
+            elif not sifchain.balance_zero(delta):
+                return new_balances
             now = time.time()
             if (timeout is not None) and (now - start_time > timeout):
                 raise Exception("Timeout waiting for sif balance to change")
@@ -654,7 +627,7 @@ class EnvCtx:
                 last_change_state = new_balances
                 last_change_time = now
             else:
-                delta = self.sif_balance_delta(new_balances, last_change_state)
+                delta = sifchain.balance_delta(new_balances, last_change_state)
                 if delta:
                     last_change_state = new_balances
                     last_change_time = now

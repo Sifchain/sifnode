@@ -49,10 +49,13 @@ class Project:
         self.install_smart_contracts_dependencies()
         self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
 
+    def __rm_files_develop(self):
+        self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
+
     def __rm_files(self, level):
         if level >= 0:
             # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-            self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
+            self.__rm_files_develop()
             self.__rm(self.project_dir("smart-contracts", "build"))  # truffle deploy
             self.__rm(self.project_dir("test", "integration", "vagrant", "data"))
             self.__rm(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
