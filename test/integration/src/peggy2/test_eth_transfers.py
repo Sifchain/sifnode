@@ -28,7 +28,7 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
 
     # Verify final balance
     test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
-    balance_diff = ctx.sif_balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
+    balance_diff = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
     assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
     assert balance_diff[ctx.ceth_symbol] == amount_to_send
 
@@ -80,7 +80,7 @@ def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_
     ctx.bridge_bank_lock_eth(test_eth_acct_0, test_sif_account, amount_to_send)
     ctx.advance_blocks()
     test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
-    sif_balance_delta = ctx.sif_balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
+    sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
     assert len(sif_balance_delta) == 1
     assert sif_balance_delta[ctx.ceth_symbol] == amount_to_send
 
@@ -104,7 +104,7 @@ def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_
         ctx.advance_blocks()
         sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
         eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
-        sif_balance_delta = ctx.sif_balance_delta(sif_balance_before, sif_balance_after)
+        sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
 
         assert len(sif_balance_delta) == 1
         assert sif_balance_delta[sif_denom_hash] == send_amount_0
@@ -131,7 +131,7 @@ def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_
             return
 
         sif_balance_after = ctx.get_sifchain_balance(test_sif_account)
-        sif_balance_delta = ctx.sif_balance_delta(sif_balance_before, sif_balance_after)
+        sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
 
         assert sif_balance_delta[sif_denom_hash] == - send_amount_1
         assert sif_balance_delta["rowan"] == -100000  # TODO Where is this value from?
