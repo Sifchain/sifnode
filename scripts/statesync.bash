@@ -8,7 +8,7 @@ export PATH=$PATH:~/go/bin
 
 
 # Install Gaia
-go install -tags badgerdb ./...
+go install -tags rocksdb ./...
 
 
 # MAKE HOME FOLDER AND GET GENESIS
@@ -40,4 +40,4 @@ export SIFNODED_STATESYNC_TRUST_HEIGHT=$BLOCK_HEIGHT
 export SIFNODED_STATESYNC_TRUST_HASH=$TRUST_HASH
 export SIFNODED_P2P_PERSISTENT_PEERS="71667eb24e7ad01925d9c75689e0b3e802faeca2@3.250.251.12:26656"
 
-sifnoded start --x-crisis-skip-assert-invariants --db_backend badgerdb
+sifnoded start --x-crisis-skip-assert-invariants --db_backend rocksdb
