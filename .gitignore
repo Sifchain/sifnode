@@ -19,6 +19,7 @@ log/*.log
 anchore-reports
 sifnoded
 *.pyc
+*.swp
 
 .vercel
 nohup.out
@@ -35,3 +36,9 @@ smart-contracts/environment.json
 node_modules/
 
 deploy
+
+smart-contracts/combined.log
+smart-contracts/yarn-error.log
+test/integration/output.json
+test/integration/sifchainrelayerdb/*
+*.log
