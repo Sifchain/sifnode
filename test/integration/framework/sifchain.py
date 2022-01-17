@@ -11,6 +11,19 @@ def sifchain_denom_hash(network_descriptor, token_contract_address):
     s = str(network_descriptor) + token_contract_address.lower()
     return "sif" + hashlib.sha256(s.encode("UTF-8")).digest().hex()
 
+def balance_delta(balances1, balances2):
+    all_denoms = set(balances1.keys())
+    all_denoms.update(balances2.keys())
+    result = {}
+    for denom in all_denoms:
+        change = balances2.get(denom, 0) - balances1.get(denom, 0)
+        if change != 0:
+            result[denom] = change
+    return result
+
+def balance_zero(balances):
+    return len(balances) == 0
+
 
 class Sifnoded:
     def __init__(self, cmd, home=None):
@@ -136,6 +149,17 @@ class Sifnoded:
             ethereum_cross_chain_fee_token, str(cross_chain_fee_base), str(cross_chain_lock_fee),
             str(cross_chain_burn_fee), "--from", admin_account_name, "--chain-id", chain_id, "--gas-prices",
             sif_format_amount(*gas_prices), "--gas-adjustment", str(gas_adjustment), "-y"]
+        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+        return res
+
+    def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, chain_id):
+        consensus_needed = "49"
+        args = ["tx", "ethbridge", "update-consensus-needed", admin_account_address, str(hardhat_chain_id),
+            consensus_needed, "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
+            "0.5rowan", "--gas-adjustment", "1.5", "-y"]
+        # TODO Currently "sifnoded tx ethbridge" does not have a "update-consensus-needed" subcommand so this command
+        #      fails by printing help and exiting with errorcode 0. Wait for PR to be merged:
+        #      https://github.com/Sifchain/sifnode/pull/2263
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 

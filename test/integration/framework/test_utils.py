@@ -4,8 +4,10 @@ import random
 import time
 import web3
 
-import main
 import eth
+import truffle
+import hardhat
+import run_env
 import sifchain
 from common import *
 
@@ -56,7 +58,7 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     return ctx
 
 def get_env_ctx_peggy2():
-    cmd = main.Integrator()
+    cmd = run_env.Integrator()
     dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
     environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
 
@@ -67,7 +69,7 @@ def get_env_ctx_peggy2():
         "BridgeRegistry": tmp["bridgeRegistry"],
         "Rowan": tmp["rowanContract"],
     }
-    abi_provider = HardhatAbiProvider(cmd, deployed_contract_addresses)
+    abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
 
     # TODO We're mixing "OPERATOR" vs. "OWNER"
     # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
@@ -90,10 +92,12 @@ def get_env_ctx_peggy2():
 
     eth_node_is_local = True
     generic_erc20_contract = "BridgeToken"
+    ceth_symbol = sifchain.sifchain_denom_hash(ethereum_network_descriptor, eth.NULL_ADDRESS)
+    assert ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, generic_erc20_contract)
+        rowan_source, ceth_symbol, generic_erc20_contract)
     if owner_private_key:
         ctx.eth.set_private_key(owner_address, owner_private_key)
 
@@ -108,19 +112,17 @@ def get_env_ctx_peggy2():
     assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
 
     # Monkeypatching for peggy2 extras
-    # TODO These are set in main.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
+    # TODO These are set in run_env.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
     # Consider passing them via environment
     ctx.cross_chain_fee_base = 1
     ctx.cross_chain_lock_fee = 1
     ctx.cross_chain_burn_fee = 1
     ctx.ethereum_network_descriptor = ethereum_network_descriptor
-    ctx.ceth_symbol = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, eth.NULL_ADDRESS)
-    assert ctx.ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
     return ctx
 
 def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
-    cmd = cmd or main.Integrator()
+    cmd = cmd or run_env.Integrator()
 
     if "ENV_FILE" in os.environ:
         env_file = os.environ["ENV_FILE"]
@@ -207,9 +209,9 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     eth_node_is_local = deployment_name is None
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    abi_provider = GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
+    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, generic_erc20_contract_name)
+        rowan_source, CETH, generic_erc20_contract_name)
     if operator_private_key:
         ctx.eth.set_private_key(operator_address, operator_private_key)
 
@@ -246,47 +248,9 @@ def sif_addr_to_evm_arg(sif_address):
     return sif_address.encode("UTF-8")
 
 
-class GanacheAbiProvider:
-    def __init__(self, cmd, artifacts_dir, ethereum_network_id):
-        self.cmd = cmd
-        self.artifacts_dir = artifacts_dir
-        self.ethereum_default_network_id = ethereum_network_id
-
-    def get_descriptor(self, sc_name):
-        path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
-        tmp = json.loads(self.cmd.read_text_file(path))
-        abi = tmp["abi"]
-        bytecode = tmp["bytecode"]
-        deployed_address = None
-        if ("networks" in tmp) and (self.ethereum_default_network_id is not None):
-            str_network_id = str(self.ethereum_default_network_id)
-            if str_network_id in tmp["networks"]:
-                deployed_address = tmp["networks"][str_network_id]["address"]
-        return abi, bytecode, deployed_address
-
-
-class HardhatAbiProvider:
-    def __init__(self, cmd, deployed_contract_addresses):
-        self.cmd = cmd
-        self.deployed_contract_addresses = deployed_contract_addresses
-
-    def get_descriptor(self, sc_name):
-        relpath = {
-            "BridgeBank": ["BridgeBank"],
-            "BridgeToken": ["BridgeBank"],
-            "TrollToken": ["Mocks"],
-        }.get(sc_name, []) + [f"{sc_name}.sol", f"{sc_name}.json"]
-        path = os.path.join(self.cmd.project.project_dir("smart-contracts/artifacts/contracts"), *relpath)
-        tmp = json.loads(self.cmd.read_text_file(path))
-        abi = tmp["abi"]
-        bytecode = tmp["bytecode"]
-        deployed_address = self.deployed_contract_addresses.get(sc_name)
-        return abi, bytecode, deployed_address
-
-
 class EnvCtx:
     def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, generic_erc20_contract
+        rowan_source, ceth_symbol, generic_erc20_contract
     ):
         self.cmd = cmd
         self.w3_conn = w3_conn
@@ -297,6 +261,7 @@ class EnvCtx:
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         self.rowan_source = rowan_source
+        self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
 
@@ -306,7 +271,7 @@ class EnvCtx:
 
     def advance_block_truffle(self, number):
         args = ["npx", "truffle", "exec", "scripts/advanceBlock.js", str(number)]
-        self.cmd.execst(args, cwd=main.project_dir("smart-contracts"))
+        self.cmd.execst(args, cwd=run_env.project_dir("smart-contracts"))
 
     def advance_block(self, number):
         if on_peggy2_branch:
@@ -314,10 +279,12 @@ class EnvCtx:
         else:
             self.advance_block_truffle(number)  # TODO Probably calls the same, check and remove
 
-    def advance_blocks(self):
+    def advance_blocks(self, number=50):
         # TODO Move to eth (it should be per-w3_conn)
         if self.eth.is_local_node:
-            self.advance_block(50)
+            previous_block = self.eth.w3_conn.eth.block_number
+            self.advance_block(number)
+            assert self.eth.w3_conn.eth.block_number - previous_block >= number
         # Otherwise just wait
 
     def get_blocklist_sc(self):
@@ -459,7 +426,7 @@ class EnvCtx:
         for e in past_events:
             token_addr = e.args["_token"]
             value = e.args["_value"]
-            assert self.eth.w3_conn.toChecksumAddress(token_addr) == token_addr
+            assert web3.Web3.toChecksumAddress(token_addr) == token_addr
             # Logically the whitelist only consists of entries that have the last value of True.
             # If the data is clean, then for each token_addr we should first see a True event, possibly
             # followed by alternating False and True. The last value is the active one.
@@ -598,13 +565,6 @@ class EnvCtx:
             raise Exception(raw_log)
         return retval
 
-    # TODO
-    # def generate_test_account(self, target_ceth_balance=10**18, target_rowan_balance=10**18):
-    #     sifchain_addr = self.create_sifchain_addr()
-    #     self.send_eth_from_ethereum_to_sifchain(self.operator, sifchain_addr, target_ceth_balance)
-    #     self.send_from_sifchain_to_sifchain(self.rowan_source, sifchain_addr, target_rowan_balance)
-    #     return sifchain_addr
-
     def get_sifchain_balance(self, sif_addr):
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
             self._sifnoded_chain_id_and_node_arg()
@@ -612,43 +572,33 @@ class EnvCtx:
         res = json.loads(stdout(res))["balances"]
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
-    def sif_balances_equal(self, dict1, dict2):
-        d2k = set(dict2.keys())
-        for k in dict1.keys():
-            if (k not in dict2) or (dict1[k] != dict2[k]):
-                return False
-            d2k.remove(k)
-        return len(d2k) == 0
-
-    def sif_balance_delta(self, balances1, balances2):
-        all_denoms = set(balances1.keys())
-        all_denoms.update(balances2.keys())
-        result = {}
-        for denom in all_denoms:
-            change = balances2.get(denom, 0) - balances1.get(denom, 0)
-            if change != 0:
-                result[denom] = change
-        return result
-
-    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90):
+    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
         start_time = time.time()
-        result = None
-        while result is None:
+        last_change_time = None
+        last_change_state = None
+        while True:
             new_balances = self.get_sifchain_balance(sif_addr)
+            delta = sifchain.balance_delta(old_balances, new_balances)
             if min_changes is not None:
-                have_all = True
-                for amount, denom in min_changes:
-                    change = new_balances.get(denom, 0) - old_balances.get(denom, 0)
-                    have_all = have_all and change >= amount
-                if have_all:
+                if all([delta.get(denom, 0) >= amount for amount, denom in min_changes]):
                     return new_balances
-            else:
-                if not self.sif_balances_equal(old_balances, new_balances):
-                    return new_balances
-            time.sleep(polling_time)
+            elif not sifchain.balance_zero(delta):
+                return new_balances
             now = time.time()
-            if now - start_time > timeout:
+            if (timeout is not None) and (now - start_time > timeout):
                 raise Exception("Timeout waiting for sif balance to change")
+            if last_change_time is None:
+                last_change_state = new_balances
+                last_change_time = now
+            else:
+                delta = sifchain.balance_delta(new_balances, last_change_state)
+                if delta:
+                    last_change_state = new_balances
+                    last_change_time = now
+                    log.debug("New state detected: {}".format(delta))
+                if (change_timeout is not None) and (now - last_change_time > change_timeout):
+                    raise Exception("Timeout waiting for sif balance to change")
+            time.sleep(polling_time)
 
     def eth_symbol_to_sif_symbol(self, eth_token_symbol):
         # TODO sifchain.use sifchain_denom_hash() if on_peggy2_branch
@@ -784,7 +734,7 @@ class EnvCtx:
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
         blocklist_sc = self.get_blocklist_sc()
-        addrs = [self.eth.w3_conn.toChecksumAddress(addr) for addr in addrs]
+        addrs = [web3.Web3.toChecksumAddress(addr) for addr in addrs]
         existing_entries = blocklist_sc.functions.getFullList().call()
         to_add = [addr for addr in addrs if addr not in existing_entries]
         to_remove = [addr for addr in existing_entries if addr not in addrs]

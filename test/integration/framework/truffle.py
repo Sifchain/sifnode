@@ -1,3 +1,6 @@
+import json
+
+
 class Ganache:
     @staticmethod
     def start_ganache_cli(env, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
@@ -15,3 +18,22 @@ class Ganache:
             (["--blockTime", str(block_time)] if block_time is not None else []) + \
             (["--account_keys_path", account_keys_path] if account_keys_path is not None else [])
         return env.popen(args, log_file=log_file)
+
+
+class GanacheAbiProvider:
+    def __init__(self, cmd, artifacts_dir, ethereum_network_id):
+        self.cmd = cmd
+        self.artifacts_dir = artifacts_dir
+        self.ethereum_default_network_id = ethereum_network_id
+
+    def get_descriptor(self, sc_name):
+        path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
+        tmp = json.loads(self.cmd.read_text_file(path))
+        abi = tmp["abi"]
+        bytecode = tmp["bytecode"]
+        deployed_address = None
+        if ("networks" in tmp) and (self.ethereum_default_network_id is not None):
+            str_network_id = str(self.ethereum_default_network_id)
+            if str_network_id in tmp["networks"]:
+                deployed_address = tmp["networks"][str_network_id]["address"]
+        return abi, bytecode, deployed_address

@@ -25,6 +25,19 @@ def web3_connect(url, websocket_timeout=None):
         kwargs["websocket_timeout"] = websocket_timeout
     return web3.Web3(web3.Web3.WebsocketProvider(url, **kwargs))
 
+def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
+    start_time = time.time()
+    w3_conn = web3_connect(url)
+    while True:
+        try:
+            w3_conn.eth.block_number
+            return w3_conn
+        except OSError:
+            pass
+        now = time.time()
+        if now - start_time > timeout:
+            raise Exception(f"Timeout when trying to connect to {url}")
+        time.sleep(polling_time)
 
 class EthereumTxWrapper:
     """
@@ -52,13 +65,13 @@ class EthereumTxWrapper:
         self.used_tx_nonces = {}
 
     def _get_private_key(self, addr):
-        addr = self.w3_conn.toChecksumAddress(addr)
+        addr = web3.Web3.toChecksumAddress(addr)
         if not addr in self.private_keys:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
     def set_private_key(self, addr, private_key):
-        addr = self.w3_conn.toChecksumAddress(addr)
+        addr = web3.Web3.toChecksumAddress(addr)
         if private_key is None:
             self.private_keys.pop(addr)  # Remove
         else:
