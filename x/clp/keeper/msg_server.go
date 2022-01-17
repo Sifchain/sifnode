@@ -39,7 +39,8 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if !k.Keeper.ValidateAddress(ctx, addAddr) {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "user does not have permission to decommission pool")
 	}
-	if pool.NativeAssetBalance.GTE(sdk.NewUintFromString(types.PoolThrehold)) {
+	minThreshold := sdk.NewUint(k.GetParams(ctx).MinCreatePoolThreshold)
+	if pool.NativeAssetBalance.GTE(minThreshold) {
 		return nil, types.ErrBalanceTooHigh
 	}
 	// Get all LP's for the pool
@@ -349,9 +350,10 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (*types.MsgCreatePoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
 	// Verify min threshold
-	MinThreshold := sdk.NewUintFromString(types.PoolThrehold)
-	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
+	minThreshold := sdk.NewUint(k.GetParams(ctx).MinCreatePoolThreshold)
+	if msg.NativeAssetAmount.LT(minThreshold) {
 		return nil, types.ErrTotalAmountTooLow
 	}
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
