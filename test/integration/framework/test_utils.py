@@ -4,10 +4,10 @@ import random
 import time
 import web3
 
-import main
 import eth
 import truffle
 import hardhat
+import run_env
 import sifchain
 from common import *
 
@@ -58,7 +58,7 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     return ctx
 
 def get_env_ctx_peggy2():
-    cmd = main.Integrator()
+    cmd = run_env.Integrator()
     dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
     environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
 
@@ -112,7 +112,7 @@ def get_env_ctx_peggy2():
     assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
 
     # Monkeypatching for peggy2 extras
-    # TODO These are set in main.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
+    # TODO These are set in run_env.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
     # Consider passing them via environment
     ctx.cross_chain_fee_base = 1
     ctx.cross_chain_lock_fee = 1
@@ -122,7 +122,7 @@ def get_env_ctx_peggy2():
     return ctx
 
 def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
-    cmd = cmd or main.Integrator()
+    cmd = cmd or run_env.Integrator()
 
     if "ENV_FILE" in os.environ:
         env_file = os.environ["ENV_FILE"]
@@ -271,7 +271,7 @@ class EnvCtx:
 
     def advance_block_truffle(self, number):
         args = ["npx", "truffle", "exec", "scripts/advanceBlock.js", str(number)]
-        self.cmd.execst(args, cwd=main.project_dir("smart-contracts"))
+        self.cmd.execst(args, cwd=run_env.project_dir("smart-contracts"))
 
     def advance_block(self, number):
         if on_peggy2_branch:
