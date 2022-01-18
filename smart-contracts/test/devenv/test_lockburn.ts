@@ -98,11 +98,11 @@ describe("lock and burn tests", () => {
       destinationEthereumAddress.address
     )
 
-    console.log("Initial Balance     ", initialEthSenderBalance)
-    console.log("intermediate Balance", initialEthReceiverBalance)
+    console.log("Before burn the sender's balance is ", initialEthSenderBalance)
+    console.log("Before burn the receiver's balance is ", initialEthReceiverBalance)
 
-    console.log("Contract Initial Balance     ", finalEthSenderBalance)
-    console.log("Contract intermediate Balance", finalEthReceiverBalance)
+    console.log("After burn the sender's balance is ", finalEthSenderBalance)
+    console.log("After burn the receiver's balance is ", finalEthReceiverBalance)
 
     expect(initialEthSenderBalance.sub(burnAmount), "should be equal ").eq(finalEthSenderBalance)
     expect(initialEthReceiverBalance.add(burnAmount.sub(crossChainCethFee)), "should be equal ").eq(
