@@ -212,6 +212,41 @@ class Integrator(Ganache, Command):
                 log.debug(f"Waiting for sif account {address}... ({repr(e)})")
                 time.sleep(1)
 
+    def dev_clean(self):
+        if on_peggy2_branch:
+            assert False, "Not implemented yet"
+        else:
+            self._dev_clean_peggy1()
+
+    def dev_build(self):
+        if on_peggy2_branch:
+            assert False, "Not implemented yet"
+        else:
+            self._dev_build_peggy1()
+
+    def _dev_clean_peggy1(self):
+        self.rmf(self.project.project_dir("smart-contracts", "node_modules"))
+
+        # Output from "truffle compile"
+        self.rmf(self.project.project_dir("smart-contracts", "build"))
+
+        for filename in ["sifnoded", "ebrelayer", "sifgen"]:
+            self.rmf(os.path.join(self.project.go_bin_dir, filename))
+
+    def _dev_build_peggy1(self):
+        self._npm_install()
+        self.execst(["make", "install"], cwd=self.project.project_dir(), pipe=False)
+        self.execst(["npx", "hardhat", "compile"], cwd=self.project.project_dir("smart-contracts"), pipe=False)
+        self.execst([self.project.project_dir("smart-contracts", "node_modules", ".bin", "truffle"), "compile"],
+            cwd=self.project.project_dir("smart-contracts"), pipe=False)
+
+    def _dev_clean_peggy2(self):
+        for file in [".proto-gen", ".run", "cmd/ebrelayer/contract/generated/artifacts", "smart-contracts/.hardhat-compile"]:
+            self.rmf(self.project.project_dir(file))
+
+    def _npm_install(self):
+        self.execst(["npm", "install"], cwd=self.project.project_dir("smart-contracts"), pipe=False)
+
 
 class UIStackEnvironment:
     def __init__(self, cmd):
@@ -892,7 +927,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         return hardhat_proc, sifnoded_proc, relayer0_proc, witness0_proc
 
     def init_smart_contracts(self, w3_url, operator_account, deployed_contract_addresses):
-        # Looks like this is already done somewhere else...
+        # TODO Looks like this is already done somewhere else...
         # operator_addr, operator_private_key = operator_account
         # w3_conn = eth.web3_wait_for_connection_up(w3_url)
         # eth_tx = eth.EthereumTxWrapper(w3_conn, True)
@@ -1047,31 +1082,11 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         sifnode_witness0_home = sifnode_witness0["home"]
 
         bridge_registry_contract_addr = peggy_sc_addrs["BridgeRegistry"]
-        # bridge_bank_contract_addr = peggy_sc_addrs["BridgeBank"]
-        # cosmos_bridge_contract_addr = peggy_sc_addrs["CosmosBridge"]
-        # rowan_contract_addr = peggy_sc_addrs["Rowan"]
 
         self.cmd.wait_for_sif_account_up(sifnode_validator0_address, tcp_url=tcp_url)  # Required for both relayer and witness
 
         ebrelayer = Ebrelayer(self.cmd)
 
-        # Example:
-        # ebrelayer
-        #     init-relayer
-        #     --network-descriptor 31337
-        #     --tendermint-node tcp://0.0.0.0:26657
-        #     --web3-provider ws://localhost:8545/
-        #     --bridge-registry-contract-address 0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e
-        #     --validator-mnemonic relayer-0
-        #     --chain-id localnet
-        #     --node tcp://0.0.0.0:26657
-        #     --from sif1a44w20496lgyv5asx4d4fnekdpy9xg8ymy9k3s
-        #     --symbol-translator-file ../test/integration/config/symbol_translator.json
-        #     --keyring-backend test
-        #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
-        # env:
-        #     "ETHEREUM_ADDRESS": evm_accounts["validators"][0]
-        #     "ETHEREUM_PRIVATE_KEY": evm_account["validators"][1]
         relayer0_exec_args = ebrelayer.peggy2_build_ebrelayer_cmd(
             "init-relayer",
             hardhat_chain_id,
@@ -1089,21 +1104,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             home=sifnode_relayer0_home,
         )
 
-        # Example from devenv:
-        # ebrelayer
-        #     init-witness
-        #     --network-descriptor 31337
-        #     --tendermint-node tcp://0.0.0.0:26657
-        #     --web3-provider ws://localhost:8545/
-        #     --bridge-registry-contract-address 0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e
-        #     --validator-mnemonic witness-0
-        #     --chain-id localnet
-        #     --node tcp://0.0.0.0:26657
-        #     --from sif1l7025ps7lt24effpduwxhk45sd977djvu38lhr
-        #     --symbol-translator-file ../test/integration/config/symbol_translator.json
-        #     --log_format json
-        #     --keyring-backend test
-        #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
         witness0_exec_args = ebrelayer.peggy2_build_ebrelayer_cmd(
             "init-witness",
             hardhat_chain_id,
@@ -1449,5 +1449,3 @@ class IBCEnvironment(IntegrationTestsEnvironment):
         sifgen = Sifgen(self.cmd)
         # This does not work - "--keyring-backend" is not supported
         x = sifgen.create_standalone(chainnet0, "chain1", mnemonic, ipaddr0, keyring_backend=None)
-
-        print()
