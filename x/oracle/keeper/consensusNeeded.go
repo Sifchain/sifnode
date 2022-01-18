@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetCrossChainFee set the crosschain fee for a network.
+// SetConsensusNeeded for a network.
 func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
 	consensusNeeded uint32) {
@@ -22,7 +22,7 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	store.Set(key, bs)
 }
 
-// GetCrossChainFeeConfig return crosschain fee config
+// GetConsensusNeeded for a network
 func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.NetworkIdentity) (uint32, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetConsensusNeededPrefix()
