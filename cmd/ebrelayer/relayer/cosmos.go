@@ -186,7 +186,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		block, err := client.BlockResults(ctx, &tmpBlockNumber)
 
 		if err != nil {
-			sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
+			sub.SugaredLogger.Infow("sifchain client failed to get a block.",
 				errorMessageKey, err.Error())
 			continue
 		}
