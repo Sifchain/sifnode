@@ -7,13 +7,12 @@ import * as hardhat from "hardhat"
 import {BigNumber} from "ethers"
 import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
 import {SifchainContractFactories, MINTER_ROLE} from "../../src/tsyringe/contracts"
-import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport"
+import {buildDevEnvContracts} from "../../src/contractSupport"
 import web3 from "web3"
 import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/devenv/sifnoded"
 
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
-import {ethers} from "hardhat"
 import {SifnodedAdapter} from "./sifnodedAdapter"
 import {getDenomHash, ethDenomHash} from "./context"
 import {checkSifnodeBurnState} from "./sifnode_lock_burn"
@@ -54,15 +53,6 @@ describe("lock and burn tests", () => {
       hardhat.ethers.provider
     )
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
-
-    // These two can happen together
-    const initialBalance = (
-      await ethers.provider.getBalance(destinationEthereumAddress.address)
-    ).toString()
-
-    const contractInitialBalance = (
-      await ethers.provider.getBalance(contracts.bridgeBank.address)
-    ).toString()
 
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
