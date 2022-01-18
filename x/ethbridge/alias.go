@@ -53,4 +53,5 @@ type (
 	MsgSignProphecy                       = types.MsgSignProphecy
 	QueryEthProphecyParams                = types.QueryEthProphecyRequest
 	QueryEthProphecyResponse              = types.QueryEthProphecyResponse
+	MsgUpdateConsensusNeeded              = types.MsgUpdateConsensusNeeded
 )
