@@ -39,6 +39,7 @@ type Keeper interface {
 	GetMTPs(ctx sdk.Context) []*MTP
 	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
+	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
 	DestroyMTP(sdk.Context, string, string, string) error
 
 	GetLeverageParam(sdk.Context) sdk.Uint

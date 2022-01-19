@@ -25,3 +25,14 @@ func (srv queryServer) GetMTP(ctx context.Context, request *types.MTPRequest) (*
 
 	return &types.MTPResponse{Mtp: &mtp}, nil
 }
+
+func (srv queryServer) GetPositionsForAddress(ctx context.Context, request *types.PositionsForAddressRequest) (*types.PositionsForAddressResponse, error) {
+	addr, err := sdk.AccAddressFromBech32(request.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	mtps := srv.keeper.GetMTPsForAddress(sdk.UnwrapSDKContext(ctx), addr)
+
+	return &types.PositionsForAddressResponse{Mtps: mtps}, nil
+}

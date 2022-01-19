@@ -101,6 +101,21 @@ func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []strin
 	return assetList
 }
 
+func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*types.MTP {
+	var mtps []*types.MTP
+	iterator := k.GetMTPIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var mtp types.MTP
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		if mtpAddress.String() == mtp.Address {
+			mtps = append(mtps, &mtp)
+		}
+	}
+	return mtps
+}
+
 func (k Keeper) DestroyMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string) error {
 	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress)
 	store := ctx.KVStore(k.storeKey)
