@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"time"
 
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
@@ -114,6 +115,25 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration
 	}
 
 	(*genesis).AppState.Gov.VotingParams.VotingPeriod = fmt.Sprintf("%v", period)
+	content, err := tmjson.Marshal(genesis)
+	if err != nil {
+		return err
+	}
+
+	if err := writeGenesis(nodeHomeDir, content); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReplaceMarginGenesis(nodeHomeDir string) error {
+	genesis, err := readGenesis(nodeHomeDir)
+	if err != nil {
+		return err
+	}
+
+	(*genesis).AppState.Margin = margintypes.DefaultGenesis()
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
