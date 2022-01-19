@@ -4,7 +4,7 @@ import "context"
 
 type Client interface {
 	/*GetCursor the position of named cursor from cursors table */
-	GetCursor(ctx context.Context, name string) int64
+	GetCursor(ctx context.Context, name string) (int64, error)
 
 	SetCursor(ctx context.Context, name string, position int64) error
 
@@ -25,11 +25,11 @@ type Client interface {
 type Consumer func(context.Context, *Event) error
 
 type Event struct {
-	ID         int64
-	EventType  string
-	Height     int32
+	ID         int64  `sql:"id"`
+	EventType  string `sql:"type"`
+	Height     int32  `sql:"height"`
 	Attributes []Attribute
-	Metadata   string
+	Metadata   string `sql:"metadata"`
 }
 
 type Attribute struct {
