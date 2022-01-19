@@ -23,7 +23,6 @@ type BankKeeper interface {
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
-	SetBalance(ctx sdk.Context, addr sdk.AccAddress, balance sdk.Coin) error
 	IterateAllBalances(ctx sdk.Context, cb func(sdk.AccAddress, sdk.Coin) bool)
 }
 
