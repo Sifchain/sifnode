@@ -76,9 +76,12 @@ func migrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bank
 			coin := sdk.NewCoins(sdk.NewCoin(value, amount))
 
 			// can't set balance directly, we mint to module, then transfer to address
-			bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coin)
-			err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, address, coin)
+			err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coin)
+			if err != nil {
+				panic("failed to mint coins during token migration")
+			}
 
+			err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, address, coin)
 			if err != nil {
 				panic("failed to set balance during token migration")
 			}

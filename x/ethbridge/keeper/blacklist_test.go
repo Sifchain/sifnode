@@ -42,7 +42,7 @@ func TestIsBlacklisted(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, oracleKeeper, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+		var ctx, keeper, _, _, oracleKeeper, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 		oracleKeeper.SetAdminAccount(ctx, adminAddress)
 		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
@@ -102,7 +102,7 @@ func TestSetBlacklist(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, oracleKeeper, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+		var ctx, keeper, _, _, oracleKeeper, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 		oracleKeeper.SetAdminAccount(ctx, adminAddress)
 		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
@@ -124,7 +124,7 @@ func TestSetBlacklist(t *testing.T) {
 }
 
 func TestKeeper_SetBlacklist_Nonadmin(t *testing.T) {
-	var ctx, keeper, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 		From: types.TestAddress,
 	})

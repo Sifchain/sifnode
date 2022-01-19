@@ -146,7 +146,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	require.NoError(t, err)
 	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
 	require.NoError(t, err)
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenRegistryKeeper, keyEthBridge)
 	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
 	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
 	// Setup validators
@@ -157,7 +157,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
 		valAddrsInOrder[i] = valAddr
 		valAddrs[valAddr.String()] = uint32(amount)
-		valTokens := sdk.TokensFromConsensusPower(amount)
+		valTokens := sdk.TokensFromConsensusPower(amount, sdk.DefaultPowerReduction)
 		// test how the validator is set from a purely unbonbed pool
 		validator, err := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
 		require.NoError(t, err)

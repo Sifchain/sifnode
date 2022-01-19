@@ -370,7 +370,9 @@ func TestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T) {
 	require.NoError(t, err)
 	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	err = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coins)
+	require.NoError(t, err)
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, cosmosSender, coins)
 	require.NoError(t, err)
 
 	testUpdateCrossChainFeeReceiverAccountMsg := types.CreateTestUpdateCrossChainFeeReceiverAccountMsg(
@@ -399,7 +401,11 @@ func TestRescueCrossChainFeeMsg(t *testing.T) {
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	_ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coins)
+	require.NoError(t, err)
+
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, cosmosSender, coins)
+	require.NoError(t, err)
 
 	res, err := handler(ctx, &testRescueCrossChainFeeMsg)
 	require.NoError(t, err)
