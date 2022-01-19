@@ -27,7 +27,7 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[types.NetworkDescriptor]typ
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkIdentity, validatorList types.ValidatorWhiteList) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkDescriptor.GetPrefix()
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&validatorList))
+	store.Set(key, k.cdc.MustMarshal(&validatorList))
 }
 
 // RemoveOracleWhiteList remove the validator list for a network.
@@ -49,7 +49,7 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkIdentity types.Networ
 	key := networkIdentity.GetPrefix()
 	bz := store.Get(key)
 	validators := &types.ValidatorWhiteList{}
-	k.cdc.MustUnmarshalBinaryBare(bz, validators)
+	k.cdc.MustUnmarshal(bz, validators)
 	return *validators
 }
 

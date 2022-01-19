@@ -24,8 +24,7 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
-
+	cdc codec.BinaryCodec // The wire codec for binary encoding/decoding.
 	accountKeeper       types.AccountKeeper
 	bankKeeper          types.BankKeeper
 	oracleKeeper        types.OracleKeeper
@@ -44,7 +43,7 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryMarshaler,
+func NewKeeper(cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
 	accountKeeper types.AccountKeeper,

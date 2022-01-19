@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
 
@@ -23,7 +24,7 @@ func (k Keeper) SetCrossChainFee(ctx sdk.Context,
 		MinimumBurnCost:          burnCost,
 		FirstLockDoublePeggyCost: firstLockDoublePeggyCost,
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&crossChainFee))
+	store.Set(key, k.cdc.MustMarshal(&crossChainFee))
 }
 
 // GetCrossChainFeeConfig return crosschain fee config
@@ -37,7 +38,7 @@ func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.Ne
 
 	bz := store.Get(key)
 	crossChainFeeConfig := &types.CrossChainFeeConfig{}
-	k.cdc.MustUnmarshalBinaryBare(bz, crossChainFeeConfig)
+	k.cdc.MustUnmarshal(bz, crossChainFeeConfig)
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.GetCrossChainFeeConfig, "crossChainFeeConfig", zap.Reflect("crossChainFeeConfig", crossChainFeeConfig))
 

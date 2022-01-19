@@ -23,9 +23,8 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
-	storeKey sdk.StoreKey          // Unexposed key to access store from sdk.Context
-
+	cdc      codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	storeKey sdk.StoreKey      // Unexposed key to access store from sdk.Context
 	stakeKeeper types.StakingKeeper
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
@@ -34,7 +33,7 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the oracle Keeper
 func NewKeeper(
-	cdc codec.BinaryMarshaler, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
+	cdc codec.BinaryCodec, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
 ) Keeper {
 	if consensusNeeded <= 0 || consensusNeeded > 1 {
 		panic(types.ErrMinimumConsensusNeededInvalid.Error())
@@ -52,7 +51,7 @@ func (k *Keeper) UpdateCurrentHeight(height int64) {
 }
 
 // GetCdc return keeper's cdc
-func (k Keeper) GetCdc() codec.BinaryMarshaler {
+func (k Keeper) GetCdc() codec.BinaryCodec {
 	return k.cdc
 }
 
