@@ -46,6 +46,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -472,12 +473,48 @@ func NewSifApp(
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
+
+		// XXX what is the correct order
+		crisistypes.ModuleName,
+		govtypes.ModuleName,
+		feegrant.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
+		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		genutiltypes.ModuleName,
+		vestingtypes.ModuleName,
+		banktypes.ModuleName,
+		paramstypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
+		authtypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
+
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		minttypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		ibchost.ModuleName,
+
+		disptypes.ModuleName,
+		transferModule.Name(),
+		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		genutiltypes.ModuleName,
+		vestingtypes.ModuleName,
+		banktypes.ModuleName,
+		paramstypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
+		authtypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -501,6 +538,10 @@ func NewSifApp(
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
 		tokenregistry.ModuleName,
+
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
+		upgradetypes.ModuleName,
 	)
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
