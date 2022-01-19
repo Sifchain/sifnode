@@ -27,18 +27,18 @@ func TestMsgServer_Transfer(t *testing.T) {
 		Denom:                "rowan",
 		Decimals:             18,
 		IbcCounterpartyDenom: "xrowan",
-		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCEXPORT},
+		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:       "xrowan",
 		Decimals:    10,
 		UnitDenom:   "rowan",
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCEXPORT},
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:       "misconfigured",
 		Decimals:    18,
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCEXPORT},
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:                "ceth",

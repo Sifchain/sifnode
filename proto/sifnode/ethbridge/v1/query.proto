@@ -100,11 +100,6 @@ message QueryGlobalSequenceBlockNumberRequest {
 // QueryGlobalSequenceBlockNumberResponse return GlobalsequenceBlockNumber
 message QueryGlobalSequenceBlockNumberResponse { uint64 block_number = 1; }
 
+message QueryBlacklistRequest {}
 
-message QueryBlacklistRequest {
-
-}
-
-message QueryBlacklistResponse {
-  repeated string addresses = 1;
-}
+message QueryBlacklistResponse { repeated string addresses = 1; }

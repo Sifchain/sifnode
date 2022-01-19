@@ -16,7 +16,7 @@ message Registry { repeated RegistryEntry entries = 1; }
 enum Permission {
   UNSPECIFIED = 0;
   CLP = 1;
-  IBCEXPORT =  2;
+  IBCEXPORT = 2;
   IBCIMPORT = 3;
 }
 

@@ -117,7 +117,7 @@ message MsgRescueCrossChainFeeResponse {}
 message MsgSetFeeInfo {
   string cosmos_sender = 1;
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
-  [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string fee_currency = 3;
   string fee_currency_gas = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -147,7 +147,7 @@ message MsgSetFeeInfoResponse {}
 message MsgSignProphecy {
   string cosmos_sender = 1;
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
-  [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   bytes prophecy_id = 3;
   string ethereum_address = 4;
   string signature = 5;
@@ -158,7 +158,7 @@ message MsgSignProphecyResponse {}
 message MsgUpdateConsensusNeeded {
   string cosmos_sender = 1;
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
-  [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   uint32 consensus_needed = 3;
 }
 
