@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM golang:1.15 AS build
+FROM golang:1.17 AS build
 
 ENV GOBIN=/go/bin
 ENV GOPATH=/go

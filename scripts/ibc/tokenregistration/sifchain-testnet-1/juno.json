@@ -1,13 +1,12 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/330D65554F859FB20E13413C88951CFE774DD2D83F593417A0552C0607C92225",
+      "denom": "ibc/04F5F501207C3626A2C14BFEF654D51C2E0B8F7CA578AB8ED272A66FE4E48097",
       "base_denom": "ujuno",
-      "path": "transfer/channel-36",
-      "ibc_channel_id": "channel-36",
-      "ibc_counterparty_channel_id": "channel-4",
+      "path": "transfer/channel-0",
+      "ibc_channel_id": "channel-0",
+      "ibc_counterparty_channel_id": "channel-23",
       "display_name": "",
       "display_symbol": "",
       "network": "",

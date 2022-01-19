@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "9",
+      "denom": "ibc/1C9B273EAAE5A143F9F25EFD2496B52587D16868D47B62A10ABFD38DE784402E",
+      "base_denom": "nanolike",
+      "path": "transfer/channel-3",
+      "ibc_channel_id": "channel-3",
+      "ibc_counterparty_channel_id": "channel-10",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "likecoin-mainnet-2"
+    }
+  ]
+}

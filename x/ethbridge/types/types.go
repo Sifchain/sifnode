@@ -19,6 +19,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgSignProphecy{},
 		&MsgSetFeeInfo{},
 		&MsgUpdateConsensusNeeded{},
+		&MsgSetBlacklist{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

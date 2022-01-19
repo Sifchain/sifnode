@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -252,4 +253,22 @@ func TestReadTokenMapJson(t *testing.T) {
 	jsonData := readTokenMapJSON()
 	// ba6973c40816e27ad5019d6ae10c67ccb0eef1d67ac0bd2c17425a17680eba3f is the hash of 0x00000000000000000000181
 	require.Equal(t, jsonData, map[string]string{"ceth": "ba6973c40816e27ad5019d6ae10c67ccb0eef1d67ac0bd2c17425a17680eba3f"})
+}
+
+func TestAddressFormatValidation(t *testing.T) {
+	addr0 := make([]byte, 0)
+	err := sdk.VerifyAddressFormat(addr0)
+	assert.Error(t, err, "addresses cannot be empty: unknown address")
+	addr5 := make([]byte, 5)
+	err = sdk.VerifyAddressFormat(addr5)
+	assert.NoError(t, err)
+	addr20 := make([]byte, 20)
+	err = sdk.VerifyAddressFormat(addr20)
+	assert.NoError(t, err)
+	addr32 := make([]byte, 32)
+	err = sdk.VerifyAddressFormat(addr32)
+	assert.NoError(t, err)
+	addr256 := make([]byte, 256)
+	err = sdk.VerifyAddressFormat(addr256)
+	assert.Error(t, err, "address max length is 255, got 256: unknown address")
 }

@@ -7,13 +7,10 @@ package tokenregistrymocks
 import (
 	reflect "reflect"
 
-	types "github.com/Sifchain/sifnode/x/oracle/types"
-	types0 "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	types1 "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/cosmos/cosmos-sdk/x/auth/types"
+	types "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
-	types3 "github.com/tendermint/tendermint/abci/types"
-	log "github.com/tendermint/tendermint/libs/log"
+	types1 "github.com/tendermint/tendermint/abci/types"
 )
 
 // MockKeeper is a mock of Keeper interface.
@@ -39,53 +36,25 @@ func (m *MockKeeper) EXPECT() *MockKeeperMockRecorder {
 	return m.recorder
 }
 
-// AddIBCTokenMetadata mocks base method.
-func (m *MockKeeper) AddIBCTokenMetadata(ctx types1.Context, metadata types0.TokenMetadata, cosmosSender types1.AccAddress) string {
+// CheckEntryPermissions mocks base method.
+func (m *MockKeeper) CheckEntryPermissions(entry *types.RegistryEntry, permissions []types.Permission) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddIBCTokenMetadata", ctx, metadata, cosmosSender)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// AddIBCTokenMetadata indicates an expected call of AddIBCTokenMetadata.
-func (mr *MockKeeperMockRecorder) AddIBCTokenMetadata(ctx, metadata, cosmosSender interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIBCTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).AddIBCTokenMetadata), ctx, metadata, cosmosSender)
-}
-
-// AddTokenMetadata mocks base method.
-func (m *MockKeeper) AddTokenMetadata(ctx types1.Context, metadata types0.TokenMetadata) string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddTokenMetadata", ctx, metadata)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// AddTokenMetadata indicates an expected call of AddTokenMetadata.
-func (mr *MockKeeperMockRecorder) AddTokenMetadata(ctx, metadata interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).AddTokenMetadata), ctx, metadata)
-}
-
-// CheckDenomPermissions mocks base method.
-func (m *MockKeeper) CheckDenomPermissions(ctx types1.Context, denom string, permissions []types0.Permission) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckDenomPermissions", ctx, denom, permissions)
+	ret := m.ctrl.Call(m, "CheckEntryPermissions", entry, permissions)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// CheckDenomPermissions indicates an expected call of CheckDenomPermissions.
-func (mr *MockKeeperMockRecorder) CheckDenomPermissions(ctx, denom, permissions interface{}) *gomock.Call {
+// CheckEntryPermissions indicates an expected call of CheckEntryPermissions.
+func (mr *MockKeeperMockRecorder) CheckEntryPermissions(entry, permissions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDenomPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckDenomPermissions), ctx, denom, permissions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckEntryPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckEntryPermissions), entry, permissions)
 }
 
 // ExportGenesis mocks base method.
-func (m *MockKeeper) ExportGenesis(ctx types1.Context) *types0.GenesisState {
+func (m *MockKeeper) ExportGenesis(ctx types0.Context) *types.GenesisState {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExportGenesis", ctx)
-	ret0, _ := ret[0].(*types0.GenesisState)
+	ret0, _ := ret[0].(*types.GenesisState)
 	return ret0
 }
 
@@ -95,68 +64,40 @@ func (mr *MockKeeperMockRecorder) ExportGenesis(ctx interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportGenesis", reflect.TypeOf((*MockKeeper)(nil).ExportGenesis), ctx)
 }
 
-// GetDenom mocks base method.
-func (m *MockKeeper) GetDenom(ctx types1.Context, denom string) types0.RegistryEntry {
+// GetEntry mocks base method.
+func (m *MockKeeper) GetEntry(registry types.Registry, denom string) (*types.RegistryEntry, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDenom", ctx, denom)
-	ret0, _ := ret[0].(types0.RegistryEntry)
-	return ret0
+	ret := m.ctrl.Call(m, "GetEntry", registry, denom)
+	ret0, _ := ret[0].(*types.RegistryEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// GetDenom indicates an expected call of GetDenom.
-func (mr *MockKeeperMockRecorder) GetDenom(ctx, denom interface{}) *gomock.Call {
+// GetEntry indicates an expected call of GetEntry.
+func (mr *MockKeeperMockRecorder) GetEntry(registry, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenom", reflect.TypeOf((*MockKeeper)(nil).GetDenom), ctx, denom)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEntry", reflect.TypeOf((*MockKeeper)(nil).GetEntry), registry, denom)
 }
 
-// GetDenomWhitelist mocks base method.
-func (m *MockKeeper) GetRegistry(ctx types1.Context) types0.Registry {
+// GetRegistry mocks base method.
+func (m *MockKeeper) GetRegistry(ctx types0.Context) types.Registry {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRegistry", ctx)
-	ret0, _ := ret[0].(types0.Registry)
+	ret0, _ := ret[0].(types.Registry)
 	return ret0
 }
 
-// GetDenomWhitelist indicates an expected call of GetDenomWhitelist.
-func (mr *MockKeeperMockRecorder) GetDenomWhitelist(ctx interface{}) *gomock.Call {
+// GetRegistry indicates an expected call of GetRegistry.
+func (mr *MockKeeperMockRecorder) GetRegistry(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRegistry", reflect.TypeOf((*MockKeeper)(nil).GetRegistry), ctx)
 }
 
-// GetFirstLockDoublePeg mocks base method.
-func (m *MockKeeper) GetFirstLockDoublePeg(ctx types1.Context, denom string, networkDescriptor types.NetworkDescriptor) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFirstLockDoublePeg", ctx, denom, networkDescriptor)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// GetFirstLockDoublePeg indicates an expected call of GetFirstLockDoublePeg.
-func (mr *MockKeeperMockRecorder) GetFirstLockDoublePeg(ctx, denom, networkDescriptor interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFirstLockDoublePeg", reflect.TypeOf((*MockKeeper)(nil).GetFirstLockDoublePeg), ctx, denom, networkDescriptor)
-}
-
-// GetTokenMetadata mocks base method.
-func (m *MockKeeper) GetTokenMetadata(ctx types1.Context, denomHash string) (types0.TokenMetadata, bool) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenMetadata", ctx, denomHash)
-	ret0, _ := ret[0].(types0.TokenMetadata)
-	ret1, _ := ret[1].(bool)
-	return ret0, ret1
-}
-
-// GetTokenMetadata indicates an expected call of GetTokenMetadata.
-func (mr *MockKeeperMockRecorder) GetTokenMetadata(ctx, denomHash interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).GetTokenMetadata), ctx, denomHash)
-}
-
 // InitGenesis mocks base method.
-func (m *MockKeeper) InitGenesis(ctx types1.Context, state types0.GenesisState) []types3.ValidatorUpdate {
+func (m *MockKeeper) InitGenesis(ctx types0.Context, state types.GenesisState) []types1.ValidatorUpdate {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InitGenesis", ctx, state)
-	ret0, _ := ret[0].([]types3.ValidatorUpdate)
+	ret0, _ := ret[0].([]types1.ValidatorUpdate)
 	return ret0
 }
 
@@ -167,7 +108,7 @@ func (mr *MockKeeperMockRecorder) InitGenesis(ctx, state interface{}) *gomock.Ca
 }
 
 // IsAdminAccount mocks base method.
-func (m *MockKeeper) IsAdminAccount(ctx types1.Context, adminAccount types1.AccAddress) bool {
+func (m *MockKeeper) IsAdminAccount(ctx types0.Context, adminAccount types0.AccAddress) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsAdminAccount", ctx, adminAccount)
 	ret0, _ := ret[0].(bool)
@@ -180,36 +121,8 @@ func (mr *MockKeeperMockRecorder) IsAdminAccount(ctx, adminAccount interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdminAccount", reflect.TypeOf((*MockKeeper)(nil).IsAdminAccount), ctx, adminAccount)
 }
 
-// IsDenomWhitelisted mocks base method.
-func (m *MockKeeper) IsDenomWhitelisted(ctx types1.Context, denom string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsDenomWhitelisted", ctx, denom)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsDenomWhitelisted indicates an expected call of IsDenomWhitelisted.
-func (mr *MockKeeperMockRecorder) IsDenomWhitelisted(ctx, denom interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDenomWhitelisted", reflect.TypeOf((*MockKeeper)(nil).IsDenomWhitelisted), ctx, denom)
-}
-
-// Logger mocks base method.
-func (m *MockKeeper) Logger(ctx types1.Context) log.Logger {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Logger", ctx)
-	ret0, _ := ret[0].(log.Logger)
-	return ret0
-}
-
-// Logger indicates an expected call of Logger.
-func (mr *MockKeeperMockRecorder) Logger(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockKeeper)(nil).Logger), ctx)
-}
-
 // RemoveToken mocks base method.
-func (m *MockKeeper) RemoveToken(ctx types1.Context, denom string) {
+func (m *MockKeeper) RemoveToken(ctx types0.Context, denom string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "RemoveToken", ctx, denom)
 }
@@ -221,7 +134,7 @@ func (mr *MockKeeperMockRecorder) RemoveToken(ctx, denom interface{}) *gomock.Ca
 }
 
 // SetAdminAccount mocks base method.
-func (m *MockKeeper) SetAdminAccount(ctx types1.Context, adminAccount types1.AccAddress) {
+func (m *MockKeeper) SetAdminAccount(ctx types0.Context, adminAccount types0.AccAddress) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetAdminAccount", ctx, adminAccount)
 }
@@ -232,20 +145,8 @@ func (mr *MockKeeperMockRecorder) SetAdminAccount(ctx, adminAccount interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAdminAccount", reflect.TypeOf((*MockKeeper)(nil).SetAdminAccount), ctx, adminAccount)
 }
 
-// SetFirstLockDoublePeg mocks base method.
-func (m *MockKeeper) SetFirstLockDoublePeg(ctx types1.Context, denom string, networkDescriptor types.NetworkDescriptor) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetFirstLockDoublePeg", ctx, denom, networkDescriptor)
-}
-
-// SetFirstLockDoublePeg indicates an expected call of SetFirstLockDoublePeg.
-func (mr *MockKeeperMockRecorder) SetFirstLockDoublePeg(ctx, denom, networkDescriptor interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFirstLockDoublePeg", reflect.TypeOf((*MockKeeper)(nil).SetFirstLockDoublePeg), ctx, denom, networkDescriptor)
-}
-
 // SetToken mocks base method.
-func (m *MockKeeper) SetToken(ctx types1.Context, entry *types0.RegistryEntry) {
+func (m *MockKeeper) SetToken(ctx types0.Context, entry *types.RegistryEntry) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetToken", ctx, entry)
 }
@@ -254,53 +155,4 @@ func (m *MockKeeper) SetToken(ctx types1.Context, entry *types0.RegistryEntry) {
 func (mr *MockKeeperMockRecorder) SetToken(ctx, entry interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockKeeper)(nil).SetToken), ctx, entry)
-}
-
-// MockAccountKeeper is a mock of AccountKeeper interface.
-type MockAccountKeeper struct {
-	ctrl     *gomock.Controller
-	recorder *MockAccountKeeperMockRecorder
-}
-
-// MockAccountKeeperMockRecorder is the mock recorder for MockAccountKeeper.
-type MockAccountKeeperMockRecorder struct {
-	mock *MockAccountKeeper
-}
-
-// NewMockAccountKeeper creates a new mock instance.
-func NewMockAccountKeeper(ctrl *gomock.Controller) *MockAccountKeeper {
-	mock := &MockAccountKeeper{ctrl: ctrl}
-	mock.recorder = &MockAccountKeeperMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockAccountKeeper) EXPECT() *MockAccountKeeperMockRecorder {
-	return m.recorder
-}
-
-// GetAccount mocks base method.
-func (m *MockAccountKeeper) GetAccount(arg0 types1.Context, arg1 types1.AccAddress) types2.AccountI {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccount", arg0, arg1)
-	ret0, _ := ret[0].(types2.AccountI)
-	return ret0
-}
-
-// GetAccount indicates an expected call of GetAccount.
-func (mr *MockAccountKeeperMockRecorder) GetAccount(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockAccountKeeper)(nil).GetAccount), arg0, arg1)
-}
-
-// SetModuleAccount mocks base method.
-func (m *MockAccountKeeper) SetModuleAccount(arg0 types1.Context, arg1 types2.ModuleAccountI) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetModuleAccount", arg0, arg1)
-}
-
-// SetModuleAccount indicates an expected call of SetModuleAccount.
-func (mr *MockAccountKeeperMockRecorder) SetModuleAccount(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetModuleAccount", reflect.TypeOf((*MockAccountKeeper)(nil).SetModuleAccount), arg0, arg1)
 }

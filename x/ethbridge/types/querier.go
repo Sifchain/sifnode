@@ -14,6 +14,7 @@ const (
 	QueryGlobalSequenceBlockNumber = "globalSequenceBlockNumber"
 	QueryProphciesCompleted = "prophciesCompleted"
 
+	QueryBlacklist   = "blacklist"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams

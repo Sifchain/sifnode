@@ -30,6 +30,7 @@ func GetQueryCmd() *cobra.Command {
 		cli.GetCmdGetCrosschainFeeConfig(),
 		cli.GetEthereumLockBurnNonce(),
 		cli.GetWitnessLockBurnSequence(),
+		cli.GetCmdGetBlacklist(),
 	)
 
 	return ethBridgeQueryCmd
@@ -57,6 +58,7 @@ func GetTxCmd() *cobra.Command {
 		cli.GetCmdSetCrossChainFee(),
 		cli.GetCmdSignProphecy(),
 		cli.GetCmdUpdateConsensusNeeded(),
+		cli.GetCmdSetBlacklist(),
 	)
 
 	return ethBridgeTxCmd

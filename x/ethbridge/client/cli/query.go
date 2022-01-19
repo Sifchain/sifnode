@@ -8,6 +8,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 )
 
@@ -216,4 +217,33 @@ func GetProphecyCompleted() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
+}
+
+func GetCmdGetBlacklist() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "blacklist",
+		Short: "Query full address blacklist",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryBlacklistRequest{}
+
+			res, err := queryClient.GetBlacklist(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }

@@ -5,12 +5,6 @@
 make clean install
 sifnoded init test --chain-id=localnet -o
 
-#sifnoded config output json
-#sifnoded config indent true
-#sifnoded config trust-node true
-#sifnoded config chain-id localnet
-#sifnoded config keyring-backend test
-
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover --keyring-backend=test
 
@@ -26,6 +20,7 @@ sifnoded add-genesis-account $(sifnoded keys show akasha -a --keyring-backend=te
 sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a --keyring-backend=test) --keyring-backend=test
 sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a --keyring-backend=test) --keyring-backend=test
 
+sifnoded set-genesis-oracle-admin sif --keyring-backend=test
 sifnoded set-genesis-whitelister-admin sif --keyring-backend=test
 sifnoded set-gen-denom-whitelist scripts/denoms.json
 

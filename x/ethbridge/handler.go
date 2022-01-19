@@ -14,7 +14,6 @@ import (
 // NewHandler returns a handler for "ethbridge" type messages.
 func NewHandler(k Keeper) sdk.Handler {
 	msgServer := keeper.NewMsgServerImpl(k)
-
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
@@ -46,8 +45,11 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgUpdateConsensusNeeded:
 			res, err := msgServer.UpdateConsensusNeeded(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgSetBlacklist:
+			res, err := msgServer.SetBlacklist(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
-			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
+			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", sdk.MsgTypeURL(msg))
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}

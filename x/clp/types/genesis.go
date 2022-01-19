@@ -9,7 +9,6 @@ import (
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState(params Params) GenesisState {
-
 	return GenesisState{
 		Params: params,
 	}
@@ -24,7 +23,7 @@ func DefaultGenesisState() *GenesisState {
 	}
 }
 
-func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
 		err := marshaler.UnmarshalJSON(appState[ModuleName], &genesisState)

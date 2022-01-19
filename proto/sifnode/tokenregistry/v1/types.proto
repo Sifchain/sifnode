@@ -1,6 +1,5 @@
 syntax = "proto3";
 package sifnode.tokenregistry.v1;
-
 import "gogoproto/gogo.proto";
 import "sifnode/oracle/v1/network_descriptor.proto";
 
@@ -15,18 +14,14 @@ message Registry { repeated RegistryEntry entries = 1; }
 
 // Permission
 enum Permission {
-  // PERMISSION_UNSPECIFIED
-  PERMISSION_UNSPECIFIED = 0;
-  // PERMISSION_CLP
-  PERMISSION_CLP = 1;
-  // PERMISSION_IBCEXPORT
-  PERMISSION_IBCEXPORT = 2;
-  // PERMISSION_IBCIMPORT
-  PERMISSION_IBCIMPORT = 3;
+  UNSPECIFIED = 0;
+  CLP = 1;
+  IBCEXPORT =  2;
+  IBCIMPORT = 3;
 }
 
 message RegistryEntry {
-  bool is_whitelisted = 1;
+  reserved 1;
   int64 decimals = 2;
   string denom = 3;
   string base_denom = 4;

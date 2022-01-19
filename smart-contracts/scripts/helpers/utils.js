@@ -171,6 +171,18 @@ const SIFNODE_MODEL = {
   ibc_counterparty_chain_id: "",
 };
 
+function extractPrivateKeys(envString) {
+  let finalList = [];
+  if (envString.indexOf(",") == -1) {
+    // there is only one key here
+    finalList.push(envString);
+  } else {
+    finalList = envString.split(",");
+  }
+
+  return finalList;
+}
+
 module.exports = {
   print,
   isValidSymbol,
@@ -180,4 +192,5 @@ module.exports = {
   hasSameElementsAndLength,
   generateV1Denom,
   SIFNODE_MODEL,
+  extractPrivateKeys,
 };
