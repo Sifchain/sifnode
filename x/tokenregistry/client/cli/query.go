@@ -68,7 +68,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagDisplaySymbol = "token_display_symbol"
 	var flagExternalSymbol = "token_external_symbol"
 	var flagTransferLimit = "token_transfer_limit"
-	var flagNetwork = "token_network"
+	var flagNetworkDescriptor = "token_network"
 	var flagAddress = "token_address"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
@@ -133,7 +133,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			network, err := flags.GetInt32(flagNetwork)
+			network, err := flags.GetUint64(flagNetworkDescriptor)
 			if err != nil {
 				return err
 			}
@@ -231,8 +231,8 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The original symbol as seen on external network")
 	cmd.Flags().String(flagTransferLimit, "",
 		"Used by UI")
-	cmd.Flags().String(flagNetwork, "",
-		"Original network of token i.e ethereum")
+	cmd.Flags().Uint64(flagNetworkDescriptor, 1,
+		"Network descriptor for token")
 	cmd.Flags().String(flagAddress, "",
 		"Contract address i.e in EVM cases")
 	// Permission flags, default true.

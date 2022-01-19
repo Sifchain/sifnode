@@ -12,18 +12,19 @@ import (
 
 func TestGenerateEntry(t *testing.T) {
 	cmd, _ := NewRootCmd()
-	cmd.SetArgs([]string{
+	cmdElements := []string{
 		"query",
 		"tokenregistry",
 		"generate",
 		"--token_base_denom", "uatom",
 		"--token_ibc_channel_id", "channel-0",
 		"--token_decimals", "6",
-	})
+	}
+	cmd.SetArgs(cmdElements)
 	app.SetConfig(false)
 	homeDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(homeDir)
 	err = svrcmd.Execute(cmd, homeDir)
-	require.NoError(t, err)
+	require.NoError(t, err, "command", "cmdElements", cmdElements, "homeDir", homeDir)
 }
