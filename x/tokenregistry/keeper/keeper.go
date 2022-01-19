@@ -2,14 +2,17 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
+	"github.com/Sifchain/sifnode/x/instrumentation"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	gogotypes "github.com/gogo/protobuf/types"
-
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 type keeper struct {
@@ -22,6 +25,11 @@ func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
 		cdc:      cdc,
 		storeKey: storeKey,
 	}
+}
+
+// Logger returns a module-specific logger.
+func (k keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
@@ -100,19 +108,67 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 	})
 }
 
-func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
+// GetRegistry get all token's metadata
+func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
+	var entries []*types.RegistryEntry
+
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&wl)
-	store.Set(types.WhitelistStorePrefix, bz)
+	iterator := sdk.KVStorePrefixIterator(store, types.TokenDenomPrefix)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var registry types.RegistryEntry
+		key := iterator.Key()
+		bz := store.Get(key)
+		k.cdc.MustUnmarshal(bz, &registry)
+
+		entries = append(entries, &registry)
+	}
+
+	return types.Registry{
+		Entries: entries,
+	}
 }
 
-func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
-	var whitelist types.Registry
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.WhitelistStorePrefix)
-	if len(bz) == 0 {
-		return types.Registry{}
+// SetRegistry add a bunch of tokens
+func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
+
+	for _, item := range wl.Entries {
+		k.SetToken(ctx, item)
 	}
-	k.cdc.MustUnmarshal(bz, &whitelist)
-	return whitelist
+}
+
+func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
+	return append(types.TokenDenomPrefix, []byte(denom)...)
+}
+
+func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
+
+	var entry types.RegistryEntry
+	key := k.GetDenomPrefix(ctx, denom)
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(key)
+
+	k.cdc.MustUnmarshal(bz, &entry)
+
+	return entry
+}
+
+func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
+	registry := k.GetDenom(ctx, denom)
+	if result, ok := registry.DoublePeggedNetworkMap[uint32(networkDescriptor)]; ok {
+		return result
+	}
+
+	return true
+}
+
+func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
+	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
+	if firstLockDoublePeg {
+		registry := k.GetDenom(ctx, denom)
+		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
+		k.SetToken(ctx, &registry)
+
+		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
+	}
 }

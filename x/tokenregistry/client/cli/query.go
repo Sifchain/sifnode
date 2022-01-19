@@ -11,6 +11,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	"github.com/spf13/cobra"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 )
@@ -132,7 +133,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			network, err := flags.GetString(flagNetwork)
+			network, err := flags.GetInt32(flagNetwork)
 			if err != nil {
 				return err
 			}
@@ -197,7 +198,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				UnitDenom:                unitDenom,
 				DisplayName:              displayName,
 				DisplaySymbol:            displaySymbol,
-				Network:                  network,
+				Network:                  oracletypes.NetworkDescriptor(network),
 				Address:                  address,
 				ExternalSymbol:           externalSymbol,
 				TransferLimit:            transferLimit,

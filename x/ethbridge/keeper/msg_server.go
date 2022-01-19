@@ -9,10 +9,8 @@ import (
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
 
-  sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
