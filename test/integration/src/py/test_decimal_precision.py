@@ -74,18 +74,6 @@ class TxType(enum.Enum):
     DEDUCT = 'deduct'
 
 
-def truncate_value(input_value, digits_to_truncate):
-    if digits_to_truncate > 0:
-        # create a string from value and then manipulate it
-        input_value = str(input_value)
-        if len(input_value) - digits_to_truncate > 0:
-            return input_value[0:len(input_value)-digits_to_truncate]
-        else:
-            return input_value
-    else:
-        return input_value
-
-
 def query_balance(asset, chain=Chain.SIFCHAIN):
     if (chain == Chain.SIFCHAIN):
         cmd = cmd_sif_q_balance
@@ -105,9 +93,13 @@ def query_balance(asset, chain=Chain.SIFCHAIN):
     denom_index = [index for index, value in enumerate(
         balances) if value.find(f'denom: {asset}') != -1]
     if (len(denom_index) > 0):
-        # index of amount is always less by 1
-        balance = re.sub(
-            r'^.*amount: ', '', balances[denom_index[0] - 1])
+        # index of amount is always less by 1, update : it's is NOT!! for iris (it's +1)
+        if (chain != 'iris'):
+            balance = re.sub(
+                r'^.*amount: ', '', balances[denom_index[0] - 1])
+        else:
+            balance = re.sub(
+                r'^.*amount: ', '', balances[denom_index[0] + 1])
     else:
         raise Exception(f'Denom balance for {asset} not found.')
 
@@ -165,15 +157,21 @@ def query_tx_hash(cmd):
 # 123456789012345678 -> 123456789000000000
 # 123456789 -> 100000000
 # 500 -> 000
+# it digits_to_truncate is negative, then we are adding instead of truncating
+# 123456 -> 123456000000000000
 
 
 def convert_amount(value, digits_to_truncate=8):
     # create a string from value and then manipulate it
     value = str(value)
-    if len(value) <= digits_to_truncate:
-        result = '0'.ljust(digits_to_truncate, '0')
+    if digits_to_truncate > 0:
+        if len(value) <= digits_to_truncate:
+            result = '0'.ljust(digits_to_truncate, '0')
+        else:
+            result = value[0:len(value)-digits_to_truncate]
     else:
-        result = value[0:len(value)-digits_to_truncate]
+        result = value.ljust(len(value)-digits_to_truncate,
+                             '0')  # it's in fact adding here
 
     general_logger.info(f'Converted amount = {result}')
     return result
@@ -209,19 +207,21 @@ def assert_expected_value(expected, asset, chain=Chain.SIFCHAIN):
     assert expected == actual, f'\t\tAssertion failed for {chain}, {asset}: expected {expected}, got {actual}.'
 
 
-def normalize_ibc_amount_to_sif_dp(amount):
-    if isinstance(amount, int):
-        amount = str(amount)
+# def normalize_ibc_amount_to_sif_dp(amount):
+#     if isinstance(amount, int):
+#         amount = str(amount)
 
-    precision_diff = int(sif_asset_dp_value) - int(ibc_denom_dp_value)
-    normalized = 0
-    if precision_diff > 0:  # i.e. 18 for ceth/rowan, 6 for cusdc, 8 for ccro
-        normalized = int(amount.ljust(len(amount) + precision_diff, '0'))
-    else:
-        normalized = int(amount)
+#     # comment 01-14-22: we now take absolute value
+#     precision_diff = abs(int(sif_asset_dp_value) - int(ibc_denom_dp_value))
+#     normalized = 0
+#     # new code
+#     if len(amount) < precision_diff:
+#         normalized = int(amount.ljust(len(amount) + precision_diff, '0'))
+#     else:
+#         normalized = int(amount)
 
-    general_logger.info(f'Normalized amount = {normalized}')
-    return normalized
+#     general_logger.info(f'Normalized amount = {normalized}')
+#     return normalized
 
 
 def save_tx_info(denom, tx_amount, source_chain, tx_info):
@@ -246,12 +246,12 @@ for tx_data in data["tx"]:
     ibc_denom_dp_value = tx_data["ibc_denom_dp_value"]
     save_tx_info_new_denom(sif_asset)
     for tx_amount in tx_data["amount"]:
+        # it might be a negative value, then we should add instead of truncate
         digits_to_truncate = int(sif_asset_dp_value) - int(ibc_denom_dp_value)
+
         tx_amount_converted = int(
             convert_amount(tx_amount, digits_to_truncate))
-        tx_amount_normalized = normalize_ibc_amount_to_sif_dp(
-            tx_amount_converted)
-        cmd_tx_sif_to_external = f'sifnoded tx ibc-transfer transfer transfer {channel} {external_wallet} {tx_amount}{sif_asset} --from={sif_wallet} --keyring-backend=test --node={sif_node} --chain-id={sif_chain_id} -y --packet-timeout-timestamp=6000000000000 --gas=500000 --gas-prices=0.5rowan'
+        cmd_tx_sif_to_external = f'sifnoded tx ibc-transfer transfer transfer {channel} {external_wallet} {tx_amount}{sif_asset} --from={sif_wallet} --keyring-backend=test --node={sif_node} --chain-id={sif_chain_id} -y --packet-timeout-timestamp=6000000000000 --fees 100000000000000000rowan --log_format json'
         cmd_tx_external_to_sif = f'{external_cli_tool} tx ibc-transfer transfer transfer {counterparty_channel} {sif_wallet} {tx_amount_converted}{ibc_denom} --from={external_wallet} --keyring-backend=test --chain-id={external_chain_id} --node={external_node} -y --gas-prices={external_gas_price} --gas=500000 --packet-timeout-timestamp=600000000000'
 
         print(
@@ -266,7 +266,7 @@ for tx_data in data["tx"]:
         tx_info = transfer_tx(dest_chain=external_network)
         save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
         assert_expected_value(calculate_expected_value(
-            sif_asset_balance, tx_amount_normalized, TxType.DEDUCT), sif_asset, Chain.SIFCHAIN)
+            sif_asset_balance, tx_amount, TxType.DEDUCT), sif_asset, Chain.SIFCHAIN)
         assert_expected_value(calculate_expected_value(
             external_asset_balance, tx_amount_converted, TxType.INCREASE), ibc_denom, external_network)
 
@@ -290,7 +290,7 @@ for tx_data in data["tx"]:
             assert_expected_value(calculate_expected_value(
                 external_asset_balance, tx_amount_converted, TxType.DEDUCT), ibc_denom, external_network)
             assert_expected_value(calculate_expected_value(
-                sif_asset_balance, tx_amount_normalized, TxType.INCREASE), sif_asset, Chain.SIFCHAIN)
+                sif_asset_balance, tx_amount, TxType.INCREASE), sif_asset, Chain.SIFCHAIN)
             if get_gas_info_flag:
                 cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={external_node} --output=json'
                 tx_info = query_tx_hash(cmd_tx_hash_info)
