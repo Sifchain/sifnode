@@ -13,9 +13,9 @@ import (
 )
 
 const releaseVersion = "0.10.0"
-const release_candidate_4 = "rc.4"
-const release_candidate_5 = "rc.5"
-const release_candidate_6 = "rc.6"
+const releaseCandidate4 = "rc.4"
+const releaseCandidate5 = "rc.5"
+const releaseCandidate6 = "rc.6"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
@@ -42,15 +42,15 @@ func SetupHandlers(app *SifchainApp) {
 		// This is to make sure auth module migrates after staking
 		return app.mm.RunMigrations(ctx, app.configurator, newVM)
 	})
-	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, release_candidate_4}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate4}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		delete(vm, feegrant.ModuleName)
 		delete(vm, crisistypes.ModuleName)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
-	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, release_candidate_5}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate5}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
-	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, release_candidate_6}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate6}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 

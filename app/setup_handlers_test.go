@@ -8,10 +8,10 @@ import (
 
 func TestSetupHandlers_CreateName(t *testing.T) {
 	const releaseVersion = "0.10.0"
-	const release_candidate_4 = "rc.4"
-	const release_candidate_5 = "rc.5"
-	const release_candidate_6 = "rc.6"
-	require.Equal(t, "0.10.0-rc.4", strings.Join([]string{releaseVersion, release_candidate_4}, "-"))
-	require.Equal(t, "0.10.0-rc.5", strings.Join([]string{releaseVersion, release_candidate_5}, "-"))
-	require.Equal(t, "0.10.0-rc.6", strings.Join([]string{releaseVersion, release_candidate_6}, "-"))
+	const releaseCandidate4 = "rc.4"
+	const releaseCandidate5 = "rc.5"
+	const releaseCandidate6 = "rc.6"
+	require.Equal(t, "0.10.0-rc.4", strings.Join([]string{releaseVersion, releaseCandidate4}, "-"))
+	require.Equal(t, "0.10.0-rc.5", strings.Join([]string{releaseVersion, releaseCandidate5}, "-"))
+	require.Equal(t, "0.10.0-rc.6", strings.Join([]string{releaseVersion, releaseCandidate6}, "-"))
 }
