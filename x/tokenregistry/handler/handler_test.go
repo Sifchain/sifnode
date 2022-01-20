@@ -203,6 +203,7 @@ func TestHandleSetRegistry(t *testing.T) {
 	}
 	for _, tt := range setup {
 		tt := tt
+		registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := h(ctx, &tt.msg)
 			tt.errorAssertion(t, err)
@@ -211,6 +212,7 @@ func TestHandleSetRegistry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
+		registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := h(ctx, &tt.msg)
 			tt.errorAssertion(t, err)
