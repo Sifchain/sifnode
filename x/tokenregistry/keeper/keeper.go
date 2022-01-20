@@ -83,29 +83,19 @@ func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry,
 }
 
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
-	wl := k.GetRegistry(ctx)
-	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
-			wl.Entries[i] = entry
-			k.SetRegistry(ctx, wl)
-			return
-		}
-	}
-	wl.Entries = append(wl.Entries, entry)
-	k.SetRegistry(ctx, wl)
+	entry.Sanitize()
+	key := k.GetDenomPrefix(ctx, entry.Denom)
+	store := ctx.KVStore(k.storeKey)
+
+	bz := k.cdc.MustMarshal(entry)
+
+	store.Set(key, bz)
 }
 
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	registry := k.GetRegistry(ctx)
-	updated := make([]*types.RegistryEntry, 0)
-	for _, t := range registry.Entries {
-		if t != nil && !strings.EqualFold(t.Denom, denom) {
-			updated = append(updated, t)
-		}
-	}
-	k.SetRegistry(ctx, types.Registry{
-		Entries: updated,
-	})
+	key := k.GetDenomPrefix(ctx, denom)
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(key)
 }
 
 // GetRegistry get all token's metadata
@@ -131,7 +121,6 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 
 // SetRegistry add a bunch of tokens
 func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
-
 	for _, item := range wl.Entries {
 		k.SetToken(ctx, item)
 	}
