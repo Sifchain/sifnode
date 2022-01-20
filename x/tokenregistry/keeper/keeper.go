@@ -121,9 +121,9 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 
 // SetRegistry add a bunch of tokens
 func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
-	for _, item := range wl.Entries {
-		k.SetToken(ctx, item)
-	}
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&wl)
+	store.Set(types.TokenDenomPrefix, bz)
 }
 
 func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
