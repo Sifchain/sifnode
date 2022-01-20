@@ -333,14 +333,12 @@ func TestBurnEthSuccess(t *testing.T) {
 			case "global_sequence":
 			case senderString:
 			case "recipient":
+
 			case moduleString:
 				require.Equal(t, value, types.ModuleName)
 			case "network_id":
 				networkDescriptor = value
 			case "amount":
-			case "spender":
-			case "receiver":
-			case "burner":
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}

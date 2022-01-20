@@ -211,11 +211,6 @@ func TestHandleSetRegistry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		// need clear existed tokens from previous test case
-		registry = app.TokenRegistryKeeper.GetRegistry(ctx)
-		for _, item := range registry.Entries {
-			app.TokenRegistryKeeper.RemoveToken(ctx, item.Denom)
-		}
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := h(ctx, &tt.msg)
 			tt.errorAssertion(t, err)
