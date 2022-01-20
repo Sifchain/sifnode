@@ -18,6 +18,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 # We use one smart contract file as a signal that the abigen files have been created
 smart_contract_file=cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol/BridgeRegistry.go
 
+BUILD_TAGS ?= ${IMAGE_TAG}
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
