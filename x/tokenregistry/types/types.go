@@ -23,12 +23,12 @@ func (r *RegistryEntry) Sanitize() {
 func GetPermissionFromString(s string) Permission {
 	switch s {
 	case "PERMISSION_CLP":
-		return Permission_PERMISSION_CLP
+		return Permission_CLP
 	case "PERMISSION_IBCEXPORT":
-		return Permission_PERMISSION_IBCEXPORT
+		return Permission_IBCEXPORT
 	case "PERMISSION_IBCIMPORT":
-		return Permission_PERMISSION_IBCIMPORT
+		return Permission_IBCIMPORT
 	default:
-		return Permission_PERMISSION_UNSPECIFIED
+		return Permission_UNSPECIFIED
 	}
 }

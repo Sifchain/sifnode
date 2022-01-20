@@ -1,12 +1,10 @@
 import logging
-
 import pytest
 
 import burn_lock_functions
 import test_utilities
 from pytest_utilities import generate_test_account, generate_minimal_test_account
 from test_utilities import EthereumToSifchainTransferRequest, SifchaincliCredentials
-
 
 def test_eth_to_ceth(
         basic_transfer_request: EthereumToSifchainTransferRequest,
@@ -18,7 +16,6 @@ def test_eth_to_ceth(
         base_transfer_request=basic_transfer_request,
         target_ceth_balance=100
     )
-
 
 def test_eth_to_ceth_and_back_to_eth(
         basic_transfer_request: EthereumToSifchainTransferRequest,
@@ -57,7 +54,6 @@ def test_eth_to_ceth_and_back_to_eth(
     request.ethereum_symbol = "eth"
     request.amount = small_amount
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-
 
 def test_transfer_eth_to_ceth_over_limit(
         basic_transfer_request: EthereumToSifchainTransferRequest,

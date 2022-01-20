@@ -14,8 +14,10 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
 	cdc.RegisterConcrete(MsgUpdateCrossChainFeeReceiverAccount{}, "ethbridge/MsgUpdateCrossChainFeeReceiverAccount", nil)
 	cdc.RegisterConcrete(MsgRescueCrossChainFee{}, "ethbridge/MsgRescueCrossChainFee", nil)
+	cdc.RegisterConcrete(MsgSetBlacklist{}, "ethbridge/MsgSetBlacklist", nil)
 	cdc.RegisterConcrete(MsgSetFeeInfo{}, "ethbridge/MsgSetFeeInfo", nil)
 	cdc.RegisterConcrete(MsgSignProphecy{}, "ethbridge/MsgSignProphecy", nil)
+	cdc.RegisterConcrete(MsgUpdateConsensusNeeded{}, "ethbridge/MsgUpdateConsensusNeeded", nil)
 }
 
 var (

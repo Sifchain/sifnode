@@ -55,6 +55,19 @@ type Auth struct {
 	Accounts Accounts `json:"accounts"`
 }
 
+type AuthZ struct {
+	Authorization []string `json:"authorization"`
+}
+
+type Crisis struct {
+	ConstantFee ConstantFee `json:"constant_fee"`
+}
+
+type ConstantFee struct {
+	Amount string `json:"amount"`
+	Denom  string `json:"denom"`
+}
+
 type BankParams struct {
 	SendEnabled        []interface{} `json:"send_enabled"`
 	DefaultSendEnabled bool          `json:"default_send_enabled"`
@@ -268,6 +281,10 @@ type ClientGenesisParams struct {
 	AllowedClients []string `json:"allowed_clients"`
 }
 
+type ConnectionGenesisParams struct {
+	MaxExpectedTimePerBlock string `json:"max_expected_time_per_block"`
+}
+
 type ClientGenesis struct {
 	Clients            []interface{}       `json:"clients"`
 	ClientsConsensus   []interface{}       `json:"clients_consensus"`
@@ -278,9 +295,10 @@ type ClientGenesis struct {
 }
 
 type ConnectionGenesis struct {
-	Connections            []interface{} `json:"connections"`
-	ClientConnectionPaths  []interface{} `json:"client_connection_paths"`
-	NextConnectionSequence string        `json:"next_connection_sequence"`
+	Connections            []interface{}           `json:"connections"`
+	ClientConnectionPaths  []interface{}           `json:"client_connection_paths"`
+	NextConnectionSequence string                  `json:"next_connection_sequence"`
+	Params                 ConnectionGenesisParams `json:"params"`
 }
 
 type ChannelGenesis struct {
@@ -360,6 +378,7 @@ type AppState struct {
 	Mint         Mint          `json:"mint"`
 	Slashing     Slashing      `json:"slashing"`
 	Auth         Auth          `json:"auth"`
+	AuthZ        AuthZ         `json:"authz"`
 	Bank         Bank          `json:"bank"`
 	CLP          CLP           `json:"clp"`
 	Transfer     Transfer      `json:"transfer"`
@@ -368,6 +387,7 @@ type AppState struct {
 	Oracle       Oracle        `json:"oracle"`
 	Evidence     EvidenceState `json:"evidence"`
 	Genutil      Genutil       `json:"genutil"`
+	Crisis       Crisis        `json:"crisis"`
 }
 
 type Genesis struct {

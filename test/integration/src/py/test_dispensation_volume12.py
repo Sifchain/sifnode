@@ -121,11 +121,14 @@ def test_run_online_morethan10distribution_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-    distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
-    distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
+    distribution_msg = resp['tx']['body']['messages'][0]
+    msg_type = distribution_msg['@type']
+    distributor = distribution_msg['distributor']
+    authorized_runner = distribution_msg['authorized_runner']
+    distribution_type = distribution_msg['distribution_type']
 
     # RUN DISPENSATION TXN; GET TXN HASH
+    distribution_name = f"{str(resp['height'])}_{str(distributor)}"
     runtxnhash1 = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash1}")
     time.sleep(5)
@@ -139,64 +142,47 @@ def test_run_online_morethan10distribution_txn(claimType):
     runresp2 = query_block_claim(runtxnhash2)
     logging.info(f"response from block for run dispensation = {runresp2}")
 
-    rundistributiontag1 = runresp1['logs'][0]['events'][10]['type']
-    rundistname1 = runresp1['logs'][0]['events'][10]['attributes'][0]['value']
-    runrunneraddress1 = runresp1['logs'][0]['events'][10]['attributes'][1]['value']
+    rundistributiontag1 = runresp1['logs'][0]['events'][12]['type']
+    rundistname1 = runresp1['logs'][0]['events'][12]['attributes'][0]['value']
+    runrunneraddress1 = runresp1['logs'][0]['events'][12]['attributes'][1]['value']
 
     assert str(rundistributiontag1) == 'distribution_run'
     assert str(rundistname1) == distribution_name
     assert str(runrunneraddress1) == runner_address
 
     # READING TAGS FROM RUN DISPENSATION CMD
-    temprundistamount1 = runresp1['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 1 = {temprundistamount1}")
-    temprundistamount2 = runresp1['logs'][0]['events'][1]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 2 = {temprundistamount2}")
-    temprundistamount3 = runresp1['logs'][0]['events'][2]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 3 = {temprundistamount3}")
-    temprundistamount4 = runresp1['logs'][0]['events'][3]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 4 = {temprundistamount4}")
-    temprundistamount5 = runresp1['logs'][0]['events'][4]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 5 = {temprundistamount5}")
-    temprundistamount6 = runresp1['logs'][0]['events'][5]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 6 = {temprundistamount6}")
-    temprundistamount7 = runresp1['logs'][0]['events'][6]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 7 = {temprundistamount7}")
-    temprundistamount8 = runresp1['logs'][0]['events'][7]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 8 = {temprundistamount8}")
-    temprundistamount9 = runresp1['logs'][0]['events'][8]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 9 = {temprundistamount9}")
-    temprundistamount10 = runresp1['logs'][0]['events'][9]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 10 = {temprundistamount10}")
-    temprundistamount11 = runresp2['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 11 = {temprundistamount11}")
-    temprundistamount12 = runresp2['logs'][0]['events'][1]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 12 = {temprundistamount12}")
+    temprundistamount1 = runresp1['logs'][0]['events'][0]['attributes'][1]['value']
+    temprundistamount2 = runresp1['logs'][0]['events'][0]['attributes'][3]['value']
+    temprundistamount3 = runresp1['logs'][0]['events'][0]['attributes'][5]['value']
+    temprundistamount4 = runresp1['logs'][0]['events'][0]['attributes'][7]['value']
+    temprundistamount5 = runresp1['logs'][0]['events'][0]['attributes'][9]['value']
+    temprundistamount6 = runresp1['logs'][0]['events'][0]['attributes'][11]['value']
+    temprundistamount7 = runresp1['logs'][0]['events'][0]['attributes'][13]['value']
+    temprundistamount8 = runresp1['logs'][0]['events'][0]['attributes'][15]['value']
+    temprundistamount9 = runresp1['logs'][0]['events'][0]['attributes'][17]['value']
+    temprundistamount10 = runresp1['logs'][0]['events'][0]['attributes'][19]['value']
+    temprundistamount11 = runresp2['logs'][0]['events'][0]['attributes'][1]['value']
+    temprundistamount12 = runresp2['logs'][0]['events'][0]['attributes'][3]['value']
 
     my_list = [temprundistamount1, temprundistamount2, temprundistamount3, temprundistamount4, temprundistamount5, temprundistamount6, temprundistamount7, temprundistamount8, temprundistamount9, temprundistamount10, temprundistamount11, temprundistamount12]
-    logging.info(f"my list = {my_list}")
     rundistamount = [int(i[:-5]) for i in my_list]
-    logging.info(f"temp amount distributed 2 = {rundistamount}")
     amount_distributed = [rundistamount[0], rundistamount[1], rundistamount[2], rundistamount[3], rundistamount[4], rundistamount[5], rundistamount[6], rundistamount[7], rundistamount[8], rundistamount[9], rundistamount[10], rundistamount[11]]
-    logging.info(f"amount distributed = {amount_distributed}")
     total_amount_distributed = sum(int(i) for i in amount_distributed)
 
     runrecipientaddress1 = runresp1['logs'][0]['events'][0]['attributes'][0]['value']
-    runrecipientaddress2 = runresp1['logs'][0]['events'][1]['attributes'][0]['value']
-    runrecipientaddress3 = runresp1['logs'][0]['events'][2]['attributes'][0]['value']
-    runrecipientaddress4 = runresp1['logs'][0]['events'][3]['attributes'][0]['value']
-    runrecipientaddress5 = runresp1['logs'][0]['events'][4]['attributes'][0]['value']
-    runrecipientaddress6 = runresp1['logs'][0]['events'][5]['attributes'][0]['value']
-    runrecipientaddress7 = runresp1['logs'][0]['events'][6]['attributes'][0]['value']
-    runrecipientaddress8 = runresp1['logs'][0]['events'][7]['attributes'][0]['value']
-    runrecipientaddress9 = runresp1['logs'][0]['events'][8]['attributes'][0]['value']
-    runrecipientaddress10 = runresp1['logs'][0]['events'][9]['attributes'][0]['value']
+    runrecipientaddress2 = runresp1['logs'][0]['events'][0]['attributes'][2]['value']
+    runrecipientaddress3 = runresp1['logs'][0]['events'][0]['attributes'][4]['value']
+    runrecipientaddress4 = runresp1['logs'][0]['events'][0]['attributes'][6]['value']
+    runrecipientaddress5 = runresp1['logs'][0]['events'][0]['attributes'][8]['value']
+    runrecipientaddress6 = runresp1['logs'][0]['events'][0]['attributes'][10]['value']
+    runrecipientaddress7 = runresp1['logs'][0]['events'][0]['attributes'][12]['value']
+    runrecipientaddress8 = runresp1['logs'][0]['events'][0]['attributes'][14]['value']
+    runrecipientaddress9 = runresp1['logs'][0]['events'][0]['attributes'][16]['value']
+    runrecipientaddress10 = runresp1['logs'][0]['events'][0]['attributes'][18]['value']
     runrecipientaddress11 = runresp2['logs'][0]['events'][0]['attributes'][0]['value']
-    runrecipientaddress12 = runresp2['logs'][0]['events'][1]['attributes'][0]['value']
+    runrecipientaddress12 = runresp2['logs'][0]['events'][0]['attributes'][2]['value']
     recipient_dispensation_addresses = [runrecipientaddress1, runrecipientaddress2, runrecipientaddress3, runrecipientaddress4, runrecipientaddress5, runrecipientaddress6, runrecipientaddress7, runrecipientaddress8, runrecipientaddress9, runrecipientaddress10, runrecipientaddress11, runrecipientaddress12]
-    logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")
     sortedrundistreceiverlist1 = sorted(recipient_dispensation_addresses)
-    logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist1}")
 
     assert sortedrundistreceiverlist1[0] == sorted_dest_address_list[0]
     assert sortedrundistreceiverlist1[1] == sorted_dest_address_list[1]

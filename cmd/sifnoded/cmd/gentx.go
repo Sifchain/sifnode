@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -19,7 +17,6 @@ import (
 )
 
 func AddGenesisValidatorCmd(defaultNodeHome string) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "add-genesis-validators [network_descriptor] [address_or_key_name] [power]",
 		Short: "add genesis validators to genesis.json",
@@ -29,9 +26,7 @@ the account address or key name. If a key name is given, the address will be loo
 		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			depCdc := clientCtx.JSONMarshaler
-			cdc := depCdc.(codec.Marshaler)
-
+			cdc := clientCtx.Codec
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
@@ -60,7 +55,6 @@ the account address or key name. If a key name is given, the address will be loo
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
-
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
 			if oracleGenState.AddressWhitelist == nil {
 				oracleGenState.AddressWhitelist = make(map[uint32]*oracletypes.ValidatorWhiteList)
@@ -79,21 +73,16 @@ the account address or key name. If a key name is given, the address will be loo
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
-
 			appState[oracletypes.ModuleName] = oracleGenStateBz
-
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal application genesis state: %w", err)
 			}
-
 			genDoc.AppState = appStateJSON
 			return genutil.ExportGenesisFile(genDoc, genFile)
 		},
 	}
-
 	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "node's home directory")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
-
 	return cmd
 }

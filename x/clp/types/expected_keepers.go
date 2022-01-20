@@ -16,16 +16,13 @@ type ParamSubspace interface {
 }
 
 type BankKeeper interface {
-	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
-	AddCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
-	SetBalance(ctx sdk.Context, addr sdk.AccAddress, balance sdk.Coin) error
 	IterateAllBalances(ctx sdk.Context, cb func(sdk.AccAddress, sdk.Coin) bool)
 }
 
@@ -35,7 +32,7 @@ type AuthKeeper interface {
 }
 
 type TokenRegistryKeeper interface {
-	GetDenom(ctx sdk.Context, denom string) tokenregistryTypes.RegistryEntry
-	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
-	CheckDenomPermissions(ctx sdk.Context, denom string, permissions []tokenregistryTypes.Permission) bool
+	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
+	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
+	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
 }

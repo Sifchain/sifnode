@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"go.uber.org/zap"
@@ -23,8 +24,7 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
-
+	cdc codec.BinaryCodec // The wire codec for binary encoding/decoding.
 	accountKeeper       types.AccountKeeper
 	bankKeeper          types.BankKeeper
 	oracleKeeper        types.OracleKeeper
@@ -43,7 +43,7 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryMarshaler,
+func NewKeeper(cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
 	accountKeeper types.AccountKeeper,
@@ -339,6 +339,10 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 	}
 
 	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)
+}
+
+func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosAddress sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, consensusNeeded uint32) error {
+	return k.oracleKeeper.ProcessUpdateConsensusNeeded(ctx, cosmosAddress, networkDescriptor, consensusNeeded)
 }
 
 // GetTokenRegistryKeeper return token registry keeper

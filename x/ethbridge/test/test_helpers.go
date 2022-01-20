@@ -86,7 +86,6 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(keyTokenRegistry, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
-
 	ctx := sdk.NewContext(ms, tmproto.Header{ChainID: "foochainid"}, false, nil)
 	ctx = ctx.WithConsensusParams(
 		&abci.ConsensusParams{
@@ -97,31 +96,24 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	)
 	ctx = ctx.WithLogger(log.NewNopLogger())
 	encCfg := MakeTestEncodingConfig()
-
 	bridgeAccount := authtypes.NewEmptyModuleAccount(types.ModuleName, authtypes.Burner, authtypes.Minter)
-
 	feeCollectorAcc := authtypes.NewEmptyModuleAccount(authtypes.FeeCollectorName)
 	notBondedPool := authtypes.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, authtypes.Burner, authtypes.Staking)
 	bondPool := authtypes.NewEmptyModuleAccount(stakingtypes.BondedPoolName, authtypes.Burner, authtypes.Staking)
-
 	blacklistedAddrs := make(map[string]bool)
 	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
 	blacklistedAddrs[notBondedPool.GetAddress().String()] = true
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
-
 	maccPerms := map[string][]string{
 		authtypes.FeeCollectorName:     nil,
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		types.ModuleName:               {authtypes.Burner, authtypes.Minter},
 	}
-
 	if extraMaccPerm != "" {
 		maccPerms[extraMaccPerm] = []string{authtypes.Burner, authtypes.Minter}
 	}
-
 	paramsKeeper := paramskeeper.NewKeeper(encCfg.Marshaler, encCfg.Amino, keyParams, tkeyParams)
-
 	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := authkeeper.NewAccountKeeper(
 		encCfg.Marshaler, // amino codec
@@ -130,7 +122,6 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		authtypes.ProtoBaseAccount, // prototype,
 		maccPerms,
 	)
-
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Marshaler,
 		keyBank,
@@ -138,31 +129,26 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		paramsKeeper.Subspace(banktypes.ModuleName),
 		blacklistedAddrs,
 	)
-
-	initTokens := sdk.TokensFromConsensusPower(10000)
+	initTokens := sdk.TokensFromConsensusPower(10000, sdk.DefaultPowerReduction)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(100))))
-
-	bankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
-
+	// bankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
 	stakingKeeper := stakingkeeper.NewKeeper(encCfg.Marshaler, keyStaking, accountKeeper, bankKeeper, paramsKeeper.Subspace(stakingtypes.ModuleName))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oraclekeeper.NewKeeper(encCfg.Marshaler, keyOracle, stakingKeeper, consensusNeeded)
 	tokenRegistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keyTokenRegistry)
 
 	// set module accounts
-	err = bankKeeper.AddCoins(ctx, notBondedPool.GetAddress(), totalSupply)
-	require.NoError(t, err)
-
 	accountKeeper.SetModuleAccount(ctx, bridgeAccount)
 	accountKeeper.SetModuleAccount(ctx, feeCollectorAcc)
 	accountKeeper.SetModuleAccount(ctx, bondPool)
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
-
+	err = bankKeeper.MintCoins(ctx, types.ModuleName, totalSupply)
+	require.NoError(t, err)
+	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
+	require.NoError(t, err)
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenRegistryKeeper, keyEthBridge)
-
 	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
 	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
-
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
 	valAddrs := make(map[string]uint32)
@@ -171,11 +157,10 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
 		valAddrsInOrder[i] = valAddr
 		valAddrs[valAddr.String()] = uint32(amount)
-		valTokens := sdk.TokensFromConsensusPower(amount)
+		valTokens := sdk.TokensFromConsensusPower(amount, sdk.DefaultPowerReduction)
 		// test how the validator is set from a purely unbonbed pool
 		validator, err := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
 		require.NoError(t, err)
-
 		validator, _ = validator.AddTokensFromDel(valTokens)
 		stakingKeeper.SetValidator(ctx, validator)
 		stakingKeeper.SetValidatorByPowerIndex(ctx, validator)
@@ -192,7 +177,6 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost), sdk.NewInt(FirstLockDoublePeggyCost))
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
-
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }
 
@@ -201,13 +185,11 @@ func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	var addresses []sdk.AccAddress
 	var valAddresses []sdk.ValAddress
 	var buffer bytes.Buffer
-
-	// start at 100 so we can make up to 999 test addresses with valid test addresses
+	// start at 100, so we can make up to 999 test addresses with valid test addresses
 	for i := 100; i < (numAddrs + 100); i++ {
 		numString := strconv.Itoa(i)
 		buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA6") //base address string
-
-		buffer.WriteString(numString) //adding on final two digits to make addresses unique
+		buffer.WriteString(numString)                               //adding on final two digits to make addresses unique
 		address, _ := sdk.AccAddressFromHex(buffer.String())
 		valAddress := sdk.ValAddress(address)
 		addresses = append(addresses, address)
@@ -221,14 +203,11 @@ func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 func CreateTestPubKeys(numPubKeys int) []cryptotypes.PubKey {
 	var publicKeys []cryptotypes.PubKey
 	var buffer bytes.Buffer
-
 	//start at 10 to avoid changing 1 to 01, 2 to 02, etc
 	for i := 100; i < (numPubKeys + 100); i++ {
 		numString := strconv.Itoa(i)
-		buffer.WriteString(
-			"0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AF",
-		) //base pubkey string
-		buffer.WriteString(numString) //adding on final two digits to make pubkeys unique
+		buffer.WriteString("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AF") //base pubkey string
+		buffer.WriteString(numString)                                                       //adding on final two digits to make pubkeys unique
 		publicKeys = append(publicKeys, NewPubKey(buffer.String()))
 		buffer.Reset()
 	}
@@ -240,7 +219,6 @@ func NewPubKey(pk string) (res cryptotypes.PubKey) {
 	if err != nil {
 		panic(err)
 	}
-
 	//res, err = crypto.PubKeyFromBytes(pkBytes)
 	return &ed25519.PubKey{
 		Key: pkBytes,
@@ -260,12 +238,9 @@ const (
 func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
 	sifapp := app.Setup(isCheckTx)
 	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-
 	sifapp.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000)
-
+	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	_ = app.AddTestAddrs(sifapp, ctx, 6, initTokens)
-
 	return sifapp, ctx
 }
 
@@ -281,7 +256,6 @@ func GenerateRandomTokens(numberOfTokens int) []string {
 	for i := 0; i < numberOfTokens; i++ {
 		// initialize global pseudo random generator
 		randToken := tokens[rand.Intn(len(tokens))]
-
 		tokenList = append(tokenList, randToken)
 	}
 	return tokenList
@@ -298,16 +272,13 @@ func GenerateAddress(key string) sdk.AccAddress {
 	bech := res.String()
 	addr := buffer.String()
 	res, err := sdk.AccAddressFromHex(addr)
-
 	if err != nil {
 		panic(err)
 	}
-
 	bechexpected := res.String()
 	if bech != bechexpected {
 		panic("Bech encoding doesn't match reference")
 	}
-
 	bechres, err := sdk.AccAddressFromBech32(bech)
 	if err != nil {
 		panic(err)

@@ -11,6 +11,7 @@ service Msg {
   rpc Deregister(MsgDeregister) returns (MsgDeregisterResponse) {}
   rpc TokenMetadataAdd(TokenMetadataAddRequest)
       returns (TokenMetadataAddResponse) {}
+  rpc SetRegistry(MsgSetRegistry) returns (MsgSetRegistryResponse) {}
 }
 
 message MsgRegister {
@@ -19,6 +20,13 @@ message MsgRegister {
 }
 
 message MsgRegisterResponse {}
+
+message MsgSetRegistry {
+  string from = 1;
+  Registry registry = 2;
+}
+
+message MsgSetRegistryResponse {}
 
 message MsgDeregister {
   string from = 1;

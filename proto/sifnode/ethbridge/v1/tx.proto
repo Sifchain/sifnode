@@ -21,6 +21,9 @@ service Msg {
   rpc RescueCrossChainFee(MsgRescueCrossChainFee)
       returns (MsgRescueCrossChainFeeResponse);
   rpc SetFeeInfo(MsgSetFeeInfo) returns (MsgSetFeeInfoResponse);
+  rpc UpdateConsensusNeeded(MsgUpdateConsensusNeeded)
+      returns (MsgUpdateConsensusNeededResponse);
+  rpc SetBlacklist(MsgSetBlacklist) returns (MsgSetBlacklistResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
@@ -102,6 +105,13 @@ message MsgRescueCrossChainFee {
   ];
 }
 
+message MsgSetBlacklist {
+  string from = 1;
+  repeated string addresses = 2;
+}
+
+message MsgSetBlacklistResponse {}
+
 message MsgRescueCrossChainFeeResponse {}
 
 message MsgSetFeeInfo {
@@ -144,3 +154,12 @@ message MsgSignProphecy {
 }
 
 message MsgSignProphecyResponse {}
+
+message MsgUpdateConsensusNeeded {
+  string cosmos_sender = 1;
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+  uint32 consensus_needed = 3;
+}
+
+message MsgUpdateConsensusNeededResponse {}

@@ -41,7 +41,7 @@ func TestGetAddTokenMetadata(t *testing.T) {
 		Address:       testTokenMetadata.TokenAddress,
 		IsWhitelisted: true,
 		Network:       testTokenMetadata.NetworkDescriptor,
-		Permissions:   []types.Permission{types.Permission_PERMISSION_CLP},
+		Permissions:   []types.Permission{types.Permission_CLP},
 	}
 	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
 

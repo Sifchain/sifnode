@@ -20,7 +20,7 @@ func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
 	for ; iter.Valid(); iter.Next() {
 		var prophecy types.Prophecy
-		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)
+		k.cdc.MustUnmarshal(iter.Value(), &prophecy)
 		prophecies = append(prophecies, prophecy)
 	}
 	return prophecies
@@ -37,7 +37,7 @@ func (k Keeper) GetProphecy(ctx sdk.Context, prophecyID []byte) (types.Prophecy,
 	}
 
 	var prophecy types.Prophecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &prophecy)
+	k.cdc.MustUnmarshal(bz, &prophecy)
 
 	return prophecy, true
 }
@@ -50,7 +50,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
 
-	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
+	store.Set(storePrefix, k.cdc.MustMarshal(&prophecy))
 }
 
 // GetProphecyInfo return a prophecy's signatures
@@ -63,7 +63,7 @@ func (k Keeper) GetProphecyInfo(ctx sdk.Context, prophecyID []byte) (types.Proph
 		return types.ProphecyInfo{}, false
 	}
 
-	k.cdc.MustUnmarshalBinaryBare(bz, &prophecySignatures)
+	k.cdc.MustUnmarshal(bz, &prophecySignatures)
 
 	return prophecySignatures, true
 }
@@ -110,7 +110,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)
 
 	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalSequence, prophecyID)
-	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecyInfo))
+	store.Set(storePrefix, k.cdc.MustMarshal(&prophecyInfo))
 	return nil
 }
 
@@ -130,7 +130,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.AppendSignature, "storePrefix", storePrefix, "prophecySignatures", prophecySignatures)
 
-	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecySignatures))
+	store.Set(storePrefix, k.cdc.MustMarshal(&prophecySignatures))
 	return nil
 }
 
@@ -142,7 +142,7 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
-		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecyInfo)
+		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
 		if prophecyInfo.BlockNumber-currentHeight > ProphecyLiftTime {
 			storePrefix := append(types.SignaturePrefix, prophecyInfo.ProphecyId[:]...)
 			store.Delete(storePrefix)

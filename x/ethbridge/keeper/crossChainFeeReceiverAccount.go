@@ -11,7 +11,7 @@ import (
 func (k Keeper) SetCrossChainFeeReceiverAccount(ctx sdk.Context, crossChainFeeReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CrossChainFeeReceiverAccountPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: crossChainFeeReceiverAccount.String()}))
+	store.Set(key, k.cdc.MustMarshal(&protobuftypes.StringValue{Value: crossChainFeeReceiverAccount.String()}))
 }
 
 func (k Keeper) IsCrossChainFeeReceiverAccount(ctx sdk.Context, crossChainFeeReceiverAccount sdk.AccAddress) bool {
@@ -33,7 +33,7 @@ func (k Keeper) GetCrossChainFeeReceiverAccount(ctx sdk.Context) sdk.AccAddress 
 	}
 
 	strProto := &protobuftypes.StringValue{}
-	k.cdc.MustUnmarshalBinaryBare(bz, strProto)
+	k.cdc.MustUnmarshal(bz, strProto)
 
 	if strProto.Value == "" {
 		return nil

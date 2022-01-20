@@ -131,7 +131,7 @@ func TestMintSuccess(t *testing.T) {
 		DisplaySymbol: normalCreateMsg.EthBridgeClaim.Symbol,
 		Decimals:      18,
 		IsWhitelisted: true,
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 	}
 	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
 
@@ -299,7 +299,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		Decimals:      18,
 		IsWhitelisted: true,
 		Network:       oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 	}
 	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
 
@@ -339,6 +339,9 @@ func TestBurnEthSuccess(t *testing.T) {
 			case "network_id":
 				networkDescriptor = value
 			case "amount":
+			case "spender":
+			case "receiver":
+			case "burner":
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}
@@ -370,7 +373,9 @@ func TestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T) {
 	require.NoError(t, err)
 	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	err = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coins)
+	require.NoError(t, err)
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, cosmosSender, coins)
 	require.NoError(t, err)
 
 	testUpdateCrossChainFeeReceiverAccountMsg := types.CreateTestUpdateCrossChainFeeReceiverAccountMsg(
@@ -399,7 +404,11 @@ func TestRescueCrossChainFeeMsg(t *testing.T) {
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	_ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coins)
+	require.NoError(t, err)
+
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, cosmosSender, coins)
+	require.NoError(t, err)
 
 	res, err := handler(ctx, &testRescueCrossChainFeeMsg)
 	require.NoError(t, err)

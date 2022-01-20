@@ -1,13 +1,12 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/B181EA86AE95E6AB974D0692E52996C8836619E28E03E90947FE49D3BA1EBE90",
+      "denom": "ibc/92E0120F15D037353CFB73C14651FC8930ADC05B93100FD7754D3A689E53B333",
       "base_denom": "uosmo",
-      "path": "transfer/channel-21",
-      "ibc_channel_id": "channel-21",
-      "ibc_counterparty_channel_id": "channel-32",
+      "path": "transfer/channel-8",
+      "ibc_channel_id": "channel-8",
+      "ibc_counterparty_channel_id": "channel-136",
       "display_name": "",
       "display_symbol": "",
       "network": "",

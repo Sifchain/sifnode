@@ -15,6 +15,14 @@ type queryServer struct {
 	Keeper
 }
 
+func (srv queryServer) GetBlacklist(ctx context.Context, _ *types.QueryBlacklistRequest) (*types.QueryBlacklistResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	addresses := srv.Keeper.GetBlacklist(sdkCtx)
+
+	return &types.QueryBlacklistResponse{Addresses: addresses}, nil
+}
+
 // NewQueryServer returns an implementation of the ethbridge QueryServer interface,
 // for the provided Keeper.
 func NewQueryServer(keeper Keeper) types.QueryServer {

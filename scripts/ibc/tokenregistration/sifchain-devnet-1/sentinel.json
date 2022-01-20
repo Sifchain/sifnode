@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/196953F37BE10851E68C01434989C6B8E1748A836796CA1ABFF2E414D58863C5",
       "base_denom": "udvpn",

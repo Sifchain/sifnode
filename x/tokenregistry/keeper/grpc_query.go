@@ -17,7 +17,7 @@ func NewQueryServer(k types.Keeper) types.QueryServer {
 
 func (q Querier) Entries(c context.Context, _ *types.QueryEntriesRequest) (*types.QueryEntriesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	wl := q.Keeper.GetRegistry(ctx)
+	wl := q.GetRegistry(ctx)
 	return &types.QueryEntriesResponse{Registry: &wl}, nil
 }
 

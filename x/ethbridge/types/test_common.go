@@ -62,7 +62,7 @@ func CreateTestEthClaim(
 
 func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
-	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
+	testCosmosAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testcrossChainFee)
 	return burnEth
@@ -70,7 +70,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 
 func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
-	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
+	testCosmosAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testcrossChainFee)
 	return lockEth

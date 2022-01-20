@@ -7,6 +7,8 @@ import (
 	"math"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	ethbridge "github.com/Sifchain/sifnode/x/ethbridge"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -61,17 +63,25 @@ func migrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bank
 
 		coin := coins[index]
 		amount := coin.Amount
-		// clear the balance for old denom
-		coin.Amount = sdk.NewInt(0)
-		err := bankKeeper.SetBalance(ctx, address, coin)
+
+		// send old coins to module
+		err := bankKeeper.SendCoinsFromAccountToModule(ctx, address, ethbridge.ModuleName, coins)
+
 		if err != nil {
 			panic("failed to set balance during token migration")
 		}
 
 		// set the balance for new denom
 		if value, ok := tokenMap[coin.Denom]; ok {
-			coin = sdk.NewCoin(value, amount)
-			err = bankKeeper.SetBalance(ctx, address, coin)
+			coin := sdk.NewCoins(sdk.NewCoin(value, amount))
+
+			// can't set balance directly, we mint to module, then transfer to address
+			err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coin)
+			if err != nil {
+				panic("failed to mint coins during token migration")
+			}
+
+			err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, address, coin)
 			if err != nil {
 				panic("failed to set balance during token migration")
 			}

@@ -1,4 +1,4 @@
-CHAINNET?=testnet # Options; localnet, testnet, chaosnet ,mainnet
+CHAINNET?=betanet
 BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
@@ -9,27 +9,16 @@ HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER := $(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
-ifeq (mainnet,${CHAINNET})
-	BUILD_TAGS=mainnet
-else
-	BUILD_TAGS=testnet
-endif
-
-whitespace :=
-whitespace += $(whitespace)
-comma := ,
-build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
-
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
 # We use one smart contract file as a signal that the abigen files have been created
 smart_contract_file=cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol/BridgeRegistry.go
 
+BUILD_TAGS ?= ${IMAGE_TAG}
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
@@ -38,7 +27,6 @@ all: lint install
 
 build-config:
 	echo $(CHAINNET)
-	echo $(BUILD_TAGS)
 	echo $(BUILD_FLAGS)
 
 init:
@@ -70,7 +58,7 @@ clean-config:
 	@rm -rf ~/.sifnode*
 
 clean: clean-config
-	@rm -rf ${GOBIN}/sif* 
+	@rm -rf ${GOBIN}/sif*
 	git clean -fdx cmd/ebrelayer/contract/generated
 
 coverage:

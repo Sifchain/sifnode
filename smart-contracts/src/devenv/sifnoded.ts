@@ -23,6 +23,7 @@ export const crossChainBurnFee: number = 1
 const ethereumCrossChainFeeToken: string =
   "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
+const ConsensusNeeded = "49"
 export interface ValidatorValues {
   chain_id: string
   node_id: string
@@ -188,6 +189,14 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       this.chainId
     )
 
+    // set the ConsensusNeeded for hardhat
+    await this.updateConsensusNeeded(
+      sifnodedAdminAddress,
+      "31337",
+      ConsensusNeeded,
+      this.chainId
+    )
+
     sifnoded.on("exit", (code) => {
       notifier.notify({
         title: "Sifnoded Notice",
@@ -328,6 +337,38 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "-y",
     ]
 
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
+  }
+
+  // update-consensus-needed [cosmos-sender-address] [network-id] [consensus-needed] 
+  async updateConsensusNeeded(
+    sifnodeAdminAccount: EbRelayerAccount,
+    networkId: string,
+    ConsensusNeeded: string,
+    chainId: string
+  ): Promise<string> {
+    const sifgenArgs = [
+      "tx",
+      "ethbridge",
+      "update-consensus-needed",
+      sifnodeAdminAccount.account,
+      networkId,
+      ConsensusNeeded,
+      "--home",
+      sifnodeAdminAccount.homeDir,
+      "--from",
+      sifnodeAdminAccount.name,
+      "--keyring-backend",
+      "test",
+      "--chain-id",
+      chainId,
+      "--gas-prices",
+      "0.5rowan",
+      "--gas-adjustment",
+      "1.5",
+      "-y",
+    ]
+    
     return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
   }
 
