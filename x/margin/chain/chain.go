@@ -29,8 +29,22 @@ func QueryPools(clientCtx client.Context) ([]*clptypes.Pool, error) {
 	return pools, nil
 }
 
+type Event struct {
+	ID         int64
+	EventType  string
+	Height     int32
+	Attributes []Attribute
+	Metadata   string
+}
+
+type Attribute struct {
+	Key   string
+	Value string
+}
+
 /* Returns events from block_results?height=height */
 
 func BlockEvents(clientCtx client.Context, height int64) ([]*Event, error) {
+
 	return nil, nil
 }
