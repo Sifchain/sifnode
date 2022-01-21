@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -25,7 +26,7 @@ func TestKeeper_NewMsgServerImpl(t *testing.T) {
 }
 
 func TestKeeper_OpenLong(t *testing.T) {
-	openLongTests := []struct {
+	table := []struct {
 		name          string
 		msgOpenLong   types.MsgOpenLong
 		poolAsset     string
@@ -140,7 +141,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 	}
 
-	for _, tt := range openLongTests {
+	for _, tt := range table {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppMargin(false)
@@ -158,13 +159,14 @@ func TestKeeper_OpenLong(t *testing.T) {
 			pool := clptypes.Pool{
 				ExternalAsset:        &asset,
 				NativeAssetBalance:   sdk.NewUint(1000000000),
-				NativeLiabilities:    sdk.NewUint(1000000000),
-				ExternalCustody:      sdk.NewUint(1000000000),
 				ExternalAssetBalance: sdk.NewUint(1000000000),
-				ExternalLiabilities:  sdk.NewUint(1000000000),
-				NativeCustody:        sdk.NewUint(1000000000),
-				PoolUnits:            sdk.NewUint(1),
-				Health:               sdk.NewDec(1),
+				NativeCustody:        sdk.NewUint(0),
+				ExternalCustody:      sdk.NewUint(0),
+				NativeLiabilities:    sdk.NewUint(0),
+				ExternalLiabilities:  sdk.NewUint(0),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
 			}
 
 			if tt.poolEnabled {
@@ -202,7 +204,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 }
 
 func TestKeeper_CloseLong(t *testing.T) {
-	openLongTests := []struct {
+	table := []struct {
 		name           string
 		msgCloseLong   types.MsgCloseLong
 		poolAsset      string
@@ -298,7 +300,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 	}
 
-	for _, tt := range openLongTests {
+	for _, tt := range table {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppMargin(false)
@@ -362,6 +364,155 @@ func TestKeeper_CloseLong(t *testing.T) {
 			} else {
 				require.ErrorIs(t, got, tt.err)
 			}
+		})
+	}
+}
+
+func TestKeeper_OpenClose(t *testing.T) {
+	table := []struct {
+		name          string
+		externalAsset string
+		err           error
+		errString     error
+	}{
+		{
+			name:          "one round open/close long position",
+			externalAsset: "xxx",
+			err:           nil,
+		},
+	}
+
+	for _, tt := range table {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, app := test.CreateTestAppMargin(false)
+			marginKeeper := app.MarginKeeper
+
+			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+				Denom:       tt.externalAsset,
+				Decimals:    18,
+				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			})
+
+			params := types.Params{
+				LeverageMax:          sdk.NewUint(1),
+				InterestRateMax:      sdk.ZeroDec(),
+				InterestRateMin:      sdk.ZeroDec(),
+				InterestRateIncrease: sdk.ZeroDec(),
+				InterestRateDecrease: sdk.ZeroDec(),
+				HealthGainFactor:     sdk.ZeroDec(),
+				EpochLength:          0,
+			}
+			expectedGenesis := types.GenesisState{Params: &params}
+
+			genesis := marginKeeper.ExportGenesis(ctx)
+			require.Equal(t, expectedGenesis, *genesis)
+
+			msgServer := keeper.NewMsgServerImpl(marginKeeper)
+
+			nativeAsset := clptypes.NativeSymbol
+			externalAsset := clptypes.Asset{Symbol: tt.externalAsset}
+
+			pool := clptypes.Pool{
+				ExternalAsset:        &externalAsset,
+				NativeAssetBalance:   sdk.NewUint(1000000000000),
+				ExternalAssetBalance: sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(0),
+				ExternalCustody:      sdk.NewUint(0),
+				NativeLiabilities:    sdk.NewUint(0),
+				ExternalLiabilities:  sdk.NewUint(0),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(0),
+				InterestRate:         sdk.NewDec(0),
+			}
+
+			marginKeeper.SetEnabledPools(ctx, []string{tt.externalAsset})
+			marginKeeper.ClpKeeper().SetPool(ctx, &pool)
+
+			signer := clptest.GenerateAddress(clptest.AddressKey1)
+			nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000000000)))
+			externalCoin := sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000)))
+			err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(nativeCoin, externalCoin))
+			require.Nil(t, err)
+
+			nativeCoinOk := app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
+			require.True(t, nativeCoinOk)
+			externalCoinOk := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
+			require.True(t, externalCoinOk)
+
+			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, nativeAsset), nativeCoin)
+
+			msgOpenLong := types.MsgOpenLong{
+				Signer:           signer.String(),
+				CollateralAsset:  nativeAsset,
+				CollateralAmount: sdk.NewUint(1000),
+				BorrowAsset:      tt.externalAsset,
+			}
+			msgCloseLong := types.MsgCloseLong{
+				Signer:          signer.String(),
+				CollateralAsset: nativeAsset,
+				BorrowAsset:     tt.externalAsset,
+			}
+
+			_, openLongError := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msgOpenLong)
+			require.Nil(t, openLongError)
+
+			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(99999999999000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+
+			openLongExpectedMTP := types.MTP{
+				Address:          signer.String(),
+				CollateralAsset:  nativeAsset,
+				CollateralAmount: sdk.NewUint(2000),
+				LiabilitiesP:     sdk.NewUint(1000),
+				LiabilitiesI:     sdk.ZeroUint(),
+				CustodyAsset:     tt.externalAsset,
+				CustodyAmount:    sdk.ZeroUint(),
+				Leverage:         sdk.NewUint(1),
+				MtpHealth:        sdk.ZeroDec(),
+			}
+
+			openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String())
+
+			fmt.Print(openLongMTP)
+
+			require.Equal(t, openLongExpectedMTP, openLongMTP)
+
+			openLongExpectedPool := clptypes.Pool{
+				ExternalAsset:        &externalAsset,
+				NativeAssetBalance:   sdk.NewUint(999999999000),
+				ExternalAssetBalance: sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(0),
+				ExternalCustody:      sdk.NewUint(0),
+				NativeLiabilities:    sdk.NewUint(1000),
+				ExternalLiabilities:  sdk.NewUint(0),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(1),
+				InterestRate:         sdk.NewDec(0),
+			}
+
+			openLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
+			require.Equal(t, openLongExpectedPool, openLongPool)
+
+			_, closeLongError := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msgCloseLong)
+			require.Nil(t, closeLongError)
+
+			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000000000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+
+			closeLongExpectedPool := clptypes.Pool{
+				ExternalAsset:        &externalAsset,
+				NativeAssetBalance:   sdk.NewUint(999999999000),
+				ExternalAssetBalance: sdk.NewUint(10000000),
+				NativeCustody:        sdk.NewUint(0),
+				ExternalCustody:      sdk.NewUint(0),
+				NativeLiabilities:    sdk.NewUint(0),
+				ExternalLiabilities:  sdk.NewUint(0),
+				PoolUnits:            sdk.NewUint(0),
+				Health:               sdk.NewDec(1),
+				InterestRate:         sdk.NewDec(0),
+			}
+
+			closeLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
+			require.Equal(t, closeLongExpectedPool, closeLongPool)
 		})
 	}
 }
