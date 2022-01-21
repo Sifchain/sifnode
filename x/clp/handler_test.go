@@ -435,6 +435,7 @@ func TestAddLiquidityErrorCases(t *testing.T) {
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
 	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
+
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	res, err := handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
@@ -452,6 +453,37 @@ func TestAddLiquidityErrorCases(t *testing.T) {
 	msg1 = clptypes.NewMsgAddLiquidity(signer, asset1, sdk.ZeroUint(), addLiquidityAmount)
 	_, err = handler(ctx, &msg1)
 	require.NoError(t, err)
+
+	var validateTests = []struct {
+		name                string
+		signer              sdk.AccAddress
+		asset               clptypes.Asset
+		nativeAssetAmount   sdk.Uint
+		externalAssetAmount sdk.Uint
+		err                 error
+	}{
+		{
+			name:                "Add Liquidity Success Cases",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   poolBalance,
+			externalAssetAmount: poolBalance,
+		},
+		{
+			name:                "Add Liquidity ErrTokenNotSupported Cases",
+			signer:              signer,
+			asset:               asset1,
+			nativeAssetAmount:   sdk.ZeroUint(),
+			externalAssetAmount: addLiquidityAmount,
+		},
+	}
+
+	for _, tt := range validateTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+
+		})
+	}
 
 }
 
