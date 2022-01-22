@@ -18,10 +18,12 @@ import "@nomiclabs/hardhat-ethers"
 import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
 import { checkSifnodeBurnState } from "./sifnode_lock_burn"
-import { ethDenomHash } from "./context"
+import { ethDenomHash, State, TransactionStep } from "./context"
 import { StateMachineVerifier, StateMachineVerifierBuilder } from "./stateMachineVerifier"
 
 import { executeLock, checkEvmLockState } from "./evm_lock_burn"
+import { filter, Observable, scan } from "rxjs"
+import { SifEvent, sifwatch } from "../../src/watcher/watcher"
 
 chai.use(solidity)
 
@@ -153,9 +155,7 @@ describe("lock and burn tests", () => {
       contracts,
       sendAmount,
       ethereumAccounts.availableAccounts[1],
-      web3.utils.utf8ToHex(testSifAccount.account),
-      false,
-      "ceth to eth"
+      web3.utils.utf8ToHex(testSifAccount.account)
     )
 
     const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
@@ -177,11 +177,11 @@ describe("lock and burn tests", () => {
       .finally(TransactionStep.BurnCoins)
       .build()
 
-    const states: Observable<State> = evmRelayerEvents.pipe(
-      scan((acc: State, v: SifEvent) => {
-        console.log(v)
-        return null
-      }, INIT_STATE)
-    )
+    // const states: Observable<State> = evmRelayerEvents.pipe(
+    //   scan((acc: State, v: SifEvent) => {
+    //     console.log(v)
+    //     return null
+    //   }, INIT_STATE)
+    // )
   })
 })
