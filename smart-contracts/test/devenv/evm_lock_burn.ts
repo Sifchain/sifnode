@@ -1,15 +1,15 @@
-import {DevEnvContracts} from "../../src/contractSupport"
-import {BridgeToken} from "../../build"
-import {BigNumber, ContractTransaction} from "ethers"
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers"
-import {SifEvent, sifwatchReplayable} from "../../src/watcher/watcher"
+import { DevEnvContracts } from "../../src/contractSupport"
+import { BridgeToken } from "../../build"
+import { BigNumber, ContractTransaction } from "ethers"
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { SifEvent, sifwatchReplayable } from "../../src/watcher/watcher"
 import * as hardhat from "hardhat"
 import * as ethereumAddress from "../../src/ethereumAddress"
 import deepEqual = require("deep-equal")
-import {expect} from "chai"
+import { expect } from "chai"
 
-import {distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs"
-import {filter} from "rxjs/operators"
+import { distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile } from "rxjs"
+import { filter } from "rxjs/operators"
 
 import {
   State,
@@ -21,26 +21,56 @@ import {
   attachDebugPrintfs,
   verbosityLevel,
 } from "./context"
+import { exec } from "child_process"
 
+/**
+ * Executes a lock on a Ethereum Transfer to send Ether or EVM native currency to Sifchain
+ * @param contracts The ethers contract instances to interact with (e.g. Bridgebank)
+ * @param amount The amount of ether to send to sifchain
+ * @param sender Who is sending the ether to sifcahin
+ * @param sifchainRecipient What sifchain address is recieving the Ether
+ */
 export async function executeLock(
   contracts: DevEnvContracts,
-  tokenContract: undefined | BridgeToken,
-  smallAmount: BigNumber,
-  sender1: SignerWithAddress,
-  sifchainRecipient: string
-) {
+  amount: BigNumber,
+  sender: SignerWithAddress,
+  sifchainRecipient: string,
+): Promise<ContractTransaction>;
+/**
+ * Executes a lock of ERC20 tokens on EVM chain to sifchain
+ * @param contracts The ethers contract instancs to interact with (e.g. Bridgebank)
+ * @param amount The ammount of ether to send to sifchain
+ * @param sender Who is sending the ether to sifchain
+ * @param sifchainRecipient What sifchain address is recieving the ERC20 tokens
+ * @param tokenContract The ERC20 contract that is being bridged
+ * @returns 
+ */
+export async function executeLock(
+  contracts: DevEnvContracts,
+  amount: BigNumber,
+  sender: SignerWithAddress,
+  sifchainRecipient: string,
+  tokenContract: BridgeToken,
+): Promise<ContractTransaction>;
+export async function executeLock(
+  contracts: DevEnvContracts,
+  amount: BigNumber,
+  sender: SignerWithAddress,
+  sifchainRecipient: string,
+  tokenContract?: BridgeToken,
+): Promise<ContractTransaction> {
   let tx: ContractTransaction
   if (tokenContract === undefined) {
     tx = await contracts.bridgeBank
-      .connect(sender1)
-      .lock(sifchainRecipient, ethereumAddress.eth.address, smallAmount, {
-        value: smallAmount,
+      .connect(sender)
+      .lock(sifchainRecipient, ethereumAddress.eth.address, amount, {
+        value: amount,
       })
   } else {
-    await tokenContract.connect(sender1).approve(contracts.bridgeBank.address, smallAmount)
+    await tokenContract.connect(sender).approve(contracts.bridgeBank.address, amount)
     tx = await contracts.bridgeBank
-      .connect(sender1)
-      .lock(sifchainRecipient, tokenContract.address, smallAmount, {
+      .connect(sender)
+      .lock(sifchainRecipient, tokenContract.address, amount, {
         value: 0,
       })
   }
@@ -69,15 +99,15 @@ export async function checkEvmLockState(
         (acc: State, v: SifEvent) => {
           if (isTerminalState(acc))
             // we've reached a decision
-            return {...acc, value: {kind: "terminate"} as Terminate}
+            return { ...acc, value: { kind: "terminate" } as Terminate }
           switch (v.kind) {
             case "EbRelayerError":
             case "SifnodedError":
               // if we get an actual error, that's always a failure
-              return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
+              return { ...acc, value: { kind: "failure", value: v, message: "simple error" } }
             case "SifHeartbeat":
               // we just store the heartbeat
-              return {...acc, currentHeartbeat: v.value} as State
+              return { ...acc, currentHeartbeat: v.value } as State
             case "EthereumMainnetLogLock":
               // we should see exactly one lock
               let ethBlock = v.data.block as any
@@ -191,14 +221,14 @@ export async function checkEvmLockState(
                     TransactionStep.AddTokenMetadata
                   )
               }
-              return {...acc, value: v, createdAt: acc.currentHeartbeat}
+              return { ...acc, value: v, createdAt: acc.currentHeartbeat }
             default:
               // we have a new value (of any kind) and it should use the current heartbeat as its creation time
-              return {...acc, value: v, createdAt: acc.currentHeartbeat}
+              return { ...acc, value: v, createdAt: acc.currentHeartbeat }
           }
         },
         {
-          value: {kind: "initialState"},
+          value: { kind: "initialState" },
           createdAt: 0,
           currentHeartbeat: 0,
           transactionStep: TransactionStep.Initial,
@@ -210,7 +240,7 @@ export async function checkEvmLockState(
   // it's useful to skip debug prints of states where only the heartbeat changed
   const withoutHeartbeat = states.pipe(
     distinctUntilChanged<State>((a, b) => {
-      return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
+      return deepEqual({ ...a, currentHeartbeat: 0 }, { ...b, currentHeartbeat: 0 })
     })
   )
 
