@@ -66,8 +66,6 @@ describe("lock eth tests", () => {
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     let tx = await executeLock(
       contracts,
-      // undefined for Ethereum native token
-      undefined,
       sendAmount,
       ethereumAccounts.availableAccounts[1],
       web3.utils.utf8ToHex(testSifAccount.account)
@@ -146,10 +144,10 @@ describe("lock eth tests", () => {
     // lock the erc20 token
     const tx = await executeLock(
       contracts,
-      erc20,
       sendAmount,
       senderEthereumAccount,
-      web3.utils.utf8ToHex(testSifAccount.account)
+      web3.utils.utf8ToHex(testSifAccount.account),
+      erc20,
     )
 
     await checkEvmLockState(contracts, tx, sendAmount, erc20Denom)

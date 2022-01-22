@@ -58,7 +58,6 @@ describe("lock and burn tests", () => {
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     let tx = await executeLock(
       contracts,
-      undefined,
       sendAmount,
       ethereumAccounts.availableAccounts[1],
       web3.utils.utf8ToHex(testSifAccount.account)
@@ -122,10 +121,10 @@ describe("lock and burn tests", () => {
     const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
 
     // Do two locks of ethereum
-    let tx = await executeLock(contracts, undefined, smallAmount, sender1, recipient)
+    let tx = await executeLock(contracts, smallAmount, sender1, recipient)
     await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
 
-    tx = await executeLock(contracts, undefined, smallAmount, sender1, recipient)
+    tx = await executeLock(contracts, smallAmount, sender1, recipient)
     await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
   })
 })
