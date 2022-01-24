@@ -16,180 +16,48 @@ classDiagram
 
   %% Utility Contracts
   class BridgeRegistry {
-    +address cosmosBridge
-    +address bridgeBank
-    -bool _initialized
-    +initialize(address _cosmosBridge, address _bridgeBank)
   }
 
   %% CosmosBridge Contract Set
   class CosmosBridge {
-    -bool _initialized
-    +mapping~address -> address~ sourceAddressToDestinationAddress
-    +int32 networkDescriptor
-    +uint256 lastNonceSubmitted
-    +initialize(address _operator, uint256 _consensusThreshold, address[] calldata _initValidators, uint256[] calldata _initPowers, int32 _networkDescriptor)
-    +changeOperator(address _newOperator)
-    +setBridgeBank(address payable _bridgeBank)
-    +getProphecyID(bytes memory cosmosSender, uint256 cosmosSenderSequence, address payable ethereumReceiver, address tokenAddress, uint256 amount, string memory tokenName, string memory tokenSymbol, uint8 tokenDeciamls, int32 _networkDescriptor, bool doublePeg, uint128 nonce, string memory cosmosDenom)
-    -verifySignature(address signer, bytes32 hashDigest, uint8 _v, bytes32 _r, bytes32 _s)
-    -getSignedPowerAndFindDup(SignatureData[] calldata _validators, bytes32 hashDigest)
-    +batchSubmitProphecyClaimAggregatedSigs(bytes32[] calldata sigs, ClaimData[] calldata claims, SignatureData[][] calldata signatureData)
-    +submitProphecyClaimAggregatedSigs(bytes32 hashDigest, ClaimData calldata claimData, SignatureData[] calldata signatureData)
-    -_submitProphecyClaimAggregatedSigs(bytes32 hashDigest, ClaimData calldata claimData, SignatureData[] calldata sigantureData)
-    -isDoublePeggedToken(address tokenAddress)
-    -_verifyNetworkDescriptor(int32 _networkDescriptor)
-    -_createNewBridgeToken(string memory symbol, string memory name, address sourceChainTokenAddress, uint8 decimals, int32 _networkDescriptor, string calldata cosmosDenom)
-    -completeProphecyClaim(uint256 prophecyID, address payable ethereumReciever, address tokenAddress, uint256 amount)
   }
   class CosmosBridgeStorage {
-    +address payable bridgeBank
-    +bool hasBridgeBank
   }
   class Oracle {
-    -bool _initialized
-    -_initialize(address _operator, uint256 _consensusThreshold, address[] memory _initValidators, uint256[] memory _initPowers)
-    +getProphecyStatus(uint256 signedPower)
   }
   class OracleStorage {
-    +address cosmosBridge
   }
   class Valset {
-    -bool _initialized
-    -onlyOperator()
-    -_initialize(address _operator, address[] memory _initValidators, uint256[] memory _initPowers)
-    +addValidator(address _validatorAddress, uint256 _validatorPower)
-    +updateValidatorPower(address _validatorAddress, uint256 _newValidatorPower)
-    +removeValidator(address _validatorAddress)
-    +updateValset(address[] memory _validators, uint256[] memory _powers)
-    +isActiveValidator(address _validatorAddress)
-    +getValidatorPower(address _validatorAddress)
-    +recoverGas(uint256 _valsetVersion, address _validatorAddress)
   }
   class ValsetStorage {
-    +uint256 totalPower
-    +uint256 currentValsetVersion
-    +uint256 validatorCount;
-    +mapping~address -> mapping~ validators
-    +address operator
-    +mapping~address -> mapping~ powers
   }
 
   %% BridgeBank Contract Set
   class BridgeBank {
-    -bool _initialized
-    +IBlocklist blocklist
-    +bool hasBlocklist
-    +int32 networkDescriptor
-    +mapping~address -> uint8~ contractDecimals
-    +mapping~address -> string~ contractSymbol
-    +mapping~address -> string~ contractName
-    +mapping~address -> string~ contractDenom
-    -bool _reinitialized
-    initialize(address _operator, _address cosmosBridgeAddress, address _owner, address _pauser, int32 _networkDescriptor)
-    reinitialize(address _operator, _address cosmosBridgeAddress, address _owner, address _pauser, int32 _networkDescriptor)
-    _initialize(address _operator, _address cosmosBridgeAddress, address _owner, address _pauser, int32 _networkDescriptor)
-    onlyOperator()
-    onlyOwner()
-    onlyCosmosBridge()
-    onlyNotBlocklisted(address account)
-    validSifAddress(bytes calldata sifAddress)
-    -setTokenInCosmosWhiteList(address token, bool inList)
-    +changeOwner(address newOwner)
-    +changeOperator(address _newOperator)
-    -verifySifPrefix(bytes calldata sifAddress)
-    -verifySifAddressLength(bytes calldata sifAddress)
-    -verifySifAddress(bytes calldaat sifAddress)
-    +VSA(bytes calldata _sifAddress)
-    +createNewBridgeToken(string calldata name, string calldata symbol, uint8 decimals, string calldata cosmosDenom)
-    +addExistingBridgeToken(address contractAddress)
-    +batchAddExistingBridgeTokens(address[] calldata contractsAddresses)
-    +handleUnpeg(address payable ethereumReceiver, address tokenAddress, uint256 amount)
-    +burn(bytes calldata recipient, address token, uint256 amount)
-    -getName(address token)
-    -getSymbol(address token)
-    -getDecimals(address token)
-    -getDenom(address token)
-    +lock(bytes calldata recipient, address token, uint256 amount)
-    +multiLock(bytes[] calldata recipient, address[] calldata token, uint256[] calldata amount)
-    +multiLockBurn(bytes[] calldata recipient, address[] calldata token, uint256[] calldata amount, bool[] calldata isBurn)
-    -_lockTokens(bytes calldatca recipient, address tokenAddress, uint256 tokenAmount, uint256 _lockBurnNonce)
-    -_burnTokens(bytes calldatca recipient, address tokenAddress, uint256 tokenAmount, uint256 _lockBurnNonce)
-    -handleNativeCurrencyLock(bytes calldata recipient, uint256 amount)
-    -unlock(address payable recipient, address token, uint256 amount)
-    +setBridgeTokenDenom(address _token, string calldata _denom)
-    +batchSetBridgeTokenDenom(address[] calldata _tokens, string[] calldata _denoms)
-    -_setBridgeTokenDenom(address _token, string calldata _denom)
-    +forceSetBridgeTokenDenom(address _token)
-    +batchForceSetBridgeTokenDenom(address[] calldata _tokens)
-    -_forceSetBridgeTokenDenom(address _token)
-    +setBlocklist(address blocklistAddress)
-
   }
   class BankStorage {
-    +address operator
-    +address cosmosBridge
-    +address owner
   }
   class CosmosBank {
-    -deployNewBridgeToken(string memory _name, string memory _symbol, uint8 _decimals, string memory _cosmosDenom) address
-    -mintNewBridgeTokens(address _intendedRecipient, address _bridgeTokenAddress, uint256 _amount)
   }
   class CosmosWhiteList {
-    -bool _initialized
-    -cosmosWhitelistInitialize()
-    +getCosmosTokenInWhiteList(address _token) bool
   }
   class Pausable {
-    -bool _paused;
-    -_pausableInitialize(address _user)
-    +paused() bool
-    -togglePause()
-    +pause()
-    +unpause()
   }
   class PauserRole {
-    +mapping(address -> bool) pausers
-    +addPauser(address account)
-    +renouncePauser()
-    -_addPauser(address account)
-    -_removePauser(address account)
   }
   class EthereumBankStorage {
-    +uint256 lockBurnNonce
   }
   class CosmosWhiteListStorage {
-    -mapping~address -> bool: _cosmosTokenWhiteList
   }
 
   %% BridgeToken Contracts
   class BridgeToken {
-    -uint8 _decimals
-    +string cosmosDenom
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom)
-    +mint(address user, uint256 amount)
-    +decimals() uint8
-    +setDenom(string calldata denom) bool
   }
   class Rowan {
-    +BridgeToken erowan
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom, address 
-    _erowanAddress)
-    +migrate()
   }
 
   %% OFAC Compliance Contracts
   class Blocklist {
-    -mapping~address -> uint256~ _userIndex
-    -list~address~ _userList
-    -_addToBlocklist(address account) bool
-    +batchAddToBlocklist(list~address~ calldata accounts)
-    +addToBlocklist(address account) bool
-    -_removeFromBlocklist(address account) bool
-    +batchRemoveFromBlocklist(list~address~ calldata accounts)
-    +removeFromBlocklist(address account) bool
-    +isBlocklisted(address account) bool
-    +getFullList() list~address~
   }
   %% BridgeBank Inherits
   BridgeBank <|-- BankStorage
