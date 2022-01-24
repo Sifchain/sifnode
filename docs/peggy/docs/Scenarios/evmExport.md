@@ -81,7 +81,7 @@ When a user initiates an export from sifchain, they have to pay two fees; one is
 
 !> What is the average rowan gas cost to initiate this transaction?
 
-At the time of writing this, developers are expecting the average export from Ethereum would cost a user roughly $100.
+Costs for exporting assets from sifchain to ethereum are set by a flat cross-chain fee picked by an administrator of the network.
 
 ### Witness Incurred Fees
 When a witness sees a new transaction, it has to store its signed prophecy into the virtual mempool as well as increment its sequence number on the sifchain blockchain. In order to perform these transactions, it must pay rowan to cover the gas costs of these transactions. 

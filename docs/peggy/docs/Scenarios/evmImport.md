@@ -120,7 +120,7 @@ The only fees a user will incur during an import into sifchain will be the EVM n
 1. Calling `approve()` on an ERC20 contract if the asset they intend to import is an ERC20 contract
 2. Calling `Lock()` on the [BridgeBank](SmartContracts#BridgeBank) contract.
 
-At the time of writing this, developers are expecting the average import on Ethereum would cost a user roughly $40~$85.
+At the time of writing this, developers are expecting the average import on Ethereum would cost a user roughly $20~$85.
 
 ### Witness/Relayer Incurred Fees
 When a user initiates an import, each relayer and witness must submit a [NewEthBridgeClaim](Events/NewEthBridgeClaim) as well as a message to increment their sequence numbers to the

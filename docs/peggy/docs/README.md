@@ -10,7 +10,7 @@ To use it:
 ```
 cd docs/peggy
 npm install
-./node_modules/bin/docsify serve ./docs
+./node_modules/docsify-cli/bin/docsify serve ./docs
 browser http://localhost:3000/
 ```
 
