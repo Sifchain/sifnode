@@ -26,7 +26,7 @@ Peggy 2.0 is a system that facilitates non-permissioned token transfer between S
 
 ## Goals
 
-Incrmental increases in the following
+Incremental increases in the following
 
 - TVL within y months (Sifchain: $16M, Osmosis: $444M, Emeris: $35M)
 - Trading Volume within y months (Sifchain: $2-3M/day, Osmosis: 12.5M/day)
@@ -275,7 +275,7 @@ Incrmental increases in the following
 
 ## Peggy 2.0
 
-- New Sifchain Token Denoms (​​Coin Metadata Conventions - Documentation Needs update - Peggy 2.0 Lock/Burn Architecture RFC)
+- New Sifchain Token Denoms (Coin Metadata Conventions - Peggy 2.0 Lock/Burn Architecture RFC)
 - Stateless Signature Aggregation (Peggy Future Features) - Gas Savings
 - Transaction Ordering (Connecting Sifchain to Many EVM Chains) - Fewer dropped txns
 - EVM to EVM double pegging (Peggy2 end-to-end)
