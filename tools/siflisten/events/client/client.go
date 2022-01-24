@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/Sifchain/sifnode/tools/siflisten/events"
+	_ "github.com/lib/pq"
 )
 
 type client struct {
@@ -13,7 +14,7 @@ type client struct {
 }
 
 func (c client) GetCursor(ctx context.Context, name string) (int64, error) {
-	row := c.dbc.QueryRowContext(ctx, "select position from cursors where name = ?", name)
+	row := c.dbc.QueryRowContext(ctx, "select position from cursors where name = $1", name)
 
 	var position int64
 	err := row.Scan(&position)
@@ -25,7 +26,7 @@ func (c client) GetCursor(ctx context.Context, name string) (int64, error) {
 }
 
 func (c client) SetCursor(ctx context.Context, name string, position int64) error {
-	_, err := c.dbc.ExecContext(ctx, "insert into cursors (name, position) values (?, ?) on conflict update set position = ?", name, position, position)
+	_, err := c.dbc.ExecContext(ctx, "insert into cursors (name, position) values ($1, $2) on conflict update set position = ?", name, position, position)
 	if err != nil {
 		return err
 	}
@@ -33,18 +34,18 @@ func (c client) SetCursor(ctx context.Context, name string, position int64) erro
 	return nil
 }
 
-func (c client) CreateEvent(ctx context.Context, ev *events.Event) (int64, error) {
+func (c client) CreateEvent(ctx context.Context, ev *events.Event) error {
 	attrs, err := json.Marshal(ev.Attributes)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	res, err := c.dbc.ExecContext(ctx, "insert into events (`type`, height, metadata) values (?,?,?)", ev.EventType, ev.Height, attrs)
+	_, err = c.dbc.ExecContext(ctx, "insert into events (type, height, metadata) values ($1, $2, $3)", ev.EventType, ev.Height, attrs)
 	if err != nil {
-		return 0, nil
+		return err
 	}
 
-	return res.LastInsertId()
+	return err
 }
 
 func (c client) GetEvent(ctx context.Context, cursorPosition int64) (*events.Event, error) {
@@ -52,7 +53,7 @@ func (c client) GetEvent(ctx context.Context, cursorPosition int64) (*events.Eve
 }
 
 func (c client) GetEvents(ctx context.Context, cursorPosition int64) ([]*events.Event, error) {
-	rows, err := c.dbc.QueryContext(ctx, "select * from events where id > ?", cursorPosition)
+	rows, err := c.dbc.QueryContext(ctx, "select id, type, height, metadata from events where id > $1", cursorPosition)
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +62,12 @@ func (c client) GetEvents(ctx context.Context, cursorPosition int64) ([]*events.
 	var evs []*events.Event
 	for rows.Next() {
 		var ev events.Event
-		err := rows.Scan(&ev)
+		err := rows.Scan(&ev.ID, &ev.EventType, &ev.Height, &ev.Metadata)
 		if err != nil {
 			return nil, err
 		}
 
-		var attrs []events.Attribute
-		err = json.Unmarshal([]byte(ev.Metadata), &attrs)
+		err = json.Unmarshal(ev.Metadata, &ev.Attributes)
 		if err != nil {
 			return nil, err
 		}

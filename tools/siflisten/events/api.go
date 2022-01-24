@@ -9,7 +9,7 @@ type Client interface {
 	SetCursor(ctx context.Context, name string, position int64) error
 
 	/*CreateEvent creates event in events table. */
-	CreateEvent(ctx context.Context, ev *Event) (int64, error)
+	CreateEvent(ctx context.Context, ev *Event) error
 
 	/*GetEvent gets one event after the last processed cursor position. */
 	GetEvent(ctx context.Context, cursorPosition int64) (*Event, error)
@@ -29,7 +29,7 @@ type Event struct {
 	EventType  string `sql:"type"`
 	Height     int32  `sql:"height"`
 	Attributes []Attribute
-	Metadata   string `sql:"metadata"`
+	Metadata   []byte `sql:"metadata"`
 }
 
 type Attribute struct {
