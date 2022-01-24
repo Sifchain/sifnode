@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 # This is an executable command-line frontend that makes sure we are running with a suitable Python virtual environment.
 # If the virtual environment does not exist yet, it is created on first use.
