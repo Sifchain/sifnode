@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/Sifchain/sifnode/tools/siflisten/events"
 	_ "github.com/lib/pq"
@@ -26,7 +27,7 @@ func (c client) GetCursor(ctx context.Context, name string) (int64, error) {
 }
 
 func (c client) SetCursor(ctx context.Context, name string, position int64) error {
-	_, err := c.dbc.ExecContext(ctx, "insert into cursors (name, position) values ($1, $2) on conflict update set position = ?", name, position, position)
+	_, err := c.dbc.ExecContext(ctx, "insert into cursors (name, position) values ($1, $2) on conflict (name) do update set position = $3", name, position, position)
 	if err != nil {
 		return err
 	}
@@ -85,20 +86,26 @@ func (c client) ConsumeForever(ctx context.Context, cursorName string, consume e
 	}
 
 	for {
-		evs, err := c.GetEvents(ctx, position)
+		select {
+		case <-ctx.Done():
+			return
 
-		for _, ev := range evs {
-			err := consume(ctx, ev)
-			if err != nil {
-				break
+		case <-time.After(time.Second):
+			evs, err := c.GetEvents(ctx, position)
+
+			for _, ev := range evs {
+				err := consume(ctx, ev)
+				if err != nil {
+					break
+				}
+
+				position = ev.ID
 			}
 
-			position = ev.ID
-		}
-
-		err = c.SetCursor(ctx, cursorName, position)
-		if err != nil {
-			return
+			err = c.SetCursor(ctx, cursorName, position)
+			if err != nil {
+				return
+			}
 		}
 	}
 }

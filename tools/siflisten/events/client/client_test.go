@@ -44,3 +44,20 @@ func TestCreateEvent(t *testing.T) {
 	require.Equal(t, int32(1), evs[0].Height)
 	require.Equal(t, attrs, evs[0].Attributes)
 }
+
+func TestSetCursor(t *testing.T) {
+	ctx, dbc, eventsClient := SetupTest(t)
+	defer dbc.Close()
+
+	err := eventsClient.SetCursor(ctx, "test", 1)
+	require.NoError(t, err)
+
+	position, err := eventsClient.GetCursor(ctx, "test")
+	require.Equal(t, int64(1), position)
+
+	err = eventsClient.SetCursor(ctx, "test", 5)
+	require.NoError(t, err)
+
+	position, err = eventsClient.GetCursor(ctx, "test")
+	require.Equal(t, int64(5), position)
+}
