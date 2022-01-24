@@ -39,17 +39,16 @@ func TestIsBlacklisted(t *testing.T) {
 
 	adminAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, oracleKeeper, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-		oracleKeeper.SetAdminAccount(ctx, adminAddress)
-		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		app, ctx := test.CreateTestApp(false)
+		app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
 		})
 		require.NoError(t, err)
-		got := keeper.IsBlacklisted(ctx, tc.check)
+		got := app.EthbridgeKeeper.IsBlacklisted(ctx, tc.check)
 		require.Equal(t, tc.expected, got)
 	}
 }
@@ -102,30 +101,30 @@ func TestSetBlacklist(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, oracleKeeper, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-		oracleKeeper.SetAdminAccount(ctx, adminAddress)
-		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		app, ctx := test.CreateTestApp(false)
+		app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
 		})
 		require.NoError(t, err)
-		err = keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		err = app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.updated,
 		})
 		require.NoError(t, err)
 		for _, address := range tc.expectTrue {
-			require.True(t, keeper.IsBlacklisted(ctx, address))
+			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
 		for _, address := range tc.expectFalse {
-			require.False(t, keeper.IsBlacklisted(ctx, address))
+			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
 	}
 }
 
 func TestKeeper_SetBlacklist_Nonadmin(t *testing.T) {
-	var ctx, keeper, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-	err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+	app, ctx := test.CreateTestApp(false)
+	err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 		From: types.TestAddress,
 	})
 	require.ErrorIs(t, err, oracletypes.ErrNotAdminAccount)
