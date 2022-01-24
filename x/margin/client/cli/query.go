@@ -78,6 +78,18 @@ func GetEventCmd() *cobra.Command {
 				return err
 			}
 
+			flags := cmd.Flags()
+
+			baseUrl, err := flags.GetString(FlagBaseUrl)
+			if err != nil {
+				return err
+			}
+
+			blockEvents, err := chain.BlockEvents(clientCtx)
+			if err != nil {
+				return err
+			}
+			return blockEvents
 		},
 	}
 	return cmd

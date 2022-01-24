@@ -1,6 +1,11 @@
 package chain
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	keeper "github.com/Sifchain/sifnode/x/margin/keeper"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
@@ -11,13 +16,13 @@ import (
 
 func QueryMarginParams(clientCtx client.Context) (*margintypes.Params, error) {
 	marginTypes := &margintypes.Params{
-		"LeverageMax":          keeper.GetLeverageParam(clientCtx),
-		"InterestRateMax":      keeper.GetInterestRateMax(clientCtx),
-		"InterestRateMin":      keeper.GetInterestRateMin(clientCtx),
-		"InterestRateIncrease": keeper.GetInterestRateIncrease(clientCtx),
-		"InterestRateDecrease": keeper.GetInterestRateDecrease(clientCtx),
-		"HealthGainFactor":     keeper.GetHealthGainFactor(clientCtx),
-		"EpochLength":          keeper.GetEpochLength,
+		LeverageMax:          keeper.GetLeverageParam(clientCtx),
+		InterestRateMax:      keeper.GetInterestRateMax(clientCtx),
+		InterestRateMin:      keeper.GetInterestRateMin(clientCtx),
+		InterestRateIncrease: keeper.GetInterestRateIncrease(clientCtx),
+		InterestRateDecrease: keeper.GetInterestRateDecrease(clientCtx),
+		HealthGainFactor:     keeper.GetHealthGainFactor(clientCtx),
+		EpochLength:          keeper.GetEpochLength,
 	}
 	return marginTypes, nil
 }
@@ -44,7 +49,23 @@ type Attribute struct {
 
 /* Returns events from block_results?height=height */
 
-func BlockEvents(clientCtx client.Context, height int64) ([]*Event, error) {
+func BlockEvents(clientCtx client.Context, height int64, baseUrl string) ([]*Event, error) {
 
-	return nil, nil
+	path := fmt.Sprintf("%s/block_results?height=%d", baseUrl, height)
+
+	resp, err := http.Get(path)
+	if err != nil {
+		return nil, err.Error()
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err.Error()
+	}
+
+	var events []*Event
+	json.Unmarshal(body, &events)
+
+	return events, nil
 }
