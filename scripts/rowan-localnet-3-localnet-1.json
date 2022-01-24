@@ -1,12 +1,12 @@
 {
   "entries": [
     {
-      "decimals": "6",
-      "denom": "ibc/92E0120F15D037353CFB73C14651FC8930ADC05B93100FD7754D3A689E53B333",
-      "base_denom": "uosmo",
-      "path": "transfer/channel-8",
-      "ibc_channel_id": "channel-8",
-      "ibc_counterparty_channel_id": "channel-136",
+      "decimals": "18",
+      "denom": "ibc/4C2B3D3B398FC7B8FFA3A96314006FF0B38E3BFC4CE90D8EE46E9EB6768A482D",
+      "base_denom": "rowan",
+      "path": "transfer/channel-0",
+      "ibc_channel_id": "channel-0",
+      "ibc_counterparty_channel_id": "channel-0",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "osmosis-1"
+      "ibc_counterparty_chain_id": "localnet-2"
     }
   ]
 }
