@@ -47,7 +47,7 @@ func TestCreatePool(t *testing.T) {
 	// Will fail if we are below minimum
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, MinThreshold.Sub(sdk.NewUint(1)), sdk.ZeroUint())
 	res, err := handler(ctx, &msgCreatePool) //clp.handleMsgCreatePool(ctx, keeper, msgCreatePool)
-	require.Error(t, err)
+	require.Error(t, clptypes.ErrPoolDoesNotExist)
 	require.Nil(t, res)
 	// Will fail if we ask for too much.
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance.Add(sdk.NewUint(1)), initialBalance.Add(sdk.NewUint(1)))
@@ -131,7 +131,7 @@ func TestAddLiquidity(t *testing.T) {
 	newAsset := clptypes.NewAsset("Asset")
 	msgNonWhitelisted := clptypes.NewMsgAddLiquidity(signer, newAsset, sdk.NewUint(1000), sdk.NewUint(1000))
 	_, err = handler(ctx, &msgNonWhitelisted)
-	require.Error(t, err)
+	require.Error(t, clptypes.ErrLiquidityProviderDoesNotExist)
 }
 
 func TestAddLiquidity_LargeValue(t *testing.T) {
@@ -179,7 +179,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.NoError(t, err)
 	msg := clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err := handler(ctx, &msg)
-	require.Error(t, err)
+	require.Error(t, clptypes.ErrInvalidAsymmetry)
 	require.Nil(t, res)
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(10000)
@@ -239,7 +239,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	asymmetry = sdk.NewInt(100)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
-	require.Error(t, err)
+	require.Error(t, clptypes.ErrPoolTooShallow)
 	require.Nil(t, res, "Cannot withdraw pool is too shallow")
 	msgAdd := clptypes.NewMsgAddLiquidity(newLP, asset, poolBalance, poolBalance)
 	res, err = handler(ctx, &msgAdd)
@@ -392,6 +392,44 @@ func TestCreatePoolCases(t *testing.T) {
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance, poolBalance)
 	_, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.Error(t, err, clptypes.ErrPoolTooShallow)
+
+	var validateTests = []struct {
+		name           string
+		signer         sdk.AccAddress
+		asset          clptypes.Asset
+		initialBalance sdk.Uint
+		poolBalance    sdk.Uint
+		err            error
+	}{
+		{
+			name:           "Create Pool Success Cases",
+			signer:         signer,
+			asset:          asset,
+			initialBalance: poolBalance,
+			poolBalance:    poolBalance,
+			err:            nil,
+		},
+		{
+			name:           "Create Pool ErrPoolTooShallow Cases",
+			signer:         signer,
+			asset:          asset,
+			initialBalance: initialBalance,
+			poolBalance:    poolBalance,
+			err:            clptypes.ErrPoolTooShallow,
+		},
+	}
+
+	for _, tt := range validateTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			theMsg := clptypes.NewMsgAddLiquidity(tt.signer, tt.asset, tt.initialBalance, tt.poolBalance)
+			if _, res := handler(ctx, &theMsg); res != err {
+				t.Fatalf("expected %s, but %s got",
+					tt.err, res)
+			}
+		})
+	}
+
 }
 
 func TestGetPool(t *testing.T) {
@@ -468,6 +506,7 @@ func TestAddLiquidityErrorCases(t *testing.T) {
 			asset:               asset,
 			nativeAssetAmount:   poolBalance,
 			externalAssetAmount: poolBalance,
+			err:                 nil,
 		},
 		{
 			name:                "Add Liquidity ErrTokenNotSupported Cases",
@@ -475,13 +514,18 @@ func TestAddLiquidityErrorCases(t *testing.T) {
 			asset:               asset1,
 			nativeAssetAmount:   sdk.ZeroUint(),
 			externalAssetAmount: addLiquidityAmount,
+			err:                 clptypes.ErrTokenNotSupported,
 		},
 	}
 
 	for _, tt := range validateTests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-
+			theMsg := clptypes.NewMsgAddLiquidity(tt.signer, tt.asset, tt.nativeAssetAmount, tt.externalAssetAmount)
+			if _, res := handler(ctx, &theMsg); res != err {
+				t.Fatalf("expected %s, but %s got",
+					tt.err, res)
+			}
 		})
 	}
 
