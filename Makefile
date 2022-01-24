@@ -57,7 +57,11 @@ build-sifd: go.sum
 clean-config:
 	@rm -rf ~/.sifnode*
 
-clean: clean-config
+# TODO: We should decide if we'd want to keep this
+clean-peggy:
+	make -C smart-contracts clean
+
+clean: clean-config clean-peggy
 	@rm -rf ${GOBIN}/sif*
 	git clean -fdx cmd/ebrelayer/contract/generated
 
