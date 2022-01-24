@@ -1,6 +1,7 @@
 - [Peggy 2.0 PRD](README)
 - [Concepts](Concepts)
 <!-- - [Components](Components) -->
+- [Smart Contracts](contracts.md)
 - [Scenarios](Scenarios/index)
   - [EVM Import](Scenarios/evmImport)
   - [EVM Export](Scenarios/evmExport)

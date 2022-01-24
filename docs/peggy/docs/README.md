@@ -299,11 +299,12 @@ Binance Smart Chain Import/Export Functionality (Peggy2 end-to-end)
 - [x] Initial Development
 - [x] Integration Testing Group 0
 - [x] Documentation for Auditing (current phase)
-- [ ] Integration Testing Group 1 - 4 weeks
-- [ ] Integration Testing Group 2 - 2 weeks
+- [x] Integration Testing Group 1 - 4 weeks
 - [ ] Merge Develop to Future/Peggy2 - 1 week
 - [ ] Halborn Audit 1 and Subsequent Fixes - Need estimate from Halborn est 1 month?
+- [ ] Integration Testing Group 2 - 2 weeks
 - [ ] Migration/Load Testing - 2-8 weeks
+- [ ] Merge Develop to Future/Peggy2 - 1 week
 - [ ] Migration
 - [ ] Halborn Audit 2 - Mid March
 - [ ] Deployment/Devops

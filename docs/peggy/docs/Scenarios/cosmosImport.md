@@ -4,8 +4,8 @@
 
 Peggy 2.0 can import Cosmos assets (Rowan and IBC tokens)
 into the sifchain (cosmos) blockchain that have been [exported](Scenarios/evmExport) to an EVM chain. It does this by burning the
-BridgeToken created during the inital export by the [BridgeBank](SmartContracts#BridgeBank). This process is very similar to the process performed by the [EVM Import](Scenarios/evmImport) with the main difference being a change from a lock to a burn call.
-Once burned the peggy 2.0 mechanisms watching for LogBurn Events spring into action with the following sequences:
+BridgeToken created during the initial export by the [BridgeBank](SmartContracts#BridgeBank). This process is very similar to the process performed by the [EVM Import](Scenarios/evmImport), with the main difference being a change from a lock to a burn call.
+Once burned, the Peggy 2.0 mechanisms watching for LogBurn Events spring into action with the following sequences:
 
 ```mermaid
 sequenceDiagram
@@ -40,10 +40,10 @@ sequenceDiagram
   end
 
   Note over Witness,Relayer: EthBridgeClaim constructed
-  par EVM logEvent Recieved by Witness
+  par EVM logEvent Received by Witness
   BridgeBank ->> Witness: LogBurn Event
   Witness ->> Oracle Module: Broadcast claim to Sifchain
-  and EVM logEvent Recieved by Relayer
+  and EVM logEvent Received by Relayer
   BridgeBank ->> Relayer: LogBurn Event
   Relayer ->> Oracle Module: Broadcast claim to Sifchain
   end
@@ -64,30 +64,30 @@ This is for moving Cosmos assets that have been exported to an EVM chain as Brid
 Precondition: assets have been moved to EVM chain from Sifchain with a `lock` scenario.
 
 1. User initiates the scenario by approving bridgebank on the BridgeToken contract by calling `approve()` with the bridgebank address for the balance they want to burn. This authorizes the bridgebank to burn their tokens.
-2. User will call the `burn()` function on the [BridgeBank](SmartContracts#BridgeBank) smart contract, they will send the following paramaters for the burn:
+2. User will call the `burn()` function on the [BridgeBank](SmartContracts#BridgeBank) smart contract, they will send the following parameters for the burn:
    - `recipient`: byte representation of the sifchain address funds will be released to
    - `token`: address of the bridge token contract being burned
    - `amount`: uint256 value being burned by the bridgebank
-3. Bridgebank will verify the user has enough funds for the requested burn, verify that the token being burned is in the `cosmosTokenWhiteList` and then burn the funds from the users account.
+3. Bridgebank will verify the user has enough funds for the requested burn, verify that the token being burned is in the `cosmosTokenWhiteList`, and then burn the funds from the user's account.
 4. Bridgebank will call the OFAC blocklist and verify that the user is not prohibited by OFAC from doing business.
-5. OFAC will return a boolean stating if the user is banned, if the user is prohibited the [BridgeBank](SmartContracts#BridgeBank) will revert the transaction. Otherwise it continues.
-6. The ERC20 contract will transfer the balances out of the users account and credit it for the bridgebank.
-7. The BridgeToken contract will transfer the balances out of the users account and mark it destroyed.
-8. The witnesses and relayers are functionally identical on Cosmos imports from EVM. Since the witness is statless it will wake up every minute and query its last sequence number from the EthBridgeModule. It will call the GetEthereumLockBurnSequence method with the following paramaters:
+5. OFAC will return a boolean stating if the user is banned; if the user is prohibited, the [BridgeBank](SmartContracts#BridgeBank) will revert the transaction. Otherwise, it continues.
+6. The ERC20 contract will transfer the balances out of the user's account and credit it with the bridgebank.
+7. The BridgeToken contract will transfer the balances out of the user's account and mark it destroyed.
+8. The witnesses and relayers are functionally identical on Cosmos imports from EVM. Since the witness is stateless, it will wake up every minute and query its last sequence number from the EthBridgeModule. It will call the GetEthereumLockBurnSequence method with the following parameters:
    - `networkDescriptor`: An enum representing the network the witness is connected to.
    - `valAccount`: An address for the witness on sifchain
-9. The EthBridgeModule will lookup and return to the witness the last sequence number that witness processed and if it has no history will return `0` as the current sequence number.
-10. The relayer, being identical in Cosmos Imports from EVM mode will likewise wakeup every minute and query its last sequence number from the EthBridgeModule. It will call the `GetEthereumLockBurnSequence` method with the following paramaters:
+9. The EthBridgeModule will look up and return to the witness the last sequence number that the witness processed, and if it has no history, will return `0` as the current sequence number.
+10. The relayer, being identical in Cosmos Imports from EVM mode, will likewise wake up every minute and query its last sequence number from the EthBridgeModule. It will call the `GetEthereumLockBurnSequence` method with the following parameters:
     - `networkDescriptor`: An enum representing the network the relayer is connected to.
     - `valAccount`: An address for the relayer on sifchain
-11. The EthBridgeModule will lookup and return to the relayer the last sequence number that relayer processed and if it has no history will return `0` as the current sequence number.
+11. The EthBridgeModule will lookup and return to the relayer the last sequence number that the relayer processed, and if it has no history, will return `0` as the current sequence number.
 12. Upon completion of the `burn()` function the [BridgeBank](SmartContracts#BridgeBank) will emit a [LogBurn](Events#LogBurn) event on EVM network with the following data:
     - `_from`: Ethereum address that initiated the burn
     - `_to`: the sifchain address that the imported assets should be credited to (UTF-8 encoded string)
     - `_token`: the bridge token's contract address
     - `_value`: the quantity of asset being burned (a uint256 representing the smallest unit of the base value)
     - `_nonce`: the current transaction sequence number which is indexed as a topic (\_nonce) (this value increments automatically for each `burn`)
-    - `_decimals`: the decimals of the bridge token which defaults to 6 if not found
+    - `_decimals`: the decimals of the bridge token, which defaults to 6 if not found
     - `_networkDescriptor`: the network descriptor for the chain this asset is on
     - `_denom`: The cosmos denom of the IBC Asset or `rowan` for rowan.
 13. Upon seeing the LogBurn event, [witnesses](Components#witness) will:
@@ -109,13 +109,13 @@ Precondition: assets have been moved to EVM chain from Sifchain with a `lock` sc
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
 19. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [relayers](Components#relayer) will call `SetEthereumLockBurnSequence` in the
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
-20. Finally after sifchain successfully processes the successful claim it will emit a new event signaling the claim was processed successfully.
+20. Finally, after sifchain successfully processes the successful claim it will emit a new event signaling the claim was processed successfully.
 
-!> Currently Cosmos Events are transmitted in code for every EthBridgeClaim submitted, but we dont seem to have any events for when a successful claim is transmitted as step 17 calls for, is this in the code and/or needed/wanted?
+!> Currently, Cosmos Events are transmitted in code for every EthBridgeClaim submitted, but we dont seem to have any events for when a successful claim is transmitted as step 17 calls for, is this in the code and/or needed/wanted?
 
 ## Fees
 
-Anytime a user wants to import assets into sifchain there are two types of fees that need to be accounted for, user incurred fees and relayer/witness incurred fees.
+Anytime a user wants to import assets into sifchain, there are two types of fees that need to be accounted for, user incurred fees and relayer/witness incurred fees.
 
 ### User Incurred Fees
 
@@ -124,18 +124,18 @@ The only fees a user will incur during an import of Cosmos assets stored on an E
 1. Calling `approve()` on the BridgeToken contract
 2. Calling `Burn()` on the [BridgeBank](SmartContracts#BridgeBank) contract.
 
-At the time of writing this developers are expecting the average import from Ethereum would cost a user roughly $40~$85.
+At the time of writing this, developers are expecting the average import from Ethereum would cost a user roughly $40~$85.
 
 ### Witness/Relayer Incurred Fees
 
-When a user initates an import each relayer and witness must submit a [NewEthBridgeClaim](Events/NewEthBridgeClaim) as well as a message to increment their sequence numbers to the
+When a user initiates an import each relayer and witness must submit a [NewEthBridgeClaim](Events/NewEthBridgeClaim) as well as a message to increment their sequence numbers to the
 sifchain blockchain. These messages cost rowan to perform.
 
 !> What is the average cost to a relayer/witness in rowan to perform these operations?
 
-## How to programatically Initate a Burn
+## How to programmatically Initiate a Burn
 
-Below is a program which would query a users balance of a specific BridgeToken, and then initiate a burn for the entire
+Below is a program that would query a users balance of a specific BridgeToken, and then initiate a burn for the entire
 balance:
 
 ```typescript
