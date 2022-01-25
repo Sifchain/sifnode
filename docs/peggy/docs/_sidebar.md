@@ -1,6 +1,5 @@
 - [Peggy 2.0 PRD](README)
 - [Concepts](Concepts)
-<!-- - [Components](Components) -->
 - [Smart Contracts](contracts.md)
 - [Scenarios](Scenarios/index)
   - [EVM Import](Scenarios/evmImport)
@@ -8,6 +7,5 @@
   - [Cosmos Export](Scenarios/cosmosExport)
   - [Cosmos Import from EVM](Scenarios/cosmosImport)
   - [Non-native EVM Export](Scenarios/doublePegging)
-  <!-- - [Smart contracts](SmartContracts) -->
 - [Events](Events)
 - [Glossary](glossary)

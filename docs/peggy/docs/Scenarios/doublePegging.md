@@ -4,7 +4,7 @@
 
 Peggy 2.1 will be able to export EVM Native Assets (EVM Native Currency such as ETH and ERC20 tokens) from one EVM chain to another (e.g., Ethereum to Polygon) 
 through the sifchain blockchain. It does this by burning EVM native assets from the first chain tracked by the bank module. It emits events that instruct the smart contract on 
-the secondary EVM chain called the [BridgeBank](SmartContracts#BridgeBank) to release mint funds for an IOU known as a bridgeToken. Once burned, the Peggy 2.0 mechanisms watching for Burn Events spring
+the secondary EVM chain called the [BridgeBank](contracts#BridgeBank) to release mint funds for an IOU known as a bridgeToken. Once burned, the Peggy 2.0 mechanisms watching for Burn Events spring
 into action with the following sequences:
 
 Preconditions:
@@ -64,7 +64,7 @@ Steps:
    ```
    @todo@ sifnoded ... (include the actual command)
    ```
-1. [`sifnoded`](Components#Sifnoded) invokes GetTokenMetadata(denomHash) in the Token Registry module to get the token
+1. `sifnoded` invokes GetTokenMetadata(denomHash) in the Token Registry module to get the token
    metadata. From the obtained metadata, it identifies the network to export to.
     - It sees that the network descriptor is not the token's native network - @TODO@ Is this the key difference from "plain" burn?
     - It calls the token metadata module (@TODO@ Which function) to determine if the token has been exported to that network before
@@ -82,9 +82,9 @@ Steps:
 1. When a relayer (which is listening to events on sifchain) sees the signed event coming from a witness, it will check
    the signature. After seeing at least `m` of `n` valid signatures (@TODO@ how are `m` and `n` set?) for the same
    prophecyID, but signed with different keys, it will call a `submitProphecyClaimAggregatedSigs()` @TODO@ parameters
-   function on target chain's [CosmosBridge][SmartContracts#CosmosBridge] smart contract. @TODO@ What happens if the signature is invalid, or if a long time passes? Where are they stored in the meantime and for how long? 
+   function on target chain's [CosmosBridge](contracts#CosmosBridge) smart contract. @TODO@ What happens if the signature is invalid, or if a long time passes? Where are they stored in the meantime and for how long? 
 1. Next, the relayer will increment the sequence number of sifnode side. (@TODO@ How? Potential bottleneck?)
-1. The `CosmosBridge` smart contract will [verify that the signatures are valid](SmartContracts#verifySignature).
+1. The `CosmosBridge` smart contract will verify that the signatures are valid.
     - If not all signatures are valid, it will ignore it 
     - If the signature is valid, it will mint the bridge token representing the asset. (@TODO@ more details needed - we're potentially doing it the first time etc.)
     - The value of `cosmosDenom` in the token will be set to `denomHash` from originating chain 

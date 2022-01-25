@@ -2,7 +2,7 @@
 ## EVM Lock sequence
 Peggy 2.0 can import EVM native assets (EVM Native Currency such as ETH and ERC20 tokens)
 into the sifchain (cosmos) blockchain. It does this by locking EVM native assets
-into a solidity smart contract on the EVM chain called the [BridgeBank](SmartContracts#BridgeBank).
+into a solidity smart contract on the EVM chain called the [BridgeBank](contracts#BridgeBank).
 Once locked, the Peggy 2.0 mechanisms watching for LogLock Events spring into action with the following sequences:
 
 ```mermaid
@@ -60,13 +60,13 @@ sequenceDiagram
 This is for moving EVM-native assets (either EVM native currency or ERC20 tokens) from an EVM chain to Sifchain.
 
 1. User initiates the scenario by approving bridgebank on the ERC20 contract by calling `approve()` with the bridgebank address for the balance they want to lock. This authorizes the bridgebank to transfer their tokens when they lock the funds.
-2. User will call the `lock()` function on the [BridgeBank](SmartContracts#BridgeBank) smart contract, they will send the following parameters for the lock:
+2. User will call the `lock()` function on the [BridgeBank](contracts#BridgeBank) smart contract, they will send the following parameters for the lock:
    - `recipient`: byte representation of the sifchain address funds will be released to
    - `token`: address of the token contract being locked, 0x0 for native EVM currency
    - `amount`: uint256 value being locked by the bridgebank
 3. Bridgebank will verify the user has enough funds for the requested lock, verify the user is not attempting to lock a token on the `CosmosTokenWhiteList`, and then transfer the funds from the user's account to the bridgebank contract.
 4. Bridgebank will call the OFAC blocklist and verify that the user is not prohibited by OFAC from doing business.
-5. OFAC will return a boolean stating if the user is banned, if the user is prohibited, the [BridgeBank](SmartContracts#BridgeBank) will revert the transaction. Otherwise, it continues.
+5. OFAC will return a boolean stating if the user is banned, if the user is prohibited, the [BridgeBank](contracts#BridgeBank) will revert the transaction. Otherwise, it continues.
 6. The ERC20 contract will transfer the balances out of the user's account and credit it with the bridgebank.
 7. The witnesses and relayers are functionally identical on EVM imports. Since the witness is stateless it will wake up every minute and query its last sequence number from the EthBridgeModule. It will call the GetEthereumLockBurnSequence method with the following parameters:
    - `networkDescriptor`: An enum representing the network the witness is connected to.
@@ -76,7 +76,7 @@ This is for moving EVM-native assets (either EVM native currency or ERC20 tokens
    - `networkDescriptor`: An enum representing the network the relayer is connected to.
    - `valAccount`: An address for the relayer on sifchain
 10. The EthBridgeModule will lookup and return to the relayer the last sequence number that the relayer processed, and if it has no history, it will return `0` as the current sequence number.
-11. Upon completion of the `lock()` function the [BridgeBank](SmartContracts#BridgeBank) will emit a [LogLock](Events#LogLock) event on EVM network with the following data:
+11. Upon completion of the `lock()` function the [BridgeBank](contracts#BridgeBank) will emit a [LogLock](Events#LogLock) event on EVM network with the following data:
      - `_from`: Ethereum address that initiated the lock
      - `_to`: the sifchain address that the imported assets should be credited to (UTF-8 encoded string)
      - `_token`: the token's contract address or the null address for EVM-native currency
@@ -86,12 +86,12 @@ This is for moving EVM-native assets (either EVM native currency or ERC20 tokens
      - `_symbol`: the symbol of the asset which defaults to an empty string if not found
      - `_name`: the name of the asset which defaults to an empty string if not found (_name)
      - `_networkDescriptor`: the network descriptor for the chain this asset is on
-12. Upon seeing the LogLock event, [witnesses](Components#witness) will:
+12. Upon seeing the LogLock event, witnesses will:
      - [calculate the denom hash](Concepts?id=token-denom-hashing-for-evm-native-assets)
      - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast the event to sifnode. The witnesses will then update the sequence number they stored
 for the last processed block.
 13. The same as #11
-14. Upon seeing the LogLock event, [relayer](Components#relayer) will:
+14. Upon seeing the LogLock event, relayer will:
       - [calculate the denom hash](Concepts?id=token-denom-hashing-for-evm-native-assets)
       - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast it to sifnode claim, and then broadcast the event to sifnode. The relayers will then update the sequence number they stored
 15. When sifnode starts to process the [NewEthBridgeClaim](Events/NewEthbridgeClaim) the message handler for `CreateEthBridgeClaim` is called; during this, it will:
@@ -103,9 +103,9 @@ for the last processed block.
 16. When the [NewEthBridgeClaim](Event/NewEthbridgeClaim) message handler calls `ProcessClaim`, it will return a status code
     of `oracletypes.StatusText`, which will be checked to see if the claim status is `StatusText_STATUS_TEXT_SUCCESS`, if it is, the message handler will
     call `ProcessSuccessfulClaim`, which will instruct the bank module to mint new coins for the denom and value of the claim.
-17. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [witnesses](Components#witness) will call `SetEthereumLockBurnSequence` in the
+17. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the witnesses will call `SetEthereumLockBurnSequence` in the
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
-18. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [relayers](Components#relayer) will call `SetEthereumLockBurnSequence` in the
+18. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the relayers will call `SetEthereumLockBurnSequence` in the
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
 19. Finally, after sifchain successfully processes the successful claim, it will emit a new event signaling the claim was processed successfully.
 
@@ -118,7 +118,7 @@ Anytime a user wants to import assets into sifchain, there are two types of fees
 The only fees a user will incur during an import into sifchain will be the EVM native gas fees for:
 
 1. Calling `approve()` on an ERC20 contract if the asset they intend to import is an ERC20 contract
-2. Calling `Lock()` on the [BridgeBank](SmartContracts#BridgeBank) contract.
+2. Calling `Lock()` on the [BridgeBank](contracts#BridgeBank) contract.
 
 At the time of writing this, developers are expecting the average import on Ethereum would cost a user roughly $20~$85.
 

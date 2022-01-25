@@ -4,7 +4,7 @@
 
 Peggy 2.0 can Export EVM native assets (EVM Native Currency such as ETH and ERC20 tokens) 
 out of the sifchain (cosmos) blockchain. It does this by burning EVM native assets
-tracked by the bank module and emitting events that instruct the smart contract on the EVM chain called the [BridgeBank](SmartContracts#BridgeBank) to release the funds for. 
+tracked by the bank module and emitting events that instruct the smart contract on the EVM chain called the [BridgeBank](contracts#BridgeBank) to release the funds for. 
 Once burned, the Peggy 2.0 mechanisms watching for Burn Events spring into action with the following sequences:
 
 ```mermaid

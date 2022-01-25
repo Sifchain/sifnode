@@ -4,7 +4,7 @@
 
 Peggy 2.0 can Export Cosmos native assets (Rowan and IBC Assets)
 out of the Sifchain (cosmos) blockchain. It does this by locking cosmos native assets
-tracked by the bank module and emitting events which instruct the smart contract on the EVM chain called the [BridgeBank](SmartContracts#BridgeBank) to mint IOUs in the form of BridgeTokens representing the exported asset.
+tracked by the bank module and emitting events which instruct the smart contract on the EVM chain called the [BridgeBank](contracts#BridgeBank) to mint IOUs in the form of BridgeTokens representing the exported asset.
 Once locked, the Peggy 2.0 mechanisms watching for EventTypeLock spring into action with the following sequences:
 
 ```mermaid
