@@ -214,7 +214,7 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 	return X, XL, x, Y, YL, toRowan
 }
 
-func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
+func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
 	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
 	if err != nil {
 		return err
@@ -230,19 +230,30 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
-	h, err := k.UpdateMTPHealth(ctx, mtp, pool) // set mtp in func or return h?
+	h, err := k.UpdateMTPHealth(ctx, *mtp, pool) // set mtp in func or return h?
 	if err != nil {
 		return err
 	}
 	mtp.MtpHealth = h
 
 	collateralCoins := sdk.NewCoins(collateralCoin)
-	err = k.BankKeeper().SendCoinsFromAccountToModule(ctx, mtpAddress, types.ModuleName, collateralCoins)
+	err = k.BankKeeper().SendCoinsFromAccountToModule(ctx, mtpAddress, clptypes.ModuleName, collateralCoins)
 	if err != nil {
 		return err
 	}
 
-	return k.SetMTP(ctx, &mtp)
+	nativeAsset := types.GetSettlementAsset()
+
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CollateralAmount)
+		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
+	} else { // collateral is external
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CollateralAmount)
+		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
+	}
+	k.ClpKeeper().SetPool(ctx, &pool)
+
+	return k.SetMTP(ctx, mtp)
 }
 
 func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error {
@@ -299,14 +310,12 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CollateralAmount)
-		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.CollateralAmount)
-		pool.ExternalCustody = pool.ExternalCustody.Add(mtp.CustodyAmount)
-	} else {
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(mtp.CollateralAmount)
-		pool.ExternalLiabilities = pool.NativeLiabilities.Add(mtp.CollateralAmount)
+	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CustodyAmount)
 		pool.NativeCustody = pool.NativeCustody.Add(mtp.CustodyAmount)
+	} else {
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(mtp.CustodyAmount)
+		pool.ExternalCustody = pool.ExternalCustody.Add(mtp.CustodyAmount)
 	}
 
 	return k.ClpKeeper().SetPool(ctx, &pool)
@@ -315,23 +324,23 @@ func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool
 func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
-		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
+	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+		pool.NativeCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
 	} else {
-		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
+		pool.ExternalCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
 	}
 
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
-func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	CollateralAmount := mtp.CollateralAmount
 	LiabilitiesP := mtp.LiabilitiesP
 	LiabilitiesI := mtp.LiabilitiesI
 
 	var err error
-	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, pool)
 	if err != nil {
 		return err
 	}
@@ -385,7 +394,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 		return err
 	}
 
-	return k.clpKeeper.SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
 func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {

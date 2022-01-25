@@ -1080,7 +1080,7 @@ func TestKeeper_Borrow(t *testing.T) {
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", address)
 
-			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.borrowAmount, mtp, pool, tt.leverage)
+			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.borrowAmount, &mtp, pool, tt.leverage)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -1475,7 +1475,7 @@ func TestKeeper_Repay(t *testing.T) {
 				mtp.Address = tt.overrideAddress
 			}
 
-			got := marginKeeper.Repay(ctx, mtp, pool, tt.repayAmount)
+			got := marginKeeper.Repay(ctx, &mtp, pool, tt.repayAmount)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
