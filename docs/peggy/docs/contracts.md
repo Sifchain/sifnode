@@ -59,44 +59,47 @@ classDiagram
   %% OFAC Compliance Contracts
   class Blocklist {
   }
+
   %% BridgeBank Inherits
-  BridgeBank <|-- BankStorage
-  BridgeBank <|-- CosmosBank
-  BridgeBank <|-- CosmosWhiteList
-  BridgeBank <|-- Pausable
+  BankStorage     <|-- BridgeBank
+  CosmosBank      <|-- BridgeBank
+  CosmosWhiteList <|-- BridgeBank
+  Pausable        <|-- BridgeBank
+  
   BridgeBank *-- BridgeToken
   BridgeBank *--Rowan
+
   %% BankStorage Inherits
-  BankStorage <|-- EthereumBankStorage
-  BankStorage <|-- CosmosWhiteListStorage
+  EthereumBankStorage <|-- BankStorage
+  CosmosWhiteListStorage <|-- BankStorage
 
 
   %% CosmosWhiteList Inherits
-  CosmosWhiteList <|-- CosmosWhiteListStorage
+  CosmosWhiteListStorage <|-- CosmosWhiteList
 
   %% Pausable Inherits
-  Pausable <|-- PauserRole
+  PauserRole <|-- Pausable
 
   %% Rowan Inherits
-  Rowan <|-- BridgeToken
+  BridgeToken <|-- Rowan
 
   %% BridgeToken Inherits
-  BridgeToken <|-- ERC20Burnable
-  BridgeToken <|-- AccessControl
+  ERC20Burnable <|-- BridgeToken
+  AccessControl <|-- BridgeToken
 
   %% Blocklist Inherits
-  Blocklist <|-- Ownable
+  Ownable <|-- Blocklist
 
   %% CosmosBridge Inherits
-  CosmosBridge <|-- CosmosBridgeStorage
-  CosmosBridge <|-- Oracle
+  CosmosBridgeStorage <|-- CosmosBridge
+  Oracle <|-- CosmosBridge
 
   %% Oracle Inherits
-  Oracle <|-- OracleStorage
-  Oracle <|-- Valset
+  OracleStorage <|-- Oracle
+  Valset <|-- Oracle
 
   %% Valset Inherits
-  Valset <|-- ValsetStorage
+  ValsetStorage <|-- Valset
 
   %% Link Association
   BridgeRegistry -- BridgeBank
@@ -189,15 +192,16 @@ classDiagram
   }
 
   %% CosmosBridge Inherits
-  CosmosBridge <|-- CosmosBridgeStorage
-  CosmosBridge <|-- Oracle
+  CosmosBridgeStorage <|-- CosmosBridge
+  Oracle <|-- CosmosBridge
 
   %% Oracle Inherits
-  Oracle <|-- OracleStorage
-  Oracle <|-- Valset
+  OracleStorage <|-- Oracle
+  Valset <|-- Oracle
 
   %% Valset Inherits
-  Valset <|-- ValsetStorage
+  ValsetStorage <|-- Valset
+
 
   %% Link Association
   CosmosBridge --> BridgeBank
@@ -339,26 +343,27 @@ classDiagram
   }
 
   %% BridgeBank Inherits
-  BridgeBank <|-- BankStorage
-  BridgeBank <|-- CosmosBank
-  BridgeBank <|-- CosmosWhiteList
-  BridgeBank <|-- Pausable
+  BankStorage     <|-- BridgeBank
+  CosmosBank      <|-- BridgeBank
+  CosmosWhiteList <|-- BridgeBank
+  Pausable        <|-- BridgeBank
+  
   BridgeBank *-- BridgeToken
   BridgeBank *--Rowan
 
   %% BankStorage Inherits
-  BankStorage <|-- EthereumBankStorage
-  BankStorage <|-- CosmosWhiteListStorage
+  EthereumBankStorage <|-- BankStorage
+  CosmosWhiteListStorage <|-- BankStorage
 
 
   %% CosmosWhiteList Inherits
-  CosmosWhiteList <|-- CosmosWhiteListStorage
+  CosmosWhiteListStorage <|-- CosmosWhiteList
 
   %% Pausable Inherits
-  Pausable <|-- PauserRole
+  PauserRole <|-- Pausable
 
   %% Rowan Inherits
-  Rowan <|-- BridgeToken
+  BridgeToken <|-- Rowan
 
 
   %% Link Association
@@ -433,11 +438,11 @@ classDiagram
   BridgeBank *--Rowan
 
   %% Rowan Inherits
-  Rowan <|-- BridgeToken
+  BridgeToken <|-- Rowan
 
   %% BridgeToken Inherits
-  BridgeToken <|-- ERC20Burnable
-  BridgeToken <|-- AccessControl
+  ERC20Burnable <|-- BridgeToken
+  AccessControl <|-- BridgeToken
 
 
   %% Openzepplin Links
@@ -480,8 +485,9 @@ classDiagram
     +getFullList() list~address~
   }
  
+
   %% Blocklist Inherits
-  Blocklist <|-- Ownable
+  Ownable <|-- Blocklist
 
  
   %% Link Association
