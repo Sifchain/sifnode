@@ -88,7 +88,7 @@ This is for moving EVM-native assets (either EVM native currency or ERC20 tokens
      - `_networkDescriptor`: the network descriptor for the chain this asset is on
 12. Upon seeing the LogLock event, [witnesses](Components#witness) will:
      - [calculate the denom hash](Concepts?id=token-denom-hashing-for-evm-native-assets)
-     - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast it to sifnode claim, and then broadcast the event to sifnode. The witnesses will then update the sequence number they stored
+     - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast the event to sifnode. The witnesses will then update the sequence number they stored
 for the last processed block.
 13. The same as #11
 14. Upon seeing the LogLock event, [relayer](Components#relayer) will:
