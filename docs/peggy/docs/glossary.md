@@ -11,7 +11,8 @@
 - **LogBurn**: An event that is triggered when either a Cosmos Native Asset or Double Pegged Token is burned from the BridgeBank contract.
 - **MsgLock**: A sifchain event that signals that a cosmos native asset has been locked.
 - **MsgBurn**: A sifchain event that signals that an EVM native asset has been burned.
-- **ProphecyClaim**: A transaction that tells us that a certain amount of coins should be sent to someone. This event is triggered by a lock or burn transaction on one chain, and then the relayer submits this prophecy claim to the receiving chain.
+- **ProphecyClaim**: A transaction that tells us that a certain amount of coins should be sent to someone from sifchain to EVM. This event is triggered by a lock or burn transaction on the sifchain ethbridge module.
+- **EthBridgeClaim**: A transaction that tells us that a certain amount of coins should be sent to someone from EVM to sifchain. This event is triggered by a lock or burn transaction on EVM's BridgeBank contract.
 - **Validators**: Whitelisted Ethereum addresses who submit new prophecy claims.
 - **Valset**: A smart contract that stores the whitelist of validators and their powers.
 - **Oracle**: A smart contract that stores the current amount of sign-off on a given prophecy claim.
