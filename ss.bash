@@ -5,8 +5,8 @@ set -uxe
 # set environment variables
 export GOPATH=~/go
 export PATH=$PATH:~/go/bin
-export RPC=http://65.21.232.104:26657
-export RPCN=htps://rpc.sifchain.finance:443,https://rpc-archive.sifchain.finance:443
+export RPC=http://65.108.73.18:26657
+export RPCN=htps://rpc.sifchain.finance:443,https://rpc-archive.sifchain.finance:443,http://65.21.232.104:26657
 export APPNAME=SIFNODED
 
 # Install Gaia
