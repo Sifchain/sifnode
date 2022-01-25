@@ -251,7 +251,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CollateralAmount)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
 	}
-	k.clpKeeper.SetPool(ctx, &pool)
+	k.ClpKeeper().SetPool(ctx, &pool)
 
 	return k.SetMTP(ctx, mtp)
 }
@@ -394,7 +394,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		return err
 	}
 
-	return k.clpKeeper.SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
 func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
