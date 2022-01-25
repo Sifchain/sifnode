@@ -229,7 +229,7 @@ func TestKeeper_EC1(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeInCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -330,7 +330,7 @@ func TestKeeper_EC2(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeOutCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeOutCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -431,7 +431,7 @@ func TestKeeper_EC3(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeInCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -532,7 +532,7 @@ func TestKeeper_EC4(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeInCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -633,7 +633,7 @@ func TestKeeper_EC5(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeInCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -734,7 +734,7 @@ func TestKeeper_EC6(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeInCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -835,7 +835,7 @@ func TestKeeper_EC7(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", tt.pool.NativeAssetBalance, "xxx")
 
-			err := marginKeeper.TakeInCustody(ctx, mtp, tt.pool)
+			err := marginKeeper.TakeInCustody(ctx, *mtp, tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")

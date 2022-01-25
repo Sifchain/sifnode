@@ -441,6 +441,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.True(t, externalCoinOk)
 
 			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, nativeAsset), nativeCoin)
+			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset), externalCoin)
 
 			msgOpenLong := types.MsgOpenLong{
 				Signer:           signer.String(),
@@ -458,6 +459,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.Nil(t, openLongError)
 
 			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(99999999999000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			openLongExpectedMTP := types.MTP{
 				Address:          signer.String(),
@@ -479,11 +481,11 @@ func TestKeeper_OpenClose(t *testing.T) {
 
 			openLongExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(999999999000),
+				NativeAssetBalance:   sdk.NewUint(1000000000000),
 				ExternalAssetBalance: sdk.NewUint(10000000),
 				NativeCustody:        sdk.NewUint(0),
 				ExternalCustody:      sdk.NewUint(0),
-				NativeLiabilities:    sdk.NewUint(1000),
+				NativeLiabilities:    sdk.NewUint(0),
 				ExternalLiabilities:  sdk.NewUint(0),
 				PoolUnits:            sdk.NewUint(0),
 				Health:               sdk.NewDec(1),
@@ -494,13 +496,15 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.Equal(t, openLongExpectedPool, openLongPool)
 
 			_, closeLongError := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msgCloseLong)
-			require.Nil(t, closeLongError)
+			// require.Nil(t, closeLongError)
+			require.EqualError(t, closeLongError, "0rowan is smaller than 1000rowan: insufficient funds")
 
-			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000000000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(99999999999000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			closeLongExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(999999999000),
+				NativeAssetBalance:   sdk.NewUint(1000000000000),
 				ExternalAssetBalance: sdk.NewUint(10000000),
 				NativeCustody:        sdk.NewUint(0),
 				ExternalCustody:      sdk.NewUint(0),
