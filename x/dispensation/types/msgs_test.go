@@ -44,6 +44,7 @@ func TestMsgCreateDistribution_ValidateBasic_Order(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
+	assert.NoError(t, err)
 	for i, j := 0, len(output.Coins)-1; i < j; i, j = i+1, j-1 {
 		output.Coins[i], output.Coins[j] = output.Coins[j], output.Coins[i]
 	}
