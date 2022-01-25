@@ -7,8 +7,8 @@
 - **Relayer**: A piece of middleware that listens to transactions on an EVM chain and submits them to sifchain. The relayer also submits the aggregate signatures of multiple witnesses from sifchain to an EVM chain as a single transaction.
 - **BridgeBank**: A smart contract on an EVM chain where users will unlock, lock, mint, and burn funds to transfer them across the chains.
 - **BridgeToken**: An ERC20 token that is created by the BridgeBank to represent a Cosmos Native Asset or a double pegged asset on ethereum. BridgeTokens are minted by the BridgeBank whenever a user transfers such an asset to an EVM chain.
-- **LogLock**: An event that is triggered when an EVM native asset is locked in the BridgeBank contract.
-- **LogBurn**: An event that is triggered when either a Cosmos Native Asset or Double Pegged Token is burned from the BridgeBank contract.
+- **LogLock**: An EVM event that is triggered when an EVM native asset is locked in the BridgeBank contract.
+- **LogBurn**: An EVM event that is triggered when either a Cosmos Native Asset or Double Pegged Token is burned from the BridgeBank contract.
 - **MsgLock**: A sifchain event that signals that a cosmos native asset has been locked.
 - **MsgBurn**: A sifchain event that signals that an EVM native asset has been burned.
 - **ProphecyClaim**: A transaction that tells us that a certain amount of coins should be sent to someone from sifchain to EVM. This event is triggered by a lock or burn transaction on the sifchain ethbridge module.
