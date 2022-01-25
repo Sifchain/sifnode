@@ -92,7 +92,7 @@ Precondition: assets have been moved to EVM chain from Sifchain with a `lock` sc
     - `_denom`: The cosmos denom of the IBC Asset or `rowan` for rowan.
 13. Upon seeing the LogBurn event, [witnesses](Components#witness) will:
     - Set the \_denom as the denomHash in the new claim
-    - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast it to sifnode claim, and then broadcast the event to sifnode. The witnesses will then update the sequence number they stored for the last processed block.
+    - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and then broadcast the event to sifnode. The witnesses will then update the sequence number they stored for the last processed block.
 14. The same as #12
 15. Upon seeing the LogBurn event, [relayer](Components#relayer) will:
     - Set the \_denom as the denomHash in the new claim
