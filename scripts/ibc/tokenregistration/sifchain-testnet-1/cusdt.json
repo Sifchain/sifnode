@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "decimals": "18",
+      "decimals": "6",
       "denom": "cusdt",
       "base_denom": "cusdt",
       "path": "",
@@ -15,7 +15,8 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+	"IBCIMPORT"
       ],
       "unit_denom": "cusdt",
       "ibc_counterparty_denom": "",

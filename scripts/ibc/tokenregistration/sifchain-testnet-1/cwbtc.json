@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "decimals": "18",
+      "decimals": "8",
       "denom": "cwbtc",
       "base_denom": "cwbtc",
       "path": "",
@@ -15,7 +15,8 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+	"IBCIMPORT"
       ],
       "unit_denom": "wbtc",
       "ibc_counterparty_denom": "",

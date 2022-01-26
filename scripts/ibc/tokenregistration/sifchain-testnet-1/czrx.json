@@ -15,7 +15,8 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+	"IBCIMPORT"
       ],
       "unit_denom": "ceth",
       "ibc_counterparty_denom": "",
