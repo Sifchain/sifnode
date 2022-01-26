@@ -17,7 +17,7 @@
         "CLP",
         "IBCEXPORT"
       ],
-      "unit_denom": "",
+      "unit_denom": "cusdt",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     }
