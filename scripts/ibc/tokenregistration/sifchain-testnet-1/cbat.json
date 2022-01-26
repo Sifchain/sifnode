@@ -18,7 +18,7 @@
         "IBCEXPORT",
         "IBCIMPORT"
       ],
-      "unit_denom": "ubat",
+      "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     }
