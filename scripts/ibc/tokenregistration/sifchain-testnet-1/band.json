@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/0E27F87D6329E120923EF03591FA62F090005853B17D1E327D88FD03B17A5CFB",
-      "base_denom": "uband",
+      "denom": "ibc/87C657CFACC4F7EDF5EFFC9A77BDF013A28B8724D965F4ADF73288F87D04671E",
+      "base_denom": "",
       "path": "transfer/channel-41",
       "ibc_channel_id": "channel-41",
       "ibc_counterparty_channel_id": "channel-28",
       "display_name": "",
       "display_symbol": "",
-      "network": "",
+      "network": "band-laozi-testnet4",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",

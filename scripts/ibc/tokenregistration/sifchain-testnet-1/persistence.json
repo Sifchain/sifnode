@@ -2,16 +2,16 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/1DA0D68FA3369C706C7FD8F2EDF0F35BD32EB9F02887B050622AE034E93523D0",
-      "base_denom": "uxprt",
+      "denom": "ibc/05AAB588BFEB20298DD89AB2916F481108CAB1D681B43855DE2DA307E7B98DA1",
+      "base_denom": "",
       "path": "transfer/channel-1",
       "ibc_channel_id": "channel-1",
       "ibc_counterparty_channel_id": "channel-39",
-      "display_name": "uXPRT",
+      "display_name": "",
       "display_symbol": "",
-      "network": "",
+      "network": "test-core-1",
       "address": "",
-      "external_symbol": "uxprt",
+      "external_symbol": "",
       "transfer_limit": "",
       "permissions": [
         "CLP",

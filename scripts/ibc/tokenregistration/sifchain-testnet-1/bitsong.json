@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/066F76D25D87E549F7EC9BD7BCB524933FD2576EE9D039113F60A80BA290AD99",
-      "base_denom": "ubtsg",
+      "denom": "ibc/280265D7F333127FCF3120189D26DFD50DC18E51171843719C78977C9696125B",
+      "base_denom": "",
       "path": "transfer/channel-42",
       "ibc_channel_id": "channel-42",
       "ibc_counterparty_channel_id": "channel-4",
       "display_name": "",
       "display_symbol": "",
-      "network": "",
+      "network": "bitsong-testnet-6",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",

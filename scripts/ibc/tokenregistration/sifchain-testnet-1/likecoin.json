@@ -1,15 +1,15 @@
 {
   "entries": [
     {
-      "decimals": "9",
-      "denom": "ibc/1C9B273EAAE5A143F9F25EFD2496B52587D16868D47B62A10ABFD38DE784402E",
-      "base_denom": "nanolike",
+      "decimals": "6",
+      "denom": "ibc/922D52217615DBE1886243FDF3476B3249632F3BD185774534E7678EBA38F92B",
+      "base_denom": "",
       "path": "transfer/channel-3",
       "ibc_channel_id": "channel-3",
       "ibc_counterparty_channel_id": "channel-10",
       "display_name": "",
       "display_symbol": "",
-      "network": "",
+      "network": "likecoin-mainnet-2",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",

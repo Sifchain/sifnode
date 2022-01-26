@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/AC64FD65731C63C968A7BB1E711DB157BE85F7538F128FDA3363EDDD170FABF1",
+      "denom": "ibc/0CA99D46B7AD638C962D26C784F4AE9F440C70D4799C7CFFD25EB0CD1A10E726",
       "base_denom": "",
-      "path": "transfer/channel-0",
-      "ibc_channel_id": "channel-0",
-      "ibc_counterparty_channel_id": "channel-23",
+      "path": "transfer/channel-16",
+      "ibc_channel_id": "channel-16",
+      "ibc_counterparty_channel_id": "channel-32",
       "display_name": "",
       "display_symbol": "",
-      "network": "juno-1",
+      "network": "crypto-org-chain-mainnet-1",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "juno-1"
+      "ibc_counterparty_chain_id": "crypto-org-chain-mainnet-1"
     }
   ]
 }
