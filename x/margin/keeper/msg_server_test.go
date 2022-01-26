@@ -416,14 +416,14 @@ func TestKeeper_OpenClose(t *testing.T) {
 			pool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
 				NativeAssetBalance:   sdk.NewUint(1000000000000),
-				ExternalAssetBalance: sdk.NewUint(10000000),
-				NativeCustody:        sdk.NewUint(0),
-				ExternalCustody:      sdk.NewUint(0),
-				NativeLiabilities:    sdk.NewUint(0),
-				ExternalLiabilities:  sdk.NewUint(0),
-				PoolUnits:            sdk.NewUint(0),
-				Health:               sdk.NewDec(0),
-				InterestRate:         sdk.NewDec(0),
+				ExternalAssetBalance: sdk.NewUint(1000000000000),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
+				NativeLiabilities:    sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				PoolUnits:            sdk.ZeroUint(),
+				Health:               sdk.ZeroDec(),
+				InterestRate:         sdk.ZeroDec(),
 			}
 
 			marginKeeper.SetEnabledPools(ctx, []string{tt.externalAsset})
@@ -454,7 +454,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				CollateralAsset: nativeAsset,
 				BorrowAsset:     tt.externalAsset,
 			}
-
+			fmt.Println(pool)
 			_, openLongError := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msgOpenLong)
 			require.Nil(t, openLongError)
 
@@ -464,35 +464,36 @@ func TestKeeper_OpenClose(t *testing.T) {
 			openLongExpectedMTP := types.MTP{
 				Address:          signer.String(),
 				CollateralAsset:  nativeAsset,
-				CollateralAmount: sdk.NewUint(2000),
+				CollateralAmount: sdk.NewUint(1000),
 				LiabilitiesP:     sdk.NewUint(1000),
 				LiabilitiesI:     sdk.ZeroUint(),
 				CustodyAsset:     tt.externalAsset,
-				CustodyAmount:    sdk.ZeroUint(),
+				CustodyAmount:    sdk.NewUint(4000),
 				Leverage:         sdk.NewUint(1),
-				MtpHealth:        sdk.ZeroDec(),
+				MtpHealth:        sdk.NewDecWithPrec(1, 1),
 			}
 
 			openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String())
 
-			fmt.Print(openLongMTP)
+			fmt.Println(openLongMTP)
 
 			require.Equal(t, openLongExpectedMTP, openLongMTP)
 
 			openLongExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(1000000000000),
-				ExternalAssetBalance: sdk.NewUint(10000000),
+				NativeAssetBalance:   sdk.NewUint(1000000001000),
+				ExternalAssetBalance: sdk.NewUint(999999996000),
 				NativeCustody:        sdk.NewUint(0),
-				ExternalCustody:      sdk.NewUint(0),
-				NativeLiabilities:    sdk.NewUint(0),
+				ExternalCustody:      sdk.NewUint(4000),
+				NativeLiabilities:    sdk.NewUint(1000),
 				ExternalLiabilities:  sdk.NewUint(0),
 				PoolUnits:            sdk.NewUint(0),
-				Health:               sdk.NewDec(1),
+				Health:               sdk.NewDecWithPrec(999999999000000002, 18),
 				InterestRate:         sdk.NewDec(0),
 			}
 
 			openLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
+			fmt.Println(openLongPool)
 			require.Equal(t, openLongExpectedPool, openLongPool)
 
 			_, closeLongError := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msgCloseLong)
