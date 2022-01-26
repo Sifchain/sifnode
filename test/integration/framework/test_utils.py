@@ -166,6 +166,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     else:
         operator_address = env_vars["OPERATOR_ADDRESS"]
         operator_private_key = env_vars.get("OPERATOR_PRIVATE_KEY")
+    operator_address = web3.Web3.toChecksumAddress(operator_address)
 
     # Already added below
     # collected_private_keys[operator_address] = operator_private_key
@@ -294,6 +295,7 @@ class EnvCtx:
 
     def get_bridge_bank_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("BridgeBank")
+        assert address, "No address for BridgeBank"
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
@@ -542,6 +544,11 @@ class EnvCtx:
         acct = self.sifnode.keys_add_1(moniker)
         sif_address = acct["address"]
         if fund_amounts:
+            rowan_source_balances = self.get_sifchain_balance(self.rowan_source)
+            for required_amount, denom in fund_amounts:
+                available_amount = rowan_source_balances.get(denom, 0)
+                assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
+                    self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
@@ -561,8 +568,9 @@ class EnvCtx:
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
         retval = json.loads(stdout(res))
         raw_log = retval["raw_log"]
-        if "insufficient funds" in raw_log:
-            raise Exception(raw_log)
+        for bad_thing in ["insufficient funds", "signature verification failed"]:
+            if bad_thing in raw_log:
+                raise Exception(raw_log)
         return retval
 
     def get_sifchain_balance(self, sif_addr):
