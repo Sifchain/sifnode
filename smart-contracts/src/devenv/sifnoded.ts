@@ -24,6 +24,21 @@ const ethereumCrossChainFeeToken: string =
   "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
 const ConsensusNeeded = "49"
+
+// the method to parse the text output of command sifnoded query account
+function getAccount(message: string) {
+  var result = ""
+  const lines = message.split("\n")
+  lines.forEach(function (line) {
+      const kv = line.trim().split(":")
+      if (kv[0] == "address") {
+          console.log(kv)
+          result = kv[1]
+      }
+  })
+  return result
+}
+
 export interface ValidatorValues {
   chain_id: string
   node_id: string
@@ -55,7 +70,7 @@ export async function waitForSifAccount(address: string, sifnoded: string) {
   for (;;) {
     try {
       console.log("Attempting to check account")
-      ChildProcess.execSync(`${sifnoded} query account ${address}`, {
+      ChildProcess.execSync(`${sifnoded} query account ${address} --node tcp://0.0.0.0:26657`, {
         encoding: "utf8",
       }).trim()
       console.log("Sifnoded is now running, continunig onwards")
@@ -175,7 +190,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand)
     const registryPath = path.resolve(__dirname, "./", "registry.json")
     ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --gas-adjustment 1.5 --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
+      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId} --node tcp://0.0.0.0:26657`,
       { encoding: "utf8" }
     ).trim()
 
@@ -216,12 +231,16 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   }
 
   addAccount(name: string, homeDir: string, isAdmin: boolean): EbRelayerAccount {
-    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`
+    // comment it because the json output go to standard error, can't get it from execSync
+    // let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`
+    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --home ${homeDir}`
     const accountJSON = ChildProcess.execSync(accountAddCmd, {
       encoding: "utf8",
       input: "yes\nyes",
     }).trim()
-    const accountAddress = JSON.parse(accountJSON)["address"]
+
+    // const accountAddress = JSON.parse(accountJSON)["address"]
+    const accountAddress = getAccount(accountJSON)
 
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
