@@ -155,7 +155,6 @@ sequenceDiagram
     end
 ```
 
-<!-- TODO: Might not need to separate them, coz wanna show nonce in keeper -->
 
 #### Cosmos Ethbridge module
 <!-- Cosmos ethbrdige module SignProphecy msg handling-->
@@ -181,7 +180,6 @@ sequenceDiagram
 
 
 #### Relayer flow
-<!-- TODO: Styling -->
 Variables: nonce: globalSequence the contract has processed
 ```mermaid
 sequenceDiagram

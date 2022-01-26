@@ -62,35 +62,32 @@ Steps:
    - The denom hash of the currency  
    - Amount of currency/tokens to be transferred
    ```
-   @todo@ sifnoded ... (include the actual command)
    ```
 1. `sifnoded` invokes GetTokenMetadata(denomHash) in the Token Registry module to get the token
    metadata. From the obtained metadata, it identifies the network to export to.
-    - It sees that the network descriptor is not the token's native network - @TODO@ Is this the key difference from "plain" burn?
-    - It calls the token metadata module (@TODO@ Which function) to determine if the token has been exported to that network before
+    - It sees that the network descriptor is not the token's native network
+    - It calls the token metadata module to determine if the token has been exported to that network before
       - If not, it uses the "first time export fee" which is higher because it has to cover smart contract creation on the target network.
-        @TODO@ Describe how/where is this fee calculated
-      - If yes, it uses the standard cross-chain fee @TODO@ Describe how/where is this fee calculated 
+      - If yes, it uses the standard cross-chain fee 
 1. sifnoded verifies that the fee can be paid and credits the cross-chain fee account for the fee amount.
-1. sifnoded burns the tokens in the user's account for the given `denomHash` and `amount`. @TODO@ more details needed
+1. sifnoded burns the tokens in the user's account for the given `denomHash` and `amount`.
 1. sifnoded emits event of type [EventTypeBurn](Events#EventTypeBurn) with the following data:
-    - `prophecyId`: @TODO@ How is it calculated?
-    - @TODO@   
+    - `prophecyId` 
 1. When witnesses see event of type `EventTypeBurn`, they will
     - sign the prophecyId of the event with their own EVM native private key
-    - broadcast the event back to sifnoded (@TODO@ how?)
+    - broadcast the event back to sifnoded
 1. When a relayer (which is listening to events on sifchain) sees the signed event coming from a witness, it will check
-   the signature. After seeing at least `m` of `n` valid signatures (@TODO@ how are `m` and `n` set?) for the same
-   prophecyID, but signed with different keys, it will call a `submitProphecyClaimAggregatedSigs()` @TODO@ parameters
-   function on target chain's [CosmosBridge](contracts#CosmosBridge) smart contract. @TODO@ What happens if the signature is invalid, or if a long time passes? Where are they stored in the meantime and for how long? 
-1. Next, the relayer will increment the sequence number of sifnode side. (@TODO@ How? Potential bottleneck?)
+   the signature. After seeing at least `m` of `n` valid signatures for the same
+   prophecyID, but signed with different keys, it will call a `submitProphecyClaimAggregatedSigs()`
+   function on target chain's [CosmosBridge](contracts#CosmosBridge) smart contract. 
+1. Next, the relayer will increment the sequence number of sifnode side.
 1. The `CosmosBridge` smart contract will verify that the signatures are valid.
     - If not all signatures are valid, it will ignore it 
-    - If the signature is valid, it will mint the bridge token representing the asset. (@TODO@ more details needed - we're potentially doing it the first time etc.)
+    - If the signature is valid, it will mint the bridge token representing the asset. 
     - The value of `cosmosDenom` in the token will be set to `denomHash` from originating chain 
     - The corresponding amount will be sent to the user's target ETH address.
 
-(@TODO - not clear what this means) When a user burns the asset, it follows the same flow as burning an IBC bridge token on the EVM side, but
+When a user burns the asset, it follows the same flow as burning an IBC bridge token on the EVM side, but
 instead of being credited as an IBC token, it's restored as a standard imported EVM asset.
 
 This is for moving EVM-native assets (either EVM native currency or ERC20 tokens) from Sifnode to their originating EVM chain.
