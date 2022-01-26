@@ -32,11 +32,10 @@ function getAccount(message: string) {
   lines.forEach(function (line) {
       const kv = line.trim().split(":")
       if (kv[0] == "address") {
-          console.log(kv)
           result = kv[1]
       }
   })
-  return result
+  return result.trim()
 }
 
 export interface ValidatorValues {
@@ -353,6 +352,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "0.5rowan",
       "--gas-adjustment",
       "1.5",
+      "--node",
+      "tcp://0.0.0.0:26657",
       "-y",
     ]
 
@@ -385,6 +386,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "0.5rowan",
       "--gas-adjustment",
       "1.5",
+      "--node",
+      "tcp://0.0.0.0:26657",
       "-y",
     ]
     
