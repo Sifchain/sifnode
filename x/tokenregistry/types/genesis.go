@@ -8,6 +8,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
+func DefaultGenesis() *GenesisState {
+	return &GenesisState{
+		AdminAccount: "sif1ugu2p9gwmel9rpxnd9t6m78j0lhdwkaksjsftu",
+	}
+}
+
 func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if state != nil {
