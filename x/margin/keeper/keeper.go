@@ -328,8 +328,10 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 
 	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
 		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CustodyAmount)
 	} else {
 		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CustodyAmount)
 	}
 
 	return k.ClpKeeper().SetPool(ctx, pool)
@@ -384,10 +386,10 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	} else {
-		pool.ExternalAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
+		pool.ExternalAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.ExternalLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	}
 

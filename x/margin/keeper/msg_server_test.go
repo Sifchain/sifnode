@@ -519,8 +519,8 @@ func TestKeeper_OpenClose(t *testing.T) {
 
 			closeLongExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(1000000001000),
-				ExternalAssetBalance: sdk.NewUint(999999996000),
+				NativeAssetBalance:   sdk.NewUint(999999993200),
+				ExternalAssetBalance: sdk.NewUint(1000000000000),
 				NativeCustody:        sdk.NewUint(0),
 				ExternalCustody:      sdk.NewUint(0),
 				NativeLiabilities:    sdk.NewUint(0),
