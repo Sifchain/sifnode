@@ -2,6 +2,11 @@
 
 # sh ./generate-ibc-jsons.sh testnet
 
+if [ $# -ne 1 ]; then
+  echo "Need to pass in the environment. EX: generate-ibc-jsons.sh devnet"
+  exit 1
+fi
+
 . ./envs/$1.sh 
 
 echo "\n\ngenerating and storing all entries for network $SIFCHAIN_ID"
