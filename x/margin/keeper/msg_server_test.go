@@ -513,22 +513,21 @@ func TestKeeper_OpenClose(t *testing.T) {
 
 			_, closeLongError := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msgCloseLong)
 			require.Nil(t, closeLongError)
-			// require.EqualError(t, closeLongError, "0rowan is smaller than 1000rowan: insufficient funds")
 
-			// require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(99999999999000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
-			// require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
+			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000006800))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			closeLongExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(1000000000000),
-				ExternalAssetBalance: sdk.NewUint(10000000),
+				NativeAssetBalance:   sdk.NewUint(1000000001000),
+				ExternalAssetBalance: sdk.NewUint(999999996000),
 				NativeCustody:        sdk.NewUint(0),
 				ExternalCustody:      sdk.NewUint(0),
 				NativeLiabilities:    sdk.NewUint(0),
 				ExternalLiabilities:  sdk.NewUint(0),
 				PoolUnits:            sdk.NewUint(0),
-				Health:               sdk.NewDec(1),
-				InterestRate:         sdk.NewDec(0),
+				Health:               sdk.NewDecWithPrec(999999999000000002, 18),
+				InterestRate:         sdk.NewDecWithPrec(1, 1),
 			}
 
 			closeLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
