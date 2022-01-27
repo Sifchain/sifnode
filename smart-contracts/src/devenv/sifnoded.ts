@@ -218,7 +218,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
   addAccount(name: string, homeDir: string, isAdmin: boolean): EbRelayerAccount {
     // comment it because the json output go to standard error, can't get it from execSync
-    // let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`
     let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --home ${homeDir} --output json 2>&1`
     const accountJSON = ChildProcess.execSync(accountAddCmd, {
       encoding: "utf8",
