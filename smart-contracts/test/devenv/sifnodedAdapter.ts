@@ -64,12 +64,10 @@ export class SifnodedAdapter {
     }
   }
 
-
-  
   fundSifAccount(destination: string, amount: number, symbol: string): object {
     // template: sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
-    const bankSendCmd: string = `${this.gobin}/sifnoded tx bank send ${this.adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${this.homedir} --gas 200000 --node tcp://0.0.0.0:26657 --keyring-dir ${this.homedir} -y`
-    
+    const bankSendCmd: string = `${this.gobin}/sifnoded tx bank send ${this.adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${this.homedir} --gas 2000000000000000000 --node tcp://0.0.0.0:26657 --keyring-dir ${this.homedir} --output json -y`
+    console.log("++++++ bankSendCmd  ", bankSendCmd)
     const responseString: string = ChildProcess.execSync(bankSendCmd, {
       encoding: "utf8",
     })
@@ -93,7 +91,8 @@ export class SifnodedAdapter {
   }
 
   async getBalance(account: string, denomHash: string): Promise<BigNumber> {
-    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --output json 2>&1`
+    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --node tcp://0.0.0.0:26657 --output json`
+
     let result = BigNumber.from(0)
     const responseString: string = ChildProcess.execSync(bankSendCmd, {
       encoding: "utf8",
@@ -105,6 +104,7 @@ export class SifnodedAdapter {
         result = BigNumber.from(element["amount"])
       }
     })
+
     return result
   }
 }
