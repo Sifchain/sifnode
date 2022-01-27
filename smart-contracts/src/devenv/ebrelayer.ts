@@ -68,6 +68,8 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
         this.symbolTranslatorFile,
         "--home",
         this.args.sifnodeAccount.homeDir,
+        "--keyring-dir",
+        this.args.sifnodeAccount.homeDir,
         "--log_format",
         "json",
       ],
@@ -152,6 +154,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
         "--symbol-translator-file",
         this.symbolTranslatorFile,
         "--home",
+        this.args.sifnodeAccount.homeDir,
+        "--keyring-dir",
         this.args.sifnodeAccount.homeDir,
       ],
     ]
