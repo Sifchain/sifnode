@@ -1,0 +1,23 @@
+# Glossary
+
+- **EVM Chain**: Any chain based upon Ethereum/geth that fully supports the Ethereum Virtual Machine and Web3.0 libraries. (e.g., Ethereum, Binance Smart Chain, Polygon).
+- **EVM Native Asset**: Either the native currency of a chain (e.g., Ethereum, MATIC, BNB) or an ERC20 token operating on the EVM chain.
+- **Cosmos Native Asset**: Either an asset native to sifchain (e.g., Rowan) or an IBC asset.
+- **Witness**: A piece of middleware that listens to transactions on Sifchain and signs prophecies for those transactions to be submitted aggregated by a relayer. Witnesses act as relayers when observing EVM events.
+- **Relayer**: A piece of middleware that listens to transactions on an EVM chain and submits them to sifchain. The relayer also submits the aggregate signatures of multiple witnesses from sifchain to an EVM chain as a single transaction.
+- **BridgeBank**: A smart contract on an EVM chain where users will unlock, lock, mint, and burn funds to transfer them across the chains.
+- **BridgeToken**: An ERC20 token that is created by the BridgeBank to represent a Cosmos Native Asset or a double pegged asset on ethereum. BridgeTokens are minted by the BridgeBank whenever a user transfers such an asset to an EVM chain.
+- **LogLock**: An EVM event that is triggered when an EVM native asset is locked in the BridgeBank contract.
+- **LogBurn**: An EVM event that is triggered when either a Cosmos Native Asset or Double Pegged Token is burned from the BridgeBank contract.
+- **MsgLock**: A sifchain event that signals that a cosmos native asset has been locked.
+- **MsgBurn**: A sifchain event that signals that an EVM native asset has been burned.
+- **ProphecyClaim**: A transaction that tells us that a certain amount of coins should be sent to someone from sifchain to EVM. This event is triggered by a lock or burn transaction on the sifchain ethbridge module.
+- **EthBridgeClaim**: A transaction that tells us that a certain amount of coins should be sent to someone from EVM to sifchain. This event is triggered by a lock or burn transaction on EVM's BridgeBank contract.
+- **Validators**: Whitelisted Ethereum addresses who submit new prophecy claims.
+- **Valset**: A smart contract that stores the whitelist of validators and their powers.
+- **Oracle**: A smart contract that stores the current amount of sign-off on a given prophecy claim.
+- **CosmosBridge**: A smart contract on Ethereum where validators will submit new prophecy claims to unlock or mint assets on Ethereum.
+- **Validator Power**: The weight a single validator has on voting for a prophecy claim.
+- **Consensus threshold**: The percent of validators power that must sign off on a prophecy claim for it to mint or unlock assets on the Ethereum side.
+- **Virtual Mem Pool**: The keeper where incomplete EVM prophecy claims are stored awaiting signature aggregation by a relayer.
+- **Sequence Number**: A number that tracks the specific transaction occurring across the bridge by network id.
