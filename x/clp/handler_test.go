@@ -202,6 +202,11 @@ func TestAddLiquidity(t *testing.T) {
 	msgNonWhitelisted := clptypes.NewMsgAddLiquidity(signer, newAsset, sdk.NewUint(1000), sdk.NewUint(1000))
 	_, err = handler(ctx, &msgNonWhitelisted)
 	require.Error(t, clptypes.ErrLiquidityProviderDoesNotExist)
+
+	overFlowIngeter := sdk.NewUintFromString("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	testMsg := clptypes.NewMsgAddLiquidity(signer, asset, overFlowIngeter, overFlowIngeter)
+	_, err = handler(ctx, &testMsg)
+	require.Error(t, clptypes.ErrOverFlow)
 }
 
 func TestAddLiquidity_LargeValue(t *testing.T) {
@@ -384,6 +389,9 @@ func TestSwap(t *testing.T) {
 	msgE = clptypes.NewMsgSwap(signer, clptypes.NewAsset("Asset"), assetDash, swapSentAssetETH, swapSentAssetETH)
 	_, err = handler(ctx, &msgE)
 	assert.Error(t, err)
+	msgE = clptypes.NewMsgSwap(signer, clptypes.NewAsset("Asset"), assetDash, sdk.NewUintFromString("0"), sdk.NewUintFromString("0"))
+	_, err = handler(ctx, &msgE)
+	assert.Error(t, clptypes.ErrAmountTooLow)
 }
 
 func TestDecommisionPool(t *testing.T) {
