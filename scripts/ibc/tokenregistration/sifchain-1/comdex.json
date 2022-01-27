@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/6D717BFF5537D129035BAB39F593D638BA258A9F8D86FB7ECCEAB05B6950CC3E",
-      "base_denom": "uakt",
-      "path": "transfer/channel-2",
-      "ibc_channel_id": "channel-2",
-      "ibc_counterparty_channel_id": "channel-24",
+      "denom": "ibc/2A030468C9180DA1EE806E0355904EBF61EF713BAB0E47E78F2DE596181BC594",
+      "base_denom": "ucmdx",
+      "path": "transfer/channel-30",
+      "ibc_channel_id": "channel-30",
+      "ibc_counterparty_channel_id": "channel-8",
       "display_name": "",
       "display_symbol": "",
-      "network": "akashnet-2",
+      "network": "comdex-1",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "akashnet-2"
+      "ibc_counterparty_chain_id": "comdex-1"
     }
   ]
 }

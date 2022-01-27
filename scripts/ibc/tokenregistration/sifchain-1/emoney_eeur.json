@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/6D717BFF5537D129035BAB39F593D638BA258A9F8D86FB7ECCEAB05B6950CC3E",
-      "base_denom": "uakt",
-      "path": "transfer/channel-2",
-      "ibc_channel_id": "channel-2",
-      "ibc_counterparty_channel_id": "channel-24",
+      "denom": "ibc/7B8A3357032F3DB000ACFF3B2C9F8E77B932F21004FC93B5A8F77DE24161A573",
+      "base_denom": "eeur",
+      "path": "transfer/channel-19",
+      "ibc_channel_id": "channel-19",
+      "ibc_counterparty_channel_id": "channel-14",
       "display_name": "",
       "display_symbol": "",
-      "network": "akashnet-2",
+      "network": "emoney-3",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "akashnet-2"
+      "ibc_counterparty_chain_id": "emoney-3"
     }
   ]
 }
