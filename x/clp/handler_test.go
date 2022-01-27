@@ -83,6 +83,76 @@ func TestCreatePool(t *testing.T) {
 	res, err = handler(ctx, &msgNonWhitelisted)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
+	var validateTests = []struct {
+		name                string
+		signer              sdk.AccAddress
+		asset               clptypes.Asset
+		nativeAssetAmount   sdk.Uint
+		externalAssetAmount sdk.Uint
+		err                 error
+	}{
+		{
+			name:                "Create Pool Will fail if we are below minimum",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   initialBalance,
+			externalAssetAmount: poolBalance,
+			err:                 nil,
+		},
+		{
+			name:                "Create Pool Will fail if we ask for too much",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   initialBalance,
+			externalAssetAmount: poolBalance,
+			err:                 nil,
+		},
+		{
+			name:                "Create Pool Ask for the right amount no err",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   MinThreshold.Sub(sdk.NewUint(1)),
+			externalAssetAmount: poolBalance,
+			err:                 nil,
+		},
+		{
+			name:                "Can't create it a second time",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   initialBalance,
+			externalAssetAmount: sdk.ZeroUint(),
+			err:                 nil,
+		},
+		{
+			name:                "Not whitelisted",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   initialBalance,
+			externalAssetAmount: poolBalance,
+			err:                 nil,
+		},
+		{
+			name:                "whitelisted Asset",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   sdk.ZeroUint(),
+			externalAssetAmount: poolBalance,
+			err:                 nil,
+		},
+	}
+
+	for _, tt := range validateTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			theMsg := clptypes.NewMsgCreatePool(tt.signer, tt.asset, tt.nativeAssetAmount, tt.externalAssetAmount)
+			if _, res := handler(ctx, &theMsg); res != err {
+				t.Fatalf("expected %s, but %s got",
+					tt.err, res)
+			}
+		})
+	}
+
 }
 
 func TestAddLiquidity(t *testing.T) {
@@ -251,6 +321,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res, "Can withdraw now as new LP has added liquidity")
+
 }
 
 func TestSwap(t *testing.T) {
@@ -366,6 +437,44 @@ func TestDecommisionPool(t *testing.T) {
 	assert.True(t, ok, "")
 	ok = clpKeeper.HasBalance(ctx, signer, lpCoinsNative)
 	assert.True(t, ok, "")
+
+	var validateTests = []struct {
+		name           string
+		signer         sdk.AccAddress
+		asset          clptypes.Asset
+		initialBalance sdk.Uint
+		poolBalance    sdk.Uint
+		err            error
+	}{
+		{
+			name:           "Create Pool Success Cases",
+			signer:         signer,
+			asset:          asset,
+			initialBalance: poolBalance,
+			poolBalance:    poolBalance,
+			err:            nil,
+		},
+		{
+			name:           "Create Pool ErrPoolTooShallow Cases",
+			signer:         signer,
+			asset:          asset,
+			initialBalance: initialBalance,
+			poolBalance:    poolBalance,
+			err:            clptypes.ErrPoolTooShallow,
+		},
+	}
+
+	for _, tt := range validateTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			theMsg := clptypes.NewMsgAddLiquidity(tt.signer, tt.asset, tt.initialBalance, tt.poolBalance)
+			if _, res := handler(ctx, &theMsg); res != err {
+				t.Fatalf("expected %s, but %s got",
+					tt.err, res)
+			}
+		})
+	}
+
 }
 
 func TestCreatePoolCases(t *testing.T) {
@@ -456,6 +565,34 @@ func TestGetPool(t *testing.T) {
 	require.NotNil(t, res)
 	_, err = app.ClpKeeper.GetPool(ctx, asset.Symbol)
 	assert.NoError(t, err)
+	var validateTests = []struct {
+		name                string
+		signer              sdk.AccAddress
+		asset               clptypes.Asset
+		nativeAssetAmount   sdk.Uint
+		externalAssetAmount sdk.Uint
+		err                 error
+	}{
+		{
+			name:                "Create Pool",
+			signer:              signer,
+			asset:               asset,
+			nativeAssetAmount:   initialBalance,
+			externalAssetAmount: poolBalance,
+			err:                 nil,
+		},
+	}
+
+	for _, tt := range validateTests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			theMsg := clptypes.NewMsgCreatePool(tt.signer, tt.asset, tt.nativeAssetAmount, tt.externalAssetAmount)
+			if _, res := handler(ctx, &theMsg); res != err {
+				t.Fatalf("expected %s, but %s got",
+					tt.err, res)
+			}
+		})
+	}
 
 }
 
