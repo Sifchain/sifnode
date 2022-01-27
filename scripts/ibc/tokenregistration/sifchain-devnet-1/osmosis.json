@@ -9,7 +9,7 @@
       "ibc_counterparty_channel_id": "channel-34",
       "display_name": "",
       "display_symbol": "",
-      "network": "",
+      "network": "osmosis-1",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",

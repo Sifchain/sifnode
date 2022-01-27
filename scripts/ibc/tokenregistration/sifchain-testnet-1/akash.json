@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/8B5ABF13E8A9AFDC9585C85659A07359C20399C31EF1285EC9330C9AA9B659CA",
-      "base_denom": "",
+      "denom": "ibc/8DF58541612917752DA1CCACC8441FCFE367F9960E51151968A75CE22671D717",
+      "base_denom": "uakt",
       "path": "transfer/channel-12",
       "ibc_channel_id": "channel-12",
       "ibc_counterparty_channel_id": "channel-66",

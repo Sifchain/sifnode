@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/1F504327F291C53194B4630E7AAEAD698D01D4BDEAF2A0833CF191C75BFC1D47",
-      "base_denom": "",
+      "denom": "ibc/92E0120F15D037353CFB73C14651FC8930ADC05B93100FD7754D3A689E53B333",
+      "base_denom": "uosmo",
       "path": "transfer/channel-8",
       "ibc_channel_id": "channel-8",
       "ibc_counterparty_channel_id": "channel-136",

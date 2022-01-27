@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/AC64FD65731C63C968A7BB1E711DB157BE85F7538F128FDA3363EDDD170FABF1",
-      "base_denom": "",
+      "denom": "ibc/04F5F501207C3626A2C14BFEF654D51C2E0B8F7CA578AB8ED272A66FE4E48097",
+      "base_denom": "ujuno",
       "path": "transfer/channel-0",
       "ibc_channel_id": "channel-0",
       "ibc_counterparty_channel_id": "channel-23",

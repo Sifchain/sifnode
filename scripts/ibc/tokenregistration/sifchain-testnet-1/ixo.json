@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/982E0583F725737D37F532E004DE5E3C2F57141E116C159DD164E3E66C26FE00",
-      "base_denom": "",
+      "denom": "ibc/F3FF7A84A73B62921538642F9797C423D2B4C4ACB3C7FCFFCE7F12AA69909C4B",
+      "base_denom": "uixo",
       "path": "transfer/channel-38",
       "ibc_channel_id": "channel-38",
       "ibc_counterparty_channel_id": "channel-12",

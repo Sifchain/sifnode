@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/CE5F15D674A84E29D0B5AEF378009AA851598C63712C4F6DC39E3829954329F7",
-      "base_denom": "",
+      "denom": "ibc/06489E73FE4F013799E0BBF57AD71D31729E91931B84445A1EFA8B741449EAF6",
+      "base_denom": "ungm",
       "path": "transfer/channel-5",
       "ibc_channel_id": "channel-5",
       "ibc_counterparty_channel_id": "channel-25",

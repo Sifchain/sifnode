@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/908A05C5E93457AB3CCED0CB93AC24B69C1D5411B3A35B3BDC7857F3BBED45EF",
-      "base_denom": "",
+      "denom": "ibc/452372B8214E22C625E98958C5EDFB939C48E6590E40B711E9D30206EF8EDC9B",
+      "base_denom": "uluna",
       "path": "transfer/channel-45",
       "ibc_channel_id": "channel-45",
       "ibc_counterparty_channel_id": "channel-27",

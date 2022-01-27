@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/B7A08607EBBD84A9264BE55EDD2046820BD36090E30E94F32C4C2C06FB8A34FE",
-      "base_denom": "",
+      "denom": "ibc/AA525F30094BA9015EDCDA02FF0D4EA63A3BC056689D676EAD167CD6F760D261",
+      "base_denom": "uregen",
       "path": "transfer/channel-4",
       "ibc_channel_id": "channel-4",
       "ibc_counterparty_channel_id": "channel-40",
