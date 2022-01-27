@@ -32,6 +32,15 @@ do
     LIKECOIN)
       token_decimals=9
       ;;
+    SECRET)
+      token_decimals=18
+      ;;
+    CRYPTO_ORG)
+      token_decimals=8
+      ;;
+    COMDEX)
+      token_decimals=18
+      ;;
     *)
       token_decimals=6
       ;;
