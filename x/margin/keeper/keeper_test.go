@@ -330,7 +330,7 @@ func TestKeeper_EC2(t *testing.T) {
 
 			mtp := types.NewMTP("address", "rowan", "xxx")
 
-			err := marginKeeper.TakeOutCustody(ctx, *mtp, tt.pool)
+			err := marginKeeper.TakeOutCustody(ctx, *mtp, &tt.pool)
 			require.Nil(t, err)
 
 			got, _ := marginKeeper.ClpKeeper().GetPool(ctx, "xxx")
@@ -1295,7 +1295,7 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
 
-		got := marginKeeper.TakeOutCustody(ctx, mtp, pool)
+		got := marginKeeper.TakeOutCustody(ctx, mtp, &pool)
 
 		require.NoError(t, got)
 	})
@@ -1304,7 +1304,7 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
 
-		got := marginKeeper.TakeOutCustody(ctx, mtp, pool)
+		got := marginKeeper.TakeOutCustody(ctx, mtp, &pool)
 
 		require.NoError(t, got)
 	})

@@ -323,16 +323,16 @@ func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Poo
 	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
-func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
+func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
-		pool.NativeCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
+		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
 	} else {
-		pool.ExternalCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
+		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
 	}
 
-	return k.ClpKeeper().SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
 func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
@@ -375,7 +375,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		if err != nil {
 			return err
 		}
-		err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, returnCoins)
+		err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, addr, returnCoins)
 		if err != nil {
 			return err
 		}
@@ -421,8 +421,13 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 
 	prevInterestRate := pool.InterestRate
 
-	mul1 := pool.ExternalAssetBalance.Add(pool.ExternalLiabilities).Quo(pool.ExternalAssetBalance)
-	mul2 := pool.NativeAssetBalance.Add(pool.NativeLiabilities).Quo(pool.NativeAssetBalance)
+	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
+	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
+
+	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
+	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
 	targetInterestRate := healthGainFactor.Mul(sdk.NewDecFromBigInt(mul1.BigInt())).Mul(sdk.NewDecFromBigInt(mul2.BigInt()))
 

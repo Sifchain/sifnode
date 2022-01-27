@@ -110,7 +110,7 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 		}
 	}
 
-	err = k.TakeOutCustody(ctx, mtp, pool)
+	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
 		return nil, err
 	}
