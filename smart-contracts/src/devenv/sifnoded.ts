@@ -25,19 +25,6 @@ const ethereumCrossChainFeeToken: string =
 
 const ConsensusNeeded = "49"
 
-// the method to parse the text output of command sifnoded query account
-function getAccount(message: string) {
-  var result = ""
-  const lines = message.split("\n")
-  lines.forEach(function (line) {
-      const kv = line.trim().split(":")
-      if (kv[0] == "address") {
-          result = kv[1]
-      }
-  })
-  return result.trim()
-}
-
 export interface ValidatorValues {
   chain_id: string
   node_id: string
@@ -232,14 +219,13 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   addAccount(name: string, homeDir: string, isAdmin: boolean): EbRelayerAccount {
     // comment it because the json output go to standard error, can't get it from execSync
     // let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`
-    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --home ${homeDir}`
+    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --home ${homeDir} --output json 2>&1`
     const accountJSON = ChildProcess.execSync(accountAddCmd, {
       encoding: "utf8",
       input: "yes\nyes",
     }).trim()
 
-    // const accountAddress = JSON.parse(accountJSON)["address"]
-    const accountAddress = getAccount(accountJSON)
+    const accountAddress = JSON.parse(accountJSON)["address"]
 
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
