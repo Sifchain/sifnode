@@ -41,6 +41,8 @@ do
   counterparty_channel_id=${!counterparty_channel_id}
   token_decimals=$chain"_TOKEN_DECIMALS"
   token_decimals=${!token_decimals}
+  token_address=$chain"_TOKEN_ADDRESS"
+  token_address=${!token_address}
 
   filename="$(tr [A-Z] [a-z] <<< "$chain")"
 
@@ -55,6 +57,7 @@ do
   	--token_decimals=$token_decimals \
   	--token_display_name="" \
         --token_network=$chain_id \
+        --token_address=$token_address \
   	--token_external_symbol="" \
   	--token_permission_clp=true \
   	--token_permission_ibc_export=true \
