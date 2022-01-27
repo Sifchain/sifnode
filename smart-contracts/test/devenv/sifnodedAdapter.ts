@@ -67,7 +67,6 @@ export class SifnodedAdapter {
   fundSifAccount(destination: string, amount: number, symbol: string): object {
     // template: sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
     const bankSendCmd: string = `${this.gobin}/sifnoded tx bank send ${this.adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${this.homedir} --gas 2000000000000000000 --node tcp://0.0.0.0:26657 --keyring-dir ${this.homedir} --output json -y`
-    console.log("++++++ bankSendCmd  ", bankSendCmd)
     const responseString: string = ChildProcess.execSync(bankSendCmd, {
       encoding: "utf8",
     })
