@@ -45,7 +45,7 @@ export class SifnodedAdapter {
    */
   createTestSifAccount(prepayRowan: boolean = true): EbRelayerAccount {
     const testSifAccountName = uuidv4()
-    const keyAddCmd: string = `${this.gobin}/sifnoded keys add ${testSifAccountName} --home ${this.homedir} --keyring-backend test --output json`
+    const keyAddCmd: string = `${this.gobin}/sifnoded keys add ${testSifAccountName} --home ${this.homedir} --keyring-backend test --output json 2>&1`
 
     const responseString: string = ChildProcess.execSync(keyAddCmd, {
       encoding: "utf8",
@@ -64,9 +64,12 @@ export class SifnodedAdapter {
     }
   }
 
+
+  
   fundSifAccount(destination: string, amount: number, symbol: string): object {
     // template: sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
-    const bankSendCmd: string = `${this.gobin}/sifnoded tx bank send ${this.adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${this.homedir} --gas auto -y`
+    const bankSendCmd: string = `${this.gobin}/sifnoded tx bank send ${this.adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${this.homedir} --gas 200000 --node tcp://0.0.0.0:26657 --keyring-dir ${this.homedir} -y`
+    
     const responseString: string = ChildProcess.execSync(bankSendCmd, {
       encoding: "utf8",
     })
@@ -90,7 +93,7 @@ export class SifnodedAdapter {
   }
 
   async getBalance(account: string, denomHash: string): Promise<BigNumber> {
-    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --output json`
+    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --output json 2>&1`
     let result = BigNumber.from(0)
     const responseString: string = ChildProcess.execSync(bankSendCmd, {
       encoding: "utf8",

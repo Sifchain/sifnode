@@ -23,7 +23,7 @@ chai.use(solidity)
 describe("lock eth tests", () => {
   dotenv.config()
   // This test only works when devenv is running, and that requires a connection to localhost
-  expect(hardhat.network.name, "please use devenv").to.eq("localhost")
+  expect(hardhat.network.name, "please use devenv").to.eq("hardhat")
 
   const devEnvObject = readDevEnvObj("environment.json")
   const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
