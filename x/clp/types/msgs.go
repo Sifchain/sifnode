@@ -72,8 +72,7 @@ func (m MsgSwap) ValidateBasic() error {
 	if !m.ReceivedAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ReceivedAsset.Symbol)
 	}
-
-	if m.SentAsset == m.ReceivedAsset {
+	if m.SentAsset.Equals(*m.ReceivedAsset) {
 		return sdkerrors.Wrap(ErrInValidAsset, "Sent And Received asset cannot be the same")
 	}
 	if m.SentAmount.IsZero() {
@@ -156,7 +155,7 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if m.ExternalAsset.Equals(GetSettlementAsset()) {
 		return sdkerrors.Wrap(ErrInValidAsset, "External asset cannot be rowan")
 	}
-	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) && (m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
+	if (!m.NativeAssetAmount.GT(sdk.ZeroUint())) && (!m.ExternalAssetAmount.GT(sdk.ZeroUint())) {
 		return sdkerrors.Wrap(ErrInValidAmount, fmt.Sprintf("Both asset ammounts cannot be 0 %s / %s", m.NativeAssetAmount.String(), m.ExternalAssetAmount.String()))
 	}
 

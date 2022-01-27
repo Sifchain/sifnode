@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/06489E73FE4F013799E0BBF57AD71D31729E91931B84445A1EFA8B741449EAF6",
+      "base_denom": "ungm",
+      "path": "transfer/channel-5",
+      "ibc_channel_id": "channel-5",
+      "ibc_counterparty_channel_id": "channel-25",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "emoney-3"
+    }
+  ]
+}

@@ -3,47 +3,64 @@ package app
 import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	m "github.com/cosmos/cosmos-sdk/types/module"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
-
-	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
+	"strings"
 )
 
-const upgradeName = "0.9.14"
-
-const distributionVersion = "0.9.14"
-const distributionAddress = "sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3"
-const distributionAmount = "200000000000000000000000000" // 200m
+const releaseVersion = "0.10.0"
+const releaseCandidate4 = "rc.4"
+const releaseCandidate5 = "rc.5"
+const releaseCandidate6 = "rc.6"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
-		app.Logger().Info("Running upgrade handler for " + upgradeName)
-		if plan.Name == distributionVersion {
-			mintAmount, ok := sdk.NewIntFromString(distributionAmount)
-			if !ok {
-				panic("failed to get mint amount")
-			}
-			mintCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), mintAmount))
-			err := app.BankKeeper.MintCoins(ctx, dispensationtypes.ModuleName, mintCoins)
-			if err != nil {
-				panic(err)
-			}
-			address, err := sdk.AccAddressFromBech32(distributionAddress)
-			if err != nil {
-				panic(err)
-			}
-			err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins)
-			if err != nil {
-				panic(err)
-			}
+	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
+		fromVM := make(map[string]uint64)
+		// Old Modules can execute Migrations if needed .
+		// State migration logic should be added to a migrator function
+		// Migrating modules should increment the ConsensusVersion
+		// FromVersion NotEqual to ConsensusVersion is required to trigger a migration.
+		for moduleName := range app.mm.Modules {
+			fromVM[moduleName] = 1
 		}
+		delete(fromVM, feegrant.ModuleName)
+		delete(fromVM, crisistypes.ModuleName)
+		// Set to 2 , which is the same as the ConsensusVersion to disable migrate function
+		fromVM[authtypes.ModuleName] = 2
+		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		if err != nil {
+			panic(err)
+		}
+		// Set it back to 1 to run only auth migration
+		newVM[authtypes.ModuleName] = 1
+		// This is to make sure auth module migrates after staking
+		return app.mm.RunMigrations(ctx, app.configurator, newVM)
 	})
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate4}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		delete(vm, feegrant.ModuleName)
+		delete(vm, crisistypes.ModuleName)
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
+	})
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate5}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
+	})
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate6}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
+	})
+
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		panic(err)
 	}
-	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == releaseVersion && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{},
+			Added: []string{feegrant.ModuleName, crisistypes.ModuleName},
 		}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,

@@ -2,7 +2,6 @@ package test
 
 import (
 	"bytes"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -10,13 +9,13 @@ import (
 	"unicode/utf8"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // Constants for test scripts only .
@@ -27,29 +26,25 @@ const (
 	AddressKey3 = "A58856F0FD53BF058B4909A21AEC019107BA9"
 )
 
-//// returns context and app with params set on account keeper
+// CreateTestApp returns context and app with params set on account keeper
 func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000)
+	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
 
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
-	ctx, app := GetSimApp(isCheckTx)
 	sifapp.SetConfig(false)
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	return ctx, app
-}
-
-func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
-	app, ctx := CreateTestApp(isCheckTx)
+	app := sifapp.Setup(isCheckTx)
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	return ctx, app
 }
 
@@ -61,10 +56,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
-		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
-		if err != nil {
-			fmt.Println("Error Generating new pool :", err)
-		}
+		pool := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		poolList = append(poolList, pool)
 	}
 	return poolList
@@ -93,11 +85,8 @@ func GeneratePoolsAndLPs(keeper clpkeeper.Keeper, ctx sdk.Context, tokens []stri
 	for i := 0; i < len(tokens); i++ {
 		externalToken := tokens[i]
 		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
-		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), sdk.NewUint(1))
-		if err != nil {
-			panic(err)
-		}
-		err = keeper.SetPool(ctx, &pool)
+		pool := types.NewPool(&externalAsset, sdk.NewUint(1000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), sdk.NewUint(1))
+		err := keeper.SetPool(ctx, &pool)
 		if err != nil {
 			panic(err)
 		}

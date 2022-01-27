@@ -53,7 +53,6 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-
 	if v == 0 {
 		return fmt.Errorf("min create pool threshold must be positive: %d", v)
 	}
@@ -61,7 +60,7 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 }
 
 func (p Params) Equal(p2 Params) bool {
-	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
-	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	bz1 := ModuleCdc.MustMarshalLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalLengthPrefixed(&p2)
 	return bytes.Equal(bz1, bz2)
 }

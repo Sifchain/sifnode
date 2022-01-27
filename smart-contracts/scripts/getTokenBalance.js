@@ -7,13 +7,13 @@ module.exports = async () => {
     const BigNumber = require("bignumber.js")
     const HDWalletProvider = require("@truffle/hdwallet-provider");
     try {
-  
+
     // Contract abstraction
     const truffleContract = require("truffle-contract");
     const contract = truffleContract(
       require("../build/contracts/BridgeToken.json")
     );
-  
+
     console.log("Expected usage: \n truffle exec scripts/getTokenBalance.js 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 0xdDA6327139485221633A1FcD65f4aC932E60A2e1");
 
     /*******************************************
@@ -42,12 +42,12 @@ module.exports = async () => {
     if (NETWORK_ROPSTEN) {
       provider = new HDWalletProvider(
         process.env.ETHEREUM_PRIVATE_KEY,
-        "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+        process.env['WEB3_PROVIDER']
       );
     } else {
       provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
     }
-  
+
     const web3 = new Web3(provider);
     contract.setProvider(web3.currentProvider);
     /*******************************************
@@ -73,4 +73,3 @@ module.exports = async () => {
     console.error({error})
   }
   };
-  

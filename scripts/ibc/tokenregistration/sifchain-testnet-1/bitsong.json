@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/066F76D25D87E549F7EC9BD7BCB524933FD2576EE9D039113F60A80BA290AD99",
+      "base_denom": "ubtsg",
+      "path": "transfer/channel-42",
+      "ibc_channel_id": "channel-42",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bitsong-testnet-6"
+    }
+  ]
+}

@@ -352,22 +352,37 @@ def restore_default_rescue_location(
 threadlocals = threading.local()
 
 @pytest.fixture
-def ctx(snapshot_name):
+def ctx_legacy(snapshot_name):
     logging.debug("Before ctx()")
     yield threadlocals.ctx
     logging.debug("After ctx()")
 
 @pytest.fixture(scope="function")
 def with_snapshot(snapshot_name):
-    make = integration_test_context.make_py_module
-    make.cleanup_and_reset_state()
+    main = integration_test_context.main
+    cmd = main.Integrator()
+    project = cmd.project
+    project.cleanup_and_reset_state()
     ctx = integration_test_context.IntegrationTestContext(snapshot_name)
     logging.info("Started processes: {}".format(repr(ctx.processes)))
     threadlocals.ctx = ctx
-    os.environ["VAGRANT_ENV_JSON"] = make.project_dir("test/integration/vagrantenv.json")  # TODO HACK
+    os.environ["VAGRANT_ENV_JSON"] = main.project_dir("test/integration/vagrantenv.json")  # TODO HACK
     logging.debug("Before with_snapshot()")
     yield
     logging.debug("After with_snapshot()")
-    make.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
+    main.project.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
     logging.info("Terminated processes: {}".format(repr(ctx.processes)))
     del threadlocals.ctx
+
+@pytest.fixture(scope="function")
+def ctx(request):
+    # To pass the "snapshot_name" as a parameter with value "foo" from test, annotate the test function like this:
+    # @pytest.mark.snapshot_name("foo")
+    snapshot_name = request.node.get_closest_marker("snapshot_name")
+    if snapshot_name is not None:
+        snapshot_name = snapshot_name.args[0]
+    from integration_framework import test_utils
+    logging.error("Context setup: snapshot_name={}".format(repr(snapshot_name)))
+    with test_utils.get_test_env_ctx() as ctx:
+        yield ctx
+        logging.debug("Test context cleanup")

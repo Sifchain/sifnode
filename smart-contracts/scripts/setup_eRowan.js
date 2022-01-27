@@ -29,12 +29,12 @@ module.exports = async (cb) => {
         if (NETWORK_ROPSTEN) {
           provider = new HDWalletProvider(
             process.env.ETHEREUM_PRIVATE_KEY,
-            "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+            process.env['WEB3_PROVIDER']
           );
         } else if (NETWORK_MAINNET) {
           provider = new HDWalletProvider(
             process.env.ETHEREUM_PRIVATE_KEY,
-            "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+            process.env['WEB3_PROVIDER']
           );
         } else {
           provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);

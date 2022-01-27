@@ -16,7 +16,7 @@ import (
 // Keeper of the clp store
 type Keeper struct {
 	storeKey            sdk.StoreKey
-	cdc                 codec.BinaryMarshaler
+	cdc                 codec.BinaryCodec
 	bankKeeper          types.BankKeeper
 	authKeeper          types.AuthKeeper
 	tokenRegistryKeeper types.TokenRegistryKeeper
@@ -24,12 +24,11 @@ type Keeper struct {
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
-
 	keeper := Keeper{
 		storeKey:            key,
 		cdc:                 cdc,
@@ -46,7 +45,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) Codec() codec.BinaryMarshaler {
+func (k Keeper) Codec() codec.BinaryCodec {
 	return k.cdc
 }
 
@@ -71,20 +70,17 @@ func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) 
 	return k.bankKeeper.HasBalance(ctx, addr, coin)
 }
 
-func (k Keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
+func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 	normalizationFactor := sdk.NewDec(1)
 	adjustExternalToken := false
-	entry := k.tokenRegistryKeeper.GetDenom(ctx, denom)
-	if !entry.IsWhitelisted {
-		return normalizationFactor, adjustExternalToken
-	}
-	nf := entry.Decimals
+	nf := decimals
 	if nf != 18 {
-		adjustExternalToken = true
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
+		var diffFactor int64
+		if nf < 18 {
+			diffFactor = 18 - nf
+			adjustExternalToken = true
+		} else {
 			diffFactor = nf - 18
-			adjustExternalToken = false
 		}
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}

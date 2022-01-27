@@ -1,21 +1,18 @@
-import importlib.util
 import copy
 import os
 import logging
 import test_utilities
 
-basedir = os.path.abspath(os.path.join(__file__, *([os.path.pardir] * 5)))
-path = os.path.join(basedir, "test/integration/make.py")
-spec = importlib.util.spec_from_file_location("module.name", path)
-make_py_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(make_py_module)
+from integration_framework import main
 
 
+# TODO This class is obsolete, transitioning to test_utils.Peggy1EnvCtx
+#      At the moment it is only used for test_random_currency_roundtrip_with_snapshot.py
 class IntegrationTestContext:
     def __init__(self, snapshot_name):
-        self.cmd = make_py_module.Integrator()
-        self.it_playbook = make_py_module.IntegrationTestsPlaybook(self.cmd)
-        self.processes = self.it_playbook.restore_snapshot(snapshot_name)
+        self.cmd = main.Integrator()
+        self.env = main.IntegrationTestsEnvironment(self.cmd)
+        self.processes = self.env.restore_snapshot(snapshot_name)
 
     def get_required_var(self, varname):
         return test_utilities.get_required_env_var(varname)

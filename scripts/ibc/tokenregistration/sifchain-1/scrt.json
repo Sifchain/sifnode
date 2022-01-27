@@ -1,0 +1,26 @@
+ {
+  "entries": [
+    {
+      "decimals": "18",
+      "denom": "ibc/3313DFB885C0C0EBE85E307A529985AFF7CA82239D404329BDF294E357FBC73A",
+      "base_denom": "scrt",
+      "path": "transfer/channel-33",
+      "ibc_channel_id": "channel-33",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "Secret",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "secret-4"
+    }
+  ]
+}

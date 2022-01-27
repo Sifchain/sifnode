@@ -22,6 +22,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdDeregister(),
 		GetCmdRegisterAll(),
 		GetCmdDeregisterAll(),
+		GetCmdSetRegistry(),
 	)
 	return cmd
 }
@@ -39,7 +40,7 @@ func GetCmdRegisterAll() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) < 1 {
@@ -78,7 +79,7 @@ func GetCmdRegister() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) != 1 {
@@ -87,6 +88,39 @@ func GetCmdRegister() *cobra.Command {
 			msg := types.MsgRegister{
 				From:  clientCtx.GetFromAddress().String(),
 				Entry: registry.Entries[0],
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetRegistry() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-registry [registry.json]",
+		Short: "Reset the registry to the registry.json",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
+			if err != nil {
+				return err
+			} else if len(registry.Entries) != 1 {
+				return errors.New("exactly one token entry must be specified in input file")
+			}
+			msg := types.MsgSetRegistry{
+				From:     clientCtx.GetFromAddress().String(),
+				Registry: &registry,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -138,7 +172,7 @@ func GetCmdDeregisterAll() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) < 1 {

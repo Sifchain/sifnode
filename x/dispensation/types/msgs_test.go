@@ -1,16 +1,20 @@
 package types_test
 
 import (
+	"strings"
+	"testing"
+
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {
+	sifapp.SetConfig(false)
 	distributor := sdk.AccAddress("addr1_______________")
 	authorizedRunner := sdk.AccAddress("addr2_______________")
 	msg := types.MsgCreateDistribution{
@@ -23,14 +27,16 @@ func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
+func TestMsgCreateDistribution_ValidateBasic_Order(t *testing.T) {
+	sifapp.SetConfig(false)
 	distributor := sdk.AccAddress("addr1_______________")
-	outputList := test.CreatOutputList(1, "1")
-	validAddress := sdk.AccAddress("addr2_______________")
-	inValidAddress := validAddress[1:]
-	authorizedRunner := sdk.AccAddress("addr3_______________")
-	outputList = append(outputList, banktypes.NewOutput(inValidAddress,
-		sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(1000000)))))
+	authorizedRunner := sdk.AccAddress("addr2_______________")
+	validAddress := sdk.AccAddress("addr3_______________")
+
+	coin := []sdk.Coin{sdk.NewCoin("rowan", sdk.NewInt(1000000)), sdk.NewCoin("cusdt", sdk.NewInt(1000000))}
+
+	output := banktypes.NewOutput(validAddress, sdk.NewCoins(coin...))
+	outputList := []banktypes.Output{output}
 	msg := types.MsgCreateDistribution{
 		Distributor:      distributor.String(),
 		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
@@ -38,6 +44,46 @@ func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
+	assert.NoError(t, err)
+	for i, j := 0, len(output.Coins)-1; i < j; i, j = i+1, j-1 {
+		output.Coins[i], output.Coins[j] = output.Coins[j], output.Coins[i]
+	}
+	revOutputList := []banktypes.Output{output}
+	msg = types.MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		Output:           revOutputList,
+		AuthorizedRunner: authorizedRunner.String(),
+	}
+	err = msg.ValidateBasic()
+	assert.NoError(t, err)
+}
+
+func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
+	distributor := sdk.AccAddress("addr1_______________")
+	outputList := test.CreatOutputList(10, "1")
+	validAddress := sdk.AccAddress("addr2_______________")
+	authorizedRunner := sdk.AccAddress("addr3_______________")
+	// Address is valid as long as its length is between 1-255 bytes.
+	invalidAddress := sdk.AccAddress("")
+	outputList = append(outputList, banktypes.NewOutput(invalidAddress, sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(1000000)))))
+	msg := types.MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		Output:           outputList,
+		AuthorizedRunner: authorizedRunner.String(),
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
+	invalidAddress2 := sdk.AccAddress(strings.Repeat(validAddress.String(), 7))
+	outputList = append(outputList, banktypes.NewOutput(invalidAddress2, sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(1000000)))))
+	msg = types.MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		Output:           outputList,
+		AuthorizedRunner: authorizedRunner.String(),
+	}
+	err = msg.ValidateBasic()
 	assert.Error(t, err)
 }
 
@@ -54,7 +100,7 @@ func TestMsgCreateDistribution_ValidateBasic_NonRowan(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestMsgCreateDistribution_ValidateBasic_MultipleCoins(t *testing.T) {
@@ -70,7 +116,7 @@ func TestMsgCreateDistribution_ValidateBasic_MultipleCoins(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestMsgCreateDistribution_ValidateBasic_ZeroCoins(t *testing.T) {
