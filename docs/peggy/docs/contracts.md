@@ -464,7 +464,7 @@ Sifchain Bridge Tokens use the OpenZeppelin Access Controls contract to enforce 
 ### Denom Types
 Bridge Tokens have a custom field of `cosmosDenom` that is set on deployment in the constructor. This denom represents the internal sifchain address for the underlying asset. For Rowan this field will be `rowan` for cosmos native assets this field will be a string representing the symbol of the token being exported (e.g. `juno`). For double pegged EVM assets see [Token Denom Hashing](/Concepts?id=token-denom-hashing-for-evm-native-assets) for more information on the denom representation.
 
-## OFAC Blocklist
+<!-- ## OFAC Blocklist
 ```mermaid
 classDiagram
 
@@ -503,4 +503,4 @@ In order to comply with OFAC sanctions and to prevent Sifchain's DEX from being 
 2. The script queries the OFAC website and extracts all valid EVM addresses
 3. The script identifies any addresses that are currently being blocked that are not on the OFAC blocklist and identifies any addresses that are not on the blocklist that are currently on the OFAC website
 4. The script calls `removeFromBlocklist` or `batchRemoveFromBlocklist` with the list of addresses that need to be removed from the blocklist
-5. The script calls `addToBlocklist` or `batchAddtoBlocklist` with the list of addresses that need to be added to the blocklist
+5. The script calls `addToBlocklist` or `batchAddtoBlocklist` with the list of addresses that need to be added to the blocklist -->
