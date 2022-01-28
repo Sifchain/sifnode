@@ -42,8 +42,8 @@ func TestIsBlacklisted(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, oracleKeeper, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-		oracleKeeper.SetAdminAccount(ctx, adminAddress)
+		var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+		keeper.GetTokenRegistryKeeper().SetAdminAccount(ctx, adminAddress)
 		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
