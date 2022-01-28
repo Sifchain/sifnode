@@ -119,7 +119,6 @@ def main(argv):
         import inflate_tokens
         inflate_tokens.run(*argv[1:])
     elif what == "recover-eth":
-        import test_utils
         test_utils.recover_eth_from_test_accounts()
     elif what == "run-peggy2-tests":
         cmd.execst(["yarn", "test"], cwd=project.smart_contracts_dir)
