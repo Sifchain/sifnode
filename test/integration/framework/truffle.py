@@ -21,10 +21,11 @@ class Ganache:
 
 
 class GanacheAbiProvider:
-    def __init__(self, cmd, artifacts_dir, ethereum_network_id):
+    def __init__(self, cmd, artifacts_dir, ethereum_network_id, deployed_smart_contract_address_overrides):
         self.cmd = cmd
         self.artifacts_dir = artifacts_dir
         self.ethereum_default_network_id = ethereum_network_id
+        self.deployed_smart_contract_address_overrides = deployed_smart_contract_address_overrides
 
     def get_descriptor(self, sc_name):
         path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
@@ -32,8 +33,11 @@ class GanacheAbiProvider:
         abi = tmp["abi"]
         bytecode = tmp["bytecode"]
         deployed_address = None
-        if ("networks" in tmp) and (self.ethereum_default_network_id is not None):
-            str_network_id = str(self.ethereum_default_network_id)
-            if str_network_id in tmp["networks"]:
-                deployed_address = tmp["networks"][str_network_id]["address"]
+        if (self.deployed_smart_contract_address_overrides is not None) and (sc_name in self.deployed_smart_contract_address_overrides):
+            deployed_address = self.deployed_smart_contract_address_overrides[sc_name]
+        else:
+            if ("networks" in tmp) and (self.ethereum_default_network_id is not None):
+                str_network_id = str(self.ethereum_default_network_id)
+                if str_network_id in tmp["networks"]:
+                    deployed_address = tmp["networks"][str_network_id]["address"]
         return abi, bytecode, deployed_address
