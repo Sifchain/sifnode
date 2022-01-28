@@ -6,8 +6,8 @@ clibuilder()
    echo ""
    echo "Usage: $0 -u UpgradeName -c CurrentBinary -n NewBinary"
    echo -e "\t-u Name of the upgrade [Must match a handler defined in setup-handlers.go in NewBinary]"
-   echo -e "\t-c Branch name for current binary"
-   echo -e "\t-n Branch name for new binary"
+   echo -e "\t-c Branch name for old binary (Upgrade From)"
+   echo -e "\t-n Branch name for new binary (Upgrade To)"
    exit 1 # Exit script after printing help
 }
 
