@@ -262,7 +262,8 @@ class Project:
         self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
 
     def npm_install(self, path):
-        package_lock_json = os.path.join(path, "package-lock.json")
+        # TODO Add package-lock.json also on future/peggy2 branch?
+        package_lock_json = os.path.join(path, "package.json" if on_peggy2_branch else "package-lock.json")
         sha1 = self.cmd.sha1_of_file(package_lock_json)
         node_modules = os.path.join(path, "node_modules")
 
