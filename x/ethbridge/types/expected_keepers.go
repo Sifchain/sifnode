@@ -45,3 +45,7 @@ type OracleKeeper interface {
 	GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64
 	ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor types.NetworkDescriptor, ConsensusNeeded uint32) error
 }
+
+type TokenRegistryKeeper interface {
+	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
+}

@@ -1,13 +1,25 @@
 #!/usr/bin/env python
 
+from http import client
 import sys
 import json
 import subprocess
 from dateutil.parser import parse
 
-output = subprocess.check_output(["sifnoded", "q", "ibc", "client", "states", "--output", "json", "--node", sys.argv[1]])
 
-clients = json.loads(output.decode('utf-8'))
+page = 1
+clients = []
+
+while True:
+  output = subprocess.check_output(['sifnoded', 'q', 'ibc', 'client', 'states', '--output', 'json', '--node', sys.argv[1], '--page', str(page)])
+  data = json.loads(output.decode('utf-8'))
+
+  clients.extend(data['client_states'])
+
+  if not data['pagination']['next_key']:
+    break
+
+  page += 1
 
 # get the block time
 output = subprocess.check_output(["sifnoded", "q", "ibc", "connection", "connections", "--output", "json", "--node", sys.argv[1]])
@@ -22,8 +34,8 @@ current_block_time = parse(current_block['block']['header']['time'])
 print(f"Current block time {str(current_block_time)} and number {current_block_number}")
 print("")
 
-
-for client_data in clients['client_states']:
+for client_data in clients:
+  print(client_data['client_id'])
   client_id = client_data['client_id']
   revision_height = client_data['client_state']['latest_height']['revision_height']
   revision_number = client_data['client_state']['latest_height']['revision_number']
@@ -36,10 +48,6 @@ for client_data in clients['client_states']:
   print("revison: " + revision_number)
   print("revison height: " + revision_height)
   print('trusting period: ' + trusting_period)
-
-  # if int(revision_height) > int(current_block_number):
-  #   print(f"revision height {revision_height} is greater than current block number {current_block_number}")
-  #   print("")
 
   output = subprocess.check_output(['sifnoded', 'q', 'ibc', 'client', 'consensus-state', client_id,  f'{revision_number}-{revision_height}', '--node', sys.argv[1], '--output', 'json'])
   block = json.loads(output.decode('utf-8'))
