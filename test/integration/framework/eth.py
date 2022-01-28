@@ -75,6 +75,8 @@ class EthereumTxWrapper:
         if private_key is None:
             self.private_keys.pop(addr)  # Remove
         else:
+            is_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
+            private_key = private_key if is_hex else _get_account_from_mnemonic(private_key)  # Convert from mnemonic if necessary
             assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
             check_addr = self.w3_conn.eth.account.from_key(private_key).address
             assert check_addr == addr, f"Private key does not correspond to given address {addr}"
@@ -370,3 +372,15 @@ class ExponentiallyWeightedAverageFeeEstimator:
     @staticmethod
     def estimate_gas_price():
         return 0
+
+
+__web3_enabled_unaudited_hdwallet_features = False
+
+# https://stackoverflow.com/questions/68050645/how-to-create-a-web3py-account-using-mnemonic-phrase
+def _get_account_from_mnemonic(mnemonic):
+    a = web3.Web3().eth.account
+    global __web3_enabled_unaudited_hdwallet_features
+    if not __web3_enabled_unaudited_hdwallet_features:
+        a.enable_unaudited_hdwallet_features()
+        __web3_enabled_unaudited_hdwallet_features = True
+    return a.from_mnemonic(mnemonic, account_path="m/44'/60'/0'/0/0").privateKey.hex()[2:]

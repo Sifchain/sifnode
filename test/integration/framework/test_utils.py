@@ -255,11 +255,7 @@ def get_overrides_for_smart_contract_addresses(env_vars):
         "Rowan": "ROWAN_ADDRESS",  # Peggy2 only?
         "BridgeToken": "BRIDGE_TOKEN_ADDRESS",  # Peggy1 only
     }
-    tmp = {}
-    for k, v in mappings.items():
-        if v in env_vars:
-            tmp[k] = web3.Web3.toChecksumAddress(env_vars[v])
-    return tmp
+    return dict(((k, web3.Web3.toChecksumAddress(env_vars[v])) for k, v in mappings.items() if v in env_vars))
 
 
 def sif_addr_to_evm_arg(sif_address):
