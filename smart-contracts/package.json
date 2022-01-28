@@ -9,6 +9,7 @@
   "authors": "Elliot Friedman, James Moore, Junius Zhou, Denali Marsh",
   "license": "ISC",
   "devDependencies": {
+    "truffle": "5.4.29",
     "@ethersproject/hardware-wallets": "^5.4.0",
     "@float-capital/solidity-coverage": "^0.7.17",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
