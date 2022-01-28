@@ -22,9 +22,13 @@ def main(argv):
     if what == "project-init":
         project.init()
     elif what == "clean":
-        project.clean(*argv[1:])
+        project.clean()
+    elif what == "build":
+        project.build()
     elif what == "rebuild":
-        cmd.project.rebuild()
+        project.rebuild()
+    elif what == "project":
+        return getattr(project, argv[1])(*argv[2:])
     elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
@@ -112,7 +116,6 @@ def main(argv):
         import inflate_tokens
         inflate_tokens.run(*argv[1:])
     elif what == "recover-eth":
-        import test_utils
         test_utils.recover_eth_from_test_accounts()
     elif what == "run-peggy2-tests":
         cmd.execst(["yarn", "test"], cwd=project.smart_contracts_dir)

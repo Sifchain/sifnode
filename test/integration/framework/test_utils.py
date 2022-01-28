@@ -62,13 +62,14 @@ def get_env_ctx_peggy2():
     dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
     environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
 
+    deployed_contract_address_overrides = get_overrides_for_smart_contract_addresses(dot_env_vars)
     tmp = environment_vars["contractResults"]["contractAddresses"]
-    deployed_contract_addresses = {
+    deployed_contract_addresses = dict_merge({
         "BridgeBank": tmp["bridgeBank"],
         "CosmosBridge": tmp["cosmosBridge"],
         "BridgeRegistry": tmp["bridgeRegistry"],
         "Rowan": tmp["rowanContract"],
-    }
+    }, deployed_contract_address_overrides)
     abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
 
     # TODO We're mixing "OPERATOR" vs. "OWNER"
@@ -166,6 +167,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     else:
         operator_address = env_vars["OPERATOR_ADDRESS"]
         operator_private_key = env_vars.get("OPERATOR_PRIVATE_KEY")
+    operator_address = web3.Web3.toChecksumAddress(operator_address)
 
     # Already added below
     # collected_private_keys[operator_address] = operator_private_key
@@ -197,6 +199,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
+    deployed_smart_contract_address_overrides = get_overrides_for_smart_contract_addresses(env_vars)
 
     w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
 
@@ -209,7 +212,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     eth_node_is_local = deployment_name is None
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
+    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id, deployed_smart_contract_address_overrides)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
         rowan_source, CETH, generic_erc20_contract_name)
     if operator_private_key:
@@ -244,6 +247,17 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     return ctx
 
 
+def get_overrides_for_smart_contract_addresses(env_vars):
+    mappings = {
+        "BridgeBank": "BRIDGE_BANK_ADDRESS",
+        "BridgeRegistry": "BRIDGE_REGISTRY_ADDRESS",
+        "CosmosBridge": "COSMOS_BRIDGE_ADDRESS",  # Peggy2 only?
+        "Rowan": "ROWAN_ADDRESS",  # Peggy2 only?
+        "BridgeToken": "BRIDGE_TOKEN_ADDRESS",  # Peggy1 only
+    }
+    return dict(((k, web3.Web3.toChecksumAddress(env_vars[v])) for k, v in mappings.items() if v in env_vars))
+
+
 def sif_addr_to_evm_arg(sif_address):
     return sif_address.encode("UTF-8")
 
@@ -267,25 +281,16 @@ class EnvCtx:
 
     def advance_block_w3(self, number):
         for _ in range(number):
+            # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
             self.w3_conn.provider.make_request("evm_mine", [])
-
-    def advance_block_truffle(self, number):
-        args = ["npx", "truffle", "exec", "scripts/advanceBlock.js", str(number)]
-        self.cmd.execst(args, cwd=run_env.project_dir("smart-contracts"))
-
-    def advance_block(self, number):
-        if on_peggy2_branch:
-            self.advance_block_w3(number)
-        else:
-            self.advance_block_truffle(number)  # TODO Probably calls the same, check and remove
 
     def advance_blocks(self, number=50):
         # TODO Move to eth (it should be per-w3_conn)
         if self.eth.is_local_node:
             previous_block = self.eth.w3_conn.eth.block_number
-            self.advance_block(number)
+            self.advance_block_w3(number)
             assert self.eth.w3_conn.eth.block_number - previous_block >= number
-        # Otherwise just wait
+        # Otherwise do nothing (e.g. wait for balance change takes longer)
 
     def get_blocklist_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("Blocklist")
@@ -294,6 +299,7 @@ class EnvCtx:
 
     def get_bridge_bank_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("BridgeBank")
+        assert address, "No address for BridgeBank"
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
@@ -379,6 +385,8 @@ class EnvCtx:
         bridge_bank_sc = self.get_bridge_bank_sc()
         txhash1 = self.tx_approve(token_sc, self.operator, bridge_bank_sc.address, amount)
         txhash2 = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
+        log.debug("tx_approve_and_lock: {} '{}' ({}) from {} to {}".format(amount, token_sc.functions.name().call(),
+            token_sc.functions.symbol().call(), from_eth_acct, to_sif_acct))
         return txhash1, txhash2
 
     # </editor-fold>
@@ -528,9 +536,9 @@ class EnvCtx:
             self._sifnoded_home_arg() + \
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
-        result = json.loads(stdout(res))
+        result = sifnoded_parse_output_lines(stdout(res))
         assert "failed to execute message" not in result["raw_log"]
-        return json.loads(stdout(res))
+        return result
 
     def create_sifchain_addr(self, moniker=None, fund_amounts=None):
         """
@@ -542,6 +550,11 @@ class EnvCtx:
         acct = self.sifnode.keys_add_1(moniker)
         sif_address = acct["address"]
         if fund_amounts:
+            rowan_source_balances = self.get_sifchain_balance(self.rowan_source)
+            for required_amount, denom in fund_amounts:
+                available_amount = rowan_source_balances.get(denom, 0)
+                assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
+                    self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
@@ -561,8 +574,9 @@ class EnvCtx:
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
         retval = json.loads(stdout(res))
         raw_log = retval["raw_log"]
-        if "insufficient funds" in raw_log:
-            raise Exception(raw_log)
+        for bad_thing in ["insufficient funds", "signature verification failed"]:
+            if bad_thing in raw_log:
+                raise Exception(raw_log)
         return retval
 
     def get_sifchain_balance(self, sif_addr):
@@ -756,7 +770,8 @@ class EnvCtx:
             assert (self.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
             assert (self.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
             assert (self.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
-        assert bridge_bank_sc.functions.owner().call() == self.operator
+        assert bridge_bank_sc.functions.owner().call() == self.operator, \
+            "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
         assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
 
@@ -794,3 +809,12 @@ def recover_eth_from_test_accounts():
             ctx.eth.send_eth(addr, ctx.operator, to_recover)
             total_recovered += to_recover
     log.info("Total recovered: {} ETH".format(total_recovered/eth.ETH))
+
+
+def sifnoded_parse_output_lines(stdout):
+    pat = re.compile("^(.*?): (.*)$")
+    result = {}
+    for line in stdout.splitlines():
+        m = pat.match(line)
+        result[m[1]] = m[2]
+    return result
