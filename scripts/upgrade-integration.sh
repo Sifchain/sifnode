@@ -86,8 +86,8 @@ cp $GOPATH/bin/sifnoded $GOPATH/bin/new/
 
 
 # Setup cosmovisor
-cp $GOPATH/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
-cp $GOPATH/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
+cp $GOPATH/bin/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
+cp $GOPATH/bin/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
 
 chmod +x $DAEMON_HOME/cosmovisor/genesis/bin/sifnoded
 chmod +x $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/sifnoded
@@ -98,8 +98,8 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 # Add state data here if required
 
 cosmovisor start >> sifnode.log 2>&1  &
-sleep 7
-sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
+#sleep 7
+#sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
 sleep 7
 sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
 sleep 7
