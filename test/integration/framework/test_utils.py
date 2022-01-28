@@ -268,25 +268,16 @@ class EnvCtx:
 
     def advance_block_w3(self, number):
         for _ in range(number):
+            # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
             self.w3_conn.provider.make_request("evm_mine", [])
-
-    def advance_block_truffle(self, number):
-        args = ["npx", "truffle", "exec", "scripts/advanceBlock.js", str(number)]
-        self.cmd.execst(args, cwd=run_env.project_dir("smart-contracts"))
-
-    def advance_block(self, number):
-        if on_peggy2_branch:
-            self.advance_block_w3(number)
-        else:
-            self.advance_block_truffle(number)  # TODO Probably calls the same, check and remove
 
     def advance_blocks(self, number=50):
         # TODO Move to eth (it should be per-w3_conn)
         if self.eth.is_local_node:
             previous_block = self.eth.w3_conn.eth.block_number
-            self.advance_block(number)
+            self.advance_block_w3(number)
             assert self.eth.w3_conn.eth.block_number - previous_block >= number
-        # Otherwise just wait
+        # Otherwise do nothing (e.g. wait for balance change takes longer)
 
     def get_blocklist_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("Blocklist")
