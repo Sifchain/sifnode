@@ -212,40 +212,8 @@ class Integrator(Ganache, Command):
                 log.debug(f"Waiting for sif account {address}... ({repr(e)})")
                 time.sleep(1)
 
-    def dev_clean(self):
-        if on_peggy2_branch:
-            assert False, "Not implemented yet"
-        else:
-            self._dev_clean_peggy1()
-
-    def dev_build(self):
-        if on_peggy2_branch:
-            assert False, "Not implemented yet"
-        else:
-            self._dev_build_peggy1()
-
-    def _dev_clean_peggy1(self):
-        self.rmf(self.project.project_dir("smart-contracts", "node_modules"))
-
-        # Output from "truffle compile"
-        self.rmf(self.project.project_dir("smart-contracts", "build"))
-
-        for filename in ["sifnoded", "ebrelayer", "sifgen"]:
-            self.rmf(os.path.join(self.project.go_bin_dir, filename))
-
-    def _dev_build_peggy1(self):
-        self._npm_install()
-        self.execst(["make", "install"], cwd=self.project.project_dir(), pipe=False)
-        self.execst(["npx", "hardhat", "compile"], cwd=self.project.project_dir("smart-contracts"), pipe=False)
-        self.execst([self.project.project_dir("smart-contracts", "node_modules", ".bin", "truffle"), "compile"],
-            cwd=self.project.project_dir("smart-contracts"), pipe=False)
-
-    def _dev_clean_peggy2(self):
-        for file in [".proto-gen", ".run", "cmd/ebrelayer/contract/generated/artifacts", "smart-contracts/.hardhat-compile"]:
-            self.rmf(self.project.project_dir(file))
-
     def _npm_install(self):
-        self.execst(["npm", "install"], cwd=self.project.project_dir("smart-contracts"), pipe=False)
+        self.project.npm_install(self.project.project_dir("smart-contracts"))
 
 
 class UIStackEnvironment:

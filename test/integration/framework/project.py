@@ -42,13 +42,6 @@ class Project:
         else:
             log.debug("Nothing to delete for '{}'".format(path))
 
-    def rebuild(self):
-        # Use this after switching branches (i.e. develop vs. future/peggy2)
-        self.clean(1)
-        # self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
-        self.install_smart_contracts_dependencies()
-        self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
-
     def __rm_files_develop(self):
         self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
 
@@ -102,7 +95,6 @@ class Project:
             self.__rm(self.cmd.get_user_home(".cache/yarn"))
             self.__rm(self.cmd.get_user_home(".sifnoded"))
             self.__rm(self.cmd.get_user_home(".sifnode-integration"))
-            self.__rm(project_dir("smart-contracts/node_modules"))
 
             # Peggy2
             # Generated Go stubs (by smart-contracts/Makefile)
@@ -122,12 +114,6 @@ class Project:
             # smart-contracts/.hardhat-compile
             # smart-contracts/env.json
             # smart-contracts/environment.json
-
-    # Use this between run-env.
-    def clean(self, level=None):
-        level = 0 if level is None else int(level)
-        force_kill_processes(self.cmd)
-        self.__rm_files(level)
 
     def yarn(self, args, cwd=None, env=None):
         return self.cmd.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
@@ -215,12 +201,6 @@ class Project:
         self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(env)))
         self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(env))
 
-    def init(self):
-        self.clean()
-        self.cmd.rmdir(project_dir("smart-contracts/node_modules"))
-        self.make_go_binaries_2()
-        self.install_smart_contracts_dependencies()
-
     def get_peruser_config_dir(self):
         return self.cmd.get_user_home(".config", "siftool")
 
@@ -234,3 +214,96 @@ class Project:
             return json.loads(self.cmd.read_text_file(path))
         else:
             return None
+
+    def init(self):
+        self.clean()
+        # self.cmd.rmdir(project_dir("smart-contracts/node_modules"))
+        self.make_go_binaries_2()
+        self.install_smart_contracts_dependencies()
+
+    def clean(self):
+        if on_peggy2_branch:
+            for file in [".proto-gen", ".run", "cmd/ebrelayer/contract/generated/artifacts", "smart-contracts/.hardhat-compile"]:
+                self.cmd.rmf(self.project_dir(file))
+        else:
+            self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
+
+            # Output from "truffle compile"
+            self.cmd.rmf(self.project_dir("smart-contracts", "build"))
+
+            for filename in ["sifnoded", "ebrelayer", "sifgen"]:
+                self.cmd.rmf(os.path.join(self.go_bin_dir, filename))
+
+    # Use this between run-env.
+    def old_clean(self, level=None):
+        level = 0 if level is None else int(level)
+        force_kill_processes(self.cmd)
+        self.__rm_files(level)
+
+    def build(self):
+        if on_peggy2_branch:
+            assert False, "Not implemented yet"
+            # self.cmd.execst(["npx", "hardhat", "compile"], cwd=self.project_dir("smart-contracts"), pipe=False)
+        else:
+            self.npm_install(self.project_dir("smart-contracts"))
+            self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
+            self.cmd.execst([self.project_dir("smart-contracts", "node_modules", ".bin", "truffle"), "compile"],
+                cwd=self.project_dir("smart-contracts"), pipe=False)
+
+    def rebuild(self):
+        self.clean()
+        self.build()
+
+    def old_rebuild(self):
+        # Use this after switching branches (i.e. develop vs. future/peggy2)
+        self.clean(1)
+        # self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
+        self.install_smart_contracts_dependencies()
+        self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
+
+    def npm_install(self, path):
+        package_lock_json = os.path.join(path, "package-lock.json")
+        sha1 = self.cmd.sha1_of_file(package_lock_json)
+        node_modules = os.path.join(path, "node_modules")
+
+        if self.cmd.exists(node_modules):
+            cache_tag_file = os.path.join(node_modules, ".siftool-cache-tag")
+            cache_tag = self.cmd.read_text_file(cache_tag_file) if self.cmd.exists(cache_tag_file) else None
+            if (cache_tag is None) or (cache_tag != sha1):
+                self.cmd.rmdir(node_modules)
+            else:
+                return
+
+        assert not self.cmd.exists(node_modules)
+        cache_dir = os.path.join(self.get_peruser_config_dir(), "npm-cache")
+        cache_index = os.path.join(cache_dir, "index.json")
+        cache = []
+        if not self.cmd.exists(cache_dir):
+            self.cmd.mkdir(cache_dir)
+        else:
+            cache = json.loads(self.cmd.read_text_file(cache_index))
+        idx = None
+        for i, s in enumerate(cache):
+            if s == sha1:
+                idx = i
+                break
+        tarfile = os.path.join(cache_dir, "{}.tar".format(sha1))
+        if idx is None:
+            saved_package_lock = self.cmd.read_text_file(os.path.join(path, "package-lock.json"))
+            saved_yarn_lock = self.cmd.read_text_file(os.path.join(path, "yarn.lock"))
+            self.cmd.execst(["npm", "install"], cwd=path, pipe=False)
+            cache_tag_file = os.path.join(node_modules, ".siftool-cache-tag")
+            self.cmd.write_text_file(cache_tag_file, sha1)
+            self.cmd.write_text_file(os.path.join(path, "package-lock.json"), saved_package_lock)
+            self.cmd.write_text_file(os.path.join(path, "yarn.lock"), saved_yarn_lock)
+            self.cmd.tar_create(node_modules, tarfile)
+        else:
+            cache.pop(idx)
+            self.cmd.tar_extract(tarfile, node_modules)
+        cache.insert(0, sha1)
+        max_cache_items = 5
+        if len(cache) > max_cache_items:
+            for s in cache[max_cache_items:]:
+                self.cmd.rm(os.path.join(cache_dir, "{}.tar".format(s)))
+            cache = cache[:max_cache_items]
+        self.cmd.write_text_file(cache_index, json.dumps(cache))
