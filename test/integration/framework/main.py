@@ -22,16 +22,11 @@ def main(argv):
     if what == "project-init":
         project.init()
     elif what == "clean":
-        project.clean(*argv[1:])
+        project.clean()
+    elif what == "build":
+        project.build()
     elif what == "rebuild":
-        cmd.project.rebuild()
-    elif what == "dev-clean":
-        cmd.dev_clean()
-    elif what == "dev-build":
-        cmd.dev_build()
-    elif what == "dev-rebuild":
-        cmd.dev_clean()
-        cmd.dev_build()
+        project.rebuild()
     elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()

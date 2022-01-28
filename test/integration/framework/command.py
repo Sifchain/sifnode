@@ -91,7 +91,7 @@ class Command:
     def tar_create(self, path, tarfile):
         comp = self.__tar_compression_option(tarfile)
         # tar on 9p filesystem reports "file shrank by ... bytes" and exits with errorcode 1
-        tar_quirks = True
+        tar_quirks = False
         if tar_quirks:
             tmpdir = self.mktempdir()
             try:
@@ -115,3 +115,7 @@ class Command:
     def tcp_probe_connect(self, host, port):
         res = self.execst(["nc", "-z", host, str(port)], check_exit=False)
         return res[0] == 0
+
+    def sha1_of_file(self, path):
+        res = self.execst(["sha1sum", "-b", path])
+        return stdout_lines(res)[0][:40]
