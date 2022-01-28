@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
@@ -16,6 +17,7 @@ const releaseVersion = "0.10.0"
 const releaseCandidate4 = "rc.4"
 const releaseCandidate5 = "rc.5"
 const releaseCandidate6 = "rc.6"
+const releaseCandidate7 = "rc.7"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
@@ -51,6 +53,10 @@ func SetupHandlers(app *SifchainApp) {
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate6}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
+	})
+	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate7}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		fmt.Println("Running Upgrade Handler for ", releaseVersion, releaseCandidate7)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
