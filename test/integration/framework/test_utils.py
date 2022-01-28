@@ -536,9 +536,9 @@ class EnvCtx:
             self._sifnoded_home_arg() + \
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
-        result = json.loads(stdout(res))
+        result = sifnoded_parse_output_lines(stdout(res))
         assert "failed to execute message" not in result["raw_log"]
-        return json.loads(stdout(res))
+        return result
 
     def create_sifchain_addr(self, moniker=None, fund_amounts=None):
         """
@@ -809,3 +809,12 @@ def recover_eth_from_test_accounts():
             ctx.eth.send_eth(addr, ctx.operator, to_recover)
             total_recovered += to_recover
     log.info("Total recovered: {} ETH".format(total_recovered/eth.ETH))
+
+
+def sifnoded_parse_output_lines(stdout):
+    pat = re.compile("^(.*?): (.*)$")
+    result = {}
+    for line in stdout.splitlines():
+        m = pat.match(line)
+        result[m[1]] = m[2]
+    return result
