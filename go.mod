@@ -156,5 +156,6 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	// Rocksdb support
 	github.com/tecbot/gorocksdb => github.com/cosmos/gorocksdb v1.2.0
+	// cosmos grpc
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
