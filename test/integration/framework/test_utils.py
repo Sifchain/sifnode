@@ -389,6 +389,8 @@ class EnvCtx:
         bridge_bank_sc = self.get_bridge_bank_sc()
         txhash1 = self.tx_approve(token_sc, self.operator, bridge_bank_sc.address, amount)
         txhash2 = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
+        log.debug("tx_approve_and_lock: {} '{}' ({}) from {} to {}".format(amount, token_sc.functions.name().call(),
+            token_sc.functions.symbol().call(), from_eth_acct, to_sif_acct))
         return txhash1, txhash2
 
     # </editor-fold>
@@ -772,7 +774,8 @@ class EnvCtx:
             assert (self.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
             assert (self.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
             assert (self.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
-        assert bridge_bank_sc.functions.owner().call() == self.operator
+        assert bridge_bank_sc.functions.owner().call() == self.operator, \
+            "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
         assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
 

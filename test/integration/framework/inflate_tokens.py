@@ -149,9 +149,12 @@ class InflateTokens:
             pending_txs.append(self.ctx.tx_bridge_bank_lock_eth(from_eth_addr, to_sif_addr, amount))
             sent_amounts.append([amount, self.ctx.ceth_symbol])
         self.wait_for_all(pending_txs)
+        log.info("{} Ethereum transactions commited: {}".format(len(pending_txs), repr(sent_amounts)))
 
         # Wait for intermediate_sif_account to receive all funds across the bridge
+        previous_block = self.ctx.eth.w3_conn.eth.block_number
         self.ctx.advance_blocks()
+        log.info("Ethereum blocks advanced by {}".format(self.ctx.eth.w3_conn.eth.block_number - previous_block))
         self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
             polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
