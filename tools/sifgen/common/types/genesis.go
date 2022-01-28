@@ -111,6 +111,25 @@ type CLP struct {
 	LiquidityProviders []interface{} `json:"liquidity_providers"`
 }
 
+type Margin struct {
+	Params MarginParams `json:"params"`
+}
+
+type MarginParams struct {
+	LeverageMax          string      `json:"leverage_max"`
+	InterestRateMax      string      `json:"interest_rate_max"`
+	InterestRateMin      string      `json:"interest_rate_min"`
+	InterestRateIncrease string      `json:"interest_rate_increase"`
+	InterestRateDecrease string      `json:"interest_rate_decrease"`
+	HealthGainFactor     string      `json:"health_gain_factor"`
+	EpochLength          json.Number `json:"epoch_length,omitempty"`
+	Pools                []string    `json:"pools,omitempty"`
+}
+
+type TokenRegistry struct {
+	AdminAccount string `json:"admin_account"`
+}
+
 type Dispensation struct {
 	DistributionRecords interface{} `json:"distribution_records"`
 	Distributions       interface{} `json:"distributions"`
@@ -368,26 +387,28 @@ type Transfer struct {
 }
 
 type AppState struct {
-	Upgrade      struct{}      `json:"upgrade"`
-	Ethbridge    struct{}      `json:"ethbridge"`
-	Params       interface{}   `json:"params"`
-	Ibc          Ibc           `json:"ibc"`
-	Distribution Distribution  `json:"distribution"`
-	Staking      Staking       `json:"staking"`
-	Gov          Gov           `json:"gov"`
-	Mint         Mint          `json:"mint"`
-	Slashing     Slashing      `json:"slashing"`
-	Auth         Auth          `json:"auth"`
-	AuthZ        AuthZ         `json:"authz"`
-	Bank         Bank          `json:"bank"`
-	CLP          CLP           `json:"clp"`
-	Transfer     Transfer      `json:"transfer"`
-	Capability   Capability    `json:"capability"`
-	Dispensation Dispensation  `json:"dispensation"`
-	Oracle       Oracle        `json:"oracle"`
-	Evidence     EvidenceState `json:"evidence"`
-	Genutil      Genutil       `json:"genutil"`
-	Crisis       Crisis        `json:"crisis"`
+	Upgrade       struct{}      `json:"upgrade"`
+	Ethbridge     struct{}      `json:"ethbridge"`
+	Params        interface{}   `json:"params"`
+	Ibc           Ibc           `json:"ibc"`
+	Distribution  Distribution  `json:"distribution"`
+	Staking       Staking       `json:"staking"`
+	Gov           Gov           `json:"gov"`
+	Mint          Mint          `json:"mint"`
+	Slashing      Slashing      `json:"slashing"`
+	Auth          Auth          `json:"auth"`
+	AuthZ         AuthZ         `json:"authz"`
+	Bank          Bank          `json:"bank"`
+	CLP           CLP           `json:"clp"`
+	Margin        Margin        `json:"margin"`
+	TokenRegistry TokenRegistry `json:"tokenregistry"`
+	Transfer      Transfer      `json:"transfer"`
+	Capability    Capability    `json:"capability"`
+	Dispensation  Dispensation  `json:"dispensation"`
+	Oracle        Oracle        `json:"oracle"`
+	Evidence      EvidenceState `json:"evidence"`
+	Genutil       Genutil       `json:"genutil"`
+	Crisis        Crisis        `json:"crisis"`
 }
 
 type Genesis struct {
