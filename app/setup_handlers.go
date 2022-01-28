@@ -9,13 +9,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
-	"strings"
 )
 
-const releaseVersion = "0.10.0"
-const releaseCandidate4 = "rc.4"
-const releaseCandidate5 = "rc.5"
-const releaseCandidate6 = "rc.6"
+const releaseVersion = "0.10.1"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
@@ -41,17 +37,6 @@ func SetupHandlers(app *SifchainApp) {
 		newVM[authtypes.ModuleName] = 1
 		// This is to make sure auth module migrates after staking
 		return app.mm.RunMigrations(ctx, app.configurator, newVM)
-	})
-	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate4}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		delete(vm, feegrant.ModuleName)
-		delete(vm, crisistypes.ModuleName)
-		return app.mm.RunMigrations(ctx, app.configurator, vm)
-	})
-	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate5}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		return app.mm.RunMigrations(ctx, app.configurator, vm)
-	})
-	app.UpgradeKeeper.SetUpgradeHandler(strings.Join([]string{releaseVersion, releaseCandidate6}, "-"), func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
