@@ -138,6 +138,7 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	require.NotNil(t, bank)
 }
 
+/*
 func TestKeeper_EC1(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "xxx"}
 
@@ -844,6 +845,7 @@ func TestKeeper_EC7(t *testing.T) {
 		})
 	}
 }
+*/
 
 func TestKeeper_CustodySwap(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
@@ -1246,21 +1248,22 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 
 func TestKeeper_TakeInCustody(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
-	pool := clptypes.Pool{
-		ExternalAsset:        &asset,
-		NativeAssetBalance:   sdk.NewUint(1000),
-		NativeLiabilities:    sdk.NewUint(1000),
-		ExternalCustody:      sdk.NewUint(1000),
-		ExternalAssetBalance: sdk.NewUint(1000),
-		ExternalLiabilities:  sdk.NewUint(1000),
-		NativeCustody:        sdk.NewUint(1000),
-		PoolUnits:            sdk.NewUint(1),
-		Health:               sdk.NewDec(1),
-	}
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+
+		pool := clptypes.Pool{
+			ExternalAsset:        &asset,
+			NativeAssetBalance:   sdk.NewUint(1000),
+			NativeLiabilities:    sdk.NewUint(1000),
+			ExternalCustody:      sdk.NewUint(1000),
+			ExternalAssetBalance: sdk.NewUint(1000),
+			ExternalLiabilities:  sdk.NewUint(1000),
+			NativeCustody:        sdk.NewUint(1000),
+			PoolUnits:            sdk.NewUint(1),
+			Health:               sdk.NewDec(1),
+		}
 
 		got := marginKeeper.TakeInCustody(ctx, mtp, &pool)
 
@@ -1270,6 +1273,18 @@ func TestKeeper_TakeInCustody(t *testing.T) {
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
+
+		pool := clptypes.Pool{
+			ExternalAsset:        &asset,
+			NativeAssetBalance:   sdk.NewUint(1000),
+			NativeLiabilities:    sdk.NewUint(1000),
+			ExternalCustody:      sdk.NewUint(1000),
+			ExternalAssetBalance: sdk.NewUint(1000),
+			ExternalLiabilities:  sdk.NewUint(1000),
+			NativeCustody:        sdk.NewUint(1000),
+			PoolUnits:            sdk.NewUint(1),
+			Health:               sdk.NewDec(1),
+		}
 
 		got := marginKeeper.TakeInCustody(ctx, mtp, &pool)
 
@@ -1279,21 +1294,22 @@ func TestKeeper_TakeInCustody(t *testing.T) {
 
 func TestKeeper_TakeOutCustody(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
-	pool := clptypes.Pool{
-		ExternalAsset:        &asset,
-		NativeAssetBalance:   sdk.NewUint(1000),
-		NativeLiabilities:    sdk.NewUint(1000),
-		ExternalCustody:      sdk.NewUint(1000),
-		ExternalAssetBalance: sdk.NewUint(1000),
-		ExternalLiabilities:  sdk.NewUint(1000),
-		NativeCustody:        sdk.NewUint(1000),
-		PoolUnits:            sdk.NewUint(1),
-		Health:               sdk.NewDec(1),
-	}
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+
+		pool := clptypes.Pool{
+			ExternalAsset:        &asset,
+			NativeAssetBalance:   sdk.NewUint(1000),
+			NativeLiabilities:    sdk.NewUint(1000),
+			ExternalCustody:      sdk.NewUint(1000),
+			ExternalAssetBalance: sdk.NewUint(1000),
+			ExternalLiabilities:  sdk.NewUint(1000),
+			NativeCustody:        sdk.NewUint(1000),
+			PoolUnits:            sdk.NewUint(1),
+			Health:               sdk.NewDec(1),
+		}
 
 		got := marginKeeper.TakeOutCustody(ctx, mtp, &pool)
 
@@ -1303,6 +1319,18 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
+
+		pool := clptypes.Pool{
+			ExternalAsset:        &asset,
+			NativeAssetBalance:   sdk.NewUint(1000),
+			NativeLiabilities:    sdk.NewUint(1000),
+			ExternalCustody:      sdk.NewUint(1000),
+			ExternalAssetBalance: sdk.NewUint(1000),
+			ExternalLiabilities:  sdk.NewUint(1000),
+			NativeCustody:        sdk.NewUint(1000),
+			PoolUnits:            sdk.NewUint(1),
+			Health:               sdk.NewDec(1),
+		}
 
 		got := marginKeeper.TakeOutCustody(ctx, mtp, &pool)
 

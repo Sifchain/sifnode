@@ -117,24 +117,10 @@ func TestKeeper_OpenLong(t *testing.T) {
 				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
-				BorrowAsset:      "rowan",
+				BorrowAsset:      "xxx",
 			},
-			poolAsset:     "rowan",
-			token:         "rowan",
-			poolEnabled:   true,
-			fundedAccount: true,
-			err:           nil,
-		},
-		{
-			name: "account funded",
-			msgOpenLong: types.MsgOpenLong{
-				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-				CollateralAsset:  "rowan",
-				CollateralAmount: sdk.NewUint(1000),
-				BorrowAsset:      "rowan",
-			},
-			poolAsset:     "rowan",
-			token:         "rowan",
+			poolAsset:     "xxx",
+			token:         "xxx",
 			poolEnabled:   true,
 			fundedAccount: true,
 			err:           nil,
@@ -178,10 +164,19 @@ func TestKeeper_OpenLong(t *testing.T) {
 			var address string
 
 			if tt.fundedAccount {
+				nativeAsset := tt.msgOpenLong.CollateralAsset
+				externalAsset := clptypes.Asset{Symbol: tt.msgOpenLong.BorrowAsset}
+
+				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
+				externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
+				err := app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(nativeCoin, externalCoin))
+				require.Nil(t, err)
+
+				nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(10000)))
+				externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(10000)))
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
 				address = _signer.String()
-				nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-				err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin, externalCoin))
 				require.Nil(t, err)
 			} else {
 				address = tt.msgOpenLong.Signer
@@ -290,10 +285,10 @@ func TestKeeper_CloseLong(t *testing.T) {
 			msgCloseLong: types.MsgCloseLong{
 				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset: "rowan",
-				BorrowAsset:     "rowan",
+				BorrowAsset:     "xxx",
 			},
-			poolAsset:     "rowan",
-			token:         "rowan",
+			poolAsset:     "xxx",
+			token:         "xxx",
 			poolEnabled:   true,
 			fundedAccount: true,
 			err:           nil,
@@ -335,10 +330,20 @@ func TestKeeper_CloseLong(t *testing.T) {
 			var address string
 
 			if tt.fundedAccount {
+				nativeAsset := tt.msgCloseLong.CollateralAsset
+				externalAsset := clptypes.Asset{Symbol: tt.msgCloseLong.BorrowAsset}
+
+				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
+				externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
+				err := app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(nativeCoin, externalCoin))
+				require.Nil(t, err)
+
+				nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(10000)))
+				externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(10000)))
+
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
 				address = _signer.String()
-				nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-				err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
 				require.Nil(t, err)
 				marginKeeper.BankKeeper().SendCoinsFromAccountToModule(ctx, _signer, types.ModuleName, sdk.NewCoins(nativeCoin))
 			} else {
@@ -498,11 +503,11 @@ func TestKeeper_OpenClose(t *testing.T) {
 				ExternalAsset:        &externalAsset,
 				NativeAssetBalance:   sdk.NewUint(1000000001000),
 				ExternalAssetBalance: sdk.NewUint(999999996000),
-				NativeCustody:        sdk.NewUint(0),
+				NativeCustody:        sdk.ZeroUint(),
 				ExternalCustody:      sdk.NewUint(4000),
 				NativeLiabilities:    sdk.NewUint(1000),
-				ExternalLiabilities:  sdk.NewUint(0),
-				PoolUnits:            sdk.NewUint(0),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				PoolUnits:            sdk.ZeroUint(),
 				Health:               sdk.NewDecWithPrec(999999999000000002, 18),
 				InterestRate:         sdk.NewDecWithPrec(1, 1),
 			}
@@ -521,11 +526,11 @@ func TestKeeper_OpenClose(t *testing.T) {
 				ExternalAsset:        &externalAsset,
 				NativeAssetBalance:   sdk.NewUint(999999993200),
 				ExternalAssetBalance: sdk.NewUint(1000000000000),
-				NativeCustody:        sdk.NewUint(0),
-				ExternalCustody:      sdk.NewUint(0),
-				NativeLiabilities:    sdk.NewUint(0),
-				ExternalLiabilities:  sdk.NewUint(0),
-				PoolUnits:            sdk.NewUint(0),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
+				NativeLiabilities:    sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				PoolUnits:            sdk.ZeroUint(),
 				Health:               sdk.NewDecWithPrec(999999999000000002, 18),
 				InterestRate:         sdk.NewDecWithPrec(1, 1),
 			}
