@@ -62,13 +62,14 @@ def get_env_ctx_peggy2():
     dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
     environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
 
+    deployed_contract_address_overrides = get_overrides_for_smart_contract_addresses(dot_env_vars)
     tmp = environment_vars["contractResults"]["contractAddresses"]
-    deployed_contract_addresses = {
+    deployed_contract_addresses = dict_merge({
         "BridgeBank": tmp["bridgeBank"],
         "CosmosBridge": tmp["cosmosBridge"],
         "BridgeRegistry": tmp["bridgeRegistry"],
         "Rowan": tmp["rowanContract"],
-    }
+    }, deployed_contract_address_overrides)
     abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
 
     # TODO We're mixing "OPERATOR" vs. "OWNER"
@@ -198,6 +199,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
+    deployed_smart_contract_address_overrides = get_overrides_for_smart_contract_addresses(env_vars)
 
     w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
 
@@ -210,7 +212,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     eth_node_is_local = deployment_name is None
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id)
+    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id, deployed_smart_contract_address_overrides)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
         rowan_source, CETH, generic_erc20_contract_name)
     if operator_private_key:
@@ -243,6 +245,21 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
         ctx.eth.gas_estimate_fn = estimator.estimate_fees
 
     return ctx
+
+
+def get_overrides_for_smart_contract_addresses(env_vars):
+    mappings = {
+        "BridgeBank": "BRIDGE_BANK_ADDRESS",
+        "BridgeRegistry": "BRIDGE_REGISTRY_ADDRESS",
+        "CosmosBridge": "COSMOS_BRIDGE_ADDRESS",  # Peggy2 only?
+        "Rowan": "ROWAN_ADDRESS",  # Peggy2 only?
+        "BridgeToken": "BRIDGE_TOKEN_ADDRESS",  # Peggy1 only
+    }
+    tmp = {}
+    for k, v in mappings.items():
+        if v in env_vars:
+            tmp[k] = web3.Web3.toChecksumAddress(env_vars[v])
+    return tmp
 
 
 def sif_addr_to_evm_arg(sif_address):
