@@ -27,6 +27,8 @@ def main(argv):
         project.build()
     elif what == "rebuild":
         project.rebuild()
+    elif what == "project":
+        return getattr(project, argv[1])(*argv[2:])
     elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
