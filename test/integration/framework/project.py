@@ -242,8 +242,8 @@ class Project:
 
     def build(self):
         if on_peggy2_branch:
-            assert False, "Not implemented yet"
-            # self.cmd.execst(["npx", "hardhat", "compile"], cwd=self.project_dir("smart-contracts"), pipe=False)
+            self.npm_install(self.project_dir("smart-contracts"))
+            self.npx(["hardhat", "compile"], cwd=self.project_dir("smart-contracts"), pipe=False)
         else:
             self.npm_install(self.project_dir("smart-contracts"))
             self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
@@ -289,13 +289,13 @@ class Project:
                 break
         tarfile = os.path.join(cache_dir, "{}.tar".format(sha1))
         if idx is None:
-            saved_package_lock = self.cmd.read_text_file(os.path.join(path, "package-lock.json"))
-            saved_yarn_lock = self.cmd.read_text_file(os.path.join(path, "yarn.lock"))
+            saved = dict(((f, self.cmd.read_text_file(f))
+                for f in [os.path.join(path, x) for x in ["package-lock.json", "yarn.lock"]] if self.cmd.exists(f)))
             self.cmd.execst(["npm", "install"], cwd=path, pipe=False)
             cache_tag_file = os.path.join(node_modules, ".siftool-cache-tag")
             self.cmd.write_text_file(cache_tag_file, sha1)
-            self.cmd.write_text_file(os.path.join(path, "package-lock.json"), saved_package_lock)
-            self.cmd.write_text_file(os.path.join(path, "yarn.lock"), saved_yarn_lock)
+            for file, contents in saved.items():
+                self.cmd.write_text_file(file, contents)
             self.cmd.tar_create(node_modules, tarfile)
         else:
             cache.pop(idx)
