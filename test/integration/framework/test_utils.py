@@ -531,12 +531,13 @@ class EnvCtx:
                 "--from", from_sif_addr,  # Mandatory, either name from keyring or address
                 "--gas-prices", "0.5rowan",
                 "--gas-adjustment", "1.5",
+                "--output", "json",
                 "-y"
             ] + \
             self._sifnoded_home_arg() + \
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
-        result = sifnoded_parse_output_lines(stdout(res))
+        result = json.loads(stdout(res))
         assert "failed to execute message" not in result["raw_log"]
         return result
 
