@@ -1,11 +1,11 @@
 import * as ChildProcess from "child_process"
-import { ShellCommand } from "./devEnv"
-import { GolangResults } from "./golangBuilder"
+import {ShellCommand} from "./devEnv"
+import {GolangResults} from "./golangBuilder"
 import * as path from "path"
 import * as fs from "fs"
 import YAML from "yaml"
 import notifier from "node-notifier"
-import { EbrelayerArguments } from "./ebrelayer"
+import {EbrelayerArguments} from "./ebrelayer"
 import * as delay from "delay"
 
 import {
@@ -14,8 +14,8 @@ import {
   ExecSyncOptionsWithStringEncoding,
   StdioOptions,
 } from "child_process"
-import { network } from "hardhat"
-import { sleep } from "./devEnvUtilities"
+import {network} from "hardhat"
+import {sleep} from "./devEnvUtilities"
 
 export const crossChainFeeBase: number = 1
 export const crossChainLockFee: number = 1
@@ -115,7 +115,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2",
     ]
 
-    await fs.promises.mkdir(this.networkDir, { recursive: true })
+    await fs.promises.mkdir(this.networkDir, {recursive: true})
 
     const sifnodedLogFile = fs.openSync(this.logfile, "w")
 
@@ -146,11 +146,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       const valOperKey = this.readValoperKey(moniker, homeDir)
       const stdout = await this.addGenesisValidator(chainDir, valOperKey)
       console.log(
-        `Added genesis validator: ${JSON.stringify({ moniker, homeDir, chainDir, valOperKey })}`
+        `Added genesis validator: ${JSON.stringify({moniker, homeDir, chainDir, valOperKey})}`
       )
       const whitelistedValidator = ChildProcess.execSync(
         `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
-        { encoding: "utf8", input: password }
+        {encoding: "utf8", input: password}
       ).trim()
       console.log(`--bech val output: ${whitelistedValidator}`)
     }
@@ -158,18 +158,18 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // Create an ADMIN account on sifnode with name sifnodeadmin
     const sifnodedAdminAddress: EbRelayerAccount = this.addAccount("sifnodeadmin", homeDir, true)
     // Create an account for each relayer as requested
-    const relayerAddresses = Array.from({ length: this.nRelayers }, (_, relayer) =>
+    const relayerAddresses = Array.from({length: this.nRelayers}, (_, relayer) =>
       this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir)
     )
     // Create an account for each witness as requested
-    const witnessAddresses = Array.from({ length: this.nWitnesses }, (_, witness) =>
+    const witnessAddresses = Array.from({length: this.nWitnesses}, (_, witness) =>
       this.addRelayerWitnessAccount(`witness-${witness}`, homeDir)
     )
 
     let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level debug --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`
 
     console.log(`start sifnoded with: \n${sifnodedDaemonCmd}`)
-    const sifnoded = ChildProcess.spawn(sifnodedDaemonCmd, { shell: true, stdio: stdioOptions })
+    const sifnoded = ChildProcess.spawn(sifnodedDaemonCmd, {shell: true, stdio: stdioOptions})
 
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
@@ -177,10 +177,12 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const registryPath = path.resolve(__dirname, "./", "registry.json")
     ChildProcess.execSync(
       `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId} --node tcp://0.0.0.0:26657`,
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     ).trim()
 
-    await this.setCrossChainFee(
+    // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
+    await sleep(10000)
+    const setCrossChainFeeResult =  await this.setCrossChainFee(
       sifnodedAdminAddress,
       "31337",
       ethereumCrossChainFeeToken,
@@ -189,14 +191,13 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       String(crossChainBurnFee),
       this.chainId
     )
+    console.log("setCrossChainFeeResult as ", setCrossChainFeeResult)
 
+    // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
+    await sleep(10000)
     // set the ConsensusNeeded for hardhat
-    await this.updateConsensusNeeded(
-      sifnodedAdminAddress,
-      "31337",
-      ConsensusNeeded,
-      this.chainId
-    )
+    const updateConsensusNeededResult = await this.updateConsensusNeeded(sifnodedAdminAddress, "31337", ConsensusNeeded, this.chainId)
+    console.log("updateConsensusNeededResult as ", updateConsensusNeededResult)
 
     sifnoded.on("exit", (code) => {
       notifier.notify({
@@ -229,18 +230,18 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan,20000000000000000000ceth --home ${homeDir}`,
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     ).trim()
     if (isAdmin === true) {
       ChildProcess.execSync(
         `${this.sifnodedCommand} set-genesis-oracle-admin ${accountAddress} --home ${homeDir}`,
-        { encoding: "utf8" }
+        {encoding: "utf8"}
       ).trim()
     }
 
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-genesis-whitelister-admin ${accountAddress} --home ${homeDir}`,
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     ).trim()
 
     return {
@@ -258,11 +259,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const bachAddress = this.readValoperKey(name, homeDir)
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     ).trim()
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-validators ${EVM_Network_Descriptor} ${bachAddress} ${Validator_Power} --home ${homeDir}`,
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     ).trim()
 
     return adminAccount
@@ -285,7 +286,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   readValoperKey(moniker: string, homeDir: string): string {
     return ChildProcess.execSync(
       `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test --home ${homeDir}`,
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     ).trim()
   }
 
@@ -300,8 +301,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       path.join(chainDir, ".sifnoded"),
     ]
 
-    console.log(`Add genesis validator: ${JSON.stringify({ chainDir, valoper })}`)
-    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
+    console.log(`Add genesis validator: ${JSON.stringify({chainDir, valoper})}`)
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, {encoding: "utf8"})
   }
 
   // sifnoded tx ethbridge set-cross-chain-fee sif1f8sz5779td3y6xsq296k3wurflsdnfxmq5hudd 1 ceth 1 1 1
@@ -342,10 +343,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "-y",
     ]
 
-    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, {encoding: "utf8"})
   }
 
-  // update-consensus-needed [cosmos-sender-address] [network-id] [consensus-needed] 
+  // update-consensus-needed [cosmos-sender-address] [network-id] [consensus-needed]
   async updateConsensusNeeded(
     sifnodeAdminAccount: EbRelayerAccount,
     networkId: string,
@@ -375,8 +376,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "tcp://0.0.0.0:26657",
       "-y",
     ]
-    
-    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
+
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, {encoding: "utf8"})
   }
 
   override async run(): Promise<void> {
