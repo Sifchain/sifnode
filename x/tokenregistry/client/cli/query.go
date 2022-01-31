@@ -283,6 +283,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err

@@ -52,7 +52,7 @@ func syncCmd() *cobra.Command {
 				//WithBroadcastMode("block").
 				WithOutputFormat("json")
 
-			chainevents.Sync(clientCtx, nil)
+			chainevents.Sync(clientCtx, nil, cmd.Flags())
 
 			return nil
 		}}
