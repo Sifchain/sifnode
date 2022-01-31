@@ -1015,6 +1015,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         assert res[0]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
         assert res[1]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
 
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        # TODO Can we make it more robust?
+        time.sleep(10)
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
@@ -1025,6 +1029,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
             admin_account_name, chain_id, gas_prices, gas_adjustment)
 
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        time.sleep(10)
         sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
