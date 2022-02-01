@@ -18,7 +18,7 @@ func main() {
 	_networkCmd := networkCmd()
 	_networkCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
 	_networkCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
-	_networkCmd.PersistentFlags().String("keyring-backend", "file", "Select keyring's backend (os|file|kwallet|pass|test|memory)")
+	_networkCmd.PersistentFlags().String("keyring-backend", "file", "keyring backend (os|file|kwallet|pass|test|memory)")
 	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
@@ -39,6 +39,7 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCreateCmd.PersistentFlags().Bool("enable-grpc", false, "enable gRPC")
 	_nodeCreateCmd.PersistentFlags().Bool("enable-api", false, "enable API")
+	_nodeCreateCmd.PersistentFlags().String("keyring-backend", "test", "keyring backend (os|file|kwallet|pass|test|memory)")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()

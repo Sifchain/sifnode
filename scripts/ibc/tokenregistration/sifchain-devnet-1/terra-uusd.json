@@ -1,12 +1,12 @@
 {
   "entries": [
     {
-      "decimals": "9",
-      "denom": "ibc/123466F93BD086614AB9BBC674B6B58453D2B293CE12C7D802FA0582BC69E024",
-      "base_denom": "nanolike",
-      "path": "transfer/channel-43",
-      "ibc_channel_id": "channel-43",
-      "ibc_counterparty_channel_id": "channel-4",
+      "decimals": "6",
+      "denom": "ibc/217BC2C4AD4953D957243A8D0ED015E6689E9C88ADE3D04C9F7BE48916A00457",
+      "base_denom": "uusd",
+      "path": "transfer/channel-123",
+      "ibc_channel_id": "channel-123",
+      "ibc_counterparty_channel_id": "channel-3",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "likecoin-mainnet-2"
+      "ibc_counterparty_chain_id": "bombay-10"
     }
   ]
 }

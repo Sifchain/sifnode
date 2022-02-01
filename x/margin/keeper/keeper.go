@@ -101,6 +101,21 @@ func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []strin
 	return assetList
 }
 
+func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*types.MTP {
+	var mtps []*types.MTP
+	iterator := k.GetMTPIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var mtp types.MTP
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		if mtpAddress.String() == mtp.Address {
+			mtps = append(mtps, &mtp)
+		}
+	}
+	return mtps
+}
+
 func (k Keeper) DestroyMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string) error {
 	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress)
 	store := ctx.KVStore(k.storeKey)
@@ -214,7 +229,7 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 	return X, XL, x, Y, YL, toRowan
 }
 
-func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
+func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, leverage sdk.Uint) error {
 	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
 	if err != nil {
 		return err
@@ -230,34 +245,45 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
-	h, err := k.UpdateMTPHealth(ctx, mtp, pool) // set mtp in func or return h?
+	h, err := k.UpdateMTPHealth(ctx, *mtp, *pool) // set mtp in func or return h?
 	if err != nil {
 		return err
 	}
 	mtp.MtpHealth = h
 
 	collateralCoins := sdk.NewCoins(collateralCoin)
-	err = k.BankKeeper().SendCoinsFromAccountToModule(ctx, mtpAddress, types.ModuleName, collateralCoins)
+	err = k.BankKeeper().SendCoinsFromAccountToModule(ctx, mtpAddress, clptypes.ModuleName, collateralCoins)
 	if err != nil {
 		return err
 	}
 
-	return k.SetMTP(ctx, &mtp)
+	nativeAsset := types.GetSettlementAsset()
+
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CollateralAmount)
+		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
+	} else { // collateral is external
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CollateralAmount)
+		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
+	}
+	k.ClpKeeper().SetPool(ctx, pool)
+
+	return k.SetMTP(ctx, mtp)
 }
 
 func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error {
 	// can be both X and Y
-	ExternalAssetBalance := pool.ExternalAssetBalance
-	ExternalLiabilities := pool.ExternalLiabilities
-	NativeAssetBalance := pool.NativeAssetBalance
-	NativeLiabilities := pool.NativeLiabilities
+	ExternalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
+	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
 
 	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities))
 	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities))
 
 	H := mul1.Mul(mul2)
 
-	pool.Health = sdk.NewDecFromBigInt(H.BigInt())
+	pool.Health = H
 	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
@@ -266,72 +292,74 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 	// delta x in calculate in y currency
 	nativeAsset := types.GetSettlementAsset()
 
-	var err error
-	var normalizedCollateral, normalizedLiabilities, normalizedCustody sdk.Uint
+	var normalizedCollateral, normalizedLiabilities, normalizedCustody sdk.Dec
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-		normalizedCustody, err = k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+		normalizedCustodyInt, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
-		normalizedCollateral = mtp.CollateralAmount
-		normalizedLiabilities = mtp.LiabilitiesP
+		normalizedCustody = sdk.NewDecFromBigInt(normalizedCustodyInt.BigInt())
+		normalizedCollateral = sdk.NewDecFromBigInt(mtp.CollateralAmount.BigInt())
+		normalizedLiabilities = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
 	} else { // collateral is external
-		normalizedCollateral, err = k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.CollateralAmount)
+		normalizedCollateralInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.CollateralAmount)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
-		normalizedLiabilities, err = k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
+		normalizedCollateral = sdk.NewDecFromBigInt(normalizedCollateralInt.BigInt())
+		normalizedLiabilitiesInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
-		normalizedCustody = mtp.CustodyAmount
+		normalizedLiabilities = sdk.NewDecFromBigInt(normalizedLiabilitiesInt.BigInt())
+		normalizedCustody = sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	}
 
-	if normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody).Equal(sdk.ZeroUint()) {
+	if normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
 		return sdk.Dec{}, types.ErrMTPInvalid
 	}
 
 	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody))
 
-	return sdk.NewDecFromBigInt(health.BigInt()), nil
+	return health, nil
 }
 
-func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
+func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CollateralAmount)
-		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.CollateralAmount)
-		pool.ExternalCustody = pool.ExternalCustody.Add(mtp.CustodyAmount)
-	} else {
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(mtp.CollateralAmount)
-		pool.ExternalLiabilities = pool.NativeLiabilities.Add(mtp.CollateralAmount)
+	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CustodyAmount)
 		pool.NativeCustody = pool.NativeCustody.Add(mtp.CustodyAmount)
+	} else {
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(mtp.CustodyAmount)
+		pool.ExternalCustody = pool.ExternalCustody.Add(mtp.CustodyAmount)
 	}
 
-	return k.ClpKeeper().SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
-func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
+func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
-		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
-	} else {
+	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
 		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CustodyAmount)
+	} else {
+		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CustodyAmount)
 	}
 
-	return k.ClpKeeper().SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
-func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	CollateralAmount := mtp.CollateralAmount
 	LiabilitiesP := mtp.LiabilitiesP
 	LiabilitiesI := mtp.LiabilitiesI
 
 	var err error
-	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, pool)
 	if err != nil {
 		return err
 	}
@@ -364,7 +392,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 		if err != nil {
 			return err
 		}
-		err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, returnCoins)
+		err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, addr, returnCoins)
 		if err != nil {
 			return err
 		}
@@ -373,10 +401,10 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	} else {
-		pool.ExternalAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
+		pool.ExternalAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.ExternalLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	}
 
@@ -385,7 +413,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 		return err
 	}
 
-	return k.clpKeeper.SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
 func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
@@ -410,8 +438,13 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 
 	prevInterestRate := pool.InterestRate
 
-	mul1 := pool.ExternalAssetBalance.Add(pool.ExternalLiabilities).Quo(pool.ExternalAssetBalance)
-	mul2 := pool.NativeAssetBalance.Add(pool.NativeLiabilities).Quo(pool.NativeAssetBalance)
+	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
+	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
+
+	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
+	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
 	targetInterestRate := healthGainFactor.Mul(sdk.NewDecFromBigInt(mul1.BigInt())).Mul(sdk.NewDecFromBigInt(mul2.BigInt()))
 

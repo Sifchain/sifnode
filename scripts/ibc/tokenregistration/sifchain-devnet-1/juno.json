@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/04F5F501207C3626A2C14BFEF654D51C2E0B8F7CA578AB8ED272A66FE4E48097",
       "base_denom": "ujuno",
-      "path": "",
+      "path": "transfer/channel-0",
       "ibc_channel_id": "channel-0",
       "ibc_counterparty_channel_id": "channel-16",
       "display_name": "",

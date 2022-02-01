@@ -210,6 +210,10 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	if err = genesis.ReplaceMarginGenesis(common.DefaultNodeHome); err != nil {
+		return err
+	}
+
 	err = n.replaceConfigTOML()
 	if err != nil {
 		return err
