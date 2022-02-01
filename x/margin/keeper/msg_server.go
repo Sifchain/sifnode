@@ -29,7 +29,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 
 	collateralAmount := msg.CollateralAmount
 
-	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset)
+	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, "long")
 
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
@@ -72,7 +72,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventOpen,
-		sdk.NewAttribute("position", "long"),
+		sdk.NewAttribute("position", mtp.Position),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
@@ -90,7 +90,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*types.MsgCloseLongResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.Signer)
+	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.Signer, "long")
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventClose,
-		sdk.NewAttribute("position", "long"),
+		sdk.NewAttribute("position", mtp.Position),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
@@ -154,7 +154,7 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 func (k msgServer) ForceCloseLong(goCtx context.Context, msg *types.MsgForceCloseLong) (*types.MsgForceCloseLongResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.MtpAddress)
+	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.MtpAddress, "long")
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func (k msgServer) ForceCloseLong(goCtx context.Context, msg *types.MsgForceClos
 		return nil, sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
 
-	err = k.TakeOutCustody(ctx, mtp, pool)
+	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
 		return nil, err
 	}
@@ -206,10 +206,24 @@ func (k msgServer) ForceCloseLong(goCtx context.Context, msg *types.MsgForceClos
 		return nil, err
 	}
 
-	err = k.Repay(ctx, mtp, pool, repayAmount)
+	err = k.Repay(ctx, &mtp, pool, repayAmount)
 	if err != nil {
 		return nil, err
 	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
+		sdk.NewAttribute("position", mtp.Position),
+		sdk.NewAttribute("address", mtp.Address),
+		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
+		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
+		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
+		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
+		sdk.NewAttribute("leverage", mtp.Leverage.String()),
+		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
+		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
+		sdk.NewAttribute("health", mtp.MtpHealth.String()),
+		sdk.NewAttribute("closer", msg.Signer),
+	))
 
 	return &types.MsgForceCloseLongResponse{}, nil
 }

@@ -16,6 +16,7 @@ message MTPRequest {
   string address = 1;
   string custody_asset = 2;
   string collateral_asset = 3;
+  string position = 4;
 }
 
 message MTPResponse {

@@ -18,7 +18,7 @@ func NewQueryServer(k types.Keeper) types.QueryServer {
 }
 
 func (srv queryServer) GetMTP(ctx context.Context, request *types.MTPRequest) (*types.MTPResponse, error) {
-	mtp, err := srv.keeper.GetMTP(sdk.UnwrapSDKContext(ctx), request.CollateralAsset, request.CustodyAsset, request.Address)
+	mtp, err := srv.keeper.GetMTP(sdk.UnwrapSDKContext(ctx), request.CollateralAsset, request.CustodyAsset, request.Address, request.Position)
 	if err != nil {
 		return nil, err
 	}

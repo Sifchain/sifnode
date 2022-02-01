@@ -46,8 +46,8 @@ func TestKeeper_SetMTP(t *testing.T) {
 func TestKeeper_GetMTP(t *testing.T) {
 	t.Run("get MTP from a store key that exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
-		got, err := marginKeeper.GetMTP(ctx, "ceth", "xxx", want.Address)
+		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", "long")
+		got, err := marginKeeper.GetMTP(ctx, "ceth", "xxx", want.Address, "long")
 
 		require.NoError(t, err)
 		require.Equal(t, got, want)
@@ -55,7 +55,7 @@ func TestKeeper_GetMTP(t *testing.T) {
 
 	t.Run("fails when store keys does not exist", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
-		_, got := marginKeeper.GetMTP(ctx, "ceth", "xxx", "xxx")
+		_, got := marginKeeper.GetMTP(ctx, "ceth", "xxx", "xxx", "long")
 
 		require.ErrorIs(t, got, types.ErrMTPDoesNotExist)
 	})
@@ -63,7 +63,7 @@ func TestKeeper_GetMTP(t *testing.T) {
 
 func TestKeeper_GetMTPIterator(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
+	want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", "long")
 	iterator := marginKeeper.GetMTPIterator(ctx)
 	bytesValue := iterator.Value()
 	var got types.MTP
@@ -74,8 +74,8 @@ func TestKeeper_GetMTPIterator(t *testing.T) {
 
 func TestKeeper_GetMTPs(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1")
-	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2")
+	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", "long")
+	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", "long")
 	want := []*types.MTP{&key1, &key2}
 	got := marginKeeper.GetMTPs(ctx)
 
@@ -86,8 +86,8 @@ func TestKeeper_GetMTPs(t *testing.T) {
 
 func TestKeeper_GetMTPsForAsset(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1")
-	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2")
+	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", "long")
+	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", "long")
 	want := []*types.MTP{&key1, &key2}
 	got := marginKeeper.GetMTPsForAsset(ctx, "ceth")
 
@@ -100,8 +100,8 @@ func TestKeeper_GetAssetsForMTP(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 	addr, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 
-	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String())
-	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String())
+	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String(), "long")
+	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String(), "long")
 	want := []string{"ceth"}
 	got := marginKeeper.GetAssetsForMTP(ctx, addr)
 
@@ -113,14 +113,14 @@ func TestKeeper_GetAssetsForMTP(t *testing.T) {
 func TestKeeper_DestroyMTP(t *testing.T) {
 	t.Run("key does not exist", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
-		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", "xxx")
+		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", "xxx", "long")
 
 		require.ErrorIs(t, got, types.ErrMTPDoesNotExist)
 	})
 	t.Run("key exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
-		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", mtp.Address)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", "long")
+		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", mtp.Address, "long")
 
 		require.NoError(t, got)
 	})
@@ -371,7 +371,7 @@ func TestKeeper_Borrow(t *testing.T) {
 				address = tt.address
 			}
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", address)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", address, "long")
 
 			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.borrowAmount, &mtp, &pool, tt.leverage)
 
@@ -518,7 +518,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx")
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", "long")
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.LiabilitiesP = tt.liabilitiesP
 			mtp.CollateralAmount = tt.collateralAmount
@@ -542,7 +542,7 @@ func TestKeeper_TakeInCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", "long")
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -563,7 +563,7 @@ func TestKeeper_TakeInCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx", "long")
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -588,7 +588,7 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", "long")
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -609,7 +609,7 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx", "long")
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -785,7 +785,7 @@ func TestKeeper_Repay(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address, "long")
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.LiabilitiesP = tt.liabilitiesP
 			mtp.CollateralAmount = tt.collateralAmount
@@ -810,7 +810,7 @@ func TestKeeper_Repay(t *testing.T) {
 func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 
-	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", "long")
 
 	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(1.0))
 	require.Nil(t, got)
@@ -918,10 +918,10 @@ func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	require.NotNil(t, marginKeeper)
 	return ctx, app, marginKeeper
 }
-func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string) types.MTP {
+func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string, position string) types.MTP {
 	storeKey := app.GetKey(types.StoreKey)
 	store := ctx.KVStore(storeKey)
-	key := types.GetMTPKey(collateralAsset, custodyAsset, address)
+	key := types.GetMTPKey(collateralAsset, custodyAsset, address, position)
 
 	newMTP := types.MTP{
 		Address:          address,

@@ -358,7 +358,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 				signer = tt.overrideSigner
 			}
 
-			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer)
+			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer, "long")
 
 			_, got := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msg)
 
@@ -493,7 +493,7 @@ func TestKeeper_OpenCloseLong(t *testing.T) {
 				MtpHealth:        sdk.NewDecWithPrec(1, 1),
 			}
 
-			openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String())
+			openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String(), "long")
 
 			fmt.Println(openLongMTP)
 
@@ -1178,7 +1178,7 @@ func TestKeeper_EC(t *testing.T) {
 						Leverage:         sdk.NewUint(1),
 						MtpHealth:        chunkItem.mtpHealth,
 					}
-					openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String())
+					openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String(), "long")
 					require.Equal(t, openLongExpectedMTP, openLongMTP)
 
 					openLongExpectedPool := clptypes.Pool{
