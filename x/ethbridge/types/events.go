@@ -2,14 +2,15 @@ package types
 
 // Ethbridge module event types
 const (
-	EventTypeCreateClaim              = "create_claim"
-	EventTypeProphecyStatus           = "prophecy_status"
-	EventTypeBurn                     = "sif_burn"
-	EventTypeLock                     = "sif_lock"
-	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
-	EventTypeSetCrossChainFee         = "set_cross_chain_fee"
-	EventTypeSignProphecy             = "sign_prophecy"
-	EventTypeUpdateConsensusNeeded    = "update_consensus_needed"
+	EventTypeCreateClaim                        = "create_claim"
+	EventTypeProphecyStatus                     = "prophecy_status"
+	EventTypeBurn                               = "sif_burn"
+	EventTypeLock                               = "sif_lock"
+	EventTypeUpdateWhiteListValidator           = "update_whitelist_validator"
+	EventTypeSetCrossChainFee                   = "set_cross_chain_fee"
+	EventTypeSignProphecy                       = "sign_prophecy"
+	EventTypeUpdateConsensusNeeded              = "update_consensus_needed"
+	EventTypeUpdateCrossChainFeeReceiverAccount = "update_cross_chain_fee_receiver_account"
 
 	AttributeKeyEthereumSender               = "ethereum_sender"
 	AttributeKeyEthereumSenderSequence       = "ethereum_sender_sequence"

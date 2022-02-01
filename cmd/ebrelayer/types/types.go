@@ -41,7 +41,26 @@ const (
 
 // String returns the event type as a string
 func (d Event) String() string {
-	return [...]string{"unsupported", "sif_burn", "sif_lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim", "prophecy_completed", "submitProphecyClaimAggregatedSigs"}[d]
+	return [...]string{
+		"unsupported",
+		ethbridge.EventTypeBurn,
+		ethbridge.EventTypeLock,
+		ethbridge.EventTypeProphecyStatus,
+		ethbridge.EventTypeCreateClaim,
+		ethbridge.EventTypeUpdateWhiteListValidator,
+		ethbridge.EventTypeSetCrossChainFee,
+		ethbridge.EventTypeUpdateCrossChainFeeReceiverAccount,
+		ethbridge.EventTypeSignProphecy,
+
+		// TODO: Suspect these can be removed
+		LogLock.String(),                    // TODO: Where is this used?
+		LogBurn.String(),                    // TODO: Where is this used?
+		LogNewProphecyClaim.String(),        // TODO: Where is this used?
+		NewProphecyClaim.String(),           // TODO: Where is this used?
+		"newProphecyClaim",                  // TODO: Where is this used?
+		"prophecy_completed",                // TODO: Where is this used?
+		"submitProphecyClaimAggregatedSigs", // TODO: Where is this used?
+	}[d]
 }
 
 // EthereumEvent struct is used by LogLock and LogBurn

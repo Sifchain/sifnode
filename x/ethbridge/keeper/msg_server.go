@@ -262,6 +262,8 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		"DenomHash", claim.Denom,
 	)
 
+	ctx.EventManager().EmitTypedEvents()
+
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
