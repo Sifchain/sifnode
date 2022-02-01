@@ -25,10 +25,10 @@ func TestKeeper_NewMsgServerImpl(t *testing.T) {
 	require.NotNil(t, got)
 }
 
-func TestKeeper_OpenLong(t *testing.T) {
+func TestKeeper_Open(t *testing.T) {
 	table := []struct {
 		name          string
-		msgOpenLong   types.MsgOpenLong
+		msgOpen       types.MsgOpen
 		poolAsset     string
 		token         string
 		poolEnabled   bool
@@ -38,7 +38,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 	}{
 		{
 			name: "pool does not exist",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
@@ -50,7 +50,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 		{
 			name: "same collateral and native asset but pool does not exist",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
@@ -62,7 +62,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 		{
 			name: "same collateral and native asset but pool exists",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
@@ -74,7 +74,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 		{
 			name: "margin enabled but denom does not exist",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
@@ -87,7 +87,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 		{
 			name: "wrong address",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
@@ -100,7 +100,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 		{
 			name: "insufficient funds",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
@@ -113,7 +113,7 @@ func TestKeeper_OpenLong(t *testing.T) {
 		},
 		{
 			name: "account funded",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
@@ -164,8 +164,8 @@ func TestKeeper_OpenLong(t *testing.T) {
 			var address string
 
 			if tt.fundedAccount {
-				nativeAsset := tt.msgOpenLong.CollateralAsset
-				externalAsset := clptypes.Asset{Symbol: tt.msgOpenLong.BorrowAsset}
+				nativeAsset := tt.msgOpen.CollateralAsset
+				externalAsset := clptypes.Asset{Symbol: tt.msgOpen.BorrowAsset}
 
 				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
 				externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
@@ -179,13 +179,13 @@ func TestKeeper_OpenLong(t *testing.T) {
 				err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin, externalCoin))
 				require.Nil(t, err)
 			} else {
-				address = tt.msgOpenLong.Signer
+				address = tt.msgOpen.Signer
 			}
 
-			msg := tt.msgOpenLong
+			msg := tt.msgOpen
 			msg.Signer = address
 
-			_, got := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msg)
+			_, got := msgServer.Open(sdk.WrapSDKContext(ctx), &msg)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -198,10 +198,10 @@ func TestKeeper_OpenLong(t *testing.T) {
 	}
 }
 
-func TestKeeper_CloseLong(t *testing.T) {
+func TestKeeper_Close(t *testing.T) {
 	table := []struct {
 		name           string
-		msgCloseLong   types.MsgCloseLong
+		msgClose       types.MsgClose
 		poolAsset      string
 		token          string
 		poolEnabled    bool
@@ -212,7 +212,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 	}{
 		{
 			name: "mtp does not exist",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
@@ -224,7 +224,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 		{
 			name: "pool does not exist",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
@@ -235,7 +235,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 		{
 			name: "same collateral and native asset but pool does not exist",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
@@ -246,7 +246,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 		{
 			name: "denom does not exist",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
@@ -258,7 +258,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 		{
 			name: "wrong address",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
@@ -270,7 +270,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 		{
 			name: "insufficient funds",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
@@ -282,7 +282,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		},
 		{
 			name: "account funded",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
@@ -330,8 +330,8 @@ func TestKeeper_CloseLong(t *testing.T) {
 			var address string
 
 			if tt.fundedAccount {
-				nativeAsset := tt.msgCloseLong.CollateralAsset
-				externalAsset := clptypes.Asset{Symbol: tt.msgCloseLong.BorrowAsset}
+				nativeAsset := tt.msgClose.CollateralAsset
+				externalAsset := clptypes.Asset{Symbol: tt.msgClose.BorrowAsset}
 
 				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
 				externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
@@ -347,10 +347,10 @@ func TestKeeper_CloseLong(t *testing.T) {
 				require.Nil(t, err)
 				marginKeeper.BankKeeper().SendCoinsFromAccountToModule(ctx, _signer, types.ModuleName, sdk.NewCoins(nativeCoin))
 			} else {
-				address = tt.msgCloseLong.Signer
+				address = tt.msgClose.Signer
 			}
 
-			msg := tt.msgCloseLong
+			msg := tt.msgClose
 			msg.Signer = address
 
 			var signer string = msg.Signer
@@ -360,7 +360,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 
 			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer, "long")
 
-			_, got := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msg)
+			_, got := msgServer.Close(sdk.WrapSDKContext(ctx), &msg)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -373,7 +373,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 	}
 }
 
-func TestKeeper_OpenCloseLong(t *testing.T) {
+func TestKeeper_OpenClose(t *testing.T) {
 	table := []struct {
 		name          string
 		externalAsset string
@@ -463,25 +463,25 @@ func TestKeeper_OpenCloseLong(t *testing.T) {
 			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, nativeAsset), nativeCoin)
 			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset), externalCoin)
 
-			msgOpenLong := types.MsgOpenLong{
+			msgOpen := types.MsgOpen{
 				Signer:           signer.String(),
 				CollateralAsset:  nativeAsset,
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      tt.externalAsset,
 			}
-			msgCloseLong := types.MsgCloseLong{
+			msgClose := types.MsgClose{
 				Signer:          signer.String(),
 				CollateralAsset: nativeAsset,
 				BorrowAsset:     tt.externalAsset,
 			}
 			fmt.Println(pool)
-			_, openLongError := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msgOpenLong)
-			require.Nil(t, openLongError)
+			_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
+			require.Nil(t, openError)
 
 			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(99999999999000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
 			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
-			openLongExpectedMTP := types.MTP{
+			openExpectedMTP := types.MTP{
 				Address:          signer.String(),
 				CollateralAsset:  nativeAsset,
 				CollateralAmount: sdk.NewUint(1000),
@@ -493,13 +493,13 @@ func TestKeeper_OpenCloseLong(t *testing.T) {
 				MtpHealth:        sdk.NewDecWithPrec(1, 1),
 			}
 
-			openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String(), "long")
+			openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String(), "long")
 
-			fmt.Println(openLongMTP)
+			fmt.Println(openMTP)
 
-			require.Equal(t, openLongExpectedMTP, openLongMTP)
+			require.Equal(t, openExpectedMTP, openMTP)
 
-			openLongExpectedPool := clptypes.Pool{
+			openExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
 				NativeAssetBalance:   sdk.NewUint(1000000001000),
 				ExternalAssetBalance: sdk.NewUint(999999996000),
@@ -512,17 +512,17 @@ func TestKeeper_OpenCloseLong(t *testing.T) {
 				InterestRate:         sdk.NewDecWithPrec(1, 1),
 			}
 
-			openLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
-			fmt.Println(openLongPool)
-			require.Equal(t, openLongExpectedPool, openLongPool)
+			openPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
+			fmt.Println(openPool)
+			require.Equal(t, openExpectedPool, openPool)
 
-			_, closeLongError := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msgCloseLong)
-			require.Nil(t, closeLongError)
+			_, closeError := msgServer.Close(sdk.WrapSDKContext(ctx), &msgClose)
+			require.Nil(t, closeError)
 
 			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000006800))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
 			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
-			closeLongExpectedPool := clptypes.Pool{
+			closeExpectedPool := clptypes.Pool{
 				ExternalAsset:        &externalAsset,
 				NativeAssetBalance:   sdk.NewUint(999999993200),
 				ExternalAssetBalance: sdk.NewUint(1000000000000),
@@ -535,31 +535,31 @@ func TestKeeper_OpenCloseLong(t *testing.T) {
 				InterestRate:         sdk.NewDecWithPrec(1, 1),
 			}
 
-			closeLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
-			require.Equal(t, closeLongExpectedPool, closeLongPool)
+			closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
+			require.Equal(t, closeExpectedPool, closePool)
 		})
 	}
 }
 
 func TestKeeper_EC(t *testing.T) {
 	type Chunk struct {
-		chunk                                    sdk.Uint
-		signerNativeAssetBalanceAfterOpenLong    sdk.Uint
-		signerExternalAssetBalanceAfterOpenLong  sdk.Uint
-		signerNativeAssetBalanceAfterCloseLong   sdk.Uint
-		signerExternalAssetBalanceAfterCloseLong sdk.Uint
-		poolNativeAssetBalanceAfterOpenLong      sdk.Uint
-		poolExternalAssetBalanceAfterOpenLong    sdk.Uint
-		poolHealthAfterOpenLong                  sdk.Dec
-		poolNativeAssetBalanceAfterCloseLong     sdk.Uint
-		poolExternalAssetBalanceAfterCloseLong   sdk.Uint
-		poolHealthAfterCloseLong                 sdk.Dec
-		mtpCustodyAmount                         sdk.Uint
-		mtpHealth                                sdk.Dec
-		openLongErrorString                      error
-		openLongError                            error
-		closeLongErrorString                     error
-		closeLongError                           error
+		chunk                                sdk.Uint
+		signerNativeAssetBalanceAfterOpen    sdk.Uint
+		signerExternalAssetBalanceAfterOpen  sdk.Uint
+		signerNativeAssetBalanceAfterClose   sdk.Uint
+		signerExternalAssetBalanceAfterClose sdk.Uint
+		poolNativeAssetBalanceAfterOpen      sdk.Uint
+		poolExternalAssetBalanceAfterOpen    sdk.Uint
+		poolHealthAfterOpen                  sdk.Dec
+		poolNativeAssetBalanceAfterClose     sdk.Uint
+		poolExternalAssetBalanceAfterClose   sdk.Uint
+		poolHealthAfterClose                 sdk.Dec
+		mtpCustodyAmount                     sdk.Uint
+		mtpHealth                            sdk.Dec
+		openErrorString                      error
+		openError                            error
+		closeErrorString                     error
+		closeError                           error
 	}
 	type Test struct {
 		X_A    sdk.Uint
@@ -582,51 +582,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(100),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(31),
-							mtpHealth:                                sdk.NewDecWithPrec(162001036806635562, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(31),
+							mtpHealth:                            sdk.NewDecWithPrec(162001036806635562, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(13),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(680094924560566755, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(680094924560566755, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							closeLongErrorString:                     errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(13),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(680094924560566755, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(680094924560566755, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							closeErrorString:                     errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -635,51 +635,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(10),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000036994),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(7),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(63006),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(10),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(3),
-							mtpHealth:                                sdk.NewDecWithPrec(164397974616952719, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000036994),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(7),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(63006),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(10),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(3),
+							mtpHealth:                            sdk.NewDecWithPrec(164397974616952719, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999981994),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(118006),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(682091950568188387, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(682091950568188387, 18),
-							mtpCustodyAmount:                         sdk.NewUint(9),
-							mtpHealth:                                sdk.NewDecWithPrec(353577237340327734, 18),
-							closeLongErrorString:                     errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999981994),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(118006),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(682091950568188387, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(682091950568188387, 18),
+							mtpCustodyAmount:                     sdk.NewUint(9),
+							mtpHealth:                            sdk.NewDecWithPrec(353577237340327734, 18),
+							closeErrorString:                     errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -688,51 +688,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(1),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(108000),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(1),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.ZeroUint(),
-							mtpHealth:                                sdk.NewDecWithPrec(500000000000000000, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(108000),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(1),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.ZeroUint(),
+							mtpHealth:                            sdk.NewDecWithPrec(500000000000000000, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999981994),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(118006),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(682091950568188387, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(682091950568188387, 18),
-							mtpCustodyAmount:                         sdk.NewUint(9),
-							mtpHealth:                                sdk.NewDecWithPrec(353577237340327734, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999981994),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(118006),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(682091950568188387, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(682091950568188387, 18),
+							mtpCustodyAmount:                     sdk.NewUint(9),
+							mtpHealth:                            sdk.NewDecWithPrec(353577237340327734, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -747,51 +747,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(100000),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000037598),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69444),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(62402),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100000),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(30556),
-							mtpHealth:                                sdk.NewDecWithPrec(163049681237873180, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000037598),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69444),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62402),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100000),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(30556),
+							mtpHealth:                            sdk.NewDecWithPrec(163049681237873180, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999982598),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999982598),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(117402),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(13101),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(680978178907437269, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(680978178907437269, 18),
-							mtpCustodyAmount:                         sdk.NewUint(86899),
-							mtpHealth:                                sdk.NewDecWithPrec(355899519859193208, 18),
-							closeLongErrorString:                     errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999982598),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999982598),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(117402),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(13101),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(680978178907437269, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(680978178907437269, 18),
+							mtpCustodyAmount:                     sdk.NewUint(86899),
+							mtpHealth:                            sdk.NewDecWithPrec(355899519859193208, 18),
+							closeErrorString:                     errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -800,51 +800,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(200000),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000037597),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(138889),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(62403),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(200000),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(61111),
-							mtpHealth:                                sdk.NewDecWithPrec(163049681237873180, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000037597),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(138889),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62403),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(200000),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(61111),
+							mtpHealth:                            sdk.NewDecWithPrec(163049681237873180, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999982597),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(117403),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(26203),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(680980029349837300, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(680980029349837300, 18),
-							mtpCustodyAmount:                         sdk.NewUint(173797),
-							mtpHealth:                                sdk.NewDecWithPrec(355899519859193208, 18),
-							closeLongErrorString:                     errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999982597),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(117403),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(26203),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(680980029349837300, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(680980029349837300, 18),
+							mtpCustodyAmount:                     sdk.NewUint(173797),
+							mtpHealth:                            sdk.NewDecWithPrec(355899519859193208, 18),
+							closeErrorString:                     errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -853,51 +853,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(1),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(108000),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(1),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.ZeroUint(),
-							mtpHealth:                                sdk.NewDecWithPrec(500000000000000000, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(108000),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(1),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.ZeroUint(),
+							mtpHealth:                            sdk.NewDecWithPrec(500000000000000000, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999981994),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(118006),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(682091950568188387, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(682091950568188387, 18),
-							mtpCustodyAmount:                         sdk.NewUint(9),
-							mtpHealth:                                sdk.NewDecWithPrec(353577237340327734, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999981994),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(118006),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(682091950568188387, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(682091950568188387, 18),
+							mtpCustodyAmount:                     sdk.NewUint(9),
+							mtpHealth:                            sdk.NewDecWithPrec(353577237340327734, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -912,51 +912,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(5000),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000037602),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(3472),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(62398),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(5000),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(1528),
-							mtpHealth:                                sdk.NewDecWithPrec(163039047851960545, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000037602),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(3472),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62398),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(5000),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(1528),
+							mtpHealth:                            sdk.NewDecWithPrec(163039047851960545, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999982602),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999935000),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(117398),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(655),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(680970776923166162, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(680970776923166162, 18),
-							mtpCustodyAmount:                         sdk.NewUint(4345),
-							mtpHealth:                                sdk.NewDecWithPrec(355906428964312292, 18),
-							closeLongErrorString:                     errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999982602),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999935000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(117398),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(655),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(680970776923166162, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(680970776923166162, 18),
+							mtpCustodyAmount:                     sdk.NewUint(4345),
+							mtpHealth:                            sdk.NewDecWithPrec(355906428964312292, 18),
+							closeErrorString:                     errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -965,51 +965,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(100),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999999000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000003807),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(11000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(6193),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(31),
-							mtpHealth:                                sdk.NewDecWithPrec(161995788109509153, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999999000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000003807),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(11000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(6193),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(31),
+							mtpHealth:                            sdk.NewDecWithPrec(161995788109509153, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999998307),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(11693),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(13),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(680102367242482406, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(680102367242482406, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356633380884450785, 18),
-							closeLongErrorString:                     errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999998307),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(11693),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(13),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(680102367242482406, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(680102367242482406, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356633380884450785, 18),
+							closeErrorString:                     errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -1018,51 +1018,51 @@ func TestKeeper_EC(t *testing.T) {
 					Y_A: sdk.NewUint(1),
 					chunks: []Chunk{
 						{
-							chunk:                                    sdk.NewUint(10),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(108000),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(1),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.ZeroUint(),
-							mtpHealth:                                sdk.NewDecWithPrec(500000000000000000, 18),
+							chunk:                                sdk.NewUint(10),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999990000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(108000),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(1),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.ZeroUint(),
+							mtpHealth:                            sdk.NewDecWithPrec(500000000000000000, 18),
 						},
 						{
-							chunk:                                    sdk.NewUint(55),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999981994),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(118006),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(1),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(682091950568188387, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(116926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(682091950568188387, 18),
-							mtpCustodyAmount:                         sdk.NewUint(9),
-							mtpHealth:                                sdk.NewDecWithPrec(353577237340327734, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(55),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999981994),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(118006),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(682091950568188387, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(116926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(682091950568188387, 18),
+							mtpCustodyAmount:                     sdk.NewUint(9),
+							mtpHealth:                            sdk.NewDecWithPrec(353577237340327734, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 						{
-							chunk:                                    sdk.NewUint(99),
-							signerNativeAssetBalanceAfterOpenLong:    sdk.NewUint(99999999983074),
-							signerExternalAssetBalanceAfterOpenLong:  sdk.NewUint(1000000000000000),
-							signerNativeAssetBalanceAfterCloseLong:   sdk.NewUint(100000000038074),
-							signerExternalAssetBalanceAfterCloseLong: sdk.NewUint(1000000000000000),
-							poolNativeAssetBalanceAfterOpenLong:      sdk.NewUint(110000),
-							poolExternalAssetBalanceAfterOpenLong:    sdk.NewUint(69),
-							poolHealthAfterOpenLong:                  sdk.NewDecWithPrec(916666666666666667, 18),
-							poolNativeAssetBalanceAfterCloseLong:     sdk.NewUint(61926),
-							poolExternalAssetBalanceAfterCloseLong:   sdk.NewUint(100),
-							poolHealthAfterCloseLong:                 sdk.NewDecWithPrec(916666666666666667, 18),
-							mtpCustodyAmount:                         sdk.NewUint(87),
-							mtpHealth:                                sdk.NewDecWithPrec(356640318512226279, 18),
-							openLongErrorString:                      errors.New("not enough received asset tokens to swap"),
+							chunk:                                sdk.NewUint(99),
+							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999983074),
+							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000038074),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(110000),
+							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
+							poolHealthAfterOpen:                  sdk.NewDecWithPrec(916666666666666667, 18),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(61926),
+							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
+							poolHealthAfterClose:                 sdk.NewDecWithPrec(916666666666666667, 18),
+							mtpCustodyAmount:                     sdk.NewUint(87),
+							mtpHealth:                            sdk.NewDecWithPrec(356640318512226279, 18),
+							openErrorString:                      errors.New("not enough received asset tokens to swap"),
 						},
 					},
 				},
@@ -1142,88 +1142,88 @@ func TestKeeper_EC(t *testing.T) {
 				chunkItem := chunkItem
 				name := fmt.Sprintf("%v, X_A=%v, Y_A=%v, delta x=%v%%", ec.name, testItem.X_A, testItem.Y_A, chunkItem.chunk)
 				t.Run(name, func(t *testing.T) {
-					msgOpenLong := types.MsgOpenLong{
+					msgOpen := types.MsgOpen{
 						Signer:           signer.String(),
 						CollateralAsset:  nativeAsset,
 						CollateralAmount: testItem.X_A.Mul(chunkItem.chunk).Quo(sdk.NewUint(100)),
 						BorrowAsset:      ec.externalAsset,
 					}
-					msgCloseLong := types.MsgCloseLong{
+					msgClose := types.MsgClose{
 						Signer:          signer.String(),
 						CollateralAsset: nativeAsset,
 						BorrowAsset:     ec.externalAsset,
 					}
-					_, openLongError := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msgOpenLong)
-					if chunkItem.openLongErrorString != nil {
-						require.EqualError(t, openLongError, chunkItem.openLongErrorString.Error())
+					_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
+					if chunkItem.openErrorString != nil {
+						require.EqualError(t, openError, chunkItem.openErrorString.Error())
 						return
-					} else if chunkItem.openLongError != nil {
-						require.ErrorIs(t, openLongError, chunkItem.openLongError)
+					} else if chunkItem.openError != nil {
+						require.ErrorIs(t, openError, chunkItem.openError)
 						return
 					} else {
-						require.NoError(t, openLongError)
+						require.NoError(t, openError)
 					}
 
-					require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(chunkItem.signerNativeAssetBalanceAfterOpenLong)), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
-					require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterOpenLong)), app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset))
+					require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(chunkItem.signerNativeAssetBalanceAfterOpen)), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+					require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterOpen)), app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset))
 
-					openLongExpectedMTP := types.MTP{
+					openExpectedMTP := types.MTP{
 						Address:          signer.String(),
 						CollateralAsset:  nativeAsset,
-						CollateralAmount: msgOpenLong.CollateralAmount,
-						LiabilitiesP:     msgOpenLong.CollateralAmount,
+						CollateralAmount: msgOpen.CollateralAmount,
+						LiabilitiesP:     msgOpen.CollateralAmount,
 						LiabilitiesI:     sdk.ZeroUint(),
 						CustodyAsset:     ec.externalAsset,
 						CustodyAmount:    chunkItem.mtpCustodyAmount,
 						Leverage:         sdk.NewUint(1),
 						MtpHealth:        chunkItem.mtpHealth,
 					}
-					openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String(), "long")
-					require.Equal(t, openLongExpectedMTP, openLongMTP)
+					openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String(), "long")
+					require.Equal(t, openExpectedMTP, openMTP)
 
-					openLongExpectedPool := clptypes.Pool{
+					openExpectedPool := clptypes.Pool{
 						ExternalAsset:        &externalAsset,
-						NativeAssetBalance:   chunkItem.poolNativeAssetBalanceAfterOpenLong,
-						ExternalAssetBalance: chunkItem.poolExternalAssetBalanceAfterOpenLong,
+						NativeAssetBalance:   chunkItem.poolNativeAssetBalanceAfterOpen,
+						ExternalAssetBalance: chunkItem.poolExternalAssetBalanceAfterOpen,
 						NativeCustody:        sdk.ZeroUint(),
 						ExternalCustody:      chunkItem.mtpCustodyAmount,
-						NativeLiabilities:    msgOpenLong.CollateralAmount,
+						NativeLiabilities:    msgOpen.CollateralAmount,
 						ExternalLiabilities:  sdk.ZeroUint(),
 						PoolUnits:            sdk.ZeroUint(),
-						Health:               chunkItem.poolHealthAfterOpenLong,
+						Health:               chunkItem.poolHealthAfterOpen,
 						InterestRate:         sdk.NewDecWithPrec(1, 1),
 					}
-					openLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
-					require.Equal(t, openLongExpectedPool, openLongPool)
+					openPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
+					require.Equal(t, openExpectedPool, openPool)
 
-					_, closeLongError := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msgCloseLong)
-					if chunkItem.closeLongErrorString != nil {
-						require.EqualError(t, closeLongError, chunkItem.closeLongErrorString.Error())
+					_, closeError := msgServer.Close(sdk.WrapSDKContext(ctx), &msgClose)
+					if chunkItem.closeErrorString != nil {
+						require.EqualError(t, closeError, chunkItem.closeErrorString.Error())
 						return
-					} else if chunkItem.closeLongError != nil {
-						require.ErrorIs(t, closeLongError, chunkItem.closeLongError)
+					} else if chunkItem.closeError != nil {
+						require.ErrorIs(t, closeError, chunkItem.closeError)
 						return
 					} else {
-						require.NoError(t, closeLongError)
+						require.NoError(t, closeError)
 					}
 
-					require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(chunkItem.signerNativeAssetBalanceAfterCloseLong)), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
-					require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterCloseLong)), app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset))
+					require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(chunkItem.signerNativeAssetBalanceAfterClose)), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+					require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterClose)), app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset))
 
-					closeLongExpectedPool := clptypes.Pool{
+					closeExpectedPool := clptypes.Pool{
 						ExternalAsset:        &externalAsset,
-						NativeAssetBalance:   chunkItem.poolNativeAssetBalanceAfterCloseLong,
-						ExternalAssetBalance: chunkItem.poolExternalAssetBalanceAfterCloseLong,
+						NativeAssetBalance:   chunkItem.poolNativeAssetBalanceAfterClose,
+						ExternalAssetBalance: chunkItem.poolExternalAssetBalanceAfterClose,
 						NativeCustody:        sdk.ZeroUint(),
 						ExternalCustody:      sdk.ZeroUint(),
 						NativeLiabilities:    sdk.ZeroUint(),
 						ExternalLiabilities:  sdk.ZeroUint(),
 						PoolUnits:            sdk.ZeroUint(),
-						Health:               chunkItem.poolHealthAfterCloseLong,
+						Health:               chunkItem.poolHealthAfterClose,
 						InterestRate:         sdk.NewDecWithPrec(1, 1),
 					}
-					closeLongPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
-					require.Equal(t, closeLongExpectedPool, closeLongPool)
+					closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
+					require.Equal(t, closeExpectedPool, closePool)
 				})
 			}
 		}

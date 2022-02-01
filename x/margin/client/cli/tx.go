@@ -17,12 +17,12 @@ func GetTxCmd() *cobra.Command {
 		Short: "Margin transactions sub-commands",
 	}
 	cmd.AddCommand(
-		GetOpenLongCmd(),
+		GetOpenCmd(),
 	)
 	return cmd
 }
 
-func GetOpenLongCmd() *cobra.Command {
+func GetOpenCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "open-long",
 		Short: "Open long position",
@@ -47,7 +47,7 @@ func GetOpenLongCmd() *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgOpenLong{
+			msg := types.MsgOpen{
 				Signer:           clientCtx.GetFromAddress().String(),
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: sdk.NewUint(collateralAmount),
@@ -70,7 +70,7 @@ func GetOpenLongCmd() *cobra.Command {
 
 }
 
-func GetCloseLongCmd() *cobra.Command {
+func GetCloseCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "close-long",
 		Short: "Close long position",
@@ -90,7 +90,7 @@ func GetCloseLongCmd() *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgCloseLong{
+			msg := types.MsgClose{
 				Signer:          clientCtx.GetFromAddress().String(),
 				CollateralAsset: collateralAsset,
 				BorrowAsset:     borrowAsset,
@@ -111,7 +111,7 @@ func GetCloseLongCmd() *cobra.Command {
 
 }
 
-func GetForceCloseLongCmd() *cobra.Command {
+func GetForceCloseCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "force-close-long",
 		Short: "Force close long position",
@@ -136,7 +136,7 @@ func GetForceCloseLongCmd() *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgForceCloseLong{
+			msg := types.MsgForceClose{
 				Signer:          clientCtx.GetFromAddress().String(),
 				MtpAddress:      MtpAddress,
 				CollateralAsset: collateralAsset,

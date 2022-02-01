@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgOpenLong{}
-	_ sdk.Msg = &MsgCloseLong{}
-	_ sdk.Msg = &MsgForceCloseLong{}
+	_ sdk.Msg = &MsgOpen{}
+	_ sdk.Msg = &MsgClose{}
+	_ sdk.Msg = &MsgForceClose{}
 )
 
 func Validate(asset string) bool {
@@ -22,7 +22,7 @@ func Validate(asset string) bool {
 	return coin.IsValid()
 }
 
-func (m MsgOpenLong) ValidateBasic() error {
+func (m MsgOpen) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -40,7 +40,7 @@ func (m MsgOpenLong) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgOpenLong) GetSigners() []sdk.AccAddress {
+func (m MsgOpen) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
@@ -48,7 +48,7 @@ func (m MsgOpenLong) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{signer}
 }
 
-func (m MsgCloseLong) ValidateBasic() error {
+func (m MsgClose) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -62,7 +62,7 @@ func (m MsgCloseLong) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgCloseLong) GetSigners() []sdk.AccAddress {
+func (m MsgClose) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
@@ -70,7 +70,7 @@ func (m MsgCloseLong) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{signer}
 }
 
-func (m MsgForceCloseLong) ValidateBasic() error {
+func (m MsgForceClose) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -87,7 +87,7 @@ func (m MsgForceCloseLong) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgForceCloseLong) GetSigners() []sdk.AccAddress {
+func (m MsgForceClose) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

@@ -34,21 +34,21 @@ func TestTypes_ValidateAsset(t *testing.T) {
 	}
 }
 
-func TestTypes_MsgOpenLongValidateBasic(t *testing.T) {
+func TestTypes_MsgOpenValidateBasic(t *testing.T) {
 	validateBasicTests := []struct {
-		name        string
-		msgOpenLong types.MsgOpenLong
-		err         error
-		errString   error
+		name      string
+		msgOpen   types.MsgOpen
+		err       error
+		errString error
 	}{
 		{
-			name:        "no signer",
-			msgOpenLong: types.MsgOpenLong{},
-			err:         sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
+			name:    "no signer",
+			msgOpen: types.MsgOpen{},
+			err:     sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
 			name: "collateral asset invalid",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:          "xxx",
 				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 			},
@@ -56,7 +56,7 @@ func TestTypes_MsgOpenLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "borrow asset invalid",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -65,7 +65,7 @@ func TestTypes_MsgOpenLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "collateral amount is zero",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(0),
@@ -75,7 +75,7 @@ func TestTypes_MsgOpenLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "all valid",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer:           "xxx",
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(100),
@@ -87,7 +87,7 @@ func TestTypes_MsgOpenLongValidateBasic(t *testing.T) {
 	for _, tt := range validateBasicTests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.msgOpenLong.ValidateBasic()
+			got := tt.msgOpen.ValidateBasic()
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -100,34 +100,34 @@ func TestTypes_MsgOpenLongValidateBasic(t *testing.T) {
 	}
 }
 
-func TestTypes_MsgOpenLongGetSigners(t *testing.T) {
+func TestTypes_MsgOpenGetSigners(t *testing.T) {
 	getSignersTests := []struct {
-		name        string
-		msgOpenLong types.MsgOpenLong
-		errString   string
+		name      string
+		msgOpen   types.MsgOpen
+		errString string
 	}{
 		{
-			name:        "no signer",
-			msgOpenLong: types.MsgOpenLong{},
-			errString:   "empty address string is not allowed",
+			name:      "no signer",
+			msgOpen:   types.MsgOpen{},
+			errString: "empty address string is not allowed",
 		},
 		{
 			name: "wrong address",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer: "xxx",
 			},
 			errString: "decoding bech32 failed: invalid bech32 string length 3",
 		},
 		{
 			name: "wrong prefix",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			},
 			errString: "invalid Bech32 prefix; expected cosmos, got sif",
 		},
 		{
 			name: "returned address",
-			msgOpenLong: types.MsgOpenLong{
+			msgOpen: types.MsgOpen{
 				Signer: "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
 			},
 			errString: "",
@@ -138,31 +138,31 @@ func TestTypes_MsgOpenLongGetSigners(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
-					tt.msgOpenLong.GetSigners()
+					tt.msgOpen.GetSigners()
 				})
 			} else {
-				got := tt.msgOpenLong.GetSigners()
-				require.Equal(t, got[0].String(), tt.msgOpenLong.Signer)
+				got := tt.msgOpen.GetSigners()
+				require.Equal(t, got[0].String(), tt.msgOpen.Signer)
 			}
 		})
 	}
 }
 
-func TestTypes_MsgCloseLongValidateBasic(t *testing.T) {
+func TestTypes_MsgCloseValidateBasic(t *testing.T) {
 	validateBasicTests := []struct {
-		name         string
-		msgCloseLong types.MsgCloseLong
-		err          error
-		errString    error
+		name      string
+		msgClose  types.MsgClose
+		err       error
+		errString error
 	}{
 		{
-			name:         "no signer",
-			msgCloseLong: types.MsgCloseLong{},
-			err:          sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
+			name:     "no signer",
+			msgClose: types.MsgClose{},
+			err:      sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
 			name: "collateral asset invalid",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 			},
@@ -170,7 +170,7 @@ func TestTypes_MsgCloseLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "borrow asset invalid",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -179,7 +179,7 @@ func TestTypes_MsgCloseLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "all valid",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
@@ -190,7 +190,7 @@ func TestTypes_MsgCloseLongValidateBasic(t *testing.T) {
 	for _, tt := range validateBasicTests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.msgCloseLong.ValidateBasic()
+			got := tt.msgClose.ValidateBasic()
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -203,34 +203,34 @@ func TestTypes_MsgCloseLongValidateBasic(t *testing.T) {
 	}
 }
 
-func TestTypes_MsgCloseLongGetSigners(t *testing.T) {
+func TestTypes_MsgCloseGetSigners(t *testing.T) {
 	getSignersTests := []struct {
-		name         string
-		msgCloseLong types.MsgCloseLong
-		errString    string
+		name      string
+		msgClose  types.MsgClose
+		errString string
 	}{
 		{
-			name:         "no signer",
-			msgCloseLong: types.MsgCloseLong{},
-			errString:    "empty address string is not allowed",
+			name:      "no signer",
+			msgClose:  types.MsgClose{},
+			errString: "empty address string is not allowed",
 		},
 		{
 			name: "wrong address",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer: "xxx",
 			},
 			errString: "decoding bech32 failed: invalid bech32 string length 3",
 		},
 		{
 			name: "wrong prefix",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			},
 			errString: "invalid Bech32 prefix; expected cosmos, got sif",
 		},
 		{
 			name: "returned address",
-			msgCloseLong: types.MsgCloseLong{
+			msgClose: types.MsgClose{
 				Signer: "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
 			},
 			errString: "",
@@ -241,31 +241,31 @@ func TestTypes_MsgCloseLongGetSigners(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
-					tt.msgCloseLong.GetSigners()
+					tt.msgClose.GetSigners()
 				})
 			} else {
-				got := tt.msgCloseLong.GetSigners()
-				require.Equal(t, got[0].String(), tt.msgCloseLong.Signer)
+				got := tt.msgClose.GetSigners()
+				require.Equal(t, got[0].String(), tt.msgClose.Signer)
 			}
 		})
 	}
 }
 
-func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
+func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 	validateBasicTests := []struct {
-		name              string
-		msgForceCloseLong types.MsgForceCloseLong
-		err               error
-		errString         error
+		name          string
+		msgForceClose types.MsgForceClose
+		err           error
+		errString     error
 	}{
 		{
-			name:              "no signer",
-			msgForceCloseLong: types.MsgForceCloseLong{},
-			err:               sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
+			name:          "no signer",
+			msgForceClose: types.MsgForceClose{},
+			err:           sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
 			name: "no mtp address",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxxx",
 				BorrowAsset:     "xxxx",
@@ -274,7 +274,7 @@ func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "collateral asset invalid",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 			},
@@ -282,7 +282,7 @@ func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "borrow asset invalid",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -291,7 +291,7 @@ func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
 		},
 		{
 			name: "all valid",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer:          "xxx",
 				MtpAddress:      "xxx",
 				CollateralAsset: "xxx",
@@ -303,7 +303,7 @@ func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
 	for _, tt := range validateBasicTests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.msgForceCloseLong.ValidateBasic()
+			got := tt.msgForceClose.ValidateBasic()
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -316,34 +316,34 @@ func TestTypes_MsgForceCloseLongValidateBasic(t *testing.T) {
 	}
 }
 
-func TestTypes_MsgForceCloseLongGetSigners(t *testing.T) {
+func TestTypes_MsgForceCloseGetSigners(t *testing.T) {
 	getSignersTests := []struct {
-		name              string
-		msgForceCloseLong types.MsgForceCloseLong
-		errString         string
+		name          string
+		msgForceClose types.MsgForceClose
+		errString     string
 	}{
 		{
-			name:              "no signer",
-			msgForceCloseLong: types.MsgForceCloseLong{},
-			errString:         "empty address string is not allowed",
+			name:          "no signer",
+			msgForceClose: types.MsgForceClose{},
+			errString:     "empty address string is not allowed",
 		},
 		{
 			name: "wrong address",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer: "xxx",
 			},
 			errString: "decoding bech32 failed: invalid bech32 string length 3",
 		},
 		{
 			name: "wrong prefix",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			},
 			errString: "invalid Bech32 prefix; expected cosmos, got sif",
 		},
 		{
 			name: "returned address",
-			msgForceCloseLong: types.MsgForceCloseLong{
+			msgForceClose: types.MsgForceClose{
 				Signer: "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
 			},
 			errString: "",
@@ -354,11 +354,11 @@ func TestTypes_MsgForceCloseLongGetSigners(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
-					tt.msgForceCloseLong.GetSigners()
+					tt.msgForceClose.GetSigners()
 				})
 			} else {
-				got := tt.msgForceCloseLong.GetSigners()
-				require.Equal(t, got[0].String(), tt.msgForceCloseLong.Signer)
+				got := tt.msgForceClose.GetSigners()
+				require.Equal(t, got[0].String(), tt.msgForceClose.Signer)
 			}
 		})
 	}
