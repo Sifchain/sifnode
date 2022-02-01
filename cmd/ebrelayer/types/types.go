@@ -53,10 +53,9 @@ func (d Event) String() string {
 		ethbridge.EventTypeSignProphecy,
 
 		// TODO: Suspect these can be removed
-		LogLock.String(),                    // TODO: Where is this used?
-		LogBurn.String(),                    // TODO: Where is this used?
-		LogNewProphecyClaim.String(),        // TODO: Where is this used?
-		NewProphecyClaim.String(),           // TODO: Where is this used?
+		"LogLock",                           // TODO: Where is this used?
+		"LogBurn",                           // TODO: Where is this used?
+		"LogNewProphecyClaim",               // TODO: Where is this used?
 		"newProphecyClaim",                  // TODO: Where is this used?
 		"prophecy_completed",                // TODO: Where is this used?
 		"submitProphecyClaimAggregatedSigs", // TODO: Where is this used?
