@@ -29,25 +29,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type MsgOpenLong struct {
+type MsgOpen struct {
 	Signer           string                                  `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	CollateralAsset  string                                  `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
 	CollateralAmount github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,3,opt,name=collateral_amount,json=collateralAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"collateral_amount"`
 	BorrowAsset      string                                  `protobuf:"bytes,4,opt,name=borrow_asset,json=borrowAsset,proto3" json:"borrow_asset,omitempty"`
+	Position         Position                                `protobuf:"varint,5,opt,name=position,proto3,enum=sifnode.margin.v1.Position" json:"position,omitempty"`
 }
 
-func (m *MsgOpenLong) Reset()         { *m = MsgOpenLong{} }
-func (m *MsgOpenLong) String() string { return proto.CompactTextString(m) }
-func (*MsgOpenLong) ProtoMessage()    {}
-func (*MsgOpenLong) Descriptor() ([]byte, []int) {
+func (m *MsgOpen) Reset()         { *m = MsgOpen{} }
+func (m *MsgOpen) String() string { return proto.CompactTextString(m) }
+func (*MsgOpen) ProtoMessage()    {}
+func (*MsgOpen) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4dd3bc05d7e781ea, []int{0}
 }
-func (m *MsgOpenLong) XXX_Unmarshal(b []byte) error {
+func (m *MsgOpen) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgOpenLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgOpen) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgOpenLong.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgOpen.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -57,54 +58,61 @@ func (m *MsgOpenLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-func (m *MsgOpenLong) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgOpenLong.Merge(m, src)
+func (m *MsgOpen) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgOpen.Merge(m, src)
 }
-func (m *MsgOpenLong) XXX_Size() int {
+func (m *MsgOpen) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgOpenLong) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgOpenLong.DiscardUnknown(m)
+func (m *MsgOpen) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgOpen.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgOpenLong proto.InternalMessageInfo
+var xxx_messageInfo_MsgOpen proto.InternalMessageInfo
 
-func (m *MsgOpenLong) GetSigner() string {
+func (m *MsgOpen) GetSigner() string {
 	if m != nil {
 		return m.Signer
 	}
 	return ""
 }
 
-func (m *MsgOpenLong) GetCollateralAsset() string {
+func (m *MsgOpen) GetCollateralAsset() string {
 	if m != nil {
 		return m.CollateralAsset
 	}
 	return ""
 }
 
-func (m *MsgOpenLong) GetBorrowAsset() string {
+func (m *MsgOpen) GetBorrowAsset() string {
 	if m != nil {
 		return m.BorrowAsset
 	}
 	return ""
 }
 
-type MsgOpenLongResponse struct {
+func (m *MsgOpen) GetPosition() Position {
+	if m != nil {
+		return m.Position
+	}
+	return Position_UNSPECIFIED
 }
 
-func (m *MsgOpenLongResponse) Reset()         { *m = MsgOpenLongResponse{} }
-func (m *MsgOpenLongResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgOpenLongResponse) ProtoMessage()    {}
-func (*MsgOpenLongResponse) Descriptor() ([]byte, []int) {
+type MsgOpenResponse struct {
+}
+
+func (m *MsgOpenResponse) Reset()         { *m = MsgOpenResponse{} }
+func (m *MsgOpenResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgOpenResponse) ProtoMessage()    {}
+func (*MsgOpenResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4dd3bc05d7e781ea, []int{1}
 }
-func (m *MsgOpenLongResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgOpenResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgOpenLongResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgOpenResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgOpenLongResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgOpenResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -114,36 +122,37 @@ func (m *MsgOpenLongResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *MsgOpenLongResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgOpenLongResponse.Merge(m, src)
+func (m *MsgOpenResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgOpenResponse.Merge(m, src)
 }
-func (m *MsgOpenLongResponse) XXX_Size() int {
+func (m *MsgOpenResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgOpenLongResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgOpenLongResponse.DiscardUnknown(m)
+func (m *MsgOpenResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgOpenResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgOpenLongResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgOpenResponse proto.InternalMessageInfo
 
-type MsgCloseLong struct {
-	Signer          string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
-	CollateralAsset string `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
-	BorrowAsset     string `protobuf:"bytes,3,opt,name=borrow_asset,json=borrowAsset,proto3" json:"borrow_asset,omitempty"`
+type MsgClose struct {
+	Signer          string   `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	CollateralAsset string   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
+	BorrowAsset     string   `protobuf:"bytes,3,opt,name=borrow_asset,json=borrowAsset,proto3" json:"borrow_asset,omitempty"`
+	Position        Position `protobuf:"varint,5,opt,name=position,proto3,enum=sifnode.margin.v1.Position" json:"position,omitempty"`
 }
 
-func (m *MsgCloseLong) Reset()         { *m = MsgCloseLong{} }
-func (m *MsgCloseLong) String() string { return proto.CompactTextString(m) }
-func (*MsgCloseLong) ProtoMessage()    {}
-func (*MsgCloseLong) Descriptor() ([]byte, []int) {
+func (m *MsgClose) Reset()         { *m = MsgClose{} }
+func (m *MsgClose) String() string { return proto.CompactTextString(m) }
+func (*MsgClose) ProtoMessage()    {}
+func (*MsgClose) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4dd3bc05d7e781ea, []int{2}
 }
-func (m *MsgCloseLong) XXX_Unmarshal(b []byte) error {
+func (m *MsgClose) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgCloseLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgClose) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgCloseLong.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgClose.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -153,54 +162,61 @@ func (m *MsgCloseLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-func (m *MsgCloseLong) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCloseLong.Merge(m, src)
+func (m *MsgClose) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgClose.Merge(m, src)
 }
-func (m *MsgCloseLong) XXX_Size() int {
+func (m *MsgClose) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgCloseLong) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCloseLong.DiscardUnknown(m)
+func (m *MsgClose) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgClose.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgCloseLong proto.InternalMessageInfo
+var xxx_messageInfo_MsgClose proto.InternalMessageInfo
 
-func (m *MsgCloseLong) GetSigner() string {
+func (m *MsgClose) GetSigner() string {
 	if m != nil {
 		return m.Signer
 	}
 	return ""
 }
 
-func (m *MsgCloseLong) GetCollateralAsset() string {
+func (m *MsgClose) GetCollateralAsset() string {
 	if m != nil {
 		return m.CollateralAsset
 	}
 	return ""
 }
 
-func (m *MsgCloseLong) GetBorrowAsset() string {
+func (m *MsgClose) GetBorrowAsset() string {
 	if m != nil {
 		return m.BorrowAsset
 	}
 	return ""
 }
 
-type MsgCloseLongResponse struct {
+func (m *MsgClose) GetPosition() Position {
+	if m != nil {
+		return m.Position
+	}
+	return Position_UNSPECIFIED
 }
 
-func (m *MsgCloseLongResponse) Reset()         { *m = MsgCloseLongResponse{} }
-func (m *MsgCloseLongResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgCloseLongResponse) ProtoMessage()    {}
-func (*MsgCloseLongResponse) Descriptor() ([]byte, []int) {
+type MsgCloseResponse struct {
+}
+
+func (m *MsgCloseResponse) Reset()         { *m = MsgCloseResponse{} }
+func (m *MsgCloseResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCloseResponse) ProtoMessage()    {}
+func (*MsgCloseResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4dd3bc05d7e781ea, []int{3}
 }
-func (m *MsgCloseLongResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgCloseResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgCloseLongResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCloseResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgCloseLongResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCloseResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -210,37 +226,38 @@ func (m *MsgCloseLongResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *MsgCloseLongResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCloseLongResponse.Merge(m, src)
+func (m *MsgCloseResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCloseResponse.Merge(m, src)
 }
-func (m *MsgCloseLongResponse) XXX_Size() int {
+func (m *MsgCloseResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgCloseLongResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCloseLongResponse.DiscardUnknown(m)
+func (m *MsgCloseResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCloseResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgCloseLongResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgCloseResponse proto.InternalMessageInfo
 
-type MsgForceCloseLong struct {
-	Signer          string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
-	MtpAddress      string `protobuf:"bytes,2,opt,name=mtp_address,json=mtpAddress,proto3" json:"mtp_address,omitempty"`
-	CollateralAsset string `protobuf:"bytes,3,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
-	BorrowAsset     string `protobuf:"bytes,4,opt,name=borrow_asset,json=borrowAsset,proto3" json:"borrow_asset,omitempty"`
+type MsgForceClose struct {
+	Signer          string   `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	MtpAddress      string   `protobuf:"bytes,2,opt,name=mtp_address,json=mtpAddress,proto3" json:"mtp_address,omitempty"`
+	CollateralAsset string   `protobuf:"bytes,3,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
+	BorrowAsset     string   `protobuf:"bytes,4,opt,name=borrow_asset,json=borrowAsset,proto3" json:"borrow_asset,omitempty"`
+	Position        Position `protobuf:"varint,5,opt,name=position,proto3,enum=sifnode.margin.v1.Position" json:"position,omitempty"`
 }
 
-func (m *MsgForceCloseLong) Reset()         { *m = MsgForceCloseLong{} }
-func (m *MsgForceCloseLong) String() string { return proto.CompactTextString(m) }
-func (*MsgForceCloseLong) ProtoMessage()    {}
-func (*MsgForceCloseLong) Descriptor() ([]byte, []int) {
+func (m *MsgForceClose) Reset()         { *m = MsgForceClose{} }
+func (m *MsgForceClose) String() string { return proto.CompactTextString(m) }
+func (*MsgForceClose) ProtoMessage()    {}
+func (*MsgForceClose) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4dd3bc05d7e781ea, []int{4}
 }
-func (m *MsgForceCloseLong) XXX_Unmarshal(b []byte) error {
+func (m *MsgForceClose) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgForceCloseLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgForceClose) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgForceCloseLong.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgForceClose.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -250,61 +267,68 @@ func (m *MsgForceCloseLong) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *MsgForceCloseLong) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgForceCloseLong.Merge(m, src)
+func (m *MsgForceClose) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgForceClose.Merge(m, src)
 }
-func (m *MsgForceCloseLong) XXX_Size() int {
+func (m *MsgForceClose) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgForceCloseLong) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgForceCloseLong.DiscardUnknown(m)
+func (m *MsgForceClose) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgForceClose.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgForceCloseLong proto.InternalMessageInfo
+var xxx_messageInfo_MsgForceClose proto.InternalMessageInfo
 
-func (m *MsgForceCloseLong) GetSigner() string {
+func (m *MsgForceClose) GetSigner() string {
 	if m != nil {
 		return m.Signer
 	}
 	return ""
 }
 
-func (m *MsgForceCloseLong) GetMtpAddress() string {
+func (m *MsgForceClose) GetMtpAddress() string {
 	if m != nil {
 		return m.MtpAddress
 	}
 	return ""
 }
 
-func (m *MsgForceCloseLong) GetCollateralAsset() string {
+func (m *MsgForceClose) GetCollateralAsset() string {
 	if m != nil {
 		return m.CollateralAsset
 	}
 	return ""
 }
 
-func (m *MsgForceCloseLong) GetBorrowAsset() string {
+func (m *MsgForceClose) GetBorrowAsset() string {
 	if m != nil {
 		return m.BorrowAsset
 	}
 	return ""
 }
 
-type MsgForceCloseLongResponse struct {
+func (m *MsgForceClose) GetPosition() Position {
+	if m != nil {
+		return m.Position
+	}
+	return Position_UNSPECIFIED
 }
 
-func (m *MsgForceCloseLongResponse) Reset()         { *m = MsgForceCloseLongResponse{} }
-func (m *MsgForceCloseLongResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgForceCloseLongResponse) ProtoMessage()    {}
-func (*MsgForceCloseLongResponse) Descriptor() ([]byte, []int) {
+type MsgForceCloseResponse struct {
+}
+
+func (m *MsgForceCloseResponse) Reset()         { *m = MsgForceCloseResponse{} }
+func (m *MsgForceCloseResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgForceCloseResponse) ProtoMessage()    {}
+func (*MsgForceCloseResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4dd3bc05d7e781ea, []int{5}
 }
-func (m *MsgForceCloseLongResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgForceCloseResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgForceCloseLongResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgForceCloseResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgForceCloseLongResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgForceCloseResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -314,59 +338,61 @@ func (m *MsgForceCloseLongResponse) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *MsgForceCloseLongResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgForceCloseLongResponse.Merge(m, src)
+func (m *MsgForceCloseResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgForceCloseResponse.Merge(m, src)
 }
-func (m *MsgForceCloseLongResponse) XXX_Size() int {
+func (m *MsgForceCloseResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgForceCloseLongResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgForceCloseLongResponse.DiscardUnknown(m)
+func (m *MsgForceCloseResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgForceCloseResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgForceCloseLongResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgForceCloseResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgOpenLong)(nil), "sifnode.margin.v1.MsgOpenLong")
-	proto.RegisterType((*MsgOpenLongResponse)(nil), "sifnode.margin.v1.MsgOpenLongResponse")
-	proto.RegisterType((*MsgCloseLong)(nil), "sifnode.margin.v1.MsgCloseLong")
-	proto.RegisterType((*MsgCloseLongResponse)(nil), "sifnode.margin.v1.MsgCloseLongResponse")
-	proto.RegisterType((*MsgForceCloseLong)(nil), "sifnode.margin.v1.MsgForceCloseLong")
-	proto.RegisterType((*MsgForceCloseLongResponse)(nil), "sifnode.margin.v1.MsgForceCloseLongResponse")
+	proto.RegisterType((*MsgOpen)(nil), "sifnode.margin.v1.MsgOpen")
+	proto.RegisterType((*MsgOpenResponse)(nil), "sifnode.margin.v1.MsgOpenResponse")
+	proto.RegisterType((*MsgClose)(nil), "sifnode.margin.v1.MsgClose")
+	proto.RegisterType((*MsgCloseResponse)(nil), "sifnode.margin.v1.MsgCloseResponse")
+	proto.RegisterType((*MsgForceClose)(nil), "sifnode.margin.v1.MsgForceClose")
+	proto.RegisterType((*MsgForceCloseResponse)(nil), "sifnode.margin.v1.MsgForceCloseResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/margin/v1/tx.proto", fileDescriptor_4dd3bc05d7e781ea) }
 
 var fileDescriptor_4dd3bc05d7e781ea = []byte{
-	// 442 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x93, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x86, 0xed, 0x1a, 0x55, 0x74, 0x52, 0x01, 0x31, 0xa5, 0x0a, 0x46, 0xd8, 0x10, 0x21, 0x0a,
-	0x08, 0x6c, 0x15, 0x9e, 0x20, 0x05, 0x71, 0xc2, 0x42, 0x0a, 0x20, 0x24, 0x84, 0x54, 0x39, 0xf6,
-	0x66, 0x6b, 0x61, 0xef, 0x58, 0x3b, 0xdb, 0x52, 0xde, 0x82, 0x33, 0xe2, 0x81, 0x7a, 0x0c, 0x37,
-	0xc4, 0x21, 0x42, 0xc9, 0x8b, 0xa0, 0xd8, 0x8e, 0x63, 0x12, 0x8b, 0xe4, 0xc0, 0xc9, 0xf6, 0xfc,
-	0xff, 0xce, 0x7c, 0x3b, 0x9e, 0x01, 0x8b, 0xe2, 0xa1, 0xc0, 0x88, 0x79, 0x69, 0x20, 0x79, 0x2c,
-	0xbc, 0xb3, 0x43, 0x4f, 0x9d, 0xbb, 0x99, 0x44, 0x85, 0x66, 0xbb, 0xd4, 0xdc, 0x42, 0x73, 0xcf,
-	0x0e, 0xad, 0x3d, 0x8e, 0x1c, 0x73, 0xd5, 0x9b, 0xbd, 0x15, 0x46, 0xeb, 0x76, 0x43, 0x92, 0x2f,
-	0x19, 0xa3, 0x42, 0xee, 0xfe, 0xd0, 0xa1, 0xe5, 0x13, 0x7f, 0x9d, 0x31, 0xf1, 0x0a, 0x05, 0x37,
-	0xf7, 0x61, 0x9b, 0x62, 0x2e, 0x98, 0xec, 0xe8, 0x77, 0xf4, 0x07, 0x3b, 0xfd, 0xf2, 0xcb, 0x7c,
-	0x08, 0xd7, 0x42, 0x4c, 0x92, 0x40, 0x31, 0x19, 0x24, 0xc7, 0x01, 0x11, 0x53, 0x9d, 0xad, 0xdc,
-	0x71, 0x75, 0x11, 0xef, 0xcd, 0xc2, 0xe6, 0x47, 0x68, 0xd7, 0xad, 0x29, 0x9e, 0x0a, 0xd5, 0x31,
-	0x66, 0xde, 0x23, 0xef, 0x62, 0xec, 0x68, 0xbf, 0xc6, 0xce, 0x01, 0x8f, 0xd5, 0xc9, 0xe9, 0xc0,
-	0x0d, 0x31, 0xf5, 0x42, 0xa4, 0x14, 0xa9, 0x7c, 0x3c, 0xa1, 0xe8, 0x53, 0xc9, 0xf7, 0x2e, 0x16,
-	0xaa, 0x5f, 0x2b, 0xda, 0xcb, 0x13, 0x99, 0x77, 0x61, 0x77, 0x80, 0x52, 0xe2, 0xe7, 0x12, 0xe2,
-	0x52, 0x0e, 0xd1, 0x2a, 0x62, 0x39, 0x40, 0xf7, 0x06, 0x5c, 0xaf, 0x5d, 0xa9, 0xcf, 0x28, 0x43,
-	0x41, 0xac, 0xab, 0x60, 0xd7, 0x27, 0xfe, 0x3c, 0x41, 0x62, 0xff, 0xeb, 0xaa, 0xcb, 0x30, 0xc6,
-	0x2a, 0xcc, 0x3e, 0xec, 0xd5, 0xab, 0x56, 0x34, 0xdf, 0x74, 0x68, 0xfb, 0xc4, 0x5f, 0xa2, 0x0c,
-	0xd9, 0x7a, 0x26, 0x07, 0x5a, 0xa9, 0xca, 0x8e, 0x83, 0x28, 0x92, 0x8c, 0xa8, 0xc4, 0x81, 0x54,
-	0x65, 0xbd, 0x22, 0xd2, 0x08, 0x6d, 0x6c, 0x06, 0xdd, 0xd0, 0xc1, 0x5b, 0x70, 0x73, 0x85, 0x6d,
-	0x4e, 0xfe, 0xf4, 0xfb, 0x16, 0x18, 0x3e, 0x71, 0xf3, 0x2d, 0x5c, 0xae, 0xc6, 0xc6, 0x76, 0x57,
-	0xe6, 0xd1, 0xad, 0xfd, 0x03, 0xeb, 0xfe, 0xbf, 0xf5, 0xaa, 0x2b, 0x9a, 0xf9, 0x1e, 0x76, 0x16,
-	0xed, 0x70, 0x9a, 0x8f, 0x55, 0x06, 0xeb, 0x60, 0x8d, 0xa1, 0x96, 0x78, 0x08, 0x57, 0x96, 0x9a,
-	0x7d, 0xaf, 0xf9, 0xf0, 0xdf, 0x2e, 0xeb, 0xf1, 0x26, 0xae, 0x45, 0x9d, 0xa3, 0x17, 0x17, 0x13,
-	0x5b, 0x1f, 0x4d, 0x6c, 0xfd, 0xf7, 0xc4, 0xd6, 0xbf, 0x4e, 0x6d, 0x6d, 0x34, 0xb5, 0xb5, 0x9f,
-	0x53, 0x5b, 0xfb, 0xf0, 0xa8, 0x36, 0xf5, 0x6f, 0xe2, 0x61, 0x78, 0x12, 0xc4, 0xc2, 0x9b, 0xaf,
-	0xe7, 0xf9, 0x7c, 0x41, 0xf3, 0xe9, 0x1f, 0x6c, 0xe7, 0xeb, 0xf9, 0xec, 0x4f, 0x00, 0x00, 0x00,
-	0xff, 0xff, 0x78, 0xaa, 0xf5, 0x52, 0x04, 0x04, 0x00, 0x00,
+	// 467 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0xf5, 0x36, 0x6d, 0x29, 0x53, 0xa0, 0x8d, 0xc5, 0x47, 0xe4, 0x0a, 0x27, 0x84, 0x03, 0x01,
+	0x09, 0x5b, 0x2d, 0x07, 0xce, 0x29, 0x08, 0x21, 0xa1, 0x08, 0x14, 0xc4, 0xa5, 0x42, 0xaa, 0x1c,
+	0x67, 0xbb, 0x5d, 0x11, 0xef, 0x58, 0x9e, 0x6d, 0x29, 0x7f, 0x80, 0x33, 0x7f, 0x83, 0x7f, 0xd2,
+	0x1b, 0x3d, 0x22, 0x0e, 0x15, 0x4a, 0xfe, 0x04, 0x47, 0x94, 0xf5, 0x3a, 0x31, 0x60, 0x0a, 0x87,
+	0x9c, 0x6c, 0xcf, 0x7b, 0x1e, 0xbf, 0xf7, 0xc6, 0x3b, 0xe0, 0x91, 0x3c, 0x50, 0x38, 0xe4, 0x61,
+	0x12, 0x65, 0x42, 0xaa, 0xf0, 0x78, 0x3b, 0xd4, 0x27, 0x41, 0x9a, 0xa1, 0x46, 0xb7, 0x6e, 0xb1,
+	0x20, 0xc7, 0x82, 0xe3, 0x6d, 0xef, 0xba, 0x40, 0x81, 0x06, 0x0d, 0xa7, 0x77, 0x39, 0xd1, 0xbb,
+	0x5d, 0xd1, 0xe4, 0x43, 0xca, 0x29, 0x87, 0xdb, 0x1f, 0x97, 0xe0, 0x52, 0x8f, 0xc4, 0xcb, 0x94,
+	0x2b, 0xf7, 0x26, 0xac, 0x92, 0x14, 0x8a, 0x67, 0x0d, 0xd6, 0x62, 0x9d, 0xcb, 0x7d, 0xfb, 0xe4,
+	0xde, 0x87, 0xcd, 0x18, 0x47, 0xa3, 0x48, 0xf3, 0x2c, 0x1a, 0xed, 0x47, 0x44, 0x5c, 0x37, 0x96,
+	0x0c, 0x63, 0x63, 0x5e, 0xef, 0x4e, 0xcb, 0xee, 0x5b, 0xa8, 0x97, 0xa9, 0x09, 0x1e, 0x29, 0xdd,
+	0xa8, 0x4d, 0xb9, 0xbb, 0xe1, 0xe9, 0x79, 0xd3, 0xf9, 0x76, 0xde, 0xbc, 0x27, 0xa4, 0x3e, 0x3c,
+	0x1a, 0x04, 0x31, 0x26, 0x61, 0x8c, 0x94, 0x20, 0xd9, 0xcb, 0x43, 0x1a, 0xbe, 0xb3, 0xda, 0xde,
+	0x48, 0xa5, 0xfb, 0xa5, 0x8f, 0x76, 0x4d, 0x23, 0xf7, 0x0e, 0x5c, 0x19, 0x60, 0x96, 0xe1, 0x7b,
+	0x2b, 0x62, 0xd9, 0x88, 0x58, 0xcf, 0x6b, 0xb9, 0x80, 0xc7, 0xb0, 0x96, 0x22, 0x49, 0x2d, 0x51,
+	0x35, 0x56, 0x5a, 0xac, 0x73, 0x6d, 0x67, 0x2b, 0xf8, 0x23, 0xaa, 0xe0, 0x95, 0xa5, 0xf4, 0x67,
+	0xe4, 0x76, 0x1d, 0x36, 0x6c, 0x0e, 0x7d, 0x4e, 0x29, 0x2a, 0xe2, 0xed, 0xcf, 0x0c, 0xd6, 0x7a,
+	0x24, 0x9e, 0x8c, 0x90, 0xf8, 0x22, 0xc2, 0xf9, 0x5d, 0x7e, 0x6d, 0x81, 0xf2, 0x5d, 0xd8, 0x2c,
+	0xa4, 0xce, 0xf4, 0x7f, 0x61, 0x70, 0xb5, 0x47, 0xe2, 0x19, 0x66, 0x31, 0xbf, 0xd8, 0x44, 0x13,
+	0xd6, 0x13, 0x9d, 0xee, 0x47, 0xc3, 0x61, 0xc6, 0x89, 0xac, 0x7e, 0x48, 0x74, 0xda, 0xcd, 0x2b,
+	0x95, 0x2e, 0x6b, 0xff, 0xe7, 0x72, 0x91, 0x43, 0xba, 0x05, 0x37, 0x7e, 0x31, 0x54, 0x58, 0xdd,
+	0xf9, 0xc1, 0xa0, 0xd6, 0x23, 0xe1, 0x3e, 0x87, 0x65, 0xf3, 0x2b, 0x7b, 0x15, 0xfd, 0xec, 0x78,
+	0xbd, 0xf6, 0xdf, 0xb1, 0x59, 0x74, 0x8e, 0xfb, 0x02, 0x56, 0xf2, 0xcc, 0xb6, 0xaa, 0xe9, 0x06,
+	0xf4, 0xee, 0x5e, 0x00, 0x96, 0x9a, 0xed, 0x01, 0x94, 0xa6, 0xd0, 0xaa, 0x7e, 0x69, 0xce, 0xf0,
+	0x3a, 0xff, 0x62, 0xcc, 0x7b, 0xef, 0x3e, 0x3d, 0x1d, 0xfb, 0xec, 0x6c, 0xec, 0xb3, 0xef, 0x63,
+	0x9f, 0x7d, 0x9a, 0xf8, 0xce, 0xd9, 0xc4, 0x77, 0xbe, 0x4e, 0x7c, 0x67, 0xef, 0x41, 0xe9, 0xa4,
+	0xbd, 0x96, 0x07, 0xf1, 0x61, 0x24, 0x55, 0x58, 0xac, 0x83, 0x93, 0x62, 0x21, 0x98, 0x13, 0x37,
+	0x58, 0x35, 0xeb, 0xe0, 0xd1, 0xcf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xf1, 0x5b, 0x95, 0x3f, 0x74,
+	0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -381,9 +407,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	OpenLong(ctx context.Context, in *MsgOpenLong, opts ...grpc.CallOption) (*MsgOpenLongResponse, error)
-	CloseLong(ctx context.Context, in *MsgCloseLong, opts ...grpc.CallOption) (*MsgCloseLongResponse, error)
-	ForceCloseLong(ctx context.Context, in *MsgForceCloseLong, opts ...grpc.CallOption) (*MsgForceCloseLongResponse, error)
+	Open(ctx context.Context, in *MsgOpen, opts ...grpc.CallOption) (*MsgOpenResponse, error)
+	Close(ctx context.Context, in *MsgClose, opts ...grpc.CallOption) (*MsgCloseResponse, error)
+	ForceClose(ctx context.Context, in *MsgForceClose, opts ...grpc.CallOption) (*MsgForceCloseResponse, error)
 }
 
 type msgClient struct {
@@ -394,27 +420,27 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) OpenLong(ctx context.Context, in *MsgOpenLong, opts ...grpc.CallOption) (*MsgOpenLongResponse, error) {
-	out := new(MsgOpenLongResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.margin.v1.Msg/OpenLong", in, out, opts...)
+func (c *msgClient) Open(ctx context.Context, in *MsgOpen, opts ...grpc.CallOption) (*MsgOpenResponse, error) {
+	out := new(MsgOpenResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.margin.v1.Msg/Open", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) CloseLong(ctx context.Context, in *MsgCloseLong, opts ...grpc.CallOption) (*MsgCloseLongResponse, error) {
-	out := new(MsgCloseLongResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.margin.v1.Msg/CloseLong", in, out, opts...)
+func (c *msgClient) Close(ctx context.Context, in *MsgClose, opts ...grpc.CallOption) (*MsgCloseResponse, error) {
+	out := new(MsgCloseResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.margin.v1.Msg/Close", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) ForceCloseLong(ctx context.Context, in *MsgForceCloseLong, opts ...grpc.CallOption) (*MsgForceCloseLongResponse, error) {
-	out := new(MsgForceCloseLongResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.margin.v1.Msg/ForceCloseLong", in, out, opts...)
+func (c *msgClient) ForceClose(ctx context.Context, in *MsgForceClose, opts ...grpc.CallOption) (*MsgForceCloseResponse, error) {
+	out := new(MsgForceCloseResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.margin.v1.Msg/ForceClose", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -423,79 +449,79 @@ func (c *msgClient) ForceCloseLong(ctx context.Context, in *MsgForceCloseLong, o
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	OpenLong(context.Context, *MsgOpenLong) (*MsgOpenLongResponse, error)
-	CloseLong(context.Context, *MsgCloseLong) (*MsgCloseLongResponse, error)
-	ForceCloseLong(context.Context, *MsgForceCloseLong) (*MsgForceCloseLongResponse, error)
+	Open(context.Context, *MsgOpen) (*MsgOpenResponse, error)
+	Close(context.Context, *MsgClose) (*MsgCloseResponse, error)
+	ForceClose(context.Context, *MsgForceClose) (*MsgForceCloseResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) OpenLong(ctx context.Context, req *MsgOpenLong) (*MsgOpenLongResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method OpenLong not implemented")
+func (*UnimplementedMsgServer) Open(ctx context.Context, req *MsgOpen) (*MsgOpenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Open not implemented")
 }
-func (*UnimplementedMsgServer) CloseLong(ctx context.Context, req *MsgCloseLong) (*MsgCloseLongResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CloseLong not implemented")
+func (*UnimplementedMsgServer) Close(ctx context.Context, req *MsgClose) (*MsgCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Close not implemented")
 }
-func (*UnimplementedMsgServer) ForceCloseLong(ctx context.Context, req *MsgForceCloseLong) (*MsgForceCloseLongResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ForceCloseLong not implemented")
+func (*UnimplementedMsgServer) ForceClose(ctx context.Context, req *MsgForceClose) (*MsgForceCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForceClose not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _Msg_OpenLong_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgOpenLong)
+func _Msg_Open_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgOpen)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).OpenLong(ctx, in)
+		return srv.(MsgServer).Open(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.margin.v1.Msg/OpenLong",
+		FullMethod: "/sifnode.margin.v1.Msg/Open",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).OpenLong(ctx, req.(*MsgOpenLong))
+		return srv.(MsgServer).Open(ctx, req.(*MsgOpen))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CloseLong_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCloseLong)
+func _Msg_Close_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgClose)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).CloseLong(ctx, in)
+		return srv.(MsgServer).Close(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.margin.v1.Msg/CloseLong",
+		FullMethod: "/sifnode.margin.v1.Msg/Close",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CloseLong(ctx, req.(*MsgCloseLong))
+		return srv.(MsgServer).Close(ctx, req.(*MsgClose))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_ForceCloseLong_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgForceCloseLong)
+func _Msg_ForceClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgForceClose)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).ForceCloseLong(ctx, in)
+		return srv.(MsgServer).ForceClose(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.margin.v1.Msg/ForceCloseLong",
+		FullMethod: "/sifnode.margin.v1.Msg/ForceClose",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ForceCloseLong(ctx, req.(*MsgForceCloseLong))
+		return srv.(MsgServer).ForceClose(ctx, req.(*MsgForceClose))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -505,23 +531,23 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "OpenLong",
-			Handler:    _Msg_OpenLong_Handler,
+			MethodName: "Open",
+			Handler:    _Msg_Open_Handler,
 		},
 		{
-			MethodName: "CloseLong",
-			Handler:    _Msg_CloseLong_Handler,
+			MethodName: "Close",
+			Handler:    _Msg_Close_Handler,
 		},
 		{
-			MethodName: "ForceCloseLong",
-			Handler:    _Msg_ForceCloseLong_Handler,
+			MethodName: "ForceClose",
+			Handler:    _Msg_ForceClose_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "sifnode/margin/v1/tx.proto",
 }
 
-func (m *MsgOpenLong) Marshal() (dAtA []byte, err error) {
+func (m *MsgOpen) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -531,16 +557,21 @@ func (m *MsgOpenLong) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgOpenLong) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgOpen) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgOpenLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgOpen) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.Position != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Position))
+		i--
+		dAtA[i] = 0x28
+	}
 	if len(m.BorrowAsset) > 0 {
 		i -= len(m.BorrowAsset)
 		copy(dAtA[i:], m.BorrowAsset)
@@ -575,7 +606,7 @@ func (m *MsgOpenLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgOpenLongResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgOpenResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -585,12 +616,12 @@ func (m *MsgOpenLongResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgOpenLongResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgOpenResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgOpenLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgOpenResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -598,7 +629,7 @@ func (m *MsgOpenLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCloseLong) Marshal() (dAtA []byte, err error) {
+func (m *MsgClose) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -608,16 +639,21 @@ func (m *MsgCloseLong) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgCloseLong) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgClose) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgCloseLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgClose) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.Position != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Position))
+		i--
+		dAtA[i] = 0x28
+	}
 	if len(m.BorrowAsset) > 0 {
 		i -= len(m.BorrowAsset)
 		copy(dAtA[i:], m.BorrowAsset)
@@ -642,7 +678,7 @@ func (m *MsgCloseLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCloseLongResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgCloseResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -652,12 +688,12 @@ func (m *MsgCloseLongResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgCloseLongResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCloseResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgCloseLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCloseResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -665,7 +701,7 @@ func (m *MsgCloseLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgForceCloseLong) Marshal() (dAtA []byte, err error) {
+func (m *MsgForceClose) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -675,16 +711,21 @@ func (m *MsgForceCloseLong) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgForceCloseLong) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgForceClose) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgForceCloseLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgForceClose) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.Position != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Position))
+		i--
+		dAtA[i] = 0x28
+	}
 	if len(m.BorrowAsset) > 0 {
 		i -= len(m.BorrowAsset)
 		copy(dAtA[i:], m.BorrowAsset)
@@ -716,7 +757,7 @@ func (m *MsgForceCloseLong) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgForceCloseLongResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgForceCloseResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -726,12 +767,12 @@ func (m *MsgForceCloseLongResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgForceCloseLongResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgForceCloseResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgForceCloseLongResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgForceCloseResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -750,7 +791,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgOpenLong) Size() (n int) {
+func (m *MsgOpen) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -770,10 +811,13 @@ func (m *MsgOpenLong) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	if m.Position != 0 {
+		n += 1 + sovTx(uint64(m.Position))
+	}
 	return n
 }
 
-func (m *MsgOpenLongResponse) Size() (n int) {
+func (m *MsgOpenResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -782,7 +826,7 @@ func (m *MsgOpenLongResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgCloseLong) Size() (n int) {
+func (m *MsgClose) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -800,10 +844,13 @@ func (m *MsgCloseLong) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	if m.Position != 0 {
+		n += 1 + sovTx(uint64(m.Position))
+	}
 	return n
 }
 
-func (m *MsgCloseLongResponse) Size() (n int) {
+func (m *MsgCloseResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -812,7 +859,7 @@ func (m *MsgCloseLongResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgForceCloseLong) Size() (n int) {
+func (m *MsgForceClose) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -834,10 +881,13 @@ func (m *MsgForceCloseLong) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	if m.Position != 0 {
+		n += 1 + sovTx(uint64(m.Position))
+	}
 	return n
 }
 
-func (m *MsgForceCloseLongResponse) Size() (n int) {
+func (m *MsgForceCloseResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -852,7 +902,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgOpenLong) Unmarshal(dAtA []byte) error {
+func (m *MsgOpen) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -875,10 +925,10 @@ func (m *MsgOpenLong) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgOpenLong: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgOpen: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgOpenLong: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgOpen: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1011,6 +1061,25 @@ func (m *MsgOpenLong) Unmarshal(dAtA []byte) error {
 			}
 			m.BorrowAsset = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Position", wireType)
+			}
+			m.Position = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Position |= Position(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1032,7 +1101,7 @@ func (m *MsgOpenLong) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgOpenLongResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgOpenResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1055,10 +1124,10 @@ func (m *MsgOpenLongResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgOpenLongResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgOpenResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgOpenLongResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgOpenResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -1082,7 +1151,7 @@ func (m *MsgOpenLongResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgCloseLong) Unmarshal(dAtA []byte) error {
+func (m *MsgClose) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1105,10 +1174,10 @@ func (m *MsgCloseLong) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCloseLong: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgClose: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCloseLong: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgClose: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1207,6 +1276,25 @@ func (m *MsgCloseLong) Unmarshal(dAtA []byte) error {
 			}
 			m.BorrowAsset = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Position", wireType)
+			}
+			m.Position = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Position |= Position(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1228,7 +1316,7 @@ func (m *MsgCloseLong) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgCloseLongResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgCloseResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1251,10 +1339,10 @@ func (m *MsgCloseLongResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCloseLongResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCloseResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCloseLongResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCloseResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -1278,7 +1366,7 @@ func (m *MsgCloseLongResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgForceCloseLong) Unmarshal(dAtA []byte) error {
+func (m *MsgForceClose) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1301,10 +1389,10 @@ func (m *MsgForceCloseLong) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgForceCloseLong: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgForceClose: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgForceCloseLong: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgForceClose: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1435,6 +1523,25 @@ func (m *MsgForceCloseLong) Unmarshal(dAtA []byte) error {
 			}
 			m.BorrowAsset = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Position", wireType)
+			}
+			m.Position = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Position |= Position(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1456,7 +1563,7 @@ func (m *MsgForceCloseLong) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgForceCloseLongResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgForceCloseResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1479,10 +1586,10 @@ func (m *MsgForceCloseLongResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgForceCloseLongResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgForceCloseResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgForceCloseLongResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgForceCloseResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

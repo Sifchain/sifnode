@@ -41,7 +41,7 @@ func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
 	return nil
 }
 
-func (k Keeper) GetMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress, position string) (types.MTP, error) {
+func (k Keeper) GetMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string, position types.Position) (types.MTP, error) {
 	var mtp types.MTP
 	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress, position)
 	store := ctx.KVStore(k.storeKey)
@@ -116,7 +116,7 @@ func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*ty
 	return mtps
 }
 
-func (k Keeper) DestroyMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress, position string) error {
+func (k Keeper) DestroyMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string, position types.Position) error {
 	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress, position)
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(key) {
@@ -404,8 +404,8 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	} else {
-		pool.ExternalAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
-		pool.ExternalLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
+		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.LiabilitiesP)
 	}
 
 	err = k.DestroyMTP(ctx, mtp.CollateralAsset, mtp.CustodyAsset, mtp.Address, mtp.Position)

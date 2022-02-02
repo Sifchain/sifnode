@@ -18,7 +18,7 @@ const (
 	RouterKey = ModuleName
 )
 
-func NewMTP(signer string, collateralAsset string, borrowAsset string, position string) *MTP {
+func NewMTP(signer string, collateralAsset string, borrowAsset string, position Position) *MTP {
 	return &MTP{
 		Address:          signer,
 		CollateralAsset:  collateralAsset,
@@ -40,10 +40,24 @@ func (mtp MTP) Validate() error {
 	if mtp.Address == "" {
 		return sdkerrors.Wrap(ErrMTPInvalid, "no address specified")
 	}
+	if mtp.Position == Position_UNSPECIFIED {
+		return sdkerrors.Wrap(ErrMTPInvalid, "no position specified")
+	}
 
 	return nil
 }
 
 func GetSettlementAsset() string {
 	return "rowan"
+}
+
+func GetPositionFromString(s string) Position {
+	switch s {
+	case "long":
+		return Position_LONG
+	case "short":
+		return Position_SHORT
+	default:
+		return Position_UNSPECIFIED
+	}
 }
