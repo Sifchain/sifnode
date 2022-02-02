@@ -22,6 +22,17 @@ func Validate(asset string) bool {
 	return coin.IsValid()
 }
 
+func IsValidPosition(position Position) bool {
+	switch position {
+	case Position_LONG:
+		return true
+	case Position_SHORT:
+		return true
+	default:
+		return false
+	}
+}
+
 func (m MsgOpen) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
@@ -37,6 +48,12 @@ func (m MsgOpen) ValidateBasic() error {
 	if m.CollateralAmount.IsZero() {
 		return sdkerrors.Wrap(clptypes.ErrInValidAmount, m.CollateralAmount.String())
 	}
+
+	ok := IsValidPosition(m.Position)
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
+	}
+
 	return nil
 }
 
@@ -57,6 +74,10 @@ func (m MsgClose) ValidateBasic() error {
 	}
 	if !Validate(m.BorrowAsset) {
 		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
+	}
+	ok := IsValidPosition(m.Position)
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
 	}
 
 	return nil
@@ -82,6 +103,10 @@ func (m MsgForceClose) ValidateBasic() error {
 	}
 	if !Validate(m.BorrowAsset) {
 		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
+	}
+	ok := IsValidPosition(m.Position)
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
 	}
 
 	return nil
