@@ -224,12 +224,12 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 	bytes, _ := arguments.Pack(
 		[]byte(cosmosSender),
 		big.NewInt(int64(sequence)),
-		// gethCommon.HexToAddress(ethereumReceiver),
-		// gethCommon.HexToAddress(tokenAddress),
+		gethCommon.HexToAddress(ethereumReceiver),
+		gethCommon.HexToAddress(tokenAddress),
 		// big.NewInt(amount.Int64()),
 		// doublePeggy,
 		// big.NewInt(int64(globalNonce)),
-		// big.NewInt(int64(networkDescriptor)),
+		big.NewInt(int64(networkDescriptor)),
 	)
 
 	hashBytes := crypto.Keccak256(bytes)

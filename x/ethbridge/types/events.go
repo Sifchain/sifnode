@@ -4,8 +4,8 @@ package types
 var (
 	EventTypeCreateClaim              = "create_claim"
 	EventTypeProphecyStatus           = "prophecy_status"
-	EventTypeBurn                     = "burn"
-	EventTypeLock                     = "lock"
+	EventTypeBurn                     = "sif_burn"
+	EventTypeLock                     = "sif_lock"
 	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
 	EventTypeSetCrossChainFee         = "set_cross_chain_fee"
 	EventTypeSignProphecy             = "sign_prophecy"
