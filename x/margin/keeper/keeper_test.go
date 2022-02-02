@@ -35,9 +35,15 @@ func TestKeeper_SetMTP(t *testing.T) {
 		err := marginKeeper.SetMTP(ctx, &mtp)
 		require.EqualError(t, err, "no address specified: mtp invalid")
 	})
-	t.Run("define asset and address", func(t *testing.T) {
+	t.Run("define asset and address but no position", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
 		mtp := types.MTP{CollateralAsset: "xxx", Address: "xxx"}
+		err := marginKeeper.SetMTP(ctx, &mtp)
+		require.EqualError(t, err, "no position specified: mtp invalid")
+	})
+	t.Run("define asset and address", func(t *testing.T) {
+		ctx, _, marginKeeper := initKeeper(t)
+		mtp := types.MTP{CollateralAsset: "xxx", Address: "xxx", Position: types.Position_LONG}
 		err := marginKeeper.SetMTP(ctx, &mtp)
 		require.NoError(t, err)
 	})
@@ -932,7 +938,9 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 		CustodyAsset:     custodyAsset,
 		CustodyAmount:    sdk.NewUint(1000),
 		Leverage:         sdk.NewUint(10),
-		MtpHealth:        sdk.NewDec(20)}
+		MtpHealth:        sdk.NewDec(20),
+		Position:         position}
+
 	store.Set(key, types.ModuleCdc.MustMarshal(&newMTP))
 
 	return newMTP

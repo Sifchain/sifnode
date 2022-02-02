@@ -40,6 +40,9 @@ func (mtp MTP) Validate() error {
 	if mtp.Address == "" {
 		return sdkerrors.Wrap(ErrMTPInvalid, "no address specified")
 	}
+	if mtp.Position == Position_UNSPECIFIED {
+		return sdkerrors.Wrap(ErrMTPInvalid, "no position specified")
+	}
 
 	return nil
 }
