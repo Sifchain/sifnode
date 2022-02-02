@@ -9,12 +9,12 @@ import (
 )
 
 func TestTypes_NewMTP(t *testing.T) {
-	got := types.NewMTP("signer", "collateralAsset", "borrowAsset", "long")
+	got := types.NewMTP("signer", "collateralAsset", "borrowAsset", types.Position_LONG)
 
 	require.Equal(t, got.Address, "signer")
 	require.Equal(t, got.CollateralAsset, "collateralAsset")
 	require.Equal(t, got.CustodyAsset, "borrowAsset")
-	require.Equal(t, got.CustodyAsset, "long")
+	require.Equal(t, got.Position, types.Position_LONG)
 }
 
 func TestTypes_MtpValidate(t *testing.T) {

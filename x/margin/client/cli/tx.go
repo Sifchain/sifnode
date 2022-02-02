@@ -53,13 +53,14 @@ func GetOpenCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			positionEnum := types.GetPositionFromString(position)
 
 			msg := types.MsgOpen{
 				Signer:           clientCtx.GetFromAddress().String(),
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: sdk.NewUint(collateralAmount),
 				BorrowAsset:      borrowAsset,
-				Position:         position,
+				Position:         positionEnum,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -103,12 +104,13 @@ func GetCloseCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			positionEnum := types.GetPositionFromString(position)
 
 			msg := types.MsgClose{
 				Signer:          clientCtx.GetFromAddress().String(),
 				CollateralAsset: collateralAsset,
 				BorrowAsset:     borrowAsset,
-				Position:        position,
+				Position:        positionEnum,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -156,13 +158,14 @@ func GetForceCloseCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			positionEnum := types.GetPositionFromString(position)
 
 			msg := types.MsgForceClose{
 				Signer:          clientCtx.GetFromAddress().String(),
 				MtpAddress:      MtpAddress,
 				CollateralAsset: collateralAsset,
 				BorrowAsset:     borrowAsset,
-				Position:        position,
+				Position:        positionEnum,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)

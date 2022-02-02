@@ -18,7 +18,7 @@ const (
 	RouterKey = ModuleName
 )
 
-func NewMTP(signer string, collateralAsset string, borrowAsset string, position string) *MTP {
+func NewMTP(signer string, collateralAsset string, borrowAsset string, position Position) *MTP {
 	return &MTP{
 		Address:          signer,
 		CollateralAsset:  collateralAsset,
@@ -46,4 +46,15 @@ func (mtp MTP) Validate() error {
 
 func GetSettlementAsset() string {
 	return "rowan"
+}
+
+func GetPositionFromString(s string) Position {
+	switch s {
+	case "long":
+		return Position_LONG
+	case "short":
+		return Position_SHORT
+	default:
+		return Position_UNSPECIFIED
+	}
 }

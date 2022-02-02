@@ -20,7 +20,7 @@ message MsgOpen {
     (gogoproto.nullable) = false
   ];
   string borrow_asset = 4;
-  string position = 5;
+  Position position = 5;
 }
 
 message MsgOpenResponse {}
@@ -29,7 +29,7 @@ message MsgClose {
     string signer = 1;
     string collateral_asset = 2;
     string borrow_asset = 3;
-    string position = 5;
+    Position position = 5;
 }
 
 message MsgCloseResponse {}
@@ -39,7 +39,7 @@ message MsgForceClose {
   string mtp_address = 2;
   string collateral_asset = 3;
   string borrow_asset = 4;
-  string position = 5;
+  Position position = 5;
 }
 
 message MsgForceCloseResponse {}

@@ -30,17 +30,17 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 	var err error
 
 	switch msg.Position {
-	case "long":
+	case types.Position_LONG:
 		mtp, err = k.OpenLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position)
+		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position.String())
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventOpen,
-		sdk.NewAttribute("position", mtp.Position),
+		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
@@ -62,17 +62,17 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 	var err error
 
 	switch msg.Position {
-	case "long":
+	case types.Position_LONG:
 		mtp, err = k.CloseLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position)
+		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position.String())
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventClose,
-		sdk.NewAttribute("position", mtp.Position),
+		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
@@ -94,17 +94,17 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var err error
 
 	switch msg.Position {
-	case "long":
+	case types.Position_LONG:
 		mtp, err = k.ForceCloseLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position)
+		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position.String())
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
-		sdk.NewAttribute("position", mtp.Position),
+		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
 		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),

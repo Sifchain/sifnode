@@ -358,7 +358,7 @@ func TestKeeper_Close(t *testing.T) {
 				signer = tt.overrideSigner
 			}
 
-			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer, "long")
+			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer, types.Position_LONG)
 
 			_, got := msgServer.Close(sdk.WrapSDKContext(ctx), &msg)
 
@@ -407,6 +407,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
 				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
 				EpochLength:          0,
+				ForceCloseThreshold:  sdk.ZeroDec(),
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -468,11 +469,13 @@ func TestKeeper_OpenClose(t *testing.T) {
 				CollateralAsset:  nativeAsset,
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      tt.externalAsset,
+				Position:         types.Position_LONG,
 			}
 			msgClose := types.MsgClose{
 				Signer:          signer.String(),
 				CollateralAsset: nativeAsset,
 				BorrowAsset:     tt.externalAsset,
+				Position:        types.Position_LONG,
 			}
 			fmt.Println(pool)
 			_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
@@ -493,7 +496,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				MtpHealth:        sdk.NewDecWithPrec(1, 1),
 			}
 
-			openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String(), "long")
+			openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String(), types.Position_LONG)
 
 			fmt.Println(openMTP)
 
@@ -1178,7 +1181,7 @@ func TestKeeper_EC(t *testing.T) {
 						Leverage:         sdk.NewUint(1),
 						MtpHealth:        chunkItem.mtpHealth,
 					}
-					openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String(), "long")
+					openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String(), types.Position_LONG)
 					require.Equal(t, openExpectedMTP, openMTP)
 
 					openExpectedPool := clptypes.Pool{

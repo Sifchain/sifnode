@@ -41,6 +41,13 @@ message Params {
   ];
 }
 
+enum Position {
+  UNSPECIFIED = 0;
+  LONG = 1;
+  SHORT = 2;
+}
+
+
 message MTP {
   string address = 1;
   string collateral_asset = 2;
@@ -69,5 +76,5 @@ message MTP {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string position = 10;
+  Position position = 10;
 }
