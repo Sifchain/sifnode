@@ -161,28 +161,17 @@ func TestTypes_MsgCloseLongValidateBasic(t *testing.T) {
 			err:          sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
-			name: "collateral asset invalid",
+			name: "id invalid",
 			msgCloseLong: types.MsgCloseLong{
-				Signer:          "xxx",
-				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				Signer: "xxx",
 			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
-		},
-		{
-			name: "borrow asset invalid",
-			msgCloseLong: types.MsgCloseLong{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+			err: sdkerrors.Wrap(types.ErrMTPDoesNotExist, "no id specified"),
 		},
 		{
 			name: "all valid",
 			msgCloseLong: types.MsgCloseLong{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxx",
+				Signer: "xxx",
+				Id:     1,
 			},
 			err: nil,
 		},

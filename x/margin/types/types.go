@@ -39,6 +39,9 @@ func (mtp MTP) Validate() error {
 	if mtp.Address == "" {
 		return sdkerrors.Wrap(ErrMTPInvalid, "no address specified")
 	}
+	if mtp.Id == 0 {
+		return sdkerrors.Wrap(ErrMTPInvalid, "no id specified")
+	}
 
 	return nil
 }

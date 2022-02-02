@@ -80,20 +80,14 @@ func GetCloseLongCmd() *cobra.Command {
 				return err
 			}
 
-			collateralAsset, err := cmd.Flags().GetString("collateral_asset")
-			if err != nil {
-				return err
-			}
-
-			borrowAsset, err := cmd.Flags().GetString("borrow_asset")
+			id, err := cmd.Flags().GetUint64("id")
 			if err != nil {
 				return err
 			}
 
 			msg := types.MsgCloseLong{
-				Signer:          clientCtx.GetFromAddress().String(),
-				CollateralAsset: collateralAsset,
-				BorrowAsset:     borrowAsset,
+				Signer: clientCtx.GetFromAddress().String(),
+				Id:     id,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -104,8 +98,7 @@ func GetCloseLongCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String("collateral_asset", "", "symbol of asset")
-	cmd.Flags().String("borrow_asset", "", "symbol of asset")
+	cmd.Flags().Uint64("id", 0, "id of the position")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 

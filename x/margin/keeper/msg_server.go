@@ -90,7 +90,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*types.MsgCloseLongResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.Signer)
+	mtp, err := k.GetMTP(ctx, msg.Signer, msg.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -98,15 +98,15 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
-	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
-		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.BorrowAsset)
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
 		}
 	} else {
-		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
+		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
 		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.CollateralAsset)
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
 		}
 	}
 

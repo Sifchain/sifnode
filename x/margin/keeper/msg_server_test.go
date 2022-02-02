@@ -188,6 +188,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 		borrowAsset     string
 		poolAsset       string
 		token           string
+		id              uint64
 		marginEnabled   bool
 		fundedAccount   bool
 		overrideSigner  string
@@ -200,6 +201,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			collateralAsset: "xxx",
 			borrowAsset:     "xxx",
 			poolAsset:       "rowan",
+			id:              2,
 			token:           "somethingelse",
 			overrideSigner:  "otheraddress",
 			errString:       types.ErrMTPDoesNotExist,
@@ -210,6 +212,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			collateralAsset: "xxx",
 			borrowAsset:     "xxx",
 			poolAsset:       "rowan",
+			id:              1,
 			token:           "somethingelse",
 			errString:       sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
@@ -219,6 +222,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			collateralAsset: "rowan",
 			borrowAsset:     "xxx",
 			poolAsset:       "rowan",
+			id:              1,
 			token:           "somethingelse",
 			errString:       sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
@@ -228,6 +232,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			collateralAsset: "xxx",
 			borrowAsset:     "xxx",
 			poolAsset:       "xxx",
+			id:              1,
 			token:           "somethingelse",
 			marginEnabled:   true,
 			err:             tokenregistrytypes.ErrNotFound,
@@ -239,6 +244,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			borrowAsset:     "xxx",
 			poolAsset:       "xxx",
 			token:           "xxx",
+			id:              1,
 			marginEnabled:   true,
 			errString:       errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
@@ -248,6 +254,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			collateralAsset: "xxx",
 			borrowAsset:     "xxx",
 			poolAsset:       "xxx",
+			id:              1,
 			token:           "xxx",
 			marginEnabled:   true,
 			errString:       errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
@@ -259,6 +266,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 			borrowAsset:     "rowan",
 			poolAsset:       "rowan",
 			token:           "rowan",
+			id:              1,
 			marginEnabled:   true,
 			fundedAccount:   true,
 			err:             nil,
@@ -311,9 +319,8 @@ func TestKeeper_CloseLong(t *testing.T) {
 			}
 
 			msg := types.MsgCloseLong{
-				Signer:          address,
-				CollateralAsset: tt.collateralAsset,
-				BorrowAsset:     tt.borrowAsset,
+				Signer: address,
+				Id:     tt.id,
 			}
 
 			var signer string = msg.Signer
@@ -321,7 +328,7 @@ func TestKeeper_CloseLong(t *testing.T) {
 				signer = tt.overrideSigner
 			}
 
-			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer)
+			addMTPKey(t, ctx, app, marginKeeper, tt.collateralAsset, tt.borrowAsset, signer, 1)
 
 			_, got := msgServer.CloseLong(sdk.WrapSDKContext(ctx), &msg)
 

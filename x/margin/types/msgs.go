@@ -51,13 +51,9 @@ func (m MsgCloseLong) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
-	if !Validate(m.CollateralAsset) {
-		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.CollateralAsset)
+	if m.Id == 0 {
+		return sdkerrors.Wrap(ErrMTPDoesNotExist, "no id specified")
 	}
-	if !Validate(m.BorrowAsset) {
-		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
-	}
-
 	return nil
 }
 
