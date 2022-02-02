@@ -31,13 +31,9 @@ func NewKeeper(storeKey sdk.StoreKey,
 	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, paramStore: ps, storeKey: storeKey, cdc: cdc}
 }
 
-func (k Keeper) GetMTPCount(ctx sdk.Context, mtp *types.MTP) uint64 {
-	if mtp.Id != 0 {
-		return mtp.Id
-	}
-
+func (k Keeper) GetMTPCount(ctx sdk.Context) uint64 {
 	var count uint64
-	countBz := ctx.KVStore(k.storeKey).Get(append(types.MTPCountPrefix, mtp.Address...))
+	countBz := ctx.KVStore(k.storeKey).Get(types.MTPCountPrefix)
 	if countBz == nil {
 		count = 0
 	} else {
@@ -48,12 +44,12 @@ func (k Keeper) GetMTPCount(ctx sdk.Context, mtp *types.MTP) uint64 {
 
 func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
 	store := ctx.KVStore(k.storeKey)
-	count := k.GetMTPCount(ctx, mtp)
+	count := k.GetMTPCount(ctx)
 
 	if mtp.Id == 0 {
 		count++
 		mtp.Id = count
-		store.Set(append(types.MTPCountPrefix, mtp.Address...), types.GetIDBytes(count))
+		store.Set(types.MTPCountPrefix, types.GetIDBytes(count))
 	}
 
 	if err := mtp.Validate(); err != nil {
