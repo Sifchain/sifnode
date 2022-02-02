@@ -43,6 +43,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "xxx",
+				Position:         types.Position_LONG,
 			},
 			poolAsset: "rowan",
 			token:     "somethingelse",
@@ -55,6 +56,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "xxx",
+				Position:         types.Position_LONG,
 			},
 			poolAsset: "rowan",
 			token:     "somethingelse",
@@ -67,6 +69,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "rowan",
+				Position:         types.Position_LONG,
 			},
 			poolAsset: "rowan",
 			token:     "somethingelse",
@@ -79,6 +82,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "xxx",
+				Position:         types.Position_LONG,
 			},
 			poolAsset:   "xxx",
 			token:       "somethingelse",
@@ -92,6 +96,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "xxx",
+				Position:         types.Position_LONG,
 			},
 			poolAsset:   "xxx",
 			token:       "xxx",
@@ -105,6 +110,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "xxx",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "xxx",
+				Position:         types.Position_LONG,
 			},
 			poolAsset:   "xxx",
 			token:       "xxx",
@@ -118,6 +124,7 @@ func TestKeeper_Open(t *testing.T) {
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUint(1000),
 				BorrowAsset:      "xxx",
+				Position:         types.Position_LONG,
 			},
 			poolAsset:     "xxx",
 			token:         "xxx",
@@ -216,6 +223,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset:      "rowan",
 			token:          "somethingelse",
@@ -228,6 +236,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset: "rowan",
 			token:     "somethingelse",
@@ -239,6 +248,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "xxx",
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset: "rowan",
 			token:     "somethingelse",
@@ -250,6 +260,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset:   "xxx",
 			token:       "somethingelse",
@@ -262,6 +273,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "xxx",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset:   "xxx",
 			token:       "xxx",
@@ -274,6 +286,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset:   "xxx",
 			token:       "xxx",
@@ -286,6 +299,7 @@ func TestKeeper_Close(t *testing.T) {
 				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
 			},
 			poolAsset:     "xxx",
 			token:         "xxx",
@@ -494,6 +508,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				CustodyAmount:    sdk.NewUint(4000),
 				Leverage:         sdk.NewUint(1),
 				MtpHealth:        sdk.NewDecWithPrec(1, 1),
+				Position:         types.Position_LONG,
 			}
 
 			openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, tt.externalAsset, signer.String(), types.Position_LONG)
@@ -1095,6 +1110,7 @@ func TestKeeper_EC(t *testing.T) {
 				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
 				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
 				EpochLength:          0,
+				ForceCloseThreshold:  sdk.ZeroDec(),
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -1150,11 +1166,13 @@ func TestKeeper_EC(t *testing.T) {
 						CollateralAsset:  nativeAsset,
 						CollateralAmount: testItem.X_A.Mul(chunkItem.chunk).Quo(sdk.NewUint(100)),
 						BorrowAsset:      ec.externalAsset,
+						Position:         types.Position_LONG,
 					}
 					msgClose := types.MsgClose{
 						Signer:          signer.String(),
 						CollateralAsset: nativeAsset,
 						BorrowAsset:     ec.externalAsset,
+						Position:        types.Position_LONG,
 					}
 					_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
 					if chunkItem.openErrorString != nil {
@@ -1180,6 +1198,7 @@ func TestKeeper_EC(t *testing.T) {
 						CustodyAmount:    chunkItem.mtpCustodyAmount,
 						Leverage:         sdk.NewUint(1),
 						MtpHealth:        chunkItem.mtpHealth,
+						Position:         types.Position_LONG,
 					}
 					openMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, ec.externalAsset, signer.String(), types.Position_LONG)
 					require.Equal(t, openExpectedMTP, openMTP)
