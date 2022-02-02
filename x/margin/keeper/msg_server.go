@@ -29,7 +29,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 
 	collateralAmount := msg.CollateralAmount
 
-	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.CollateralAmount, msg.BorrowAsset)
+	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset)
 
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
@@ -56,7 +56,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 		return nil, err
 	}
 
-	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, pool, leverage)
+	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, &pool, leverage)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 		return nil, err
 	}
 
-	err = k.TakeInCustody(ctx, *mtp, pool)
+	err = k.TakeInCustody(ctx, *mtp, &pool)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 		}
 	}
 
-	err = k.TakeOutCustody(ctx, mtp, pool)
+	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
 		return nil, err
 	}
