@@ -203,7 +203,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 				case types.MsgBurn, types.MsgLock:
 					// the relayer for signature aggregator not handle burn and lock
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
-					instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosBurnMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
 					if err != nil {
 						sub.SugaredLogger.Errorw("sifchain client receive a malformed burn/lock message.",
 							errorMessageKey, err.Error())
@@ -227,6 +226,8 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						// if global Sequence is less than expected, just ignore the event. it is normal to see processed Sequence coexist with expected one
 						// if global Sequence is larger than expected, it is wrong and we must miss something.
 						if cosmosMsg.GlobalSequence == globalSequence+1 {
+							instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosBurnMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
+
 							sub.witnessSignProphecyID(txFactory, cosmosMsg)
 							// update expected global Sequence
 							globalSequence++
