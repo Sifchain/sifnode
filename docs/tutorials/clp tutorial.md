@@ -95,7 +95,7 @@ note:
  
 ```--asymmetry```         -10000 = 100% Native Asset, 0 = 50% Native Asset 50% External Asset, 10000 = 100% External Asset
 
-```--wBasis```            0 = 0%, 10000 = 100%, Remove 0-100% of liquidity if both assets of the pair symmetrically
+```--wBasis```            0 = 0%, 10000 = 100%, Remove 0-100% of liquidity symmetrically for both assets of the pair
 
 E.g
 
