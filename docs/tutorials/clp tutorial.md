@@ -69,7 +69,7 @@ note:
 
 6. Query the ceth pool; `sifnoded q clp pool ceth`
 
-7. Query an accounts liquidity provider `sifnoded q clp lp ceth $(sifnoded keys show sif -a)`
+7. Query an accounts liquidity provider `sifnoded q clp lp ceth $(sifnoded keys show sif -a --keyring-backend=test)`
 
 #### Add Extra liquidity  (Continuing from above)
 
