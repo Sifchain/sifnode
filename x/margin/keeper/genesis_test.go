@@ -26,6 +26,7 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		require.Equal(t, state.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
 		require.Equal(t, state.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
 		require.Equal(t, state.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
+		require.Equal(t, state.Params.ForceCloseThreshold, marginKeeper.GetForceCloseThreshold(ctx))
 	})
 
 	t.Run("prior import of genesis then export", func(t *testing.T) {
@@ -41,6 +42,7 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 			InterestRateDecrease: sdk.NewDec(1),
 			HealthGainFactor:     sdk.NewDec(1),
 			EpochLength:          1,
+			ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
 		}
 		want := types.GenesisState{Params: &params}
 		marginKeeper.InitGenesis(ctx, want)
@@ -72,6 +74,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.Equal(t, got.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
 		require.Equal(t, got.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
 		require.Equal(t, got.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
+		require.Equal(t, got.Params.ForceCloseThreshold, marginKeeper.GetForceCloseThreshold(ctx))
 	})
 
 	t.Run("params fields set", func(t *testing.T) {
@@ -87,6 +90,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 			InterestRateDecrease: sdk.NewDec(1),
 			HealthGainFactor:     sdk.NewDec(1),
 			EpochLength:          1,
+			ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)

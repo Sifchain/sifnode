@@ -49,6 +49,12 @@ func (k Keeper) GetEpochLength(ctx sdk.Context) int64 {
 	return d
 }
 
+func (k Keeper) GetForceCloseThreshold(ctx sdk.Context) sdk.Dec {
+	var d sdk.Dec
+	k.paramStore.Get(ctx, types.KeyForceCloseThresholdParam, &d)
+	return d
+}
+
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	var pools []string
 	k.paramStore.Get(ctx, types.KeyPoolsParam, &pools)

@@ -8,7 +8,7 @@ import (
 )
 
 func TestTypes_GetMTPKey(t *testing.T) {
-	got := types.GetMTPKey("ceth", "xxx", "xxx")
+	got := types.GetMTPKey("ceth", "xxx", "xxx", types.Position_LONG)
 	want := []byte{1, 99, 101, 116, 104, 120, 120, 120, 120, 120, 120}
 
 	if !reflect.DeepEqual(got, want) {

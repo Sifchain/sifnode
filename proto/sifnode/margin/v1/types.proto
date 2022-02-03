@@ -35,7 +35,18 @@ message Params {
   ];
   int64 epoch_length = 7;
   repeated string pools = 8;
+  string force_close_threshold = 9 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
+
+enum Position {
+  UNSPECIFIED = 0;
+  LONG = 1;
+  SHORT = 2;
+}
+
 
 message MTP {
   string address = 1;
@@ -65,4 +76,5 @@ message MTP {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
+  Position position = 10;
 }
