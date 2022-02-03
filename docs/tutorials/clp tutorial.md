@@ -46,7 +46,9 @@ When used with the use of peg-zone as demonstrated a past video, this will enabl
 ```
 
 4. Check your seed account balance/s;
+
    `sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test)`
+   
    `sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)`
 
 #### Create and query pools
@@ -56,10 +58,10 @@ note:
 * the minimum transaction fee for these operations is 10^17 rowan.
 
 1. Create the first pool for ceth; 
-`sifnoded tx clp create-pool --from sif --keyring-backend test --symbol ceth --nativeAmount 2000000000000000000 --externalAmount 2000000000000000000 --fees 100000000000000000rowan --chain-id localnet`
+`sifnoded tx clp create-pool --from sif --keyring-backend test --symbol ceth --nativeAmount 2000000000000000000 --externalAmount 2000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
 
 2. Create another pool for cdash with a different account; 
-`sifnoded tx clp create-pool --from akasha --keyring-backend test --symbol cdash --nativeAmount 3000000000000000000 --externalAmount 3000000000000000000 --fees 100000000000000000rowan --chain-id localnet`    
+`sifnoded tx clp create-pool --from akasha --keyring-backend test --symbol cdash --nativeAmount 3000000000000000000 --externalAmount 3000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
 
 3. Check funds left on first account; `sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test)`
 
@@ -74,10 +76,10 @@ note:
 #### Add Extra liquidity  (Continuing from above)
 
 1. Add more liquidity for ceth from sif account; 
-`sifnoded tx clp add-liquidity --from sif  --keyring-backend test --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000 --fees 100000000000000000rowan --chain-id localnet `
+`sifnoded tx clp add-liquidity --from sif  --keyring-backend test --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
 
 2. Add more liquidity for cdash from other account; 
-`sifnoded tx clp add-liquidity --from akasha  --keyring-backend test --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --fees 100000000000000000rowan --chain-id localnet`
+`sifnoded tx clp add-liquidity --from akasha  --keyring-backend test --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --fees 100000000000000000rowan --chain-id localnet -y`
 
 #### Swap via the pools 
 
@@ -93,7 +95,7 @@ note:
  
 ```--asymmetry```         -10000 = 100% Native Asset, 0 = 50% Native Asset 50% External Asset, 10000 = 100% External Asset
 
-```--wBasis```            0 = 0%, 10000 = 100%
+```--wBasis```            0 = 0%, 10000 = 100%, Remove 0-100% of liquidity if both assets of the pair symmetrically
 
 E.g
 
@@ -101,7 +103,7 @@ E.g
 `sifnoded tx clp remove-liquidity --from sif --keyring-backend test --symbol ceth --wBasis 5000 --asymmetry 0 --fees 100000000000000000rowan --chain-id localnet -y`
 
 2. Remove 10% of akasha's liquidity in rowan/dash symmetrically (equal rowan/dash);
-`sifnoded tx clp remove-liquidity --from akasha --keyring-backend test --symbol cdash --wBasis 5000 --asymmetry 0 --fees 100000000000000000rowan --chain-id localnet -y`
+`sifnoded tx clp remove-liquidity --from akasha --keyring-backend test --symbol cdash --wBasis 1000 --asymmetry 0 --fees 100000000000000000rowan --chain-id localnet -y`
 
 #### Coming  
 
