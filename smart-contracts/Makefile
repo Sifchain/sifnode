@@ -33,3 +33,6 @@ clean-smartcontracts:
 
 clean-node:
 	rm -rf node_modules
+
+tests:
+	npx hardhat test test/*.js
