@@ -48,7 +48,7 @@ func GetCmdQueryPositionsForAddress() *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(res))
+			return clientCtx.PrintProto(res)
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)

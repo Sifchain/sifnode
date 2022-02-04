@@ -51,7 +51,7 @@ func (s *IntegrationTestSuite) TearDownSuite() {
 	s.network.Cleanup()
 }
 
-func (s *IntegrationTestSuite) TestOpenLongCmd() {
+func (s *IntegrationTestSuite) TestOpenCmd() {
 	val := s.network.Validators[0]
 
 	// Use baseURL to make API HTTP requests or use val.RPCClient to make direct
@@ -64,11 +64,11 @@ func (s *IntegrationTestSuite) TestOpenLongCmd() {
 		"--from=" + val.Address.String(),
 		"-y",
 	}
-	_, err := testutilcli.ExecTestCLICmd(val.ClientCtx, cli.GetOpenLongCmd(), args)
+	_, err := testutilcli.ExecTestCLICmd(val.ClientCtx, cli.GetOpenCmd(), args)
 	require.NoError(s.T(), err)
 }
 
-func (s *IntegrationTestSuite) TestCloseLongCmd() {
+func (s *IntegrationTestSuite) TestCloseCmd() {
 	val := s.network.Validators[0]
 
 	args := []string{
@@ -77,7 +77,7 @@ func (s *IntegrationTestSuite) TestCloseLongCmd() {
 		"--from=" + val.Address.String(),
 		"-y",
 	}
-	_, err := testutilcli.ExecTestCLICmd(val.ClientCtx, cli.GetCloseLongCmd(), args)
+	_, err := testutilcli.ExecTestCLICmd(val.ClientCtx, cli.GetCloseCmd(), args)
 	require.NoError(s.T(), err)
 }
 

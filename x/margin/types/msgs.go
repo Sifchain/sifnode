@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgOpenLong{}
-	_ sdk.Msg = &MsgCloseLong{}
+	_ sdk.Msg = &MsgOpen{}
+	_ sdk.Msg = &MsgClose{}
+	_ sdk.Msg = &MsgForceClose{}
 )
 
 func Validate(asset string) bool {
@@ -21,7 +22,18 @@ func Validate(asset string) bool {
 	return coin.IsValid()
 }
 
-func (m MsgOpenLong) ValidateBasic() error {
+func IsValidPosition(position Position) bool {
+	switch position {
+	case Position_LONG:
+		return true
+	case Position_SHORT:
+		return true
+	default:
+		return false
+	}
+}
+
+func (m MsgOpen) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -36,10 +48,16 @@ func (m MsgOpenLong) ValidateBasic() error {
 	if m.CollateralAmount.IsZero() {
 		return sdkerrors.Wrap(clptypes.ErrInValidAmount, m.CollateralAmount.String())
 	}
+
+	ok := IsValidPosition(m.Position)
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
+	}
+
 	return nil
 }
 
-func (m MsgOpenLong) GetSigners() []sdk.AccAddress {
+func (m MsgOpen) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
@@ -47,9 +65,31 @@ func (m MsgOpenLong) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{signer}
 }
 
-func (m MsgCloseLong) ValidateBasic() error {
+func (m MsgClose) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if m.Id == 0 {
+		return sdkerrors.Wrap(ErrMTPDoesNotExist, "no id specified")
+	}
+
+	return nil
+}
+
+func (m MsgClose) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgForceClose) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if len(m.MtpAddress) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.MtpAddress)
 	}
 	if !Validate(m.CollateralAsset) {
 		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.CollateralAsset)
@@ -57,11 +97,15 @@ func (m MsgCloseLong) ValidateBasic() error {
 	if !Validate(m.BorrowAsset) {
 		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
 	}
+	ok := IsValidPosition(m.Position)
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
+	}
 
 	return nil
 }
 
-func (m MsgCloseLong) GetSigners() []sdk.AccAddress {
+func (m MsgForceClose) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
