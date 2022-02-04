@@ -7,24 +7,24 @@ import (
 
 // ReflectHandleMsg is used to encode handle messages
 type ReflectHandleMsg struct {
-	Reflect       *reflectPayload    `json:"reflect_msg,omitempty"`
-	ReflectSubMsg *reflectSubPayload `json:"reflect_sub_msg,omitempty"`
-	Change        *ownerPayload      `json:"change_owner,omitempty"`
+	Reflect       *ReflectPayload    `json:"reflect_msg,omitempty"`
+	ReflectSubMsg *ReflectSubPayload `json:"reflect_sub_msg,omitempty"`
+	Change        *OwnerPayload      `json:"change_owner,omitempty"`
 }
 
-type ownerPayload struct {
+type OwnerPayload struct {
 	Owner sdk.Address `json:"owner"`
 }
 
-type reflectPayload struct {
+type ReflectPayload struct {
 	Msgs []wasmvmtypes.CosmosMsg `json:"msgs"`
 }
 
-type reflectSubPayload struct {
+type ReflectSubPayload struct {
 	Msgs []wasmvmtypes.SubMsg `json:"msgs"`
 }
 
-type reflectCustomMsg struct {
+type ReflectCustomMsg struct {
 	Debug string `json:"debug,omitempty"`
 	Raw   []byte `json:"raw,omitempty"`
 }

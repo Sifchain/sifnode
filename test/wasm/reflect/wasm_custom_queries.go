@@ -13,22 +13,22 @@ import (
 // reflectPlugins needs to be registered in test setup to handle custom query callbacks
 func ReflectPlugins() *wasmkeeper.QueryPlugins {
 	return &wasmkeeper.QueryPlugins{
-		Custom: performCustomQuery,
+		Custom: PerformCustomQuery,
 	}
 }
 
-func performCustomQuery(_ sdk.Context, request json.RawMessage) ([]byte, error) {
-	var custom reflectCustomQuery
+func PerformCustomQuery(_ sdk.Context, request json.RawMessage) ([]byte, error) {
+	var custom ReflectCustomQuery
 	err := json.Unmarshal(request, &custom)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 	if custom.Capitalized != nil {
 		msg := strings.ToUpper(custom.Capitalized.Text)
-		return json.Marshal(reflectCustomQueryResponse{Msg: msg})
+		return json.Marshal(ReflectCustomQueryResponse{Msg: msg})
 	}
 	if custom.Ping != nil {
-		return json.Marshal(reflectCustomQueryResponse{Msg: "pong"})
+		return json.Marshal(ReflectCustomQueryResponse{Msg: "pong"})
 	}
 	return nil, sdkerrors.Wrap(types.ErrInvalidMsg, "Unknown Custom query variant")
 }

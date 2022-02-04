@@ -15,15 +15,15 @@ import (
 // reflectEncoders needs to be registered in to handle custom message callbacks
 func ReflectEncoders(cdc codec.Codec) *wasmkeeper.MessageEncoders {
 	return &wasmkeeper.MessageEncoders{
-		Custom: fromReflectRawMsg(cdc),
+		Custom: FromReflectRawMsg(cdc),
 	}
 }
 
-// fromReflectRawMsg decodes msg.Data to an sdk.Msg using proto Any and json
+// FromReflectRawMsg decodes msg.Data to an sdk.Msg using proto Any and json
 // encoding. This needs to be registered on the Encoders
-func fromReflectRawMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
+func FromReflectRawMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
 	return func(_sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
-		var custom reflectCustomMsg
+		var custom ReflectCustomMsg
 		err := json.Unmarshal(msg, &custom)
 		if err != nil {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
@@ -46,9 +46,9 @@ func fromReflectRawMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
 	}
 }
 
-// toReflectRawMsg encodes an sdk msg using any type with json encoding.
+// ToReflectRawMsg encodes an sdk msg using any type with json encoding.
 // Then wraps it as an opaque message
-func toReflectRawMsg(cdc codec.Codec, msg sdk.Msg) (wasmvmtypes.CosmosMsg, error) {
+func ToReflectRawMsg(cdc codec.Codec, msg sdk.Msg) (wasmvmtypes.CosmosMsg, error) {
 	any, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
 		return wasmvmtypes.CosmosMsg{}, err
@@ -57,7 +57,7 @@ func toReflectRawMsg(cdc codec.Codec, msg sdk.Msg) (wasmvmtypes.CosmosMsg, error
 	if err != nil {
 		return wasmvmtypes.CosmosMsg{}, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
-	customMsg, err := json.Marshal(reflectCustomMsg{
+	customMsg, err := json.Marshal(ReflectCustomMsg{
 		Raw: rawBz,
 	})
 	res := wasmvmtypes.CosmosMsg{
