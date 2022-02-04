@@ -581,6 +581,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     onlyNotBlocklisted(msg.sender)
   {
     uint256 transferedAmount = transferBalance(tokenAddress, tokenAmount);
+    // require(transferedAmount > 0, "No Balance Transferred");
 
     // decimals defaults to 18 if call to decimals fails
     uint8 decimals = getDecimals(tokenAddress);
