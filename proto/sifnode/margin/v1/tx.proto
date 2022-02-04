@@ -7,11 +7,12 @@ import "sifnode/margin/v1/types.proto";
 option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 service Msg {
-  rpc OpenLong(MsgOpenLong) returns (MsgOpenLongResponse) {}
-  rpc CloseLong(MsgCloseLong) returns (MsgCloseLongResponse) {}
+  rpc Open(MsgOpen) returns (MsgOpenResponse) {}
+  rpc Close(MsgClose) returns (MsgCloseResponse) {}
+  rpc ForceClose(MsgForceClose) returns (MsgForceCloseResponse) {}
 }
 
-message MsgOpenLong {
+message MsgOpen {
   string signer = 1;
   string collateral_asset = 2;
   string collateral_amount = 3 [
@@ -19,13 +20,24 @@ message MsgOpenLong {
     (gogoproto.nullable) = false
   ];
   string borrow_asset = 4;
+  Position position = 5;
 }
 
-message MsgOpenLongResponse {}
+message MsgOpenResponse {}
 
-message MsgCloseLong {
+message MsgClose {
     string signer = 1;
     uint64 id = 2;
 }
 
-message MsgCloseLongResponse {}
+message MsgCloseResponse {}
+
+message MsgForceClose {
+  string signer = 1;
+  string mtp_address = 2;
+  string collateral_asset = 3;
+  string borrow_asset = 4;
+  Position position = 5;
+}
+
+message MsgForceCloseResponse {}

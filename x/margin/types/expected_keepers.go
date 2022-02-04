@@ -49,6 +49,7 @@ type Keeper interface {
 	GetInterestRateDecrease(ctx sdk.Context) sdk.Dec
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
+	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
 	GetEnabledPools(ctx sdk.Context) []string
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
