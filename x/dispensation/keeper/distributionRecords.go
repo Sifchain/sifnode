@@ -156,7 +156,8 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) *types
 func (k Keeper) GetLimitedRecordsForStatus(ctx sdk.Context, status types.DistributionStatus) *types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, status)
-	count := 0
+	count := int64(0)
+	records := k.GetMaxRecordsPerBlock(ctx).MaxRecords
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
 		if err != nil {
@@ -169,11 +170,36 @@ func (k Keeper) GetLimitedRecordsForStatus(ctx sdk.Context, status types.Distrib
 		k.cdc.MustUnmarshal(bytesValue, &dr)
 		res.DistributionRecords = append(res.DistributionRecords, &dr)
 		count++
-		if count == types.MaxRecordsPerBlock {
+		if count == records {
 			break
 		}
 	}
 	return &res
+}
+
+func (k Keeper) SetMaxRecordsPerBlock(ctx sdk.Context, maxRecords types.MaxRecordsPerBlock) {
+	key := []byte(fmt.Sprintf("%s", "MaxRecords"))
+	store := ctx.KVStore(k.storeKey)
+	store.Set(key, k.cdc.MustMarshal(&maxRecords))
+}
+
+func (k Keeper) GetMaxRecordsPerBlock(ctx sdk.Context) types.MaxRecordsPerBlock {
+	key := []byte(fmt.Sprintf("%s", "MaxRecords"))
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(key)
+	var maxRecordsPerBlock types.MaxRecordsPerBlock
+	k.cdc.MustUnmarshal(bz, &maxRecordsPerBlock)
+	return maxRecordsPerBlock
+}
+
+func (k Keeper) IncrementMaxRecordsPerBlock(ctx sdk.Context) {
+	key := []byte(fmt.Sprintf("%s", "MaxRecords"))
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(key)
+	var maxRecordsPerBlock types.MaxRecordsPerBlock
+	k.cdc.MustUnmarshal(bz, &maxRecordsPerBlock)
+	maxRecordsPerBlock.MaxRecords = maxRecordsPerBlock.MaxRecords + 10
+	store.Set(key, k.cdc.MustMarshal(&maxRecordsPerBlock))
 }
 
 func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
@@ -183,7 +209,8 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 	status types.DistributionStatus) *types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, status)
-	count := 0
+	count := int64(0)
+	maxRecords := k.GetMaxRecordsPerBlock(ctx).MaxRecords
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
 		if err != nil {
@@ -191,7 +218,7 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		if count == types.MaxRecordsPerBlock {
+		if count == maxRecords {
 			break
 		}
 		var dr types.DistributionRecord
@@ -205,6 +232,8 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 			count = count + 1
 		}
 	}
+	ctx.Logger().Info(fmt.Sprintf("Records Dispensed : %d , Height Dispensed at : %d", count, ctx.BlockHeight()))
+	k.IncrementMaxRecordsPerBlock(ctx)
 	return &res
 }
 

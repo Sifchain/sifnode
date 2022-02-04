@@ -20,9 +20,9 @@ const (
 	RouterKey = ModuleName
 
 	// QuerierRoute to be used for querier msgs
-	QuerierRoute       = ModuleName
-	DefaultParamspace  = ModuleName
-	MaxRecordsPerBlock = 10
+	QuerierRoute            = ModuleName
+	DefaultParamspace       = ModuleName
+	MaxRecordsPerBlockConst = 10
 )
 
 var (

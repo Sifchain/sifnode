@@ -36,6 +36,10 @@ enum DistributionStatus {
   DISTRIBUTION_STATUS_FAILED = 3;
 }
 
+message MaxRecordsPerBlock {
+  int64 max_records = 1 ;
+}
+
 message DistributionRecord {
   DistributionStatus distribution_status = 1;
   DistributionType distribution_type = 2;
