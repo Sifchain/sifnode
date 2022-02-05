@@ -28,7 +28,7 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 			res, err := msgServer.ForceClose(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
-			return nil, sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request")
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized margin message type: %T", msg)
 		}
 	}
 }

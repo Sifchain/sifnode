@@ -33,6 +33,18 @@ func IsValidPosition(position Position) bool {
 	}
 }
 
+func (m MsgOpen) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgOpen) Route() string {
+	return RouterKey
+}
+
+func (m MsgOpen) Type() string {
+	return "open"
+}
+
 func (m MsgOpen) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
