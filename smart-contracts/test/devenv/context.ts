@@ -1,19 +1,19 @@
 import * as chai from "chai"
-import {solidity} from "ethereum-waffle"
-import {SifEvent} from "../../src/watcher/watcher"
-import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet"
-import {BigNumber} from "ethers"
-import {Observable, Subscription} from "rxjs"
-import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer"
-import {sha256} from "ethers/lib/utils"
+import { solidity } from "ethereum-waffle"
+import { SifEvent } from "../../src/watcher/watcher"
+import { EthereumMainnetEvent } from "../../src/watcher/ethereumMainnet"
+import { BigNumber } from "ethers"
+import { Observable, Subscription } from "rxjs"
+import { EbRelayerEvmEvent } from "../../src/watcher/ebrelayer"
+import { sha256 } from "ethers/lib/utils"
 
 // The hash value for ethereum on mainnet
 export const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
 chai.use(solidity)
 
-const GWEI = Math.pow(10, 9)
-const ETH = Math.pow(10, 18)
+export const GWEI = Math.pow(10, 9)
+export const ETH = Math.pow(10, 18)
 
 export interface Failure {
   kind: "failure"
@@ -102,7 +102,7 @@ function isNotTerminalState(s: State) {
   return !isTerminalState(s)
 }
 
-type VerbosityLevel = "summary" | "full" | "none"
+export type VerbosityLevel = "summary" | "full" | "none"
 
 export function verbosityLevel(): VerbosityLevel {
   switch (process.env["VERBOSE"]) {
@@ -182,6 +182,7 @@ export function buildFailure(acc: State, v: SifEvent, message: string): State {
   }
 }
 
+// WTF is this doing here LOL?
 export function getDenomHash(networkId: number, contract: string) {
   const data = String(networkId) + contract.toLowerCase()
 
