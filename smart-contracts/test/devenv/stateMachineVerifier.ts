@@ -56,6 +56,7 @@ const ebrelayerstateToTxStep: Map<string, TransactionStep> = new Map()
 ebrelayerstateToTxStep.set("ReceiveCosmosBurnMessage", TransactionStep.ReceiveCosmosBurnMessage)
 ebrelayerstateToTxStep.set("WitnessSignProphecy", TransactionStep.WitnessSignProphecy)
 ebrelayerstateToTxStep.set("ProphecyClaimSubmitted", TransactionStep.ProphecyClaimSubmitted)
+ebrelayerstateToTxStep.set("EthereumProphecyClaim", TransactionStep.SawProphecyClaim)
 
 const peggyEventToTxStep: Map<string, TransactionStep> = new Map()
 peggyEventToTxStep.set("Burn", TransactionStep.Burn)
@@ -103,8 +104,9 @@ export class StateMachineVerifier {
    * @returns
    */
   verify(event: SifEvent): State {
+    console.log("smVerifier: Verifying: ", event)
     const currentTransactionStep = this.sifEventToTransactionStep(event)
-
+    console.log("Corresponds to tx step: ", currentTransactionStep)
     if (currentTransactionStep != this.expectedStateQueue[0]) {
       // Return failure state
       return buildFailure(
@@ -113,14 +115,18 @@ export class StateMachineVerifier {
         `Bad Transition: Expected ${this.expectedStateQueue[0]}, Got ${currentTransactionStep}`
         // TODO: Support printing out the entire tree by storing successful steps
       )
+    } else {
+      console.log("Matches expected state")
     }
     // TODO: Lookup transaction step for extra verification
 
     // All verifications for this txStep was completed, moving for next iteration
     this.expectedStateQueue.shift()
+    console.log("smVerifier: Expected State Queue: ", this.expectedStateQueue)
 
     if (this.expectedStateQueue.length == 0) {
       // We have completed verification of all steps. We'll emit a successful state
+      console.log("smVerifier: All steps completed, returning success msg")
       return {
         ...this.currentState,
         transactionStep: currentTransactionStep,
@@ -129,6 +135,7 @@ export class StateMachineVerifier {
         },
       }
     }
+    console.log("smVerifier: Not at terminal yet, continuing")
     return {
       ...this.currentState,
       transactionStep: currentTransactionStep,
@@ -153,6 +160,10 @@ export class StateMachineVerifier {
 
     if (event.kind == "EthereumMainnetLogUnlock") {
       return TransactionStep.EthereumMainnetLogUnlock
+    }
+
+    if (event.kind == "EthereumMainnetLogLock") {
+      return TransactionStep.SawLogLock
     }
     console.log("We SHOULD NOT HAVE REACHED HERE. Encountered unmapped sifEvent")
     throw Exception
