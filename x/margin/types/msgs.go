@@ -77,6 +77,18 @@ func (m MsgOpen) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{signer}
 }
 
+func (m MsgClose) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgClose) Route() string {
+	return RouterKey
+}
+
+func (m MsgClose) Type() string {
+	return "close"
+}
+
 func (m MsgClose) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
@@ -101,6 +113,18 @@ func (m MsgClose) GetSigners() []sdk.AccAddress {
 		panic(err)
 	}
 	return []sdk.AccAddress{signer}
+}
+
+func (m MsgForceClose) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgForceClose) Route() string {
+	return RouterKey
+}
+
+func (m MsgForceClose) Type() string {
+	return "force_close"
 }
 
 func (m MsgForceClose) ValidateBasic() error {
