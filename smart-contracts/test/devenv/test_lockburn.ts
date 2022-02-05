@@ -18,12 +18,16 @@ import "@nomiclabs/hardhat-ethers"
 import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
 import { checkSifnodeBurnState } from "./sifnode_lock_burn"
-import { ethDenomHash, State, TransactionStep } from "./context"
+import { ETH, ethDenomHash, isTerminalState, State, Terminate, TransactionStep } from "./context"
 import { StateMachineVerifier, StateMachineVerifierBuilder } from "./stateMachineVerifier"
 
 import { executeLock, checkEvmLockState } from "./evm_lock_burn"
 import { filter, Observable, scan } from "rxjs"
 import { SifEvent, sifwatch } from "../../src/watcher/watcher"
+import * as rxjs from "rxjs"
+import { lastValueFrom } from "rxjs"
+import { stat } from "fs"
+import { assert } from "console"
 
 chai.use(solidity)
 
@@ -56,8 +60,8 @@ describe("lock and burn tests", () => {
       hardhat.ethers.provider
     )
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
-    // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
-    const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
+    const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
+    // const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
     let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
     process.env["VERBOSE"] = "summary"
@@ -82,7 +86,7 @@ describe("lock and burn tests", () => {
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
-    let burnAmount = BigNumber.from("2300000000000000000") // 2300 gwei
+    let burnAmount = BigNumber.from("2300000") // 2300 gwei
     await checkSifnodeBurnState(
       sifnodedAdapter,
       contracts,
@@ -134,7 +138,7 @@ describe("lock and burn tests", () => {
     await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
   })
 
-  it("Should send ceth back to eth using builder", async () => {
+  it.only("Should send ceth back to eth using builder", async () => {
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
 
@@ -144,8 +148,8 @@ describe("lock and burn tests", () => {
     )
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
 
-    const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
-    // const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
+    // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
+    const sendAmount = BigNumber.from("500000000000") // 3500 gwei
 
     let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
@@ -167,21 +171,69 @@ describe("lock and burn tests", () => {
       hardhat,
       contracts.bridgeBank,
       contracts.cosmosBridge
-    ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
+    ) //.pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
 
     const smVerifierBuilder: StateMachineVerifierBuilder = new StateMachineVerifierBuilder()
     const smVerifier: StateMachineVerifier = smVerifierBuilder
-      .initial(TransactionStep.Initial)
-      .then(TransactionStep.Burn)
-      .then(TransactionStep.SendCoinsFromAccountToModule)
-      .finally(TransactionStep.BurnCoins)
+      // .initial(TransactionStep.Initial)
+      .then(TransactionStep.SawLogLock)
+      .then(TransactionStep.SawProphecyClaim)
       .build()
 
-    // const states: Observable<State> = evmRelayerEvents.pipe(
-    //   scan((acc: State, v: SifEvent) => {
-    //     console.log(v)
-    //     return null
-    //   }, INIT_STATE)
-    // )
+    const states: Observable<State> = evmRelayerEvents
+      .pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
+      .pipe(
+        scan(
+          (acc: State, v: SifEvent) => {
+            if (isTerminalState(acc)) {
+              return {
+                ...acc,
+                value: { kind: "terminate" } as Terminate,
+              }
+            }
+            switch (v.kind) {
+              case "EbRelayerError":
+              case "SifnodedError":
+                return { ...acc, value: { kind: "failure", value: v, message: "simple error" } }
+              case "SifHeartbeat":
+                return { ...acc, currentHeartbeat: v.value } as State
+              case "EthereumMainnetLogLock":
+              case "EbRelayerEvmStateTransition":
+              case "SifnodedPeggyEvent": {
+                console.log("Verifying: ", v)
+
+                let newAcc: State = smVerifier.verify(v)
+                console.log("Acc: ", acc)
+                console.log("NewAcc: ", newAcc)
+                return newAcc
+                // return {
+                //   ...newAcc,
+                //   // value: v,
+                //   // createdAt: newAcc.currentHeartbeat,
+                //   // transactionStep: newAcc.transactionStep,
+                // }
+              }
+              default:
+                return { ...acc, value: v, createdAt: acc.currentHeartbeat }
+            }
+          },
+          {
+            value: { kind: "initialState" },
+            createdAt: 0,
+            currentHeartbeat: 0,
+            transactionStep: TransactionStep.Initial,
+            uniqueId: "eth to ceth",
+          } as State
+        )
+      )
+
+    console.log(states)
+    const lastValue = await lastValueFrom(
+      states.pipe(rxjs.takeWhile((x) => x.value.kind != "terminate"))
+    )
+
+    // expect(lastValue.transactionStep).to.eq(TransactionStep.SawLogLock)
+    expect(lastValue.value.kind).to.eq("success")
+    console.log(lastValue)
   })
 })
