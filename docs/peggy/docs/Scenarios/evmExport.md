@@ -79,14 +79,10 @@ Anytime a user wants to export imported assets onto an EVM chain, there are thre
 ### User Incurred Fees
 When a user initiates an export from sifchain, they have to pay two fees; one is the sifchain gas fee in rowan for the transaction. The second is the EVM Native currency as a cross-chain fee to cover the relayer costs to unlock funds from the bridgebank. 
 
-!> What is the average rowan gas cost to initiate this transaction?
-
 Costs for exporting assets from sifchain to ethereum are set by a flat cross-chain fee picked by an administrator of the network.
 
 ### Witness Incurred Fees
 When a witness sees a new transaction, it has to store its signed prophecy into the virtual mempool as well as increment its sequence number on the sifchain blockchain. In order to perform these transactions, it must pay rowan to cover the gas costs of these transactions. 
-
-!> What is the average rowan gas cost to initiate this transaction?
 
 ### Relayer Incurred Fees
 When a relayer sees a signed and completed prophecy claim, it will transmit this claim to the CosmosBridge on the EVM chain being exported to. This costs Gas in the native EVM chains currency to perform; the cross-chain fee charged to the user should be close to the gas price being charged to the relayers. 

@@ -125,8 +125,6 @@ Unique to a non-native export is:
  - The cross-chain fee will be paid in the native chains currency to which it's being exported
  - There are two cross-chain fees, one for the first-time export as the bridgeToken has to be deployed, and one for every other export.
 
-!> What is the average rowan gas cost to initiate this transaction? Are the below estimates correct as well?
-
 Currently, it is estimated by the developers that it would cost roughly:
  - Ethereum: $1,000 first time export, $100 standard export
  - Polygon: $0.25 first time export, $0.01 standard export
@@ -134,8 +132,6 @@ Currently, it is estimated by the developers that it would cost roughly:
 
 ### Witness Incurred Fees
 When a witness sees a new transaction, it has to store its signed prophecy into the virtual mempool as well as increment its sequence number on the sifchain blockchain, In order to perform these transactions, it must pay rowan to cover the gas costs of these transactions. 
-
-!> What is the average rowan gas cost to initiate this transaction?
 
 ### Relayer Incurred Fees
 When a relayer sees a signed and completed prophecy claim, it will transmit this claim to the CosmosBridge on the EVM chain being exported to. This costs Gas in the native EVM chains currency to perform; the cross-chain fee charged to the user should be close to the gas price being charged to the relayers. 

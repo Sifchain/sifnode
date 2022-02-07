@@ -109,8 +109,6 @@ for the last processed block.
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
 19. Finally, after sifchain successfully processes the successful claim, it will emit a new event signaling the claim was processed successfully.
 
-!> Currently, Cosmos Events are transmitted in code for every EthBridgeClaim submitted, but we don't seem to have any events for when a successful claim is transmitted as step 17 calls for. Is this in the code and/or needed/wanted?
-
 ## Fees
 Anytime a user wants to import assets into sifchain, there are two types of fees that need to be accounted for, user incurred fees and relayer/witness incurred fees.
 
@@ -125,8 +123,6 @@ At the time of writing this, developers are expecting the average import on Ethe
 ### Witness/Relayer Incurred Fees
 When a user initiates an import, each relayer and witness must submit a [NewEthBridgeClaim](Events/NewEthBridgeClaim) as well as a message to increment their sequence numbers to the
 sifchain blockchain. These messages cost rowan to perform.
-
-!> What is the average cost to a relayer/witness in rowan to perform these operations?
 
 ## How to programmatically Initiate a Lock
 Below is a program that would query a users balance of a specific ERC20 token and then initiate a lock for the entire
