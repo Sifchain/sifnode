@@ -22,7 +22,7 @@ jobs:
       - name: Build docker images
         working-directory: docs/peggy
         run: |
-          docker build -t sifchain/peggy-docs:${{ steps.hash.outputs.sha_short }}
+          docker build -t sifchain/peggy-docs:${{ steps.hash.outputs.sha_short }} .
 
       - name: Push docker images
         run: |
