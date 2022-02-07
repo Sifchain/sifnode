@@ -276,30 +276,6 @@ func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 			err: sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
-			name: "collateral asset invalid",
-			msgForceClose: types.MsgForceClose{
-				Signer:     "xxx",
-				MtpAddress: "xxx",
-			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
-		},
-		{
-			name: "borrow asset invalid",
-			msgForceClose: types.MsgForceClose{
-				Signer:     "xxx",
-				MtpAddress: "xxx",
-			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
-		},
-		{
-			name: "position invalid",
-			msgForceClose: types.MsgForceClose{
-				Signer:     "xxx",
-				MtpAddress: "xxx",
-			},
-			err: sdkerrors.Wrap(types.ErrInvalidPosition, types.Position_UNSPECIFIED.String()),
-		},
-		{
 			name: "all valid",
 			msgForceClose: types.MsgForceClose{
 				Signer:     "xxx",

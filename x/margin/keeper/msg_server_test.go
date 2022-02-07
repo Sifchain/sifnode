@@ -498,6 +498,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			openExpectedMTP := types.MTP{
+				Id:               1,
 				Address:          signer.String(),
 				CollateralAsset:  nativeAsset,
 				CollateralAmount: sdk.NewUint(1000),
@@ -1156,7 +1157,7 @@ func TestKeeper_EC(t *testing.T) {
 			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, nativeAsset), nativeCoin)
 			require.Equal(t, app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset), externalCoin)
 
-			for _, chunkItem := range testItem.chunks {
+			for i, chunkItem := range testItem.chunks {
 				chunkItem := chunkItem
 				name := fmt.Sprintf("%v, X_A=%v, Y_A=%v, delta x=%v%%", ec.name, testItem.X_A, testItem.Y_A, chunkItem.chunk)
 				t.Run(name, func(t *testing.T) {
@@ -1169,7 +1170,7 @@ func TestKeeper_EC(t *testing.T) {
 					}
 					msgClose := types.MsgClose{
 						Signer: signer.String(),
-						Id:     1,
+						Id:     uint64(i + 1),
 					}
 					_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
 					if chunkItem.openErrorString != nil {
@@ -1186,6 +1187,7 @@ func TestKeeper_EC(t *testing.T) {
 					require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterOpen)), app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset))
 
 					openExpectedMTP := types.MTP{
+						Id:               uint64(i + 1),
 						Address:          signer.String(),
 						CollateralAsset:  nativeAsset,
 						CollateralAmount: msgOpen.CollateralAmount,
@@ -1197,7 +1199,8 @@ func TestKeeper_EC(t *testing.T) {
 						MtpHealth:        chunkItem.mtpHealth,
 						Position:         types.Position_LONG,
 					}
-					openMTP, _ := marginKeeper.GetMTP(ctx, signer.String(), 1)
+					openMTP, err := marginKeeper.GetMTP(ctx, signer.String(), uint64(i+1))
+					require.NoError(t, err)
 					require.Equal(t, openExpectedMTP, openMTP)
 
 					openExpectedPool := clptypes.Pool{
