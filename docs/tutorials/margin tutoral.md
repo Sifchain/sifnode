@@ -6,7 +6,7 @@ TBD
 
 #### Previous tutorial
 
-* Clp Basics: https://github.com/Sifchain/sifnode/blob/develop/docs/tutorials/clp%20tutorial.md
+- Clp Basics: https://github.com/Sifchain/sifnode/blob/develop/docs/tutorials/clp%20tutorial.md
 
 #### Dependencies:
 
@@ -14,18 +14,21 @@ TBD
 
 #### What is Margin Trading or trading with margin or leverage
 
-Margin trading refers to the use of borrowed funds from continuous liquidity pools (CLP) providers 
-to trade a financial asset. The margin trader can bet against an asset to go up (long) or down (short) and 
+Margin trading refers to the use of borrowed funds from continuous liquidity pools (CLP) providers
+to trade a financial asset. The margin trader can bet against an asset to go up (long) or down (short) and
 relies upon the collateral amount to form the loan.
-At the same time providing a continous funding interest rate to the CLP providers. 
+At the same time providing a continous funding interest rate to the CLP providers.
 
 #### Setup
 
 1. Initialize the local chain run; `./scripts/init.sh`
 
-2. Start the chain; `./scripts/run.sh`
+2. Decrease the gouvernance voting period time;
+   `echo "$(jq '.app_state.gov.voting_params.voting_period = "60s"' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json`
 
-3. Check to see you have two local accounts/keys setup; `sifnoded keys list --keyring-backend=test`
+3. Start the chain; `./scripts/run.sh`
+
+4. Check to see you have two local accounts/keys setup; `sifnoded keys list --keyring-backend=test`
 
 ```
 - name: akasha
@@ -45,21 +48,22 @@ At the same time providing a continous funding interest rate to the CLP provider
   mnemonic: ""
 ```
 
-4. Check your seed account balance/s;
+5. Check your seed account balance/s;
    `sifnoded q bank balances $(sifnoded keys show sif -a --keyring-backend=test)`
    `sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)`
 
 #### Create and query pools
 
-note: 
-* the minimum threshold for native amount is 10^18 rowan.
-* the minimum transaction fee for these operations is 10^17 rowan.
+note:
 
-1. Create the first pool for ceth; 
-`sifnoded tx clp create-pool --from sif --keyring-backend test --symbol ceth --nativeAmount 2000000000000000000 --externalAmount 2000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
+- the minimum threshold for native amount is 10^18 rowan.
+- the minimum transaction fee for these operations is 10^17 rowan.
 
-2. Create another pool for cdash with a different account; 
-`sifnoded tx clp create-pool --from akasha --keyring-backend test --symbol cdash --nativeAmount 3000000000000000000 --externalAmount 3000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
+1. Create the first pool for ceth;
+   `sifnoded tx clp create-pool --from sif --keyring-backend test --symbol ceth --nativeAmount 2000000000000000000 --externalAmount 2000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
+
+2. Create another pool for cdash with a different account;
+   `sifnoded tx clp create-pool --from akasha --keyring-backend test --symbol cdash --nativeAmount 3000000000000000000 --externalAmount 3000000000000000000 --fees 100000000000000000rowan --chain-id localnet -y`
 
 3. Query all clp pools; `sifnoded q clp pools`
 
@@ -69,35 +73,85 @@ The set of pools that have margin enabled is managed through governance.
 
 The param change proposal takes the format:
 
-```
+```json
 {
-"title": "Margin Pools Param Change",
-"description": "Update enabled margin pools",
-"changes": [
-{
-"subspace": "margin",
-"key": "Pools",
-"value": ["ceth","cusdt"]
-}
-],
-"deposit": "10000000stake"
+  "title": "Margin Pools Param Change",
+  "description": "Update enabled margin pools",
+  "changes": [
+    {
+      "subspace": "margin",
+      "key": "Pools",
+      "value": ["ceth", "cdash"]
+    }
+  ],
+  "deposit": "10000000stake"
 }
 ```
 
-To submit a param change proposal:
+1. Save the proposal above within a file named `proposal.json`
 
-` sifnoded tx gov submit-proposal param-change proposal.json --from sif --keyring-backend test --chain-id localnet`
+2. Submit a param change proposal;
+   `sifnoded tx gov submit-proposal param-change proposal.json --from sif --keyring-backend test --chain-id localnet -y`
 
-To vote on proposal
+3. Vote on proposal;
+   `sifnoded tx gov vote 1 yes --from sif --chain-id localnet --keyring-backend test -y`
 
-`sifnoded tx gov vote 1 yes --from sif --chain-id localnet --keyring-backend test`
+4. Query the proposal to check the proposal status has passed;
+   `sifnoded q gov proposals --chain-id localnet`
+
+Result:
+
+```
+pagination:
+  next_key: null
+  total: "0"
+proposals:
+- content:
+    '@type': /cosmos.params.v1beta1.ParameterChangeProposal
+    changes:
+    - key: Pools
+      subspace: margin
+      value: |-
+        [
+                "ceth",
+                "cdash"
+              ]
+    description: Update enabled margin pools
+    title: Margin Pools Param Change
+  deposit_end_time: "2022-02-09T18:50:23.040643413Z"
+  final_tally_result:
+    abstain: "0"
+    "no": "0"
+    no_with_veto: "0"
+    "yes": "1000000000000000000000000"
+  proposal_id: "1"
+  status: PROPOSAL_STATUS_PASSED
+  submit_time: "2022-02-07T18:50:23.040643413Z"
+  total_deposit:
+  - amount: "10000000"
+    denom: stake
+  voting_end_time: "2022-02-07T18:51:23.040643413Z"
+  voting_start_time: "2022-02-07T18:50:23.040643413Z"
+```
+
+5. Verify that the margin param has changed;
+   `sifnoded q params subspace margin Pools --chain-id localnet`
+
+Result:
+
+```
+key: Pools
+subspace: margin
+value: '["ceth","cdash"]'
+```
 
 #### Create and query margin trading positions (MTP)
 
 1. Create margin long position against ceth;
-`sifnoded tx margin open-long --from sif --keyring-backend test --borrow_asset ceth --collateral_asset rowan --collateral_amount 1000 --chain-id localnet`
+   `sifnoded tx margin open-long --from sif --keyring-backend test --borrow_asset ceth --collateral_asset rowan --collateral_amount 1000 --chain-id localnet`
 
 Result:
+
 ```
 code: 0
 codespace: ""
@@ -114,9 +168,10 @@ txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
 ```
 
 2. Add up to an existing margin position by creating a second margin position for the same asset ceth;
-`sifnoded tx margin open-long --from sif --keyring-backend test --borrow_asset ceth --collateral_asset rowan --collateral_amount 500 --chain-id localnet`
+   `sifnoded tx margin open-long --from sif --keyring-backend test --borrow_asset ceth --collateral_asset rowan --collateral_amount 500 --chain-id localnet`
 
 Result:
+
 ```
 code: 0
 codespace: ""
@@ -133,9 +188,10 @@ txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
 ```
 
 3. Query all the existing margin positions (same asset ceth);
-`sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-backend=test)`
+   `sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-backend=test)`
 
 Result:
+
 ```json
 {
   "mtps": [
@@ -170,9 +226,10 @@ Result:
 #### Reduce size and close existing margin positions
 
 1. Reduce the size of an existing margin position for ceth by closing one of the existing MTPs;
-`sifnoded tx margin close-long --from sif --keyring-backend test --id yyyy --borrow_asset ceth --collateral_asset rowan --chain-id localnet`
+   `sifnoded tx margin close-long --from sif --keyring-backend test --id yyyy --borrow_asset ceth --collateral_asset rowan --chain-id localnet`
 
 Result:
+
 ```
 code: 0
 codespace: ""
@@ -189,9 +246,10 @@ txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
 ```
 
 2. Query remaining margin positions for ceth;
-`sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-backend=test)`
+   `sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-backend=test)`
 
 Result:
+
 ```json
 {
   "mtps": [
@@ -212,9 +270,10 @@ Result:
 ```
 
 3. Close the margin long position entirely for ceth;
-`sifnoded tx margin close-long --from sif --keyring-backend test --id xxxx --borrow_asset ceth --collateral_asset rowan --chain-id localnet`
+   `sifnoded tx margin close-long --from sif --keyring-backend test --id xxxx --borrow_asset ceth --collateral_asset rowan --chain-id localnet`
 
 Result:
+
 ```
 code: 0
 codespace: ""
@@ -231,9 +290,10 @@ txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
 ```
 
 4. Query existing margin positions (none);
-`sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-backend=test)`
+   `sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-backend=test)`
 
 Result:
+
 ```json
 {
   "mtps": []
