@@ -58,30 +58,33 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.MsgCloseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	var mtp *types.MTP
-	var err error
+	mtp, err := k.GetMTP(ctx, msg.Signer, msg.Id)
+	if err != nil {
+		return nil, err
+	}
 
-	switch msg.Position {
+	var closedMtp *types.MTP
+	switch mtp.Position {
 	case types.Position_LONG:
-		mtp, err = k.CloseLong(ctx, msg)
+		closedMtp, err = k.CloseLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position.String())
+		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtp.Position.String())
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventClose,
-		sdk.NewAttribute("position", mtp.Position.String()),
-		sdk.NewAttribute("address", mtp.Address),
-		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
-		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
-		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
-		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
-		sdk.NewAttribute("leverage", mtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
-		sdk.NewAttribute("health", mtp.MtpHealth.String()),
+		sdk.NewAttribute("position", closedMtp.Position.String()),
+		sdk.NewAttribute("address", closedMtp.Address),
+		sdk.NewAttribute("collateral_asset", closedMtp.CollateralAsset),
+		sdk.NewAttribute("collateral_amount", closedMtp.CollateralAmount.String()),
+		sdk.NewAttribute("custody_asset", closedMtp.CustodyAsset),
+		sdk.NewAttribute("custody_amount", closedMtp.CustodyAmount.String()),
+		sdk.NewAttribute("leverage", closedMtp.Leverage.String()),
+		sdk.NewAttribute("liabilities_p", closedMtp.LiabilitiesP.String()),
+		sdk.NewAttribute("liabilities_i", closedMtp.LiabilitiesI.String()),
+		sdk.NewAttribute("health", closedMtp.MtpHealth.String()),
 	))
 
 	return &types.MsgCloseResponse{}, nil
@@ -90,17 +93,20 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	var mtp *types.MTP
-	var err error
+	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
+	if err != nil {
+		return nil, err
+	}
 
-	switch msg.Position {
+	var mtp *types.MTP
+	switch mtpToClose.Position {
 	case types.Position_LONG:
 		mtp, err = k.ForceCloseLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, msg.Position.String())
+		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
@@ -220,7 +226,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 }
 
 func (k msgServer) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, error) {
-	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.MtpAddress, msg.Position)
+	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -228,15 +234,15 @@ func (k msgServer) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*t
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
-	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
-		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.BorrowAsset)
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
 		}
 	} else {
-		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
+		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
 		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.CollateralAsset)
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
 		}
 	}
 

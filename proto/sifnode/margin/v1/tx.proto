@@ -35,9 +35,7 @@ message MsgCloseResponse {}
 message MsgForceClose {
   string signer = 1;
   string mtp_address = 2;
-  string collateral_asset = 3;
-  string borrow_asset = 4;
-  Position position = 5;
+  uint64 id = 3;
 }
 
 message MsgForceCloseResponse {}
