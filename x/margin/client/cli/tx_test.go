@@ -61,6 +61,7 @@ func (s *IntegrationTestSuite) TestOpenCmd() {
 		"--collateral_asset=rowan",
 		"--borrow_asset=atom",
 		"--collateral_amount=1000",
+		"--position=long",
 		"--from=" + val.Address.String(),
 		"-y",
 	}
@@ -72,8 +73,7 @@ func (s *IntegrationTestSuite) TestCloseCmd() {
 	val := s.network.Validators[0]
 
 	args := []string{
-		"--collateral_asset=rowan",
-		"--borrow_asset=atom",
+		"--id=1",
 		"--from=" + val.Address.String(),
 		"-y",
 	}
