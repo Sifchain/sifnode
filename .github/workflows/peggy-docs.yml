@@ -1,0 +1,68 @@
+name: Peggy 2 Documentation
+
+on:
+  push:
+    branches:
+      - 'future/peggy2'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get commit hash
+        id: hash
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Build docker images
+        working-directory: docs/peggy
+        run: |
+          docker build -t sifchain/peggy-docs:${{ steps.hash.outputs.sha_short }}
+
+      - name: Push docker images
+        run: |
+          docker push sifchain/peggy-docs:${{ steps.hash.outputs.sha_short }}
+
+  deploy:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: Sifchain/sifchain-devops
+        path: sifchain-devops
+        token: "${{ secrets.GIT_PAT }}"
+
+    - name: Get commit hash
+      id: hash
+      run: |
+        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+    - name: Configure AWS Credentials
+      working-directory: sifchain-devops
+      run: |
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+        AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+        AWS_REGION=${{ secrets.AWS_REGION }} \
+        AWS_ROLE=${{ secrets.AWS_ROLE }} \
+        PROFILE=sifchain-aws-sifchain-data \
+        make provider-aws-configure
+
+    - name: Generate kubernetes config
+      working-directory: sifchain-devops
+      run: |
+        CLUSTER_NAME=sifchain-aws-sifchain-data \
+        AWS_REGION=${{ secrets.AWS_REGION }} \
+        AWS_PROFILE=sifchain-aws-sifchain-data \
+        AWS_ROLE=${{ secrets.AWS_ROLE }} \
+        make provider-aws-kubeconfig
+
+    - name: Deploy peggy docs
+      working-directory: sifchain-devops
+      run: |
+        helm upgrade peggy-docs helm/standalone/peggy-docs --install -n peggy-docs \
+        --create-namespace \
+        --set image.tag=${{ steps.hash.outputs.sha_short }}
