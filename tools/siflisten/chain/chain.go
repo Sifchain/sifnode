@@ -105,12 +105,12 @@ type Result struct {
 
 type BlockResults struct {
 	Jsonrpc string `json:"jsonrpc"`
-	Id      int64  `json:"id"`
+	ID      int64  `json:"id"`
 	Result  Result `json:"result"`
 }
 
 type ErrorResponse struct {
-	Id      int64  `json:"id"`
+	ID      int64  `json:"id"`
 	Jsonrpc string `json:"jsonrpc"`
 	Error   string `json:"error"`
 }
@@ -174,7 +174,12 @@ func BlockEvents(clientCtx client.Context) ([]*events.Event, error) {
 		return nil, err
 	}
 
-	json.Unmarshal(body, &blocksResults)
+	err = json.Unmarshal(body, &blocksResults)
+	if err != nil {
+		fmt.Println("err2")
+		fmt.Println(err)
+		return nil, err
+	}
 	fmt.Println("BlockEvents")
 	fmt.Println(blocksResults)
 
@@ -193,5 +198,10 @@ func QueryPools(clientCtx client.Context) ([]*types.Pool, error) {
 	fmt.Println("QueryPools")
 	fmt.Println(result)
 	clientCtx.PrintProto(result)
+	if err != nil {
+		fmt.Println("err2")
+		fmt.Println(err)
+		return nil, err
+	}
 	return result.Pools, nil
 }
