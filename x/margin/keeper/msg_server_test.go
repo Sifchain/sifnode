@@ -205,11 +205,11 @@ func TestKeeper_Open(t *testing.T) {
 	}
 }
 
-/*
 func TestKeeper_Close(t *testing.T) {
 	table := []struct {
 		name           string
 		msgClose       types.MsgClose
+		msgOpen        types.MsgOpen
 		poolAsset      string
 		token          string
 		poolEnabled    bool
@@ -221,7 +221,9 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "mtp does not exist",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
+				Signer: "xxx",
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -234,7 +236,10 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "pool does not exist",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
+				Signer: "xxx",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -246,7 +251,10 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "same collateral and native asset but pool does not exist",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
+				Signer: "xxx",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -258,7 +266,10 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "denom does not exist",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
+				Signer: "xxx",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -271,7 +282,10 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "wrong address",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
+				Signer: "xxx",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -284,7 +298,10 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "insufficient funds",
 			msgClose: types.MsgClose{
-				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "xxx",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -297,7 +314,10 @@ func TestKeeper_Close(t *testing.T) {
 		{
 			name: "account funded",
 			msgClose: types.MsgClose{
-				Signer:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
@@ -345,8 +365,8 @@ func TestKeeper_Close(t *testing.T) {
 			var address string
 
 			if tt.fundedAccount {
-				nativeAsset := tt.msgClose.CollateralAsset
-				externalAsset := clptypes.Asset{Symbol: tt.msgClose.BorrowAsset}
+				nativeAsset := tt.msgOpen.CollateralAsset
+				externalAsset := clptypes.Asset{Symbol: tt.msgOpen.BorrowAsset}
 
 				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
 				externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
@@ -373,7 +393,7 @@ func TestKeeper_Close(t *testing.T) {
 				signer = tt.overrideSigner
 			}
 
-			addMTPKey(t, ctx, app, marginKeeper, msg.CollateralAsset, msg.BorrowAsset, signer, types.Position_LONG)
+			addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, types.Position_LONG, 1)
 
 			_, got := msgServer.Close(sdk.WrapSDKContext(ctx), &msg)
 
@@ -386,7 +406,7 @@ func TestKeeper_Close(t *testing.T) {
 			}
 		})
 	}
-}*/
+}
 
 func TestKeeper_OpenClose(t *testing.T) {
 	table := []struct {
