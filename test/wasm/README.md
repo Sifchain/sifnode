@@ -1,6 +1,6 @@
 # Sifchain - Wasm 
 
-This folder contains code used to demonstrate how to bind wasm contracts to 
+This folder contains code that demonstrates how to bind wasm contracts to 
 custom SDK modules. 
 
 ## Reflect
@@ -9,23 +9,47 @@ The `reflect` package contains the `reflect.wasm` smart-contract as well as the
 Go bindings that enable other sifnode code to exchange messages with this 
 contract.
 
-The `reflect` contract essentially forwards incoming Cosmos messages and queries
-to the SDK's underlying routing mechanism.
+The `reflect` contract essentially forwards incoming messages to the `wasm`
+module's handler on the `go` side. 
+
+Internally, the `wasm` module's handler matches each incoming messages to one of 
+the following types: 
+
+    - bank
+    - staking
+    - distribution
+    - stargate
+    - IBC 
+    - gov
+    - wasm
+    - custom
+
+and forwards the message to the appropriate module. In the case of a `custom`
+message, it tries to match the message against the registered custom decoders,
+and  **this is where we plug in our custom logic to process custom messages**.
+
+When we create the `wasm` module's keeper, we pass it our custom decoder as an
+option. 
+
+```go
+	wasmOpts = append(wasmOpts,
+		wasmkeeper.WithGasRegister(NewJunoWasmGasRegister()),
+		// the reflect options are added for testing only
+		wasmkeeper.WithMessageEncoders(reflect.ReflectEncoders(codec)),
+		wasmkeeper.WithQueryPlugins(reflect.ReflectPlugins()),
+	)
+```
+
+Our custom decoder decodes an incoming CustomMsg (from json format) to our 
+`ReflectCustomMsg` type. This type contains a `Raw` field which contains a raw 
+byte encoding of a `clp` message. If there is no error in the decoding of these 
+fields, the `clp` message is returned by our decoder and further relayed by the 
+`wasm` module's handler.
 
 In the demo below, we send a wrapped `swap` message to the smart-contract which 
 relays it onto the `clp` module via the SDK's message passing system.
 
-Most of the custom `go` code relates to encoding and decoding messages.
-
-We define a `ReflectCustomMsg` (which corresponds to the output of the 
-`reflect` contract) and add an encoder to the wasm keeper that enables the 
-wasm keeper to recognize these messages, unpack their contents and convert them 
-into SDK messages so that they can be picked up by other modules. A similar 
-pattern is implemented for queries.
-
 ## Demo
-
-
 
 ### Setup
 
