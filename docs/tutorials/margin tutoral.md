@@ -63,6 +63,35 @@ note:
 
 3. Query all clp pools; `sifnoded q clp pools`
 
+#### Enable margin on pools
+
+The set of pools that have margin enabled is managed through governance.
+
+The param change proposal takes the format:
+
+```
+{
+"title": "Margin Pools Param Change",
+"description": "Update enabled margin pools",
+"changes": [
+{
+"subspace": "margin",
+"key": "Pools",
+"value": ["ceth","cusdt"]
+}
+],
+"deposit": "10000000stake"
+}
+```
+
+To submit a param change proposal:
+
+` sifnoded tx gov submit-proposal param-change proposal.json --from sif --keyring-backend test --chain-id localnet`
+
+To vote on proposal
+
+`sifnoded tx gov vote 1 yes --from sif --chain-id localnet --keyring-backend test`
+
 #### Create and query margin trading positions (MTP)
 
 1. Create margin long position against ceth;
