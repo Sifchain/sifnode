@@ -18,7 +18,7 @@ browser http://localhost:3000/
 
 ## Problem Statement
 
-The Ethereum scaling problem is a well known issue for traders resulting in long confirmation times and exorbitant fees. The recent rise of non-Ethereum-based exchanges like Mdex and Pancakeswap has shown that there is considerable demand for defi products on a more scalable platform. Sifchain, our application-specific blockchain, is an ever more efficient platform for value exchange. That said, the vast majority of development is still on Ethereum. To fully realize the advantages of all platforms, bridges are the keystone in creating a united defi ecosystem.
+The Ethereum scaling problem is a well known issue for traders resulting in long confirmation times and exorbitant fees. The recent rise of non-Ethereum-based exchanges has shown that there is considerable demand for defi products on a more scalable platform. Sifchain, our application-specific blockchain, is an ever more efficient platform for value exchange. That said, the vast majority of development is still on Ethereum. To fully realize the advantages of all platforms, bridges are the keystone in creating a united defi ecosystem.
 
 ## One Liner
 
@@ -28,9 +28,9 @@ Peggy 2.0 is a system that facilitates non-permissioned token transfer between S
 
 Incremental increases in the following
 
-- TVL within y months (Sifchain: $16M, Osmosis: $444M, Emeris: $35M)
-- Trading Volume within y months (Sifchain: $2-3M/day, Osmosis: 12.5M/day)
-- Weekly Active Addresses within y months
+- TVL 
+- Trading Volume 
+- Weekly Active Addresses 
 - Number of non-Ethereum tokens imported into Sifchain
 
 ## Use Cases
@@ -273,42 +273,35 @@ Incremental increases in the following
   </tbody>
 </table>
 
-## Peggy 2.0
+## Peggy 2.0 Features
 
-- New Sifchain Token Denoms (Coin Metadata Conventions - Peggy 2.0 Lock/Burn Architecture RFC)
-- Stateless Signature Aggregation (Peggy Future Features) - Gas Savings
-- Transaction Ordering (Connecting Sifchain to Many EVM Chains) - Fewer dropped txns
-- EVM to EVM double pegging (Peggy2 end-to-end)
-- Removal of Ethereum whitelists (IBC whitelist is not being modified)
-- Individually Batched Imports/Exports (Peggy Future Features)
-- OFAC Blocklist (from Peggy 1.0)
+- Updated Sifchain Token Denoms - Extensibility 
+- Stateless Signature Aggregation - Gas Savings
+- Transaction Ordering - Stability
+- EVM to EVM double pegging - Extensibility
+- Removal of Ethereum whitelists - Usability
+- Individually Batched Imports/Exports - Gas Savings
+
 
 ## Peggy 2.1
 
-Binance Smart Chain Import/Export Functionality (Peggy2 end-to-end)
+- New EVM chain integration 
 
-## Backlog Features
 
-- Peggy Token/Peg Zone (Decentralization of Peggy Relayers) Peggy Chain Article
-- Additional EVM chains (e.g. HECO, Ethereum Classic, Klaytn, Polygon, Avalanche, OKEX)
-- Gas Oracle (for dynamically adjusted export fees)
-- Separate pauser and unpauser roles for the internal team (so that the team can stop the relayers if necessary, but not necessarily be able to unpause) - Dependent on chainops/executive priorities
+## Roadmap
 
-## Current Roadmap
-
-- [x] Initial Development
-- [x] Integration Testing Group 0
-- [x] Documentation for Auditing (current phase)
-- [x] Integration Testing Group 1 - 4 weeks
-- [ ] Merge Develop to Future/Peggy2 - 1 week
-- [ ] Halborn Audit 1 and Subsequent Fixes - Need estimate from Halborn est 1 month?
-- [ ] Integration Testing Group 2 - 2 weeks
-- [ ] Migration/Load Testing - 2-8 weeks
-- [ ] Merge Develop to Future/Peggy2 - 1 week
-- [ ] Migration
-- [ ] Halborn Audit 2 - Mid March
-- [ ] Deployment/Devops
-- [ ] UI
-- [ ] Sifnode
-- [ ] Data Pipeline
-- [ ] Deploy / Launch Peggy 2.0
+- Initial Development
+- Integration Testing Group 0
+- Documentation for Auditing 
+- Integration Testing Group 1 
+- Merge Develop to Future/Peggy2
+- Halborn Audit 1 
+- Integration Testing Group 2 
+- Migration/Load Testing 
+- Migration
+- Halborn Audit 2 
+- Deployment/Devops
+- UI Updates
+- Sifnode Updates
+- Data Pipeline Infrastructure Changes
+- Launch Peggy 2.0
