@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/app"
 	chainevents "github.com/Sifchain/sifnode/tools/siflisten/chain/events"
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
@@ -37,7 +39,7 @@ func syncCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			fmt.Println(rpcClient)
 			encConfig := app.MakeTestEncodingConfig()
 
 			clientCtx := sdkclient.Context{}.
