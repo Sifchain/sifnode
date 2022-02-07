@@ -8,6 +8,8 @@ import "hardhat-contract-sizer"
 import "hardhat-gas-reporter"
 import "reflect-metadata" // needed by tsyringe
 import "@typechain/hardhat"
+import "@nomiclabs/hardhat-waffle";
+
 
 const { print } = require("./scripts/helpers/utils")
 
