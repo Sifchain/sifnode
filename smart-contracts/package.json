@@ -92,7 +92,7 @@
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "cp .env.example .env",
     "compile": "npx hardhat compile --force",
-    "test": "npx hardhat test",
+    "test": "npx hardhat compile; npx hardhat test",
     "gas": "REPORT_GAS=1 yarn test",
     "size": "yarn compile && npx hardhat size-contracts",
     "coverage": "RUN_COVERAGE=1 npx hardhat coverage",
