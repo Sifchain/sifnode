@@ -7,17 +7,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Sifchain/sifnode/app"
 	events "github.com/Sifchain/sifnode/tools/siflisten/events"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/spf13/pflag"
+	paramsKeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramsProposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 )
-
-var sifapp app.SifchainApp
 
 var blocksResults BlockResults
 
@@ -120,64 +116,82 @@ type ErrorResponse struct {
 }
 
 func QueryMarginParams(clientCtx client.Context) (*margintypes.Params, error) {
+	fmt.Println("QUERY MARGIN PARAMS")
 
-	queryClient := margintypes.NewQueryClient(clientCtx)
-	queryClient.GetMTP()
-	marginKeeper := sifapp.MarginKeeper
+	var k paramsKeeper.Keeper
+	var t paramsProposal.QueryParamsRequest
 
-	genesis := marginKeeper.ExportGenesis(ctx)
-
-	marginParams := margintypes.Params{
-		LeverageMax:          genesis.Params.LeverageMax,
-		InterestRateMax:      genesis.Params.InterestRateMax,
-		InterestRateMin:      genesis.Params.InterestRateMin,
-		InterestRateIncrease: genesis.Params.InterestRateIncrease,
-		InterestRateDecrease: genesis.Params.InterestRateDecrease,
-		HealthGainFactor:     genesis.Params.HealthGainFactor,
-		EpochLength:          genesis.Params.EpochLength,
+	resp, err := k.Params(context.Background(), &t)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
+	fmt.Println(resp)
 
-	return &marginParams, nil
+	//paramsKeeper.NewQuerier()
+
+	//.Params(context.Background())
+	//paramsKeeper.NewQuerier(sifapp.MarginKeeper, )
+	//queryClient.GetMTP()
+	// marginKeeper := sifapp.MarginKeeper
+
+	// genesis := marginKeeper.ExportGenesis(ctx)
+
+	// marginParams := margintypes.Params{
+	// 	LeverageMax:          genesis.Params.LeverageMax,
+	// 	InterestRateMax:      genesis.Params.InterestRateMax,
+	// 	InterestRateMin:      genesis.Params.InterestRateMin,
+	// 	InterestRateIncrease: genesis.Params.InterestRateIncrease,
+	// 	InterestRateDecrease: genesis.Params.InterestRateDecrease,
+	// 	HealthGainFactor:     genesis.Params.HealthGainFactor,
+	// 	EpochLength:          genesis.Params.EpochLength,
+	// }
+
+	return nil, nil
 }
 
 /* Returns events from block_results?height=height */
 
-func BlockEvents(ctx sdk.Context, height int64) ([]*events.Event, error) {
+func BlockEvents(clientCtx client.Context) ([]*events.Event, error) {
 	//take a look on the return of this path and return events.Event
-	path := fmt.Sprintf("%s/block_results?height=%d", "https://rpc.cosmos.network", height)
+	fmt.Println("BlockEvents")
+	fmt.Println(clientCtx.NodeURI)
+	path := fmt.Sprintf("%s/block_results?height=%d", clientCtx.NodeURI, clientCtx.Height)
 
 	resp, err := http.Get(path)
+
 	if err != nil {
+		fmt.Println("err1")
+		fmt.Println(err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Println("err2")
+		fmt.Println(err)
 		return nil, err
 	}
 
 	json.Unmarshal(body, &blocksResults)
+	fmt.Println("BlockEvents")
+	fmt.Println(blocksResults)
 
-	return blocksResults, nil
+	return nil, nil
 }
 
-func QueryPools(clientCtx client.Context, flagSet *pflag.FlagSet) (*clptypes.PoolsRes, error) {
-
+func QueryPools(clientCtx client.Context) ([]*types.Pool, error) {
 	queryClient := types.NewQueryClient(clientCtx)
 
-	pageReq, err := client.ReadPageRequest(flagSet)
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := queryClient.GetPools(context.Background(), &types.PoolsReq{
-		Pagination: pageReq,
-	})
+	result, err := queryClient.GetPools(context.Background(), &types.PoolsReq{})
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
-
-	return result, nil
+	fmt.Println("QueryPools")
+	fmt.Println(result)
+	clientCtx.PrintProto(result)
+	return result.Pools, nil
 }
