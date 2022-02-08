@@ -207,16 +207,17 @@ func TestKeeper_Open(t *testing.T) {
 
 func TestKeeper_Close(t *testing.T) {
 	table := []struct {
-		name           string
-		msgClose       types.MsgClose
-		msgOpen        types.MsgOpen
-		poolAsset      string
-		token          string
-		poolEnabled    bool
-		fundedAccount  bool
-		overrideSigner string
-		err            error
-		errString      error
+		name              string
+		msgClose          types.MsgClose
+		msgOpen           types.MsgOpen
+		poolAsset         string
+		token             string
+		poolEnabled       bool
+		fundedAccount     bool
+		overrideSigner    string
+		mtpCreateDisabled bool
+		err               error
+		errString         error
 	}{
 		{
 			name: "mtp does not exist",
@@ -280,7 +281,7 @@ func TestKeeper_Close(t *testing.T) {
 			err:         tokenregistrytypes.ErrNotFound,
 		},
 		{
-			name: "wrong address",
+			name: "wrong address/mtp not found",
 			msgClose: types.MsgClose{
 				Signer: "xxx",
 				Id:     1,
@@ -290,13 +291,14 @@ func TestKeeper_Close(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			poolAsset:   "xxx",
-			token:       "xxx",
-			poolEnabled: true,
-			errString:   errors.New("decoding bech32 failed: invalid bech32 string length 3"),
+			poolAsset:         "xxx",
+			token:             "xxx",
+			poolEnabled:       true,
+			mtpCreateDisabled: true,
+			errString:         errors.New("mtp not found"),
 		},
 		{
-			name: "insufficient funds",
+			name: "insufficient funds/mtp not found",
 			msgClose: types.MsgClose{
 				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:     1,
@@ -306,10 +308,11 @@ func TestKeeper_Close(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			poolAsset:   "xxx",
-			token:       "xxx",
-			poolEnabled: true,
-			errString:   errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
+			poolAsset:         "xxx",
+			token:             "xxx",
+			poolEnabled:       true,
+			mtpCreateDisabled: true,
+			errString:         errors.New("mtp not found"),
 		},
 		{
 			name: "account funded",
@@ -327,6 +330,23 @@ func TestKeeper_Close(t *testing.T) {
 			poolEnabled:   true,
 			fundedAccount: true,
 			err:           nil,
+		},
+		{
+			name: "mtp position invalid",
+			msgClose: types.MsgClose{
+				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:     1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "rowan",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_SHORT,
+			},
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
+			errString:     errors.New("SHORT: mtp position invalid"),
 		},
 	}
 
@@ -393,9 +413,244 @@ func TestKeeper_Close(t *testing.T) {
 				signer = tt.overrideSigner
 			}
 
-			addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, types.Position_LONG, 1)
+			if !tt.mtpCreateDisabled {
+				addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1)
+			}
 
 			_, got := msgServer.Close(sdk.WrapSDKContext(ctx), &msg)
+
+			if tt.errString != nil {
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
+			} else {
+				require.ErrorIs(t, got, tt.err)
+			}
+		})
+	}
+}
+
+func TestKeeper_ForceClose(t *testing.T) {
+	table := []struct {
+		name              string
+		msgForceClose     types.MsgForceClose
+		msgOpen           types.MsgOpen
+		poolAsset         string
+		token             string
+		poolEnabled       bool
+		fundedAccount     bool
+		overrideSigner    string
+		mtpCreateDisabled bool
+		err               error
+		errString         error
+	}{
+		{
+			name: "mtp does not exist",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "xxx",
+				MtpAddress: "xxx",
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset:      "rowan",
+			token:          "somethingelse",
+			overrideSigner: "otheraddress",
+			errString:      types.ErrMTPDoesNotExist,
+		},
+		{
+			name: "pool does not exist",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "xxx",
+				MtpAddress: "xxx",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+		},
+		{
+			name: "same collateral and native asset but pool does not exist",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "xxx",
+				MtpAddress: "xxx",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "rowan",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+		},
+		{
+			name: "denom does not exist",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "xxx",
+				MtpAddress: "xxx",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset:   "xxx",
+			token:       "somethingelse",
+			poolEnabled: true,
+			err:         tokenregistrytypes.ErrNotFound,
+		},
+		{
+			name: "wrong address/mtp not found",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "xxx",
+				MtpAddress: "xxx",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset:         "xxx",
+			token:             "xxx",
+			poolEnabled:       true,
+			mtpCreateDisabled: true,
+			errString:         errors.New("mtp not found"),
+		},
+		{
+			name: "insufficient funds/mtp not found",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset:         "xxx",
+			token:             "xxx",
+			poolEnabled:       true,
+			mtpCreateDisabled: true,
+			errString:         errors.New("mtp not found"),
+		},
+		{
+			name: "account funded",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "rowan",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
+			err:           nil,
+		},
+		{
+			name: "mtp position invalid",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "rowan",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_SHORT,
+			},
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
+			errString:     errors.New("SHORT: mtp position invalid"),
+		},
+	}
+
+	for _, tt := range table {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, app := test.CreateTestAppMargin(false)
+			marginKeeper := app.MarginKeeper
+
+			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+				Denom:       tt.token,
+				Decimals:    18,
+				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			})
+
+			msgServer := keeper.NewMsgServerImpl(marginKeeper)
+
+			asset := clptypes.Asset{Symbol: tt.poolAsset}
+			pool := clptypes.Pool{
+				ExternalAsset:        &asset,
+				NativeAssetBalance:   sdk.NewUint(1000000000),
+				NativeLiabilities:    sdk.NewUint(1000000000),
+				ExternalCustody:      sdk.NewUint(1000000000),
+				ExternalAssetBalance: sdk.NewUint(1000000000),
+				ExternalLiabilities:  sdk.NewUint(1000000000),
+				NativeCustody:        sdk.NewUint(1000000000),
+				PoolUnits:            sdk.NewUint(1),
+				Health:               sdk.NewDec(1),
+			}
+			if tt.poolEnabled {
+				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
+			}
+
+			marginKeeper.ClpKeeper().SetPool(ctx, &pool)
+
+			var address string
+
+			if tt.fundedAccount {
+				nativeAsset := tt.msgOpen.CollateralAsset
+				externalAsset := clptypes.Asset{Symbol: tt.msgOpen.BorrowAsset}
+
+				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
+				externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
+				err := app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(nativeCoin, externalCoin))
+				require.Nil(t, err)
+
+				nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(10000)))
+				externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(10000)))
+
+				_signer := clptest.GenerateAddress(clptest.AddressKey1)
+				address = _signer.String()
+				err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, _signer, sdk.NewCoins(nativeCoin))
+				require.Nil(t, err)
+				marginKeeper.BankKeeper().SendCoinsFromAccountToModule(ctx, _signer, types.ModuleName, sdk.NewCoins(nativeCoin))
+			} else {
+				address = tt.msgForceClose.Signer
+			}
+
+			msg := tt.msgForceClose
+			msg.Signer = address
+
+			var signer string = msg.Signer
+			if tt.overrideSigner != "" {
+				signer = tt.overrideSigner
+			}
+
+			if !tt.mtpCreateDisabled {
+				addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1)
+			}
+
+			_, got := msgServer.ForceClose(sdk.WrapSDKContext(ctx), &msg)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -510,7 +765,6 @@ func TestKeeper_OpenClose(t *testing.T) {
 				Signer: signer.String(),
 				Id:     1,
 			}
-			fmt.Println(pool)
 			_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
 			require.Nil(t, openError)
 
@@ -533,8 +787,6 @@ func TestKeeper_OpenClose(t *testing.T) {
 
 			openMTP, _ := marginKeeper.GetMTP(ctx, signer.String(), 1)
 
-			fmt.Println(openMTP)
-
 			require.Equal(t, openExpectedMTP, openMTP)
 
 			openExpectedPool := clptypes.Pool{
@@ -551,7 +803,6 @@ func TestKeeper_OpenClose(t *testing.T) {
 			}
 
 			openPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
-			fmt.Println(openPool)
 			require.Equal(t, openExpectedPool, openPool)
 
 			_, closeError := msgServer.Close(sdk.WrapSDKContext(ctx), &msgClose)

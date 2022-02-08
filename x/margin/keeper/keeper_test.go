@@ -23,30 +23,52 @@ func TestKeeper_Errors(t *testing.T) {
 }
 
 func TestKeeper_SetMTP(t *testing.T) {
-	t.Run("missed defining asset", func(t *testing.T) {
-		ctx, _, marginKeeper := initKeeper(t)
-		mtp := types.MTP{}
-		err := marginKeeper.SetMTP(ctx, &mtp)
-		require.EqualError(t, err, "no asset specified: mtp invalid")
-	})
-	t.Run("define asset but no address", func(t *testing.T) {
-		ctx, _, marginKeeper := initKeeper(t)
-		mtp := types.MTP{CollateralAsset: "xxx"}
-		err := marginKeeper.SetMTP(ctx, &mtp)
-		require.EqualError(t, err, "no address specified: mtp invalid")
-	})
-	t.Run("define asset and address but no position", func(t *testing.T) {
-		ctx, _, marginKeeper := initKeeper(t)
-		mtp := types.MTP{CollateralAsset: "xxx", Address: "xxx"}
-		err := marginKeeper.SetMTP(ctx, &mtp)
-		require.EqualError(t, err, "no position specified: mtp invalid")
-	})
-	t.Run("define asset and address", func(t *testing.T) {
-		ctx, _, marginKeeper := initKeeper(t)
-		mtp := types.MTP{CollateralAsset: "xxx", Address: "xxx", Position: types.Position_LONG}
-		err := marginKeeper.SetMTP(ctx, &mtp)
-		require.NoError(t, err)
-	})
+	table := []struct {
+		name      string
+		mtp       types.MTP
+		err       error
+		errString error
+	}{
+		{
+			name:      "missed defining asset",
+			mtp:       types.MTP{},
+			errString: errors.New("no asset specified: mtp invalid"),
+		},
+		{
+			name:      "define asset but no address",
+			mtp:       types.MTP{CollateralAsset: "xxx"},
+			errString: errors.New("no address specified: mtp invalid"),
+		},
+		{
+			name:      "define asset and address but no position",
+			mtp:       types.MTP{CollateralAsset: "xxx", Address: "xxx"},
+			errString: errors.New("no position specified: mtp invalid"),
+		},
+		{
+			name: "define asset and address with long position",
+			mtp:  types.MTP{CollateralAsset: "xxx", Address: "xxx", Position: types.Position_LONG},
+		},
+		{
+			name: "define asset and address with short position",
+			mtp:  types.MTP{CollateralAsset: "xxx", Address: "xxx", Position: types.Position_SHORT},
+		},
+	}
+
+	for _, tt := range table {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, _, marginKeeper := initKeeper(t)
+			got := marginKeeper.SetMTP(ctx, &tt.mtp)
+
+			if tt.errString != nil {
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
+			} else {
+				require.ErrorIs(t, got, tt.err)
+			}
+		})
+	}
 }
 
 func TestKeeper_GetMTP(t *testing.T) {
