@@ -41,13 +41,14 @@ option.
 ```
 
 Our custom decoder decodes an incoming CustomMsg (from json format) to our 
-`ReflectCustomMsg` type. This type contains a `Raw` field which contains a raw 
-byte encoding of a `clp` message. If there is no error in the decoding of these 
-fields, the `clp` message is returned by our decoder and further relayed by the 
-`wasm` module's handler.
+`ReflectCustomMsg` type. This type contains some fields that we can use to 
+create a `clp` message. The `clp` message is returned by our decoder and further
+ relayed by the `wasm` module's handler.
 
-In the demo below, we send a wrapped `swap` message to the smart-contract which 
-relays it onto the `clp` module via the SDK's message passing system.
+At the moment, we have hardcoded the `clp` message that gets created when a
+`ReflectCustomMsg` is received, and we don't use the fields in the 
+`ReflectCustomMsg`. Hence, the next step is to encode meaningful information in
+`ReflectCustomMsg` and use it to populate a `clp` message.
 
 ## Demo
 
