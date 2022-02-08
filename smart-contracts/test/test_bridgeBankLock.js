@@ -109,7 +109,7 @@ describe("Test Bridge Bank", function () {
       const remaining = 90_000;
       const afterTransfer = 9_500;
       // Get balances before locking
-      const beforeBridgeBankBalance = Number(
+      const beforeBridgeBankBalance = ethers.BigNumber.from(
         await token.balanceOf(state.bridgeBank.address)
       );
       beforeBridgeBankBalance.should.be.equal(0);
