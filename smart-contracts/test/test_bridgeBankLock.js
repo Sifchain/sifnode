@@ -125,11 +125,11 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the tokens have left the user's wallet
       const afterUserBalance = ethers.BigNumber.from(await token.balanceOf(user.address));
-      afterUserBalance.should.be.bignumber.equal(remaining);
+      afterUserBalance.should.equal(remaining);
 
       // Confirm that bridgeBank now owns the tokens:
       const afterBridgeBankBalance = ethers.BigNumber.from(await token.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.bignumber.equal(afterTransfer);
+      afterBridgeBankBalance.should.equal(afterTransfer);
     });
 
     it("should allow users to lock Ethereum in the bridge bank", async function () {
@@ -143,7 +143,7 @@ describe("Test Bridge Bank", function () {
       const contractBalanceWei = await getBalance(state.bridgeBank.address);
       const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
 
-      contractBalance.should.be.bignumber.equal(
+      contractBalance.should.equal(
         Web3Utils.fromWei((+state.weiAmount).toString(), "ether")
       );
     });
