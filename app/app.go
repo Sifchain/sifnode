@@ -401,6 +401,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
+		app.TokenRegistryKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -554,7 +555,9 @@ func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) 
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-
+	// Init chain is called when the chain starts up
+	// Setting the module version here finalizes the version map which makes sure we can keep track of migrations and not migrate from 1 to 2 every time.
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 

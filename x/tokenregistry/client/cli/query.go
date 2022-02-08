@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -75,6 +76,10 @@ func GetCmdGenerateEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			clientCtx, err = client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -160,26 +165,31 @@ func GetCmdGenerateEntry() *cobra.Command {
 			var denom string
 			var path string
 			// base_denom is required.
-			// override the IBC generation with --denom if specified explicitly.
+			// override the IBC generation with --token_denom if specified explicitly.
 			// otherwise fallback to base_denom
 			if ibcChannelID != "" {
 				path = "transfer/" + ibcChannelID
+				// generate IBC hash from baseDenom and ibc channel id
+				denomTrace := transfertypes.DenomTrace{
+					Path:      path,
+					BaseDenom: baseDenom,
+				}
+				denom = denomTrace.IBCDenom()
+			} else if initialDenom == "" {
+				// either initialDenom or channel id must be specified,
+				// to prevent accidentally leaving off IBC details and
+				return errors.New("--token_denom must be specified if no IBC channel is provided")
 			}
-			// generate IBC hash from baseDenom and ibc channel id
-			denomTrace := transfertypes.DenomTrace{
-				Path:      path,
-				BaseDenom: baseDenom,
-			}
-			denom = denomTrace.IBCDenom()
+			// --token_denom always takes precedence over IBC generation if specified
 			if initialDenom != "" {
 				denom = initialDenom
-			} else if denom == "" {
-				denom = baseDenom
 			}
+
 			entry := types.RegistryEntry{
 				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
+				Path:                     path,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
@@ -230,6 +240,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	}
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 
