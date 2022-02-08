@@ -9,9 +9,15 @@ async function finishUpdate() {
     const factory = await ethers.getContractFactory("BridgeBank") as BridgeBank__factory;
     const bridgebank = await factory.attach(BridgeBankAddress);
 
-    // Set the blocklist 
+    // Set the blocklist variable
+    console.log("Setting the blocklist variable");
     await bridgebank.connect(operator).setBlocklist(BlockListAddress);
 
     // Unpause the bridgebank
+    console.log("Unpausing the variable");
     await bridgebank.connect(pauser).unpause();
 }
+
+finishUpdate()
+    .then(() => {console.log("Tests completed")})
+    .catch((err)=> console.error("Encountered an error:", err))
