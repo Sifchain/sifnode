@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sifnoded tx wasm store ./reflect/contract2/reflect.wasm \
+sifnoded tx wasm store ./reflect/contract3/reflect.wasm \
 --from sif --keyring-backend test \
 --gas 1000000000000000000 \
 --broadcast-mode block \
