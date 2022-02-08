@@ -19,30 +19,22 @@ pub fn instantiate(
 
 #[entry_point]
 pub fn execute(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    msg: ExecuteMsg,
-) -> Result<Response<CustomMsg>, ReflectError> {
-    match msg {
-        ExecuteMsg::ReflectMsg { msgs } => try_reflect(deps, env, info, msgs),
-    }
-}
-
-pub fn try_reflect(
     _deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
-    msgs: Vec<CosmosMsg<CustomMsg>>,
+    msg: ExecuteMsg,
 ) -> Result<Response<CustomMsg>, ReflectError> {
-
-    if msgs.is_empty() {
-        return Err(ReflectError::MessagesEmpty);
+    match msg {
+        ExecuteMsg::ReflectMsg { msgs } => {
+            if msgs.is_empty() {
+                return Err(ReflectError::MessagesEmpty);
+            }
+        
+            Ok(Response::new()
+                .add_attribute("action", "reflect")
+                .add_messages(msgs))
+        }
     }
-
-    Ok(Response::new()
-        .add_attribute("action", "reflect")
-        .add_messages(msgs))
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
