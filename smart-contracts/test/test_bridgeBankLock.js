@@ -114,7 +114,7 @@ describe("Test Bridge Bank", function () {
       );
       beforeBridgeBankBalance.should.be.equal(0);
 
-      const beforeUserBalance = Number(await token.balanceOf(user.address));
+      const beforeUserBalance = ethers.BigNumber.from(await token.balanceOf(user.address));
       beforeUserBalance.should.be.equal(initialBalance);
       // Approve transfer of tokens first
       await token.connect(user).approve(state.bridgeBank.address, transferAmount);
@@ -124,11 +124,11 @@ describe("Test Bridge Bank", function () {
         .lock(state.sender, token.address, transferAmount);
 
       // Confirm that the tokens have left the user's wallet
-      const afterUserBalance = Number(await token.balanceOf(user.address));
+      const afterUserBalance = ethers.BigNumber.from(await token.balanceOf(user.address));
       afterUserBalance.should.be.bignumber.equal(remaining);
 
       // Confirm that bridgeBank now owns the tokens:
-      const afterBridgeBankBalance = Number(await token.balanceOf(state.bridgeBank.address));
+      const afterBridgeBankBalance = ethers.BigNumber.from(await token.balanceOf(state.bridgeBank.address));
       afterBridgeBankBalance.should.be.bignumber.equal(afterTransfer);
     });
 
