@@ -1522,3 +1522,94 @@ func TestKeeper_EC(t *testing.T) {
 		}
 	}
 }
+
+func TestKeeper_AddUpExistingMTP(t *testing.T) {
+	nativeAsset := clptypes.NativeSymbol
+	externalAsset := clptypes.Asset{Symbol: "xxx"}
+
+	ctx, app := test.CreateTestAppMargin(false)
+	marginKeeper := app.MarginKeeper
+
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+		Denom:       externalAsset.Symbol,
+		Decimals:    18,
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+	})
+
+	msgServer := keeper.NewMsgServerImpl(marginKeeper)
+
+	pool := clptypes.Pool{
+		ExternalAsset:        &externalAsset,
+		NativeAssetBalance:   sdk.NewUint(1000000000000),
+		ExternalAssetBalance: sdk.NewUint(1000000000000),
+		NativeCustody:        sdk.ZeroUint(),
+		ExternalCustody:      sdk.ZeroUint(),
+		NativeLiabilities:    sdk.ZeroUint(),
+		ExternalLiabilities:  sdk.ZeroUint(),
+		PoolUnits:            sdk.ZeroUint(),
+		Health:               sdk.ZeroDec(),
+		InterestRate:         sdk.NewDecWithPrec(1, 1),
+	}
+
+	marginKeeper.SetEnabledPools(ctx, []string{externalAsset.Symbol})
+	marginKeeper.ClpKeeper().SetPool(ctx, &pool)
+
+	nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(1000000000000)))
+	externalCoin := sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000)))
+	err := app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(nativeCoin, externalCoin))
+	require.Nil(t, err)
+
+	signer := clptest.GenerateAddress(clptest.AddressKey1)
+	nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000000000)))
+	externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(1000000000000000)))
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(nativeCoin, externalCoin))
+	require.Nil(t, err)
+
+	msg1 := types.MsgOpenLong{
+		Signer:           signer.String(),
+		CollateralAsset:  nativeAsset,
+		CollateralAmount: sdk.NewUint(1000),
+		BorrowAsset:      externalAsset.Symbol,
+	}
+
+	_, openLongError := msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msg1)
+	require.NoError(t, openLongError)
+
+	openLongExpectedMTP := types.MTP{
+		Address:          signer.String(),
+		CollateralAsset:  nativeAsset,
+		CollateralAmount: sdk.NewUint(1000),
+		LiabilitiesP:     sdk.NewUint(1000),
+		LiabilitiesI:     sdk.ZeroUint(),
+		CustodyAsset:     externalAsset.Symbol,
+		CustodyAmount:    sdk.NewUint(4000),
+		Leverage:         sdk.NewUint(1),
+		MtpHealth:        sdk.NewDecWithPrec(1, 1),
+	}
+	openLongMTP, _ := marginKeeper.GetMTP(ctx, nativeAsset, externalAsset.Symbol, signer.String())
+	require.Equal(t, openLongExpectedMTP, openLongMTP)
+
+	msg2 := types.MsgOpenLong{
+		Signer:           signer.String(),
+		CollateralAsset:  nativeAsset,
+		CollateralAmount: sdk.NewUint(500),
+		BorrowAsset:      externalAsset.Symbol,
+	}
+
+	_, openLongError = msgServer.OpenLong(sdk.WrapSDKContext(ctx), &msg2)
+	require.NoError(t, openLongError)
+
+	openLongExpectedMTP = types.MTP{
+		Address:          signer.String(),
+		CollateralAsset:  nativeAsset,
+		CollateralAmount: sdk.NewUint(1500),
+		LiabilitiesP:     sdk.NewUint(1500),
+		LiabilitiesI:     sdk.ZeroUint(),
+		CustodyAsset:     externalAsset.Symbol,
+		CustodyAmount:    sdk.NewUint(6000),
+		Leverage:         sdk.NewUint(1),
+		MtpHealth:        sdk.NewDecWithPrec(1, 1),
+	}
+	openLongMTP, _ = marginKeeper.GetMTP(ctx, nativeAsset, externalAsset.Symbol, signer.String())
+	require.Equal(t, openLongExpectedMTP, openLongMTP)
+}
