@@ -135,7 +135,7 @@ class Sifnoded:
     def peggy2_token_registry_register_all(self, registry_path, gas_prices, gas_adjustment, from_account,
         chain_id
     ):
-        args = ["tx", "tokenregistry", "register-all", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
+        args = ["tx", "tokenregistry", "set-registry", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
             "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--yes"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return [json.loads(x) for x in stdout(res).splitlines()]
