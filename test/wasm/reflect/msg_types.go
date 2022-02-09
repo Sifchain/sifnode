@@ -4,6 +4,6 @@ type Swap struct {
 	Amount uint32 `json:"amount,omitempty"`
 }
 
-type ReflectCustomMsg struct {
+type SifchainMsg struct {
 	Swap *Swap `json:"swap,omitempty"`
 }

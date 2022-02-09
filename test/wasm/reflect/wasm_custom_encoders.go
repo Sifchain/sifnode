@@ -22,30 +22,32 @@ func ReflectEncoders(cdc codec.Codec) *wasmkeeper.MessageEncoders {
 // encoding. This needs to be registered on the Encoders
 func FromReflectCustomMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
 	return func(_sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
-		var custom ReflectCustomMsg
-		err := json.Unmarshal(msg, &custom)
+		var sifMsg SifchainMsg
+		err := json.Unmarshal(msg, &sifMsg)
 		if err != nil {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 		}
 
-		fmt.Printf("@@@ SWAP: %v\n", custom.Swap)
+		fmt.Printf("@@@ SifchainMsg: %#v\n", sifMsg)
 
-		if custom.Swap != nil {
-			fmt.Printf("@@@ swap amount: %v\n", custom.Swap.Amount)
+		if sifMsg.Swap != nil {
+			fmt.Printf("@@@ swap: %#v\n", sifMsg.Swap)
+
+			// TODO populate swap message with data in ReflectCustomMsg
+			contractAddress, err := sdk.AccAddressFromBech32("sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6")
+			if err != nil {
+				return nil, err
+			}
+			swapMsg := clptypes.NewMsgSwap(
+				contractAddress,
+				clptypes.NewAsset("rowan"),
+				clptypes.NewAsset("ceth"),
+				sdk.NewUint(uint64(sifMsg.Swap.Amount)),
+				sdk.NewUint(0),
+			)
+			return []sdk.Msg{&swapMsg}, nil
 		}
 
-		// TODO populate swap message with data in ReflectCustomMsg
-		contractAddress, err := sdk.AccAddressFromBech32("sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6")
-		if err != nil {
-			return nil, err
-		}
-		swapMsg := clptypes.NewMsgSwap(
-			contractAddress,
-			clptypes.NewAsset("rowan"),
-			clptypes.NewAsset("ceth"),
-			sdk.NewUint(20000),
-			sdk.NewUint(0),
-		)
-		return []sdk.Msg{&swapMsg}, nil
+		return nil, fmt.Errorf("@@@ Empty SifchainMsg")
 	}
 }

@@ -23,11 +23,11 @@ pub fn execute(
     _env: Env,
     _info: MessageInfo,
     msg: ExecuteMsg,
-) -> Result<Response<CustomMsg>, ReflectError> {
+) -> Result<Response<SifchainMsg>, ReflectError> {
     match msg {
         ExecuteMsg::Swap { amount } => Ok(Response::new()
             .add_attribute("action", "reflect")
-            .add_message(CustomMsg::Swap { amount })),
+            .add_message(SifchainMsg::Swap { amount })),
     }
 }
 
@@ -39,14 +39,14 @@ pub enum ExecuteMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum CustomMsg {
+pub enum SifchainMsg {
     Swap { amount: u32 },
 }
 
-impl cosmwasm_std::CustomMsg for CustomMsg {}
+impl cosmwasm_std::CustomMsg for SifchainMsg {}
 
-impl From<CustomMsg> for CosmosMsg<CustomMsg> {
-    fn from(original: CustomMsg) -> Self {
+impl From<SifchainMsg> for CosmosMsg<SifchainMsg> {
+    fn from(original: SifchainMsg) -> Self {
         CosmosMsg::Custom(original)
     }
 }
