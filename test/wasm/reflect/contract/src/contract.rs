@@ -24,10 +24,23 @@ pub fn execute(
     _info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response<SifchainMsg>, ReflectError> {
+    
     match msg {
-        ExecuteMsg::Swap { amount } => Ok(Response::new()
+        ExecuteMsg::Swap { amount } => {
+
+            let swap_msg = SifchainMsg::Swap { 
+                signer: "sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6".to_string(),
+                sent_asset: "rowan".to_string(),
+                received_asset: "ceth".to_string(),
+                sent_amount: amount.to_string(),
+                min_received_amount: "0".to_string(), 
+            };
+
+            Ok(Response::new()
             .add_attribute("action", "reflect")
-            .add_message(SifchainMsg::Swap { amount })),
+            .add_message(swap_msg))
+        }
+       
     }
 }
 
@@ -40,7 +53,13 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SifchainMsg {
-    Swap { amount: u32 },
+    Swap { 
+        signer: String,
+        sent_asset: String,
+        received_asset: String,
+        sent_amount: String,
+        min_received_amount: String,
+    },
 }
 
 impl cosmwasm_std::CustomMsg for SifchainMsg {}

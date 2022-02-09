@@ -14,13 +14,13 @@ import (
 // reflectEncoders needs to be registered in to handle custom message callbacks
 func ReflectEncoders(cdc codec.Codec) *wasmkeeper.MessageEncoders {
 	return &wasmkeeper.MessageEncoders{
-		Custom: FromReflectCustomMsg(cdc),
+		Custom: EncodeSifchainMessage(cdc),
 	}
 }
 
-// FromReflectCustomMsg decodes msg.Data to an sdk.Msg using proto Any and json
+// EncodeSifchainMessage decodes msg.Data to an sdk.Msg using proto Any and json
 // encoding. This needs to be registered on the Encoders
-func FromReflectCustomMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
+func EncodeSifchainMessage(cdc codec.Codec) wasmkeeper.CustomEncoder {
 	return func(_sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
 		var sifMsg SifchainMsg
 		err := json.Unmarshal(msg, &sifMsg)
@@ -31,23 +31,41 @@ func FromReflectCustomMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
 		fmt.Printf("@@@ SifchainMsg: %#v\n", sifMsg)
 
 		if sifMsg.Swap != nil {
-			fmt.Printf("@@@ swap: %#v\n", sifMsg.Swap)
-
-			// TODO populate swap message with data in ReflectCustomMsg
-			contractAddress, err := sdk.AccAddressFromBech32("sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6")
-			if err != nil {
-				return nil, err
-			}
-			swapMsg := clptypes.NewMsgSwap(
-				contractAddress,
-				clptypes.NewAsset("rowan"),
-				clptypes.NewAsset("ceth"),
-				sdk.NewUint(uint64(sifMsg.Swap.Amount)),
-				sdk.NewUint(0),
-			)
-			return []sdk.Msg{&swapMsg}, nil
+			return EncodeSwapMsg(_sender, sifMsg.Swap)
 		}
 
-		return nil, fmt.Errorf("@@@ Empty SifchainMsg")
+		return nil, fmt.Errorf("@@@ Unknown SifchainMsg type")
 	}
+}
+
+func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {
+	// ATTENTION
+	// cosmwasm tends to always user sender as signer
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+
+	sentAmount, ok := sdk.NewIntFromString(msg.SentAmount)
+	if !ok {
+		return nil, fmt.Errorf("Invalid sent amount %s", msg.SentAmount)
+	}
+
+	minReceivedAmount, ok := sdk.NewIntFromString(msg.MinReceivedAmount)
+	if !ok {
+		return nil, fmt.Errorf("Invalid min received amount %s", msg.MinReceivedAmount)
+	}
+
+	swapMsg := clptypes.NewMsgSwap(
+		signer,
+		clptypes.NewAsset(msg.SentAsset),
+		clptypes.NewAsset(msg.ReceivedAssed),
+		sdk.Uint(sentAmount),
+		sdk.Uint(minReceivedAmount),
+	)
+
+	fmt.Printf("@@@ sent amount: %v\n", swapMsg.SentAmount)
+	fmt.Printf("@@@ min received amount: %v\n", swapMsg.MinReceivingAmount)
+
+	return []sdk.Msg{&swapMsg}, nil
 }
