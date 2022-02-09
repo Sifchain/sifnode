@@ -5,7 +5,7 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/Sifchain/sifnode/test/wasm/reflect"
+	sifwasm "github.com/Sifchain/sifnode/wasm"
 	"github.com/cosmos/cosmos-sdk/codec"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/prometheus/client_golang/prometheus"
@@ -34,9 +34,8 @@ func GetWasmOpts(codec codec.Codec, appOpts servertypes.AppOptions) []wasm.Optio
 
 	wasmOpts = append(wasmOpts,
 		wasmkeeper.WithGasRegister(NewJunoWasmGasRegister()),
-		// the reflect options are added for testing only
-		wasmkeeper.WithMessageEncoders(reflect.ReflectEncoders(codec)),
-		wasmkeeper.WithQueryPlugins(reflect.ReflectPlugins()),
+		wasmkeeper.WithMessageEncoders(sifwasm.Encoders(codec)),
+		wasmkeeper.WithQueryPlugins(sifwasm.Plugins()),
 	)
 
 	return wasmOpts

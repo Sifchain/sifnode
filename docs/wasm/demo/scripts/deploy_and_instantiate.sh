@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sifnoded tx wasm store ./reflect/contract/reflect.wasm \
+sifnoded tx wasm store ./contract/swapper.wasm \
 --from sif --keyring-backend test \
 --gas 1000000000000000000 \
 --broadcast-mode block \
@@ -9,7 +9,7 @@ sifnoded tx wasm store ./reflect/contract/reflect.wasm \
 
 sifnoded tx wasm instantiate 1 '{}' \
 --amount 50000rowan \
---label "reflect" \
+--label "swapper" \
 --from sif --keyring-backend test \
 --gas 1000000000000000000 \
 --broadcast-mode block \

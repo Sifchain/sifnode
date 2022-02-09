@@ -1,5 +1,5 @@
 [package]
-name = "reflect"
+name = "swapper"
 version = "0.1.0"
 authors = ["Kevin Jones <kevin.jonesat@gmail.com>"]
 edition = "2018"

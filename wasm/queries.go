@@ -1,4 +1,4 @@
-package reflect
+package wasm
 
 import (
 	"encoding/json"
@@ -10,25 +10,25 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// reflectPlugins needs to be registered in test setup to handle custom query callbacks
-func ReflectPlugins() *wasmkeeper.QueryPlugins {
+// Plugins needs to be registered to handle custom query callbacks
+func Plugins() *wasmkeeper.QueryPlugins {
 	return &wasmkeeper.QueryPlugins{
-		Custom: PerformCustomQuery,
+		Custom: PerformQuery,
 	}
 }
 
-func PerformCustomQuery(_ sdk.Context, request json.RawMessage) ([]byte, error) {
-	var custom ReflectCustomQuery
+func PerformQuery(_ sdk.Context, request json.RawMessage) ([]byte, error) {
+	var custom SifchainQuery
 	err := json.Unmarshal(request, &custom)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 	if custom.Capitalized != nil {
 		msg := strings.ToUpper(custom.Capitalized.Text)
-		return json.Marshal(ReflectCustomQueryResponse{Msg: msg})
+		return json.Marshal(SifchainQueryResponse{Msg: msg})
 	}
 	if custom.Ping != nil {
-		return json.Marshal(ReflectCustomQueryResponse{Msg: "pong"})
+		return json.Marshal(SifchainQueryResponse{Msg: "pong"})
 	}
-	return nil, sdkerrors.Wrap(types.ErrInvalidMsg, "Unknown Custom query variant")
+	return nil, sdkerrors.Wrap(types.ErrInvalidMsg, "Unknown Sifchain query variant")
 }

@@ -1,4 +1,4 @@
-package reflect
+package wasm
 
 import (
 	"encoding/json"
@@ -11,15 +11,15 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// reflectEncoders needs to be registered in to handle custom message callbacks
-func ReflectEncoders(cdc codec.Codec) *wasmkeeper.MessageEncoders {
+// Encoders needs to be registered in order to handle custom sifchain messages
+func Encoders(cdc codec.Codec) *wasmkeeper.MessageEncoders {
 	return &wasmkeeper.MessageEncoders{
 		Custom: EncodeSifchainMessage(cdc),
 	}
 }
 
-// EncodeSifchainMessage decodes msg.Data to an sdk.Msg using proto Any and json
-// encoding. This needs to be registered on the Encoders
+// EncodeSifchainMessage encodes the contents of a SifchainMsg into an SDK msg
+// destined to a sifchain-specific module
 func EncodeSifchainMessage(cdc codec.Codec) wasmkeeper.CustomEncoder {
 	return func(_sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
 		var sifMsg SifchainMsg
@@ -27,24 +27,14 @@ func EncodeSifchainMessage(cdc codec.Codec) wasmkeeper.CustomEncoder {
 		if err != nil {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 		}
-
-		fmt.Printf("@@@ SifchainMsg: %#v\n", sifMsg)
-
 		if sifMsg.Swap != nil {
 			return EncodeSwapMsg(_sender, sifMsg.Swap)
 		}
-
-		return nil, fmt.Errorf("@@@ Unknown SifchainMsg type")
+		return nil, fmt.Errorf("Unknown SifchainMsg type")
 	}
 }
 
 func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {
-	// ATTENTION
-	// cosmwasm tends to always user sender as signer
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return nil, err
-	}
 
 	sentAmount, ok := sdk.NewIntFromString(msg.SentAmount)
 	if !ok {
@@ -56,8 +46,17 @@ func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {
 		return nil, fmt.Errorf("Invalid min received amount %s", msg.MinReceivedAmount)
 	}
 
+	// ATTENTION
+	// cosmwasm tends to always user sender as signer
+	// fmt.Printf("@@@ signer: %s\n", msg.Signer)
+	// signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
 	swapMsg := clptypes.NewMsgSwap(
-		signer,
+		// signer,
+		sender,
 		clptypes.NewAsset(msg.SentAsset),
 		clptypes.NewAsset(msg.ReceivedAssed),
 		sdk.Uint(sentAmount),
