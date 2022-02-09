@@ -28,7 +28,11 @@ func FromReflectCustomMsg(cdc codec.Codec) wasmkeeper.CustomEncoder {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 		}
 
-		fmt.Printf("@@@ SWAP: %s\n", custom.Swap)
+		fmt.Printf("@@@ SWAP: %v\n", custom.Swap)
+
+		if custom.Swap != nil {
+			fmt.Printf("@@@ swap amount: %v\n", custom.Swap.Amount)
+		}
 
 		// TODO populate swap message with data in ReflectCustomMsg
 		contractAddress, err := sdk.AccAddressFromBech32("sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6")

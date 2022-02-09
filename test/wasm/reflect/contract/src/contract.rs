@@ -22,23 +22,31 @@ pub fn execute(
     _deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
-    msg: ReflectCustomMsg,
-) -> Result<Response<ReflectCustomMsg>, ReflectError> {    
-    Ok(Response::new()
-    .add_attribute("action", "reflect")
-    .add_message(msg))
+    msg: ExecuteMsg,
+) -> Result<Response<CustomMsg>, ReflectError> {
+    match msg {
+        ExecuteMsg::Swap { amount } => Ok(Response::new()
+            .add_attribute("action", "reflect")
+            .add_message(CustomMsg::Swap { amount })),
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum ReflectCustomMsg {
-    Swap(String),
+pub enum ExecuteMsg {
+    Swap { amount: u32 },
 }
 
-impl cosmwasm_std::CustomMsg for ReflectCustomMsg {}
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum CustomMsg {
+    Swap { amount: u32 },
+}
 
-impl From<ReflectCustomMsg> for CosmosMsg<ReflectCustomMsg> {
-    fn from(original: ReflectCustomMsg) -> Self {
+impl cosmwasm_std::CustomMsg for CustomMsg {}
+
+impl From<CustomMsg> for CosmosMsg<CustomMsg> {
+    fn from(original: CustomMsg) -> Self {
         CosmosMsg::Custom(original)
     }
 }

@@ -1,5 +1,9 @@
 package reflect
 
+type Swap struct {
+	Amount uint32 `json:"amount,omitempty"`
+}
+
 type ReflectCustomMsg struct {
-	Swap string `json:"swap,omitempty"`
+	Swap *Swap `json:"swap,omitempty"`
 }
