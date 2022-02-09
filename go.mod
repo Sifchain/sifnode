@@ -145,6 +145,11 @@ require (
 )
 
 require (
+	github.com/aws/aws-lambda-go v1.13.3
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+)
+
+require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
@@ -155,6 +160,7 @@ require (
 
 replace (
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.43.0
+	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.4
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/tendermint/tendermint v0.34.14
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
