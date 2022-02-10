@@ -15,3 +15,6 @@ swap:
 
 show-contract-balance:
 	sifnoded q bank balances sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6
+
+custom-query:
+	./scripts/query.sh

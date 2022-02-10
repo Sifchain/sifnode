@@ -1,11 +1,25 @@
-use cosmwasm_std::{entry_point, CosmosMsg};
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
+use cosmwasm_std::{entry_point, to_binary, CosmosMsg, CustomQuery};
+use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo};
+use cosmwasm_std::{Response, QueryResponse, StdResult, StdError};
 
-use cosmwasm_std::StdError;
 use schemars::JsonSchema;
 use thiserror::Error;
 
 use serde::{Deserialize, Serialize};
+
+#[derive(Error, Debug)]
+pub enum SwapperError {
+    #[error("{0}")]
+    Std(#[from] StdError),
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Instantiate 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)] //JsonSchema removed
+pub struct InstantiateMsg {}
+
 
 #[entry_point]
 pub fn instantiate(
@@ -15,6 +29,16 @@ pub fn instantiate(
     _msg: InstantiateMsg,
 ) -> Result<Response, SwapperError> {
     Ok(Response::default())
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Execute
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ExecuteMsg {
+    Swap { amount: u32 },
 }
 
 #[entry_point]
@@ -43,21 +67,6 @@ pub fn execute(
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)] //JsonSchema removed
-pub struct InstantiateMsg {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
-    Swap { amount: u32 },
-}
-
-#[derive(Error, Debug)]
-pub enum SwapperError {
-    #[error("{0}")]
-    Std(#[from] StdError),
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SifchainMsg {
@@ -75,4 +84,47 @@ impl From<SifchainMsg> for CosmosMsg<SifchainMsg> {
     fn from(original: SifchainMsg) -> Self {
         CosmosMsg::Custom(original)
     }
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Query
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum QueryMsg {
+    Pool { external_asset: String },
+}
+
+#[entry_point]
+pub fn query(
+    deps: Deps<SifchainQuery>,
+     _env: Env,
+      msg: QueryMsg,
+) -> StdResult<QueryResponse> {
+
+    match msg {
+        QueryMsg::Pool { external_asset} => to_binary(&query_pool(deps, external_asset)?),
+    }
+}
+
+fn query_pool(deps: Deps<SifchainQuery>, _external_asset: String) -> StdResult<SifchainResponse> {
+    let req = SifchainQuery::Ping { }.into();
+    let response: SifchainResponse = deps.querier.query(&req)?;
+    Ok(response)
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SifchainQuery {
+    Ping {},
+}
+
+impl CustomQuery for SifchainQuery {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct SifchainResponse {
+    pub msg: String,
 }
