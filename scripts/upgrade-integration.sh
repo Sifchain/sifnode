@@ -33,6 +33,7 @@ export DAEMON_NAME=sifnoded
 export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
 
 make clean
+rm -rf ~/.sifnoded
 rm -rf sifnode.log
 
 rm -rf $GOPATH/sifnoded
