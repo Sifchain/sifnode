@@ -13,7 +13,6 @@ type Swap struct {
 }
 
 type AddLiquidity struct {
-	Signer              string `json:"signer,omitempty"`
 	ExternalAsset       string `json:"external_asset,omitempty"`
 	NativeAssetAmount   string `json:"native_asset_amount,omitempty"`
 	ExternalAssetAmount string `json:"external_asset_amount,omitempty"`

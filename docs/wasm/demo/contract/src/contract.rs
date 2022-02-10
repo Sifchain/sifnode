@@ -21,7 +21,7 @@ pub fn instantiate(
 pub fn execute(
     _deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response<SifchainMsg>, SwapperError> {
     match msg {
@@ -39,7 +39,6 @@ pub fn execute(
         }
         ExecuteMsg::AddLiquidity {} => {
             let add_liquidity_msg = SifchainMsg::AddLiquidity {
-                signer: info.sender.to_string(),
                 external_asset: "ceth".to_string(),
                 native_asset_amount: "100".to_string(),
                 external_asset_amount: "50".to_string(),
@@ -78,7 +77,6 @@ pub enum SifchainMsg {
         min_received_amount: String,
     },
     AddLiquidity {
-        signer: String,
         external_asset: String,
         native_asset_amount: String,
         external_asset_amount: String,
