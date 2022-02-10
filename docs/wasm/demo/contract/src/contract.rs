@@ -43,7 +43,6 @@ pub fn execute(
     }
 }
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)] //JsonSchema removed
 pub struct InstantiateMsg {}
 

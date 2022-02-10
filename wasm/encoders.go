@@ -21,19 +21,24 @@ func Encoders(cdc codec.Codec) *wasmkeeper.MessageEncoders {
 // EncodeSifchainMessage encodes the contents of a SifchainMsg into an SDK msg
 // destined to a sifchain-specific module
 func EncodeSifchainMessage(cdc codec.Codec) wasmkeeper.CustomEncoder {
-	return func(_sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
+	return func(sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
 		var sifMsg SifchainMsg
 		err := json.Unmarshal(msg, &sifMsg)
 		if err != nil {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 		}
-		if sifMsg.Swap != nil {
-			return EncodeSwapMsg(_sender, sifMsg.Swap)
+
+		switch {
+		case sifMsg.Swap != nil:
+			return EncodeSwapMsg(sender, sifMsg.Swap)
 		}
-		return nil, fmt.Errorf("Unknown SifchainMsg type")
+
+		return nil, fmt.Errorf("Unknown variant of SifchainMsg")
 	}
 }
 
+// EncodeSwapMsg converts a wasm Swap message into a clp MsgSwap. It sets the
+// sender address as the signer
 func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {
 	sentAmount, ok := sdk.NewIntFromString(msg.SentAmount)
 	if !ok {
@@ -43,7 +48,6 @@ func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {
 	if !ok {
 		return nil, fmt.Errorf("Invalid min received amount %s", msg.MinReceivedAmount)
 	}
-	// XXX note that the swap signer is the contract
 	swapMsg := clptypes.NewMsgSwap(
 		sender,
 		clptypes.NewAsset(msg.SentAsset),
