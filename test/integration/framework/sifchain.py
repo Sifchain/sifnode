@@ -240,6 +240,7 @@ class Ebrelayer:
             (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
             (["--from", sign_with] if sign_with else []) + \
             (["--home", home] if home else []) + \
+            (["--keyring-dir", home] if home else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
         return buildcmd(args, env=env, cwd=cwd)
