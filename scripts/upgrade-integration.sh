@@ -44,7 +44,7 @@ rm -rf $GOPATH/bin/new/sifnoded
 git checkout $CurrentBinary
 make install
 cp $GOPATH/bin/sifnoded $GOPATH/bin/old/
-chmod +x $GOPATH/sifnoded
+chmod +x $GOPATH/bin/sifnoded
 sifnoded init test --chain-id=localnet -o
 
 echo "Generating deterministic account - sif"
