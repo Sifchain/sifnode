@@ -402,6 +402,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
+		app.TokenRegistryKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 

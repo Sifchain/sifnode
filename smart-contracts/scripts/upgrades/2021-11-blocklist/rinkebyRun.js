@@ -1,6 +1,41 @@
 /**
- * This script will upgrade BridgeBank in production and connect it to the Blocklist.
- * For instructions, please consult scripts/upgrades/2021-11-blocklist/runbook.md
+ * This script will upgrade BridgeBank on ROPSTEN and connect it to the Blocklist.
+ * We won't use our usual Ropsten deployment, as we don't want to overwrite values
+ * used in our testnet test flows.
+ * Instead, we'll use an alternate list of contracts that were deployed specifically for this.
+ *
+ * The list is as follows (Rinkeby addresses):
+ * CosmosBridge: 0x84A096672AA417e1afF2bAA9994247FF73347E55
+ * BridgeBank: 0x5CAf4CB0693AD0e8f354A30D01CC20F9496988D4
+ * Blocklist: 0xbB4fa6cC28f18Ae005998a5336dbA3bC49e3dc57
+ *
+ * There are 3 important roles:
+ * The Proxy Admin can upgrade BridgeBank: 0xDDEe73fb5c91EDf22fe8293C72BE5Fca7cDbc872
+ * The BridgeBank Operator can set the blocklist in BridgeBank: 0xAa13C6edb99Fe18Ca97DE8Cc3c2467a5DabFF998
+ * The Pauser can pause and unpause the system: 0x2DAe2e893DB771D01b5CB24d1C26692d9b034D3C
+ *
+ * Before running this script, please set the following variables on your .env:
+ * RINKEBY_URL=https://eth-rinkeby.alchemyapi.io/v2/your-alchemy-id
+ * RINKEBY_PRIVATE_KEYS=XXXXXXXX,YYYYYYYY,ZZZZZZZZ
+ * ACTIVE_PRIVATE_KEY=RINKEBY_PRIVATE_KEYS
+ *
+ * Where:
+ *
+ * ```
+ * XXXXXXXX is the PROXY ADMIN private key
+ * YYYYYYYY is BridgeBank's and CosmosBridge's OPERATOR private key
+ * ZZZZZZZZ is the PAUSER's private key
+ * ```
+ *
+ * They should be separated by a comma, and they have to be in that order (admin first, operator second, pauser third).
+ * Please also make sure you changed `your-alchemy-id` for your actual Alchemy id in `RINKEBY_URL`.
+ *
+ * To run the script, use the following command:
+ *
+ * ```
+ * npx hardhat run scripts/upgrades/2021-11-blocklist/rinkebyRun.js
+ * ```
+ *
  */
 require("dotenv").config();
 
@@ -14,26 +49,25 @@ const { print } = require("../../helpers/utils");
 // Helps converting an address to a checksum address
 const addr = Web3.utils.toChecksumAddress;
 
-// Defaults to the Ethereum Mainnet address
+// Defaults to the Rinkeby address
 const BLOCKLIST_ADDRESS =
-  process.env.BLOCKLIST_ADDRESS || addr("0x9C8a2011cCb697D7EDe3c94f9FBa5686a04DeACB");
+  process.env.BLOCKLIST_ADDRESS || addr("0xAE864F340043ba8d45dbDdFd589F3957A74Dc7FF");
 
-// If there is no DEPLOYMENT_NAME env var, we'll use the mainnet deployment
-const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
+const BRIDGEBANK_ADDRESS =
+  process.env.BRIDGEBANK_ADDRESS || addr("0x5CAf4CB0693AD0e8f354A30D01CC20F9496988D4");
 
-// If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
-const CHAIN_ID = process.env.CHAIN_ID || 1;
+const COSMOSBRIDGE_ADDRESS =
+  process.env.COSMOSBRIDGE_ADDRESS || addr("0x84A096672AA417e1afF2bAA9994247FF73347E55");
 
-// Are we running this script in test mode?
-const USE_FORKING = !!process.env.USE_FORKING;
+const PROXY_ADMIN_ADDRESS =
+  process.env.PROXY_ADMIN_ADDRESS || addr("0xDDEe73fb5c91EDf22fe8293C72BE5Fca7cDbc872");
 
 // Will estimate gas and multiply the result by this value to use as MaxFeePerGas
 const GAS_PRICE_BUFFER = 5;
 
 const state = {
   addresses: {
-    pauser1: addr("c0a586fb260b2c14098a9d95b75f56f13cad2dd9"),
-    pauser2: addr("0x9910ade709043d8b9ed2a31fdfcbfb6538f9a397"),
+    pauser: addr("0x2DAe2e893DB771D01b5CB24d1C26692d9b034D3C"),
     whitelistedToken: addr("0x5a98fcbea516cf06857215779fd812ca3bef1b32"),
     cosmosWhitelistedtoken: addr("0x8D983cb9388EaC77af0474fA441C4815500Cb7BB"),
     knownBlocklistedAddress: addr("0x8576acc5c05d6ce88f4e49bf65bdf0c62f91353c"),
@@ -51,8 +85,7 @@ const state = {
   },
   storageSlots: {
     before: {
-      pauser1: "",
-      pauser2: "",
+      pauser: "",
       owner: "",
       nonce: "",
       whitelist: "",
@@ -134,59 +167,57 @@ async function estimateGasPrice() {
 
 async function connectToContracts() {
   print("yellow", `🕑 Connecting to contracts...`);
+
   // Create an instance of BridgeBank from the deployed code
-  const { instance: bridgeBank } = await support.getDeployedContract(
-    DEPLOYMENT_NAME,
-    "BridgeBank",
-    CHAIN_ID
-  );
+  const { instance: bridgeBank } = await getDeployedContract("BridgeBank", BRIDGEBANK_ADDRESS);
   state.contracts.bridgeBank = bridgeBank;
 
   // Create an instance of CosmosBridge from the deployed code
-  const { instance: cosmosBridge } = await support.getDeployedContract(
-    DEPLOYMENT_NAME,
+  const { instance: cosmosBridge } = await getDeployedContract(
     "CosmosBridge",
-    CHAIN_ID
+    COSMOSBRIDGE_ADDRESS
   );
   state.contracts.cosmosBridge = cosmosBridge;
 
   // Connect to the Blocklist
   state.contracts.blocklist = await support.getContractAt("Blocklist", BLOCKLIST_ADDRESS);
+  print("green", `✅ Blocklist connected at ${state.contracts.blocklist.address}`);
 
-  print("green", `✅ Contracts connected`);
+  print("green", `✅ -- All contracts connected --`);
+}
+
+async function getDeployedContract(contractName, forceAddress) {
+  chainId = 4;
+
+  const filename = `scripts/upgrades/2021-11-blocklist/deployments-test/${contractName}.json`;
+  const artifactContents = fs.readFileSync(filename, { encoding: "utf-8" });
+  const parsed = JSON.parse(artifactContents);
+  const ethersInterface = new ethers.utils.Interface(parsed.abi);
+
+  const address = forceAddress || parsed.networks[chainId].address;
+  print("yellow", `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`);
+
+  const accounts = await ethers.getSigners();
+  const activeUser = accounts[0];
+
+  const contract = new ethers.Contract(address, ethersInterface, activeUser);
+  const instance = await contract.attach(address);
+
+  print("green", `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`);
+
+  return {
+    contract,
+    instance,
+    address,
+    activeUser,
+  };
 }
 
 async function setupAccounts() {
-  const operatorAddress = await state.contracts.bridgeBank.operator();
-
-  // If we're forking, we want to impersonate the owner account
-  if (USE_FORKING) {
-    print("magenta", "MAINNET FORKING :: IMPERSONATE ACCOUNT");
-
-    state.signers.admin = await support.impersonateAccount(
-      support.PROXY_ADMIN_ADDRESS,
-      "10000000000000000000",
-      "Proxy Admin"
-    );
-
-    state.signers.operator = await support.impersonateAccount(
-      operatorAddress,
-      "10000000000000000000",
-      "Operator"
-    );
-
-    state.signers.pauser = await support.impersonateAccount(
-      state.addresses.pauser1,
-      "10000000000000000000",
-      "Pauser"
-    );
-  } else {
-    // If not, we want the connected accounts
-    const accounts = await ethers.getSigners();
-    state.signers.admin = accounts[0];
-    state.signers.operator = accounts[1];
-    state.signers.pauser = accounts[2];
-  }
+  const accounts = await ethers.getSigners();
+  state.signers.admin = accounts[0];
+  state.signers.operator = accounts[1];
+  state.signers.pauser = accounts[2];
 
   await accounts_sanityCheck();
 }
@@ -195,14 +226,13 @@ async function accounts_sanityCheck() {
   const operatorAddress = await state.contracts.bridgeBank.operator();
 
   const hasCorrectAdmin =
-    state.signers.admin.address.toLowerCase() === support.PROXY_ADMIN_ADDRESS.toLowerCase();
+    state.signers.admin.address.toLowerCase() === PROXY_ADMIN_ADDRESS.toLowerCase();
 
   const hasCorrectOperator =
     state.signers.operator.address.toLowerCase() === operatorAddress.toLowerCase();
 
   const hasCorrectPauser =
-    state.signers.pauser.address.toLowerCase() === state.addresses.pauser1.toLowerCase() ||
-    state.signers.pauser.address.toLowerCase() === state.addresses.pauser2.toLowerCase();
+    state.signers.pauser.address.toLowerCase() === state.addresses.pauser.toLowerCase();
 
   if (!hasCorrectAdmin) {
     throw new Error(
@@ -218,7 +248,7 @@ async function accounts_sanityCheck() {
 
   if (!hasCorrectPauser) {
     throw new Error(
-      `The third Private Key is not the BridgeBank PAUSER's private key. Please use the Private Key that corresponds to the address ${state.addresses.pauser1} or ${state.addresses.pauser2}`
+      `The third Private Key is not the BridgeBank PAUSER's private key. Please use the Private Key that corresponds to the address ${state.addresses.pauser}`
     );
   }
 
@@ -266,8 +296,7 @@ async function setStorageSlots(beforeUpgrade = true) {
   const contract = beforeUpgrade ? state.contracts.bridgeBank : state.contracts.upgradedBridgeBank;
   const prefix = beforeUpgrade ? "before" : "after";
 
-  state.storageSlots[prefix].pauser1 = await contract.pausers(state.addresses.pauser1);
-  state.storageSlots[prefix].pauser2 = await contract.pausers(state.addresses.pauser2);
+  state.storageSlots[prefix].pauser = await contract.pausers(state.addresses.pauser);
   state.storageSlots[prefix].owner = await contract.owner();
   state.storageSlots[prefix].nonce = await contract.lockBurnNonce();
   state.storageSlots[prefix].whitelist = await contract.getTokenInEthWhiteList(
@@ -317,13 +346,19 @@ function copyManifest(injectChanges) {
   print("cyan", `👀 Fetching the correct manifest`);
 
   fs.copySync(
-    `./deployments/sifchain-1/.openzeppelin/mainnet.json`,
-    `./.openzeppelin/mainnet.json`
+    `./scripts/upgrades/2021-11-blocklist/deployments-test/rinkeby.json`,
+    `./.openzeppelin/rinkeby.json`
   );
 }
 
 async function registerBlocklist() {
   print("yellow", "🕑 Registering the Blocklist in BridgeBank. Please wait...");
+
+  print(
+    "magenta",
+    `state.contracts.upgradedBridgeBank.address: ${state.contracts.upgradedBridgeBank.address}`
+  );
+
   await state.contracts.upgradedBridgeBank
     .connect(state.signers.operator)
     .setBlocklist(BLOCKLIST_ADDRESS, { maxFeePerGas: state.maxFeePerGas });
