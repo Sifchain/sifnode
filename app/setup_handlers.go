@@ -27,9 +27,9 @@ func SetupHandlers(app *SifchainApp) {
 		// State migration logic should be added to a migrator function
 		// Migrating modules should increment the ConsensusVersion
 		// FromVersion NotEqual to ConsensusVersion is required to trigger a migration.
-		for moduleName := range app.mm.Modules {
-			fromVM[moduleName] = 1
-		}
+		//for moduleName := range app.mm.Modules {
+		//	fromVM[moduleName] = 1
+		//}
 		// Set to 2 , which is the same as the ConsensusVersion to disable migrate function
 		fromVM[authtypes.ModuleName] = 2
 		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
