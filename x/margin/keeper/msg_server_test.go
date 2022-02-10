@@ -432,17 +432,20 @@ func TestKeeper_Close(t *testing.T) {
 
 func TestKeeper_ForceClose(t *testing.T) {
 	table := []struct {
-		name              string
-		msgForceClose     types.MsgForceClose
-		msgOpen           types.MsgOpen
-		poolAsset         string
-		token             string
-		poolEnabled       bool
-		fundedAccount     bool
-		overrideSigner    string
-		mtpCreateDisabled bool
-		err               error
-		errString         error
+		name                          string
+		msgForceClose                 types.MsgForceClose
+		msgOpen                       types.MsgOpen
+		poolAsset                     string
+		token                         string
+		poolEnabled                   bool
+		fundedAccount                 bool
+		overrideSigner                string
+		overrideForceCloseThreadshold string
+		mtpCreateDisabled             bool
+		err                           error
+		errString                     error
+		err2                          error
+		errString2                    error
 	}{
 		{
 			name: "mtp does not exist",
@@ -526,6 +529,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 			poolEnabled:       true,
 			mtpCreateDisabled: true,
 			errString:         errors.New("mtp not found"),
+			errString2:        errors.New("mtp not found"),
 		},
 		{
 			name: "insufficient funds/mtp not found",
@@ -544,9 +548,10 @@ func TestKeeper_ForceClose(t *testing.T) {
 			poolEnabled:       true,
 			mtpCreateDisabled: true,
 			errString:         errors.New("mtp not found"),
+			errString2:        errors.New("mtp not found"),
 		},
 		{
-			name: "account funded",
+			name: "account funded and mtp healthy",
 			msgForceClose: types.MsgForceClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
@@ -561,7 +566,26 @@ func TestKeeper_ForceClose(t *testing.T) {
 			token:         "xxx",
 			poolEnabled:   true,
 			fundedAccount: true,
-			err:           nil,
+			errString:     errors.New("sif15ky9du8a2wlstz6fpx3p4mqpjyrm5cgqhns3lt: mtp health above force close threshold"),
+		},
+		{
+			name: "account funded and mtp not healthy",
+			msgForceClose: types.MsgForceClose{
+				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+				Id:         1,
+			},
+			msgOpen: types.MsgOpen{
+				CollateralAsset: "rowan",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			poolAsset:                     "xxx",
+			token:                         "xxx",
+			poolEnabled:                   true,
+			fundedAccount:                 true,
+			overrideForceCloseThreadshold: "2",
+			errString2:                    errors.New("mtp not found"),
 		},
 		{
 			name: "mtp position invalid",
@@ -594,6 +618,26 @@ func TestKeeper_ForceClose(t *testing.T) {
 				Decimals:    18,
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
+
+			params := types.Params{
+				LeverageMax:          sdk.NewUint(1),
+				InterestRateMax:      sdk.NewDec(1),
+				InterestRateMin:      sdk.ZeroDec(),
+				InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
+				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
+				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
+				EpochLength:          0,
+				ForceCloseThreshold:  sdk.ZeroDec(),
+			}
+
+			if tt.overrideForceCloseThreadshold != "" {
+				params.ForceCloseThreshold, _ = sdk.NewDecFromStr(tt.overrideForceCloseThreadshold)
+			}
+
+			expectedGenesis := types.GenesisState{Params: &params}
+			marginKeeper.InitGenesis(ctx, expectedGenesis)
+			genesis := marginKeeper.ExportGenesis(ctx)
+			require.Equal(t, expectedGenesis, *genesis)
 
 			msgServer := keeper.NewMsgServerImpl(marginKeeper)
 
@@ -640,6 +684,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 			msg := tt.msgForceClose
 			msg.Signer = address
+			msg.MtpAddress = address
 
 			var signer string = msg.Signer
 			if tt.overrideSigner != "" {
@@ -658,6 +703,16 @@ func TestKeeper_ForceClose(t *testing.T) {
 				require.NoError(t, got)
 			} else {
 				require.ErrorIs(t, got, tt.err)
+			}
+
+			_, got2 := marginKeeper.GetMTP(ctx, signer, 1)
+
+			if tt.errString2 != nil {
+				require.EqualError(t, got2, tt.errString2.Error())
+			} else if tt.err2 == nil {
+				require.NoError(t, got2)
+			} else {
+				require.ErrorIs(t, got2, tt.err)
 			}
 		})
 	}
