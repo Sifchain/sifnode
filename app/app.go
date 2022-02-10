@@ -333,8 +333,6 @@ func NewSifApp(
 	   We remove the invariant check from crisis module and add to be checked once every 600 blocks instead.
 	*/
 	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
-	skipGenesisInvariants = false
-	invCheckPeriod = 1
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName), invCheckPeriod, app.BankKeeper, authtypes.FeeCollectorName,
 	)
