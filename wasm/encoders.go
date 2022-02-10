@@ -30,8 +30,34 @@ func EncodeSifchainMessage(cdc codec.Codec) wasmkeeper.CustomEncoder {
 		if sifMsg.Swap != nil {
 			return EncodeSwapMsg(_sender, sifMsg.Swap)
 		}
+		if sifMsg.AddLiquidity != nil {
+			return EncodeAddLiquidityMsg(_sender, sifMsg.AddLiquidity)
+		}
 		return nil, fmt.Errorf("Unknown SifchainMsg type")
 	}
+}
+
+func EncodeAddLiquidityMsg(sender sdk.AccAddress, msg *AddLiquidity) ([]sdk.Msg, error) {
+
+	nativeAssetAmount, ok := sdk.NewIntFromString(msg.NativeAssetAmount)
+	if !ok {
+		return nil, fmt.Errorf("invalid native asset amount %s", msg.NativeAssetAmount)
+	}
+
+	externalAssetAmount, ok := sdk.NewIntFromString(msg.ExternalAssetAmount)
+	if !ok {
+		return nil, fmt.Errorf("invalid external asset amount %s", msg.ExternalAssetAmount)
+	}
+
+	addLiquidityMsg := clptypes.NewMsgAddLiquidity(
+		sender,
+		clptypes.NewAsset(msg.ExternalAsset),
+		sdk.Uint(nativeAssetAmount),
+		sdk.Uint(externalAssetAmount),
+	)
+
+	return []sdk.Msg{&addLiquidityMsg}, nil
+
 }
 
 func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {

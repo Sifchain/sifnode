@@ -24,24 +24,33 @@ pub fn execute(
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response<SifchainMsg>, SwapperError> {
-    
     match msg {
         ExecuteMsg::Swap { amount } => {
-
-            let swap_msg = SifchainMsg::Swap { 
+            let swap_msg = SifchainMsg::Swap {
                 // signer: "sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6".to_string(),
                 signer: info.sender.to_string(),
                 sent_asset: "rowan".to_string(),
                 received_asset: "ceth".to_string(),
                 sent_amount: amount.to_string(),
-                min_received_amount: "0".to_string(), 
+                min_received_amount: "0".to_string(),
             };
 
             Ok(Response::new()
-            .add_attribute("action", "swap")
-            .add_message(swap_msg))
+                .add_attribute("action", "swap")
+                .add_message(swap_msg))
         }
-       
+        ExecuteMsg::AddLiquidity {} => {
+            let add_liquidity_msg = SifchainMsg::AddLiquidity {
+                signer: info.sender.to_string(),
+                external_asset: "ceth".to_string(),
+                native_asset_amount: "100".to_string(),
+                external_asset_amount: "50".to_string(),
+            };
+
+            Ok(Response::new()
+                .add_attribute("action", "add_liquidity")
+                .add_message(add_liquidity_msg))
+        }
     }
 }
 
@@ -49,17 +58,24 @@ pub fn execute(
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     Swap { amount: u32 },
+    AddLiquidity {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SifchainMsg {
-    Swap { 
+    Swap {
         signer: String,
         sent_asset: String,
         received_asset: String,
         sent_amount: String,
         min_received_amount: String,
+    },
+    AddLiquidity {
+        signer: String,
+        external_asset: String,
+        native_asset_amount: String,
+        external_asset_amount: String,
     },
 }
 
