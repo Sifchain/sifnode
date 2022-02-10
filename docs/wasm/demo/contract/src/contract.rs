@@ -27,8 +27,6 @@ pub fn execute(
     match msg {
         ExecuteMsg::Swap { amount } => {
             let swap_msg = SifchainMsg::Swap {
-                // signer: "sif14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s62cvu6".to_string(),
-                signer: info.sender.to_string(),
                 sent_asset: "rowan".to_string(),
                 received_asset: "ceth".to_string(),
                 sent_amount: amount.to_string(),
@@ -54,6 +52,9 @@ pub fn execute(
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)] //JsonSchema removed
+pub struct InstantiateMsg {}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
@@ -61,11 +62,16 @@ pub enum ExecuteMsg {
     AddLiquidity {},
 }
 
+#[derive(Error, Debug)]
+pub enum SwapperError {
+    #[error("{0}")]
+    Std(#[from] StdError),
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SifchainMsg {
     Swap {
-        signer: String,
         sent_asset: String,
         received_asset: String,
         sent_amount: String,
@@ -85,13 +91,4 @@ impl From<SifchainMsg> for CosmosMsg<SifchainMsg> {
     fn from(original: SifchainMsg) -> Self {
         CosmosMsg::Custom(original)
     }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)] //JsonSchema removed
-pub struct InstantiateMsg {}
-
-#[derive(Error, Debug)]
-pub enum SwapperError {
-    #[error("{0}")]
-    Std(#[from] StdError),
 }

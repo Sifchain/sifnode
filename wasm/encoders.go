@@ -61,36 +61,21 @@ func EncodeAddLiquidityMsg(sender sdk.AccAddress, msg *AddLiquidity) ([]sdk.Msg,
 }
 
 func EncodeSwapMsg(sender sdk.AccAddress, msg *Swap) ([]sdk.Msg, error) {
-
 	sentAmount, ok := sdk.NewIntFromString(msg.SentAmount)
 	if !ok {
 		return nil, fmt.Errorf("Invalid sent amount %s", msg.SentAmount)
 	}
-
 	minReceivedAmount, ok := sdk.NewIntFromString(msg.MinReceivedAmount)
 	if !ok {
 		return nil, fmt.Errorf("Invalid min received amount %s", msg.MinReceivedAmount)
 	}
-
-	// ATTENTION
-	// cosmwasm tends to always user sender as signer
-	// fmt.Printf("@@@ signer: %s\n", msg.Signer)
-	// signer, err := sdk.AccAddressFromBech32(msg.Signer)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
+	// XXX note that the swap signer is the contract
 	swapMsg := clptypes.NewMsgSwap(
-		// signer,
 		sender,
 		clptypes.NewAsset(msg.SentAsset),
 		clptypes.NewAsset(msg.ReceivedAssed),
 		sdk.Uint(sentAmount),
 		sdk.Uint(minReceivedAmount),
 	)
-
-	fmt.Printf("@@@ sent amount: %v\n", swapMsg.SentAmount)
-	fmt.Printf("@@@ min received amount: %v\n", swapMsg.MinReceivingAmount)
-
 	return []sdk.Msg{&swapMsg}, nil
 }

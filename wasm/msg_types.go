@@ -6,7 +6,6 @@ type SifchainMsg struct {
 }
 
 type Swap struct {
-	Signer            string `json:"signer,omitempty"`
 	SentAsset         string `json:"sent_asset,omitempty"`
 	ReceivedAssed     string `json:"received_asset,omitempty"`
 	SentAmount        string `json:"sent_amount,omitempty"`
