@@ -1014,6 +1014,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         assert len(res) == 1
         assert res[0]["code"] == 0
 
+        # need sleep to wait last transaction included in block
+        time.sleep(5)
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
@@ -1024,6 +1026,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
             admin_account_name, chain_id, gas_prices, gas_adjustment)
 
+        # need sleep to wait last transaction included in block
+        time.sleep(5)
         sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
