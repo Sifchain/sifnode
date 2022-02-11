@@ -3,6 +3,7 @@ import eth
 import test_utils
 import sifchain
 from common import *
+from test_utils import EnvCtx
 
 
 fund_amount_eth = 10 * eth.ETH
@@ -66,7 +67,7 @@ def test_trolltoken_to_sifnode_and_back(ctx):
 
 
 # Shared code used by different test scenarios
-def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_times, is_troll_token):
+def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, number_of_times, is_troll_token):
     # Create/retrieve 2 test ethereum accounts
     test_eth_acct_0, test_eth_acct_1 = [ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth) for _ in range(2)]
 
@@ -139,15 +140,15 @@ def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_
         assert eth_balance_after_1 == eth_balance_before_1 + send_amount_1
         assert eth_balance_after_1 == send_amount_1 * (i + 1)
 
-
+# TODO: Token_data also has token decimals field, why are we taking as param
 def deploy_erc20_token_for_test(ctx, token_decimals):
-    token_data = ctx.generate_random_erc20_token_data()
+    token_data: test_utils.ERC20TokenData = ctx.generate_random_erc20_token_data()
     return ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, token_decimals)
 
 
 def deploy_trolltoken_for_test(ctx):
     token = ctx.generate_random_erc20_token_data()
-    abi, bytecode, _ = ctx.abi_provider.get_descriptor("TrollToken")
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("RandomTrollToken")
     token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
     txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)(token.name, token.symbol)
     return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)

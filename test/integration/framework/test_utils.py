@@ -789,9 +789,9 @@ class EnvCtx:
 
 class ERC20TokenData:
     def __init__(self, symbol, name, decimals):
-        self.symbol = symbol
-        self.name = name
-        self.decimals = decimals
+        self.symbol: string = symbol
+        self.name: string = name
+        self.decimals: int = decimals
 
 
 def recover_eth_from_test_accounts():
