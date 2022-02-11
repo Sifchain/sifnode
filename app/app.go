@@ -18,6 +18,9 @@ import (
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	"github.com/Sifchain/sifnode/x/margin"
+	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -106,9 +109,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/Sifchain/sifnode/x/margin"
-	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
-	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 )
 
 const appName = "sifnode"
@@ -482,6 +482,7 @@ func NewSifApp(
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
+		margin.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
