@@ -39,20 +39,18 @@ type (
 	}
 
 	CloseReq struct {
-		BaseReq         rest.BaseReq   `json:"base_req"`
-		Signer          string         `json:"signer"`           // User who is trying to close margin position
-		CollateralAsset clptypes.Asset `json:"collateral_asset"` // CollateralAsset for margin position
-		BorrowAsset     clptypes.Asset `json:"borrow_asset"`     // BorrowAsset is asset being borrowed in margin position
-		Position        types.Position `json:"position"`         // Position type for margin position
+		BaseReq rest.BaseReq `json:"base_req"`
+		Signer  string       `json:"signer"` // User who is trying to close margin position
+		Id      uint64       `json:"id"`     // Id of the mtp
+
 	}
 
 	ForceCloseReq struct {
-		BaseReq         rest.BaseReq   `json:"base_req"`
-		Signer          string         `json:"signer"`           // User who is trying to close margin position
-		MtpAddress      string         `json:"mtp_address"`      // MtpAddress for position to force close
-		CollateralAsset clptypes.Asset `json:"collateral_asset"` // CollateralAsset for margin position
-		BorrowAsset     clptypes.Asset `json:"borrow_asset"`     // BorrowAsset is asset being borrowed in margin position
-		Position        types.Position `json:"position"`         // Position type for margin position
+		BaseReq    rest.BaseReq `json:"base_req"`
+		Signer     string       `json:"signer"`      // User who is trying to close margin position
+		MtpAddress string       `json:"mtp_address"` // MtpAddress for position to force close
+		Id         uint64       `json:"id"`          // Id of the mtp
+
 	}
 )
 
@@ -113,10 +111,8 @@ func closeHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.MsgClose{
-			Signer:          signer.String(),
-			CollateralAsset: req.CollateralAsset.String(),
-			BorrowAsset:     req.BorrowAsset.String(),
-			Position:        req.Position,
+			Signer: signer.String(),
+			Id:     req.Id,
 		}
 
 		err = msg.ValidateBasic()
@@ -155,11 +151,9 @@ func forceCloseHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.MsgForceClose{
-			Signer:          signer.String(),
-			MtpAddress:      mtpAddress.String(),
-			CollateralAsset: req.CollateralAsset.String(),
-			BorrowAsset:     req.BorrowAsset.String(),
-			Position:        req.Position,
+			Signer:     signer.String(),
+			MtpAddress: mtpAddress.String(),
+			Id:         req.Id,
 		}
 
 		err = msg.ValidateBasic()
