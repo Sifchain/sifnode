@@ -43,8 +43,8 @@ impl CustomQuery for SifchainQuery {}
 #[serde(rename_all = "snake_case")]
 
 pub struct PoolResponse {
-    external_asset: String,
-    external_asset_balance: String,
-    native_asset_balance: String,
-    pool_units: String,
+    pub external_asset: String,
+    pub external_asset_balance: String,
+    pub native_asset_balance: String,
+    pub pool_units: String,
 }

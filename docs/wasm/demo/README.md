@@ -1,18 +1,13 @@
 # Demo
 
 In this demo we deploy the `swapper` smart-contract which calls the `clp` module
-to do a swap. 
+to do a swap. First we manually create a rowan/ceth pool using the `sifnoded` 
+cli commands. Then we deploy and instantiate the smart-contract, giving it 50000
+rowan. Finally, we call the smart-contract with a specified `amount` to trigger 
+a swap from rowan to ceth. 
 
-First we manually create a rowan/ceth liquitidy pool using the `sifnoded` cli
-commands.
-
-Then we deploy and instantiate the smart-contract, giving it 50000 rowan.
-
-Finally, we call the smart-contract with a specified `amount` to trigger a swap
-from rowan to ceth. 
-
-Note that it is the contract's bank balances that are thus updated, not the
-balances of the signer of the transaction.
+Note that it is the contract's bank balances that are updated, not the balances 
+of the signer of the transaction.
 
 ## Setup
 

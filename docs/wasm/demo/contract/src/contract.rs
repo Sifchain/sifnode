@@ -1,6 +1,7 @@
 use cosmwasm_std::{entry_point, to_binary};
 use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo};
 use cosmwasm_std::{QueryResponse, Response, StdError, StdResult};
+use cosmwasm_std::{Uint256};
 
 use schemars::JsonSchema;
 use thiserror::Error;
@@ -51,13 +52,28 @@ pub enum ExecuteMsg {
 
 #[entry_point]
 pub fn execute(
-    _deps: DepsMut,
+    deps: DepsMut<SifchainQuery>,
     _env: Env,
     _info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response<SifchainMsg>, SwapperError> {
     match msg {
         ExecuteMsg::Swap { amount } => {
+
+            let pool_response = query_pool(
+                deps.as_ref(),
+                 "ceth".to_string(),
+            )?;
+
+            let external_balance:Uint256 = pool_response.external_asset_balance.parse().unwrap();
+
+            if external_balance < Uint256::from(2_000_000_000_000_000_000u128){
+                return Err(SwapperError::Std(StdError::ParseErr{
+                    target_type: "xxx".to_string(), 
+                    msg: "pool is below threshold".to_string(),
+                }))
+            }
+
             let swap_msg = SifchainMsg::Swap {
                 sent_asset: "rowan".to_string(),
                 received_asset: "ceth".to_string(),
@@ -72,8 +88,8 @@ pub fn execute(
         ExecuteMsg::AddLiquidity {} => {
             let add_liquidity_msg = SifchainMsg::AddLiquidity {
                 external_asset: "ceth".to_string(),
-                native_asset_amount: "100".to_string(),
-                external_asset_amount: "50".to_string(),
+                native_asset_amount: "200".to_string(),
+                external_asset_amount: "200".to_string(),
             };
 
             Ok(Response::new()
@@ -116,6 +132,5 @@ pub fn query(deps: Deps<SifchainQuery>, _env: Env, msg: QueryMsg) -> StdResult<Q
 
 fn query_pool(deps: Deps<SifchainQuery>, external_asset: String) -> StdResult<PoolResponse> {
     let req = SifchainQuery::Pool { external_asset }.into();
-    let response: PoolResponse = deps.querier.query(&req)?;
-    Ok(response)
+    deps.querier.query(&req)
 }
