@@ -1,6 +1,6 @@
 use cosmwasm_std::{entry_point, to_binary, CosmosMsg, CustomQuery};
 use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo};
-use cosmwasm_std::{Response, QueryResponse, StdResult, StdError};
+use cosmwasm_std::{QueryResponse, Response, StdError, StdResult};
 
 use schemars::JsonSchema;
 use thiserror::Error;
@@ -14,12 +14,11 @@ pub enum SwapperError {
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Instantiate 
+Instantiate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)] //JsonSchema removed
 pub struct InstantiateMsg {}
-
 
 #[entry_point]
 pub fn instantiate(
@@ -38,8 +37,14 @@ Execute
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Swap { amount: u32 },
+    Swap {
+        amount: u32,
+    },
     AddLiquidity {},
+    RemoveLiquidity {
+        w_basis_points: String,
+        asymmetry: String,
+    },
 }
 
 #[entry_point]
@@ -73,6 +78,20 @@ pub fn execute(
                 .add_attribute("action", "add_liquidity")
                 .add_message(add_liquidity_msg))
         }
+        ExecuteMsg::RemoveLiquidity {
+            w_basis_points,
+            asymmetry,
+        } => {
+            let remove_liquidity_msg = SifchainMsg::RemoveLiquidity {
+                external_asset: "ceth".to_string(),
+                w_basis_points: w_basis_points,
+                asymmetry: asymmetry,
+            };
+
+            Ok(Response::new()
+                .add_attribute("action", "remove_liquidity")
+                .add_message(remove_liquidity_msg))
+        }
     }
 }
 
@@ -89,6 +108,11 @@ pub enum SifchainMsg {
         external_asset: String,
         native_asset_amount: String,
         external_asset_amount: String,
+    },
+    RemoveLiquidity {
+        external_asset: String,
+        w_basis_points: String,
+        asymmetry: String,
     },
 }
 
@@ -111,23 +135,17 @@ pub enum QueryMsg {
 }
 
 #[entry_point]
-pub fn query(
-    deps: Deps<SifchainQuery>,
-     _env: Env,
-      msg: QueryMsg,
-) -> StdResult<QueryResponse> {
-
+pub fn query(deps: Deps<SifchainQuery>, _env: Env, msg: QueryMsg) -> StdResult<QueryResponse> {
     match msg {
-        QueryMsg::Pool { external_asset} => to_binary(&query_pool(deps, external_asset)?),
+        QueryMsg::Pool { external_asset } => to_binary(&query_pool(deps, external_asset)?),
     }
 }
 
 fn query_pool(deps: Deps<SifchainQuery>, _external_asset: String) -> StdResult<SifchainResponse> {
-    let req = SifchainQuery::Ping { }.into();
+    let req = SifchainQuery::Ping {}.into();
     let response: SifchainResponse = deps.querier.query(&req)?;
     Ok(response)
 }
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

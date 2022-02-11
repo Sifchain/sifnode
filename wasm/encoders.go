@@ -33,10 +33,30 @@ func EncodeSifchainMessage(cdc codec.Codec) wasmkeeper.CustomEncoder {
 			return EncodeSwapMsg(sender, sifMsg.Swap)
 		case sifMsg.AddLiquidity != nil:
 			return EncodeAddLiquidityMsg(sender, sifMsg.AddLiquidity)
+		case sifMsg.RemoveLiquidity != nil:
+			return EncodeRemoveLiquidityMsg(sender, sifMsg.RemoveLiquidity)
 		}
 
 		return nil, fmt.Errorf("Unknown SifchainMsg type")
 	}
+}
+
+func EncodeRemoveLiquidityMsg(sender sdk.AccAddress, msg *RemoveLiquidity) ([]sdk.Msg, error) {
+	wBasisPoints, ok := sdk.NewIntFromString(msg.WBasisPoints)
+	if !ok {
+		return nil, fmt.Errorf("invalid w basis points %s", msg.WBasisPoints)
+	}
+	asymmetry, ok := sdk.NewIntFromString(msg.Asymmetry)
+	if !ok {
+		return nil, fmt.Errorf("invalid asymmetry %s", msg.Asymmetry)
+	}
+	removeLiquidityMsg := clptypes.NewMsgRemoveLiquidity(
+		sender,
+		clptypes.NewAsset(msg.ExternalAsset),
+		sdk.Int(wBasisPoints),
+		sdk.Int(asymmetry),
+	)
+	return []sdk.Msg{&removeLiquidityMsg}, nil
 }
 
 func EncodeAddLiquidityMsg(sender sdk.AccAddress, msg *AddLiquidity) ([]sdk.Msg, error) {

@@ -52,3 +52,11 @@ The rest of the commands are to be executed from the same directory as this
 2. Check balances again: `make show-contract-balance`
 
 3. Check pool: `make show-pool`
+
+### Remove liquidity from ceth pool
+
+1. Remove liquidity: `make remove-liquidity`
+
+2. Check balances again: `make show-contract-balance`
+
+3. Check pool: `make show-pool`

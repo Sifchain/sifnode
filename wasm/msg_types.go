@@ -1,8 +1,9 @@
 package wasm
 
 type SifchainMsg struct {
-	Swap         *Swap         `json:"swap,omitempty"`
-	AddLiquidity *AddLiquidity `json:"add_liquidity,omitempty"`
+	Swap            *Swap            `json:"swap,omitempty"`
+	AddLiquidity    *AddLiquidity    `json:"add_liquidity,omitempty"`
+	RemoveLiquidity *RemoveLiquidity `json:"remove_liquidity,omitempty"`
 }
 
 type Swap struct {
@@ -16,4 +17,10 @@ type AddLiquidity struct {
 	ExternalAsset       string `json:"external_asset,omitempty"`
 	NativeAssetAmount   string `json:"native_asset_amount,omitempty"`
 	ExternalAssetAmount string `json:"external_asset_amount,omitempty"`
+}
+
+type RemoveLiquidity struct {
+	ExternalAsset string `json:"external_asset,omitempty"`
+	WBasisPoints  string `json:"w_basis_points,omitempty"`
+	Asymmetry     string `json:"asymmetry,omitempty"`
 }
