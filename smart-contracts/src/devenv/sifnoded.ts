@@ -175,10 +175,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // Must wait for sifnode to fully start first
     await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand)
     const registryPath = path.resolve(__dirname, "./", "registry.json")
-    ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId} --node tcp://0.0.0.0:26657`,
+    const registryResult = ChildProcess.execSync(
+      `${this.sifnodedCommand} tx tokenregistry set-registry ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId} --node tcp://0.0.0.0:26657`,
       {encoding: "utf8"}
     ).trim()
+    console.log("registryResult as ", registryResult)
 
     // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
     await sleep(10000)
