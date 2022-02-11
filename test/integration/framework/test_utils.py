@@ -263,7 +263,7 @@ def sif_addr_to_evm_arg(sif_address):
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
+    def __init__(self, cmd, w3_conn: Web3, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
         rowan_source, ceth_symbol, generic_erc20_contract
     ):
         self.cmd = cmd
