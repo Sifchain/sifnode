@@ -1,10 +1,16 @@
 package wasm
 
 type SifchainQuery struct {
-	Ping *struct{} `json:"ping,omitempty"`
+	Pool *PoolQuery `json:"pool,omitempty"`
 }
 
-// this is from the go code back to the contract (capitalized or ping)
-type SifchainQueryResponse struct {
-	Msg string `json:"msg"`
+type PoolQuery struct {
+	ExternalAsset string `json:"external_asset,omitempty"`
+}
+
+type PoolResponse struct {
+	ExternalAsset        string `json:"external_asset,omitempty"`
+	ExternalAssetBalance string `json:"external_asset_balance,omitempty"`
+	NativeAssetBalance   string `json:"native_asset_balance,omitempty"`
+	PoolUnits            string `json:"pool_units,omitempty"`
 }

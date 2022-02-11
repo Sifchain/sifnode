@@ -141,22 +141,26 @@ pub fn query(deps: Deps<SifchainQuery>, _env: Env, msg: QueryMsg) -> StdResult<Q
     }
 }
 
-fn query_pool(deps: Deps<SifchainQuery>, _external_asset: String) -> StdResult<SifchainResponse> {
-    let req = SifchainQuery::Ping {}.into();
-    let response: SifchainResponse = deps.querier.query(&req)?;
+fn query_pool(deps: Deps<SifchainQuery>, external_asset: String) -> StdResult<PoolResponse> {
+    let req = SifchainQuery::Pool { external_asset }.into();
+    let response: PoolResponse = deps.querier.query(&req)?;
     Ok(response)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SifchainQuery {
-    Ping {},
+    Pool { external_asset: String },
 }
 
 impl CustomQuery for SifchainQuery {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct SifchainResponse {
-    pub msg: String,
+
+pub struct PoolResponse {
+    external_asset: String,
+    external_asset_balance: String,
+    native_asset_balance: String,
+    pool_units: String,
 }
