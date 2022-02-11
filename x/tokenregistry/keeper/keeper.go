@@ -162,3 +162,46 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
 	}
 }
+
+func (k keeper) AddMultipleTokens(ctx sdk.Context, entries []*types.RegistryEntry) {
+	wl := k.GetRegistry(ctx)
+
+	for _, entry := range entries {
+		found := false
+		for i := range wl.Entries {
+			// update if nil or the same denom
+			if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
+				wl.Entries[i] = entry
+				found = true
+				break
+			}
+		}
+		if !found {
+			wl.Entries = append(wl.Entries, entry)
+		}
+	}
+
+	k.SetRegistry(ctx, wl)
+}
+
+func (k keeper) RemoveMultipleTokens(ctx sdk.Context, denoms []string) {
+	registry := k.GetRegistry(ctx)
+	remained := make([]*types.RegistryEntry, 0)
+
+	for _, t := range registry.Entries {
+		found := false
+		for _, denom := range denoms {
+			if t != nil && strings.EqualFold(t.Denom, denom) {
+				found = true
+			}
+
+		}
+		if !found {
+			remained = append(remained, t)
+		}
+	}
+
+	k.SetRegistry(ctx, types.Registry{
+		Entries: remained,
+	})
+}
