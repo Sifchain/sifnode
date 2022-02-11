@@ -15,9 +15,9 @@ var (
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
-	cdc.RegisterConcrete(&MsgOpen{}, "MsgOpen", nil)
-	cdc.RegisterConcrete(&MsgClose{}, "MsgClose", nil)
-	cdc.RegisterConcrete(&MsgForceClose{}, "MsgForceClose", nil)
+	cdc.RegisterConcrete(&MsgOpen{}, "margin/MsgOpen", nil)
+	cdc.RegisterConcrete(&MsgClose{}, "margin/MsgClose", nil)
+	cdc.RegisterConcrete(&MsgForceClose{}, "margin/MsgForceClose", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
