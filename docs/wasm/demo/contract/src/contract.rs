@@ -1,4 +1,4 @@
-use cosmwasm_std::{entry_point, to_binary, CosmosMsg, CustomQuery};
+use cosmwasm_std::{entry_point, to_binary};
 use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo};
 use cosmwasm_std::{QueryResponse, Response, StdError, StdResult};
 
@@ -6,6 +6,8 @@ use schemars::JsonSchema;
 use thiserror::Error;
 
 use serde::{Deserialize, Serialize};
+
+use crate::sif_std::{PoolResponse, SifchainMsg, SifchainQuery};
 
 #[derive(Error, Debug)]
 pub enum SwapperError {
@@ -95,35 +97,6 @@ pub fn execute(
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum SifchainMsg {
-    Swap {
-        sent_asset: String,
-        received_asset: String,
-        sent_amount: String,
-        min_received_amount: String,
-    },
-    AddLiquidity {
-        external_asset: String,
-        native_asset_amount: String,
-        external_asset_amount: String,
-    },
-    RemoveLiquidity {
-        external_asset: String,
-        w_basis_points: String,
-        asymmetry: String,
-    },
-}
-
-impl cosmwasm_std::CustomMsg for SifchainMsg {}
-
-impl From<SifchainMsg> for CosmosMsg<SifchainMsg> {
-    fn from(original: SifchainMsg) -> Self {
-        CosmosMsg::Custom(original)
-    }
-}
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Query
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -145,22 +118,4 @@ fn query_pool(deps: Deps<SifchainQuery>, external_asset: String) -> StdResult<Po
     let req = SifchainQuery::Pool { external_asset }.into();
     let response: PoolResponse = deps.querier.query(&req)?;
     Ok(response)
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum SifchainQuery {
-    Pool { external_asset: String },
-}
-
-impl CustomQuery for SifchainQuery {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-
-pub struct PoolResponse {
-    external_asset: String,
-    external_asset_balance: String,
-    native_asset_balance: String,
-    pool_units: String,
 }
