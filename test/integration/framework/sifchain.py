@@ -11,6 +11,7 @@ def sifchain_denom_hash(network_descriptor, token_contract_address):
     s = str(network_descriptor) + token_contract_address.lower()
     return "sif" + hashlib.sha256(s.encode("UTF-8")).digest().hex()
 
+// TODO: Add comment
 def balance_delta(balances1, balances2):
     all_denoms = set(balances1.keys())
     all_denoms.update(balances2.keys())

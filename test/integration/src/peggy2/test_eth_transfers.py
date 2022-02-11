@@ -5,7 +5,7 @@ import sifchain
 from common import *
 from test_utils import EnvCtx
 
-
+# TODO: CAP for global
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
 
@@ -95,6 +95,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 
     # We do minting and approving just once for all iterations, but we could also do it each time separately.
     ctx.mint_generic_erc20_token(token_addr, total_amount, test_eth_acct_0)
+    # Why does this work? Dont we need to approve exact amount?
     ctx.approve_erc20_token(token_sc, test_eth_acct_0, total_amount)
 
     for i in range(number_of_times):
@@ -140,12 +141,85 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
         assert eth_balance_after_1 == eth_balance_before_1 + send_amount_1
         assert eth_balance_after_1 == send_amount_1 * (i + 1)
 
+
+
+def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
+    test_eth_acct_0 = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+
+    # create/retrieve a test sifchain account
+    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+
+    test_account_token_balance = 5000
+
+    # Locking eth for cross chain fee
+    eth_amount_to_send = 5000000 * eth.GWEI # TODO How to set properly?
+    assert eth_amount_to_send < fund_amount_eth
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
+    ctx.bridge_bank_lock_eth(test_eth_acct_0, test_sif_account, eth_amount_to_send)
+    ctx.advance_blocks()
+    # TDOO: Wrap next few lines into a single function
+    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
+    assert len(sif_balance_delta) == 1
+    assert sif_balance_delta[ctx.ceth_symbol] == eth_amount_to_send
+
+    token_sc = deploy_failhard_for_test(ctx, test_eth_acct_0, test_account_token_balance)
+    token_addr = token_sc.address
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+
+
+    ctx.approve_erc20_token(token_sc, test_eth_acct_0, test_account_token_balance)
+    ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct_0, test_sif_account, test_account_token_balance)
+    ctx.advance_blocks()
+
+
+    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, sif_balance_after)
+    assert len(sif_balance_delta) == 1
+    assert sif_balance_delta[sif_denom_hash] == test_account_token_balance
+
+    # TODO: These assertions need to be less magic-string'd 
+    # assert eth_balance_before_0 == test_account_token_balance
+    eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
+    assert eth_balance_after_0 == 0
+
+
+    # Completed eth -> sif assertions. The tx has succeeded
+    test_send_amount_back = 2500
+
+
+    eth_balance_before_1 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
+    sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+    ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct_0, test_send_amount_back, sif_denom_hash)
+
+    # TrollToken should time out, any legit ERC20 should pass.
+    # Timeout needs to be long enough for any legit token (90s works for Hardhat, but might not work for Ropsten).
+    try:
+        eth_balance_after_1 = ctx.wait_for_eth_balance_change(test_eth_acct_0, eth_balance_before_1,
+            token_addr=token_addr, timeout=90)
+    except Exception as e:
+        # assert is_troll_token
+        # assert i + 1 == number_of_times == 1
+        # assert e.__class__ == Exception
+        # assert len(e.args) == 1
+        assert e.args[0] == "Timeout waiting for Ethereum balance to change"
+        return
+
+    sif_balance_after = ctx.get_sifchain_balance(test_sif_account)
+    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
+
+    assert sif_balance_delta[sif_denom_hash] == - send_amount_1
+
+
+    assert eth_balance_after_1 == test_send_amount_back
+
+
 # TODO: Token_data also has token decimals field, why are we taking as param
 def deploy_erc20_token_for_test(ctx, token_decimals):
     token_data: test_utils.ERC20TokenData = ctx.generate_random_erc20_token_data()
     return ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, token_decimals)
 
-def deploy_failhard_for_test(ctx, account: str, amount: int):
+def deploy_failhard_for_test(ctx: EnvCtx, account: str, amount: int):
     token = ctx.generate_random_erc20_token_data()
     abi, bytecode, _ = ctx.abi_provider.get_descriptor("FailHardToken")
     token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
