@@ -53,7 +53,7 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 		{
 			name:      "msg open long",
 			msg:       msgOpen,
-			errString: errors.New(": pool does not exist"),
+			errString: errors.New("UNSPECIFIED: mtp position invalid"),
 		},
 		{
 			name:      "msg close long",

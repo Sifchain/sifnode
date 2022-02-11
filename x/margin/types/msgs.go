@@ -69,15 +69,8 @@ func (m MsgClose) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
-	if !Validate(m.CollateralAsset) {
-		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.CollateralAsset)
-	}
-	if !Validate(m.BorrowAsset) {
-		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
-	}
-	ok := IsValidPosition(m.Position)
-	if !ok {
-		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
+	if m.Id == 0 {
+		return sdkerrors.Wrap(ErrMTPDoesNotExist, "no id specified")
 	}
 
 	return nil
@@ -98,15 +91,8 @@ func (m MsgForceClose) ValidateBasic() error {
 	if len(m.MtpAddress) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.MtpAddress)
 	}
-	if !Validate(m.CollateralAsset) {
-		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.CollateralAsset)
-	}
-	if !Validate(m.BorrowAsset) {
-		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
-	}
-	ok := IsValidPosition(m.Position)
-	if !ok {
-		return sdkerrors.Wrap(ErrInvalidPosition, m.Position.String())
+	if m.Id == 0 {
+		return sdkerrors.Wrap(ErrMTPDoesNotExist, "no id specified")
 	}
 
 	return nil

@@ -41,6 +41,8 @@ func TestTypes_MtpValidate(t *testing.T) {
 			mtp: types.MTP{
 				CollateralAsset: "xxx",
 				Address:         "xxx",
+				Id:              1,
+				Position:        types.Position_LONG,
 			},
 			errString: nil,
 		},

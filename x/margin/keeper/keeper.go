@@ -31,19 +31,38 @@ func NewKeeper(storeKey sdk.StoreKey,
 	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, paramStore: ps, storeKey: storeKey, cdc: cdc}
 }
 
+func (k Keeper) GetMTPCount(ctx sdk.Context) uint64 {
+	var count uint64
+	countBz := ctx.KVStore(k.storeKey).Get(types.MTPCountPrefix)
+	if countBz == nil {
+		count = 0
+	} else {
+		count = types.GetIDFromBytes(countBz)
+	}
+	return count
+}
+
 func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
+	store := ctx.KVStore(k.storeKey)
+	count := k.GetMTPCount(ctx)
+
+	if mtp.Id == 0 {
+		count++
+		mtp.Id = count
+		store.Set(types.MTPCountPrefix, types.GetIDBytes(count))
+	}
+
 	if err := mtp.Validate(); err != nil {
 		return err
 	}
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetMTPKey(mtp.CollateralAsset, mtp.CustodyAsset, mtp.Address, mtp.Position)
+	key := types.GetMTPKey(mtp.Address, mtp.Id)
 	store.Set(key, k.cdc.MustMarshal(mtp))
 	return nil
 }
 
-func (k Keeper) GetMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string, position types.Position) (types.MTP, error) {
+func (k Keeper) GetMTP(ctx sdk.Context, mtpAddress string, id uint64) (types.MTP, error) {
 	var mtp types.MTP
-	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress, position)
+	key := types.GetMTPKey(mtpAddress, id)
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(key) {
 		return mtp, types.ErrMTPDoesNotExist
@@ -116,8 +135,8 @@ func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*ty
 	return mtps
 }
 
-func (k Keeper) DestroyMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string, position types.Position) error {
-	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress, position)
+func (k Keeper) DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error {
+	key := types.GetMTPKey(mtpAddress, id)
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(key) {
 		return types.ErrMTPDoesNotExist
@@ -408,7 +427,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.LiabilitiesP)
 	}
 
-	err = k.DestroyMTP(ctx, mtp.CollateralAsset, mtp.CustodyAsset, mtp.Address, mtp.Position)
+	err = k.DestroyMTP(ctx, mtp.Address, mtp.Id)
 	if err != nil {
 		return err
 	}

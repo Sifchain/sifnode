@@ -176,41 +176,18 @@ func TestTypes_MsgCloseValidateBasic(t *testing.T) {
 			err:      sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
-			name: "collateral asset invalid",
+			name: "id invalid",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				Position:        types.Position_LONG,
+				Signer: "xxx",
 			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+			err: sdkerrors.Wrap(types.ErrMTPDoesNotExist, "no id specified"),
 		},
-		{
-			name: "borrow asset invalid",
-			msgClose: types.MsgClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				Position:        types.Position_LONG,
-			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
-		},
-		{
-			name: "position invalid",
-			msgClose: types.MsgClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxx",
-				Position:        types.Position_UNSPECIFIED,
-			},
-			err: sdkerrors.Wrap(types.ErrInvalidPosition, types.Position_UNSPECIFIED.String()),
-		},
+
 		{
 			name: "all valid",
 			msgClose: types.MsgClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxx",
-				Position:        types.Position_LONG,
+				Signer: "xxx",
+				Id:     1,
 			},
 			err: nil,
 		},
@@ -294,53 +271,16 @@ func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 		{
 			name: "no mtp address",
 			msgForceClose: types.MsgForceClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxxx",
-				BorrowAsset:     "xxxx",
-				Position:        types.Position_LONG,
+				Signer: "xxx",
 			},
 			err: sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
-			name: "collateral asset invalid",
-			msgForceClose: types.MsgForceClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				MtpAddress:      "xxx",
-				Position:        types.Position_LONG,
-			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
-		},
-		{
-			name: "borrow asset invalid",
-			msgForceClose: types.MsgForceClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				MtpAddress:      "xxx",
-				Position:        types.Position_LONG,
-			},
-			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
-		},
-		{
-			name: "position invalid",
-			msgForceClose: types.MsgForceClose{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxx",
-				MtpAddress:      "xxx",
-				Position:        types.Position_UNSPECIFIED,
-			},
-			err: sdkerrors.Wrap(types.ErrInvalidPosition, types.Position_UNSPECIFIED.String()),
-		},
-		{
 			name: "all valid",
 			msgForceClose: types.MsgForceClose{
-				Signer:          "xxx",
-				MtpAddress:      "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxx",
-				Position:        types.Position_LONG,
+				Signer:     "xxx",
+				MtpAddress: "xxx",
+				Id:         1,
 			},
 			err: nil,
 		},

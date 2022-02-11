@@ -77,4 +77,5 @@ message MTP {
     (gogoproto.nullable) = false
   ];
   Position position = 10;
+  uint64 id = 11;
 }

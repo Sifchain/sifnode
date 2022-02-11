@@ -43,6 +43,9 @@ func (mtp MTP) Validate() error {
 	if mtp.Position == Position_UNSPECIFIED {
 		return sdkerrors.Wrap(ErrMTPInvalid, "no position specified")
 	}
+	if mtp.Id == 0 {
+		return sdkerrors.Wrap(ErrMTPInvalid, "no id specified")
+	}
 
 	return nil
 }

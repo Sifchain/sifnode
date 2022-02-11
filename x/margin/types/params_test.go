@@ -68,7 +68,7 @@ func TestTypes_ParamSetPairs(t *testing.T) {
 		{
 			key:          "ForceCloseThreshold",
 			param:        &p.ForceCloseThreshold,
-			paramSetPair: got[1],
+			paramSetPair: got[7],
 		},
 	}
 
