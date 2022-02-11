@@ -1,0 +1,62 @@
+[global]
+log_level = 'info'
+[telemetry]
+enabled = false
+host = '0.0.0.0'
+port = 3001
+[rest]
+enabled = true
+host = '0.0.0.0'
+port = 3000
+
+[[chains]]
+id='localnet-1'
+rpc_addr='http://localhost:27665'
+grpc_addr='http://localhost:9090'
+websocket_addr='ws://localhost:27665/websocket'
+rpc_timeout='10s'
+account_prefix='sif'
+key_name='sif'
+store_prefix='ibc'
+max_gas=3000000
+gas_price={ price = 0.5, denom = 'rowan' }
+gas_adjustment=0.1
+clock_drift='20s'
+trusting_period='15minutes'
+trust_threshold={ numerator = '1', denominator = '3' }
+max_tx_size=8380000
+
+[[chains]]
+id='localnet-2'
+rpc_addr='http://localhost:27666'
+grpc_addr='http://localhost:9091'
+websocket_addr='ws://localhost:27666/websocket'
+rpc_timeout='10s'
+account_prefix='sif'
+key_name='sif'
+store_prefix='ibc'
+max_gas=3000000
+gas_price={ price = 0.5, denom = 'rowan' }
+gas_adjustment=0.1
+clock_drift='20s'
+trusting_period='15minutes'
+trust_threshold={ numerator = '1', denominator = '3' }
+max_tx_size=8380000
+
+[[chains]]
+id='localnet-3'
+rpc_addr='http://localhost:27667'
+grpc_addr='http://localhost:9092'
+websocket_addr='ws://localhost:27667/websocket'
+rpc_timeout='10s'
+account_prefix='sif'
+key_name='sif'
+store_prefix='ibc'
+max_gas=3000000
+gas_price={ price = 0.5, denom = 'rowan' }
+gas_adjustment=0.1
+clock_drift='20s'
+trusting_period='15minutes'
+trust_threshold={ numerator = '1', denominator = '3' }
+max_tx_size=8380000
+
