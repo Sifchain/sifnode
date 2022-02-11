@@ -433,7 +433,7 @@ func NewSifApp(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate"
-	wasmOpts := GetWasmOpts(appCodec, appOpts)
+	wasmOpts := GetWasmOpts(appCodec, appOpts, app.ClpKeeper)
 	app.wasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],

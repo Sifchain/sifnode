@@ -6,6 +6,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sifwasm "github.com/Sifchain/sifnode/wasm"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,7 +27,7 @@ const (
 	DefaultJunoCompileCost uint64 = 100
 )
 
-func GetWasmOpts(codec codec.Codec, appOpts servertypes.AppOptions) []wasm.Option {
+func GetWasmOpts(codec codec.Codec, appOpts servertypes.AppOptions, clpKeeper clpkeeper.Keeper) []wasm.Option {
 	var wasmOpts []wasm.Option
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
@@ -35,7 +36,7 @@ func GetWasmOpts(codec codec.Codec, appOpts servertypes.AppOptions) []wasm.Optio
 	wasmOpts = append(wasmOpts,
 		wasmkeeper.WithGasRegister(NewJunoWasmGasRegister()),
 		wasmkeeper.WithMessageEncoders(sifwasm.Encoders(codec)),
-		wasmkeeper.WithQueryPlugins(sifwasm.Plugins()),
+		wasmkeeper.WithQueryPlugins(sifwasm.Plugins(clpKeeper)),
 	)
 
 	return wasmOpts
