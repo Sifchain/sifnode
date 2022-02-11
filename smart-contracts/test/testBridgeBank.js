@@ -87,7 +87,7 @@ describe("Test Bridge Bank", function () {
       expect(bridgeBankBalanceAfter).to.be.equal(expectedBalance);
     });
 
-    it("should allow user to lock fake ERC20 tokens", async function () {
+    it("should not allow user to lock fake ERC20 tokens", async function () {
       const FakeTokenFactory = await ethers.getContractFactory("FakeERC20");
       const fakeToken = await FakeTokenFactory.deploy();
 
@@ -95,18 +95,7 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount)
       )
-        .to.emit(state.bridgeBank, "LogLock")
-        .withArgs(
-          userOne.address,
-          state.sender,
-          fakeToken.address,
-          state.amount,
-          "3",
-          18,
-          "",
-          "",
-          state.networkDescriptor
-        );
+        .to.be.revertedWith("No Balance Transferred");
     });
 
     it("should allow users to lock Ethereum in the bridge bank", async function () {
