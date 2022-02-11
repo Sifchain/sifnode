@@ -131,7 +131,7 @@ classDiagram
   BridgeRegistry -- BridgeBank
   BridgeRegistry -- CosmosBridge
 ```
-The Bridge Registry is a simple contract that stores the addresses of the currently deployed CosmosBridge and BirdgeBank smart contracts, and it holds no other purpose. This is an upgradable contract that can be 
+The Bridge Registry is a simple contract that stores the addresses of the currently deployed CosmosBridge and BridgeBank smart contracts, and it holds no other purpose. This is an upgradable contract that can be 
 updated if the contract addresses need to be changed in the future.
 
 ## CosmosBridge

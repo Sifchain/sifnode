@@ -1011,10 +1011,11 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
             chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
-        assert len(res) == 2
-        assert res[0]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
-        assert res[1]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
+        assert len(res) == 1
+        assert res[0]["code"] == 0
 
+        # need sleep to wait last transaction included in block
+        time.sleep(5)
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
@@ -1025,6 +1026,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
             admin_account_name, chain_id, gas_prices, gas_adjustment)
 
+        # need sleep to wait last transaction included in block
+        time.sleep(5)
         sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
