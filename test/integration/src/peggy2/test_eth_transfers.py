@@ -144,10 +144,29 @@ def deploy_erc20_token_for_test(ctx, token_decimals):
     token_data = ctx.generate_random_erc20_token_data()
     return ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, token_decimals)
 
-
-def deploy_trolltoken_for_test(ctx):
+def deploy_failhard_for_test(ctx, account: str, amount: int):
     token = ctx.generate_random_erc20_token_data()
-    abi, bytecode, _ = ctx.abi_provider.get_descriptor("TrollToken")
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("FailHardToken")
+    token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+    txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)("fail hard token", "FHT", account, amount)
+    return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)
+
+def deploy_unicodeToken_for_test(ctx, account: str, amount: int):
+    token = ctx.generate_random_erc20_token_data()
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("UnicodeToken")
+    token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+    txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)()
+    return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)
+
+def deploy_commissiontoken_for_test(ctx):
+    token = ctx.generate_random_erc20_token_data()
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("CommissionToken")
     token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
     txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)(token.name, token.symbol)
     return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)
+
+def deploy_random_trolltoken_for_test(ctx):
+    token = ctx.generate_random_erc20_token_data()
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("RandomTrollToken")
+    token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+    txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)
