@@ -50,6 +50,7 @@ func (m MsgCreateDistribution) ValidateBasic() error {
 		if err != nil {
 			return errors.Wrapf(ErrInvalid, "Invalid Recipient Address")
 		}
+		out.Coins.Sort()
 		if !out.Coins.IsValid() {
 			return errors.Wrapf(ErrInvalid, "Invalid Coins")
 		}

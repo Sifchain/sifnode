@@ -47,10 +47,7 @@ install: go.sum
 build-sifd: go.sum
 	go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
-clean-config:
-	@rm -rf ~/.sifnode*
-
-clean: clean-config
+clean:
 	@rm -rf ${GOBIN}/sif*
 
 coverage:
