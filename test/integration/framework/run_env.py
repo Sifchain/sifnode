@@ -840,7 +840,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             [999999 * 10**21, "rowan"],
             [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [999999 * 10**21, ceth_symbol],
-        ]
+        ] + [[10**18, "test{}".format(i)] for i in range(1, 6)]
         validator_power = 100
         seed_ip_address = "10.10.1.1"
         tendermint_port = 26657
@@ -848,7 +848,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         tokens = [
             [10**20, "rowan"],
             [2 * 10**19, "ceth"]
-        ]
+        ] + [[10**18, "xtest{}".format(i)] for i in range(1, 6)]
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
         self.cmd.rmdir(sifnoded_network_dir)
