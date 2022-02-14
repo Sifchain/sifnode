@@ -68,7 +68,10 @@ clean: clean-config clean-peggy
 coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
-tests:
+test-peggy:
+	make -C smart-contracts tests
+
+tests: test-peggy
 	@go test -v -coverprofile .testCoverage.txt ./...
 
 feature-tests:
