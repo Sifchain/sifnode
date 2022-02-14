@@ -24,7 +24,7 @@ export async function getContractFromTruffleArtifact<T extends BaseContract>(
   const truffleContract = (truffle as any)(parsedArtifactContents)
   const contractData = truffleContract.networks[chainId]
   const ethersContract = await hre.ethers.getContractAt(truffleContract.abi, contractData.address)
-  return ethersContract as T
+  return ethersContract as unknown as T
 }
 
 @injectable()
