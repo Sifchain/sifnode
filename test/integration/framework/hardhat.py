@@ -66,6 +66,10 @@ class HardhatAbiProvider:
             "CosmosBridge": [],
             "Rowan": ["BridgeBank"],
             "TrollToken": ["Mocks"],
+            "FailHardToken": ["Mocks"],
+            "UnicodeToken": ["Mocks"],
+            "CommissionToken": ["Mocks"],
+            "RandomTrollToken": ["Mocks"],
         }.get(sc_name, []) + [f"{sc_name}.sol", f"{sc_name}.json"]
         path = os.path.join(self.cmd.project.project_dir("smart-contracts/artifacts/contracts"), *relpath)
         tmp = json.loads(self.cmd.read_text_file(path))

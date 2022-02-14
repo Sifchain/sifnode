@@ -215,7 +215,9 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     assert eth_balance_after_1 == test_send_amount_back
 
 
-def deploy_trolltoken_for_test(ctx):
+
+
+def deploy_trolltoken_for_test(ctx: EnvCtx):
     token = ctx.generate_random_erc20_token_data()
     abi, bytecode, _ = ctx.abi_provider.get_descriptor("TrollToken")
     token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
