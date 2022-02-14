@@ -86,3 +86,7 @@ it is preferable to plug back into the main routing system. This enables us to
 keep all clp code in one place and to rely on the security model implemented by
 the SDK. 
 
+On the Rust side, we have developed a reusable library that mirrors the custom
+types mentionned above. It can be imported into a smart-contract to create and
+emmit `clp` messages and queries. Please refer to the `clp` tutorial for some
+guidance on how to do this.

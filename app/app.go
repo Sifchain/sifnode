@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/CosmWasm/wasmd/x/wasm"
 	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
@@ -107,8 +108,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
 )
 
 const appName = "sifnode"
@@ -146,7 +145,6 @@ var (
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-
 		wasm.AppModuleBasic{},
 	)
 
@@ -162,8 +160,7 @@ var (
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
-
-		wasm.ModuleName: {authtypes.Burner},
+		wasm.ModuleName:                {authtypes.Burner},
 	}
 )
 
@@ -262,7 +259,6 @@ func NewSifApp(
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
-
 		wasm.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -430,8 +426,6 @@ func NewSifApp(
 	if err != nil {
 		panic("error while reading wasm config: " + err.Error())
 	}
-	// The last arguments can contain custom message handlers, and custom query handlers,
-	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate"
 	wasmOpts := GetWasmOpts(appCodec, appOpts, app.ClpKeeper)
 	app.wasmKeeper = wasm.NewKeeper(
@@ -513,7 +507,6 @@ func NewSifApp(
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
-
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -557,7 +550,6 @@ func NewSifApp(
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
 		tokenregistry.ModuleName,
-
 		wasm.ModuleName,
 	)
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -577,7 +569,7 @@ func NewSifApp(
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			TxCounterStoreKey: keys[wasm.StoreKey],
-			WasmConfig:        wasmConfig,
+			WasmConfig:        &wasmConfig,
 		},
 	)
 	if err != nil {

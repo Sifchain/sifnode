@@ -19,7 +19,7 @@ type HandlerOptions struct {
 	ante.HandlerOptions
 
 	TxCounterStoreKey sdk.StoreKey
-	WasmConfig        wasmTypes.WasmConfig
+	WasmConfig        *wasmTypes.WasmConfig
 }
 
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
@@ -35,6 +35,12 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	var sigGasConsumer = options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
+	}
+	if options.WasmConfig == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "wasm config is required for ante builder")
+	}
+	if options.TxCounterStoreKey == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx counter key is required for ante builder")
 	}
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
