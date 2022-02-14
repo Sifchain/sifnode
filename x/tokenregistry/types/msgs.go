@@ -211,7 +211,7 @@ func (m *MsgDeregisterAll) Route() string {
 }
 
 func (m *MsgDeregisterAll) Type() string {
-	return "deregister-akk"
+	return "deregister-all"
 }
 
 func (m *MsgDeregisterAll) ValidateBasic() error {
