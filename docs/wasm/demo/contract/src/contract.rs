@@ -1,14 +1,14 @@
+use cosmwasm_std::Uint256;
 use cosmwasm_std::{entry_point, to_binary};
 use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo};
 use cosmwasm_std::{QueryResponse, Response, StdError, StdResult};
-use cosmwasm_std::{Uint256};
 
 use schemars::JsonSchema;
 use thiserror::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::sif_std::{PoolResponse, SifchainMsg, SifchainQuery};
+use sif_std::{PoolResponse, SifchainMsg, SifchainQuery};
 
 #[derive(Error, Debug)]
 pub enum SwapperError {
@@ -59,19 +59,15 @@ pub fn execute(
 ) -> Result<Response<SifchainMsg>, SwapperError> {
     match msg {
         ExecuteMsg::Swap { amount } => {
+            let pool_response = query_pool(deps.as_ref(), "ceth".to_string())?;
 
-            let pool_response = query_pool(
-                deps.as_ref(),
-                 "ceth".to_string(),
-            )?;
+            let external_balance: Uint256 = pool_response.external_asset_balance.parse().unwrap();
 
-            let external_balance:Uint256 = pool_response.external_asset_balance.parse().unwrap();
-
-            if external_balance < Uint256::from(2_000_000_000_000_000_000u128){
-                return Err(SwapperError::Std(StdError::ParseErr{
-                    target_type: "xxx".to_string(), 
+            if external_balance < Uint256::from(2_000_000_000_000_000_000u128) {
+                return Err(SwapperError::Std(StdError::ParseErr {
+                    target_type: "xxx".to_string(),
                     msg: "pool is below threshold".to_string(),
-                }))
+                }));
             }
 
             let swap_msg = SifchainMsg::Swap {
