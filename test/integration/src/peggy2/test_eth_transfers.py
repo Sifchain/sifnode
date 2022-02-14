@@ -1,3 +1,4 @@
+from typing import Iterable
 from integration_framework import main, common, eth, test_utils, inflate_tokens, sifchain
 import eth
 import test_utils
@@ -178,7 +179,7 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     assert len(sif_balance_delta) == 1
     assert sif_balance_delta[sif_denom_hash] == test_account_token_balance
 
-    # TODO: These assertions need to be less magic-string'd 
+    # TODO: These assertions need to be less magic-string'd
     # assert eth_balance_before_0 == test_account_token_balance
     eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
     assert eth_balance_after_0 == 0
@@ -214,6 +215,13 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     assert eth_balance_after_1 == test_send_amount_back
 
 
+def deploy_trolltoken_for_test(ctx):
+    token = ctx.generate_random_erc20_token_data()
+    abi, bytecode, _ = ctx.abi_provider.get_descriptor("TrollToken")
+    token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
+    txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)(token.name, token.symbol)
+    return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)
+
 # TODO: Token_data also has token decimals field, why are we taking as param
 def deploy_erc20_token_for_test(ctx, token_decimals):
     token_data: test_utils.ERC20TokenData = ctx.generate_random_erc20_token_data()
@@ -243,7 +251,7 @@ def deploy_commissiontoken_for_test(ctx, dev: str, devFee: int, user: str, quant
     txrcpt = ctx.eth.transact_sync(token_sc.constructor, ctx.operator)(dev, devFee, user, quantity)
     return ctx.w3_conn.eth.contract(abi=abi, address=txrcpt.contractAddress)
 
-def deploy_randomtrolltoken_for_test(ctx, initialAccounts: list[str], quantity: list[int]):
+def deploy_randomtrolltoken_for_test(ctx: EnvCtx, initialAccounts: Iterable[str], quantity: Iterable[int]):
     token = ctx.generate_random_erc20_token_data()
     abi, bytecode, _ = ctx.abi_provider.get_descriptor("RandomTrollToken")
     token_sc = ctx.w3_conn.eth.contract(abi=abi, bytecode=bytecode)
