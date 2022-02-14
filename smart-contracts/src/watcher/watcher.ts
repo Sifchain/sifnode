@@ -12,8 +12,8 @@ import {
 } from "./ethereumMainnet"
 
 export interface SifwatchLogs {
-  evmrelayer: string
   sifnoded: string
+  evmrelayer?: string
   witness?: string
 }
 
@@ -27,21 +27,23 @@ export type SifEvent = EbRelayerEvent | SifnodedEvent | EthereumMainnetEvent | S
 export function sifwatch(
   logs: SifwatchLogs,
   hre: HardhatRuntimeEnvironment,
-  bridgeBank: BridgeBank,
+  bridgeBank?: BridgeBank,
   cosmosBridge?: CosmosBridge
 ): Observable<SifEvent> {
   // TODO: Const?
   const observables: Observable<SifEvent>[] = new Array()
 
   // const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
-  const evmRelayerLines = tailFileAsObservable(logs.evmrelayer)
-  const evmRelayerEvents: Observable<EbRelayerEvent> = evmRelayerLines.pipe(
-    map(jsonParseSimple),
-    map(toEvmRelayerEvent),
-    filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
-  )
+  if (logs.evmrelayer != undefined) {
+    const evmRelayerLines = tailFileAsObservable(logs.evmrelayer)
+    const evmRelayerEvents: Observable<EbRelayerEvent> = evmRelayerLines.pipe(
+      map(jsonParseSimple),
+      map(toEvmRelayerEvent),
+      filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
+    )
 
-  observables.push(evmRelayerEvents)
+    observables.push(evmRelayerEvents)
+  }
 
   const sifnodedLines = tailFileAsObservable(logs.sifnoded)
   const sifnodedEvents: Observable<SifnodedEvent> = sifnodedLines.pipe(
@@ -59,8 +61,10 @@ export function sifwatch(
   )
   observables.push(heartbeat)
 
-  const ethereumEvents = subscribeToEthereumEvents(bridgeBank)
-  observables.push(ethereumEvents)
+  if (bridgeBank != undefined) {
+    const ethereumEvents = subscribeToEthereumEvents(bridgeBank)
+    observables.push(ethereumEvents)
+  }
 
   if (logs.witness != undefined) {
     const witnessLines = tailFileAsObservable(logs.witness)

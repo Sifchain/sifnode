@@ -89,6 +89,20 @@ export class SifnodedAdapter {
     return JSON.parse(responseString)
   }
 
+  async executeIbcTransfer(
+    srcPort: string,
+    srcChannel: string,
+    receiver: string,
+    amount: BigNumber,
+    denom: string,
+  ): Promise<object> {
+    let token = amount.toString() + denom
+    let sifnodedCmd: string = `${this.gobin}/sifnoded tx ibc-transfer transfer ${srcPort} ${srcChannel} ${receiver} ${token} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${this.homedir} --output json -y `
+    console.log("Executing ibc transfer:", sifnodedCmd)
+    let responseString = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8" })
+    return JSON.parse(responseString)
+  }
+
   async getBalance(account: string, denomHash: string): Promise<BigNumber> {
     const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --node tcp://0.0.0.0:26657 --output json`
 
