@@ -60,24 +60,20 @@ func EncodeRemoveLiquidityMsg(sender sdk.AccAddress, msg *RemoveLiquidity) ([]sd
 }
 
 func EncodeAddLiquidityMsg(sender sdk.AccAddress, msg *AddLiquidity) ([]sdk.Msg, error) {
-
 	nativeAssetAmount, ok := sdk.NewIntFromString(msg.NativeAssetAmount)
 	if !ok {
 		return nil, fmt.Errorf("invalid native asset amount %s", msg.NativeAssetAmount)
 	}
-
 	externalAssetAmount, ok := sdk.NewIntFromString(msg.ExternalAssetAmount)
 	if !ok {
 		return nil, fmt.Errorf("invalid external asset amount %s", msg.ExternalAssetAmount)
 	}
-
 	addLiquidityMsg := clptypes.NewMsgAddLiquidity(
 		sender,
 		clptypes.NewAsset(msg.ExternalAsset),
 		sdk.Uint(nativeAssetAmount),
 		sdk.Uint(externalAssetAmount),
 	)
-
 	return []sdk.Msg{&addLiquidityMsg}, nil
 
 }
