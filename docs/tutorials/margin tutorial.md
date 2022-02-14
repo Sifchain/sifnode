@@ -197,7 +197,7 @@ value: '["ceth","cdash"]'
 
 1. Create margin long position against ceth;
 ```bash
-sifnoded tx margin open-long \
+sifnoded tx margin open \
   --from sif \
   --keyring-backend test \
   --borrow_asset ceth \
@@ -221,12 +221,12 @@ logs: []
 raw_log: '[]'
 timestamp: ""
 tx: null
-txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
+txhash: 08CF11E1DECB1FF9340933D2D178DC6EBE2EE7114825FA2955C54972845C6E59
 ```
 
 2. Add up to an existing margin position by creating a second margin position for the same asset ceth;
 ```bash
-sifnoded tx margin open-long \
+sifnoded tx margin open \
   --from sif \
   --keyring-backend test \
   --borrow_asset ceth \
@@ -250,7 +250,7 @@ logs: []
 raw_log: '[]'
 timestamp: ""
 tx: null
-txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
+txhash: 97E7A90E3DB3956101F8C226AC8F369F7C403956C84A4830103EAB3A286701B6
 ```
 
 3. Query all the existing margin positions (same asset ceth);
@@ -259,42 +259,37 @@ sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-ba
 ```
 
 Result:
-```json
-{
-  "mtps": [
-    {
-      "id": "1",
-      "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-      "collateral_asset": "rowan",
-      "collateral_amount": "1000",
-      "liabilities_p": "1000",
-      "liabilities_i": "0",
-      "custody_asset": "ceth",
-      "custody_amount": "4000",
-      "leverage": "1",
-      "mtp_health": "0.100000000000000000"
-    },
-    {
-      "id": "2",
-      "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-      "collateral_asset": "rowan",
-      "collateral_amount": "500",
-      "liabilities_p": "500",
-      "liabilities_i": "0",
-      "custody_asset": "ceth",
-      "custody_amount": "2000",
-      "leverage": "1",
-      "mtp_health": "0.100000000000000000"
-    }
-  ]
-}
+```
+mtps:
+- address: sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd
+  collateral_amount: "1000"
+  collateral_asset: rowan
+  custody_amount: "4000"
+  custody_asset: ceth
+  id: "1"
+  leverage: "1"
+  liabilities_i: "0"
+  liabilities_p: "1000"
+  mtp_health: "0.100000000000000000"
+  position: LONG
+- address: sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd
+  collateral_amount: "500"
+  collateral_asset: rowan
+  custody_amount: "2000"
+  custody_asset: ceth
+  id: "2"
+  leverage: "1"
+  liabilities_i: "0"
+  liabilities_p: "500"
+  mtp_health: "0.100000000000000000"
+  position: LONG
 ```
 
 #### Reduce size and close existing margin positions
 
 1. Reduce the size of an existing margin position for ceth by closing one of the existing MTPs;
 ```bash
-sifnoded tx margin close-long \
+sifnoded tx margin close \
   --from sif \
   --keyring-backend test \
   --id 2 \
@@ -315,7 +310,7 @@ logs: []
 raw_log: '[]'
 timestamp: ""
 tx: null
-txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
+txhash: 083CCA8E8C0E6E60A83A53764CD15031F1794AE79A00D6CD1F9E60E43601A39C
 ```
 
 2. Query remaining margin positions for ceth;
@@ -324,28 +319,24 @@ sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-ba
 ```
 
 Result:
-```json
-{
-  "mtps": [
-    {
-      "id": "1",
-      "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-      "collateral_asset": "rowan",
-      "collateral_amount": "1000",
-      "liabilities_p": "1000",
-      "liabilities_i": "0",
-      "custody_asset": "ceth",
-      "custody_amount": "4000",
-      "leverage": "1",
-      "mtp_health": "0.100000000000000000"
-    }
-  ]
-}
+```
+mtps:
+- address: sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd
+  collateral_amount: "1000"
+  collateral_asset: rowan
+  custody_amount: "4000"
+  custody_asset: ceth
+  id: "1"
+  leverage: "1"
+  liabilities_i: "0"
+  liabilities_p: "1000"
+  mtp_health: "0.100000000000000000"
+  position: LONG
 ```
 
 3. Close the margin long position entirely for ceth;
 ```bash
-sifnoded tx margin close-long \
+sifnoded tx margin close \
   --from sif \
   --keyring-backend test \
   --id 1 \
@@ -366,7 +357,7 @@ logs: []
 raw_log: '[]'
 timestamp: ""
 tx: null
-txhash: 372EDDE367EE22B3E0D2034F6429BDAB082D756D5223848F2F3A722ADE808615
+txhash: 110C1CF8DDE40A1554D500AE584CBF8875209908A8D7792256EF9486B2F84B70
 ```
 
 4. Query existing margin positions (none);
@@ -375,8 +366,6 @@ sifnoded q margin positions-for-address $(sifnoded keys show sif -a --keyring-ba
 ```
 
 Result:
-```json
-{
-  "mtps": []
-}
+```
+mtps: []
 ```
