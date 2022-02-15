@@ -83,22 +83,6 @@ func TestNewDistributionRecord_validateCoinIsInvalid(t *testing.T) {
 	assert.False(t, bool)
 }
 
-// func TestNewDistributionRecord_validateCoinIsNegative(t *testing.T) {
-// 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING
-// 	status := types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
-// 	distributionName := types.AttributeKeyDistributionName
-// 	runner := types.AttributeKeyDistributionRunner
-// 	recipientAddress := types.AttributeKeyDistributionRecordAddress
-// 	Coins := sdk.Coins{sdk.Coin{
-// 		Denom:  "rowan",
-// 		Amount: sdk.NewInt(-20)}}
-// 	distributionStartHeight := int64(1)
-// 	distributionCompletedHeight := int64(10)
-// 	result := types.NewDistributionRecord(status, distributionType, distributionName, recipientAddress, Coins, distributionStartHeight, distributionCompletedHeight, runner)
-// 	bool := result.Validate()
-// 	assert.False(t, bool)
-// }
-
 func TestNewDistributionRecord_Add(t *testing.T) {
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING
 	status := types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
@@ -168,16 +152,6 @@ func TestNewUserClaim(t *testing.T) {
 
 }
 
-// func TestNewUserClaim_Error(t *testing.T) {
-// 	UserAddress := ""
-// 	userClaimType := types.DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED
-// 	tm := time.Time{}
-// 	UserClaim, Error := types.NewUserClaim(UserAddress, userClaimType, tm.UTC())
-
-// 	// assert.Error(t,Error,)
-// 	t.Log(UserClaim)
-// 	t.Log(Error)
-// }
 func TestNewUserClaim_ValidateFalse(t *testing.T) {
 	UserAddress := ""
 	userClaimType := types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING
