@@ -4,39 +4,34 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
+	types3 "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
+	"strings"
 )
 
-const releaseVersion = "0.10.1"
+const releaseVersion = "0.11.0"
+
+var (
+	rc1 = GetUpgradeName(releaseVersion, "rc1")
+)
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+	app.UpgradeKeeper.SetUpgradeHandler(rc1, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		app.Logger().Info("Running upgrade handler for " + rc1)
 		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
-		fromVM := make(map[string]uint64)
-		// Old Modules can execute Migrations if needed .
-		// State migration logic should be added to a migrator function
-		// Migrating modules should increment the ConsensusVersion
-		// FromVersion NotEqual to ConsensusVersion is required to trigger a migration.
-		for moduleName := range app.mm.Modules {
-			fromVM[moduleName] = 1
+		minter := types3.Minter{
+			Inflation:        sdk.MustNewDecFromStr("0.417800000000000000"),
+			AnnualProvisions: sdk.ZeroDec(),
 		}
-		delete(fromVM, feegrant.ModuleName)
-		delete(fromVM, crisistypes.ModuleName)
-		// Set to 2 , which is the same as the ConsensusVersion to disable migrate function
-		fromVM[authtypes.ModuleName] = 2
-		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
-		if err != nil {
-			panic(err)
-		}
-		// Set it back to 1 to run only auth migration
-		newVM[authtypes.ModuleName] = 1
-		// This is to make sure auth module migrates after staking
-		return app.mm.RunMigrations(ctx, app.configurator, newVM)
+		app.MintKeeper.SetMinter(ctx, minter)
+		params := app.MintKeeper.GetParams(ctx)
+		params.InflationMax = sdk.MustNewDecFromStr("0.5000000000000000000")
+		params.InflationMin = sdk.MustNewDecFromStr("0.37000000000000000000")
+		app.MintKeeper.SetParams(ctx, params)
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
@@ -53,4 +48,8 @@ func SetupHandlers(app *SifchainApp) {
 		// instead the default which is the latest version that store last committed i.e 0 for new stores.
 		app.SetStoreLoader(types.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
+}
+
+func GetUpgradeName(rv, rc string) string {
+	return strings.Join([]string{rv, rc}, "-")
 }
