@@ -698,6 +698,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     } else {
       IERC20 tokenToTransfer = IERC20(token);
 
+      // TODO: try/catch
       tokenToTransfer.safeTransfer(recipient, amount);
     }
 
