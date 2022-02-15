@@ -69,20 +69,6 @@ func TestMsgCreateDistribution_GetSigners(t *testing.T) {
 
 }
 
-// func TestMsgCreateDistribution_GetSigners_panic(t *testing.T) {
-// 	sifapp.SetConfig(false)
-// 	distributor := "1234"
-// 	authorizedRunner := sdk.AccAddress("addr2_______________")
-// 	msg := types.MsgCreateDistribution{
-// 		Distributor:      distributor,
-// 		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
-// 		Output:           test.CreatOutputList(2000, "1"),
-// 		AuthorizedRunner: authorizedRunner.String(),
-// 	}
-// 	result := msg.GetSigners()
-// 	t.Log(result)
-// }
-
 func TestMsgCreateDistribution_GetSignBytes(t *testing.T) {
 	distributor := sdk.AccAddress("addr1_______________")
 	authorizedRunner := sdk.AccAddress("addr2_______________")
@@ -227,6 +213,7 @@ func TestMsgCreateDistribution_ValidateBasic_ZeroCoins(t *testing.T) {
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
 }
+
 func TestMsgCreateDistribution_ValidateBasic_invalidCoins(t *testing.T) {
 	distributor := sdk.AccAddress("addr1_______________")
 	outputlist := test.CreatOutputList(2000, "1")
@@ -243,6 +230,7 @@ func TestMsgCreateDistribution_ValidateBasic_invalidCoins(t *testing.T) {
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
 }
+
 func TestMsgCreateClaim_ValidateBasic_WrongType(t *testing.T) {
 	claimer := sdk.AccAddress("addr1_______________")
 	msg := types.MsgCreateUserClaim{
@@ -338,6 +326,7 @@ func TestMsgRunDistribution(t *testing.T) {
 	assert.Equal(t, distributionType, result.DistributionType)
 
 }
+
 func TestMsgRunDistribution_Route(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
@@ -349,6 +338,7 @@ func TestMsgRunDistribution_Route(t *testing.T) {
 	assert.Equal(t, key, key1)
 
 }
+
 func TestMsgRunDistribution_Type(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
