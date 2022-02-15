@@ -19,6 +19,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
+const OutputAmount = "10000000000000000000"
+
 func createInput(t *testing.T, filename string) {
 	in, err := sdk.AccAddressFromBech32("sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd")
 	assert.NoError(t, err)
@@ -54,11 +56,9 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 func TestKeeper_DistributeDrops_For_Address_Fail(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	outputAmount := "10000000000000000000"
-	outputList := test.CreatOutputList(3, outputAmount)
-	totalCoins, err := utils.TotalOutput(outputList)
+	outputList := test.CreatOutputList(3, OutputAmount)
+	_, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
-	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
 	distributionName := ""
 	runner := ""
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, runner)
@@ -71,9 +71,8 @@ func TestKeeper_DistributeDrops_For_Address_Fail(t *testing.T) {
 func TestKeeper_DistributeDrops_Fail(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	outputAmount := "10000000000000000000"
 	dispensationCreator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
-	outputList := test.CreatOutputList(3, outputAmount)
+	outputList := test.CreatOutputList(3, OutputAmount)
 	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
@@ -96,9 +95,8 @@ func TestKeeper_DistributeDrops_Fail(t *testing.T) {
 func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	outputAmount := "10000000000000000000"
 	dispensationCreator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
-	outputList := test.CreatOutputList(3, outputAmount)
+	outputList := test.CreatOutputList(3, OutputAmount)
 	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
@@ -149,8 +147,7 @@ func TestKeeper_AccumulateDrops_InvalidAddressDistribute(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	addr := ""
-	outputAmount := "10000000000000000000"
-	outputList := test.CreatOutputList(3, outputAmount)
+	outputList := test.CreatOutputList(3, OutputAmount)
 	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 
@@ -162,8 +159,7 @@ func TestKeeper_AccumulateDrops_Invalid(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	dispensationCreator := sdk.AccAddress("addr1_______________")
-	outputAmount := "10000000000000000000"
-	outputList := test.CreatOutputList(3, outputAmount)
+	outputList := test.CreatOutputList(3, OutputAmount)
 	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	err1 := keeper.AccumulateDrops(ctx, dispensationCreator.String(), totalCoins)
@@ -178,5 +174,4 @@ func TestKeeper_VerifyDistribution_Invalid(t *testing.T) {
 	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	err := keeper.VerifyAndSetDistribution(ctx, distName, distType, authorizedRunner.String())
 	assert.Error(t, err)
-
 }
