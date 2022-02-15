@@ -14,6 +14,17 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
+func TestKeeper_SetDistributions_ar_Fail(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	name := ""
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	selectType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
+	distribution := types.NewDistribution(selectType, name, authorizedRunner.String())
+	err := keeper.SetDistribution(ctx, distribution)
+	assert.Error(t, err)
+}
+
 func TestKeeper_GetDistributions(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	distributionTypes := []types.DistributionType{types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY}
