@@ -112,6 +112,38 @@ func TestMsgCreateDistribution_ValidateBasic_InvalidDistributionType(t *testing.
 	assert.Error(t, err)
 }
 
+func TestMsgCreateDistribution_ValidateBasic_Order(t *testing.T) {
+	sifapp.SetConfig(false)
+	distributor := sdk.AccAddress("addr1_______________")
+	authorizedRunner := sdk.AccAddress("addr2_______________")
+	validAddress := sdk.AccAddress("addr3_______________")
+
+	coin := []sdk.Coin{sdk.NewCoin("rowan", sdk.NewInt(1000000)), sdk.NewCoin("cusdt", sdk.NewInt(1000000))}
+
+	output := banktypes.NewOutput(validAddress, sdk.NewCoins(coin...))
+	outputList := []banktypes.Output{output}
+	msg := types.MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		Output:           outputList,
+		AuthorizedRunner: authorizedRunner.String(),
+	}
+	err := msg.ValidateBasic()
+	assert.NoError(t, err)
+	for i, j := 0, len(output.Coins)-1; i < j; i, j = i+1, j-1 {
+		output.Coins[i], output.Coins[j] = output.Coins[j], output.Coins[i]
+	}
+	revOutputList := []banktypes.Output{output}
+	msg = types.MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		Output:           revOutputList,
+		AuthorizedRunner: authorizedRunner.String(),
+	}
+	err = msg.ValidateBasic()
+	assert.NoError(t, err)
+}
+
 func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
 	distributor := sdk.AccAddress("addr1_______________")
 	outputList := test.CreatOutputList(10, "1")

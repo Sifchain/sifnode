@@ -30,3 +30,7 @@ type OracleKeeper interface {
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
 }
+
+type TokenRegistryKeeper interface {
+	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
+}

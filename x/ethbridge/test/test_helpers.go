@@ -3,6 +3,8 @@ package test
 import (
 	"bytes"
 	"encoding/hex"
+	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
+	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"math/rand"
 	"time"
 
@@ -58,6 +60,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyParams := sdk.NewKVStoreKey(paramstypes.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(paramstypes.TStoreKey)
 	keyBank := sdk.NewKVStoreKey(banktypes.StoreKey)
+	keytokenRegistry := sdk.NewKVStoreKey(tokenregistryTypes.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracleTypes.StoreKey)
 	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
 	db := dbm.NewMemDB()
@@ -115,6 +118,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		paramsKeeper.Subspace(banktypes.ModuleName),
 		blacklistedAddrs,
 	)
+	tokenregistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keytokenRegistry)
 	initTokens := sdk.TokensFromConsensusPower(10000, sdk.DefaultPowerReduction)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(100))))
 	// bankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
@@ -130,7 +134,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	require.NoError(t, err)
 	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
 	require.NoError(t, err)
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenregistryKeeper, keyEthBridge)
 	cethReceiverAccount, _ := sdk.AccAddressFromBech32(types.TestAddress)
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, cethReceiverAccount)
 	// Setup validators
