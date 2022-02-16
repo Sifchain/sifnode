@@ -35,7 +35,7 @@ export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
 make clean
 rm -rf sifnode.log
 
-rm -rf $GOPATH/sifnoded
+rm -rf $GOPATH/bin/sifnoded
 rm -rf $GOPATH/bin/old/sifnoded
 rm -rf $GOPATH/bin/new/sifnoded
 
