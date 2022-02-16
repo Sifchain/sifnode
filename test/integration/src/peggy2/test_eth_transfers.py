@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import Iterable
 from integration_framework import main, common, eth, test_utils, inflate_tokens, sifchain
 import eth
@@ -143,47 +144,60 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
         assert eth_balance_after_1 == send_amount_1 * (i + 1)
 
 
-
+# Lock an eth to
 def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     test_eth_acct_0 = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
-    # create/retrieve a test sifchain account
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
 
-    test_account_token_balance = 5000
+    test_account_token_balance = 30000
 
     # Locking eth for cross chain fee
     eth_amount_to_send = 5000000 * eth.GWEI # TODO How to set properly?
     assert eth_amount_to_send < fund_amount_eth
-    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
-    ctx.bridge_bank_lock_eth(test_eth_acct_0, test_sif_account, eth_amount_to_send)
-    ctx.advance_blocks()
-    # TDOO: Wrap next few lines into a single function
-    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
-    sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
-    assert len(sif_balance_delta) == 1
-    assert sif_balance_delta[ctx.ceth_symbol] == eth_amount_to_send
 
     token_sc = deploy_failhard_for_test(ctx, test_eth_acct_0, test_account_token_balance)
     token_addr = token_sc.address
     sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+    print("Sif denom hash for failhard token: ", sif_denom_hash)
 
 
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
+    print("Initial balance before lock cross chain eth: ", test_sif_account_initial_balance)
+
+    txReceipt = ctx.bridge_bank_lock_eth(test_eth_acct_0, test_sif_account, eth_amount_to_send)
+    ctx.advance_blocks(100)
+    print("Lock cross chain fee tx: ", txReceipt)
+
+
+    # TDOO: Wrap next few lines into a single function
+    test_sif_account_new_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    print("Initial balance after lock cross chain eth: ", test_sif_account_new_balance)
+    sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_new_balance)
+    assert len(sif_balance_delta) == 1, "User should only have changes in ceth balance"
+    assert sif_balance_delta[ctx.ceth_symbol] == eth_amount_to_send, "User did not receive expected ceth balance"
+    # User on sif has enough ceth balance
+
+
+    # TODO: Need to get token balance on sif account BEFORE bridgebank lock
+    # Locking erc20 token to sifchain
     ctx.approve_erc20_token(token_sc, test_eth_acct_0, test_account_token_balance)
-    ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct_0, test_sif_account, test_account_token_balance)
-    ctx.advance_blocks()
+    # ctx.w3_conn.eth.
+    txReceipt = ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct_0, test_sif_account, test_account_token_balance)
+    ctx.advance_blocks(100)
+    print("Lock tx receipt: ", txReceipt)
 
-
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
-    sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, sif_balance_after)
-    assert len(sif_balance_delta) == 1
+    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_new_balance)
+    sif_balance_delta = sifchain.balance_delta(test_sif_account_new_balance, sif_balance_after)
+    assert len(sif_balance_delta) == 1, "User should only have changes in token balance" # TODO: Is this actually true? Wt about cross chain fee?
+    print(sif_balance_delta)
+    assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token" # TODO: Assert statement
     assert sif_balance_delta[sif_denom_hash] == test_account_token_balance
 
-    # TODO: These assertions need to be less magic-string'd
-    # assert eth_balance_before_0 == test_account_token_balance
-    eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
-    assert eth_balance_after_0 == 0
+    # The user has successfully locked token on evm, and got balance on sifchain
+    print("We have bridged the erc20 token into sif account: ")
 
+    return
 
     # Completed eth -> sif assertions. The tx has succeeded
     test_send_amount_back = 2500
