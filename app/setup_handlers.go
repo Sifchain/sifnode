@@ -23,8 +23,7 @@ func SetupHandlers(app *SifchainApp) {
 		/*
 			The exact APR depends on the total Bonded Rowan , and can thus fluctuate a little .
 
-			- Rewards Percentage Required
-			    - APR * BondRatio ( Total Bonded Rowan/ Total Supply Rowan)
+			- Inflation Percentage Required = APR * BondRatio ( Total Bonded Rowan/ Total Supply Rowan)
 
 			- Calculations for APR 300 % , assuming the max APR to be 350 and min APR to be 250
 			    - 300% → 41.78
