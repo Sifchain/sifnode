@@ -197,8 +197,6 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     # The user has successfully locked token on evm, and got balance on sifchain
     print("We have bridged the erc20 token into sif account: ")
 
-    return
-
     # Completed eth -> sif assertions. The tx has succeeded
     test_send_amount_back = 2500
 
@@ -218,15 +216,10 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
         # assert e.__class__ == Exception
         # assert len(e.args) == 1
         assert e.args[0] == "Timeout waiting for Ethereum balance to change"
+        print("Successfully timedout")
         return
 
-    sif_balance_after = ctx.get_sifchain_balance(test_sif_account)
-    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
-
-    assert sif_balance_delta[sif_denom_hash] == - send_amount_1
-
-
-    assert eth_balance_after_1 == test_send_amount_back
+    assert True == False, "We should have timed out because we do not expect balance to have changed whilst polling"
 
 
 
