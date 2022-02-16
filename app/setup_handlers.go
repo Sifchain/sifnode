@@ -28,8 +28,8 @@ func SetupHandlers(app *SifchainApp) {
 		}
 		app.MintKeeper.SetMinter(ctx, minter)
 		params := app.MintKeeper.GetParams(ctx)
-		params.InflationMax = sdk.MustNewDecFromStr("0.5000000000000000000")
-		params.InflationMin = sdk.MustNewDecFromStr("0.37000000000000000000")
+		params.InflationMax = sdk.MustNewDecFromStr("0.500000000000000000")
+		params.InflationMin = sdk.MustNewDecFromStr("0.370000000000000000")
 		app.MintKeeper.SetParams(ctx, params)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
