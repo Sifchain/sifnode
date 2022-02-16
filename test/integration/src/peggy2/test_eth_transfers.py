@@ -211,10 +211,7 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
         eth_balance_after_1 = ctx.wait_for_eth_balance_change(test_eth_acct_0, eth_balance_before_1,
             token_addr=token_addr, timeout=90)
     except Exception as e:
-        # assert is_troll_token
-        # assert i + 1 == number_of_times == 1
-        # assert e.__class__ == Exception
-        # assert len(e.args) == 1
+        # TODO: Is there more precise way to assert this? Has knowledge of internals of wait_for_eth_balance_change
         assert e.args[0] == "Timeout waiting for Ethereum balance to change"
         print("Successfully timedout")
         return
