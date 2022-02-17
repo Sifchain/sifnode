@@ -7,7 +7,6 @@ import sifchain
 from common import *
 from test_utils import EnvCtx
 
-# TODO: CAP for global
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
 
@@ -147,9 +146,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 # Lock an eth to
 def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     test_eth_acct_0 = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-
     test_account_token_balance = 30000
 
     # Locking eth for cross chain fee
@@ -159,12 +156,8 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     token_sc = deploy_failhard_for_test(ctx, test_eth_acct_0, test_account_token_balance)
     token_addr = token_sc.address
     sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
-    print("Sif denom hash for failhard token: ", sif_denom_hash)
-
 
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
-    print("Initial balance before lock cross chain eth: ", test_sif_account_initial_balance)
-
     txReceipt = ctx.bridge_bank_lock_eth(test_eth_acct_0, test_sif_account, eth_amount_to_send)
     ctx.advance_blocks(100)
     print("Lock cross chain fee tx: ", txReceipt)
@@ -214,10 +207,11 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
         # TODO: Is there more precise way to assert this? Has knowledge of internals of wait_for_eth_balance_change
         assert e.args[0] == "Timeout waiting for Ethereum balance to change"
         print("Successfully timedout")
-        return
 
-    assert True == False, "We should have timed out because we do not expect balance to have changed whilst polling"
+    # assert True == False, "We should have timed out because we do not expect balance to have changed whilst polling"
+    print("Continuing with next transfer")
 
+    test_erc20_to_sifnode_and_back_first_time(ctx)
 
 
 
