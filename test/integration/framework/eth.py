@@ -39,6 +39,21 @@ def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
             raise Exception(f"Timeout when trying to connect to {url}")
         time.sleep(polling_time)
 
+def validate_address_and_private_key(addr, private_key):
+    a = web3.Web3().eth.account
+    addr = web3.Web3.toChecksumAddress(addr) if addr else None
+    if private_key:
+        private_key_is_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
+        private_key = private_key_is_hex[2] if private_key_is_hex else _mnemonic_to_private_key(private_key)
+        account = a.from_key(private_key)
+        addr = addr or account.address
+        assert addr == account.address, "Address does not correspond to private key"
+        assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
+    else:
+        private_key = None
+    assert addr
+    return addr, private_key
+
 class EthereumTxWrapper:
     """
     This class wraps a Web3 connection in a way that makes calling web3 functions and sending
@@ -71,15 +86,13 @@ class EthereumTxWrapper:
         return self.private_keys[addr]
 
     def set_private_key(self, addr, private_key):
+        a = web3.Web3().eth.account
         addr = web3.Web3.toChecksumAddress(addr)
         if private_key is None:
             self.private_keys.pop(addr)  # Remove
         else:
-            is_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
-            private_key = private_key if is_hex else _get_account_from_mnemonic(private_key)  # Convert from mnemonic if necessary
-            assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
-            check_addr = self.w3_conn.eth.account.from_key(private_key).address
-            assert check_addr == addr, f"Private key does not correspond to given address {addr}"
+            assert re.match("^([0-9a-f]{64})$", private_key)
+            assert addr == a.from_key(private_key).address, f"Private key does not correspond to given address {addr}"
             self.private_keys[addr] = private_key
         if self.is_local_node:
             # existing_accounts = self.w3_conn.geth.personal.list_accounts()
@@ -377,10 +390,10 @@ class ExponentiallyWeightedAverageFeeEstimator:
 __web3_enabled_unaudited_hdwallet_features = False
 
 # https://stackoverflow.com/questions/68050645/how-to-create-a-web3py-account-using-mnemonic-phrase
-def _get_account_from_mnemonic(mnemonic):
+def _mnemonic_to_private_key(mnemonic, account_path="m/44'/60'/0'/0/0"):
     a = web3.Web3().eth.account
     global __web3_enabled_unaudited_hdwallet_features
     if not __web3_enabled_unaudited_hdwallet_features:
         a.enable_unaudited_hdwallet_features()
         __web3_enabled_unaudited_hdwallet_features = True
-    return a.from_mnemonic(mnemonic, account_path="m/44'/60'/0'/0/0").privateKey.hex()[2:]
+    return a.from_mnemonic(mnemonic, account_path=account_path).privateKey.hex()[2:]
