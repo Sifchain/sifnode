@@ -153,7 +153,8 @@ class Project:
         self.cmd.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
         # According to peggy2, the plan is to move from npm install to yarn, but there are some issues with yarn atm.
         # self.yarn(["install"], cwd=self.smart_contracts_dir)
-        self.cmd.execst(["npm", "install"], cwd=self.smart_contracts_dir, pipe=False)
+        # self.cmd.execst(["npm", "install"], cwd=self.smart_contracts_dir, pipe=False)
+        self.npm_install(self.smart_contracts_dir)
 
     def write_vagrantenv_sh(self, state_vars, data_dir, ethereum_websocket_address, chainnet):
         # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
