@@ -42,6 +42,7 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     if eth_user_private_keys:
         available_test_accounts = []
         for address, key in [[e["address"], e["key"]] for e in eth_user_private_keys]:
+            address, key = eth.validate_address_and_private_key(address, key)
             available_test_accounts.append(address)
             ctx.eth.set_private_key(address, key)
         ctx.available_test_eth_accounts = available_test_accounts
@@ -79,7 +80,9 @@ def get_env_ctx_peggy2():
     owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
     owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
     if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
-        owner_private_key = owner_private_key[2:]
+        owner_private_key = owner_private_key[2:]  # TODO Remove
+    owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+
     rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
     w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
@@ -167,7 +170,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     else:
         operator_address = env_vars["OPERATOR_ADDRESS"]
         operator_private_key = env_vars.get("OPERATOR_PRIVATE_KEY")
-    operator_address = web3.Web3.toChecksumAddress(operator_address)
+    operator_address, operator_private_key = eth.validate_address_and_private_key(operator_address, operator_private_key)
 
     # Already added below
     # collected_private_keys[operator_address] = operator_private_key
@@ -188,14 +191,14 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     if "SMART_CONTRACT_ARTIFACT_DIR" in env_vars:
         artifacts_dir = env_vars["SMART_CONTRACT_ARTIFACT_DIR"]
     elif deployment_name:
-        artifacts_dir = cmd.project.project_dir("smart-contracts/deployments/{}/build".format(deployment_name))
+        artifacts_dir = cmd.project.project_dir("smart-contracts/deployments/{}/build/contracts".format(deployment_name))
         if deployment_name == "sifchain-1":
             # Special case for Betanet because SifchainTestToken is not deployed there.
             # It's only available on Testnet, Devnet and in local environment.
             # However, BridgeToken will work on Betanet meaning that name(), symbol() and decimals() return meaningful values.
             generic_erc20_contract_name = "BridgeToken"
     else:
-        artifacts_dir = cmd.project.project_dir("smart-contracts/build")
+        artifacts_dir = cmd.project.project_dir("smart-contracts/build/contracts")
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
@@ -607,7 +610,7 @@ class EnvCtx:
                 last_change_time = now
             else:
                 delta = sifchain.balance_delta(new_balances, last_change_state)
-                if delta:
+                if not sifchain.balance_zero(delta):
                     last_change_state = new_balances
                     last_change_time = now
                     log.debug("New state detected: {}".format(delta))
