@@ -81,9 +81,15 @@ func (p Params) Validate() error { // TODO determine all checks
 	if err := validatePmtpEndBlock(p.PmtpEndBlock); err != nil {
 		return err
 	}
-	if p.PmtpEndBlock < (p.PmtpStartBlock) {
+	if p.PmtpEndBlock < p.PmtpStartBlock {
 		return fmt.Errorf(
 			"end block (%d) must be after begin block (%d)",
+			p.PmtpEndBlock, p.PmtpStartBlock,
+		)
+	}
+	if p.PmtpNativeWeight.Add(p.PmtpExternalWeight).GT(sdk.NewDec(1)) {
+		return fmt.Errorf(
+			"sum of native weight (%d) and external weight (%d) cannot exceed 1",
 			p.PmtpEndBlock, p.PmtpStartBlock,
 		)
 	}
