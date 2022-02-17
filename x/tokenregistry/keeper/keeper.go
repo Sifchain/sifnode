@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	gogotypes "github.com/gogo/protobuf/types"
 
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -153,12 +152,12 @@ func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 }
 
 func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
-	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
-	if firstLockDoublePeg {
-		registry := k.GetDenom(ctx, denom)
-		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
-		k.SetToken(ctx, &registry)
+	// firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
+	// if firstLockDoublePeg {
+	// 	registry := k.GetDenom(ctx, denom)
+	// 	registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
+	// 	k.SetToken(ctx, &registry)
 
-		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
-	}
+	// 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
+	// }
 }

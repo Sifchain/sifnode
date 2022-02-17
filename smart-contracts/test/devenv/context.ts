@@ -61,6 +61,7 @@ export enum TransactionStep {
   CoinsSent = "CoinsSent",
 
   Burn = "Burn",
+  Lock = "Lock",
   GetTokenMetadata = "GetTokenMetadata",
   CosmosEvent = "CosmosEvent",
   SignProphecy = "SignProphecy",
@@ -72,7 +73,10 @@ export enum TransactionStep {
   SetProphecy = "SetProphecy",
   // TODO: Burn coin and burn are confusing. One is receivng a burn msg, the other a cosmos burncoin call
   BurnCoins = "BurnCoins",
+  LockCoins = "LockCoins",
+  PublishCosmosLockMessage = "PublishCosmosLockMessage",
   PublishCosmosBurnMessage = "PublishCosmosBurnMessage",
+  ReceiveCosmosLockMessage = "ReceiveCosmosLockMessage",
   ReceiveCosmosBurnMessage = "ReceiveCosmosBurnMessage",
 
   // Witness

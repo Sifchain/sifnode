@@ -51,7 +51,7 @@ describe("lock eth tests", () => {
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
 
     // record the init balance before lock
     const initialEthSenderBalance = await ethers.provider.getBalance(senderEthereumAccount.address)
@@ -117,7 +117,7 @@ describe("lock eth tests", () => {
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
 
     // grant the miner
     const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)

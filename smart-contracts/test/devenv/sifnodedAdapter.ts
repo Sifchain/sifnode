@@ -7,6 +7,8 @@ import * as ChildProcess from "child_process"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { BigNumber } from "ethers"
 import { exit } from "process"
+import {ethDenomHash} from "./context"
+import { sleep } from "../../src/devenv/devEnvUtilities"
 
 interface Balance {
   denom: string
@@ -22,6 +24,12 @@ interface Balances {
  */
 const ROWAN_SYMBOL = "rowan"
 const DEFAULT_PREPAY_AMOUNT = 10000000000
+const DEFAULT_IBC_TOKEN_AMOUNT = 10000000000
+const DEFAULT_CETH_AMOUNT = 10000000000
+
+
+export const IBC_TOKEN_DENOM = "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"
+
 export class SifnodedAdapter {
   private readonly homedir: string
   private readonly adminAccount: string
@@ -43,7 +51,7 @@ export class SifnodedAdapter {
    * @returns an ebrelayerAccount with uuid as name, and a valid sif address
    * TODO: Should the return type be ebrelayeraccount? it's really a sif account
    */
-  createTestSifAccount(prepayRowan: boolean = true): EbRelayerAccount {
+  async createTestSifAccount(prepayRowan: boolean = true, ibcToken: boolean = false, cethToken: boolean = false): Promise<EbRelayerAccount> {
     const testSifAccountName = uuidv4()
     const keyAddCmd: string = `${this.gobin}/sifnoded keys add ${testSifAccountName} --home ${this.homedir} --keyring-backend test --output json 2>&1`
 
@@ -52,9 +60,29 @@ export class SifnodedAdapter {
     })
     const responseJson = JSON.parse(responseString)
 
+    console.log("++++++ created account as ", responseJson)
+    const balance = await this.getBalance(this.adminAccount, "")
+    console.log("++++++ admin balance is  ", balance)
+
+
     if (prepayRowan) {
+      await sleep(5000)
       this.fundSifAccount(responseJson.address, DEFAULT_PREPAY_AMOUNT, ROWAN_SYMBOL)
       console.log("Funded with rowan")
+    }
+
+    if (ibcToken) {
+      await sleep(5000)
+      this.fundSifAccount(responseJson.address, DEFAULT_IBC_TOKEN_AMOUNT, IBC_TOKEN_DENOM)
+      console.log("Funded with ibc token")
+
+    }
+
+    if (cethToken) {
+      await sleep(5000)
+      this.fundSifAccount(responseJson.address, DEFAULT_CETH_AMOUNT, ethDenomHash)
+      console.log("Funded with ceth token")
+      await sleep(5000)
     }
 
     return {
@@ -74,6 +102,26 @@ export class SifnodedAdapter {
     return JSON.parse(responseString)
   }
 
+  async getBalance(account: string, denomHash: string): Promise<BigNumber> {
+    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --node tcp://0.0.0.0:26657 --output json`
+
+    let result = BigNumber.from(0)
+    const responseString: string = ChildProcess.execSync(bankSendCmd, {
+      encoding: "utf8",
+    })
+    const balancesJson = JSON.parse(responseString) as Balances
+
+    console.log("====== balance as ", balancesJson)
+
+    balancesJson["balances"].forEach((element) => {
+      if (element["denom"] === denomHash) {
+        result = BigNumber.from(element["amount"])
+      }
+    })
+
+    return result
+  }
+
   async executeSifBurn(
     sender: EbRelayerAccount,
     destination: SignerWithAddress,
@@ -89,35 +137,18 @@ export class SifnodedAdapter {
     return JSON.parse(responseString)
   }
 
-  async executeIbcTransfer(
-    srcPort: string,
-    srcChannel: string,
-    receiver: string,
+  async executeSifLock(
+    sender: EbRelayerAccount,
+    destination: SignerWithAddress,
     amount: BigNumber,
-    denom: string,
+    symbol: string,
+    // TODO: What is correct value for corsschainfee?
+    crossChainFee: string,
+    networkDescriptor: number
   ): Promise<object> {
-    let token = amount.toString() + denom
-    let sifnodedCmd: string = `${this.gobin}/sifnoded tx ibc-transfer transfer ${srcPort} ${srcChannel} ${receiver} ${token} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${this.homedir} --output json -y `
-    console.log("Executing ibc transfer:", sifnodedCmd)
+    let sifnodedCmd: string = `${this.gobin}/sifnoded tx ethbridge lock ${sender.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${networkDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${this.homedir} --from ${sender.name} --output json -y `
+    console.log("Executing sif burn:", sifnodedCmd)
     let responseString = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8" })
     return JSON.parse(responseString)
-  }
-
-  async getBalance(account: string, denomHash: string): Promise<BigNumber> {
-    const bankSendCmd: string = `${this.gobin}/sifnoded query bank balances ${account} --chain-id localnet --home ${this.homedir} --node tcp://0.0.0.0:26657 --output json`
-
-    let result = BigNumber.from(0)
-    const responseString: string = ChildProcess.execSync(bankSendCmd, {
-      encoding: "utf8",
-    })
-    const balancesJson = JSON.parse(responseString) as Balances
-
-    balancesJson["balances"].forEach((element) => {
-      if (element["denom"] === denomHash) {
-        result = BigNumber.from(element["amount"])
-      }
-    })
-
-    return result
   }
 }

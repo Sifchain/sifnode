@@ -14,7 +14,7 @@ import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import {ethers} from "hardhat"
 import {SifnodedAdapter} from "./sifnodedAdapter"
-import {checkSifnodeBurnState} from "./sifnode_lock_burn"
+import {checkSifnodeBurnState} from "./sifnode_burn"
 import {ethDenomHash} from "./context"
 
 import {executeLock, checkEvmLockState} from "./evm_lock_burn"
@@ -53,7 +53,7 @@ describe("lock and burn tests", () => {
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
     process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     let tx = await executeLock(
@@ -109,22 +109,22 @@ describe("lock and burn tests", () => {
     )
   })
 
-  it("should send two locks of ethereum", async () => {
-    const ethereumAccounts = await ethereumResultsToSifchainAccounts(
-      devEnvObject.ethResults!,
-      hardhat.ethers.provider
-    )
-    const factories = container.resolve(SifchainContractFactories)
-    const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
-    const sender1 = ethereumAccounts.availableAccounts[0]
-    const smallAmount = BigNumber.from(1017)
-    const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
+  // it("should send two locks of ethereum", async () => {
+  //   const ethereumAccounts = await ethereumResultsToSifchainAccounts(
+  //     devEnvObject.ethResults!,
+  //     hardhat.ethers.provider
+  //   )
+  //   const factories = container.resolve(SifchainContractFactories)
+  //   const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+  //   const sender1 = ethereumAccounts.availableAccounts[0]
+  //   const smallAmount = BigNumber.from(1017)
+  //   const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
 
-    // Do two locks of ethereum
-    let tx = await executeLock(contracts, smallAmount, sender1, recipient)
-    await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
+  //   // Do two locks of ethereum
+  //   let tx = await executeLock(contracts, smallAmount, sender1, recipient)
+  //   await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
 
-    tx = await executeLock(contracts, smallAmount, sender1, recipient)
-    await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
-  })
+  //   tx = await executeLock(contracts, smallAmount, sender1, recipient)
+  //   await checkEvmLockState(contracts, tx, smallAmount, ethDenomHash)
+  // })
 })

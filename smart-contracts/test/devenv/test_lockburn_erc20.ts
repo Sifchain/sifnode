@@ -15,7 +15,7 @@ import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import {SifnodedAdapter} from "./sifnodedAdapter"
 import {getDenomHash, ethDenomHash} from "./context"
-import {checkSifnodeBurnState} from "./sifnode_lock_burn"
+import {checkSifnodeBurnState} from "./sifnode_burn"
 import {executeLock, checkEvmLockState} from "./evm_lock_burn"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
@@ -57,7 +57,7 @@ describe("lock and burn tests", () => {
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata

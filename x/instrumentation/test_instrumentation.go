@@ -36,7 +36,9 @@ const (
 	SetFirstLockDoublePeg          = "SetFirstLockDoublePeg"
 	AddTokenMetadata               = "AddTokenMetadata"
 	GetTokenMetadata               = "GetTokenMetadata"
+	PublishCosmosLockMessage       = "PublishCosmosLockMessage"
 	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"
+	ReceiveCosmosLockMessage       = "ReceiveCosmosLockMessage"
 	ReceiveCosmosBurnMessage       = "ReceiveCosmosBurnMessage"
 	WitnessSignProphecy            = "WitnessSignProphecy"
 	// TODO: Ambiguous naming

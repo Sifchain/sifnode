@@ -226,7 +226,12 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						// if global Sequence is less than expected, just ignore the event. it is normal to see processed Sequence coexist with expected one
 						// if global Sequence is larger than expected, it is wrong and we must miss something.
 						if cosmosMsg.GlobalSequence == globalSequence+1 {
-							instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosBurnMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
+							if claimType == types.MsgLock {
+								instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosLockMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
+
+							} else {
+								instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosBurnMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
+							}
 
 							sub.witnessSignProphecyID(txFactory, cosmosMsg)
 							// update expected global Sequence
@@ -244,7 +249,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 				}
 			}
 		}
-
 	}
 }
 

@@ -230,7 +230,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
-      `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan,20000000000000000000ceth --home ${homeDir}`,
+      `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2 --home ${homeDir}`,
       {encoding: "utf8"}
     ).trim()
     if (isAdmin === true) {
