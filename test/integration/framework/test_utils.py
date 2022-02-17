@@ -268,7 +268,7 @@ class EnvCtx:
     ):
         self.cmd = cmd
         self.w3_conn = w3_conn
-        self.eth = ctx_eth
+        self.eth: eth.EthereumTxWrapper = ctx_eth
         self.abi_provider: hardhat.HardhatAbiProvider = abi_provider
         self.operator = operator
         self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
