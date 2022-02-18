@@ -49,18 +49,20 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		Use:   "sifnoded",
 		Short: "app Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			initClientCtx = client.ReadHomeFlag(initClientCtx, cmd)
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
 			}
+
 			initClientCtx, err = config.ReadFromClientConfig(initClientCtx)
 			if err != nil {
 				return err
 			}
-			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
+
+			if err = client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
+
 			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
 	}
