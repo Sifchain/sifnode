@@ -14,8 +14,24 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-var datadir string
-var outfile string
+var (
+	datadir string
+	outfile string
+	query   string
+	page    int
+	perPage int
+)
+
+var (
+	// "message.action='/ibc.core.client.v1.MsgUpdateClient'"
+	// "fungible_token_packet.denom='ujuno'" // XXX what it the denom of uluna ibc/lkjljlkjlkj
+	// "fungible_token_packet.sucess='001'"
+	// "fungible_token_packet.denom='transfer/channel-19/ungm'"
+	// "fungible_token_packet.denom='transfer/channel-18/uluna'"
+	defaultQuery   = "update_client.client_id='07-tendermint-41'"
+	defaultPage    = 1
+	defaultPerPage = 10
+)
 
 func init() {
 	homedir, err := os.UserHomeDir()
@@ -26,9 +42,15 @@ func init() {
 	defaultOutFile := fmt.Sprintf("%s/dbtool.data", homedir)
 	flag.StringVar(&datadir, "data", defaultDataDir, "data directory")
 	flag.StringVar(&outfile, "out", defaultOutFile, "output file")
+	flag.StringVar(&query, "query", defaultQuery, "query string")
+	flag.IntVar(&page, "page", defaultPage, "page number")
+	flag.IntVar(&perPage, "per-page", defaultPerPage, "results per page")
 	flag.Parse()
 	fmt.Printf("data directory: %s\n", datadir)
 	fmt.Printf("output file: %s\n", outfile)
+	fmt.Printf("query: %s\n", query)
+	fmt.Printf("page: %d\n", page)
+	fmt.Printf("per-page: %d\n", perPage)
 }
 
 func main() {
@@ -44,12 +66,6 @@ func main() {
 	}
 	defer f.Close()
 
-	// query := "message.action='/ibc.core.client.v1.MsgUpdateClient'"
-	query := "update_client.client_id='07-tendermint-41'"
-	// query := "fungible_token_packet.denom='ujuno'" // XXX what it the denom of uluna ibc/lkjljlkjlkj
-	// query := "fungible_token_packet.sucess='001'"
-	// query := "fungible_token_packet.denom='transfer/channel-19/ungm'"
-	// query := "fungible_token_packet.denom='transfer/channel-18/uluna'"
 	page := 1
 	perPage := 10
 
