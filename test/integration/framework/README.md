@@ -59,3 +59,76 @@ e.g. SIFNODE="https://api-testnet.sifchain.finance"
 ```
 - Integration test to be targeted for PoC: test_eth_transfers.py
 - Dependency diagram: https://files.slack.com/files-pri/T0187TWB4V8-F02BC477N79/sifchaindevenv.jpg
+
+
+# Standardized environment setup
+
+## Peggy1 - Tempnet on AWS
+
+chain_id = "mychain" // Parameter
+
+// Generate account with name 'sif' in the local keyring
+mnemonic = generate_mnemonic()
+exec("echo $mnemonic | sifnoded keys add --recover --keyring-backend test")
+sif_admin = exec("sifnoded keys show sif -a --keyring-backend test") // sif1xxx... 
+
+// Init the chain. This command creates files:
+// ~/.sifnoded/config/node_key.json
+// ~/.sifnoded/config/genesis.json
+// ~/.sifnoded/config/priv_validator_key.json
+// ~/.sifnoded/data/priv_validator_state.json
+// and prints some JSON (what?)
+exec("sifnoded init test --chain-id {chain_id}")
+
+// Add Genesis Accounts
+exec("sifnoded add-genesis-account {sif_admin} --keyring-backend test 999999000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink")
+
+// Add Genesis CLP ADMIN sif
+exec("sifnoded add-genesis-clp-admin ${sif_admin} --keyring-backend test")
+
+// Add Genesis CLP ADMIN sif
+exec("sifnoded add-genesis-clp-admin ${sif_admin} --keyring-backend test")
+
+// Set Genesis whitelist admin ${SIF_WALLET}
+exec("sifnoded set-genesis-whitelister-admin {sif_admin} --keyring-backend test")
+
+// Fund account (Genesis TX stake)
+exec("sifnoded gentx {sif_admin} 1000000000000000000000000stake --keyring-backend test --chain-id {chain_id}")
+
+// Generate token json
+sifnoded q tokenregistry generate -o json \
+   --token_base_denom=cosmos \
+   --token_ibc_counterparty_chain_id=${GAIA_CHAIN_ID} \
+   --token_ibc_channel_id=$GAIA_CHANNEL_ID \
+   --token_ibc_counterparty_channel_id=$GAIA_COUNTERPARTY_CHANNEL_ID \
+   --token_ibc_counterparty_denom="" \
+   --token_unit_denom="" \
+   --token_decimals=6 \
+   --token_display_name="COSMOS" \
+   --token_external_symbol="cosmos" \
+   --token_permission_clp=true \
+   --token_permission_ibc_export=true \
+   --token_permission_ibc_import=true | jq > gaia.json
+
+// Whitelist tokens
+// printf "registering cosmos... \n"
+sifnoded tx tokenregistry register gaia.json \
+   --node tcp://${SIFNODE_P2P_HOSTNAME}:26657 \
+   --chain-id $SIFCHAIN_ID \
+   --from $SIF_WALLET \
+   --keyring-backend test \
+   --gas=500000 \
+   --gas-prices=0.5rowan \
+   -y
+
+// Deploy token registry
+// Registering Tokens...
+// Set Whitelist from denoms.json...
+sifnoded set-gen-denom-whitelist DENOM.json
+
+
+## Peggy1 - integration tests
+
+// Parameters: validator moniker, validator mnemonic
+sifnoded_keys_add(validator_moniker, validator_password) // Test keyring
+valoper = get_val_address(validator_moniker)
