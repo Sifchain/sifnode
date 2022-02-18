@@ -54,7 +54,7 @@ coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 tests:
-	@go test -v -coverprofile .testCoverage.txt ./...
+	@go test -v -coverprofile .testCoverage.txt ./... -tags=integration
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt

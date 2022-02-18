@@ -1,0 +1,9 @@
+syntax = "proto3";
+package sifnode.pmtp.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/pmtp/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/pmtp/types";
+
+service Msg {}
