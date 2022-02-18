@@ -66,9 +66,6 @@ func main() {
 	}
 	defer f.Close()
 
-	page := 1
-	perPage := 10
-
 	fmt.Printf("Getting transactions (page %d, perPage %d)...\n", page, perPage)
 	res, err := core.TxSearch(
 		&rpctypes.Context{},
