@@ -43,8 +43,8 @@ def validate_address_and_private_key(addr, private_key):
     a = web3.Web3().eth.account
     addr = web3.Web3.toChecksumAddress(addr) if addr else None
     if private_key:
-        private_key_is_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
-        private_key = private_key_is_hex[2] if private_key_is_hex else _mnemonic_to_private_key(private_key)
+        match_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
+        private_key = match_hex[2].lower() if match_hex else _mnemonic_to_private_key(private_key)
         account = a.from_key(private_key)
         addr = addr or account.address
         assert addr == account.address, "Address does not correspond to private key"
