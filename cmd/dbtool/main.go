@@ -20,7 +20,7 @@ var (
 	datadir string
 	outfile string
 	query   string
-	page    int
+	pages   int
 	perPage int
 )
 
@@ -33,7 +33,7 @@ var (
 	// defaultQuery = "update_client.client_id='07-tendermint-41' AND fungible_token_packet.success='false'"
 	defaultQuery = "update_client.client_id='07-tendermint-41'"
 	// defaultQuery   = "send_packet.packet_dst_port='transfer'"
-	defaultPage    = 1
+	defaultPages   = 1
 	defaultPerPage = 10
 )
 
@@ -47,13 +47,13 @@ func init() {
 	flag.StringVar(&datadir, "data", defaultDataDir, "data directory")
 	flag.StringVar(&outfile, "out", defaultOutFile, "output file")
 	flag.StringVar(&query, "query", defaultQuery, "query string")
-	flag.IntVar(&page, "page", defaultPage, "page number")
+	flag.IntVar(&pages, "pages", defaultPages, "download pages")
 	flag.IntVar(&perPage, "per-page", defaultPerPage, "results per page")
 	flag.Parse()
 	fmt.Printf("data directory: %s\n", datadir)
 	fmt.Printf("output file: %s\n", outfile)
 	fmt.Printf("query: %s\n", query)
-	fmt.Printf("page: %d\n", page)
+	fmt.Printf("pages: %d\n", pages)
 	fmt.Printf("per-page: %d\n", perPage)
 }
 
@@ -64,22 +64,32 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Getting transactions (page %d, perPage %d)...\n", page, perPage)
-	res, err := core.TxSearch(
-		&rpctypes.Context{},
-		query,
-		false,
-		&page,
-		&perPage,
-		"asc",
-	)
-	if err != nil {
-		panic(err)
+	page := 1
+	keepGoing := true
+	results := []*coretypes.ResultTx{}
+	for keepGoing {
+		fmt.Printf("Getting transactions (page %d, perPage %d)...\n", page, perPage)
+		res, err := core.TxSearch(
+			&rpctypes.Context{},
+			query,
+			false,
+			&page,
+			&perPage,
+			"asc",
+		)
+		if err != nil {
+			panic(err)
+		}
+		results = append(results, res.Txs...)
+		fmt.Printf("results: %d | total: %d\n", len(results), res.TotalCount)
+		if len(res.Txs) < perPage || page == pages {
+			keepGoing = false
+		} else {
+			page++
+		}
 	}
 
-	fmt.Printf("results: %d | total: %d\n", len(res.Txs), res.TotalCount)
-
-	events := filterEvents(res.Txs)
+	events := filterEvents(results)
 
 	err = printEvents(events)
 	if err != nil {
