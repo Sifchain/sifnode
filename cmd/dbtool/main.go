@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	abcitypes "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/rpc/core"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -64,30 +65,7 @@ func main() {
 		panic(err)
 	}
 
-	page := 1
-	keepGoing := true
-	results := []*coretypes.ResultTx{}
-	for keepGoing {
-		fmt.Printf("Getting transactions (page %d, perPage %d)...\n", page, perPage)
-		res, err := core.TxSearch(
-			&rpctypes.Context{},
-			query,
-			false,
-			&page,
-			&perPage,
-			"asc",
-		)
-		if err != nil {
-			panic(err)
-		}
-		results = append(results, res.Txs...)
-		fmt.Printf("results: %d | total: %d\n", len(results), res.TotalCount)
-		if len(res.Txs) < perPage || page == pages {
-			keepGoing = false
-		} else {
-			page++
-		}
-	}
+	results := doQuery(query, pages, perPage)
 
 	events := filterEvents(results)
 
@@ -150,6 +128,34 @@ func openOutputFile(filename string) (*os.File, error) {
 	return os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 }
 
+func doQuery(query string, pages, perPage int) []*coretypes.ResultTx {
+	results := []*coretypes.ResultTx{}
+	page := 1
+	keepGoing := true
+	for keepGoing {
+		fmt.Printf("Getting transactions (page %d, perPage %d)...\n", page, perPage)
+		res, err := core.TxSearch(
+			&rpctypes.Context{},
+			query,
+			false,
+			&page,
+			&perPage,
+			"asc",
+		)
+		if err != nil {
+			panic(err)
+		}
+		results = append(results, res.Txs...)
+		fmt.Printf("results: %d | total: %d\n", len(results), res.TotalCount)
+		if len(res.Txs) < perPage || page == pages {
+			keepGoing = false
+		} else {
+			page++
+		}
+	}
+	return results
+}
+
 type EventInfo struct {
 	Type           string
 	PacketSequence int
@@ -158,6 +164,7 @@ type EventInfo struct {
 	Denom          string
 	Amount         uint64
 	Attributes     []string
+	RealAttributes []abcitypes.EventAttribute
 }
 
 func filterEvents(txs []*coretypes.ResultTx) []*EventInfo {
@@ -165,15 +172,16 @@ func filterEvents(txs []*coretypes.ResultTx) []*EventInfo {
 	for _, tx := range txs {
 		txHash := hex.EncodeToString(tx.Tx.Hash())
 		for _, ev := range tx.TxResult.Events {
-			attributes := []string{}
 			if keepEvent(ev.Type) {
+				attributes := []string{}
 				for _, attr := range ev.Attributes {
 					attributes = append(attributes, attr.String())
 				}
 				info := &EventInfo{
-					TxHash:     txHash,
-					Type:       ev.Type,
-					Attributes: attributes,
+					TxHash:         txHash,
+					Type:           ev.Type,
+					Attributes:     attributes,
+					RealAttributes: ev.Attributes,
 				}
 				infos = append(infos, info)
 			}
