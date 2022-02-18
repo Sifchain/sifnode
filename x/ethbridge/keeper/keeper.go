@@ -193,13 +193,13 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 	firstDoublePeg bool) ([]byte, error) {
 
 	logger := k.Logger(ctx)
-	// var coins sdk.Coins
-	// networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
-	// crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
+	var coins sdk.Coins
+	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
+	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
-	// if err != nil {
-	// 	return []byte{}, err
-	// }
+	if err != nil {
+		return []byte{}, err
+	}
 
 	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", tokenMetadata.Symbol)
@@ -207,49 +207,48 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 	}
 
 	// check if it is the first time to do double peg
-	// cost := crossChainFeeConfig.MinimumLockCost
-	// if firstDoublePeg {
-	// 	cost = cost.Add(crossChainFeeConfig.FirstLockDoublePeggyCost)
-	// }
+	cost := crossChainFeeConfig.MinimumLockCost
+	if firstDoublePeg {
+		cost = cost.Add(crossChainFeeConfig.FirstLockDoublePeggyCost)
+	}
 
-	// minimumLock := cost.Mul(crossChainFeeConfig.FeeCurrencyGas)
-	// if msg.CrosschainFee.LT(minimumLock) {
-	// 	return []byte{}, errors.New("crosschain fee amount in message less than minimum lock")
-	// }
+	minimumLock := cost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	if msg.CrosschainFee.LT(minimumLock) {
+		return []byte{}, errors.New("crosschain fee amount in message less than minimum lock")
+	}
 
-	// if k.IsCrossChainFeeReceiverAccountSet(ctx) {
-	// 	coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 
-	// 	err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCrossChainFeeReceiverAccount(ctx), coins)
-	// 	if err != nil {
-	// 		logger.Error("failed to send crosschain fee from account to account.",
-	// 			errorMessageKey, err.Error())
-	// 		return []byte{}, err
-	// 	}
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCrossChainFeeReceiverAccount(ctx), coins)
+		if err != nil {
+			logger.Error("failed to send crosschain fee from account to account.",
+				errorMessageKey, err.Error())
+			return []byte{}, err
+		}
 
-	// coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
 
-	// } else {
-	// coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
-	// }
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+	}
 
-	// logger.Info("just show coin.", coins, coins)
 	// TODO
-	// err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
-	// if err != nil {
-	// 	logger.Error("failed to transfer coin from account to module.",
-	// 		errorMessageKey, err.Error())
-	// 	return []byte{}, err
-	// }
+	if err != nil {
+		logger.Error("failed to transfer coin from account to module.",
+			errorMessageKey, err.Error())
+		return []byte{}, err
+	}
 
-	// coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
-	// err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
-	// if err != nil {
-	// 	logger.Error("failed to burn burned coin.",
-	// 		errorMessageKey, err.Error())
-	// 	return []byte{}, err
-	// }
+	coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
+	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		logger.Error("failed to burn burned coin.",
+			errorMessageKey, err.Error())
+		return []byte{}, err
+	}
 
 	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)

@@ -43,15 +43,15 @@ export async function checkSifnodeLockState(
   let receivedCosmosLockmsg: boolean = false
   let witnessSignedProphecy: boolean = false
 
-  let hasSeenEthereumLogUnlcok: boolean = false
+  let hasSeenEthereumLogMint: boolean = false
   let hasSeenProphecyClaimSubmitted: boolean = false
 
   const states: Observable<State> = evmRelayerEvents.pipe(
     scan(
       (acc: State, v: SifEvent) => {
-        console.log("++++++ Event: ", v)
+        console.log("Event: ", v)
         // if (v.kind == "")
-        if (isTerminalState(acc) || (hasSeenEthereumLogUnlcok && hasSeenProphecyClaimSubmitted)) {
+        if (isTerminalState(acc) || (hasSeenEthereumLogMint && hasSeenProphecyClaimSubmitted)) {
           // we've reached a decision
           console.log("Reached terminate state", acc)
           return {...acc, value: {kind: "terminate"} as Terminate}
@@ -65,13 +65,23 @@ export async function checkSifnodeLockState(
             // we just store the heartbeat
             return {...acc, currentHeartbeat: v.value} as State
           }
-          case "EthereumMainnetLogUnlock": {
-            hasSeenEthereumLogUnlcok = true
+          case "EthereumMainnetLogBridgeTokenMint": {
+            hasSeenEthereumLogMint = true
             return ensureCorrectTransition(
               acc,
               v,
               TransactionStep.ProphecyStatus,
-              TransactionStep.EthereumMainnetLogUnlock
+              TransactionStep.EthereumMainnetLogBridgeTokenMint
+            )
+          }
+          
+          case "EthereumMainnetLogProphecyCompleted": {
+            hasSeenEthereumLogMint = true
+            return ensureCorrectTransition(
+              acc,
+              v,
+              TransactionStep.EthereumMainnetLogBridgeTokenMint,
+              TransactionStep.EthereumMainnetLogProphecyCompleted
             )
           }
           // Ebrelayer side log assertions
@@ -88,7 +98,8 @@ export async function checkSifnodeLockState(
                     acc,
                     v,
                     TransactionStep.PublishCosmosLockMessage,
-                    TransactionStep.ReceiveCosmosLockMessage
+                    TransactionStep.ReceiveCosmosLockMessage,
+                    true
                   )
                 } else {
                   return {...acc, value: v, createdAt: acc.currentHeartbeat}
@@ -240,7 +251,7 @@ export async function checkSifnodeLockState(
   )
 
   const lv = await lastValueFrom(states.pipe(takeWhile((x) => x.value.kind !== "terminate")))
-  const expectedEndState: TransactionStep = TransactionStep.EthereumMainnetLogUnlock
+  const expectedEndState: TransactionStep = TransactionStep.EthereumMainnetLogProphecyCompleted
   expect(
     lv.transactionStep,
     `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`

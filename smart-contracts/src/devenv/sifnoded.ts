@@ -166,7 +166,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       this.addRelayerWitnessAccount(`witness-${witness}`, homeDir)
     )
 
-    let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level debug --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`
+    let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level trace --trace --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`
 
     console.log(`start sifnoded with: \n${sifnodedDaemonCmd}`)
     const sifnoded = ChildProcess.spawn(sifnodedDaemonCmd, {shell: true, stdio: stdioOptions})

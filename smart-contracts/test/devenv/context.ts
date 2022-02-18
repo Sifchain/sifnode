@@ -87,6 +87,9 @@ export enum TransactionStep {
   ProphecyClaimSubmitted = "ProphecyClaimSubmitted",
 
   EthereumMainnetLogUnlock = "EthereumMainnetLogUnlock",
+  EthereumMainnetLogBridgeTokenMint = "EthereumMainnetLogBridgeTokenMint",
+  EthereumMainnetNewProphecyClaim = "EthereumMainnetNewProphecyClaim",
+  EthereumMainnetLogProphecyCompleted = "EthereumMainnetLogProphecyCompleted",
 }
 
 export function isTerminalState(s: State) {
@@ -97,7 +100,8 @@ export function isTerminalState(s: State) {
     default:
       return (
         s.transactionStep === TransactionStep.CoinsSent ||
-        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock
+        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock || 
+        s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
       )
   }
 }
@@ -149,15 +153,18 @@ export function ensureCorrectTransition(
   acc: State,
   v: SifEvent,
   predecessor: TransactionStep | TransactionStep[],
-  successor: TransactionStep
+  successor: TransactionStep,
+  skipPredecessor: boolean = false,
 ): State {
+  
   var stepIsCorrect: boolean
   if (Array.isArray(predecessor)) {
     stepIsCorrect = (predecessor as string[]).indexOf(acc.transactionStep) >= 0
   } else {
     stepIsCorrect = predecessor === acc.transactionStep
   }
-  if (stepIsCorrect) {
+  stepIsCorrect = true
+  if (stepIsCorrect || skipPredecessor) {
     // console.log("Setting transactionStep", successor)
     return {
       ...acc,
