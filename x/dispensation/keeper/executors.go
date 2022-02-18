@@ -67,7 +67,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName 
 		if record.DoesTypeSupportClaim() {
 			k.DeleteClaim(ctx, record.RecipientAddress, record.DistributionType)
 		}
-		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress, height, record.Coins.String()))
+		//ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress, height, record.Coins.String()))
 	}
 	return pendingRecords, nil
 }

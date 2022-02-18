@@ -95,7 +95,9 @@ func CreatePerfTestData(ctx sdk.Context, keeper Keeper) {
 	if err != nil {
 		panic(err)
 	}
-	outputList := CreatOutputListGen(1252500, "1000")
+	// Calculate using N/2 (2a + (N-1)D)
+	// N = 1000 (Max runs per block ) / 10 (Step increment )
+	outputList := CreatOutputListGen(50500, "1000") //1252500
 	totalOutput, err := dispensationUtils.TotalOutput(outputList)
 	if err != nil {
 		panic(err)
