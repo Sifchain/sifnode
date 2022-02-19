@@ -4,7 +4,6 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
     "resolveJsonModule": true,
@@ -23,6 +22,11 @@
   "include": [
     "./scripts",
     "./deploy",
+    "./test",
+    "./build",
     "./recover/test"
+  ],
+  "files": [
+    "./hardhat.config.ts"
   ]
 }

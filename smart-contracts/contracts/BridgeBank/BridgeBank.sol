@@ -419,9 +419,9 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   }
 
   /**
-   * @dev Fetches de decimals of a token by address
+   * @dev Fetches the decimals of a token by address
    * @param token The bridgeTokens's address
-   * @return The bridgeTokens's decimals or 18
+   * @return The bridgeTokens's decimals or 0
    */
   function getDecimals(address token) private returns (uint8) {
     uint8 decimals = contractDecimals[token];
@@ -434,11 +434,55 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
       contractDecimals[token] = _decimals;
     } catch {
       // if we can't access the decimals function of this token,
-      // assume that it has 18 decimals
-      decimals = 18;
+      // assume that it has 0 decimals
+      decimals = 0;
     }
 
     return decimals;
+  }
+
+  /**
+   * @dev Fetches the current token balance the bridgebank holds of a given token address
+   * @param token The bridgeToken's address
+   * @return The balance of the bridgebanks account with the bridge token
+   */
+  function getBalance(address token) private returns (uint256) {
+    uint256 balance;
+    try BridgeToken(token).balanceOf(address(this)) returns (uint256 _balance) {
+      balance = _balance;
+    } catch {
+      balance = 0;
+    }
+    return balance;
+  }
+
+  /**
+   * @dev Function which transfers the requested amount of tokens from the calling users account to the bridgebanks account
+   *      This function checks the balances before and after the transfer and reports the amount that was transfered in total
+   *      such that tokens which charge fees on transfer are accurately represented.
+   * @param token The bridgeToken's address
+   * @param amount The amount of bridgeToken's to transfer to the bridgebank
+   * @return The balance that was transfered as reported by the getBalance command   
+   */
+  function transferBalance(address token, uint256 amount) private returns (uint256) {
+    //The interface of the ERC20 token to interact with
+    IERC20 tokenToTransfer = IERC20(token);
+
+    //The balance before any transfers take place
+    uint256 oldBalance = getBalance(token);
+
+    // locking the tokens by transfering them from the user to the bridgebank
+    tokenToTransfer.safeTransferFrom(msg.sender, address(this), amount);
+
+    //Fetch the updated balance reported after the transfer
+    uint256 newBalance = getBalance(token);
+
+    //Calculate the total amount transfered from the newbalance vs the old balance
+    //Since this contract uses solidity 0.8+ overflows from bad acting tokens should 
+    //revert.
+    uint256 transferedAmount = newBalance - oldBalance;
+    
+    return transferedAmount;
   }
 
   /**
@@ -536,9 +580,8 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     validSifAddress(recipient)
     onlyNotBlocklisted(msg.sender)
   {
-    IERC20 tokenToTransfer = IERC20(tokenAddress);
-    // lock tokens
-    tokenToTransfer.safeTransferFrom(msg.sender, address(this), tokenAmount);
+    uint256 transferedAmount = transferBalance(tokenAddress, tokenAmount);
+    require(transferedAmount > 0, "No Balance Transferred");
 
     // decimals defaults to 18 if call to decimals fails
     uint8 decimals = getDecimals(tokenAddress);
@@ -551,7 +594,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
       msg.sender,
       recipient,
       tokenAddress,
-      tokenAmount,
+      transferedAmount,
       _lockBurnNonce,
       decimals,
       symbol,

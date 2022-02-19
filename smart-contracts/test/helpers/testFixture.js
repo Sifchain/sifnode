@@ -321,6 +321,21 @@ async function deployTrollToken() {
 }
 
 /**
+ * A Commission Token (CMT) is a token that charges a dev fee commission for every transaction so if I send you
+ * 100 CMT with a devFee of 5% you would get 95 CMT and the dev gets 5 CMT.
+ * @param {address} devAccount The account which gets the commissions on transfer
+ * @param {uint256} devFee The fee to charge per transaction in ten thousandths of a percent
+ * @param {address} userAccount The user to mint tokens to
+ * @param {uint256} quantity The quantity of tokens to mint
+ * @returns An Ethers CommissionTokenContract
+ */
+async function deployCommissionToken(devAccount, devFee, userAccount, quantity) {
+  const tokenFactory = await ethers.getContractFactory("CommissionToken");
+  const token = await tokenFactory.deploy(devAccount, devFee, userAccount, quantity);
+  return token;
+}
+
+/**
  * Creates a valid claim
  * @returns { digest, signatures, claimData }
  */
@@ -383,6 +398,7 @@ async function getValidClaim({
 module.exports = {
   setup,
   deployTrollToken,
+  deployCommissionToken,
   signHash,
   getDigestNewProphecyClaim,
   getValidClaim,

@@ -5,7 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { setup } = require("./helpers/testFixture");
+const { setup, deployCommissionToken } = require("./helpers/testFixture");
 
 require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
@@ -99,6 +99,39 @@ describe("Test Bridge Bank", function () {
       afterBridgeBankBalance.should.be.bignumber.equal(state.amount);
     });
 
+    it("should allow user to lock Commission Charging ERC20 tokens", async function () { 
+      const devAccount = userOne.address;
+      const user = userTwo;
+      const devFee = 500; // 5% dev fee
+      const initialBalance = 100_000
+      const token = await deployCommissionToken(devAccount, devFee, user.address, initialBalance);
+      const transferAmount = 10_000
+      const remaining = 90_000;
+      const afterTransfer = 9_500;
+      // Get balances before locking
+      const beforeBridgeBankBalance = ethers.BigNumber.from(
+        await token.balanceOf(state.bridgeBank.address)
+      );
+      beforeBridgeBankBalance.should.be.equal(0);
+
+      const beforeUserBalance = ethers.BigNumber.from(await token.balanceOf(user.address));
+      beforeUserBalance.should.be.equal(initialBalance);
+      // Approve transfer of tokens first
+      await token.connect(user).approve(state.bridgeBank.address, transferAmount);
+      // Attempt to lock tokens
+      await state.bridgeBank
+        .connect(user)
+        .lock(state.sender, token.address, transferAmount);
+
+      // Confirm that the tokens have left the user's wallet
+      const afterUserBalance = ethers.BigNumber.from(await token.balanceOf(user.address));
+      afterUserBalance.should.equal(remaining);
+
+      // Confirm that bridgeBank now owns the tokens:
+      const afterBridgeBankBalance = ethers.BigNumber.from(await token.balanceOf(state.bridgeBank.address));
+      afterBridgeBankBalance.should.equal(afterTransfer);
+    });
+
     it("should allow users to lock Ethereum in the bridge bank", async function () {
       const tx = await state.bridgeBank
         .connect(userOne)
@@ -110,7 +143,7 @@ describe("Test Bridge Bank", function () {
       const contractBalanceWei = await getBalance(state.bridgeBank.address);
       const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
 
-      contractBalance.should.be.bignumber.equal(
+      contractBalance.should.equal(
         Web3Utils.fromWei((+state.weiAmount).toString(), "ether")
       );
     });
@@ -184,6 +217,53 @@ describe("Test Bridge Bank", function () {
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
       afterUserBalance.should.be.bignumber.equal(state.amount);
+    });
+
+     it("should allow user to multi-lock ERC20 tokens including commission tokens", async function () {
+      const devAccount = userTwo.address;
+      const user = userOne;
+      const devFee = 500; // 5% dev fee
+      const initialBalance = 100_000
+      const token = await deployCommissionToken(devAccount, devFee, user.address, initialBalance);
+      const transferAmount = 10_000
+      const remaining = 90_000;
+      const afterTransfer = 9_500;
+
+      const beforeBridgeBankBalance = Number(
+        await token.balanceOf(state.bridgeBank.address)
+      );
+      beforeBridgeBankBalance.should.be.equal(0);
+
+      // Approve bridgebank as a spender
+      await token.connect(user).approve(state.bridgeBank.address, transferAmount);
+
+      // Attempt to lock tokens
+      await state.bridgeBank
+        .connect(userOne)
+        .multiLockBurn(
+          [state.sender, state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address, token.address],
+          [state.amount, state.amount, state.amount, transferAmount],
+          [false, false, false, false]
+        );
+
+      // Confirm that the user has been minted the correct token
+      let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      // Confirm that the commission tokens have left the user's wallet
+      afterUserBalance = Number(await token.balanceOf(user.address));
+      afterUserBalance.should.be.bignumber.equal(remaining);
+
+      // Confirm that bridgeBank now owns the commission tokens:
+      const afterBridgeBankBalance = Number(await token.balanceOf(state.bridgeBank.address));
+      afterBridgeBankBalance.should.be.bignumber.equal(afterTransfer);
     });
 
     it("should NOT allow a blocklisted user to multi-lock ERC20 tokens", async function () {
@@ -478,7 +558,7 @@ describe("Test Bridge Bank", function () {
             [false, false, false, false]
           ),
         { value: 100 }
-      ).to.be.revertedWith("Address: call to non-contract");
+      ).to.be.revertedWith("function call to a non-contract account");
     });
 
     it("should NOT allow user to multi-burn tokens and Eth in the same call", async function () {

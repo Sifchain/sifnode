@@ -156,6 +156,9 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
 	if firstLockDoublePeg {
 		registry := k.GetDenom(ctx, denom)
+		if registry.DoublePeggedNetworkMap == nil {
+			registry.DoublePeggedNetworkMap = make(map[uint32]bool)
+		}
 		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
 		k.SetToken(ctx, &registry)
 

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/assert"
@@ -86,4 +87,21 @@ func TestKeeper_AddRemoveRegisterAll(t *testing.T) {
 	registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 
 	assert.Equal(t, len(registry.Entries), 2)
+}
+
+func TestKeeper_SetFirstLockDoublePeg(t *testing.T) {
+	app, ctx, _ := test.CreateTestApp(false)
+
+	denom := "denom"
+	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
+		Denom:       denom,
+		Decimals:    18,
+		Permissions: []types.Permission{types.Permission_CLP},
+	})
+	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE
+
+	assert.True(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
+	app.TokenRegistryKeeper.SetFirstLockDoublePeg(ctx, denom, networkDescriptor)
+	assert.False(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
+
 }
