@@ -26,7 +26,10 @@ func addPersistentFlags(cmd *cobra.Command) {
 }
 
 func addCommands(cmd *cobra.Command) {
-	cmd.AddCommand(NewSearchCmd())
+	cmd.AddCommand(
+		NewSearchCmd(),
+		NewGetStuckCmd(),
+	)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
