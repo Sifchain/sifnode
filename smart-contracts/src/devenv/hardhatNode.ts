@@ -2,7 +2,6 @@ import * as hre from "hardhat"
 import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv"
 import * as ChildProcess from "child_process"
 import notifier from "node-notifier"
-
 export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   private output: Promise<EthereumResults>
   private outputResolve: any

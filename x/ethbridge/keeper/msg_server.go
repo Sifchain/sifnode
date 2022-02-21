@@ -53,7 +53,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return &types.MsgLockResponse{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
-	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+	doublePeg := tokenMetadata.NetworkDescriptor != oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED && tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 	firstDoublePeg := doublePeg && srv.tokenRegistryKeeper.GetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 
 	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata, firstDoublePeg)

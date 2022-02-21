@@ -23,6 +23,8 @@ export const crossChainBurnFee: number = 1
 const ethereumCrossChainFeeToken: string =
   "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
+const rowanTokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+
 const ConsensusNeeded = "49"
 
 export interface ValidatorValues {
@@ -175,6 +177,18 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // Must wait for sifnode to fully start first
     await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand)
     const registryPath = path.resolve(__dirname, "./", "registry.json")
+
+    // replace the contract address with deployed one
+    const rawData = fs.readFileSync(registryPath, 'utf8')
+    var entries = JSON.parse(rawData)
+    for (var val of entries["entries"]) {
+        if (val["denom"] === "rowan") {
+            val["address"] = rowanTokenAddress;
+        }
+    }
+    let data = JSON.stringify(entries);
+    fs.writeFileSync(registryPath, data)
+
     const registryResult = ChildProcess.execSync(
       `${this.sifnodedCommand} tx tokenregistry set-registry ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId} --node tcp://0.0.0.0:26657`,
       {encoding: "utf8"}
