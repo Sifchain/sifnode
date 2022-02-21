@@ -21,6 +21,7 @@ var (
 	datadir string
 	outfile string
 	query   string
+	full    bool
 	pages   int
 	perPage int
 )
@@ -32,8 +33,8 @@ var (
 	// "fungible_token_packet.denom='transfer/channel-19/ungm'"
 	// "fungible_token_packet.denom='transfer/channel-18/uluna'"
 	// defaultQuery = "update_client.client_id='07-tendermint-41' AND fungible_token_packet.success='false'"
-	defaultQuery = "update_client.client_id='07-tendermint-41'"
-	// defaultQuery   = "send_packet.packet_dst_port='transfer'"
+	// defaultQuery = "update_client.client_id='07-tendermint-42'"
+	defaultQuery   = "send_packet.packet_connection='connection-41'"
 	defaultPages   = 1
 	defaultPerPage = 10
 )
@@ -48,7 +49,8 @@ func init() {
 	flag.StringVar(&datadir, "data", defaultDataDir, "data directory")
 	flag.StringVar(&outfile, "out", defaultOutFile, "output file")
 	flag.StringVar(&query, "query", defaultQuery, "query string")
-	flag.IntVar(&pages, "pages", defaultPages, "download pages")
+	flag.BoolVar(&full, "full", full, "download all pages (alternatively, use --pages)")
+	flag.IntVar(&pages, "pages", defaultPages, "number of pages to download (use --full for all pages)")
 	flag.IntVar(&perPage, "per-page", defaultPerPage, "results per page")
 	flag.Parse()
 	fmt.Printf("data directory: %s\n", datadir)
@@ -65,7 +67,7 @@ func main() {
 		panic(err)
 	}
 
-	results := doQuery(query, pages, perPage)
+	results := doQuery(query, full, pages, perPage)
 
 	events := filterEvents(results)
 
@@ -128,7 +130,7 @@ func openOutputFile(filename string) (*os.File, error) {
 	return os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 }
 
-func doQuery(query string, pages, perPage int) []*coretypes.ResultTx {
+func doQuery(query string, full bool, pages, perPage int) []*coretypes.ResultTx {
 	results := []*coretypes.ResultTx{}
 	page := 1
 	keepGoing := true
@@ -147,7 +149,8 @@ func doQuery(query string, pages, perPage int) []*coretypes.ResultTx {
 		}
 		results = append(results, res.Txs...)
 		fmt.Printf("results: %d | total: %d\n", len(results), res.TotalCount)
-		if len(res.Txs) < perPage || page == pages {
+		if len(res.Txs) < perPage ||
+			(page == pages && !full) {
 			keepGoing = false
 		} else {
 			page++
@@ -191,6 +194,7 @@ func filterEvents(txs []*coretypes.ResultTx) []*EventInfo {
 }
 
 func keepEvent(eventType string) bool {
+	// return true
 
 	// incoming transfers
 	// return eventType == "recv_packet" ||
@@ -200,9 +204,6 @@ func keepEvent(eventType string) bool {
 	return eventType == "send_packet" ||
 		eventType == "acknowledge_packet" ||
 		eventType == "timeout_packet"
-
-	// return true
-
 }
 
 func printEvents(events []*EventInfo) error {
