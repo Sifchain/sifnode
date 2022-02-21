@@ -4,17 +4,24 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Sifchain/sifnode/cmd/dbtool/utils"
 	"github.com/spf13/cobra"
 )
 
 var (
 	datadir = fmt.Sprintf("%s/.sifnoded/data", homeDir())
+	verbose = false
 )
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "dbtool",
 		Short: "A tool to query the sifnode database",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if verbose {
+				utils.SetVerbose()
+			}
+		},
 	}
 	addPersistentFlags(rootCmd)
 	addCommands(rootCmd)
@@ -23,12 +30,13 @@ func NewRootCmd() *cobra.Command {
 
 func addPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&datadir, "data", "d", datadir, "Data directory")
+	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", verbose, "Verbose output")
 }
 
 func addCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewSearchCmd(),
-		NewGetStuckCmd(),
+		NewStuckTxsCmd(),
 	)
 }
 

@@ -18,6 +18,15 @@ type EventInfo struct {
 	RealAttributes []abcitypes.EventAttribute
 }
 
+func (ev *EventInfo) GetAttribute(key string) string {
+	for _, attr := range ev.RealAttributes {
+		if string(attr.Key) == key {
+			return string(attr.Value)
+		}
+	}
+	return ""
+}
+
 func FilterEvents(
 	txs []*coretypes.ResultTx,
 	typeFilter func(string) bool,

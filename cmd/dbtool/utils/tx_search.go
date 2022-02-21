@@ -13,7 +13,7 @@ func DoTxSearch(query string, full bool, pages, perPage int) ([]*coretypes.Resul
 	page := 1
 	keepGoing := true
 	for keepGoing {
-		fmt.Printf("Getting transactions (page %d, perPage %d)...\n", page, perPage)
+		Print(fmt.Sprintf("page %d, perPage %d...", page, perPage))
 		res, err := core.TxSearch(
 			&rpctypes.Context{},
 			query,
@@ -26,7 +26,7 @@ func DoTxSearch(query string, full bool, pages, perPage int) ([]*coretypes.Resul
 			return nil, err
 		}
 		results = append(results, res.Txs...)
-		fmt.Printf("results: %d | total: %d\n", len(results), res.TotalCount)
+		Print(fmt.Sprintf("results: %d | total: %d", len(results), res.TotalCount))
 		if len(res.Txs) < perPage ||
 			(page == pages && !full) {
 			keepGoing = false
