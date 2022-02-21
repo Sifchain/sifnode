@@ -2,32 +2,15 @@
 
 `dbtool` runs queries directly against a local database.
 
-Ex:
+Example queries:
 
-```
-go run cmd/dbtool/main.go --data ~/.sifnoded_prod/data/
-data directory: /home/martin/.sifnoded_prod/data/
-output file: /home/martin/dbtool.data
-query: update_client.client_id='07-tendermint-41'
-page: 1
-per-page: 10
-Getting transactions (page 1, perPage 10)...
-results: 10 | total: 22636
-Writing transactions to /home/martin/dbtool.data...
-```
+"message.action='/ibc.core.client.v1.MsgUpdateClient'"
+"fungible_token_packet.denom='ujuno'" 
+"fungible_token_packet.sucess='001'"
+"fungible_token_packet.denom='transfer/channel-19/ungm'"
+"fungible_token_packet.denom='transfer/channel-18/uluna'"
+"update_client.client_id='07-tendermint-41' AND fungible_token_packet.success='false'"
+"update_client.client_id='07-tendermint-42'"
+"send_packet.packet_connection='connection-41'"
 
-The CLI arguments are:
-
-```
--data string
-        data directory (default "~/.sifnoded/data")
-  -out string
-        output file (default "~/dbtool.data")
-  -page int
-        page number (default 1)
-  -per-page int
-        results per page (default 10)
-  -query string
-        query string (default "update_client.client_id='07-tendermint-41'")
-```
 
