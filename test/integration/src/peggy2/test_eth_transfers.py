@@ -146,6 +146,12 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 
 
 # Lock an eth to
+# We expect the transfer from evm to sifchain to be successful,
+# We expect the transfer from sifchain to evm to fail, w/
+#   - Tokens burned on sifchain side
+#   - Tokens not depsoited on evm side
+#   - Without fixes, SHOULD halt the bridge
+#   - With the fixes, SHOULD NOT halt the bridge, lets subsequent tx go through
 def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"], [fund_amount_ceth_cross_chain_fee, "ceth"]])
@@ -156,36 +162,36 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
 
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
-    # TODO: Get eth initial balance here
+    eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
 
     # Locking erc20 token to sifchain
+    # TODO: Can we merge approve with bank lock ? Is there situation where we dont want that?
     ctx.approve_erc20_token(token_sc, test_eth_acct, test_account_token_balance)
     ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct, test_sif_account, test_account_token_balance)
     ctx.advance_blocks()
 
     # Group these into 1 func
     sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
-    # TODO: Get eth after balance here
-
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
     assert sif_balance_delta[sif_denom_hash] == test_account_token_balance
 
-    # TODO: Assert eth balance delta here
+    eth_token_balance_after = ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr)
+    eth_token_balance_delta = eth_token_balance_after - eth_token_balance_before
+    assert eth_token_balance_delta == (test_account_token_balance * -1), "User's token on evm should have decreased by sent amount"
 
     # The user has successfully locked token on evm, and got balance on sifchain
-    print("We have bridged the erc20 token into sif account: ")
+    print("We have bridged the erc20 token into sif account and verified all account balances are as expected")
 
-    # Completed eth -> sif assertions. The tx has succeeded
     test_send_amount_back = test_account_token_balance - 15
 
-    eth_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
+    eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
 
-    # sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, "ceth"], [1, sif_denom_hash]])
-
+    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, "ceth"], [1, sif_denom_hash]])
+    print("Sif balance after sending from sifchain to ethereum:", sif_balance_after)
     # sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     # We expect his sif ious to be burned, and ceth to be decreased for gas fee
     # assert len(sif_balance_delta) == 2, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
@@ -194,7 +200,7 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     # assert sif_denom_hash not in sif_balance_delta, ""
 
     with pytest.raises(Exception) as exception:
-        ctx.wait_for_eth_balance_change(test_eth_acct, eth_balance_before, token_addr=token_addr, timeout=90)
+        ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr, timeout=90)
         assert exception.args[0] == "Timeout waiting for Ethereum balance to change"
 
     print("Attemping a valid tx to ensure this doesn't affect subsequent transactions")
