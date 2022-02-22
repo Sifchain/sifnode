@@ -60,11 +60,6 @@ export class SifnodedAdapter {
     })
     const responseJson = JSON.parse(responseString)
 
-    console.log("++++++ created account as ", responseJson)
-    const balance = await this.getBalance(this.adminAccount, "")
-    console.log("++++++ admin balance is  ", balance)
-
-
     if (prepayRowan) {
       await sleep(5000)
       this.fundSifAccount(responseJson.address, DEFAULT_PREPAY_AMOUNT, ROWAN_SYMBOL)

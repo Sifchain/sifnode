@@ -71,7 +71,7 @@ export async function executeLock(
     tx = await contracts.bridgeBank
       .connect(sender)
       .lock(sifchainRecipient, tokenContract.address, amount, {
-        value: 0,
+        value: 0, gasLimit: 20000000,
       })
   }
   return tx

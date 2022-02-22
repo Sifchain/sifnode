@@ -100,8 +100,8 @@ export function isTerminalState(s: State) {
     default:
       return (
         s.transactionStep === TransactionStep.CoinsSent ||
-        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock || 
-        s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
+        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock
+        // s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
       )
   }
 }
