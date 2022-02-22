@@ -203,6 +203,59 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
 
 
 
+def test_unicodeToken_token_to_sifnode_and_back(ctx: EnvCtx):
+    test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"], [fund_amount_ceth_cross_chain_fee, "ceth"]])
+    test_account_token_balance = 30000
+
+    token_sc = deploy_unicodeToken_for_test(ctx, test_eth_acct, test_account_token_balance)
+    token_addr = token_sc.address
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+
+    sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+
+    ctx.approve_erc20_token(token_sc, test_eth_acct, test_account_token_balance)
+    ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct, test_sif_account, test_account_token_balance)
+    ctx.advance_blocks()
+
+    # Group these into 1 func
+    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
+    # TODO: Get eth after balance here
+
+    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
+    assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
+    assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
+    assert sif_balance_delta[sif_denom_hash] == test_account_token_balance
+
+    # TODO: Assert eth balance delta here
+
+    # The user has successfully locked token on evm, and got balance on sifchain
+    print("We have bridged the erc20 token into sif account: ")
+
+    # Completed eth -> sif assertions. The tx has succeeded
+    test_send_amount_back = test_account_token_balance - 15
+
+    eth_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
+    sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+    ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
+    ctx.advance_blocks()
+
+    eth_balance_after = ctx.wait_for_eth_balance_change(test_eth_acct, eth_balance_before,
+        token_addr=token_addr, timeout=90)
+
+    sif_balance_after = ctx.get_sifchain_balance(test_sif_account)
+
+    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
+    assert sif_denom_hash in sif_balance_delta, "Should have seen changes in token's balance"
+    assert sif_balance_delta[sif_denom_hash] == test_send_amount_back
+
+    eth_balance_delta = sifchain.balance_delta(eth_balance_before, eth_balance_after)
+    print("Eth balance delta", eth_balance_delta)
+    assert sif_denom_hash in eth_balance_delta
+
+
+
+
 def deploy_trolltoken_for_test(ctx: EnvCtx):
     token = ctx.generate_random_erc20_token_data()
     abi, bytecode, _ = ctx.abi_provider.get_descriptor("TrollToken")
