@@ -205,12 +205,12 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     assert sif_balance_delta["rowan"] < 0
     assert ctx.ceth_symbol in sif_balance_delta, "User should see changes in the bridged token"
     assert sif_balance_delta[ctx.ceth_symbol] < 0
-    assert sif_denom_hash in sif_balance_delta, ""
-    assert sif_balance_delta[sif_denom_hash] == -1 * test_send_amount_back
+    assert sif_denom_hash in sif_balance_delta
+    assert sif_balance_delta[sif_denom_hash] == -1 * test_send_amount_back, "User's token should've been burned regardless of evm tx status"
 
     with pytest.raises(Exception) as exception:
         ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr, timeout=90)
-        assert exception.args[0] == "Timeout waiting for Ethereum balance to change"
+        assert exception.args[0] == "Timeout waiting for Ethereum balance to change", "We shouldn't see any changes on evm side, this was supposed to fail"
 
     print("Attemping a valid tx to ensure this doesn't affect subsequent transactions")
 
