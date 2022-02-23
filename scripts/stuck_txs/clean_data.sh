@@ -3,13 +3,13 @@
 set -eu
 
 ######################################
-# "SEND" | "ACK" | "TIMEOUT" | "UPDATE"
-TYPE="ACK"
+# "SEND" | "ACK" | "TIMEOUT" | "UPDATE" | "RCV"
+TYPE="RCV"
 
 # "TERRA" | "SIF"
-CHAIN="SIF"
+CHAIN="TERRA"
 
-CONNECTION="18" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
+CONNECTION="19" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
 #####################################
 
 case $CHAIN in
@@ -48,6 +48,12 @@ case $TYPE in
     OUT_FILE="clean/$CHAIN_DIR/timeout_packet_seq.data"
     FILES="data/$CHAIN_DIR/timeout/*"
     QUERY='.txs[].logs[].events[]|select(.type=="timeout_packet").attributes[]|select(.key=="packet_sequence").value|tonumber'
+    ;;
+
+  RCV)
+    OUT_FILE="clean/$CHAIN_DIR/rcv_packet_seq.data"
+    FILES="data/$CHAIN_DIR/rcv/*"
+    QUERY='.txs[].logs[].events[]|select(.type=="recv_packet").attributes[]|select(.key=="packet_sequence").value|tonumber'
     ;;
 
   *)

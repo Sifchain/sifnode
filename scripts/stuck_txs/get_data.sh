@@ -3,13 +3,15 @@
 set -eu
 
 ######################################
-# "SEND" | "ACK" | "TIMEOUT" | "UPDATE"
-TYPE="TIMEOUT"
+# "SEND" | "ACK" | "TIMEOUT" | "UPDATE" | "RCV"
+TYPE="RCV"
 
 # "TERRA" | "SIF"
-CHAIN="SIF"
+CHAIN="TERRA"
 
-CONNECTION="18" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
+CONNECTION="19" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
+
+CHANNEL="7" ## NOTE: 18 for Sif Terra-Sif; 15 for Sif connection 18; 7 for Terra Terra-Sif connection
 #####################################
 
 case $CHAIN in
@@ -17,7 +19,7 @@ case $CHAIN in
   SIF)
     CLI="sifnoded"
     OUTPUT_DIR=sif
-    NODE="https://rpc.sifchain.finance:443/"
+    NODE="https://rpc-archive.sifchain.finance:443"
     ;;
 
   TERRA)
@@ -34,7 +36,6 @@ esac
 
 OUTPUT_DIR=$OUTPUT_DIR/$CONNECTION
 
-
 case $TYPE in
 
   SEND)
@@ -48,13 +49,18 @@ case $TYPE in
     ;;
 
   TIMEOUT)
-    QUERY="timeout_packet.packet_connection=connection-$CONNECTION"
+    QUERY="timeout_packet.packet_src_channel=channel-$CHANNEL"
     OUTPUT_DIR=$OUTPUT_DIR/timeout
     ;;
 
   UPDATE)
-    QUERY="update_client.client_id=07-tendermint-$CONNECTION"
+    QUERY="update_client.client_id=07-tendermint-42"
     OUTPUT_DIR=$OUTPUT_DIR/update_client
+    ;;
+
+  RCV)
+    QUERY="recv_packet.packet_connection=connection-$CONNECTION"
+    OUTPUT_DIR=$OUTPUT_DIR/rcv
     ;;
 
   *)
@@ -62,8 +68,6 @@ case $TYPE in
     exit 1
     ;;
 esac
-
-
 
 get_num_pages () {
     echo "Calculating number of pages"

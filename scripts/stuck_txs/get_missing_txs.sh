@@ -2,31 +2,45 @@
 
 set -eu
 
-# TODO: this is incomplete - doesn't take into account timed out packets
-
 ######################################
 # "TERRA" | "SIF"
-CHAIN="SIF"
+SEND_CHAIN="SIF"
 
-CONNECTION="18" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
+SEND_CONNECTION="21" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
+RCV_CONNECTION="19" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
 #####################################
 
-case $CHAIN in
+case $SEND_CHAIN in
 
   SIF)
-    CHAIN_DIR=sif
+    SEND_CHAIN_DIR=sif
+    RCV_CHAIN_DIR=terra
     ;;
 
   TERRA)
-    CHAIN_DIR=terra
+    SEND_CHAIN_DIR=terra
+    RCV_CHAIN_DIR=sif
     ;;
 
   *)
-    echo -n "Unknown chain: $CHAIN"
+    echo -n "Unknown chain: $SEND_CHAIN"
     exit 1
     ;;
 esac
 
-CHAIN_DIR=$CHAIN_DIR/$CONNECTION
+SEND_CHAIN_DIR=$SEND_CHAIN_DIR/$SEND_CONNECTION
+RCV_CHAIN_DIR=$RCV_CHAIN_DIR/$RCV_CONNECTION
 
-comm -23 clean/$CHAIN_DIR/send_packet_seq.data clean/$CHAIN_DIR/ack_packet_seq.data > clean/$CHAIN_DIR/missing_txs.data
+
+sort clean/$RCV_CHAIN_DIR/rcv_packet_seq.data > tmp_rcvs
+sort clean/$SEND_CHAIN_DIR/send_packet_seq.data  > tmp_send
+sort clean/$SEND_CHAIN_DIR/timeout_packet_seq.data > tmp_timeout
+
+comm -23 tmp_send tmp_rcvs > clean/$SEND_CHAIN_DIR/missing_rcvs.data
+comm -23 clean/$SEND_CHAIN_DIR/missing_rcvs.data tmp_timeout > clean/$SEND_CHAIN_DIR/missing_txs.data
+
+sort -no clean/$SEND_CHAIN_DIR/missing_rcvs.data clean/$SEND_CHAIN_DIR/missing_acks.data
+sort -no clean/$SEND_CHAIN_DIR/missing_txs.data clean/$SEND_CHAIN_DIR/missing_txs.data
+
+rm tmp_rcvs tmp_send tmp_timeout
+
