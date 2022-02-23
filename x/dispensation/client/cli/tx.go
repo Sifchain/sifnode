@@ -51,6 +51,7 @@ func GetCmdCreate() *cobra.Command {
 			}
 			outputList, err := dispensationUtils.ParseOutput(args[1])
 			if err != nil {
+
 				return err
 			}
 			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), distributionType, outputList, args[2])

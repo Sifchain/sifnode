@@ -46,7 +46,7 @@ func createInput(t *testing.T, filename string) {
 }
 
 func createOutput(filename string, count int) {
-	outputList := test.CreatOutputList(count, "10000000000000000000")
+	outputList := test.CreatOutputList(count, "1")
 	tempInput := utils.TempOutput{Out: outputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
 	_ = ioutil.WriteFile(filename, file, 0600)
@@ -72,7 +72,7 @@ func TestParseOutput(t *testing.T) {
 	file := "output.json"
 	count := 3000
 	createOutput(file, count)
-	defer removeFile(t, file)
+	//defer removeFile(t, file)
 	outputs, err := utils.ParseOutput(file)
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), count)

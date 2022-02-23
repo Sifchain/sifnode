@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Sifchain/sifnode/x/dispensation"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
@@ -8,12 +9,13 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 )
 
-const releaseVersion = "0.11.0-rc.2"
+const releaseVersion = "0.11.0-rc.3"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
 		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
+		dispensation.CreatePerfTestData(ctx, app.DispensationKeeper)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
