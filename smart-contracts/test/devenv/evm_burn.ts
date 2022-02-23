@@ -95,6 +95,7 @@ export async function checkEvmBurnState(
     .pipe(
       scan(
         (acc: State, v: SifEvent) => {
+          console.log("Event: ", v)
           if (isTerminalState(acc))
             // we've reached a decision
             return { ...acc, value: { kind: "terminate" } as Terminate }
@@ -106,10 +107,10 @@ export async function checkEvmBurnState(
             case "SifHeartbeat":
               // we just store the heartbeat
               return { ...acc, currentHeartbeat: v.value } as State
-            case "EthereumMainnetLogLock":
+            case "EthereumMainnetLogBurn":
               // we should see exactly one lock
               let ethBlock = v.data.block as any
-              if (ethBlock.transactionHash === tx.hash && v.data.value.eq(sendAmount)) {
+              if (v.data.value.eq(sendAmount)) {
                 const newAcc: State = {
                   ...acc,
                   fromEthereumAddress: v.data.from,
@@ -119,7 +120,7 @@ export async function checkEvmBurnState(
                   newAcc,
                   v,
                   TransactionStep.Initial,
-                  TransactionStep.SawLogLock
+                  TransactionStep.SawLogBurn
                 )
               }
               return {
@@ -144,7 +145,7 @@ export async function checkEvmBurnState(
                         denomHash: d.prophecyClaim.denom_hash,
                       },
                       v,
-                      TransactionStep.SawLogLock,
+                      TransactionStep.SawLogBurn,
                       TransactionStep.SawProphecyClaim
                     )
                   }

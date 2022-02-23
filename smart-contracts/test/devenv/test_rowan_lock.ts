@@ -16,7 +16,7 @@ import "@nomiclabs/hardhat-ethers"
 import {SifnodedAdapter, IBC_TOKEN_DENOM} from "./sifnodedAdapter"
 import {getDenomHash, ethDenomHash} from "./context"
 import {checkSifnodeLockState} from "./sifnode_lock"
-import {executeLock, checkEvmLockState} from "./evm_lock_burn"
+import {executeLock, checkEvmLockState} from "./evm_lock"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
 chai.use(solidity)
@@ -44,6 +44,14 @@ describe("lock rowan token tests", () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+
+    const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)
+    const ownerAccount = (await sifchainAccountsPromise.accounts).ownerAccount
+
+    // add rowan contract into whitelist, then bridge bank can mint the token
+    await contracts.bridgeBank
+      .connect(ownerAccount)
+      .addExistingBridgeToken(contracts.rowanContract.address)
 
     const ethereumAccounts = await ethereumResultsToSifchainAccounts(
       devEnvObject.ethResults!,

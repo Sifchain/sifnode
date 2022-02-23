@@ -21,7 +21,7 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   cmd(): [string, string[]] {
     return [
       "node_modules/.bin/hardhat",
-      ["node", "--hostname", this.host, "--port", this.port.toString()],
+      ["node", "--hostname", this.host, "--port", this.port.toString(), "--verbose"],
     ]
   }
 

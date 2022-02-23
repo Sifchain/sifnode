@@ -20,7 +20,7 @@ import {getDenomHash, ethDenomHash} from "./context"
 
 chai.use(solidity)
 
-describe("lock eth tests", () => {
+describe("burn rowan tests", () => {
   dotenv.config()
   // This test only works when devenv is running, and that requires a connection to localhost
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")

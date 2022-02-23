@@ -48,6 +48,7 @@ export interface State {
 export enum TransactionStep {
   Initial = "Initial",
   SawLogLock = "SawLogLock",
+  SawLogBurn = "SawLogBurn",
   SawProphecyClaim = "SawProphecyClaim",
   SawEthbridgeClaimArray = "SawEthbridgeClaimArray",
   BroadcastTx = "BroadcastTx",
@@ -100,8 +101,8 @@ export function isTerminalState(s: State) {
     default:
       return (
         s.transactionStep === TransactionStep.CoinsSent ||
-        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock
-        // s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
+        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock ||
+        s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
       )
   }
 }
