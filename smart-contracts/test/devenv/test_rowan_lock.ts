@@ -67,7 +67,7 @@ describe("lock rowan token tests", () => {
     )
     const initReceiverBalance = await contracts.rowanContract.balanceOf(destinationEthereumAddress.address)
 
-    let lockAmount = BigNumber.from("1234")
+    let lockAmount = BigNumber.from("123456789")
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
     await checkSifnodeLockState(

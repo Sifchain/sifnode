@@ -17,7 +17,7 @@ import {SifnodedAdapter} from "./sifnodedAdapter"
 import {checkSifnodeBurnState} from "./sifnode_burn"
 import {ethDenomHash} from "./context"
 
-import {executeLock, checkEvmLockState} from "./evm_lock_burn"
+import {executeLock, checkEvmLockState} from "./evm_lock"
 
 chai.use(solidity)
 

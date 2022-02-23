@@ -93,22 +93,36 @@ export enum TransactionStep {
   EthereumMainnetLogProphecyCompleted = "EthereumMainnetLogProphecyCompleted",
 }
 
-export function isTerminalState(s: State) {
+// the last step is different for token import/export
+export enum Direction {
+  SifnodeToEthereum = "SifnodeToEthereum",
+  EthereumToSifchain = "EthereumToSifchain",
+}
+
+export function isTerminalState(s: State, direction: Direction) {
   switch (s.value.kind) {
     case "success":
     case "failure":
       return true
     default:
-      return (
-        s.transactionStep === TransactionStep.CoinsSent ||
-        s.transactionStep === TransactionStep.EthereumMainnetLogUnlock ||
-        s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
-      )
+      switch (direction) {
+        case "SifnodeToEthereum":
+          return (
+            s.transactionStep === TransactionStep.CoinsSent ||
+            s.transactionStep === TransactionStep.EthereumMainnetLogUnlock ||
+            s.transactionStep === TransactionStep.EthereumMainnetLogProphecyCompleted
+          )
+          case "EthereumToSifchain":
+            return (
+              s.transactionStep === TransactionStep.CoinsSent
+              // s.transactionStep === TransactionStep.ProcessSuccessfulClaim
+            )
+      }
   }
 }
 
-function isNotTerminalState(s: State) {
-  return !isTerminalState(s)
+function isNotTerminalState(s: State, direction: Direction) {
+  return !isTerminalState(s, direction)
 }
 
 type VerbosityLevel = "summary" | "full" | "none"

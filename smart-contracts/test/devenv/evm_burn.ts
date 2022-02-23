@@ -20,6 +20,7 @@ import {
   buildFailure,
   attachDebugPrintfs,
   verbosityLevel,
+  Direction,
 } from "./context"
 import { exec } from "child_process"
 
@@ -89,14 +90,17 @@ export async function checkEvmBurnState(
     hardhat,
     contracts.bridgeBank
   )
+  let receivedBurn = false
 
   const states: Observable<State> = evmRelayerEvents
     .pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
     .pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          console.log("Event: ", v)
-          if (isTerminalState(acc))
+          if (receivedBurn) {
+            console.log("Event: ", v)
+          }
+          if (isTerminalState(acc, Direction.EthereumToSifchain))
             // we've reached a decision
             return { ...acc, value: { kind: "terminate" } as Terminate }
           switch (v.kind) {
@@ -108,6 +112,7 @@ export async function checkEvmBurnState(
               // we just store the heartbeat
               return { ...acc, currentHeartbeat: v.value } as State
             case "EthereumMainnetLogBurn":
+              receivedBurn = true
               // we should see exactly one lock
               let ethBlock = v.data.block as any
               if (v.data.value.eq(sendAmount)) {
@@ -128,7 +133,7 @@ export async function checkEvmBurnState(
                 value: {
                   kind: "failure",
                   value: v,
-                  message: "incorrect EthereumMainnetLogLock",
+                  message: "incorrect EthereumMainnetLogBurn",
                 },
               }
             case "EbRelayerEvmStateTransition":
@@ -250,7 +255,7 @@ export async function checkEvmBurnState(
   expect(
     lv.transactionStep,
     `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`
-  ).to.eq(TransactionStep.CoinsSent)
+  ).to.eq(TransactionStep.ProcessSuccessfulClaim)
 
   verboseSubscription.unsubscribe()
   replayedEvents.unsubscribe()

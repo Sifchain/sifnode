@@ -16,7 +16,7 @@ import {ethers} from "hardhat"
 import {SifnodedAdapter} from "./sifnodedAdapter"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 import {executeBurn, checkEvmBurnState} from "./evm_burn"
-import {getDenomHash, ethDenomHash} from "./context"
+import {getDenomHash, ethDenomHash, Direction} from "./context"
 
 chai.use(solidity)
 
@@ -48,7 +48,7 @@ describe("burn rowan tests", () => {
       hardhat.ethers.provider
     )
 
-    const sendAmount = BigNumber.from("5000") // 3500 gwei
+    const sendAmount = BigNumber.from("50") // 3500 gwei
 
     let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
 
@@ -62,9 +62,9 @@ describe("burn rowan tests", () => {
     await contracts.rowanContract.connect(ownerAccount).mint(senderEthereumAccount.address, sendAmount)
 
     // record the init balance before lock
-    const initialErc20SenderBalance = await contracts.rowanContract.balanceOf(senderEthereumAccount.address)
+    const initialRowanSenderBalance = await contracts.rowanContract.balanceOf(senderEthereumAccount.address)
     const initialContractBalance = await contracts.rowanContract.balanceOf(contracts.bridgeBank.address)
-    const initialErc20ReceiverBalance = await sifnodedAdapter.getBalance(
+    const initialRowanReceiverBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       "rowan"
     )
@@ -72,8 +72,7 @@ describe("burn rowan tests", () => {
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
 
-    // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
-    // lock the erc20 token
+    // burn rowan
     const tx = await executeBurn(
       contracts,
       sendAmount,
@@ -90,26 +89,26 @@ describe("burn rowan tests", () => {
     console.log("Lock complete")
 
     // get the balance after lock
-    const finalErc20SenderBalance = await contracts.rowanContract.balanceOf(senderEthereumAccount.address)
+    const finalRowanSenderBalance = await contracts.rowanContract.balanceOf(senderEthereumAccount.address)
     const finalContractBalance = await contracts.rowanContract.balanceOf(contracts.bridgeBank.address)
-    const finalErc20ReceiverBalance = await sifnodedAdapter.getBalance(
+    const finalRowanReceiverBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       "rowan"
     )
 
-    console.log("Before lock the sender's balance is ", initialErc20SenderBalance)
+    console.log("Before lock the sender's balance is ", initialRowanSenderBalance)
     console.log("Before lock the contract's balance is ", initialContractBalance)
-    console.log("Before lock the receiver's balance is ", initialErc20ReceiverBalance)
+    console.log("Before lock the receiver's balance is ", initialRowanReceiverBalance)
 
-    console.log("After lock the sender's balance is ", finalErc20SenderBalance)
+    console.log("After lock the sender's balance is ", finalRowanSenderBalance)
     console.log("After lock the contract's balance is ", finalContractBalance)
-    console.log("After lock the receiver's balance is ", finalErc20ReceiverBalance)
+    console.log("After lock the receiver's balance is ", finalRowanReceiverBalance)
 
-    expect(initialErc20SenderBalance.sub(sendAmount), "should be equal ").eq(
-      finalErc20SenderBalance
+    expect(initialRowanSenderBalance.sub(sendAmount), "should be equal ").eq(
+      finalRowanSenderBalance
     )
-    expect(initialErc20ReceiverBalance.add(sendAmount), "should be equal ").eq(
-      finalErc20ReceiverBalance
+    expect(initialRowanReceiverBalance.add(sendAmount), "should be equal ").eq(
+      finalRowanReceiverBalance
     )
   })
 })

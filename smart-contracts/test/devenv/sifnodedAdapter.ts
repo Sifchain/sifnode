@@ -61,23 +61,23 @@ export class SifnodedAdapter {
     const responseJson = JSON.parse(responseString)
 
     if (prepayRowan) {
-      await sleep(5000)
+      await sleep(10000)
       this.fundSifAccount(responseJson.address, DEFAULT_PREPAY_AMOUNT, ROWAN_SYMBOL)
       console.log("Funded with rowan")
     }
 
     if (ibcToken) {
-      await sleep(5000)
+      await sleep(10000)
       this.fundSifAccount(responseJson.address, DEFAULT_IBC_TOKEN_AMOUNT, IBC_TOKEN_DENOM)
       console.log("Funded with ibc token")
 
     }
 
     if (cethToken) {
-      await sleep(5000)
+      await sleep(10000)
       this.fundSifAccount(responseJson.address, DEFAULT_CETH_AMOUNT, ethDenomHash)
       console.log("Funded with ceth token")
-      await sleep(5000)
+      await sleep(10000)
     }
 
     return {
