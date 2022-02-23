@@ -1,4 +1,5 @@
 from pprint import pprint
+from time import sleep
 from typing import Iterable
 
 import pytest
@@ -154,16 +155,21 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 #   - With the fixes, SHOULD NOT halt the bridge, lets subsequent tx go through
 def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"], [fund_amount_ceth_cross_chain_fee, "ceth"]])
+    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+                                                            #   [fund_amount_ceth_cross_chain_fee, ctx.ceth_symbol]])
     test_account_token_balance = 30000
 
     token_sc = deploy_failhard_for_test(ctx, test_eth_acct, test_account_token_balance)
     token_addr = token_sc.address
     sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
 
+    ctx.bridge_bank_lock_eth(test_eth_acct, test_sif_account, 5000)
+    ctx.advance_blocks(100)
+
+    sleep(10)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
-
+    print("Sifchain balance before ", sif_balance_before)
     # Locking erc20 token to sifchain
     # TODO: Can we merge approve with bank lock ? Is there situation where we dont want that?
     ctx.approve_erc20_token(token_sc, test_eth_acct, test_account_token_balance)
@@ -190,14 +196,17 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
 
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, "ceth"], [1, sif_denom_hash]])
+    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, ctx.ceth_symbol], [1, sif_denom_hash]])
     print("Sif balance after sending from sifchain to ethereum:", sif_balance_after)
-    # sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
+    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     # We expect his sif ious to be burned, and ceth to be decreased for gas fee
-    # assert len(sif_balance_delta) == 2, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
-    # assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee" #TODO: Shouldnt this be ceth?
-    # assert "rowan" in sif_balance_delta, "User should see changes in the bridged token"
-    # assert sif_denom_hash not in sif_balance_delta, ""
+    assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
+    assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee" #TODO: Shouldnt this be ceth?
+    assert sif_balance_delta["rowan"] < 0
+    assert ctx.ceth_symbol in sif_balance_delta, "User should see changes in the bridged token"
+    assert sif_balance_delta[ctx.ceth_symbol] < 0
+    assert sif_denom_hash in sif_balance_delta, ""
+    assert sif_balance_delta[sif_denom_hash] == -1 * test_send_amount_back
 
     with pytest.raises(Exception) as exception:
         ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr, timeout=90)
