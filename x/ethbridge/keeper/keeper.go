@@ -82,6 +82,9 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		coins = sdk.NewCoins(sdk.NewCoin(claim.DenomHash, claim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
+		// before token burned in Ethereum, we already have the denom generated in sifnode.
+		// for instance, the native rowan or ibc token. the denom hash build from network and
+		// contract address can't be taken as denom. need to get denom from token registry keeper
 		// based on address and network descriptor to get denom in sifnode
 		denom, err := k.tokenRegistryKeeper.GetDenomFromContract(ctx, claim.NetworkDescriptor, claim.TokenContractAddress)
 		if err != nil {
