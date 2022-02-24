@@ -165,3 +165,16 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
 	}
 }
+
+// TODO get the denom temporarily, will add a map to keep the data from network+address to denom
+// after confirmed we really need this to identify the denom after receive the burn event from Ethereum
+func (k keeper) GetDenomFromContract(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, contract string) (string, error) {
+	entries := k.GetRegistry(ctx)
+	for _, entry := range entries.Entries {
+		if entry.Address == contract && entry.Network == networkDescriptor {
+			return entry.Denom, nil
+		}
+	}
+	errorMsg := fmt.Sprintf("denom not found for %s in %s", contract, networkDescriptor)
+	return "", errors.Wrap(errors.ErrKeyNotFound, errorMsg)
+}
