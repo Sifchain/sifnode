@@ -1,0 +1,122 @@
+#!/bin/bash
+
+set -eu
+
+######################################
+# ARG PARSING
+
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -a|--client)
+      SEND_CLIENT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -b|--chain)
+      SEND_CHAIN="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+######################################
+
+get_client_connection_channel_info () {
+    $SEND_CLI query ibc connection connections --output json --node $SEND_NODE > tmp
+
+    QUERY=".connections[]|select(.client_id==\"${SEND_CLIENT}\").id" # TODO: there could be more than one connection here!
+    SEND_CONNECTION=$(jq -r $QUERY tmp) 
+
+    QUERY=".connections[]|select(.client_id==\"${SEND_CLIENT}\").counterparty.client_id" # TODO: there could be more than one connection here!
+    RCV_CLIENT=$(jq -r $QUERY tmp)
+
+    QUERY=".connections[]|select(.client_id==\"${SEND_CLIENT}\").counterparty.connection_id" # TODO: there could be more than one connection here!
+    RCV_CONNECTION=$(jq -r $QUERY tmp)
+
+    $SEND_CLI query ibc channel connections $SEND_CONNECTION --output json --node $SEND_NODE > tmp
+
+    QUERY='.channels[0].channel_id' # TODO: there could be more than one channel here!
+    SEND_CHANNEL=$(jq -r $QUERY tmp)
+
+    $RCV_CLI query ibc channel connections $RCV_CONNECTION --output json --node $RCV_NODE > tmp
+
+    QUERY='.channels[0].channel_id' # TODO: there could be more than one channel here!
+    RCV_CHANNEL=$(jq -r $QUERY tmp)
+
+    rm tmp
+}
+
+compare_cleaned_data () {
+
+    SEND_CHAIN_DIR=$SEND_CHAIN/$SEND_CONNECTION
+    RCV_CHAIN_DIR=$RCV_CHAIN/$RCV_CONNECTION
+
+    RESULTS_DIR="processed/$SEND_CHAIN_DIR"
+    mkdir -p $RESULTS_DIR
+
+    sort clean/$RCV_CHAIN_DIR/rcv_packet_seq.data > tmp_rcvs
+    sort clean/$SEND_CHAIN_DIR/send_packet_seq.data  > tmp_send
+    sort clean/$SEND_CHAIN_DIR/timeout_packet_seq.data > tmp_timeout
+
+    comm -23 tmp_send tmp_rcvs > $RESULTS_DIR/missing_rcvs.data
+    comm -23 $RESULTS_DIR/missing_rcvs.data tmp_timeout > $RESULTS_DIR/missing_txs.data
+
+    sort -no $RESULTS_DIR/missing_rcvs.data $RESULTS_DIR/missing_rcvs.data
+    sort -no $RESULTS_DIR/missing_txs.data $RESULTS_DIR/missing_txs.data
+
+    rm tmp_rcvs tmp_send tmp_timeout
+}
+
+case $SEND_CHAIN in
+
+  sif)
+    SEND_CLI="sifnoded"
+    SEND_NODE="https://rpc-archive.sifchain.finance:443"
+    RCV_CLI="terrad"
+    RCV_NODE="http://public-node.terra.dev:26657"
+    RCV_CHAIN="terra"
+    ;;
+
+  terra)
+    SEND_CLI="terrad"
+    SEND_NODE="http://public-node.terra.dev:26657"
+    RCV_CLI="sifnoded"
+    RCV_NODE="https://rpc-archive.sifchain.finance:443"
+    RCV_CHAIN="sif"
+    ;;
+
+  *)
+    echo "Unknown chain: $SEND_CHAIN"
+    exit 1
+    ;;
+esac
+
+get_client_connection_channel_info
+echo "Send connection: $SEND_CONNECTION"
+echo "Send channel: $SEND_CHANNEL"
+echo "Receive client: $RCV_CLIENT"
+echo "Receive connection: $RCV_CONNECTION"
+echo "Receive channel: $RCV_CHANNEL"
+
+./get_data --type send --chain $SEND_CHAIN --connection $SEND_CONNECTION --channel $SEND_CHANNEL
+./get_data --type timeout --chain $SEND_CHAIN --connection $SEND_CONNECTION --channel $SEND_CHANNEL
+./get_data --type rcv --chain $RCV_CHAIN --connection $RCV_CONNECTION --channel $RCV_CHANNEL
+
+./clean_data --type send --chain $SEND_CHAIN  --connection $SEND_CONNECTION
+./clean_data --type timeout --chain $SEND_CHAIN  --connection $SEND_CONNECTION
+./clean_data --type rcv --chain $RCV_CHAIN --connection $RCV_CONNECTION
+
+compare_cleaned_data

@@ -1,0 +1,117 @@
+#!/bin/bash
+
+set -eu
+
+######################################
+# ARG PARSING
+
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -t|--type)
+      TYPE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -a|--chain)
+      CHAIN="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -b|--connection)
+      CONNECTION="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -c|--channel)
+      CHANNEL="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+######################################
+
+case $CHAIN in
+
+  sif)
+    CLI="sifnoded"
+    OUTPUT_DIR=sif
+    NODE="https://rpc-archive.sifchain.finance:443"
+    ;;
+
+  terra)
+    CLI="terrad"
+    OUTPUT_DIR=terra
+    NODE="http://public-node.terra.dev:26657"
+    ;;
+
+  *)
+    echo "Unknown chain: $CHAIN"
+    exit 1
+    ;;
+esac
+
+OUTPUT_DIR=$OUTPUT_DIR/$CONNECTION
+
+case $TYPE in
+
+  send)
+    QUERY="send_packet.packet_connection=$CONNECTION"
+    OUTPUT_DIR=$OUTPUT_DIR/send
+    ;;
+
+  ack)
+    QUERY="acknowledge_packet.packet_connection=$CONNECTION"
+    OUTPUT_DIR=$OUTPUT_DIR/ack
+    ;;
+
+  timeout)
+    QUERY="timeout_packet.packet_src_channel=$CHANNEL"
+    OUTPUT_DIR=$OUTPUT_DIR/timeout
+    ;;
+
+  rcv)
+    QUERY="recv_packet.packet_connection=$CONNECTION"
+    OUTPUT_DIR=$OUTPUT_DIR/rcv
+    ;;
+
+  *)
+    echo "Unknown query type: $TYPE"
+    exit 1
+    ;;
+esac
+
+get_num_pages () {
+    echo "Calculating number of pages"
+    $CLI query txs --events $QUERY --node $NODE --output json --page 1 --limit=1 > tmp
+    TOTAL_COUNT=$(cat tmp | jq '.total_count|tonumber')
+    NUM_PAGES=$(( ($TOTAL_COUNT + (30 - 1)) / 30))
+    rm tmp
+}
+
+echo "Getting $TYPE data from $CHAIN chain"
+get_num_pages
+echo "Total number of pages: $NUM_PAGES"
+
+mkdir -p data/$OUTPUT_DIR
+
+for ((i=1; i <= $NUM_PAGES; i++));
+    do
+       echo "Getting page $i"
+       $CLI query txs --events $QUERY --node $NODE --page $i --output json > data/$OUTPUT_DIR/$i.json
+done
+
+
