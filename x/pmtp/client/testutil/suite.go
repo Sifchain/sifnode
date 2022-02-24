@@ -17,8 +17,10 @@ type IntegrationTestSuite struct {
 	cfg     network.Config
 	network *network.Network
 
-	mnemonic string
-	address  string
+	mnemonic       string
+	address        string
+	nativeAmount   types.Int
+	externalAmount types.Int
 }
 
 func NewIntegrationTestSuite(cfg network.Config) *IntegrationTestSuite {
@@ -32,14 +34,31 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	s.mnemonic = "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"
 	s.address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	s.nativeAmount, _ = types.NewIntFromString("999999000000000000000000000")
+	s.externalAmount, _ = types.NewIntFromString("500000000000000000000000")
 
 	s.cfg.Mnemonics = []string{s.mnemonic}
+	s.cfg.StakingTokens = s.nativeAmount
 
-	genesisState := banktypes.DefaultGenesisState()
-	genesisState.Balances = append(genesisState.Balances, banktypes.Balance{Address: s.address, Coins: types.Coins{types.Coin{Denom: "rowan", Amount: types.NewInt(1000000000000000000)}}})
-	bz, err := s.cfg.Codec.MarshalJSON(genesisState)
+	bz, err := GetBankGenesisState(s.cfg, s.address, s.nativeAmount, s.externalAmount)
 	s.Require().NoError(err)
 	s.cfg.GenesisState["bank"] = bz
+
+	bz, err = GetTokenRegistryGenesisState(s.cfg, s.address)
+	s.Require().NoError(err)
+	s.cfg.GenesisState["tokenregistry"] = bz
+
+	bz, err = GetClpGenesisState(s.cfg, types.NewUint(3000000000000000000), types.NewUint(2000000000000000000))
+	s.Require().NoError(err)
+	s.cfg.GenesisState["clp"] = bz
+
+	// bz, err = GetMarginGenesisState(s.cfg)
+	// s.Require().NoError(err)
+	// s.cfg.GenesisState["margin"] = bz
+
+	// bz, err = GetPmtpGenesisState(s.cfg)
+	// s.Require().NoError(err)
+	// s.cfg.GenesisState["pmtp"] = bz
 
 	s.network = network.New(s.T(), s.cfg)
 
@@ -60,7 +79,7 @@ func (s *IntegrationTestSuite) TestRowanBalanceExists() {
 	var genesisState banktypes.GenesisState
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(s.cfg.GenesisState["bank"], &genesisState))
 	s.Require().Equal(genesisState.Balances[0].Address, s.address)
-	s.Require().Contains(genesisState.Balances[0].Coins, types.Coin{Denom: "rowan", Amount: types.NewInt(1000000000000000000)})
+	s.Require().Equal(genesisState.Balances[0].Coins[5], types.NewCoin("rowan", s.nativeAmount))
 
 	out, err := QueryBalancesExec(clientCtx, val.Address)
 	s.Require().NoError(err)
@@ -68,5 +87,5 @@ func (s *IntegrationTestSuite) TestRowanBalanceExists() {
 	var balancesRes banktypes.QueryAllBalancesResponse
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &balancesRes), out.String())
 
-	s.Require().Contains(balancesRes.Balances, types.Coin{Denom: "rowan", Amount: types.NewInt(1000000000000000000)})
+	s.Require().Contains(balancesRes.Balances, types.NewCoin("rowan", s.nativeAmount))
 }
