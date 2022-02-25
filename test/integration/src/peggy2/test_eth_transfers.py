@@ -169,7 +169,6 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     sleep(10)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
-    print("Sifchain balance before ", sif_balance_before)
     # Locking erc20 token to sifchain
     # TODO: Can we merge approve with bank lock ? Is there situation where we dont want that?
     ctx.approve_erc20_token(token_sc, test_eth_acct, test_account_token_balance)
@@ -201,7 +200,7 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     # We expect his sif ious to be burned, and ceth to be decreased for gas fee
     assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
-    assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee" #TODO: Shouldnt this be ceth?
+    assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee"
     assert sif_balance_delta["rowan"] < 0
     assert ctx.ceth_symbol in sif_balance_delta, "User should see changes in the bridged token"
     assert sif_balance_delta[ctx.ceth_symbol] < 0
