@@ -21,6 +21,10 @@ func NewRootCmd() *cobra.Command {
 			if verbose {
 				utils.SetVerbose()
 			}
+			err := utils.OpenDB(datadir)
+			if err != nil {
+				panic(err)
+			}
 		},
 	}
 	addPersistentFlags(rootCmd)
@@ -36,7 +40,7 @@ func addPersistentFlags(cmd *cobra.Command) {
 func addCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewSearchCmd(),
-		NewStuckTxsCmd(),
+		NewIBCCmd(),
 	)
 }
 

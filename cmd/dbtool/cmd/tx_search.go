@@ -55,11 +55,6 @@ func txSearch(query string) {
 	fmt.Printf("pages: %d\n", pages)
 	fmt.Printf("per-page: %d\n", perPage)
 
-	err := utils.OpenDB(datadir)
-	if err != nil {
-		panic(err)
-	}
-
 	results, err := utils.DoTxSearch(query, full, pages, perPage)
 	if err != nil {
 		panic(err)

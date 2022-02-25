@@ -9,11 +9,7 @@ import (
 
 type EventInfo struct {
 	Type           string
-	PacketSequence int
-	ChannelID      string
 	TxHash         string
-	Denom          string
-	Amount         uint64
 	Attributes     []string
 	RealAttributes []abcitypes.EventAttribute
 }
@@ -41,8 +37,8 @@ func FilterEvents(
 					attributes = append(attributes, attr.String())
 				}
 				info := &EventInfo{
-					TxHash:         txHash,
 					Type:           ev.Type,
+					TxHash:         txHash,
 					Attributes:     attributes,
 					RealAttributes: ev.Attributes,
 				}
