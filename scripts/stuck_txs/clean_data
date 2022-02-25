@@ -95,12 +95,20 @@ mkdir -p clean/$CHAIN_DIR
 
 rm -f $OUT_FILE
 
+if [[ "$TYPE" == "send" ]] 
+then
+  rm -f clean/$CHAIN_DIR/send_packet_full.json
+fi
+
 for f in $FILES
 do
   jq $QUERY $f >> $OUT_FILE
+
+  if [[ "$TYPE" == "send" ]] 
+  then
+    jq '.txs[].logs[].events[]|select(.type=="send_packet").attributes | map(select(.key=="packet_data" or .key=="packet_sequence")) | {packet_sequence: .[1].value|tonumber, packet_data: .[0].value}' $f >> clean/$CHAIN_DIR/send_packet_full.json
+  fi
+
 done
 
 sort -no $OUT_FILE $OUT_FILE
-
-
-

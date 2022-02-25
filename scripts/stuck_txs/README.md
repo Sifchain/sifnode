@@ -49,6 +49,7 @@ The client of interest is '07-tendermint-42' on the `sif` chain (this was discov
 ```
 ./get_stuck_txs --client 07-tendermint-42 --chain sif
 ```
+The list of stuck transactions, with transaction data is written to 'processed/sif/connection-21/missing_txs_full.json'
 
 The list of stuck transactions is written to `processed/sif/connection-21/missing_txs.data`:
 
@@ -161,6 +162,8 @@ And the reverse direction:
 ```
 ./get_stuck_txs --client 07-tendermint-19 --chain terra
 ```
+
+The list of stuck transactions, with transaction data is written to 'processed/terra/connection-19/missing_txs_full.json'
 
 The list of stuck transactions is written to `processed/terra/connection-19/missing_txs.data`:
 
