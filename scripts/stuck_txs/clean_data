@@ -3,22 +3,50 @@
 set -eu
 
 ######################################
-# "SEND" | "ACK" | "TIMEOUT" | "UPDATE" | "RCV"
-TYPE="RCV"
+# ARG PARSING
 
-# "TERRA" | "SIF"
-CHAIN="TERRA"
+POSITIONAL_ARGS=()
 
-CONNECTION="19" ## NOTE: 21 for Sif Terra-Sif connection; 19 for Terra Terra-Sif connection
-#####################################
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -t|--type)
+      TYPE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -a|--chain)
+      CHAIN="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -b|--connection)
+      CONNECTION="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+######################################
+
 
 case $CHAIN in
 
-  SIF)
+  sif)
     CHAIN_DIR=sif
     ;;
 
-  TERRA)
+  terra)
     CHAIN_DIR=terra
     ;;
 
@@ -32,25 +60,25 @@ CHAIN_DIR=$CHAIN_DIR/$CONNECTION
 
 case $TYPE in
 
-  SEND)
+  send)
     OUT_FILE="clean/$CHAIN_DIR/send_packet_seq.data"
     FILES="data/$CHAIN_DIR/send/*"
     QUERY='.txs[].logs[].events[]|select(.type=="send_packet").attributes[]|select(.key=="packet_sequence").value|tonumber'
     ;;
 
-  ACK)
+  ack)
     OUT_FILE="clean/$CHAIN_DIR/ack_packet_seq.data"
     FILES="data/$CHAIN_DIR/ack/*"
     QUERY='.txs[].logs[].events[]|select(.type=="acknowledge_packet").attributes[]|select(.key=="packet_sequence").value|tonumber'
     ;;
 
-  TIMEOUT)
+  timeout)
     OUT_FILE="clean/$CHAIN_DIR/timeout_packet_seq.data"
     FILES="data/$CHAIN_DIR/timeout/*"
     QUERY='.txs[].logs[].events[]|select(.type=="timeout_packet").attributes[]|select(.key=="packet_sequence").value|tonumber'
     ;;
 
-  RCV)
+  rcv)
     OUT_FILE="clean/$CHAIN_DIR/rcv_packet_seq.data"
     FILES="data/$CHAIN_DIR/rcv/*"
     QUERY='.txs[].logs[].events[]|select(.type=="recv_packet").attributes[]|select(.key=="packet_sequence").value|tonumber'
