@@ -91,7 +91,7 @@ func (s *IntegrationTestSuite) TestRowanBalanceExists() {
 	s.Require().Contains(balancesRes.Balances, types.NewCoin("rowan", s.nativeAmount))
 }
 
-func (s *IntegrationTestSuite) TestCLPExists() {
+func (s *IntegrationTestSuite) TestCLPsExists() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
@@ -103,11 +103,20 @@ func (s *IntegrationTestSuite) TestCLPExists() {
 
 	s.Require().Contains(
 		poolsRes.Pools,
-		clptypes.NewPool(
-			&clptypes.Asset{Symbol: "cdash"},
-			types.NewUint(3000000000000000000),
-			types.NewUint(3000000000000000000),
-			types.NewUint(3000000000000000000),
-		),
+		&clptypes.Pool{
+			ExternalAsset:        &clptypes.Asset{Symbol: "cdash"},
+			NativeAssetBalance:   types.NewUint(3000000000000000000),
+			ExternalAssetBalance: types.NewUint(3000000000000000000),
+			PoolUnits:            types.NewUint(3000000000000000000),
+		},
+	)
+	s.Require().Contains(
+		poolsRes.Pools,
+		&clptypes.Pool{
+			ExternalAsset:        &clptypes.Asset{Symbol: "ceth"},
+			NativeAssetBalance:   types.NewUint(2000000000000000000),
+			ExternalAssetBalance: types.NewUint(2000000000000000000),
+			PoolUnits:            types.NewUint(2000000000000000000),
+		},
 	)
 }
