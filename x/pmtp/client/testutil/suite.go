@@ -5,6 +5,7 @@ package testutil
 
 import (
 	sifapp "github.com/Sifchain/sifnode/app"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	"github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -88,4 +89,25 @@ func (s *IntegrationTestSuite) TestRowanBalanceExists() {
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &balancesRes), out.String())
 
 	s.Require().Contains(balancesRes.Balances, types.NewCoin("rowan", s.nativeAmount))
+}
+
+func (s *IntegrationTestSuite) TestCLPExists() {
+	val := s.network.Validators[0]
+	clientCtx := val.ClientCtx
+
+	out, err := QueryClpPoolsExec(clientCtx)
+	s.Require().NoError(err)
+
+	var poolsRes clptypes.PoolsRes
+	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &poolsRes), out.String())
+
+	s.Require().Contains(
+		poolsRes.Pools,
+		clptypes.NewPool(
+			&clptypes.Asset{Symbol: "cdash"},
+			types.NewUint(3000000000000000000),
+			types.NewUint(3000000000000000000),
+			types.NewUint(3000000000000000000),
+		),
+	)
 }
