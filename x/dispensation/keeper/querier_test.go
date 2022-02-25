@@ -12,10 +12,37 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/Sifchain/sifnode/app"
+
 	dispensationkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 )
+
+func TestNewLegacyQuerier(t *testing.T) {
+	sifapp, ctx := test.CreateTestApp(false)
+
+	keeper := sifapp.DispensationKeeper
+	name := uuid.New().String()
+	querier := dispensationkeeper.NewLegacyQuerier(keeper)
+	queryRecName := types.QueryRecordsByDistributionNameRequest{
+		DistributionName: name,
+		Status:           types.DistributionStatus_DISTRIBUTION_STATUS_PENDING,
+	}
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&queryRecName)
+	require.NoError(t, errRes)
+	query.Path = ""
+	query.Data = qp
+	res, err := querier(ctx, []string{"fail"}, query)
+	assert.Error(t, err)
+	var dr types.DistributionRecords
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
+	assert.Error(t, err)
+
+}
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
 	keeper := app.DispensationKeeper
