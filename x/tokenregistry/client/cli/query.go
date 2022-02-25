@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"

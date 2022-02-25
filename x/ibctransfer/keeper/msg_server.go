@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	sdktransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 )
 
 type msgServer struct {
