@@ -122,3 +122,4 @@ echo "Receive channel: $RCV_CHANNEL"
 compare_cleaned_data
 
 ./seq2data --chain $SEND_CHAIN --connection $SEND_CONNECTION
+./seq2csv --chain $SEND_CHAIN --connection $SEND_CONNECTION

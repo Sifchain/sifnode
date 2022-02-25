@@ -36,13 +36,24 @@ set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 MISSED_TXS_FILE="processed/$CHAIN/$CONNECTION/missing_txs.data"
 FULL_PACKETS_FILE="clean/$CHAIN/$CONNECTION/send_packet_full.json"
-OUTPUT_FILE="processed/$CHAIN/$CONNECTION/missing_txs_full.json"
+OUTPUT_FILE="processed/$CHAIN/$CONNECTION/missing_txs_full.csv"
 
 rm -f $OUTPUT_FILE
-echo "[" > $OUTPUT_FILE
+echo "packet_sequence,tx_hash, amount,denom,sender,receiver" > $OUTPUT_FILE
 
 while read p; do
-  jq "select(.packet_sequence==${p}).packet_data" $FULL_PACKETS_FILE | sed 's/\\//g' | sed 's/"//' | sed 's/"$/,/' >> $OUTPUT_FILE
+  res=$(jq "select(.packet_sequence==${p})" $FULL_PACKETS_FILE )
+
+  tx_hash=$(echo $res | jq -r .tx_hash)
+
+  packet_data=$(echo $res | jq '.packet_data' |  sed 's/\\//g' | sed 's/"//' | sed 's/"$//' )
+
+  amount=$(echo $packet_data | jq '.amount|tonumber')
+  denom=$(echo $packet_data | jq -r '.denom')
+  sender=$(echo $packet_data | jq -r '.sender')
+  receiver=$(echo $packet_data | jq -r '.receiver')
+
+  echo ${p}, $tx_hash, $amount, $denom, $sender, $receiver >> $OUTPUT_FILE
+
 done < $MISSED_TXS_FILE
 
-sed -i '$ s/.$/]/' $OUTPUT_FILE

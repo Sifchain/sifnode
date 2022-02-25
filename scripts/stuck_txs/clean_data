@@ -104,9 +104,9 @@ for f in $FILES
 do
   jq $QUERY $f >> $OUT_FILE
 
-  if [[ "$TYPE" == "send" ]] 
+  if [[ "$TYPE" == "send" ]]
   then
-    jq '.txs[].logs[].events[]|select(.type=="send_packet").attributes | map(select(.key=="packet_data" or .key=="packet_sequence")) | {packet_sequence: .[1].value|tonumber, packet_data: .[0].value}' $f >> clean/$CHAIN_DIR/send_packet_full.json
+    jq '.txs[] | {"logs": .logs[] , "tx_hash": .txhash }| {"events": .logs.events, "tx_hash": .tx_hash} | {send_packet:     .events[] | select(.type=="send_packet").attributes    , tx_hash: .tx_hash} | { packet_data: .send_packet[] | select(.key=="packet_data"   ).value , packet_sequence:  .send_packet[] | select(.key=="packet_sequence"   ).value|tonumber ,       tx_hash:  .tx_hash       }' $f >> clean/$CHAIN_DIR/send_packet_full.json
   fi
 
 done
