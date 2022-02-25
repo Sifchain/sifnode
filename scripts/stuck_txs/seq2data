@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -eu
+
+# ######################################
+# # ARG PARSING
+
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -a|--chain)
+      CHAIN="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -b|--connection)
+      CONNECTION="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+# ######################################
+
+#CHAIN="sif"
+#CONNECTION="connection-21"
+
+MISSED_TXS_FILE="processed/$CHAIN/$CONNECTION/missing_txs.data"
+FULL_PACKETS_FILE="clean/$CHAIN/$CONNECTION/send_packet_full.json"
+OUTPUT_FILE="processed/$CHAIN/$CONNECTION/missing_txs_full.json"
+
+rm -f $OUTPUT_FILE
+echo "[" > $OUTPUT_FILE
+
+while read p; do
+  jq "select(.packet_sequence==${p}).packet_data" $FULL_PACKETS_FILE | sed 's/\\//g' | sed 's/"//' | sed 's/"$/,/' >> $OUTPUT_FILE
+done < $MISSED_TXS_FILE
+
+sed -i '$ s/.$/]/' $OUTPUT_FILE

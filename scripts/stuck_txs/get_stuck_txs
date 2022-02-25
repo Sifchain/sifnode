@@ -111,12 +111,14 @@ echo "Receive client: $RCV_CLIENT"
 echo "Receive connection: $RCV_CONNECTION"
 echo "Receive channel: $RCV_CHANNEL"
 
-./get_data --type send --chain $SEND_CHAIN --connection $SEND_CONNECTION --channel $SEND_CHANNEL
-./get_data --type timeout --chain $SEND_CHAIN --connection $SEND_CONNECTION --channel $SEND_CHANNEL
-./get_data --type rcv --chain $RCV_CHAIN --connection $RCV_CONNECTION --channel $RCV_CHANNEL
+#./get_data --type send --chain $SEND_CHAIN --connection $SEND_CONNECTION --channel $SEND_CHANNEL
+#./get_data --type timeout --chain $SEND_CHAIN --connection $SEND_CONNECTION --channel $SEND_CHANNEL
+#./get_data --type rcv --chain $RCV_CHAIN --connection $RCV_CONNECTION --channel $RCV_CHANNEL
 
-./clean_data --type send --chain $SEND_CHAIN  --connection $SEND_CONNECTION
-./clean_data --type timeout --chain $SEND_CHAIN  --connection $SEND_CONNECTION
+./clean_data --type send --chain $SEND_CHAIN --connection $SEND_CONNECTION
+./clean_data --type timeout --chain $SEND_CHAIN --connection $SEND_CONNECTION
 ./clean_data --type rcv --chain $RCV_CHAIN --connection $RCV_CONNECTION
 
 compare_cleaned_data
+
+./seq2data --chain $SEND_CHAIN --connection $SEND_CONNECTION
