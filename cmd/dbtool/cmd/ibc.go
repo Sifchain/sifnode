@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/Sifchain/sifnode/cmd/dbtool/utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 	"github.com/spf13/cobra"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
@@ -82,7 +84,8 @@ func getPendingTxs(channel string) {
 		filteredEvents := utils.FilterEvents(txs, filter)
 
 		if len(filteredEvents) == 0 {
-			panic(fmt.Errorf("No events for %s", query))
+			fmt.Printf("%d PRUNED\n", commitment.Sequence)
+			continue
 		}
 		if len(filteredEvents) > 1 {
 			panic(fmt.Errorf("Multiple events (%d) for %s", len(filteredEvents), query))
@@ -97,9 +100,9 @@ func getPendingTxs(channel string) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("tx_hash:%s, packet_sequence:%s, amount:%s, denom: %s, receiver: %s, sender: %s\n",
-			ev.TxHash,
+		fmt.Printf("%s tx_hash:%s, amount:%s, denom: %s, receiver: %s, sender: %s\n",
 			ev.GetAttribute("packet_sequence"),
+			ev.TxHash,
 			fungibleTokenPacket.Amount,
 			fungibleTokenPacket.Denom,
 			fungibleTokenPacket.Receiver,
@@ -124,6 +127,18 @@ func getConnection(connectionID string) {
 	connection, _ := sifApp.IBCKeeper.ConnectionKeeper.GetConnection(ctx, connectionID)
 
 	fmt.Println(connection.String())
+
+	resp, err := sifApp.IBCKeeper.ChannelKeeper.ConnectionChannels(
+		sdk.WrapSDKContext(ctx),
+		&types.QueryConnectionChannelsRequest{
+			Connection: connectionID,
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%v\n", resp)
 }
 
 type FungibleTokenPacketData struct {
