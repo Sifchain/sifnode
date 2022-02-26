@@ -14,6 +14,7 @@ const releaseVersion = "0.11.0"
 
 var (
 	rc1 = GetUpgradeName(releaseVersion, "rc.1")
+	rc2 = GetUpgradeName(releaseVersion, "rc.2")
 )
 
 func SetupHandlers(app *SifchainApp) {
@@ -41,6 +42,10 @@ func SetupHandlers(app *SifchainApp) {
 		params.InflationMax = sdk.MustNewDecFromStr("0.487400000000000000")
 		params.InflationMin = sdk.MustNewDecFromStr("0.348100000000000000")
 		app.MintKeeper.SetParams(ctx, params)
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
+	})
+	app.UpgradeKeeper.SetUpgradeHandler(rc2, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		app.Logger().Info("Running upgrade handler for " + rc2)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
