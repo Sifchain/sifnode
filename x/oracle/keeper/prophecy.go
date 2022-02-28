@@ -82,6 +82,8 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	tokenDecimal uint8,
 	tokenName string,
 	tokenSymbol string) error {
+	// fmt.Println("oracle call SetProphecyInfo")
+	log := ctx.Logger()
 
 	store := ctx.KVStore(k.storeKey)
 
@@ -111,6 +113,8 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 
 	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalSequence, prophecyID)
 	store.Set(storePrefix, k.cdc.MustMarshal(&prophecyInfo))
+	log.Info("oracle call SetProphecyInfo done", "prophecyInfo", prophecyInfo)
+
 	return nil
 }
 

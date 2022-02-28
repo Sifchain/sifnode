@@ -57,8 +57,16 @@ describe("lock rowan token tests", () => {
       devEnvObject.ethResults!,
       hardhat.ethers.provider
     )
-    const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
 
+    await contracts.rowanContract.grantRole(String(MINTER_ROLE), ownerAccount.address)
+    let lockAmount = BigNumber.from("123456789")
+
+    // mint token to sender
+    await contracts.rowanContract
+      .connect(ownerAccount)
+      .mint(ethereumAccounts.availableAccounts[1].address, lockAmount)
+
+    const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
     let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(true, true, true)
 
     const initSenderBalance = await sifnodedAdapter.getBalance(
@@ -66,8 +74,7 @@ describe("lock rowan token tests", () => {
       rowan
     )
     const initReceiverBalance = await contracts.rowanContract.balanceOf(destinationEthereumAddress.address)
-
-    let lockAmount = BigNumber.from("123456789")
+    
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
     await checkSifnodeLockState(
@@ -94,6 +101,9 @@ describe("lock rowan token tests", () => {
 
     console.log("After burn the sender's balance is ", finalSenderBalance)
     console.log("After burn the receiver's balance is ", finalReceiverBalance)
+
+    console.log("Rowan address is  ", contracts.rowanContract.address)
+
 
     // expect(initialErc20SenderBalance.sub(burnAmount), "should be equal ").eq(
     //   finalErc20SenderBalance

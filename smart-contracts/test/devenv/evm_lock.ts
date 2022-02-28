@@ -20,6 +20,7 @@ import {
   buildFailure,
   attachDebugPrintfs,
   verbosityLevel,
+  Direction,
 } from "./context"
 import { exec } from "child_process"
 
@@ -97,7 +98,7 @@ export async function checkEvmLockState(
     .pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          if (isTerminalState(acc))
+          if (isTerminalState(acc, Direction.EthereumToSifchain))
             // we've reached a decision
             return { ...acc, value: { kind: "terminate" } as Terminate }
           switch (v.kind) {

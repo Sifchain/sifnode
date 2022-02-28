@@ -15,6 +15,7 @@ import {
   isTerminalState,
   ensureCorrectTransition,
   TransactionStep,
+  Direction,
 } from "./context"
 import {SifnodedAdapter} from "./sifnodedAdapter"
 
@@ -51,7 +52,7 @@ export async function checkSifnodeBurnState(
       (acc: State, v: SifEvent) => {
         console.log("Event: ", v)
         // if (v.kind == "")
-        if (isTerminalState(acc) || (hasSeenEthereumLogUnlcok && hasSeenProphecyClaimSubmitted)) {
+        if (isTerminalState(acc, Direction.SifnodeToEthereum) || (hasSeenEthereumLogUnlcok && hasSeenProphecyClaimSubmitted)) {
           // we've reached a decision
           console.log("Reached terminate state", acc)
           return {...acc, value: {kind: "terminate"} as Terminate}

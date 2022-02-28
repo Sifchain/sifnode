@@ -6,6 +6,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,5 +54,22 @@ func TestKeeper_SetFirstLockDoublePeg(t *testing.T) {
 	assert.True(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
 	app.TokenRegistryKeeper.SetFirstLockDoublePeg(ctx, denom, networkDescriptor)
 	assert.False(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
+
+}
+
+func TestKeeper_SetAdminAccount(t *testing.T) {
+	app, ctx, admin := test.CreateTestApp(false)
+	address, _ := sdk.AccAddressFromBech32(admin)
+	newAddress, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+
+	assert.True(t, app.TokenRegistryKeeper.IsAdminAccount(ctx, address))
+	assert.False(t, app.TokenRegistryKeeper.IsAdminAccount(ctx, newAddress))
+	app.TokenRegistryKeeper.SetAdminAccount(ctx, newAddress)
+	assert.True(t, app.TokenRegistryKeeper.IsAdminAccount(ctx, newAddress))
+	assert.False(t, app.TokenRegistryKeeper.IsAdminAccount(ctx, address))
+
+	// assert.True(t, false)
+	// app.TokenRegistryKeeper.SetFirstLockDoublePeg(ctx, denom, networkDescriptor)
+	// assert.False(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
 
 }

@@ -168,6 +168,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       this.addRelayerWitnessAccount(`witness-${witness}`, homeDir)
     )
 
+    ChildProcess.execSync(
+      `${this.sifnodedCommand} set-genesis-token-registry-admin ${sifnodedAdminAddress.account} --home ${homeDir}`,
+      {encoding: "utf8"}
+    ).trim()
+
     let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level trace --trace --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`
 
     console.log(`start sifnoded with: \n${sifnodedDaemonCmd}`)
@@ -176,6 +181,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
     await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand)
+    await waitForSifAccount(sifnodedAdminAddress.account, this.sifnodedCommand)
+
     const registryPath = path.resolve(__dirname, "./", "registry.json")
 
     // replace the contract address with deployed one
@@ -189,10 +196,9 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     let data = JSON.stringify(entries);
     fs.writeFileSync(registryPath, data)
 
-    const registryResult = ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry set-registry ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId} --node tcp://0.0.0.0:26657`,
-      {encoding: "utf8"}
-    ).trim()
+    await sleep(10000)
+    console.log("++++ address is ", sifnodedAdminAddress.account)
+    const registryResult = await this.tokenRegistry(registryPath, sifnodedAdminAddress, this.chainId)
     console.log("registryResult as ", registryResult)
 
     // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
@@ -241,7 +247,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }).trim()
 
     const accountAddress = JSON.parse(accountJSON)["address"]
-
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2 --home ${homeDir}`,
@@ -252,6 +257,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         `${this.sifnodedCommand} set-genesis-oracle-admin ${accountAddress} --home ${homeDir}`,
         {encoding: "utf8"}
       ).trim()
+
+      // ChildProcess.execSync(
+      //   `${this.sifnodedCommand} set-genesis-token-registry-admin ${accountAddress} --home ${homeDir}`,
+      //   {encoding: "utf8"}
+      // ).trim()
     }
 
     ChildProcess.execSync(
@@ -392,6 +402,36 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "-y",
     ]
 
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, {encoding: "utf8"})
+  }
+
+  async tokenRegistry(
+    registryPath: string,
+    sifnodeAdminAccount: EbRelayerAccount,
+    chainId: string
+  ): Promise<string> {
+    const sifgenArgs = [
+      "tx",
+      "tokenregistry",
+      "set-registry",
+      registryPath,
+      "--home",
+      sifnodeAdminAccount.homeDir,
+      "--from",
+      sifnodeAdminAccount.name,
+      "--keyring-backend",
+      "test",
+      "--chain-id",
+      chainId,
+      "--gas-prices",
+      "0.5rowan",
+      "--gas-adjustment",
+      "1.5",
+      "--node",
+      "tcp://0.0.0.0:26657",
+      "-y",
+    ]
+    console.log("+++ ", sifgenArgs)
     return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, {encoding: "utf8"})
   }
 

@@ -77,6 +77,7 @@ func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermis
 func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry, error) {
 	for i := range wl.Entries {
 		e := wl.Entries[i]
+
 		if e != nil && strings.EqualFold(e.Denom, denom) {
 			return wl.Entries[i], nil
 		}
@@ -125,6 +126,12 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 		return types.Registry{}
 	}
 	k.cdc.MustUnmarshal(bz, &whitelist)
+	k.Logger(ctx).Info("GetRegistry", "registry", whitelist)
+
+	for _, i := range whitelist.Entries {
+		k.Logger(ctx).Info("GetRegistry", "entry", i)
+
+	}
 	return whitelist
 }
 
@@ -164,4 +171,17 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 
 		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
 	}
+}
+
+// TODO get the denom temporarily, will add a map to keep the data from network+address to denom
+// after confirmed we really need this to identify the denom after receive the burn event from Ethereum
+func (k keeper) GetDenomFromContract(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, contract string) (string, error) {
+	entries := k.GetRegistry(ctx)
+	for _, entry := range entries.Entries {
+		if entry.Address == contract && entry.Network == networkDescriptor {
+			return entry.Denom, nil
+		}
+	}
+	errorMsg := fmt.Sprintf("denom not found for %s in %s", contract, networkDescriptor)
+	return "", errors.Wrap(errors.ErrKeyNotFound, errorMsg)
 }

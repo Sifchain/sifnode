@@ -67,9 +67,12 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 	if firstDoublePeg {
+		logger.Info("will call SetFirstLockDoublePeg")
+
 		srv.tokenRegistryKeeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 	}
 
+	logger.Info("will call SetProphecyInfo")
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
@@ -102,6 +105,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		)),
 		"prophecyId", string(prophecyID[:]),
 		"GlobalSequence", globalSequence,
+		"DoublePeg", doublePeg,
 	)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
