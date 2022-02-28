@@ -23,7 +23,7 @@ func TestKeeper_Errors(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
 	num := clpKeeper.GetMinCreatePoolThreshold(ctx)
-	assert.Equal(t, num, uint64(100))
+	assert.Equal(t, num, types.DefaultMinCreatePoolThreshold)
 	_ = clpKeeper.GetParams(ctx)
 	_ = clpKeeper.Logger(ctx)
 	pool.ExternalAsset.Symbol = ""

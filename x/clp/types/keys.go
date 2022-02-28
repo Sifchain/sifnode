@@ -18,7 +18,6 @@ const (
 	QuerierRoute = ModuleName
 
 	NativeSymbol      = "rowan"
-	PoolThrehold      = "1000000000000000000"
 	PoolUnitsMinValue = "1000000000"
 
 	MaxSymbolLength = 71

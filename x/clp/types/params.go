@@ -10,7 +10,7 @@ import (
 // Default parameter namespace
 const (
 	DefaultParamspace                    = ModuleName
-	DefaultMinCreatePoolThreshold uint64 = 100
+	DefaultMinCreatePoolThreshold uint64 = 1000000000000000000
 )
 
 // Parameter store keys
