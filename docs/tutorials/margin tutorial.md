@@ -12,7 +12,8 @@ TBD
 
 0. `git clone git@github.com:Sifchain/sifnode.git`
 1. `cd sifnode`
-2. `make install`
+2. `git checkout feature/margin-1`
+3. `make install`
 
 #### What is Margin Trading or trading with margin or leverage
 
