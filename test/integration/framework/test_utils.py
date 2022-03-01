@@ -742,8 +742,9 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
-    def bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
-        txhash = self.tx_bridge_bank_lock_erc20(token_addr, from_eth_acct, to_sif_acct, amount)
+    def bridge_bank_lock_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
+        self.approve_erc20_token(token_sc, from_eth_acct, amount)
+        txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
     # Peggy1-specific

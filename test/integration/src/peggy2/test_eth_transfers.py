@@ -99,14 +99,12 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 
     # We do minting and approving just once for all iterations, but we could also do it each time separately.
     ctx.mint_generic_erc20_token(token_addr, total_amount, test_eth_acct_0)
-    # Why does this work? Dont we need to approve exact amount?
-    ctx.approve_erc20_token(token_sc, test_eth_acct_0, total_amount)
 
     for i in range(number_of_times):
         # Send from Ethereum account 1 to Sifchain
         eth_balance_before_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
         sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
-        ctx.bridge_bank_lock_erc20(token_addr, test_eth_acct_0, test_sif_account, send_amount_0)
+        ctx.bridge_bank_lock_erc20(token_sc, test_eth_acct_0, test_sif_account, send_amount_0)
         ctx.advance_blocks()
         sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
         eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
@@ -151,8 +149,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 # We expect the transfer from sifchain to evm to fail, w/
 #   - Tokens burned on sifchain side
 #   - Tokens not depsoited on evm side
-#   - Without fixes, SHOULD halt the bridge
-#   - With the fixes, SHOULD NOT halt the bridge, lets subsequent tx go through
+#   - It SHOULD NOT halt the bridge
 def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
@@ -170,9 +167,7 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     # Locking erc20 token to sifchain
-    # TODO: Can we merge approve with bank lock ? Is there situation where we dont want that?
-    ctx.approve_erc20_token(token_sc, test_eth_acct, test_account_token_balance)
-    ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct, test_sif_account, test_account_token_balance)
+    ctx.bridge_bank_lock_erc20(token_sc, test_eth_acct, test_sif_account, test_account_token_balance)
     ctx.advance_blocks()
 
     # Group these into 1 func
@@ -228,8 +223,7 @@ def test_unicodeToken_token_to_sifnode_and_back(ctx: EnvCtx):
 
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
 
-    ctx.approve_erc20_token(token_sc, test_eth_acct, test_account_token_balance)
-    ctx.bridge_bank_lock_erc20(token_sc.address, test_eth_acct, test_sif_account, test_account_token_balance)
+    ctx.bridge_bank_lock_erc20(token_sc, test_eth_acct, test_sif_account, test_account_token_balance)
     ctx.advance_blocks()
 
     # Group these into 1 func
