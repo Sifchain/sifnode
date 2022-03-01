@@ -142,11 +142,17 @@ func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	result := types.RegistryEntry{}
 	registry := k.GetRegistry(ctx)
+	k.Logger(ctx).Info("GetRegistry", "registry", registry)
+	for _, item := range registry.Entries {
+		k.Logger(ctx).Info("GetRegistry", "entry", item)
+	}
+
 	entry, _ := k.GetEntry(registry, denom)
 	if entry != nil {
 		result = *entry
 	}
 
+	k.Logger(ctx).Info("+++ GetRegistry", "entry", result)
 	return result
 }
 

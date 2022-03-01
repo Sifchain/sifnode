@@ -89,7 +89,7 @@ describe("lock rowan token tests", () => {
     )
 
     // Here we verify the user balance is correct
-    // get the balance after burn
+    // get the balance after lock
     const finalSenderBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       rowan
@@ -105,11 +105,14 @@ describe("lock rowan token tests", () => {
     console.log("Rowan address is  ", contracts.rowanContract.address)
 
 
-    // expect(initialErc20SenderBalance.sub(burnAmount), "should be equal ").eq(
-    //   finalErc20SenderBalance
-    // )
-    // expect(initialErc20ReceiverBalance.add(burnAmount), "should be equal ").eq(
-    //   finalErc20ReceiverBalance
-    // )
+    // greater because some rowan used to pay gas
+    expect(finalSenderBalance.sub(lockAmount), "should be equal ").gt(
+      initSenderBalance
+    )
+
+    // check receiver's balance after lock
+    expect(finalReceiverBalance.add(lockAmount), "should be equal ").eq(
+      initReceiverBalance
+    )
   })
 })
