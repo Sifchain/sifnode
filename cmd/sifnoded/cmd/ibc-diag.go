@@ -59,10 +59,10 @@ Use the regular IBC commands to find the src and dst channels of a connection
 	command.Flags().StringVar(&dstNode, "dst-node", dstNode, "rpc endpoint of destination node")
 	command.Flags().StringVar(&srcChannel, "src-channel", dstChannel, "source channel id")
 	command.Flags().StringVar(&dstChannel, "dst-channel", dstChannel, "destination channel id")
-	command.MarkFlagRequired("src-node")
-	command.MarkFlagRequired("dst-node")
-	command.MarkFlagRequired("src-channel")
-	command.MarkFlagRequired("dst-channel")
+	_ = command.MarkFlagRequired("src-node")
+	_ = command.MarkFlagRequired("dst-node")
+	_ = command.MarkFlagRequired("src-channel")
+	_ = command.MarkFlagRequired("dst-channel")
 	return command
 }
 
@@ -231,10 +231,10 @@ func getTransfer(client *rpchttp.HTTP, channelID string, packetSequence uint64) 
 	filteredEvents := FilterEvents(res.Txs, filter)
 
 	if len(filteredEvents) == 0 {
-		return nil, fmt.Errorf("Pruned send_packet (sequence %d)", packetSequence)
+		return nil, fmt.Errorf("pruned send_packet (sequence %d)", packetSequence)
 	}
 	if len(filteredEvents) > 1 {
-		return nil, fmt.Errorf("Multiple events (%d) for %s", len(filteredEvents), query)
+		return nil, fmt.Errorf("multiple events (%d) for %s", len(filteredEvents), query)
 	}
 
 	ev := filteredEvents[0]
