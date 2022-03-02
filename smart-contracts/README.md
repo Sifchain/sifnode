@@ -98,11 +98,14 @@ Requies
 
 Steps:
 - run `make clean && make` in project root
-- in `smart-contracts` , run `npx hardhat run scripts/devenv.ts`
+- in `smart-contracts` directory, run `npx hardhat run scripts/devenv.ts`
 
-This will spin up
-- 1 hardhat ethereum node on localhost
-- 1 sifnode on localhost
-- 1 peggy witness
-- 1 peggy relayer
+This will
+- install required dependencies
+- generate bindings
+- spin up
+	- 1 hardhat ethereum node on localhost
+	- 1 sifnode on localhost
+	- 1 peggy witness
+	- 1 peggy relayer
 
