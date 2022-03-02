@@ -169,7 +169,6 @@ class Integrator(Ganache, Command):
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
         sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
-        sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
         sifnode.set_gen_denom_whitelist(denom_whitelist_file)
         return sifnodeadmin_addr
 
