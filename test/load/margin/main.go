@@ -72,65 +72,27 @@ func run(cmd *cobra.Command, args []string) error {
 	// get pools
 	// pools := []string{"stake"}
 
-	// create x tx's of y positions
-	x := 10
-	y := 100
-	z := 1
+	positions := 1000
 
-	//count := make(chan int, 1)
+	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+	key, err := txf.Keybase().Key(clientCtx.GetFromName())
 
-	keydir, err := os.MkdirTemp("", "")
+	accountNumber, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, key.GetAddress())
 	if err != nil {
-		return err
-	}
-	traderKeyring, err := keyring.New("sifnoded", "test", keydir, cmd.InOrStdin())
-	if err != nil {
-		return err
+		panic(err)
 	}
 
-	clientCtx = clientCtx.WithKeyring(traderKeyring)
-	traderTxf := tx.NewFactoryCLI(clientCtx, cmd.Flags()).WithKeybase(traderKeyring)
+	txf.WithAccountNumber(accountNumber).WithSequence(seq)
 
-	faucetInfo, err := newFaucet(traderKeyring, "faucet", os.Getenv("FAUCET_MNEMONIC"))
-	if err != nil {
-		return err
-	}
-	log.Printf("Using faucet address %s", faucetInfo.GetAddress().String())
-
-	keys := make(chan keyring.Info, 1)
-	go generateAddresses(keys, traderKeyring, x*y*z)
-
-	funded := make(chan keyring.Info, 1)
-	fundAccount := newAccountFunder(funded, clientCtx, traderTxf, faucetInfo.GetAddress(), sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(1000000000000000000)), sdk.NewCoin("stake", sdk.NewInt(200))))
-
-	go func() {
-		for {
-			select {
-			case key := <-keys:
-				fundAccount(key)
-			}
-		}
-	}()
-
-	var total int
-	for {
-		select {
-		case key := <-funded:
-			total++
-			err := broadcastTrade(clientCtx, traderTxf, key)
-			if err != nil {
-				panic(err)
-			}
-			log.Printf("%d: Traded with address %s", total, key.GetAddress().String())
-			/*case c := <-count:
-			total += c
-			log.Printf("%d positions opened", total)
-
-			if c >= x*y*z {
-				return nil
-			}*/
+	for a := 0; a < positions; a++ {
+		txf.WithSequence(seq + uint64(a))
+		err := broadcastTrade(clientCtx, txf, key)
+		if err != nil {
+			panic(err)
 		}
 	}
+
+	return nil
 }
 
 func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num int) {
