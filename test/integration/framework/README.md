@@ -78,7 +78,7 @@ sif_admin = exec("sifnoded keys show sif -a --keyring-backend test") // sif1xxx.
 // ~/.sifnoded/config/priv_validator_key.json
 // ~/.sifnoded/data/priv_validator_state.json
 // and prints some JSON (what?)
-exec("sifnoded init test --chain-id {chain_id}")
+exec("sifnoded init {moniker} --chain-id {chain_id}")
 
 // Add Genesis Accounts
 exec("sifnoded add-genesis-account {sif_admin} --keyring-backend test 999999000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink")
@@ -130,5 +130,12 @@ sifnoded set-gen-denom-whitelist DENOM.json
 ## Peggy1 - integration tests
 
 // Parameters: validator moniker, validator mnemonic
-sifnoded_keys_add(validator_moniker, validator_password) // Test keyring
-valoper = get_val_address(validator_moniker)
+valicator1_moniker, validator1_address, validator1_password, validator1_mnemonic = exec("sifgen create network ...")
+
+sifnoded_keys_add(validator1_moniker, validator1_password) // Test keyring
+valoper = get_val_address(validator1_moniker)
+
+exec("sifnoded add-genesis-validators {valoper}")
+exec("sifnoded add-geneeis-account {}")
+exec("sifnoded set-genesis-oracle-admin {}")
+exec("sifnoded set-denom-whitelist {}")
