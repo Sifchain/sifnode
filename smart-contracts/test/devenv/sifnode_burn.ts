@@ -28,8 +28,7 @@ export async function checkSifnodeBurnState(
   symbol: string,
   // TODO: What is correct value for corsschainfee?
   crossChainFee: string,
-  networkDescriptor: number
-) {
+  networkDescriptor: number) {
   const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
     {
       evmrelayer: "/tmp/sifnode/evmrelayer.log",

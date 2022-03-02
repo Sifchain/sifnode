@@ -14,7 +14,7 @@ import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import {SifnodedAdapter, IBC_TOKEN_DENOM} from "./sifnodedAdapter"
-import {getDenomHash, ethDenomHash} from "./context"
+import {getDenomHash, nullContractAddress} from "./context"
 import {checkSifnodeLockState} from "./sifnode_lock"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
@@ -42,6 +42,7 @@ describe("burn ibc token tests", () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+    const bridgeToken = await factories.bridgeToken
 
     const ethereumAccounts = await ethereumResultsToSifchainAccounts(
       devEnvObject.ethResults!,
@@ -50,16 +51,26 @@ describe("burn ibc token tests", () => {
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
 
     let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(true, true, true)
-
+    // the source address copy from registry json file
+    const ibcTokenSourceAddress = "0x1111111111111111111111111111111111111111"
+    const destinationAddress = await contracts.cosmosBridge.sourceAddressToDestinationAddress(ibcTokenSourceAddress)
+    
+    console.log("mapped destinationAddress is ", destinationAddress)
     const initSenderBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       IBC_TOKEN_DENOM
     )
 
+    let initReceiverBalance = BigNumber.from(0)
+    let createNewBridgeToken = destinationAddress == nullContractAddress
+    if (!createNewBridgeToken) {
+      initReceiverBalance = await bridgeToken.attach(destinationAddress).balanceOf(destinationEthereumAddress.address)
+    }
+
     let lockAmount = BigNumber.from("1234")
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
-    await checkSifnodeLockState(
+    const [newContractAddress, mintContractAddress] = await checkSifnodeLockState(
       sifnodedAdapter,
       contracts,
       testSifAccount,
@@ -67,28 +78,42 @@ describe("burn ibc token tests", () => {
       lockAmount,
       IBC_TOKEN_DENOM,
       String(crossChainCethFee),
-      networkDescriptor
+      networkDescriptor,
+      createNewBridgeToken
     )
+
+    console.log("New contract address is ", newContractAddress)
+    console.log("Mint contract address is ", mintContractAddress)
+    if (createNewBridgeToken) {
+      expect(initReceiverBalance, "should be equal ").eq(
+        BigNumber.from(0))
+    } else {
+      expect(newContractAddress, "should be equal ").eq(
+        nullContractAddress)
+      expect(mintContractAddress, "should be equal ").eq(
+        destinationAddress)
+    }
 
     // Here we verify the user balance is correct
     // get the balance after burn
-    const finalErc20SenderBalance = await sifnodedAdapter.getBalance(
+    const finalSenderBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       IBC_TOKEN_DENOM
     )
-    // const finalErc20ReceiverBalance = await erc20.balanceOf(destinationEthereumAddress.address)
+    const finalReceiverBalance = await bridgeToken.attach(mintContractAddress).balanceOf(destinationEthereumAddress.address)
 
-    // console.log("Before burn the sender's balance is ", initialErc20SenderBalance)
-    // console.log("Before burn the receiver's balance is ", initialErc20ReceiverBalance)
+    console.log("Before burn the sender's balance is ", initSenderBalance)
+    console.log("Before burn the receiver's balance is ", initReceiverBalance)
 
-    console.log("After burn the sender's balance is ", finalErc20SenderBalance)
-    // console.log("After burn the receiver's balance is ", finalErc20ReceiverBalance)
+    console.log("After burn the sender's balance is ", finalSenderBalance)
+    console.log("After burn the receiver's balance is ", finalReceiverBalance)
 
-    // expect(initialErc20SenderBalance.sub(burnAmount), "should be equal ").eq(
-    //   finalErc20SenderBalance
-    // )
-    // expect(initialErc20ReceiverBalance.add(burnAmount), "should be equal ").eq(
-    //   finalErc20ReceiverBalance
-    // )
+
+    expect(initSenderBalance.sub(lockAmount), "should be equal ").eq(
+      finalSenderBalance
+    )
+    expect(initReceiverBalance.add(lockAmount), "should be equal ").eq(
+      finalReceiverBalance
+    )
   })
 })

@@ -73,6 +73,19 @@ export interface EthereumMainnetNewProphecyClaim {
   }
 }
 
+export interface EthereumMainnetLogNewBridgeTokenCreated {
+  kind: "EthereumMainnetLogNewBridgeTokenCreated"
+  data: {
+    kind: "EthereumMainnetLogNewBridgeTokenCreated"
+    // decimals,
+    // _networkDescriptor,
+    // name,
+    // symbol,
+    // sourceChainTokenAddress,
+    tokenAddress: string
+    // cosmosDenom
+  }
+}
 export interface EthereumMainnetLogProphecyCompleted {
   kind: "EthereumMainnetLogProphecyCompleted"
   data: {
@@ -89,6 +102,7 @@ export type EthereumMainnetEvent =
   | EthereumMainnetLogBridgeTokenMint
   | EthereumMainnetNewProphecyClaim
   | EthereumMainnetLogProphecyCompleted
+  | EthereumMainnetLogNewBridgeTokenCreated
 
 export function isEthereumMainnetEvent(x: object): x is EthereumMainnetEvent {
   switch ((x as EthereumMainnetEvent).kind) {
@@ -99,6 +113,7 @@ export function isEthereumMainnetEvent(x: object): x is EthereumMainnetEvent {
     case "EthereumMainnetLogBridgeTokenMint":
     case "EthereumMainnetNewProphecyClaim":
     case "EthereumMainnetLogProphecyCompleted":
+    case "EthereumMainnetLogNewBridgeTokenCreated":
       return true
     default:
       return false
@@ -228,9 +243,26 @@ export function subscribeToEthereumCosmosBridgeEvents(
     let logProphecyCompletedFilter = cosmosBridge.filters.LogProphecyCompleted()
     cosmosBridge.on(logProphecyCompletedFilter, LogProphecyCompleted)
 
+    const LogNewBridgeTokenCreated = (...args: any[]) => {
+      console.log("Receive new bridge token created")
+      console.log("Args: ", args)
+
+      const log: EthereumMainnetLogNewBridgeTokenCreated = {
+        kind: "EthereumMainnetLogNewBridgeTokenCreated",
+        data: {
+          kind: "EthereumMainnetLogNewBridgeTokenCreated",
+          tokenAddress: args[5],
+        },
+      }
+      subscriber.next(log)
+    }
+    let LogNewBridgeTokenCreatedFilter = cosmosBridge.filters.LogNewBridgeTokenCreated()
+    cosmosBridge.on(LogNewBridgeTokenCreatedFilter, LogNewBridgeTokenCreated)
+
     return () => {
       cosmosBridge.off(logNewProphecyClaimFilter, logNewProphecyClaimListener)
       cosmosBridge.off(logProphecyCompletedFilter, LogProphecyCompleted)
+      cosmosBridge.off(LogNewBridgeTokenCreatedFilter, LogNewBridgeTokenCreated)
     }
   })
 }

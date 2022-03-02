@@ -7,6 +7,9 @@ import {Observable, Subscription} from "rxjs"
 import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer"
 import {sha256} from "ethers/lib/utils"
 
+// zero contract address
+export const nullContractAddress = "0x0000000000000000000000000000000000000000"
+
 // The hash value for ethereum on mainnet
 export const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
@@ -91,6 +94,7 @@ export enum TransactionStep {
   EthereumMainnetLogBridgeTokenMint = "EthereumMainnetLogBridgeTokenMint",
   EthereumMainnetNewProphecyClaim = "EthereumMainnetNewProphecyClaim",
   EthereumMainnetLogProphecyCompleted = "EthereumMainnetLogProphecyCompleted",
+  EthereumMainnetLogNewBridgeTokenCreated = "EthereumMainnetLogNewBridgeTokenCreated",
 }
 
 // the last step is different for token import/export

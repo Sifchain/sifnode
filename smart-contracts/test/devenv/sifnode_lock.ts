@@ -16,8 +16,10 @@ import {
   ensureCorrectTransition,
   TransactionStep,
   Direction,
+  nullContractAddress,
 } from "./context"
 import {SifnodedAdapter} from "./sifnodedAdapter"
+import {EthereumMainnetLogNewBridgeTokenCreated, EthereumMainnetLogBridgeTokenMint} from "../../src/watcher/ethereumMainnet"
 
 export async function checkSifnodeLockState(
   sifnodedAdapter: SifnodedAdapter,
@@ -28,8 +30,9 @@ export async function checkSifnodeLockState(
   symbol: string,
   // TODO: What is correct value for corsschainfee?
   crossChainFee: string,
-  networkDescriptor: number
-) {
+  networkDescriptor: number,
+  newContract: boolean
+): Promise<[string, string]> {
   const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
     {
       evmrelayer: "/tmp/sifnode/evmrelayer.log",
@@ -46,13 +49,16 @@ export async function checkSifnodeLockState(
 
   let hasSeenEthereumLogMint: boolean = false
   let hasSeenProphecyClaimSubmitted: boolean = false
+  let newContractAddress = nullContractAddress
+  let mintContractAddress = nullContractAddress
 
   const states: Observable<State> = evmRelayerEvents.pipe(
     scan(
       (acc: State, v: SifEvent) => {
         console.log("Event: ", v)
         // if (v.kind == "")
-        if (isTerminalState(acc, Direction.SifnodeToEthereum) || (hasSeenEthereumLogMint && hasSeenProphecyClaimSubmitted)) {
+        if ((!newContract || (newContractAddress != nullContractAddress)) &&
+        (isTerminalState(acc, Direction.SifnodeToEthereum) || (hasSeenEthereumLogMint && hasSeenProphecyClaimSubmitted))) {
           // we've reached a decision
           console.log("Reached terminate state", acc)
           return {...acc, value: {kind: "terminate"} as Terminate}
@@ -66,8 +72,26 @@ export async function checkSifnodeLockState(
             // we just store the heartbeat
             return {...acc, currentHeartbeat: v.value} as State
           }
+          case "EthereumMainnetLogNewBridgeTokenCreated": {
+            const created = v as unknown as EthereumMainnetLogNewBridgeTokenCreated
+            console.log("+++ created message", created)
+            newContractAddress = created.data.tokenAddress
+            console.log("+++ created message", newContractAddress)
+
+            return ensureCorrectTransition(
+              acc,
+              v,
+              TransactionStep.ProphecyStatus,
+              TransactionStep.EthereumMainnetLogNewBridgeTokenCreated
+            )
+          }
+
           case "EthereumMainnetLogBridgeTokenMint": {
             hasSeenEthereumLogMint = true
+            let mint = v as unknown as EthereumMainnetLogBridgeTokenMint
+            console.log("mint message", mint)
+            mintContractAddress = mint.data.token
+
             return ensureCorrectTransition(
               acc,
               v,
@@ -257,4 +281,5 @@ export async function checkSifnodeLockState(
   //   lv.transactionStep,
   //   `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
   // ).to.eq(expectedEndState)
+  return [newContractAddress, mintContractAddress]
 }
