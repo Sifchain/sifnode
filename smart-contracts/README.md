@@ -89,3 +89,20 @@ The Ethereum Oracle module and Oracle modules are completed, with the Relayer se
 
 Thanks to @adrianbrink, @mossid, and @sunnya97 for contributions to the original Peggy repository.
 
+
+
+## Standing up peggy2 on local node
+
+Requies
+- `node`, 
+
+Steps:
+- run `make clean && make` in project root
+- in `smart-contracts` , run `npx hardhat run scripts/devenv.ts`
+
+This will spin up
+- 1 hardhat ethereum node on localhost
+- 1 sifnode on localhost
+- 1 peggy witness
+- 1 peggy relayer
+
