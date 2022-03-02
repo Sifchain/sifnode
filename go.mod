@@ -144,8 +144,6 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
-require github.com/cosmos/ibc-go v1.2.6
-
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/lib/pq v1.10.2 // indirect
