@@ -41,6 +41,8 @@ class InflateTokens:
             assert token_symbol not in result, f"Symbol {token_symbol} is being used by more than one whitelisted token"
             result.append(token)
         erowan_token = [t for t in result if t["symbol"] == "erowan"]
+        # These assertions are broken in Tempnet, possibly indicating missing/incomplete chain init, see README.md
+        # for comparision of steps
         assert len(erowan_token) == 1, "erowan is not whitelisted, probably bad/incomplete deployment"
         assert erowan_token[0]["is_whitelisted"], "erowan is un-whitelisted"
         return result
