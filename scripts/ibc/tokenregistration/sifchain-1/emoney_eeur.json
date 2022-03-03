@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/92E0120F15D037353CFB73C14651FC8930ADC05B93100FD7754D3A689E53B333",
-      "base_denom": "uosmo",
-      "path": "transfer/channel-8",
-      "ibc_channel_id": "channel-8",
-      "ibc_counterparty_channel_id": "channel-136",
+      "denom": "ibc/7B8A3357032F3DB000ACFF3B2C9F8E77B932F21004FC93B5A8F77DE24161A573",
+      "base_denom": "eeur",
+      "path": "transfer/channel-19",
+      "ibc_channel_id": "channel-19",
+      "ibc_counterparty_channel_id": "channel-14",
       "display_name": "",
       "display_symbol": "",
-      "network": "osmosis-1",
+      "network": "emoney-3",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "osmosis-1"
+      "ibc_counterparty_chain_id": "emoney-3"
     }
   ]
 }

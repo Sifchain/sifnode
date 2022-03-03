@@ -1,15 +1,15 @@
 {
   "entries": [
     {
-      "decimals": "6",
-      "denom": "ibc/4A6183881ABE3F53504470B6459791DECE165E2B9A00C5F9A715B90079AD4F54",
-      "base_denom": "unyan",
+      "decimals": "8",
+      "denom": "ibc/B21954812E6E642ADC0B5ACB233E02A634BF137C572575BF80F7C0CC3DB2E74D",
+      "base_denom": "basecro",
       "path": "transfer/channel-9",
       "ibc_channel_id": "channel-9",
-      "ibc_counterparty_channel_id": "channel-10",
+      "ibc_counterparty_channel_id": "channel-33",
       "display_name": "",
       "display_symbol": "",
-      "network": "nyancat-9",
+      "network": "crypto-org-chain-mainnet-1",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-9"
+      "ibc_counterparty_chain_id": "crypto-org-chain-mainnet-1"
     }
   ]
 }

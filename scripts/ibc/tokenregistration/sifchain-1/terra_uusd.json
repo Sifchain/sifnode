@@ -2,14 +2,14 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/92E0120F15D037353CFB73C14651FC8930ADC05B93100FD7754D3A689E53B333",
-      "base_denom": "uosmo",
-      "path": "transfer/channel-8",
-      "ibc_channel_id": "channel-8",
-      "ibc_counterparty_channel_id": "channel-136",
+      "denom": "ibc/17F5C77854734CFE1301E6067AA42CDF62DAF836E4467C635E6DB407853C6082",
+      "base_denom": "uusd",
+      "path": "transfer/channel-18",
+      "ibc_channel_id": "channel-18",
+      "ibc_counterparty_channel_id": "channel-7",
       "display_name": "",
       "display_symbol": "",
-      "network": "osmosis-1",
+      "network": "columbus-5",
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "osmosis-1"
+      "ibc_counterparty_chain_id": "columbus-5"
     }
   ]
 }
