@@ -139,8 +139,8 @@ class Sifnoded:
     def peggy2_token_registry_register_all(self, registry_path, gas_prices, gas_adjustment, from_account,
         chain_id
     ):
-        args = ["tx", "tokenregistry", "set-registry", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
-            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json", "--yes"]
+        args = ["tx", "tokenregistry", "register-all", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
+            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--yes"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return [json.loads(x) for x in stdout(res).splitlines()]
 
@@ -244,7 +244,6 @@ class Ebrelayer:
             (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
             (["--from", sign_with] if sign_with else []) + \
             (["--home", home] if home else []) + \
-            (["--keyring-dir", home] if home else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
         return buildcmd(args, env=env, cwd=cwd)
