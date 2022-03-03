@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -18,6 +17,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
@@ -158,7 +159,6 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 				}
 
 				for _, txLog := range block.TxsResults {
-					sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
@@ -206,7 +206,7 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 	eIP155Signer := ethTypes.NewEIP155Signer(big.NewInt(1))
 
 	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
-	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
+	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID
 
 	for blockNumber := ethFromBlock; blockNumber < ethToBlock; {
 		log.Printf("getAllProphecyClaim current blockNumber is %d\n", blockNumber)

@@ -13,11 +13,11 @@ import (
 )
 
 type keeper struct {
-	cdc      codec.BinaryMarshaler
+	cdc      codec.BinaryCodec
 	storeKey sdk.StoreKey
 }
 
-func NewKeeper(cdc codec.Marshaler, storeKey sdk.StoreKey) types.Keeper {
+func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
 	return keeper{
 		cdc:      cdc,
 		storeKey: storeKey,
@@ -27,7 +27,7 @@ func NewKeeper(cdc codec.Marshaler, storeKey sdk.StoreKey) types.Keeper {
 func (k keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.AdminAccountStorePrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&gogotypes.BytesValue{Value: adminAccount}))
+	store.Set(key, k.cdc.MustMarshal(&gogotypes.BytesValue{Value: adminAccount}))
 }
 
 func (k keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
@@ -43,7 +43,7 @@ func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	key := types.AdminAccountStorePrefix
 	bz := store.Get(key)
 	acc := gogotypes.BytesValue{}
-	k.cdc.MustUnmarshalBinaryBare(bz, &acc)
+	k.cdc.MustUnmarshal(bz, &acc)
 	adminAccount = sdk.AccAddress(acc.Value)
 	return adminAccount
 }
@@ -79,12 +79,12 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry
-			k.SetDenomWhitelist(ctx, wl)
+			k.SetRegistry(ctx, wl)
 			return
 		}
 	}
 	wl.Entries = append(wl.Entries, entry)
-	k.SetDenomWhitelist(ctx, wl)
+	k.SetRegistry(ctx, wl)
 }
 
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
@@ -95,14 +95,14 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 			updated = append(updated, t)
 		}
 	}
-	k.SetDenomWhitelist(ctx, types.Registry{
+	k.SetRegistry(ctx, types.Registry{
 		Entries: updated,
 	})
 }
 
-func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
+func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshalBinaryBare(&wl)
+	bz := k.cdc.MustMarshal(&wl)
 	store.Set(types.WhitelistStorePrefix, bz)
 }
 
@@ -113,6 +113,6 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 	if len(bz) == 0 {
 		return types.Registry{}
 	}
-	k.cdc.MustUnmarshalBinaryBare(bz, &whitelist)
+	k.cdc.MustUnmarshal(bz, &whitelist)
 	return whitelist
 }

@@ -44,17 +44,17 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the module's types for the given codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes.
-func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONMarshaler) json.RawMessage {
+func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONCodec) json.RawMessage {
 	return marshaler.MustMarshalJSON(&types.GenesisState{})
 }
 
 // ValidateGenesis performs genesis state validation.
-func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, _ sdkclient.TxEncodingConfig, message json.RawMessage) error {
+func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, _ sdkclient.TxEncodingConfig, message json.RawMessage) error {
 	var data types.GenesisState
 	if message != nil {
 		err := marshaler.UnmarshalJSON(message, &data)
@@ -96,21 +96,22 @@ type AppModuleSimulation struct{}
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
-
-	// BankKeeper types.BankKeeper
 	Keeper types.Keeper
-	Codec  *codec.Marshaler
+	Codec  *codec.Codec
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
+	m := keeper.NewMigrator(am.Keeper)
+	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer2)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(
-	keeper types.Keeper,
-	cdc *codec.Marshaler) AppModule {
+func NewAppModule(keeper types.Keeper, cdc *codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
@@ -144,20 +145,20 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
+func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier { //nolint
 	return keeper.NewLegacyQuerier(am.Keeper)
 }
 
 // InitGenesis performs genesis initialization. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	marshaler.MustUnmarshalJSON(data, &genesisState)
 	return am.Keeper.InitGenesis(ctx, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes.
-func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONCodec) json.RawMessage {
 	return marshaler.MustMarshalJSON(am.Keeper.ExportGenesis(ctx))
 }
 
@@ -168,3 +169,5 @@ func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return nil
 }
+
+func (AppModule) ConsensusVersion() uint64 { return 2 }

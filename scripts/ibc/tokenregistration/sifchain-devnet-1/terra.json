@@ -7,7 +7,7 @@
       "path": "transfer/channel-123",
       "ibc_channel_id": "channel-123",
       "ibc_counterparty_channel_id": "channel-3",
-      "display_name": "Luna",
+      "display_name": "",
       "display_symbol": "",
       "network": "",
       "address": "",

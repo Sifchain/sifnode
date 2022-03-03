@@ -18,11 +18,14 @@ func NewHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgRegister:
 			res, err := msgServer.Register(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgSetRegistry:
+			res, err := msgServer.SetRegistry(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgDeregister:
 			res, err := msgServer.Deregister(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
-			errMsg := fmt.Sprintf("unrecognized message type: %v", msg.Type())
+			errMsg := fmt.Sprintf("unrecognized message type: %v", sdk.MsgTypeURL(msg))
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}

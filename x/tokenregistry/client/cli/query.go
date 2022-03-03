@@ -2,12 +2,13 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -46,7 +47,7 @@ func GetCmdQueryEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(res.Registry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(res.Registry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
@@ -75,6 +76,10 @@ func GetCmdGenerateEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			clientCtx, err = client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -160,26 +165,31 @@ func GetCmdGenerateEntry() *cobra.Command {
 			var denom string
 			var path string
 			// base_denom is required.
-			// override the IBC generation with --denom if specified explicitly.
+			// override the IBC generation with --token_denom if specified explicitly.
 			// otherwise fallback to base_denom
 			if ibcChannelID != "" {
 				path = "transfer/" + ibcChannelID
+				// generate IBC hash from baseDenom and ibc channel id
+				denomTrace := transfertypes.DenomTrace{
+					Path:      path,
+					BaseDenom: baseDenom,
+				}
+				denom = denomTrace.IBCDenom()
+			} else if initialDenom == "" {
+				// either initialDenom or channel id must be specified,
+				// to prevent accidentally leaving off IBC details and
+				return errors.New("--token_denom must be specified if no IBC channel is provided")
 			}
-			// generate IBC hash from baseDenom and ibc channel id
-			denomTrace := transfertypes.DenomTrace{
-				Path:      path,
-				BaseDenom: baseDenom,
-			}
-			denom = denomTrace.IBCDenom()
+			// --token_denom always takes precedence over IBC generation if specified
 			if initialDenom != "" {
 				denom = initialDenom
-			} else if denom == "" {
-				denom = baseDenom
 			}
+
 			entry := types.RegistryEntry{
 				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
+				Path:                     path,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
@@ -206,7 +216,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The counterparty channel if this is an IBC token - used by clients when initiating send from a counterparty chain")
 	cmd.Flags().String(flagIbcCounterpartyChainID, "",
 		"The chain id of ibc counter party chain")
-	cmd.Flags().Int(flagDecimals, -1,
+	cmd.Flags().Int64(flagDecimals, -1,
 		"The number of decimal points")
 	cmd.Flags().String(flagUnitDenom, "",
 		"The denom in registry that holds the funds for this denom, ie the most precise denom for a token")
@@ -230,6 +240,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	}
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 
@@ -243,11 +254,11 @@ func GetCmdAddEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
-			reg, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[1])
+			reg, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[1])
 			if err != nil {
 				return err
 			}
@@ -255,7 +266,7 @@ func GetCmdAddEntry() *cobra.Command {
 			entries := registry.Entries
 			entries = append(entries, entryToAdd)
 			registry.Entries = entries
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&registry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(&registry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
@@ -272,7 +283,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
@@ -307,7 +318,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 					}
 				}
 			}
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&finalRegistry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(&finalRegistry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)

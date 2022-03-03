@@ -1,6 +1,5 @@
 import copy
 import logging
-
 import pytest
 
 import burn_lock_functions
@@ -11,9 +10,7 @@ from test_utilities import EthereumToSifchainTransferRequest, SifchaincliCredent
 # FEEDFACE is hardcoded in genesis.rake
 feedface_token = "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"
 
-
 # Only one of lock or burn will be valid depending on how we implement IBC
-
 @pytest.mark.skip(reason="not the way we do IBC yet")
 def test_burn_ibc_coins(
         basic_transfer_request: EthereumToSifchainTransferRequest,
@@ -58,7 +55,6 @@ def test_burn_ibc_coins(
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
     feedface_ethereum_balance = test_utilities.get_eth_balance(request)
     assert feedface_ethereum_balance == small_amount
-
 
 def test_lock_ibc_coins(
         basic_transfer_request: EthereumToSifchainTransferRequest,
