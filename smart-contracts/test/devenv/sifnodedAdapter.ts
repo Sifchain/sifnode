@@ -23,12 +23,12 @@ interface Balances {
  * This class is the interface to interact with sifnoded CLI.
  */
 const ROWAN_SYMBOL = "rowan"
-const DEFAULT_PREPAY_AMOUNT = 10000000000
-const DEFAULT_IBC_TOKEN_AMOUNT = 10000000000
-const DEFAULT_CETH_AMOUNT = 10000000000
+export const DEFAULT_PREPAY_AMOUNT = 10000000000
+export const DEFAULT_IBC_TOKEN_AMOUNT = 10000000000
+export const DEFAULT_CETH_AMOUNT = 10000000000
 
 
-export const IBC_TOKEN_DENOM = "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"
+export const IBC_TOKEN_DENOM = "ibc/feedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedface"
 
 export class SifnodedAdapter {
   private readonly homedir: string
@@ -105,6 +105,8 @@ export class SifnodedAdapter {
       encoding: "utf8",
     })
     const balancesJson = JSON.parse(responseString) as Balances
+
+    console.log("+++ balance is ", balancesJson)
 
     balancesJson["balances"].forEach((element) => {
       if (element["denom"] === denomHash) {

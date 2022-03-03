@@ -6,14 +6,14 @@ import {HardhatRuntimeEnvironmentToken} from "../../src/tsyringe/injectionTokens
 import * as hardhat from "hardhat"
 import {BigNumber} from "ethers"
 import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
-import {SifchainContractFactories, MINTER_ROLE} from "../../src/tsyringe/contracts"
+import {SifchainContractFactories, MINTER_ROLE, ADMIN_ROLE} from "../../src/tsyringe/contracts"
 import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport"
 import web3 from "web3"
 import {EbRelayerAccount} from "../../src/devenv/sifnoded"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import {ethers} from "hardhat"
-import {SifnodedAdapter} from "./sifnodedAdapter"
+import {SifnodedAdapter, DEFAULT_PREPAY_AMOUNT} from "./sifnodedAdapter"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 import {executeBurn, checkEvmBurnState} from "./evm_burn"
 import {getDenomHash, ethDenomHash, Direction} from "./context"
@@ -50,16 +50,20 @@ describe("burn rowan tests", () => {
 
     const sendAmount = BigNumber.from("50") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
+    // burn from evm don't need prepaid rowan in sifnode side
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(false)
 
     // grant the miner
     const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)
     const ownerAccount = (await sifchainAccountsPromise.accounts).ownerAccount
     await contracts.rowanContract.grantRole(String(MINTER_ROLE), ownerAccount.address)
+    await contracts.rowanContract.grantRole(String(ADMIN_ROLE), ownerAccount.address)
+
 
     const senderEthereumAccount = ethereumAccounts.availableAccounts[0]
     // mint token to sender
     await contracts.rowanContract.connect(ownerAccount).mint(senderEthereumAccount.address, sendAmount)
+    await contracts.rowanContract.connect(ownerAccount).setDenom("rowan")
 
     // record the init balance before lock
     const initialRowanSenderBalance = await contracts.rowanContract.balanceOf(senderEthereumAccount.address)
@@ -108,7 +112,7 @@ describe("burn rowan tests", () => {
       finalRowanSenderBalance
     )
     expect(initialRowanReceiverBalance.add(sendAmount), "should be equal ").eq(
-      finalRowanReceiverBalance
+      finalRowanReceiverBalance,
     )
   })
 })

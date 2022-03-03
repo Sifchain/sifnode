@@ -18,6 +18,8 @@ import {getDenomHash, nullContractAddress} from "./context"
 import {checkSifnodeLockState} from "./sifnode_lock"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
+import {executeBurn, checkEvmBurnState} from "./evm_burn"
+
 chai.use(solidity)
 
 describe("burn ibc token tests", () => {
@@ -52,6 +54,7 @@ describe("burn ibc token tests", () => {
 
     let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(true, true, true)
     // the source address copy from registry json file
+    const ibcTokenDenom = "ibc/feedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedface"
     const ibcTokenSourceAddress = "0x1111111111111111111111111111111111111111"
     const destinationAddress = await contracts.cosmosBridge.sourceAddressToDestinationAddress(ibcTokenSourceAddress)
     
@@ -67,7 +70,7 @@ describe("burn ibc token tests", () => {
       initReceiverBalance = await bridgeToken.attach(destinationAddress).balanceOf(destinationEthereumAddress.address)
     }
 
-    let lockAmount = BigNumber.from("1234")
+    let lockAmount = BigNumber.from("2468")
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
     const [newContractAddress, mintContractAddress] = await checkSifnodeLockState(
@@ -96,24 +99,53 @@ describe("burn ibc token tests", () => {
 
     // Here we verify the user balance is correct
     // get the balance after burn
+    const afterLockSenderBalance = await sifnodedAdapter.getBalance(
+      testSifAccount.account,
+      IBC_TOKEN_DENOM
+    )
+    const afterLockReceiverBalance = await bridgeToken.attach(mintContractAddress).balanceOf(destinationEthereumAddress.address)
+
+    console.log("Before lock the sender's balance is ", initSenderBalance)
+    console.log("Before lock the receiver's balance is ", initReceiverBalance)
+
+    console.log("After lock the sender's balance is ", afterLockSenderBalance)
+    console.log("After lock the receiver's balance is ", afterLockReceiverBalance)
+
+
+    expect(initSenderBalance.sub(lockAmount), "should be equal ").eq(
+      afterLockSenderBalance
+    )
+    expect(initReceiverBalance.add(lockAmount), "should be equal ").eq(
+      afterLockReceiverBalance
+    )
+
+    let burnAmount = BigNumber.from("1234")
+    // burn ibc token in Ethereum
+    // burn rowan
+    const tx = await executeBurn(
+      contracts,
+      burnAmount,
+      destinationEthereumAddress,
+      web3.utils.utf8ToHex(testSifAccount.account),
+      bridgeToken.attach(mintContractAddress)
+    )
+
+    await checkEvmBurnState(contracts, tx, burnAmount, ibcTokenDenom)
     const finalSenderBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       IBC_TOKEN_DENOM
     )
     const finalReceiverBalance = await bridgeToken.attach(mintContractAddress).balanceOf(destinationEthereumAddress.address)
 
-    console.log("Before burn the sender's balance is ", initSenderBalance)
-    console.log("Before burn the receiver's balance is ", initReceiverBalance)
-
     console.log("After burn the sender's balance is ", finalSenderBalance)
     console.log("After burn the receiver's balance is ", finalReceiverBalance)
 
+    expect(finalSenderBalance.sub(burnAmount), "should be equal ").eq(
+      afterLockSenderBalance
+    )
+    expect(finalReceiverBalance.add(burnAmount), "should be equal ").eq(
+      afterLockReceiverBalance
+    )
 
-    expect(initSenderBalance.sub(lockAmount), "should be equal ").eq(
-      finalSenderBalance
-    )
-    expect(initReceiverBalance.add(lockAmount), "should be equal ").eq(
-      finalReceiverBalance
-    )
   })
 })

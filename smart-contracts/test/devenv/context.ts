@@ -118,8 +118,8 @@ export function isTerminalState(s: State, direction: Direction) {
           )
           case "EthereumToSifchain":
             return (
-              s.transactionStep === TransactionStep.CoinsSent
-              // s.transactionStep === TransactionStep.ProcessSuccessfulClaim
+              s.transactionStep === TransactionStep.CoinsSent ||
+              s.transactionStep === TransactionStep.ProcessSuccessfulClaim
             )
       }
   }

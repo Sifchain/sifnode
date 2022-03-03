@@ -86,15 +86,16 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		// for instance, the native rowan or ibc token. the denom hash build from network and
 		// contract address can't be taken as denom. need to get denom from token registry keeper
 		// based on address and network descriptor to get denom in sifnode
-		denom, err := k.tokenRegistryKeeper.GetDenomFromContract(ctx, claim.NetworkDescriptor, claim.TokenContractAddress)
-		if err != nil {
-			logger.Error("failed to process successful claim.",
-				errorMessageKey, err.Error())
-			return err
-		}
-		coins = sdk.NewCoins(sdk.NewCoin(denom, claim.Amount))
+		// denom, err := k.tokenRegistryKeeper.GetDenomFromContract(ctx, claim.NetworkDescriptor, claim.TokenContractAddress)
+		// if err != nil {
+		// 	logger.Error("failed to process successful claim.",
+		// 		errorMessageKey, err.Error())
+		// 	return err
+		// }
+		coins = sdk.NewCoins(sdk.NewCoin(claim.Symbol, claim.Amount))
+		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 		// coins = sdk.NewCoins(sdk.NewCoin(claim.DenomHash, claim.Amount))
-		err = nil
+		// err = nil
 	default:
 		err = types.ErrInvalidClaimType
 	}

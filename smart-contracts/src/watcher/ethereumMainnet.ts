@@ -129,6 +129,8 @@ export function subscribeToEthereumEvents(
 ): Observable<EthereumMainnetEvent> {
   return new Observable<EthereumMainnetEvent>((subscriber) => {
     const logLockListener = (...args: any[]) => {
+      console.log("+++ logBurnListener")
+      console.log("Args: ", args)
       const newVar: EthereumMainnetLogLock = {
         kind: "EthereumMainnetLogLock",
         data: {
@@ -151,6 +153,8 @@ export function subscribeToEthereumEvents(
     bridgeBank.on(lockLogFilter, logLockListener)
 
     const logBurnListener = (...args: any[]) => {
+      console.log("+++ logBurnListener")
+      console.log("Args: ", args)
       let newVar: EthereumMainnetLogBurn = {
         kind: "EthereumMainnetLogBurn",
         data: {

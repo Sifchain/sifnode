@@ -85,7 +85,8 @@ describe("lock rowan token tests", () => {
       lockAmount,
       rowan,
       String(crossChainCethFee),
-      networkDescriptor
+      networkDescriptor,
+      false
     )
 
     // Here we verify the user balance is correct

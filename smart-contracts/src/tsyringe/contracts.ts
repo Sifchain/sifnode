@@ -18,7 +18,7 @@ import "@openzeppelin/hardhat-upgrades"
 
 import web3 from "web3"
 export const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE")
-const ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000"
+export const ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
 @singleton()
 export class SifchainContractFactories {
