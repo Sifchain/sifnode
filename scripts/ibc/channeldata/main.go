@@ -17,6 +17,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	res.Body.Close()
 	err = json.Unmarshal(body, &channelsResponse)
 	if err != nil {
 		panic(err)
@@ -31,29 +32,30 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	conRes.Body.Close()
 	err = json.Unmarshal(body, &connectionsResponse)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, channel := range channelsResponse.Channels {
-		var clientId string
+		var clientID string
 		for _, connection := range connectionsResponse.Connections {
-			if connection.Id == channel.ConnectionsHops[0] {
-				clientId = connection.ClientId
+			if connection.ID == channel.ConnectionsHops[0] {
+				clientID = connection.ClientID
 				break
 			}
 		}
-		clientResponse := GetClientState(clientId)
-		log.Printf("%s,%s,%s,%s,%s", channel.ChannelId, channel.Counterparty.ChannelId, channel.ConnectionsHops[0], clientId, clientResponse.ClientState.ChainId)
+		clientResponse := GetClientState(clientID)
+		log.Printf("%s,%s,%s,%s,%s", channel.ChannelID, channel.Counterparty.ChannelID, channel.ConnectionsHops[0], clientID, clientResponse.ClientState.ChainID)
 	}
 }
 
 type ChannelsResponse struct {
 	Channels []struct {
-		ChannelId    string `json:"channel_id"`
+		ChannelID    string `json:"channel_id"`
 		Counterparty struct {
-			ChannelId string `json:"channel_id"`
+			ChannelID string `json:"channel_id"`
 		} `json:"counterparty"`
 		ConnectionsHops []string `json:"connection_hops"`
 	}
@@ -61,29 +63,20 @@ type ChannelsResponse struct {
 
 type ConnectionsResponse struct {
 	Connections []struct {
-		Id       string `json:"id"`
-		ClientId string `json:"client_id"`
+		ID       string `json:"id"`
+		ClientID string `json:"client_id"`
 	} `json:"connections"`
-}
-
-type ClientsResponse struct {
-	ClientStates []struct {
-		ClientId    string `json:"client_id"`
-		ClientState struct {
-			ChainId string `json:"chain_id"`
-		} `json:"client_state"`
-	} `json:"client_states"`
 }
 
 type ClientResponse struct {
 	ClientState struct {
-		ChainId string `json:"chain_id"`
+		ChainID string `json:"chain_id"`
 	} `json:"client_state"`
 }
 
-func GetClientState(clientId string) ClientResponse {
+func GetClientState(clientID string) ClientResponse {
 	var clientResponse ClientResponse
-	clientsRes, err := http.Get("https://api.sifchain.finance/ibc/core/client/v1/client_states/" + clientId)
+	clientsRes, err := http.Get("https://api.sifchain.finance/ibc/core/client/v1/client_states/" + clientID)
 	if err != nil {
 		panic(err)
 	}
@@ -91,6 +84,7 @@ func GetClientState(clientId string) ClientResponse {
 	if err != nil {
 		panic(err)
 	}
+	clientsRes.Body.Close()
 	err = json.Unmarshal(body, &clientResponse)
 	if err != nil {
 		panic(err)
