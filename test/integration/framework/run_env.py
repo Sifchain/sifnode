@@ -1011,14 +1011,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
             chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
-        assert len(res) == 2
-        assert res[0]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
-        assert res[1]["raw_log"] == "failed to execute message; message index: 0: unauthorised signer: invalid address"
+        assert len(res) == 1
+        assert res[0]["code"] == 0
 
-        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
-        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
-        # TODO Can we make it more robust?
-        time.sleep(10)
+        self.wait_for_last_transaction_to_be_mined()
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
@@ -1029,13 +1025,17 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
             admin_account_name, chain_id, gas_prices, gas_adjustment)
 
-        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
-        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
-        time.sleep(10)
+        self.wait_for_last_transaction_to_be_mined()
         sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
+
+    def wait_for_last_transaction_to_be_mined(self):
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        # TODO Can we make it more robust?
+        time.sleep(10)
 
     def start_witnesses_and_relayers(self, web3_websocket_address, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs,
         evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file
