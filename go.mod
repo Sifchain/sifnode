@@ -145,11 +145,6 @@ require (
 )
 
 require (
-	github.com/aws/aws-lambda-go v1.13.3
-	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-)
-
-require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect

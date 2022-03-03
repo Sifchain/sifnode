@@ -7,19 +7,13 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
-	"strings"
 )
 
 const releaseVersion = "0.11.0"
 
-var (
-	rc1 = GetUpgradeName(releaseVersion, "rc.1")
-	rc2 = GetUpgradeName(releaseVersion, "rc.2")
-)
-
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(rc1, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		app.Logger().Info("Running upgrade handler for " + rc1)
+	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		app.Logger().Info("Running upgrade handler for " + releaseVersion)
 		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
 		/*
 				The exact APR depends on the total Bonded Rowan , and can thus fluctuate a little .
@@ -44,10 +38,6 @@ func SetupHandlers(app *SifchainApp) {
 		app.MintKeeper.SetParams(ctx, params)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
-	app.UpgradeKeeper.SetUpgradeHandler(rc2, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		app.Logger().Info("Running upgrade handler for " + rc2)
-		return app.mm.RunMigrations(ctx, app.configurator, vm)
-	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
@@ -61,8 +51,4 @@ func SetupHandlers(app *SifchainApp) {
 		// instead the default which is the latest version that store last committed i.e 0 for new stores.
 		app.SetStoreLoader(types.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
-}
-
-func GetUpgradeName(rv, rc string) string {
-	return strings.Join([]string{rv, rc}, "-")
 }
