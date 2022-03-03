@@ -59,7 +59,7 @@ sif_chain_id = sif_chain_config["chain_id"]
 
 cmd_sif_q_balance = f'sifnoded query bank balances {sif_wallet} --node {sif_node} --chain-id {sif_chain_id}'
 cmd_external_q_balance = f'{external_cli_tool} query bank balances {external_wallet} --node {external_node} --chain-id {external_chain_id}'
-
+cmd_sif_q_tokenregistry_entries = f'sifnoded query tokenregistry entries --node {sif_node} --output json'
 assertion_timeout = 180  # seconds
 
 
@@ -72,6 +72,20 @@ class Chain(enum.Enum):
 class TxType(enum.Enum):
     INCREASE = 'increase'
     DEDUCT = 'deduct'
+
+
+def get_tokenregistry_entries():
+    cmd = cmd_sif_q_tokenregistry_entries
+    gas_logger.info(cmd)
+    result = subprocess.run(cmd.split(' '),
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        print(result.stderr)
+        gas_logger.error(result.stderr)
+        exit(1)
+
+    gas_logger.info(result.stdout)
+    return json.loads(result.stdout)
 
 
 def query_balance(asset, chain=Chain.SIFCHAIN):
@@ -207,11 +221,25 @@ def assert_expected_value(expected, asset, chain=Chain.SIFCHAIN):
     assert expected == actual, f'\t\tAssertion failed for {chain}, {asset}: expected {expected}, got {actual}.'
 
 
-# def normalize_ibc_amount_to_sif_dp(amount):
-#     if isinstance(amount, int):
-#         amount = str(amount)
+# 1000 and dp=6 => 0.001000
+# 1000 and dp=18 => 0.001000000000000000
 
-#     # comment 01-14-22: we now take absolute value
+def get_dot_notation(amount, dp_value):
+    if isinstance(amount, int):
+        amount = str(amount)
+    dot_notation = '0'
+    if len(amount) < dp_value:
+        missing_dp = dp_value - len(amount)
+        dot_notation = '0.'.ljust(missing_dp+2, '0') + amount
+    elif len(amount) == dp_value:
+        dot_notation = '0.' + amount
+    else:
+        dot_notation = amount[0] + '.' + amount[1:]
+
+    print(f'dot notation = {dot_notation}')
+    return dot_notation
+
+
 #     precision_diff = abs(int(sif_asset_dp_value) - int(ibc_denom_dp_value))
 #     normalized = 0
 #     # new code
@@ -238,66 +266,73 @@ def save_tx_info_new_denom(denom):
 
 general_logger.info('++++++++++ New run started ++++++++++')
 
+tokenregistry_entries = get_tokenregistry_entries()
+print(tokenregistry_entries)
 
-for tx_data in data["tx"]:
-    sif_asset = tx_data["sif_asset"]
-    ibc_denom = tx_data[f'ibc_denom_{external_network}']
-    sif_asset_dp_value = tx_data["sif_asset_dp_value"]
-    ibc_denom_dp_value = tx_data["ibc_denom_dp_value"]
-    save_tx_info_new_denom(sif_asset)
-    for tx_amount in tx_data["amount"]:
-        # it might be a negative value, then we should add instead of truncate
-        digits_to_truncate = int(sif_asset_dp_value) - int(ibc_denom_dp_value)
+# for tx_data in data["tx"]:
+#     sif_asset = tx_data["sif_asset"]
+#     ibc_denom = tx_data[f'ibc_denom_{external_network}']
+#     sif_asset_dp_value = tx_data["sif_asset_dp_value"]
+#     ibc_denom_dp_value = tx_data["ibc_denom_dp_value"]
+#     save_tx_info_new_denom(sif_asset)
+#     for tx_amount in tx_data["amount"]:
+#         # it might be a negative value, then we should add instead of truncate
+#         digits_to_truncate = int(sif_asset_dp_value) - int(ibc_denom_dp_value)
 
-        tx_amount_converted = int(
-            convert_amount(tx_amount, digits_to_truncate))
-        cmd_tx_sif_to_external = f'sifnoded tx ibc-transfer transfer transfer {channel} {external_wallet} {tx_amount}{sif_asset} --from={sif_wallet} --keyring-backend=test --node={sif_node} --chain-id={sif_chain_id} -y --packet-timeout-timestamp=6000000000000 --fees 100000000000000000rowan --log_format json'
-        cmd_tx_external_to_sif = f'{external_cli_tool} tx ibc-transfer transfer transfer {counterparty_channel} {sif_wallet} {tx_amount_converted}{ibc_denom} --from={external_wallet} --keyring-backend=test --chain-id={external_chain_id} --node={external_node} -y --gas-prices={external_gas_price} --gas=500000 --packet-timeout-timestamp=600000000000'
+#         tx_amount_converted = int(
+#             convert_amount(tx_amount, digits_to_truncate))
+#         tx_amount_dot_notation = get_dot_notation(
+#             tx_amount, abs(sif_asset_dp_value))
+#         cmd_tx_sif_to_external = f'sifnoded tx ibc-transfer transfer transfer {channel} {external_wallet} {tx_amount}{sif_asset} --from={sif_wallet} --keyring-backend=test --node={sif_node} --chain-id={sif_chain_id} -y --packet-timeout-timestamp=6000000000000 --fees=100000000000000000rowan --broadcast-mode=block --output=json'
+#         # think there is a bug on iris cli. When it transfers from iris then it expects value with 6dp (instead of 18. And 18 was used for tx sif->iris, 18 is returned by iris q balance)
+#         cmd_tx_external_to_sif = f'{external_cli_tool} tx ibc-transfer transfer transfer {counterparty_channel} {sif_wallet} {tx_amount_dot_notation}{ibc_denom} --from={external_wallet} --keyring-backend=test --chain-id={external_chain_id} --node={external_node} -y --gas-prices={external_gas_price} --gas=500000 --packet-timeout-timestamp=600000000000 --broadcast-mode=block --output=json'
+#         # cmd_tx_external_to_sif = f'{external_cli_tool} tx ibc-transfer transfer transfer {counterparty_channel} {sif_wallet} {tx_amount_converted}{ibc_denom} --from={external_wallet} --keyring-backend=test --chain-id={external_chain_id} --node={external_node} -y --gas-prices={external_gas_price} --gas=500000 --packet-timeout-timestamp=600000000000 --broadcast-mode=block --output=json'
 
-        print(
-            f'++++ {tx_data["sif_asset"]} ==== sif->{external_network} (tx {tx_amount}) and {external_network}->sif (tx {tx_amount_converted}) ====')
-        print(f'\tTransferring sif->{external_network}')
+#         print(
+#             f'++++ {tx_data["sif_asset"]} ==== sif->{external_network} (tx {tx_amount}) and {external_network}->sif (tx {tx_amount_dot_notation}) ====')
+#         # f'++++ {tx_data["sif_asset"]} ==== sif->{external_network} (tx {tx_amount}) and {external_network}->sif (tx {tx_amount_converted}) ====')
+#         print(f'\tTransferring sif->{external_network}')
 
-        sif_asset_balance = query_balance(sif_asset, Chain.SIFCHAIN)
-        print(f'\t{sif_asset_balance}')
-        external_asset_balance = query_balance(ibc_denom, external_network)
-        print(f'\t{external_asset_balance}')
+#         sif_asset_balance = query_balance(sif_asset, Chain.SIFCHAIN)
+#         print(f'\t{sif_asset_balance}')
+#         external_asset_balance = query_balance(ibc_denom, external_network)
+#         print(f'\t{external_asset_balance}')
 
-        tx_info = transfer_tx(dest_chain=external_network)
-        save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
-        assert_expected_value(calculate_expected_value(
-            sif_asset_balance, tx_amount, TxType.DEDUCT), sif_asset, Chain.SIFCHAIN)
-        assert_expected_value(calculate_expected_value(
-            external_asset_balance, tx_amount_converted, TxType.INCREASE), ibc_denom, external_network)
+#         tx_info = transfer_tx(dest_chain=external_network)
+#         save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
+#         assert_expected_value(calculate_expected_value(
+#             sif_asset_balance, tx_amount, TxType.DEDUCT), sif_asset, Chain.SIFCHAIN)
+#         assert_expected_value(calculate_expected_value(
+#             external_asset_balance, tx_amount_converted, TxType.INCREASE), ibc_denom, external_network)
 
-        if get_gas_info_flag:
-            cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={sif_node} --output=json'
-            tx_info = query_tx_hash(cmd_tx_hash_info)
-            save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
+#         if get_gas_info_flag:
+#             cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={sif_node} --output=json'
+#             tx_info = query_tx_hash(cmd_tx_hash_info)
+#             save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
 
-        time.sleep(2)
-        print(f'\tTransferring {external_network}->sif')
-        if tx_amount_converted > 0:
-            sif_asset_balance = query_balance(sif_asset, Chain.SIFCHAIN)
-            print(f'\t{sif_asset_balance}')
-            external_asset_balance = query_balance(ibc_denom, external_network)
-            print(f'\t{external_asset_balance}')
+#         time.sleep(2)
+#         print(f'\tTransferring {external_network}->sif')
+#         if tx_amount_converted > 0:
+#             sif_asset_balance = query_balance(sif_asset, Chain.SIFCHAIN)
+#             print(f'\t{sif_asset_balance}')
+#             external_asset_balance = query_balance(ibc_denom, external_network)
+#             print(f'\t{external_asset_balance}')
 
-            tx_info = transfer_tx(
-                source_chain=external_network, dest_chain=Chain.SIFCHAIN.value)
-            save_tx_info(sif_asset, tx_amount_converted,
-                         external_network, tx_info)
-            assert_expected_value(calculate_expected_value(
-                external_asset_balance, tx_amount_converted, TxType.DEDUCT), ibc_denom, external_network)
-            assert_expected_value(calculate_expected_value(
-                sif_asset_balance, tx_amount, TxType.INCREASE), sif_asset, Chain.SIFCHAIN)
-            if get_gas_info_flag:
-                cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={external_node} --output=json'
-                tx_info = query_tx_hash(cmd_tx_hash_info)
-                save_tx_info(sif_asset, tx_amount_converted,
-                             external_network, tx_info)
-        else:
-            print("\t\tSkipping: tx amount = 0")
+#             tx_info = transfer_tx(
+#                 source_chain=external_network, dest_chain=Chain.SIFCHAIN.value)
+#             save_tx_info(sif_asset, tx_amount_converted,
+#                          external_network, tx_info)
+#             assert_expected_value(calculate_expected_value(
+#                 external_asset_balance, tx_amount_converted, TxType.DEDUCT), ibc_denom, external_network)
+#             assert_expected_value(calculate_expected_value(
+#                 sif_asset_balance, tx_amount, TxType.INCREASE), sif_asset, Chain.SIFCHAIN)
+#             if get_gas_info_flag:
+#                 cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={external_node} --output=json'
+#                 tx_info = query_tx_hash(cmd_tx_hash_info)
+#                 save_tx_info(sif_asset, tx_amount_converted,
+#                              external_network, tx_info)
+#         else:
+#             print("\t\tSkipping: tx amount = 0")
 
-if get_gas_info_flag:
-    gas_logger.info(json.dumps(tx_info_table, indent=4))
+# if get_gas_info_flag:
+#     gas_logger.info(json.dumps(tx_info_table, indent=4))
