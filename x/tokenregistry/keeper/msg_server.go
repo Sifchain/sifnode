@@ -23,10 +23,6 @@ func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (*types
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	logger := m.keeper.Logger(sdkCtx)
-
-	logger.Info("Register", "MsgRegister", req)
 	m.keeper.SetToken(sdk.UnwrapSDKContext(ctx), req.Entry)
 	return &types.MsgRegisterResponse{}, nil
 }

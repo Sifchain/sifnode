@@ -126,12 +126,7 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 		return types.Registry{}
 	}
 	k.cdc.MustUnmarshal(bz, &whitelist)
-	k.Logger(ctx).Info("GetRegistry", "registry", whitelist)
 
-	for _, i := range whitelist.Entries {
-		k.Logger(ctx).Info("GetRegistry", "entry", i)
-
-	}
 	return whitelist
 }
 
@@ -142,10 +137,6 @@ func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	result := types.RegistryEntry{}
 	registry := k.GetRegistry(ctx)
-	k.Logger(ctx).Info("GetRegistry", "registry", registry)
-	for _, item := range registry.Entries {
-		k.Logger(ctx).Info("GetRegistry", "entry", item)
-	}
 
 	entry, _ := k.GetEntry(registry, denom)
 	if entry != nil {

@@ -84,8 +84,6 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	case types.ClaimType_CLAIM_TYPE_BURN:
 		coins = sdk.NewCoins(sdk.NewCoin(claim.Symbol, claim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
-		// coins = sdk.NewCoins(sdk.NewCoin(claim.DenomHash, claim.Amount))
-		// err = nil
 	default:
 		err = types.ErrInvalidClaimType
 	}
@@ -235,7 +233,6 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 	}
 
-	// TODO
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
 	if err != nil {
