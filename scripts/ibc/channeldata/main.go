@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -47,7 +47,7 @@ func main() {
 			}
 		}
 		clientResponse := GetClientState(clientID)
-		log.Printf("%s,%s,%s,%s,%s", channel.ChannelID, channel.Counterparty.ChannelID, channel.ConnectionsHops[0], clientID, clientResponse.ClientState.ChainID)
+		fmt.Printf("%s,%s,%s,%s,%s\n", channel.ChannelID, channel.Counterparty.ChannelID, channel.ConnectionsHops[0], clientID, clientResponse.ClientState.ChainID)
 	}
 }
 
