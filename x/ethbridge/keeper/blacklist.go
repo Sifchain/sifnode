@@ -22,9 +22,10 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	}
 
 	store := ctx.KVStore(k.storeKey)
+
 	// Process removals
 	var removals []string
-	iter := store.Iterator(types.BlacklistPrefix, nil)
+	iter := sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		if len(key) > 1 {
@@ -35,7 +36,6 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 					remains = true
 				}
 			}
-
 			if !remains {
 				removals = append(removals, address)
 			}
@@ -59,9 +59,11 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 
 func (k Keeper) GetBlacklist(ctx sdk.Context) []string {
 	var addresses []string
+
 	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.BlacklistPrefix, nil)
+	iter := sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
 	defer iter.Close()
+
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		address := string(key[1:])

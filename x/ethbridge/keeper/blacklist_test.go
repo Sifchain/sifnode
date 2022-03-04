@@ -113,6 +113,7 @@ func TestSetBlacklist(t *testing.T) {
 				From:      adminAddress.String(),
 				Addresses: tc.updated,
 			})
+
 			require.NoError(t, err)
 			for _, address := range tc.expectTrue {
 				require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
