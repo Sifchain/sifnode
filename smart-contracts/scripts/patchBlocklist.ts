@@ -14,6 +14,6 @@ async function updateBridgebankBlocklist() {
     await bridgebank.connect(operator).setBlocklist(BlockListAddress);
 }
 
-finishUpdate()
+updateBridgebankBlocklist()
     .then(() => {console.log("Bridge Bank Blocklist Updated")})
     .catch((err)=> console.error("Encountered an error:", err))
