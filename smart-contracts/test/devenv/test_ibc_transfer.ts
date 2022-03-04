@@ -6,7 +6,7 @@ import {HardhatRuntimeEnvironmentToken} from "../../src/tsyringe/injectionTokens
 import * as hardhat from "hardhat"
 import {BigNumber} from "ethers"
 import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
-import {SifchainContractFactories, MINTER_ROLE} from "../../src/tsyringe/contracts"
+import {SifchainContractFactories} from "../../src/tsyringe/contracts"
 import {buildDevEnvContracts} from "../../src/contractSupport"
 import web3 from "web3"
 import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/devenv/sifnoded"
@@ -14,15 +14,14 @@ import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import {SifnodedAdapter, IBC_TOKEN_DENOM} from "./sifnodedAdapter"
-import {getDenomHash, nullContractAddress} from "./context"
+import {nullContractAddress} from "./context"
 import {checkSifnodeLockState} from "./sifnode_lock"
-import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
 import {executeBurn, checkEvmBurnState} from "./evm_burn"
 
 chai.use(solidity)
 
-describe("burn ibc token tests", () => {
+describe("burn ibc token to EVM and back tests", () => {
   dotenv.config()
   // This test only works when devenv is running, and that requires a connection to localhost
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
@@ -121,7 +120,6 @@ describe("burn ibc token tests", () => {
 
     let burnAmount = BigNumber.from("1234")
     // burn ibc token in Ethereum
-    // burn rowan
     const tx = await executeBurn(
       contracts,
       burnAmount,

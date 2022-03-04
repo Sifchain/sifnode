@@ -4,7 +4,6 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers"
 import {SifEvent, sifwatch} from "../../src/watcher/watcher"
 import * as hardhat from "hardhat"
 import deepEqual = require("deep-equal")
-import {expect} from "chai"
 import * as rxjs from "rxjs"
 import {EbRelayerAccount} from "../../src/devenv/sifnoded"
 import {distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs"

@@ -114,8 +114,7 @@ describe("lock eth tests", () => {
       hardhat.ethers.provider
     )
 
-    // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
-    const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
+    const sendAmount = BigNumber.from("5000000000000000000")
 
     let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
 
@@ -140,8 +139,6 @@ describe("lock eth tests", () => {
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
 
-    // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
-    // lock the erc20 token
     const tx = await executeLock(
       contracts,
       sendAmount,

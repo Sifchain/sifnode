@@ -22,7 +22,6 @@ import {
   verbosityLevel,
   Direction,
 } from "./context"
-import { exec } from "child_process"
 
 /**
  * Executes a lock on a Ethereum Transfer to send Ether or EVM native currency to Sifchain

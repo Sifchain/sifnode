@@ -8,15 +8,12 @@ import {BigNumber} from "ethers"
 import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
 import {SifchainContractFactories, MINTER_ROLE} from "../../src/tsyringe/contracts"
 import {buildDevEnvContracts} from "../../src/contractSupport"
-import web3 from "web3"
 import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/devenv/sifnoded"
 
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
-import {SifnodedAdapter, IBC_TOKEN_DENOM} from "./sifnodedAdapter"
-import {getDenomHash, ethDenomHash} from "./context"
+import {SifnodedAdapter} from "./sifnodedAdapter"
 import {checkSifnodeLockState} from "./sifnode_lock"
-import {executeLock, checkEvmLockState} from "./evm_lock"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
 chai.use(solidity)

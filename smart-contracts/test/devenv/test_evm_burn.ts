@@ -7,16 +7,14 @@ import * as hardhat from "hardhat"
 import {BigNumber} from "ethers"
 import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities"
 import {SifchainContractFactories, MINTER_ROLE, ADMIN_ROLE} from "../../src/tsyringe/contracts"
-import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport"
+import {buildDevEnvContracts} from "../../src/contractSupport"
 import web3 from "web3"
 import {EbRelayerAccount} from "../../src/devenv/sifnoded"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
-import {ethers} from "hardhat"
-import {SifnodedAdapter, DEFAULT_PREPAY_AMOUNT} from "./sifnodedAdapter"
+import {SifnodedAdapter} from "./sifnodedAdapter"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 import {executeBurn, checkEvmBurnState} from "./evm_burn"
-import {getDenomHash, ethDenomHash, Direction} from "./context"
 
 chai.use(solidity)
 
@@ -48,7 +46,7 @@ describe("burn rowan tests", () => {
       hardhat.ethers.provider
     )
 
-    const sendAmount = BigNumber.from("50") // 3500 gwei
+    const sendAmount = BigNumber.from("50")
 
     // burn from evm don't need prepaid rowan in sifnode side
     let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(false)
@@ -90,7 +88,7 @@ describe("burn rowan tests", () => {
     // These are temporarily added to make the logging lvl lower
     process.env["VERBOSE"] = originalVerboseLevel
 
-    console.log("Lock complete")
+    console.log("Burn complete")
 
     // get the balance after lock
     const finalRowanSenderBalance = await contracts.rowanContract.balanceOf(senderEthereumAccount.address)
@@ -100,13 +98,13 @@ describe("burn rowan tests", () => {
       "rowan"
     )
 
-    console.log("Before lock the sender's balance is ", initialRowanSenderBalance)
-    console.log("Before lock the contract's balance is ", initialContractBalance)
-    console.log("Before lock the receiver's balance is ", initialRowanReceiverBalance)
+    console.log("Before burn the sender's balance is ", initialRowanSenderBalance)
+    console.log("Before burn the contract's balance is ", initialContractBalance)
+    console.log("Before burn the receiver's balance is ", initialRowanReceiverBalance)
 
-    console.log("After lock the sender's balance is ", finalRowanSenderBalance)
-    console.log("After lock the contract's balance is ", finalContractBalance)
-    console.log("After lock the receiver's balance is ", finalRowanReceiverBalance)
+    console.log("After burn the sender's balance is ", finalRowanSenderBalance)
+    console.log("After burn the contract's balance is ", finalContractBalance)
+    console.log("After burn the receiver's balance is ", finalRowanReceiverBalance)
 
     expect(initialRowanSenderBalance.sub(sendAmount), "should be equal ").eq(
       finalRowanSenderBalance
