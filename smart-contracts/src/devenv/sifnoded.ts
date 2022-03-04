@@ -197,7 +197,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     fs.writeFileSync(registryPath, data)
 
     await sleep(10000)
-    console.log("++++ address is ", sifnodedAdminAddress.account)
     const registryResult = await this.tokenRegistry(registryPath, sifnodedAdminAddress, this.chainId)
     console.log("registryResult as ", registryResult)
 
@@ -431,7 +430,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "tcp://0.0.0.0:26657",
       "-y",
     ]
-    console.log("+++ ", sifgenArgs)
     return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, {encoding: "utf8"})
   }
 

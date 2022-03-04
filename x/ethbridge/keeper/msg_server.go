@@ -49,7 +49,6 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
-	logger.Info("+++ token metadata", "tokenMetadata", tokenMetadata)
 
 	if !ok {
 		logger.Error("token metadata not available", "DenomHash", msg.DenomHash)

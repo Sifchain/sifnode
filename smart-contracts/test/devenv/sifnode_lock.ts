@@ -74,9 +74,7 @@ export async function checkSifnodeLockState(
           }
           case "EthereumMainnetLogNewBridgeTokenCreated": {
             const created = v as unknown as EthereumMainnetLogNewBridgeTokenCreated
-            console.log("+++ created message", created)
             newContractAddress = created.data.tokenAddress
-            console.log("+++ created message", newContractAddress)
 
             return ensureCorrectTransition(
               acc,
