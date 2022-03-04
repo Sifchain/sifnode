@@ -2,12 +2,12 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/AB71F94BB809FB05FB4547C471A92C3F9826BA24E660BB4782B5ED61FB9AB867",
-      "base_denom": "uscrt",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-4",
-      "display_name": "Secret",
+      "denom": "ibc/53378390DC8B3C32454887D6C9E7EDCE7F0DB2305C3D96AE5F4D1557B3068F59",
+      "base_denom": "ustars",
+      "path": "transfer/channel-38",
+      "ibc_channel_id": "channel-38",
+      "ibc_counterparty_channel_id": "channel-12",
+      "display_name": "Stargaze",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "secret-4"
+      "ibc_counterparty_chain_id": "stargaze-1"
     }
   ]
 }

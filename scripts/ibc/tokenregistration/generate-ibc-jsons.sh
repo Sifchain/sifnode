@@ -316,13 +316,13 @@ echo "\n\ngenerated entry for TERRA $TERRA_CHAIN_ID"
 cat $SIFCHAIN_ID/terra-uusd.json | jq
 
 sifnoded q tokenregistry generate -o json \
-	--token_base_denom=scrt \
+	--token_base_denom=uscrt \
 	--token_ibc_counterparty_chain_id=$SECRET_CHAIN_ID \
   --token_ibc_channel_id=$SECRET_CHANNEL_ID \
   --token_ibc_counterparty_channel_id=$SECRET_COUNTERPARTY_CHANNEL_ID \
 	--token_ibc_counterparty_denom="" \
 	--token_unit_denom="" \
-	--token_decimals=18 \
+	--token_decimals=6 \
 	--token_display_name="Secret" \
 	--token_external_symbol="" \
 	--token_permission_clp=true \
@@ -350,3 +350,57 @@ sifnoded q tokenregistry generate -o json \
 echo "\n\ngenerated entry for $COMDEX_CHAIN_ID"
 
 cat $SIFCHAIN_ID/cmdx.json | jq
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom=uhuahua \
+	--token_ibc_counterparty_chain_id=$HUAHUA_CHAIN_ID \
+  --token_ibc_channel_id=$HUAHUA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$HUAHUA_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Chihuahua" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/huahua.json
+
+echo "\n\ngenerated entry for $HUAHUA_CHAIN_ID"
+
+cat $SIFCHAIN_ID/huahua.json | jq
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom=ustars \
+	--token_ibc_counterparty_chain_id=$STARGAZE_CHAIN_ID \
+  --token_ibc_channel_id=$STARGAZE_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$STARGAZE_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Stargaze" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/ustars.json
+
+echo "\n\ngenerated entry for $STARGAZE_CHAIN_ID"
+
+cat $SIFCHAIN_ID/ustars.json | jq
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom=ubcna \
+	--token_ibc_counterparty_chain_id=$BITCANNA_CHAIN_ID \
+  --token_ibc_channel_id=$BITCANNA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$BITCANNA_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Bitcanna" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/ubcna.json
+
+echo "\n\ngenerated entry for $BITCANNA_CHAIN_ID"
+
+cat $SIFCHAIN_ID/ubcna.json | jq
