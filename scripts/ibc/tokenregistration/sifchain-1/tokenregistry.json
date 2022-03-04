@@ -3701,10 +3701,10 @@
       "decimals": "6",
       "denom": "ibc/7876FB1D317D993F1F54185DF6E405C7FE070B71E3A53AE0CEA5A86AC878EB7A",
       "base_denom": "ubcna",
-      "path": "",
+      "path": "transfer/channel-25",
       "ibc_channel_id": "channel-25",
       "ibc_counterparty_channel_id": "channel-2",
-      "display_name": "",
+      "display_name": "Bitcanna",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -3775,7 +3775,6 @@
       "permissions": [
         "CLP",
         "IBCEXPORT",
-        "IBCIMPORT",
         "IBCIMPORT"
       ],
       "unit_denom": "",
@@ -3804,6 +3803,94 @@
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": "comdex-1"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/AB71F94BB809FB05FB4547C471A92C3F9826BA24E660BB4782B5ED61FB9AB867",
+      "base_denom": "uscrt",
+      "path": "transfer/channel-33",
+      "ibc_channel_id": "channel-33",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "Secret",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "secret-4"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/53378390DC8B3C32454887D6C9E7EDCE7F0DB2305C3D96AE5F4D1557B3068F59",
+      "base_denom": "ustars",
+      "path": "transfer/channel-38",
+      "ibc_channel_id": "channel-38",
+      "ibc_counterparty_channel_id": "channel-12",
+      "display_name": "Stargaze",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "stargaze-1"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/B75D134EA563A1D0AEB6C8F60180453DC8FB3787C6D7598F4158B37454FDAF33",
+      "base_denom": "uhuahua",
+      "path": "transfer/channel-35",
+      "ibc_channel_id": "channel-35",
+      "ibc_counterparty_channel_id": "channel-8",
+      "display_name": "Chihuahua",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "chihuahua-1"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/B5A4FE70D307359C7D383329F4D60B0D400C8F2999322929A44767C2615C7855",
+      "base_denom": "ubtsg",
+      "path": "transfer/channel-36",
+      "ibc_channel_id": "channel-36",
+      "ibc_counterparty_channel_id": "channel-6",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bitsong-2b"
     }
   ]
 }
