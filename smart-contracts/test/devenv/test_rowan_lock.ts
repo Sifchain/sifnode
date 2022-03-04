@@ -107,12 +107,12 @@ describe("lock rowan token tests", () => {
 
 
     // greater because some rowan used to pay gas
-    expect(finalSenderBalance.sub(lockAmount), "should be equal ").gt(
-      initSenderBalance
+    expect(initSenderBalance, "should be greater than ").gt(
+        finalSenderBalance.sub(lockAmount)
     )
 
     // check receiver's balance after lock
-    expect(finalReceiverBalance.add(lockAmount), "should be equal ").eq(
+    expect(finalReceiverBalance.sub(lockAmount), "should be equal ").eq(
       initReceiverBalance
     )
   })

@@ -251,8 +251,8 @@ export async function checkEvmLockState(
 
   expect(
     lv.transactionStep,
-    `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`
-  ).to.eq(TransactionStep.CoinsSent)
+    `did not get ProcessSuccessfulClaim, last step was ${JSON.stringify(lv, undefined, 2)}`
+  ).to.eq(TransactionStep.ProcessSuccessfulClaim)
 
   verboseSubscription.unsubscribe()
   replayedEvents.unsubscribe()

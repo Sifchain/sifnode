@@ -16,7 +16,7 @@ import "@nomiclabs/hardhat-ethers"
 import {SifnodedAdapter} from "./sifnodedAdapter"
 import {getDenomHash, ethDenomHash} from "./context"
 import {checkSifnodeBurnState} from "./sifnode_burn"
-import {executeLock, checkEvmLockState} from "./evm_lock_burn"
+import {executeLock, checkEvmLockState} from "./evm_lock"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 
 chai.use(solidity)
