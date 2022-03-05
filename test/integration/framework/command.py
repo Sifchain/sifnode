@@ -38,6 +38,9 @@ class Command:
     def spawn_asynchronous_process(self, exec_args, log_file=None):
         return self.popen(**exec_args, log_file=log_file)
 
+    def ls(self, path):
+        return os.listdir(path)
+
     def rm(self, path):
         if os.path.exists(path):
             os.remove(path)
