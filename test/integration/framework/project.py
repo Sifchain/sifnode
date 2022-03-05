@@ -282,7 +282,7 @@ class Project:
         cache = []
         if not self.cmd.exists(cache_dir):
             self.cmd.mkdir(cache_dir)
-        else:
+        if self.cmd.exists(cache_index):
             cache = json.loads(self.cmd.read_text_file(cache_index))
         idx = None
         for i, s in enumerate(cache):
