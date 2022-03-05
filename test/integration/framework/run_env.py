@@ -604,6 +604,11 @@ class IntegrationTestsEnvironment:
         # This script is also called from tests
 
         relayer_db_path = os.path.join(self.test_integration_dir, "sifchainrelayerdb")
+
+        # Prevent starting over dirty/existing relayer_db_path
+        if self.cmd.exists(relayer_db_path):
+            assert not self.cmd.ls(relayer_db_path), "relayer_db_path {} not empty".format(relayer_db_path)
+
         ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator1_moniker, validator1_mnemonic,
             ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=ebrelayer_log_file)
 
