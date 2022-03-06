@@ -1018,7 +1018,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         assert len(res) == 1
         assert res[0]["code"] == 0
 
-        self.wait_for_last_transaction_to_be_mined()
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        sifnode.wait_for_last_transaction_to_be_mined()
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
@@ -1029,17 +1031,13 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
             admin_account_name, chain_id, gas_prices, gas_adjustment)
 
-        self.wait_for_last_transaction_to_be_mined()
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        sifnode.wait_for_last_transaction_to_be_mined()
         sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
-
-    def wait_for_last_transaction_to_be_mined(self):
-        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
-        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
-        # TODO Can we make it more robust?
-        time.sleep(10)
 
     def start_witnesses_and_relayers(self, web3_websocket_address, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs,
         evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file

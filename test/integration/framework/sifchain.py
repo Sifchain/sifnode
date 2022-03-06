@@ -185,9 +185,22 @@ class Sifnoded:
         res = self.cmd.execst(args, stdin=stdin, cwd=cwd)
         return res
 
-    def get_status(self, host, port):
-        url = "http://{}:{}/node_info".format(host, port)
+    def _rpc_get(self, host, port, relative_url):
+        url = "http://{}:{}/{}".format(host, port, relative_url)
         return json.loads(http_get(url).decode("UTF-8"))
+
+    def get_status(self, host, port):
+        return self._rpc_get(host, port, "node_info")
+
+    def wait_for_last_transaction_to_be_mined(self, count=1):
+        # TODO return int(self._rpc_get(host, port, abci_info)["response"]["last_block_height"])
+        def latest_block_height():
+            args = ["satus"]  # TODO --node
+            return int(json.loads(stderr(self.sifnoded_exec(args)))["SyncInfo"]["latest_block_height"])
+        initial_block = latest_block_height()
+        while initial_block + count < latest_block_height():
+            time.sleep(2)
+        time.sleep(10)
 
     def wait_up(self, host, port):
         while True:
