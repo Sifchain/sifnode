@@ -19,6 +19,21 @@ class InflateTokens:
         self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 mins
         self.excluded_token_symbols = ["erowan"]
 
+        # Only transfer this tokens in a batch for Peggy1. See #2397. You would need to adjust this if
+        # test_inflate_tokens_short is passing, but test_inflate_tokens_long is timing out. It only applies to Peggy 1.
+        # The value of 3 is experimental; if tokens are still not getting across the bridge reliably, reduce the value
+        # down to 1 (minimum). The lower the value the more time the transfers will take as there will be more
+        # sequential transfers instead of parallel.
+        self.max_ethereum_batch_size = 0
+
+        # Firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
+        # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
+        # Instead, we take advantage of batching multiple denoms to single account with single send command (amounts
+        # separated by by comma: "sifnoded tx bank send ... 100denoma,100denomb,100denomc") and wait for destination
+        # account to show changes for all denoms after each send. But also batches don't work reliably if they are too
+        # big, so we limit the maximum batch size here.
+        self.max_sifnoded_batch_size = 5
+
     def get_whitelisted_tokens(self):
         whitelist = self.ctx.get_whitelisted_tokens_from_bridge_bank_past_events()
         ibc_pattern = re.compile("^ibc\/([0-9a-fA-F]{64})$")
@@ -160,21 +175,23 @@ class InflateTokens:
         self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
             polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
+    # Distributes from intermediate_sif_account to each individual account
     def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):
-        # Distribute from intermediate_sif_account to each individual account
-        # Note: firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
-        # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
-        # Instead, we take advantage of batching multiple denoms to single account with single send command (amounts
-        # separated by by comma: "sifnoded tx bank send ... 100denoma,100denomb,100denomc") and wait for destination
-        # account to show changes for all denoms after each send.
         send_amounts = [[amount_in_tokens * 10**t["decimals"], t["sif_denom"]] for t in tokens_to_transfer]
         if amount_eth_gwei > 0:
             send_amounts.append([amount_eth_gwei * eth.GWEI, self.ctx.ceth_symbol])
         for sif_acct in target_sif_accounts:
-            sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
-            self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, send_amounts)
-            self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=send_amounts,
-                polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+            remaining = send_amounts
+            while remaining:
+                batch_size = len(remaining)
+                if (self.max_sifnoded_batch_size > 0) and (batch_size > self.max_sifnoded_batch_size):
+                    batch_size = self.max_sifnoded_batch_size
+                batch = remaining[:batch_size]
+                remaining = remaining[batch_size:]
+                sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
+                self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, batch)
+                self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=batch,
+                    polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
     def export(self):
         return [{
@@ -199,7 +216,14 @@ class InflateTokens:
         n_accounts = len(target_sif_accounts)
         total_token_amount = token_amount * n_accounts
         total_eth_amount_gwei = eth_amount_gwei * n_accounts
-        fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1 * n_accounts, "rowan"]
+
+        # Calculate how much rowan we need to fund intermediate account with. This is only an estimation at this point.
+        # We need to take into account that we might need to break transfers in batches. The number of tokens is the
+        # number of ERC20 tokens plus one for ETH, rounded up. 5 is a safety factor
+        number_of_batches = 1 if self.max_sifnoded_batch_size == 0 else (len(requested_tokens) + 1) // self.max_sifnoded_batch_size + 1
+        fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1 * n_accounts * number_of_batches, "rowan"]
+        log.debug("Estimated number of batches needed to transfer tokens from intermediate sif account to target sif wallet: {}".format(number_of_batches))
+        log.debug("Estimated rowan funding needed for intermediate account: {}".format(fund_rowan))
         ether_faucet_account = self.ctx.operator
         sif_broker_account = self.ctx.create_sifchain_addr(fund_amounts=[fund_rowan])
         eth_broker_account = self.ctx.operator
@@ -227,7 +251,21 @@ class InflateTokens:
             for t in requested_tokens]
 
         self.mint([t["address"] for t in tokens_to_transfer], total_token_amount, eth_broker_account)
-        self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, total_token_amount, total_eth_amount_gwei)
+
+        if (self.max_ethereum_batch_size > 0) and (len(tokens_to_transfer) > self.max_ethereum_batch_size):
+            log.debug(f"Transferring {len(tokens_to_transfer)} tokens from ethereum to sifndde in batches of {self.max_ethereum_batch_size}...")
+            remaining = tokens_to_transfer
+            while remaining:
+                batch = remaining[:self.max_ethereum_batch_size]
+                remaining = remaining[self.max_ethereum_batch_size:]
+                self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, batch, total_token_amount, 0)
+                log.debug(f"Batch completed, {len(remaining)} tokens remaining")
+            # Transfer ETH separately
+            log.debug("Thansfering ETH from ethereum to sifnode...")
+            self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, [], 0, total_eth_amount_gwei)
+        else:
+            log.debug(f"Transferring {len(tokens_to_transfer)} tokens from ethereum to sifnode in single batch...")
+            self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, total_token_amount, total_eth_amount_gwei)
         self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, token_amount, target_sif_accounts, eth_amount_gwei)
 
     def transfer_eth(self, from_eth_addr, amount_gewi, target_sif_accounts):
