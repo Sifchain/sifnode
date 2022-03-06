@@ -117,3 +117,5 @@ def template_transform(s, d):
 
 
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
+
+in_github_ci = (os.environ.get("CI") == "true") and os.environ.get("GITHUB_REPOSITORY") and os.environ.get("GITHUB_RUN_ID")
