@@ -180,6 +180,8 @@ class InflateTokens:
         send_amounts = [[amount_in_tokens * 10**t["decimals"], t["sif_denom"]] for t in tokens_to_transfer]
         if amount_eth_gwei > 0:
             send_amounts.append([amount_eth_gwei * eth.GWEI, self.ctx.ceth_symbol])
+        progress_total = len(target_sif_accounts) * len(send_amounts)
+        progress_current = 0
         for sif_acct in target_sif_accounts:
             remaining = send_amounts
             while remaining:
@@ -192,6 +194,8 @@ class InflateTokens:
                 self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, batch)
                 self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=batch,
                     polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+                progress_current += batch_size
+                log.debug("Distributing tokens to wallets: {:0.0f}% done".format((progress_current/progress_total) * 100))
 
     def export(self):
         return [{
