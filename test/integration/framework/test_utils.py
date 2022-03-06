@@ -609,7 +609,7 @@ class EnvCtx:
                 last_change_state = new_balances
                 last_change_time = now
             else:
-                delta = sifchain.balance_delta(new_balances, last_change_state)
+                delta = sifchain.balance_delta(last_change_state, new_balances)
                 if not sifchain.balance_zero(delta):
                     last_change_state = new_balances
                     last_change_time = now
@@ -748,6 +748,11 @@ class EnvCtx:
     def bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
         txhash = self.tx_bridge_bank_lock_erc20(token_addr, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
+
+    # def bridge_bank_lock_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
+    #     self.approve_erc20_token(token_sc, from_eth_acct, amount)
+    #     txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
+    #     return self.eth.wait_for_transaction_receipt(txhash)
 
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
