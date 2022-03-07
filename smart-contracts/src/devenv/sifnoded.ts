@@ -185,7 +185,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     await sleep(10000)
     const setCrossChainFeeResult =  await this.setCrossChainFee(
       sifnodedAdminAddress,
-      "31337",
+      "9999",
       ethereumCrossChainFeeToken,
       String(crossChainFeeBase),
       String(crossChainLockFee),
@@ -197,7 +197,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
     await sleep(10000)
     // set the ConsensusNeeded for hardhat
-    const updateConsensusNeededResult = await this.updateConsensusNeeded(sifnodedAdminAddress, "31337", ConsensusNeeded, this.chainId)
+    const updateConsensusNeededResult = await this.updateConsensusNeeded(sifnodedAdminAddress, "9999", ConsensusNeeded, this.chainId)
     console.log("updateConsensusNeededResult as ", updateConsensusNeededResult)
 
     sifnoded.on("exit", (code) => {
@@ -255,7 +255,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
     const adminAccount = this.addAccount(name, homeDir, false)
     // Whitelist Relayer/Witness Account
-    const EVM_Network_Descriptor = 31337
+    const EVM_Network_Descriptor = 9999
     const Validator_Power = 100
     const bachAddress = this.readValoperKey(name, homeDir)
     ChildProcess.execSync(

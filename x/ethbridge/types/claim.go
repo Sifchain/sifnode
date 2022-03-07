@@ -1,8 +1,6 @@
 package types
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
@@ -28,7 +26,7 @@ func NewEthBridgeClaim(
 	tokenName string,
 	decimals uint8,
 ) *EthBridgeClaim {
-	denomHash := GetDenomHash(networkDescriptor, tokenContract)
+	denomHash := GetDenom(networkDescriptor, tokenContract)
 	return &EthBridgeClaim{
 		NetworkDescriptor:        networkDescriptor,
 		BridgeContractAddress:    bridgeContract.String(),
@@ -70,32 +68,31 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 /**
   Metadata Denom Naming Convention:
   For all pegged ERC20 assets, their respective token names on sifchain will be
-  composed of the following two elements: network descriptor, ERC20 token address
-  Fields will not be separated by any delimiter character.
-  All characters will be made lower case before hashing.
-  A pegged ERC20 asset with token address 0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2,
-  a network descriptor of 2 has this output:
+  composed of the following two elements: the prefix sifBridge, the network descriptor
+  (fixed as a four digit decimal number), and the ERC20 token address. Fields will not
+  be separated by any delimiter character. All hexadecimal characters will be made
+  lower case before hashing. A pegged ERC20 asset with token address
+  0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2, a network descriptor of 2 has this denom:
 
-            20xbf45bfc92ebd305d4c0baf8395c4299bdfce9ea2
+            sifBridge0020xbf45bfc92ebd305d4c0baf8395c4299bdfce9ea2
 
-  Then, that data will be hashed with SHA256 and prefixed with the
-  string ‘sif’ to produce the following hash:
-
-           sife0d5240024941c95aa2ca714f4d798f81f36da2cb8ed0c2318970c12b4acca1f
+  **WARNING**: This function will PANIC if a networkDescriptor is below 0 or larger then
+  9999. This is because the networkDescriptor field is fixed to only be four digits and
+  this function is used internally to calculate token Denoms.
 
 **/
-func GetDenomHash(
+func GetDenom(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	tokenContractAddress EthereumAddress,
 ) string {
-	denomHashedString := fmt.Sprintf("%d%s",
+	if (networkDescriptor < 0) || (networkDescriptor > 9999) {
+		panic("Error: Network Descriptor must be between 0-9999")
+	}
+	// sifBridge + 0000 (four digit base ten number) + 0x (hex address)
+	denomString := fmt.Sprintf("sifBridge%04d%s",
 		networkDescriptor,
 		strings.ToLower(tokenContractAddress.String()),
 	)
 
-	rawDenomHash := sha256.Sum256([]byte(denomHashedString))
-	// Cosmos SDK requires first character to be [a-zA-Z] so we prepend sif
-	denomHash := "sif" + hex.EncodeToString(rawDenomHash[:])
-
-	return denomHash
+	return denomString
 }

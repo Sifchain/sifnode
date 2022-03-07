@@ -173,7 +173,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 
 	oracleKeeper.SetCrossChainFee(ctx, networkIdentity,
-		types.GetDenomHash(NetworkDescriptor, types.NewEthereumAddress(EthAddress)),
+		types.GetDenom(NetworkDescriptor, types.NewEthereumAddress(EthAddress)),
 		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost), sdk.NewInt(FirstLockDoublePeggyCost))
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)

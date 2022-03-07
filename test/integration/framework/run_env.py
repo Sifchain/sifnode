@@ -818,9 +818,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # This value is actually returned from HardhatNodeRunner. It comes from smart-contracts/hardhat.config.ts.
         # In Typescript, its value is obtained by 'require("hardhat").hre.network.config.chainId'.
         # See https://hardhat.org/advanced/hardhat-runtime-environment.html
-        # The value is not used; instead a hardcoded constant 31337 is passed to ebrelayerWitnessBuilder.
+        # The value is not used; instead a hardcoded constant 9999 is passed to ebrelayerWitnessBuilder.
         # Ask juniuszhou for details.
-        hardhat_chain_id = 31337
+        hardhat_chain_id = 9999
         hardhat_accounts = self.signer_array_to_ethereum_accounts(hardhat.default_accounts(), hardhat_validator_count)
 
         self.hardhat.compile_smart_contracts()

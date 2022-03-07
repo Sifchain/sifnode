@@ -228,7 +228,7 @@ class Ebrelayer:
         args = [
             self.binary,
             init_what,
-            "--network-descriptor", str(network_descriptor),  # Network descriptor for the chain (31337)
+            "--network-descriptor", str(network_descriptor),  # Network descriptor for the chain (9999)
             "--tendermint-node", tendermint_node,  # URL to tendermint node
             "--web3-provider", web3_provider,  # Ethereum web3 service address (ws://localhost:8545/)
             "--bridge-registry-contract-address", bridge_registry_contract_address,
