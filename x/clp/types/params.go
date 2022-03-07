@@ -18,11 +18,11 @@ const (
 
 // Parameter store keys
 var (
-	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
-	KeyPmtpNativeWeight       = []byte("PmtpNativeWeight")
-	KeyPmtpExternalWeight     = []byte("PmtpExternalWeight")
-	KeyPmtpStartBlock         = []byte("PmtpStartBlock")
-	KeyPmtpEndBlock           = []byte("PmtpEndBlock")
+	KeyMinCreatePoolThreshold   = []byte("MinCreatePoolThreshold")
+	KeyPmtpPeriodGovernanceRate = []byte("PmtpPeriodGovernanceRate")
+	KeyPmtpEpochLength          = []byte("PmtpEpochLength")
+	KeyPmtpStartBlock           = []byte("PmtpStartBlock")
+	KeyPmtpEndBlock             = []byte("PmtpEndBlock")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -33,13 +33,13 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params object
-func NewParams(minThreshold uint64, pmtpNativeWeight, pmtpExternalWeight sdk.Dec, pmtpStartBlock, pmtpEndBlock int64) Params {
+func NewParams(minThreshold uint64, pmtpGovernanaceRate sdk.Dec, pmtpEpochLength, pmtpStartBlock, pmtpEndBlock int64) Params {
 	return Params{
-		MinCreatePoolThreshold: minThreshold,
-		PmtpNativeWeight:       pmtpNativeWeight,
-		PmtpExternalWeight:     pmtpExternalWeight,
-		PmtpStartBlock:         pmtpStartBlock,
-		PmtpEndBlock:           pmtpEndBlock,
+		MinCreatePoolThreshold:   minThreshold,
+		PmtpPeriodGovernanceRate: pmtpGovernanaceRate,
+		PmtpPeriodEpochLength:    pmtpEpochLength,
+		PmtpPeriodStartBlock:     pmtpStartBlock,
+		PmtpPeriodEndBlock:       pmtpEndBlock,
 	}
 }
 
@@ -47,21 +47,21 @@ func NewParams(minThreshold uint64, pmtpNativeWeight, pmtpExternalWeight sdk.Dec
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
-		paramtypes.NewParamSetPair(KeyPmtpNativeWeight, &p.PmtpNativeWeight, validatePmtpNativeWeight),
-		paramtypes.NewParamSetPair(KeyPmtpExternalWeight, &p.PmtpExternalWeight, validatePmtpExternalWeight),
-		paramtypes.NewParamSetPair(KeyPmtpStartBlock, &p.PmtpStartBlock, validatePmtpStartBlock),
-		paramtypes.NewParamSetPair(KeyPmtpEndBlock, &p.PmtpEndBlock, validatePmtpEndBlock),
+		paramtypes.NewParamSetPair(KeyPmtpPeriodGovernanceRate, &p.PmtpPeriodGovernanceRate, validatePmtpPeriodGovernanceRate),
+		paramtypes.NewParamSetPair(KeyPmtpEpochLength, &p.PmtpPeriodEpochLength, validatePmtpPeriodEpochLength),
+		paramtypes.NewParamSetPair(KeyPmtpStartBlock, &p.PmtpPeriodStartBlock, validatePmtpStartBlock),
+		paramtypes.NewParamSetPair(KeyPmtpEndBlock, &p.PmtpPeriodEndBlock, validatePmtpEndBlock),
 	}
 }
 
 // DefaultParams defines the parameters for this module
 func DefaultParams() Params {
 	return Params{
-		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
-		PmtpNativeWeight:       sdk.NewDecWithPrec(5, 1),
-		PmtpExternalWeight:     sdk.NewDecWithPrec(5, 1),
-		PmtpStartBlock:         DefaultPmtpStartBlock,
-		PmtpEndBlock:           DefaultPmtpEndBlock,
+		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
+		PmtpPeriodGovernanceRate: sdk.NewDecWithPrec(5, 1),
+		PmtpPeriodEpochLength:    7,
+		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
+		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
 	}
 }
 
@@ -69,30 +69,25 @@ func (p Params) Validate() error { // TODO determine all checks
 	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
 		return err
 	}
-	if err := validatePmtpNativeWeight(p.PmtpNativeWeight); err != nil {
+	if err := validatePmtpPeriodGovernanceRate(p.PmtpPeriodGovernanceRate); err != nil {
 		return err
 	}
-	if err := validatePmtpExternalWeight(p.PmtpExternalWeight); err != nil {
+	if err := validatePmtpPeriodEpochLength(p.PmtpPeriodEpochLength); err != nil {
 		return err
 	}
-	if err := validatePmtpStartBlock(p.PmtpStartBlock); err != nil {
+	if err := validatePmtpStartBlock(p.PmtpPeriodStartBlock); err != nil {
 		return err
 	}
-	if err := validatePmtpEndBlock(p.PmtpEndBlock); err != nil {
+	if err := validatePmtpEndBlock(p.PmtpPeriodEndBlock); err != nil {
 		return err
 	}
-	if p.PmtpEndBlock < p.PmtpStartBlock {
+	if p.PmtpPeriodEndBlock < p.PmtpPeriodStartBlock {
 		return fmt.Errorf(
 			"end block (%d) must be after begin block (%d)",
-			p.PmtpEndBlock, p.PmtpStartBlock,
+			p.PmtpPeriodEndBlock, p.PmtpPeriodStartBlock,
 		)
 	}
-	if p.PmtpNativeWeight.Add(p.PmtpExternalWeight).GT(sdk.NewDec(1)) {
-		return fmt.Errorf(
-			"sum of native weight (%d) and external weight (%d) cannot exceed 1",
-			p.PmtpEndBlock, p.PmtpStartBlock,
-		)
-	}
+	// TODO : ADD logic for rate and epoch if needed
 	return nil
 }
 
@@ -107,7 +102,8 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	return nil
 }
 
-func validatePmtpNativeWeight(i interface{}) error { // TODO determine all checks
+func validatePmtpPeriodGovernanceRate(i interface{}) error { // TODO determine all checks
+	panic("Fix this")
 	v, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -118,7 +114,8 @@ func validatePmtpNativeWeight(i interface{}) error { // TODO determine all check
 	return nil
 }
 
-func validatePmtpExternalWeight(i interface{}) error { // TODO determine all checks
+func validatePmtpPeriodEpochLength(i interface{}) error { // TODO determine all checks
+	panic("Fix this")
 	v, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

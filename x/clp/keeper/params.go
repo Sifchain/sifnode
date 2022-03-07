@@ -10,13 +10,13 @@ func (k Keeper) GetMinCreatePoolThreshold(ctx sdk.Context) (res uint64) {
 	return res
 }
 
-func (k Keeper) GetPmtpNativeWeight(ctx sdk.Context) (res sdk.Dec) {
-	k.paramstore.Get(ctx, types.KeyPmtpNativeWeight, &res)
+func (k Keeper) GetPmtpGovernaceRate(ctx sdk.Context) (res sdk.Dec) {
+	k.paramstore.Get(ctx, types.KeyPmtpPeriodGovernanceRate, &res)
 	return res
 }
 
-func (k Keeper) GetPmtpExternalWeight(ctx sdk.Context) (res sdk.Dec) {
-	k.paramstore.Get(ctx, types.KeyPmtpExternalWeight, &res)
+func (k Keeper) GetPmtpEpochLength(ctx sdk.Context) (res int64) {
+	k.paramstore.Get(ctx, types.KeyPmtpEpochLength, &res)
 	return res
 }
 
