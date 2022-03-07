@@ -44,3 +44,10 @@ message LiquidityProviderData {
   string native_asset_balance = 2;
   string external_asset_balance = 3;
 }
+
+message RewardExecution {
+  string distributed = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
