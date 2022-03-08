@@ -16,7 +16,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	// get PMTP period params
 	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
 	pmtpPeriodEndBlock := k.GetPmtpEndBlock(ctx)
-	// Logic for start of PMTP period only
+	// Start Policy
 	if currentHeight == pmtpPeriodStartBlock &&
 		k.GetPmtpEpoch(ctx).EpochCounter == 0 &&
 		k.GetPmtpEpoch(ctx).BlockCounter == 0 {
