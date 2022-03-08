@@ -8,7 +8,7 @@ import sys
 import glob
 import fcntl
 import subprocess
-
+from localnet import Localnet
 
 def execst(args, cwd=None):
     return subprocess.run(args, cwd=cwd, check=True, capture_output=False)
@@ -38,6 +38,14 @@ def ensure_venv(venv_dir, requirements_txt, lock_file=None):
     else:
         wrapped()
 
+def ensure_localnet(localnet):
+    if not os.path.exists(localnet.node_module_dir):
+        print("Install localnet dependencies on first use in '{}'...".format(localnet.node_module_dir))
+        localnet.install_deps()
+    if not os.path.exists(localnet.bin_dir):
+        print("Download localnet binaries on first use in '{}'...".format(localnet.bin_dir))
+        localnet.download_binaries()
+
 def load_main_module():
     base_dir = get_basedir()
     project_root = os.path.abspath(os.path.join(os.path.normpath(os.path.join(base_dir, *([os.path.pardir] * 3)))))
@@ -45,6 +53,10 @@ def load_main_module():
     requirements_txt = os.path.join(base_dir, "requirements.txt")
     lock_file = os.path.join(base_dir, ".lock")
 
+    if Localnet.is_enabled():
+        localnet = Localnet()
+        ensure_localnet(localnet)
+    
     ensure_venv(venv_dir, requirements_txt, lock_file=lock_file)
     venv_lib_dir = glob.glob(os.path.join(venv_dir, "lib", "python3.*"))[0]
     sys.path = sys.path + [

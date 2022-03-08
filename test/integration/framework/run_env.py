@@ -5,6 +5,7 @@ import time
 import eth
 import hardhat
 from truffle import Ganache
+from localnet import Localnet
 from command import Command
 from sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
 from project import Project, killall, force_kill_processes
@@ -134,6 +135,12 @@ class Integrator(Ganache, Command):
         # This was deleted in commit f00242302dd226bc9c3060fb78b3de771e3ff429 from sifchain_start_daemon.sh because
         # it was not working. But we assume that we want to keep it.
         sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnode.home)
+
+        if Localnet.is_enabled():
+            localnet = Localnet()
+            if not os.path.exists(localnet.config_dir):
+                print("Init all chains on first use in '{}'...".format(localnet.config_dir))
+                localnet.init_all_chains()
 
         adminuser_addr = self.sifchain_init_common(sifnode, denom_whitelist_file)
         return adminuser_addr
