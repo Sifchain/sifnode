@@ -27,7 +27,7 @@ describe("lock and burn tests", () => {
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
   const devEnvObject = readDevEnvObj("environment.json")
-  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 9999
 
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,

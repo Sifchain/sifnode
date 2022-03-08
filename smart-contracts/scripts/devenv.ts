@@ -119,7 +119,7 @@ async function main() {
       golang.results,
       // we need configure the chain id as hardhat
       // hardhat.results.chainId
-      31337
+      9999
     )
     EnvJSONWriter({
       contractResults: smartcontract.result,

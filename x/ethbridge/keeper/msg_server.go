@@ -254,7 +254,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		"Amount", claim.Amount.String(),
 		"Symbol", claim.Symbol,
 		"ClaimType", claim.ClaimType.String(),
-		"DenomHash", claim.DenomHash,
+		"DenomHash", claim.Denom,
 	)
 
 	ctx.EventManager().EmitEvents(sdk.Events{

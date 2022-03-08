@@ -38,4 +38,4 @@ clean-hardhat-artifact:
 	git clean -fdx artifacts 
 
 tests:
-	npx hardhat test test/*.js
+	npx hardhat test test/*.js test/*.ts

@@ -54,11 +54,11 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 func TestDenomCalculated(t *testing.T) {
 	address := ethbridge.NewEthereumAddress("0X0000000000000000000000000000000000000000")
 	// Test strings with uppercase values
-	expectedDenom := "siffa33aa4b83b0e09f21c221b25b6e46480ae151a36932dc44fd09f4f073e9f54f"
-	actualDenom := ethbridge.GetDenomHash(1, address)
+	expectedDenom := "sifBridge00010x0000000000000000000000000000000000000000"
+	actualDenom := ethbridge.GetDenom(1, address)
 	require.Equal(t, expectedDenom, actualDenom)
 	// Test strings with lowercase values
-	actualDenom = ethbridge.GetDenomHash(1, address)
+	actualDenom = ethbridge.GetDenom(1, address)
 	require.Equal(t, expectedDenom, actualDenom)
 }
 
