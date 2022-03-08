@@ -68,7 +68,7 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 /**
   Metadata Denom Naming Convention:
   For all pegged ERC20 assets, their respective token names on sifchain will be
-  composed of the following two elements: the prefix sifBridge, the network descriptor
+  composed of the following three elements: the prefix sifBridge, the network descriptor
   (fixed as a four digit decimal number), and the ERC20 token address. Fields will not
   be separated by any delimiter character. All hexadecimal characters will be made
   lower case before hashing. A pegged ERC20 asset with token address
