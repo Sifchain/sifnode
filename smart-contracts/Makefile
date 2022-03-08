@@ -24,8 +24,8 @@ all: ${gofiles}
 node_modules: package.json
 	npm install
 
-.PHONY: clean clean-smartcontracts clean-node
-clean: clean-node clean-smartcontracts
+.PHONY: clean clean-smartcontracts clean-node clean-hardhat-artifact 
+clean: clean-hardhat-artifact clean-node clean-smartcontracts
 	rm -f .hardhat-compile
 
 clean-smartcontracts:
@@ -33,6 +33,9 @@ clean-smartcontracts:
 
 clean-node:
 	rm -rf node_modules
+
+clean-hardhat-artifact:
+	git clean -fdx artifacts 
 
 tests:
 	npx hardhat test test/*.js
