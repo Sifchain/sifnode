@@ -25,21 +25,11 @@ message Pool {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"pool_units\""
   ];
-  string normalized_pmtp_native_weight = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"normalized_pmtp\""
-  ];
-	string normalized_pmtp_external_weight = 6 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"normalized_pmtp\""
-  ];
-	string swap_price_native = 7 [
+	string swap_price_native = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.moretags) = "yaml:\"swap_price \""
   ];
-	string swap_price_external = 8 [
+	string swap_price_external = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.moretags) = "yaml:\"swap_price \""
   ];
