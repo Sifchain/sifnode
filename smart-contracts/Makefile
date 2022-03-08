@@ -35,4 +35,4 @@ clean-node:
 	rm -rf node_modules
 
 tests:
-	npx hardhat test test/*.js
+	npx hardhat test test/*.js test/*.ts

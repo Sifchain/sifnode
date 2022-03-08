@@ -834,7 +834,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"
         ceth_symbol = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
-        assert ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+        print("ceth symbol is: {0}".format(ceth_symbol))
+        assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
         # Mint goes to validator
         mint_amount = [
             [999999 * 10**21, "rowan"],
