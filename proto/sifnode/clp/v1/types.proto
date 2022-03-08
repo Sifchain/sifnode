@@ -55,6 +55,11 @@ message LiquidityProvider {
   string liquidity_provider_address = 3;
 }
 
+message PmtpEpoch {
+  int64 epoch_counter = 1;
+  int64 block_counter = 2;
+}
+
 message WhiteList { repeated string validator_list = 1; }
 
 message LiquidityProviderData {

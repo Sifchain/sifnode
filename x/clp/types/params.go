@@ -58,14 +58,14 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
-		PmtpPeriodGovernanceRate: sdk.NewDecWithPrec(5, 1),
+		PmtpPeriodGovernanceRate: sdk.ZeroDec(),
 		PmtpPeriodEpochLength:    7,
 		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
 		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
 	}
 }
 
-func (p Params) Validate() error { // TODO determine all checks
+func (p Params) Validate() error {
 	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
 		return err
 	}
@@ -87,7 +87,9 @@ func (p Params) Validate() error { // TODO determine all checks
 			p.PmtpPeriodEndBlock, p.PmtpPeriodStartBlock,
 		)
 	}
-	// TODO : ADD logic for rate and epoch if needed
+	if (p.PmtpPeriodEndBlock-p.PmtpPeriodStartBlock)%p.PmtpPeriodEpochLength != 0 {
+		return fmt.Errorf("all epochs must have equal number of blocks : %s", p.PmtpPeriodEpochLength)
+	}
 	return nil
 }
 
@@ -103,25 +105,23 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 }
 
 func validatePmtpPeriodGovernanceRate(i interface{}) error { // TODO determine all checks
-	panic("Fix this")
 	v, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	if v.IsNegative() {
-		return fmt.Errorf("pmtp native weight threshold must be positive: %d", v)
+		return fmt.Errorf("pmtp governanace rate must be positive: %d", v)
 	}
 	return nil
 }
 
 func validatePmtpPeriodEpochLength(i interface{}) error { // TODO determine all checks
-	panic("Fix this")
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(int64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-	if v.IsNegative() {
-		return fmt.Errorf("pmtp external weight threshold must be positive: %d", v)
+	if v < 0 {
+		return fmt.Errorf("pmtp epoch length must be positive: %d", v)
 	}
 	return nil
 }
