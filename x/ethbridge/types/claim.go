@@ -26,7 +26,7 @@ func NewEthBridgeClaim(
 	tokenName string,
 	decimals uint8,
 ) *EthBridgeClaim {
-	denomHash := GetDenom(networkDescriptor, tokenContract)
+	denom := GetDenom(networkDescriptor, tokenContract)
 	return &EthBridgeClaim{
 		NetworkDescriptor:        networkDescriptor,
 		BridgeContractAddress:    bridgeContract.String(),
@@ -40,7 +40,7 @@ func NewEthBridgeClaim(
 		ClaimType:                claimType,
 		TokenName:                tokenName,
 		Decimals:                 int64(decimals),
-		DenomHash:                denomHash,
+		Denom:                    denom,
 	}
 }
 
@@ -58,7 +58,7 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 		claim.ClaimType.String(),
 		claim.TokenName,
 		strconv.Itoa(int(claim.Decimals)),
-		claim.DenomHash,
+		claim.Denom,
 	)
 	claimBytes := []byte(allContentString)
 	hashBytes := crypto.Keccak256(claimBytes)
