@@ -1,6 +1,7 @@
 package clp
 
 import (
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"time"
@@ -21,6 +22,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.GetPmtpEpoch(ctx).EpochCounter == 0 &&
 		k.GetPmtpEpoch(ctx).BlockCounter == 0 {
 		k.PolicyStart(ctx)
+		k.Logger(ctx).Info(fmt.Sprintf("Starting new policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	}
 
 	// Manage Block Counter and Calculate R running
@@ -32,6 +34,13 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	// Manage Epoch Counter
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {
 		k.DecrementEpochCounter(ctx)
+		k.SetBlockCounter(ctx, k.GetPmtpEpochLength(ctx))
+	}
+	// Last epoch is not included
+	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {
+		// Setting it to zero to check when we start policy
+		k.SetBlockCounter(ctx, 0)
+		k.Logger(ctx).Info(fmt.Sprintf("Ending Policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	}
 
 	err := k.PolicyRun(ctx)

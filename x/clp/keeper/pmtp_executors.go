@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -9,7 +8,6 @@ import (
 func (k Keeper) PolicyStart(ctx sdk.Context) {
 	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
 	pmtpPeriodEndBlock := k.GetPmtpEndBlock(ctx)
-	k.Logger(ctx).Info(fmt.Sprintf("Starting new policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	pmtpPeriodEpochLength := k.GetPmtpEpochLength(ctx)
 	// get governance rate
 	pmtpPeriodGovernanceRate := k.GetPmtpGovernaceRate(ctx)
@@ -42,7 +40,6 @@ func (k Keeper) PolicyRun(ctx sdk.Context) error {
 	pools := k.GetPools(ctx)
 	// compute swap prices for each pool
 	for _, pool := range pools {
-
 		normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 		// compute swap_price_native
 		swapPriceNative, _, _, _, err := SwapOne(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken)

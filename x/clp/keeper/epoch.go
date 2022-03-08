@@ -29,3 +29,9 @@ func (k Keeper) DecrementBlockCounter(ctx sdk.Context) {
 	epoch.BlockCounter--
 	k.SetPmtpEpoch(ctx, epoch)
 }
+
+func (k Keeper) SetBlockCounter(ctx sdk.Context, epochLength int64) {
+	epoch := k.GetPmtpEpoch(ctx)
+	epoch.BlockCounter = epochLength
+	k.SetPmtpEpoch(ctx, epoch)
+}
