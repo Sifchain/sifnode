@@ -73,7 +73,7 @@ func validateLiquidityLockPeriod(i interface{}) error {
 }
 
 func validateRewardPeriods(i interface{}) error {
-	v, ok := i.([]RewardPeriod)
+	v, ok := i.([]*RewardPeriod)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
