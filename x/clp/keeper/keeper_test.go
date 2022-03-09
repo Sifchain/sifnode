@@ -246,9 +246,9 @@ func TestKeeper_SwapOne(t *testing.T) {
 	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken)
+	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
 	assert.NoError(t, err)
-	assert.Equal(t, swapResult.String(), "10")
+	assert.Equal(t, swapResult.String(), "20")
 	assert.Equal(t, liquidityFee.String(), "978")
 	assert.Equal(t, priceImpact.String(), "0")
 }
@@ -291,6 +291,6 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	eAsset, _ := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
 	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, normalizationFactor, adjustExternalToken)
-	assert.Equal(t, swapResult.String(), "1")
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+	assert.Equal(t, "2", swapResult.String())
 }

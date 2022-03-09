@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,6 @@ func Test_ParamsEqual(t *testing.T) {
 	params2 := DefaultParams()
 	boolean := params1.Equal(params2)
 	assert.True(t, boolean)
-	boolean = params1.Equal(NewParams(uint64(10)))
+	boolean = params1.Equal(NewParams(uint64(10), sdk.ZeroDec(), 7, 1, 7))
 	assert.False(t, boolean)
 }
