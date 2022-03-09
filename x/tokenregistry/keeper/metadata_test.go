@@ -28,7 +28,7 @@ func TestGetAddTokenMetadata(t *testing.T) {
 	require.Equal(t, expected, result)
 
 	address := ethbridgetypes.NewEthereumAddress(testTokenMetadata.TokenAddress)
-	expectedDenom := ethbridgetypes.GetDenomHash(
+	expectedDenom := ethbridgetypes.GetDenom(
 		testTokenMetadata.NetworkDescriptor,
 		address,
 	)

@@ -18,8 +18,8 @@ import (
 
 //nolint:lll
 const (
-	TestResponseJSON              = "{\"prophecy_id\":\"4S77KxMym3uxl4dTjxE/1eGdrTiQWsROq4oYmNZmzIM=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
-	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"siffa33aa4b83b0e09f21c221b25b6e46480ae151a36932dc44fd09f4f073e9f54f\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\",\"first_lock_double_peggy_cost\":\"1\"}"
+	TestResponseJSON              = "{\"prophecy_id\":\"s+SwIng34aoj+5AQNsP7r46+bVskSjd7PkaKUkPt77w=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"sifBridge00010x0000000000000000000000000000000000000000\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\",\"first_lock_double_peggy_cost\":\"1\"}"
 )
 
 func TestNewQuerier(t *testing.T) {
