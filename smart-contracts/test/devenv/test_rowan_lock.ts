@@ -73,12 +73,6 @@ describe("lock rowan token tests", () => {
       rowan
     )
 
-    const tmpBalance = await sifnodedAdapter.getBalance(
-      admin.account,
-      rowan
-    )
-    console.log("+++ balance is ", tmpBalance)
-
     const initReceiverBalance = await contracts.rowanContract.balanceOf(destinationEthereumAddress.address)
     
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee

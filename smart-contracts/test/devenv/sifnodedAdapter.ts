@@ -107,8 +107,6 @@ export class SifnodedAdapter {
     })
     const balancesJson = JSON.parse(responseString) as Balances
 
-    console.log("+++ balance is ", balancesJson)
-    
     balancesJson["balances"].forEach((element) => {
       if (element["denom"] === denomHash) {
         result = BigNumber.from(element["amount"])
