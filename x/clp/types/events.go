@@ -16,6 +16,8 @@ const (
 	AttributeKeyPriceImpact          = "price_impact"
 	AttributeKeyInPool               = "in_pool"
 	AttributeKeyOutPool              = "out_pool"
+	AttributePmtpBlockRate           = "pmtp_block_rate"
+	AttributePmtpCurrentRunningRate  = "pmtp_current_running_rate"
 	AttributeKeyPool                 = "pool"
 	AttributeKeyHeight               = "height"
 	AttributeKeyLiquidityProvider    = "liquidity_provider"

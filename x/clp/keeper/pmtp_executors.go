@@ -25,7 +25,7 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	})
 }
 
-func (k Keeper) PolicyCalculations(ctx sdk.Context) {
+func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	currentHeight := ctx.BlockHeight()
 	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
 	pmtpPeriodBlockRate := k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate
@@ -34,20 +34,21 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) {
 	// set running rate
 	k.SetPmtpCurrentRunningRate(ctx, pmtpCurrentRunningRate)
 	k.DecrementBlockCounter(ctx)
+	return pmtpCurrentRunningRate
 }
 
-func (k Keeper) PolicyRun(ctx sdk.Context) error {
+func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error {
 	pools := k.GetPools(ctx)
 	// compute swap prices for each pool
 	for _, pool := range pools {
 		normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 		// compute swap_price_native
-		swapPriceNative, _, _, _, err := SwapOne(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken)
+		swapPriceNative, _, _, _, err := SwapOne(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 		if err != nil {
 			return err
 		}
 		// compute swap_price_external
-		swapPriceNative, _, _, _, err = SwapOne(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken)
+		swapPriceNative, _, _, _, err = SwapOne(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 		if err != nil {
 			return err
 		}
