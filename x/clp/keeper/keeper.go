@@ -86,3 +86,12 @@ func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 	}
 	return normalizationFactor, adjustExternalToken
 }
+
+func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Asset) (sdk.Dec, bool) {
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset.Symbol)
+	if err != nil {
+		return sdk.Dec{}, false
+	}
+	return k.GetNormalizationFactor(registryEntry.Decimals)
+}

@@ -7,15 +7,24 @@ option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
 // Params - used for initializing default parameter for clp at genesis
 message Params { 
-    uint64 min_create_pool_threshold = 1; 
-    string pmtp_native_weight = 2 [
-        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-        (gogoproto.nullable) = false
-      ];
-    string pmtp_external_weight = 3 [
+    uint64 min_create_pool_threshold = 1;
+    string pmtp_period_governance_rate = 2 [
         (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
         (gogoproto.nullable) = false
     ];
-    int64 pmtp_start_block = 4;
-    int64 pmtp_end_block = 5;
+    int64 pmtp_period_epoch_length = 3;
+    int64 pmtp_period_start_block = 4;
+    int64 pmtp_period_end_block = 5;
+}
+
+// These params are non-governable and are calculated on chain
+message PmtpRateParams {
+    string pmtp_period_block_rate = 2 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
+    string pmtp_current_running_rate = 3 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
 }
