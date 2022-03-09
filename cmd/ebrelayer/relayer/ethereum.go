@@ -403,18 +403,6 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		event.Token = decodedEvent.Token
 	}
 
-	// if event.Decimals is still 0, that means
-	// couldn't be decoded as either a lock or a burn
-	/**
-	mho: I am commenting out the following section because i suspect 0
-	value is valid, it is the default from BridgeBank when it couldnt find
-	the value in it's map, AND when the contract fail
-	*/
-	// if event.Decimals == 0 {
-	// 	sub.SugaredLogger.Errorw("could not parse lock or burn event", "log", cLog)
-	// 	return event, false, errors.New("could not parse lock or burn event")
-	// }
-
 	instrumentation.PeggyCheckpointZap(
 		sub.SugaredLogger,
 		instrumentation.EthereumEvent,
