@@ -16,12 +16,11 @@ import {
 } from "child_process"
 import {network} from "hardhat"
 import {sleep} from "./devEnvUtilities"
+import { getDenomHash, nullContractAddress } from "../../test/devenv/context"
 
 export const crossChainFeeBase: number = 1
 export const crossChainLockFee: number = 1
 export const crossChainBurnFee: number = 1
-const ethereumCrossChainFeeToken: string =
-  "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
 const rowanTokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
@@ -114,7 +113,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "test",
       // Mint goes to validator
       "--mint-amount",
-      "999999000000000000000000000rowan,1370000000000000000ibc/feedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedface,999999000000000000000000000sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2",
+      "999999000000000000000000000rowan,1370000000000000000ibc/feedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedface,999999000000000000000000000sifBridge99990x0000000000000000000000000000000000000000",
     ]
 
     await fs.promises.mkdir(this.networkDir, {recursive: true})
@@ -202,9 +201,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
     await sleep(10000)
+    const ethereumCrossChainFeeToken = getDenomHash(9999, nullContractAddress)
     const setCrossChainFeeResult =  await this.setCrossChainFee(
       sifnodedAdminAddress,
-      "31337",
+      "9999",
       ethereumCrossChainFeeToken,
       String(crossChainFeeBase),
       String(crossChainLockFee),
@@ -216,7 +216,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence
     await sleep(10000)
     // set the ConsensusNeeded for hardhat
-    const updateConsensusNeededResult = await this.updateConsensusNeeded(sifnodedAdminAddress, "31337", ConsensusNeeded, this.chainId)
+    const updateConsensusNeededResult = await this.updateConsensusNeeded(sifnodedAdminAddress, "9999", ConsensusNeeded, this.chainId)
     console.log("updateConsensusNeededResult as ", updateConsensusNeededResult)
 
     sifnoded.on("exit", (code) => {
@@ -278,7 +278,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
     const adminAccount = this.addAccount(name, homeDir, false)
     // Whitelist Relayer/Witness Account
-    const EVM_Network_Descriptor = 31337
+    const EVM_Network_Descriptor = 9999
     const Validator_Power = 100
     const bachAddress = this.readValoperKey(name, homeDir)
     ChildProcess.execSync(

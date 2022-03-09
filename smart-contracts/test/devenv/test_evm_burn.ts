@@ -49,7 +49,7 @@ describe("burn rowan tests", () => {
     const sendAmount = BigNumber.from("50")
 
     // burn from evm don't need prepaid rowan in sifnode side
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(false)
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(networkDescriptor, false)
 
     // grant the miner
     const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)

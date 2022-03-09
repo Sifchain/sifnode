@@ -97,6 +97,7 @@ export async function checkEvmLockState(
     .pipe(
       scan(
         (acc: State, v: SifEvent) => {
+          console.log("Event: ", v)
           if (isTerminalState(acc, Direction.EthereumToSifchain))
             // we've reached a decision
             return { ...acc, value: { kind: "terminate" } as Terminate }

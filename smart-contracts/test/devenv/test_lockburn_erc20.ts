@@ -14,7 +14,7 @@ import {EbRelayerAccount, crossChainFeeBase, crossChainBurnFee} from "../../src/
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import {SifnodedAdapter} from "./sifnodedAdapter"
-import {getDenomHash, ethDenomHash} from "./context"
+import {getDenomHash, nullContractAddress} from "./context"
 import {checkSifnodeBurnState} from "./sifnode_burn"
 import {executeLock, checkEvmLockState} from "./evm_lock"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
@@ -27,8 +27,8 @@ describe("lock and burn tests", () => {
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
   const devEnvObject = readDevEnvObj("environment.json")
-  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
-
+  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 9999
+  const ethDenomHash = getDenomHash(networkDescriptor, nullContractAddress)
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,
     devEnvObject!.sifResults!.adminAddress!.account,
@@ -57,7 +57,7 @@ describe("lock and burn tests", () => {
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(networkDescriptor)
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata

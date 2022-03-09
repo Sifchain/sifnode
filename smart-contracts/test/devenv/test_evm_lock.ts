@@ -16,7 +16,7 @@ import {ethers} from "hardhat"
 import {SifnodedAdapter} from "./sifnodedAdapter"
 import {SifchainAccountsPromise} from "../../src/tsyringe/sifchainAccounts"
 import {executeLock, checkEvmLockState} from "./evm_lock"
-import {getDenomHash, ethDenomHash} from "./context"
+import {getDenomHash, nullContractAddress} from "./context"
 
 chai.use(solidity)
 
@@ -26,7 +26,8 @@ describe("lock eth tests", () => {
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
   const devEnvObject = readDevEnvObj("environment.json")
-  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 9999
+  const ethDenomHash = getDenomHash(networkDescriptor, nullContractAddress)
 
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,
@@ -51,7 +52,7 @@ describe("lock eth tests", () => {
     // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(networkDescriptor)
 
     // record the init balance before lock
     const initialEthSenderBalance = await ethers.provider.getBalance(senderEthereumAccount.address)
@@ -116,7 +117,7 @@ describe("lock eth tests", () => {
 
     const sendAmount = BigNumber.from("5000000000000000000")
 
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount()
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(networkDescriptor)
 
     // grant the miner
     const sifchainAccountsPromise = container.resolve(SifchainAccountsPromise)

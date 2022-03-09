@@ -79,7 +79,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	var err error
 	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
-		coins = sdk.NewCoins(sdk.NewCoin(claim.DenomHash, claim.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(claim.Denom, claim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
 		coins = sdk.NewCoins(sdk.NewCoin(claim.Symbol, claim.Amount))

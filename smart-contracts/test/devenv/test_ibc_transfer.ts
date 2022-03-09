@@ -51,7 +51,7 @@ describe("burn ibc token to EVM and back tests", () => {
     )
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
 
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(true, true, true)
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(networkDescriptor, true, true, true)
     // the source address copy from registry json file
     const ibcTokenDenom = "ibc/feedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedface"
     const ibcTokenSourceAddress = "0x1111111111111111111111111111111111111111"

@@ -25,13 +25,15 @@ describe("lock rowan token tests", () => {
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
   const devEnvObject = readDevEnvObj("environment.json")
-  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 9999
 
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,
     devEnvObject!.sifResults!.adminAddress!.account,
     process.env["GOBIN"]
   )
+
+  const admin = devEnvObject!.sifResults!.adminAddress
 
   before("register HardhatRuntimeEnvironmentToken", async () => {
     container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
@@ -64,12 +66,19 @@ describe("lock rowan token tests", () => {
       .mint(ethereumAccounts.availableAccounts[1].address, lockAmount)
 
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
-    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(true, true, true)
+    let testSifAccount: EbRelayerAccount = await sifnodedAdapter.createTestSifAccount(networkDescriptor, true, true, true)
 
     const initSenderBalance = await sifnodedAdapter.getBalance(
       testSifAccount.account,
       rowan
     )
+
+    const tmpBalance = await sifnodedAdapter.getBalance(
+      admin.account,
+      rowan
+    )
+    console.log("+++ balance is ", tmpBalance)
+
     const initReceiverBalance = await contracts.rowanContract.balanceOf(destinationEthereumAddress.address)
     
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee

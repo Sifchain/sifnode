@@ -9,10 +9,6 @@ import {sha256} from "ethers/lib/utils"
 
 // zero contract address
 export const nullContractAddress = "0x0000000000000000000000000000000000000000"
-
-// The hash value for ethereum on mainnet
-export const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
-
 chai.use(solidity)
 
 const GWEI = Math.pow(10, 9)
@@ -213,11 +209,8 @@ export function buildFailure(acc: State, v: SifEvent, message: string): State {
 }
 
 export function getDenomHash(networkId: number, contract: string) {
-  const data = String(networkId) + contract.toLowerCase()
 
-  const enc = new TextEncoder()
-
-  const denom = "sif" + sha256(enc.encode(data)).substring(2)
+  const denom = "sifBridge" + String(networkId).padStart(4,'0') + contract.toLowerCase()
 
   return denom
 }

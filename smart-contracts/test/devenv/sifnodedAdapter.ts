@@ -7,7 +7,7 @@ import * as ChildProcess from "child_process"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { BigNumber } from "ethers"
 import { exit } from "process"
-import {ethDenomHash} from "./context"
+import {getDenomHash, nullContractAddress} from "./context"
 import { sleep } from "../../src/devenv/devEnvUtilities"
 
 interface Balance {
@@ -51,7 +51,7 @@ export class SifnodedAdapter {
    * @returns an ebrelayerAccount with uuid as name, and a valid sif address
    * TODO: Should the return type be ebrelayeraccount? it's really a sif account
    */
-  async createTestSifAccount(prepayRowan: boolean = true, ibcToken: boolean = false, cethToken: boolean = false): Promise<EbRelayerAccount> {
+  async createTestSifAccount(networkDescriptor: number, prepayRowan: boolean = true, ibcToken: boolean = false, cethToken: boolean = false): Promise<EbRelayerAccount> {
     const testSifAccountName = uuidv4()
     const keyAddCmd: string = `${this.gobin}/sifnoded keys add ${testSifAccountName} --home ${this.homedir} --keyring-backend test --output json 2>&1`
 
@@ -75,6 +75,7 @@ export class SifnodedAdapter {
 
     if (cethToken) {
       await sleep(10000)
+      const ethDenomHash = getDenomHash(networkDescriptor, nullContractAddress)
       this.fundSifAccount(responseJson.address, DEFAULT_CETH_AMOUNT, ethDenomHash)
       console.log("Funded with ceth token")
       await sleep(10000)
@@ -106,6 +107,8 @@ export class SifnodedAdapter {
     })
     const balancesJson = JSON.parse(responseString) as Balances
 
+    console.log("+++ balance is ", balancesJson)
+    
     balancesJson["balances"].forEach((element) => {
       if (element["denom"] === denomHash) {
         result = BigNumber.from(element["amount"])
