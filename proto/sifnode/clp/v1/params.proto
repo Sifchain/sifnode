@@ -9,7 +9,8 @@ option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 message Params {
   uint64 min_create_pool_threshold = 1;
   uint64 liquidity_removal_lock_period = 2; // in blocks
-  repeated RewardPeriod reward_periods = 3;
+  uint64 liquidity_removal_cancel_period = 3; // in blocks
+  repeated RewardPeriod reward_periods = 4;
 }
 
 message RewardPeriod {

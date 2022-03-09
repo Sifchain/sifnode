@@ -13,6 +13,7 @@ service Msg {
   rpc Swap(MsgSwap) returns (MsgSwapResponse);
   rpc DecommissionPool(MsgDecommissionPool)
       returns (MsgDecommissionPoolResponse);
+  rpc UnlockLiquidity(MsgUnlockLiquidityRequest) returns (MsgUnlockLiquidityResponse);
 }
 
 message MsgRemoveLiquidity {
@@ -95,3 +96,15 @@ message MsgDecommissionPool {
 }
 
 message MsgDecommissionPoolResponse {}
+
+message MsgUnlockLiquidityRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  sifnode.clp.v1.Asset external_asset = 2
+  [ (gogoproto.moretags) = "yaml:\"external_asset\"" ];
+  string units = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgUnlockLiquidityResponse {}

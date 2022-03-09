@@ -14,6 +14,7 @@ var (
 	_ sdk.Msg = &MsgAddLiquidity{}
 	_ sdk.Msg = &MsgSwap{}
 	_ sdk.Msg = &MsgDecommissionPool{}
+	_ sdk.Msg = &MsgUnlockLiquidityRequest{}
 )
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
@@ -210,6 +211,24 @@ func (m MsgCreatePool) GetSignBytes() []byte {
 }
 
 func (m MsgCreatePool) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUnlockLiquidityRequest) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if !m.ExternalAsset.Validate() {
+		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
+	}
+	return nil
+}
+
+func (m MsgUnlockLiquidityRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

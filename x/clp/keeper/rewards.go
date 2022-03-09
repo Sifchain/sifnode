@@ -6,6 +6,22 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+func (k Keeper) BeginBlock(ctx sdk.Context) {
+	params := k.GetParams(ctx)
+	for it := k.GetLiquidityProviderIterator(ctx); it.Valid(); it.Next() {
+		value := it.Value()
+		var lp types.LiquidityProvider
+		if len(value) <= 0 {
+			continue
+		}
+		err := k.cdc.Unmarshal(value, &lp)
+		if err != nil {
+			continue
+		}
+		k.PruneUnlockRecords(ctx, lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+	}
+}
+
 func EndBlock(ctx sdk.Context, _ abci.RequestEndBlock, keeper Keeper) []abci.ValidatorUpdate {
 	params := keeper.GetParams(ctx)
 	pools := keeper.GetPools(ctx)
@@ -109,4 +125,78 @@ func (k Keeper) SetRewardsDistributed(ctx sdk.Context, distributed sdk.Uint) {
 	}
 	bz := k.cdc.MustMarshal(&rewardsExecution)
 	store.Set(types.RewardExecutionPrefix, bz)
+}
+
+func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
+	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
+	// Reduce liquidity in one or more unlock records.
+	// Remove unlock records with zero units remaining.
+	params := k.GetParams(ctx)
+	currentHeight := ctx.BlockHeight()
+	lockPeriod := params.LiquidityRemovalLockPeriod
+
+	unitsLeftToUse := units
+	for _, record := range lp.Unlocks {
+		if record.RequestHeight+int64(lockPeriod) <= currentHeight {
+			if unitsLeftToUse.GT(record.Units) {
+				// use all this record's unit's and continue with remaining
+				unitsLeftToUse = unitsLeftToUse.Sub(record.Units)
+				record.Units = sdk.ZeroUint()
+			} else {
+				// use a portion of this record's units and break
+				record.Units = record.Units.Sub(unitsLeftToUse)
+				unitsLeftToUse = sdk.ZeroUint()
+				break
+			}
+		}
+	}
+
+	if !unitsLeftToUse.IsZero() {
+		return types.ErrBalanceNotAvailable
+	}
+
+	// prune records.
+	var records []*types.LiquidityUnlock
+	for _, record := range lp.Unlocks {
+		/* move to begin blocker
+		if currentHeight >= record.RequestHeight + int64(lockPeriod) + cancelPeriod {
+			// prune auto cancelled record
+			continue
+		}*/
+		if record.Units.IsZero() {
+			// prune used / zero record
+			continue
+		}
+		records = append(records, record)
+	}
+
+	lp.Unlocks = records
+	k.SetLiquidityProvider(ctx, &lp)
+
+	return nil
+}
+
+func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
+	currentHeight := ctx.BlockHeight()
+
+	var write bool
+	var records []*types.LiquidityUnlock
+	for _, record := range lp.Unlocks {
+		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) {
+			// prune auto cancelled record
+			write = true
+			continue
+		}
+		if record.Units.IsZero() {
+			// prune used / zero record
+			write = true
+			continue
+		}
+		records = append(records, record)
+	}
+
+	if write {
+		lp.Unlocks = records
+		k.SetLiquidityProvider(ctx, &lp)
+	}
 }

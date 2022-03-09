@@ -26,6 +26,41 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlockLiquidityRequest) (*types.MsgUnlockLiquidityResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	lp, err := k.Keeper.GetLiquidityProvider(ctx, request.ExternalAsset.Symbol, request.Signer)
+	if err != nil {
+		return nil, types.ErrLiquidityProviderDoesNotExist
+	}
+	totalUnlocks := sdk.ZeroUint()
+	for _, unlock := range lp.Unlocks {
+		totalUnlocks = totalUnlocks.Add(unlock.Units)
+	}
+	if totalUnlocks.Add(request.Units).GT(lp.LiquidityProviderUnits) {
+		return nil, types.ErrBalanceNotAvailable
+	}
+	lp.Unlocks = append(lp.Unlocks, &types.LiquidityUnlock{
+		RequestHeight: ctx.BlockHeight(),
+		UnlockHeight:  0,
+		Units:         request.Units,
+	})
+	k.Keeper.SetLiquidityProvider(ctx, &lp)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRequestUnlock,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, request.Signer),
+		),
+	})
+	return &types.MsgUnlockLiquidityResponse{}, nil
+}
+
 func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommissionPool) (*types.MsgDecommissionPoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	pool, err := k.Keeper.GetPool(ctx, msg.Symbol)
@@ -264,6 +299,12 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
+
+	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft))
+	if err != nil {
+		return nil, err
+	}
+
 	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt

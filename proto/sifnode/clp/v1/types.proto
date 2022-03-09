@@ -35,6 +35,16 @@ message LiquidityProvider {
     (gogoproto.moretags) = "yaml:\"liquidity_provider_units\""
   ];
   string liquidity_provider_address = 3;
+  repeated LiquidityUnlock unlocks = 4;
+}
+
+message LiquidityUnlock {
+  int64 request_height = 1;
+  int64 unlock_height = 2;
+  string units = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message WhiteList { repeated string validator_list = 1; }

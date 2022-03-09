@@ -15,9 +15,10 @@ const (
 
 // Parameter store keys
 var (
-	KeyMinCreatePoolThreshold     = []byte("MinCreatePoolThreshold")
-	KeyLiquidityRemovalLockPeriod = []byte("LiquidityRemovalLockPeriod")
-	KeyRewardPeriods              = []byte("RewardPeriods")
+	KeyMinCreatePoolThreshold       = []byte("MinCreatePoolThreshold")
+	KeyLiquidityRemovalLockPeriod   = []byte("LiquidityRemovalLockPeriod")
+	KeyLiquidityRemovalCancelPeriod = []byte("LiquidityRemovalCancelPeriod")
+	KeyRewardPeriods                = []byte("RewardPeriods")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -39,7 +40,8 @@ func NewParams(minThreshold uint64) Params {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
-		paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalLockPeriod, validateLiquidityLockPeriod),
+		paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalLockPeriod, validateLiquidityBlockPeriod),
+		paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalCancelPeriod, validateLiquidityBlockPeriod),
 		paramtypes.NewParamSetPair(KeyRewardPeriods, &p.RewardPeriods, validateRewardPeriods),
 	}
 }
@@ -64,7 +66,7 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	return nil
 }
 
-func validateLiquidityLockPeriod(i interface{}) error {
+func validateLiquidityBlockPeriod(i interface{}) error {
 	_, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
