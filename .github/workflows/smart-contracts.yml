@@ -1,8 +1,9 @@
 name: Smart Contracts
 
-on:
-  pull_request:
-    paths: ['smart-contracts/**']
+on: ['push']
+
+  # pull_request:
+  #   paths: ['smart-contracts/**']
 
 jobs:
   test:
@@ -18,15 +19,11 @@ jobs:
         uses: actions/setup-node@v2.1.4
         with:
           node-version: '14.x'
+      - name: Clean dependencies
+        run: make clean
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Install truffle
-        run: npm i -g truffle
+        run: make install
 
       - name: Test Setup
-        run: npm run test:setup
-
-      - name: Run truffle tests
-        run: npm run test
+        run: make tests
