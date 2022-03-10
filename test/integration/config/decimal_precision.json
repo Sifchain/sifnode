@@ -8,13 +8,6 @@
   },
   "tx": [
     {
-      "sif_asset": "ibc/4A6183881ABE3F53504470B6459791DECE165E2B9A00C5F9A715B90079AD4F54",
-      "ibc_denom": "",
-      "ibc_denom_iris": "nyan",
-      "ibc_denom_akash": "",
-      "ibc_denom_cosmos": "",
-      "sif_asset_dp_value": 6,
-      "ibc_denom_dp_value": 18,
       "amount": [
         1000,
         1
@@ -24,48 +17,31 @@
   "chain": [
     {
       "name": "cosmos",
-      "channel": "channel-11",
-      "counterparty_channel": "channel-27",
+      "base_denom": "uphoton",
       "cli_tool": "gaiad",
-      "chain_id": "cosmoshub-testnet",
       "node": "https://rpc.testnet.cosmos.network:443",
-      "gas_price": "5.0uphoton"
+      "gas_price": "5.0"
     },
     {
       "name": "akash",
-      "channel": "channel-12",
-      "counterparty_channel": "channel-66",
+      "base_denom": "uakt",
       "cli_tool": "akash",
-      "chain_id": "akash-testnet-6",
-      "node": "http://147.75.32.35:26657",
-      "gas_price": "0.5uakt"
+      "node": "http://iris.development.sifchain.finance:26657",
+      "gas_price": "0.5"
     },
     {
       "name": "iris",
-      "channel": "channel-9",
-      "counterparty_channel": "channel-10",
+      "base_denom": "unyan",
       "cli_tool": "iris",
-      "chain_id": "nyancat-9",
       "node": "http://iris.development.sifchain.finance:26657",
       "gas_price": "1.0unyan"
     },
     {
-      "name": "cro",
-      "channel": "channel-16",
-      "counterparty_channel": "channel-32",
-      "cli_tool": "cronosd",
-      "chain_id": "crypto-org-chain-mainnet-1",
-      "node": "<tbd>",
-      "gas_price": "0.003basecro"
-    },
-    {
-      "name": "band",
-      "channel": "channel-41",
-      "counterparty_channel": "channel-28",
-      "cli_tool": "bandd",
-      "chain_id": "band-laozi-testnet4",
-      "node": "http://rpc-laozi-testnet4.bandchain.org:26657",
-      "gas_price": "0.5uband"
+      "name": "juno",
+      "base_denom": "ujuno",
+      "cli_tool": "junod",
+      "node": "http://juno.development.sifchain.finance:26657",
+      "gas_price": "1.0"
     },
     {
       "name": "sifchain-testnet",
