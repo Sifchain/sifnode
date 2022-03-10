@@ -41,7 +41,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
 		paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalLockPeriod, validateLiquidityBlockPeriod),
-		paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalCancelPeriod, validateLiquidityBlockPeriod),
+		paramtypes.NewParamSetPair(KeyLiquidityRemovalCancelPeriod, &p.LiquidityRemovalCancelPeriod, validateLiquidityBlockPeriod),
 		paramtypes.NewParamSetPair(KeyRewardPeriods, &p.RewardPeriods, validateRewardPeriods),
 	}
 }
