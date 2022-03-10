@@ -21,7 +21,7 @@ export const crossChainFeeBase: number = 1
 export const crossChainLockFee: number = 1
 export const crossChainBurnFee: number = 1
 const ethereumCrossChainFeeToken: string =
-  "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+  "sifBridge99990x0000000000000000000000000000000000000000"
 
 const ConsensusNeeded = "49"
 
