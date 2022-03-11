@@ -1,7 +1,7 @@
 name: Smart Contracts
 
 on:
-  pull_request:
+  [pull_request, push]:
     paths: ['smart-contracts/**']
 
 jobs:
@@ -14,19 +14,20 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+
       - name: Use Node.js
         uses: actions/setup-node@v2.1.4
         with:
           node-version: '14.x'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install geth
+        run: sudo add-apt-repository -y ppa:ethereum/ethereum && sudo apt-get update && sudo apt-get install ethereum
 
-      - name: Install truffle
-        run: npm i -g truffle
+      - name: Clean dependencies
+        run: make clean
+
+      - name: Install dependencies
+        run: make install
 
       - name: Test Setup
-        run: npm run test:setup
-
-      - name: Run truffle tests
-        run: npm run test
+        run: make tests
