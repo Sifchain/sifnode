@@ -17,9 +17,8 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol      = "rowan"
-	PoolThrehold      = "1000000000000000000"
-	PoolUnitsMinValue = "1000000000"
+	NativeSymbol = "rowan"
+	PoolThrehold = "1000000000000000000"
 
 	MaxSymbolLength = 71
 	MaxWbasis       = 10000
@@ -29,6 +28,8 @@ var (
 	PoolPrefix               = []byte{0x00} // key for storing Pools
 	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
 	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
+	PmtpParamsPrefix         = []byte{0x03} // Key to store the Pmtm rate params
+	PmtpEpochPrefix          = []byte{0x04} // Key to store the Pmtm rate params
 )
 
 // Generates a key for storing a specific pool
