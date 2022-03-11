@@ -160,7 +160,8 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONCodec) json.R
 }
 
 // BeginBlock returns the begin blocker for the dispensation module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	BeginBlocker(ctx, am.keeper)
 }
 
 // EndBlock returns the end blocker for the dispensation module. It returns no validator
