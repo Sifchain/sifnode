@@ -24,12 +24,12 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.PolicyStart(ctx)
 		k.Logger(ctx).Info(fmt.Sprintf("Starting new policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	}
-
+	var pmtpCurrentRunningRate sdk.Dec
 	// Manage Block Counter and Calculate R running
 	if currentHeight >= pmtpPeriodStartBlock &&
 		currentHeight <= pmtpPeriodEndBlock &&
 		k.GetPmtpEpoch(ctx).EpochCounter > 0 {
-		k.PolicyCalculations(ctx)
+		pmtpCurrentRunningRate = k.PolicyCalculations(ctx)
 	}
 	// Manage Epoch Counter
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {
@@ -41,9 +41,10 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		// Setting it to zero to check when we start policy
 		k.SetBlockCounter(ctx, 0)
 		k.Logger(ctx).Info(fmt.Sprintf("Ending Policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
+		return
 	}
 
-	err := k.PolicyRun(ctx)
+	err := k.PolicyRun(ctx, pmtpCurrentRunningRate)
 	if err != nil {
 		panic(err)
 	}

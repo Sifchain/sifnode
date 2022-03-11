@@ -45,6 +45,17 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
+		PmtpPeriodBlockRate:    sdk.OneDec(),
+		PmtpCurrentRunningRate: sdk.OneDec(),
+	})
+	app.ClpKeeper.SetParams(ctx, types.Params{
+		MinCreatePoolThreshold:   100,
+		PmtpPeriodGovernanceRate: sdk.OneDec(),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     1,
+		PmtpPeriodEndBlock:       2,
+	})
 	return ctx, app
 }
 

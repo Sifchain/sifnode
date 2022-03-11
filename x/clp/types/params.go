@@ -10,7 +10,6 @@ import (
 
 // Default parameter namespace
 const (
-	DefaultParamspace                    = ModuleName
 	DefaultMinCreatePoolThreshold uint64 = 100
 	DefaultPmtpStartBlock         int64  = 0
 	DefaultPmtpEndBlock           int64  = 0
@@ -88,7 +87,7 @@ func (p Params) Validate() error {
 		)
 	}
 	if (p.PmtpPeriodEndBlock-p.PmtpPeriodStartBlock)%p.PmtpPeriodEpochLength != 0 {
-		return fmt.Errorf("all epochs must have equal number of blocks : %s", p.PmtpPeriodEpochLength)
+		return fmt.Errorf("all epochs must have equal number of blocks : %d", p.PmtpPeriodEpochLength)
 	}
 	return nil
 }

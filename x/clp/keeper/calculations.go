@@ -12,7 +12,13 @@ import (
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool, normalizationFactor sdk.Dec, adjustExternalToken bool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+func SwapOne(from types.Asset,
+	sentAmount sdk.Uint,
+	to types.Asset,
+	pool types.Pool,
+	normalizationFactor sdk.Dec,
+	adjustExternalToken bool,
+	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	liquidityFee, err := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
 	if err != nil {
@@ -22,7 +28,7 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	if err != nil {
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
-	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
+	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 	if err != nil {
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
@@ -38,6 +44,14 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	}
 
 	return swapResult, liquidityFee, priceImpact, pool, nil
+}
+
+func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
+	if toRowan {
+		return y.Quo(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
+	} else {
+		return y.Mul(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
+	}
 }
 
 func SetInputs(sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, bool) {
@@ -58,9 +72,14 @@ func SetInputs(sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, 
 	return X, x, Y, toRowan
 }
 
-func GetSwapFee(sentAmount sdk.Uint, to types.Asset, pool types.Pool, normalizationFactor sdk.Dec, adjustExternalToken bool) sdk.Uint {
+func GetSwapFee(sentAmount sdk.Uint,
+	to types.Asset,
+	pool types.Pool,
+	normalizationFactor sdk.Dec,
+	adjustExternalToken bool,
+	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
+	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 	if err != nil {
 		return sdk.Uint{}
 	}
@@ -255,7 +274,11 @@ func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalT
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
-func CalcSwapResult(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
+func CalcSwapResult(toRowan bool,
+	normalizationFactor sdk.Dec,
+	adjustExternalToken bool,
+	X, x, Y sdk.Uint,
+	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, error) {
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
@@ -289,7 +312,7 @@ func CalcSwapResult(toRowan bool, normalizationFactor sdk.Dec, adjustExternalTok
 	if !toRowan {
 		y = y.Quo(normalizationFactor)
 	}
-
+	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
