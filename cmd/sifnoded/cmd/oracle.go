@@ -21,7 +21,7 @@ import (
 func SetGenesisOracleAdminCmd(defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-genesis-oracle-admin [address_or_key_name]",
-		Short: "Set a genesis account to for oracle module genesis.json",
+		Short: "Set a genesis account for oracle module to genesis.json",
 		Long: `Set a genesis account to genesis.json. The account has the privilege to update whitelist validators.
 `,
 		Args: cobra.ExactArgs(1),
