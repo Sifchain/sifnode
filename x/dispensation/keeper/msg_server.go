@@ -94,7 +94,7 @@ func (srv msgServer) RunDistribution(ctx context.Context, distribution *types.Ms
 	// We only need to run and execute distribution records
 	// Distribute 10 drops for msg.DistributionName authorized to msg.DistributionRunner
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	records, err := srv.Keeper.DistributeDrops(sdkCtx, sdkCtx.BlockHeight(), distribution.DistributionName, distribution.AuthorizedRunner, distribution.DistributionType)
+	records, err := srv.Keeper.DistributeDrops(sdkCtx, sdkCtx.BlockHeight(), distribution.DistributionName, distribution.AuthorizedRunner, distribution.DistributionType, distribution.DistributionCount)
 	if err != nil {
 		return nil, err
 	}

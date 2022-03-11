@@ -22,7 +22,7 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute       = ModuleName
 	DefaultParamspace  = ModuleName
-	MaxRecordsPerBlock = 10
+	MaxRecordsPerBlock = 20
 )
 
 var (

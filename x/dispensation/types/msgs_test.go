@@ -351,7 +351,7 @@ func TestMsgRunDistribution(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType)
+	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType, 10)
 
 	assert.Equal(t, runner.String(), result.GetAuthorizedRunner())
 	assert.Equal(t, distributionName, result.DistributionName)
@@ -363,7 +363,7 @@ func TestMsgRunDistribution_Route(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType)
+	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType, 10)
 
 	key := result.Route()
 	key1 := types.RouterKey
@@ -375,7 +375,7 @@ func TestMsgRunDistribution_Type(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType)
+	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType, 10)
 
 	typ := result.Type()
 	typ1 := types.MsgTypeRunDistribution

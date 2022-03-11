@@ -31,8 +31,13 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 
 // DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
-func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName string, authorizedRunner string, distributionType types.DistributionType) (*types.DistributionRecords, error) {
-	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorizedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+func (k Keeper) DistributeDrops(ctx sdk.Context,
+	height int64,
+	distributionName string,
+	authorizedRunner string,
+	distributionType types.DistributionType,
+	distributionCount int64) (*types.DistributionRecords, error) {
+	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorizedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionCount)
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
 		if err != nil {

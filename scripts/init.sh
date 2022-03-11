@@ -3,6 +3,7 @@
 ### chain init script for development purposes only ###
 
 make clean install
+rm -rf ~/.sifnoded
 sifnoded init test --chain-id=localnet -o
 
 echo "Generating deterministic account - sif"
