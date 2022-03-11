@@ -34,6 +34,7 @@ var (
 func init() {
 
 	FsAssetSymbol.String(FlagAssetSymbol, "", "Symbol for Asset")
+	FsUnits.String(FlagUnits, "", "Liquidity provider units")
 	FsNativeAssetAmount.String(FlagNativeAssetAmount, "", "Native Asset Amount")
 	FsExternalAssetAmount.String(FlagExternalAssetAmount, "", "External Asset Amount")
 	FsWBasisPoints.String(FlagWBasisPoints, "", "WBasis Points ")
