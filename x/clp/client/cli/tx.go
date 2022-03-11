@@ -29,6 +29,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdRemoveLiquidity(),
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
+		GetCmdUnlockLiquidity(),
 	)
 
 	return clpTxCmd
@@ -253,6 +254,46 @@ func GetCmdSwap() *cobra.Command {
 	}
 	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
 		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdUnlockLiquidity() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "unbond-liquidity",
+		Short: "Unbond liquidity from a pool",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
+			signer := clientCtx.GetFromAddress()
+			units := viper.GetUint64(FlagUnits)
+			unitsInt := sdk.NewUint(units)
+			msg := types.MsgUnlockLiquidityRequest{
+				Signer:        signer.String(),
+				ExternalAsset: &externalAsset,
+				Units:         unitsInt,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsAssetSymbol)
+	cmd.Flags().AddFlagSet(FsUnits)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagUnits); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 
 	flags.AddTxFlagsToCmd(cmd)

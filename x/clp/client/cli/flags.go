@@ -6,6 +6,7 @@ import (
 
 const (
 	FlagAssetSymbol            = "symbol"
+	FlagUnits                  = "units"
 	FlagSentAssetSymbol        = "sentSymbol"
 	FlagReceivedAssetSymbol    = "receivedSymbol"
 	FlagNativeAssetAmount      = "nativeAmount"
@@ -19,6 +20,7 @@ const (
 // common flagsets to add to various functions
 var (
 	FsAssetSymbol         = flag.NewFlagSet("", flag.ContinueOnError)
+	FsUnits               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsNativeAssetAmount   = flag.NewFlagSet("", flag.ContinueOnError)
 	FsExternalAssetAmount = flag.NewFlagSet("", flag.ContinueOnError)
 	FsWBasisPoints        = flag.NewFlagSet("", flag.ContinueOnError)
