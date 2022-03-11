@@ -9,6 +9,7 @@ const (
 	EventTypeAddLiquidity            = "added_liquidity"
 	EventTypeRemoveLiquidity         = "removed_liquidity"
 	EventTypeRequestUnlock           = "request_unlock_liquidity"
+	EventTypeCancelUnlock            = "cancel_unlock_liquidity"
 	EventTypeSwap                    = "swap_successful"
 	EventTypeSwapFailed              = "swap_failed"
 	AttributeKeyThreshold            = "min_threshold"

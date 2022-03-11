@@ -184,6 +184,13 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, 
 	for _, record := range lp.Unlocks {
 		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) {
 			// prune auto cancelled record
+			ctx.EventManager().EmitEvents(sdk.Events{
+				sdk.NewEvent(
+					types.EventTypeCancelUnlock,
+					sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+					sdk.NewAttribute(types.AttributeKeyUnits, record.Units.String()),
+				),
+			})
 			write = true
 			continue
 		}
