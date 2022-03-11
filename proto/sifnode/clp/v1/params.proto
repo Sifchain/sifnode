@@ -14,9 +14,10 @@ message Params {
 }
 
 message RewardPeriod {
-  uint64 start_block = 1;
-  uint64 end_block = 2;
-  string allocation = 3 [
+  string id = 1;
+  uint64 start_block = 2;
+  uint64 end_block = 3;
+  string allocation = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint"
   ];
 }

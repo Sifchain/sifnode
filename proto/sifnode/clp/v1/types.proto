@@ -56,7 +56,8 @@ message LiquidityProviderData {
 }
 
 message RewardExecution {
-  string distributed = 1 [
+  string id = 1;
+  string distributed = 2 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
