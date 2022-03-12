@@ -19,8 +19,8 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | APT_KEY_DONT_WARN_ON_D
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
 # nodejs
-curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+# sudo apt-get install -y nodejs
 
 apt-get update
 
@@ -34,5 +34,5 @@ usermod -aG docker ${dockeruser}
 curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod a+x /usr/local/bin/docker-compose
 
 # install go
-wget -O /tmp/go.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+# wget -O /tmp/go.tar.gz https://golang.org/dl/go1.17.5.linux-amd64.tar.gz
+# sudo tar -C /usr/local -xzf /tmp/go.tar.gz
