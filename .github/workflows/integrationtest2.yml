@@ -39,11 +39,8 @@ jobs:
         run: |
           source $HOME/.bash_profile
           git clean -fdx
-          go clean -modcache
-          go mod tidy
-          make clean
-          make
-          make tests
+          cd smart-contracts && make clean && make && make tests
+
       # - name: Execute test chain integration tests
       #   run: |
       #     source $HOME/.bash_profile
