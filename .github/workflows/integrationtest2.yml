@@ -44,6 +44,8 @@ jobs:
           source $HOME/.bash_profile
           git clean -fdx
           pushd smart-contracts && make clean && make && make tests && popd
+          make && make tests
+
 
       # - name: Execute test chain integration tests
       #   run: |
