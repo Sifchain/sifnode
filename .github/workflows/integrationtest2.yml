@@ -35,11 +35,15 @@ jobs:
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
+
+      - name: Install geth
+        run: sudo add-apt-repository -y ppa:ethereum/ethereum && sudo apt-get update && sudo apt-get install ethereum
+
       - name: Setup integration test environment
         run: |
           source $HOME/.bash_profile
           git clean -fdx
-          cd smart-contracts && make clean && make && make tests
+          pushd smart-contracts && make clean && make && make tests && popd
 
       # - name: Execute test chain integration tests
       #   run: |

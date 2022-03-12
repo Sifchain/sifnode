@@ -25,7 +25,7 @@ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(
 apt-get update
 
 apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev python3-pip parallel netcat uuid-runtime vim tmux rsync psmisc
-apt-get install -y --no-install-recommends yarn
+# apt-get install -y --no-install-recommends yarn
 
 # don't want to require root to run docker
 groupadd -f docker
