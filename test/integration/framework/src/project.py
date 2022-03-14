@@ -335,7 +335,9 @@ class Project:
         args = [self.project_python(), "-m", "grpc_tools.protoc", "-I", project_proto_dir, "-I", gogo_proto_dir,
             "--python_out", generated_dir, "--grpc_python_out", generated_dir,
             os.path.join(project_proto_dir, "sifnode/ethbridge/v1/tx.proto"),
+            os.path.join(project_proto_dir, "sifnode/ethbridge/v1/query.proto"),
             os.path.join(project_proto_dir, "sifnode/ethbridge/v1/types.proto"),
             os.path.join(project_proto_dir, "sifnode/oracle/v1/network_descriptor.proto"),
+            os.path.join(project_proto_dir, "sifnode/oracle/v1/types.proto"),
             os.path.join(gogo_proto_dir, "gogoproto/gogo.proto")]
         self.cmd.execst(args, pipe=False)

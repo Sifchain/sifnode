@@ -209,6 +209,7 @@ class Sifnoded:
             except URLError:
                 time.sleep(1)
 
+
 # See https://docs.cosmos.network/v0.42/core/grpc_rest.html
 # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
 # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
@@ -227,8 +228,24 @@ def grpc_poc():
     log.debug("Hello gRPC")
     import grpc
     import sifnode.ethbridge.v1.tx_pb2_grpc as tx_pb2_grpc
-    # import sifnode.ethbridge.v1.tx_pb2 as tx_pb2
-    c = grpc.insecure_channel("localhost:9090")
+    import sifnode.ethbridge.v1.tx_pb2 as tx_pb2
+    import sifnode.oracle.v1.network_descriptor_pb2 as network_descriptor_pb2
+    import sifnode.ethbridge.v1.query_pb2 as query_pb2
+    import sifnode.ethbridge.v1.query_pb2_grpc as query_pb2_grpc
+
+    channel = grpc.insecure_channel("127.0.0.1:9090")
+    # client = tx_pb2_grpc.MsgStub(channel)
+    # msg_lock = tx_pb2.MsgLock(amount=str(1000), cosmos_sender="sender", crosschain_fee=str(0), denom_hash="denom_hash",
+    #                           ethereum_receiver="ethereum_receiver", network_descriptor=network_descriptor_pb2.NETWORK_DESCRIPTOR_ETHEREUM)
+    # msg_loc_res = client.Lock(msg_lock)
+
+    client1 = query_pb2_grpc.QueryStub(channel)
+    req = query_pb2.QueryBlacklistRequest()
+    respoonse = client1.GetBlacklist(req)
+
+    req2 = query_pb2.QueryCrosschainFeeConfigRequest(network_descriptor=31337)
+    response2 = client1.CrosschainFeeConfig(req2)
+    print()
 
 
 class Sifgen:
