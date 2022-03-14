@@ -120,7 +120,7 @@ def main(argv):
     elif what == "run-peggy2-tests":
         cmd.execst(["yarn", "test"], cwd=project.smart_contracts_dir)
     elif what == "generate-python-grpc-stubs":
-        project.generate_python_protobuf_stubs()
+        project.generate_python_grpc_stubs()
     elif what == "grpc-poc":
         import sifchain
         sifchain.grpc_poc()
