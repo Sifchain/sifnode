@@ -124,6 +124,12 @@ def main(argv):
     elif what == "grpc-poc":
         import sifchain
         sifchain.grpc_poc()
+    elif what == "localnet":
+        import localnet
+        localnet.run(cmd, argv[1:])
+    elif what == "download-ibc-binaries":
+        import localnet
+        localnet.download_ibc_binaries(cmd, *argv[1:])
     else:
         raise Exception("Missing/unknown command")
 

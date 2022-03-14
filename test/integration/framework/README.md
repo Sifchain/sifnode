@@ -1,11 +1,13 @@
 # Resources
 
 1. Docker setup in docker/ (currently only on future/peggy2 branch, Tim Lind):
+
 - setups two sifnode instances running independent chains + IBC relayer (ts-relayer)
 
 2. Brent's PoC (docker): https://github.com/Sifchain/sifchain-deploy/tree/feature/ibc-poc/docker/localnet/ibc
 
 3. Test environment for testing the new Sifchain public SDK (Caner):
+
 - https://docs.google.com/document/d/1MAlg-I0xMnUvbavAZdAN---WuqbyuRyKw-6Lfgfe130/edit
 - https://github.com/sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/index.ts#L1
 - https://github.com/Sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/cosmoshub/index.ts
@@ -14,7 +16,7 @@
 
 5. https://github.com/Sifchain/sifnode/commit/9ab620e148be8f4850eef59d39b0e869956f87a4
 
-6. sifchain-devops script to deploy TestNet (by _IM): https://github.com/Sifchain/sifchain-devops/blob/main/scripts/testnet/launch.sh#L19
+6. sifchain-devops script to deploy TestNet (by \_IM): https://github.com/Sifchain/sifchain-devops/blob/main/scripts/testnet/launch.sh#L19
 
 7. Tempnet scripts by chainops
 
@@ -24,14 +26,18 @@
 9. erowan should be deployed and whitelisted (assumption)
 
 # RPC endpoints:
+
 e.g. SIFNODE="https://api-testnet.sifchain.finance"
+
 - $SIFNODE/node_info
 - $SIFNODE/tokenregistry/entries
 
 # Peggy2 devenv
+
 - Directory: smart-contracts/scripts/src/devenv
 - Init: cd smart-contracts; rm -rf node_modules; npm install (plan is to move to yarn eventually)
 - Run: GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
+
 ```
 {
   // vscode launch.json file to debug the Dev Environment Scripts
@@ -57,9 +63,9 @@ e.g. SIFNODE="https://api-testnet.sifchain.finance"
   ]
 }
 ```
+
 - Integration test to be targeted for PoC: test_eth_transfers.py
 - Dependency diagram: https://files.slack.com/files-pri/T0187TWB4V8-F02BC477N79/sifchaindevenv.jpg
-
 
 # Standardized environment setup
 
@@ -70,7 +76,7 @@ chain_id = "mychain" // Parameter
 // Generate account with name 'sif' in the local keyring
 mnemonic = generate_mnemonic()
 exec("echo $mnemonic | sifnoded keys add --recover --keyring-backend test")
-sif_admin = exec("sifnoded keys show sif -a --keyring-backend test") // sif1xxx... 
+sif_admin = exec("sifnoded keys show sif -a --keyring-backend test") // sif1xxx...
 
 // Init the chain. This command creates files:
 // ~/.sifnoded/config/node_key.json
@@ -97,35 +103,34 @@ exec("sifnoded gentx {sif_admin} 1000000000000000000000000stake --keyring-backen
 
 // Generate token json
 sifnoded q tokenregistry generate -o json \
-   --token_base_denom=cosmos \
-   --token_ibc_counterparty_chain_id=${GAIA_CHAIN_ID} \
+ --token_base_denom=cosmos \
+ --token_ibc_counterparty_chain_id=${GAIA_CHAIN_ID} \
    --token_ibc_channel_id=$GAIA_CHANNEL_ID \
-   --token_ibc_counterparty_channel_id=$GAIA_COUNTERPARTY_CHANNEL_ID \
-   --token_ibc_counterparty_denom="" \
-   --token_unit_denom="" \
-   --token_decimals=6 \
-   --token_display_name="COSMOS" \
-   --token_external_symbol="cosmos" \
-   --token_permission_clp=true \
-   --token_permission_ibc_export=true \
-   --token_permission_ibc_import=true | jq > gaia.json
+ --token_ibc_counterparty_channel_id=$GAIA_COUNTERPARTY_CHANNEL_ID \
+ --token_ibc_counterparty_denom="" \
+ --token_unit_denom="" \
+ --token_decimals=6 \
+ --token_display_name="COSMOS" \
+ --token_external_symbol="cosmos" \
+ --token_permission_clp=true \
+ --token_permission_ibc_export=true \
+ --token_permission_ibc_import=true | jq > gaia.json
 
 // Whitelist tokens
 // printf "registering cosmos... \n"
 sifnoded tx tokenregistry register gaia.json \
-   --node tcp://${SIFNODE_P2P_HOSTNAME}:26657 \
-   --chain-id $SIFCHAIN_ID \
-   --from $SIF_WALLET \
-   --keyring-backend test \
-   --gas=500000 \
-   --gas-prices=0.5rowan \
-   -y
+ --node tcp://${SIFNODE_P2P_HOSTNAME}:26657 \
+ --chain-id $SIFCHAIN_ID \
+ --from $SIF_WALLET \
+ --keyring-backend test \
+ --gas=500000 \
+ --gas-prices=0.5rowan \
+ -y
 
 // Deploy token registry
 // Registering Tokens...
 // Set Whitelist from denoms.json...
 sifnoded set-gen-denom-whitelist DENOM.json
-
 
 ## Peggy1 - integration tests
 
@@ -139,3 +144,13 @@ exec("sifnoded add-genesis-validators {valoper}")
 exec("sifnoded add-geneeis-account {}")
 exec("sifnoded set-genesis-oracle-admin {}")
 exec("sifnoded set-denom-whitelist {}")
+
+## Coupled with the localnet framework
+
+The localnet test framework is located under `./test/localnet` within the same repository and offers some interesting features such as spinning up a bunch of IBC chains along with relayers and storing the states of the chains for later use for deterministic testing against various IBC flows.
+
+The `localnet` framework is supported by `siftool` and can be enabled by using the following environment variable `LOCALNET` set to `true` as follow:
+
+```
+LOCALNET=true siftool run-env
+```

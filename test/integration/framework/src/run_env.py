@@ -5,6 +5,7 @@ import time
 import eth
 import hardhat
 from truffle import Ganache
+from localnet import Localnet
 from command import Command
 from sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
 from project import Project, killall, force_kill_processes
@@ -647,6 +648,9 @@ class IntegrationTestsEnvironment:
             "EBRELAYER_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
         self.project.write_vagrantenv_sh(self.state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
+
+        import localnet
+        localnet.run_localnet_hook()
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
