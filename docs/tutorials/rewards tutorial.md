@@ -40,9 +40,9 @@ The param change proposal takes the format:
       "value": [
         {
           "id": "Sifrewards 1",
-          "start_block": 1000,
-          "end_block": 1999,
-          "allocation": "1000"
+          "start_block": "100",
+          "end_block": "199",
+          "allocation": "100"
         }
       ]
     }
