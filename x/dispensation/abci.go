@@ -2,31 +2,39 @@ package dispensation
 
 import (
 	"fmt"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const ecoPool = "sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3"
-const mintAmountPerBlock = "225000000000000000000"
-
 func BeginBlocker(ctx sdk.Context, k Keeper) {
-	mintAmount, ok := sdk.NewIntFromString(mintAmountPerBlock)
+	// Verify mintTokens
+	mintAmount, ok := sdk.NewIntFromString(types.MintAmountPerBlock)
 	if !ok {
 		ctx.Logger().Error("Unable to get mint amount")
 		return
 	}
-	ecoPoolAddress, err := sdk.AccAddressFromBech32(ecoPool)
+	mintCoins := sdk.NewCoins(sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, mintAmount))
+	if !mintCoins.IsValid() || mintCoins.Len() != 1 {
+		ctx.Logger().Error(fmt.Sprintf("Trying to mint invalid coins %v", mintCoins))
+		return
+	}
+	// Get Ecosystem Pool Address
+	ecoPoolAddress, err := sdk.AccAddressFromBech32(types.EcoPool)
 	if err != nil {
 		ctx.Logger().Error("Unable to get address")
 		return
 	}
-	mintCoins := sdk.NewCoins(sdk.NewCoin("rowan", mintAmount))
+	// Mint Tokens
 	err = k.GetBankKeeper().MintCoins(ctx, ModuleName, mintCoins)
 	if err != nil {
 		ctx.Logger().Error("Unable to mint coins")
 		return
 	}
+	// Send newly minted tokens to EcosystemPool
 	err = k.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, ModuleName, ecoPoolAddress, mintCoins)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to send %s coins to address %s", mintCoins.String(), ecoPoolAddress.String()))
 	}
+	k.AddMintAmount(ctx, mintCoins[0])
 }
