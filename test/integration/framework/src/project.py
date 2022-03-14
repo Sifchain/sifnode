@@ -24,6 +24,7 @@ class Project:
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
         self.test_integration_dir = project_dir("test", "integration")
+        self.siftool_dir = project_dir("test", "integration", "framework")
         self.go_path = os.environ.get("GOPATH")
         if self.go_path is None:
             # https://pkg.go.dev/cmd/go#hdr-GOPATH_and_Modules
@@ -223,12 +224,12 @@ class Project:
         self.install_smart_contracts_dependencies()
 
     def clean(self):
+        self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
+        self.cmd.rmf(os.path.join(self.siftool_dir, "build"))
         if on_peggy2_branch:
             for file in [".proto-gen", ".run", "cmd/ebrelayer/contract/generated/artifacts", "smart-contracts/.hardhat-compile"]:
                 self.cmd.rmf(self.project_dir(file))
         else:
-            self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
-
             # Output from "truffle compile"
             self.cmd.rmf(self.project_dir("smart-contracts", "build"))
 
@@ -314,16 +315,22 @@ class Project:
         project_venv_dir = project_dir("test", "integration", "framework", "venv")
         return os.path.join(project_venv_dir, "bin", "python3")
 
-    def generate_python_protobuf_stubs(self, path=None):
+    def _ensure_build_dirs(self):
+        for d in ["build", "build/repos", "build/generated"]:
+            self.cmd.mkdir(os.path.join(self.siftool_dir, d))
+
+    def generate_python_grpc_stubs(self, path=None):
         # https://grpc.io/
         # https://grpc.github.io/grpc/python/grpc_asyncio.html
-        path = path or self.cmd.pwd()
-        workdir = path
+
+        self._ensure_build_dirs()
         project_proto_dir = self.project_dir("proto")
-        gogo_proto_dir = os.path.join(workdir, "gogoproto")
-        generated_dir = self.project_dir("test", "integration", "framework")
-        # self.cmd.rmf(generated_dir)
-        # self.cmd.mkdir(generated_dir)
+        gogo_proto_dir = os.path.join(self.siftool_dir, "build/repos/gogoproto")
+        generated_dir = os.path.join(self.siftool_dir, "build/generated")
+        self.cmd.rmf(generated_dir)
+        self.cmd.mkdir(generated_dir)
+        self.cmd.rmf(gogo_proto_dir)
+        self.cmd.mkdir(gogo_proto_dir)
         self.cmd.execst(["git", "clone", "--depth", "1", "https://github.com/gogo/protobuf", gogo_proto_dir], pipe=False)
         args = [self.project_python(), "-m", "grpc_tools.protoc", "-I", project_proto_dir, "-I", gogo_proto_dir,
             "--python_out", generated_dir, "--grpc_python_out", generated_dir,
