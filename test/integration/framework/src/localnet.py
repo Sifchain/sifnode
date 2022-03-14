@@ -58,13 +58,16 @@ def run_localnet_hook():
 
 
 
+def get_localnet_config(cmd):
+    config = json.loads(cmd.read_text_file(cmd.project.project_dir("test/localnet/config/chains.json")))
+    return config
+
+
 def run(cmd, argv):
     log.debug(repr(argv))
-    config = json.loads(cmd.read_text_file(cmd.project.project_dir("test/localnet/config/chains.json")))
-
+    config = get_localnet_config(cmd)
     # Filter out items with "disabled": true
     config = {k: v for k, v in config.items() if not v.get("disabled", False)}
-
     tmpdir = cmd.mktempdir()
     log.debug(tmpdir)
 
@@ -75,12 +78,58 @@ def run(cmd, argv):
     return
 
 
-def download_ibc_binaries(cmd, output_path=None):
-    if not output_path:
-        output_path = os.environ.get("GOBIN")
+def download_ibc_binaries(cmd, chains_to_download=None, output_path=None):
     if not output_path:
         output_path = cmd.pwd()
-    print(repr(output_path))
+    config = get_localnet_config(cmd)
+    tmpdir = cmd.mktempdir()
+    all_supported_chains = set(config.keys()).difference({"sifchain"})
+    chains_to_download = chains_to_download or "all"
+    if chains_to_download == "all":
+        chains_to_download = all_supported_chains
+    else:
+        chains_to_download = ",".split(chains_to_download)
+    try:
+        tmp_gobin = os.path.join(tmpdir, "bin")
+        cmd.mkdir(tmp_gobin)
+        for chain_name in chains_to_download:
+            if chain_name not in config:
+                raise Exception("Chain {} not supported yet".format(chain_name))
+            values = config[chain_name]
+            binary = values["binary"]
+            binary_url = values.get("binaryUrl")
+            source_url = values.get("sourceUrl")
+            binary_relative_path = values.get("binaryRelativePath")
+            source_relative_path = values.get("sourceRelativePath")
+            assert bool(source_url) ^ bool(binary_url)
+            url = binary_url or source_url
+            dlfile = os.path.join(tmpdir, "{}-download.tmp".format(chain_name))
+            log.info("Downloading {} from '{}' to '{}'...".format(chain_name, url, dlfile))
+            cmd.download_url(url, output_file=dlfile)
+            extract_dir = os.path.join(tmpdir, chain_name)
+            src_file = None
+            cmd.mkdir(extract_dir)
+            if url.endswith(".zip"):
+                cmd.execst(["unzip", dlfile], cwd=extract_dir)
+            elif url.endswith(".tar.gz"):
+                cmd.execst(["tar", "xfz", dlfile], cwd=extract_dir)
+            elif binary_url:
+                # We have binaryUrl but it is not an archive => must be binary itself
+                assert not source_url and not binary_relative_path
+                src_file = dlfile
+            if not src_file:
+                if binary_url:
+                    src_file = os.path.join(extract_dir, binary_relative_path if binary_relative_path else binary)
+                if source_url:
+                    src_dir = extract_dir if not source_relative_path else os.path.join(extract_dir, source_relative_path)
+                    cmd.execst(["make", "install"], cwd=src_dir, env={"GOBIN": tmp_gobin})
+                    src_file = os.path.join(tmp_gobin, binary)
+            assert src_file
+            dst_file = os.path.join(output_path, binary)
+            cmd.copy_file(src_file, dst_file)
+            cmd.chmod(dst_file, "+x")
+    finally:
+        cmd.rmf(tmpdir)
 
 
 def fetch_genesis(base_url):
