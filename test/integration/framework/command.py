@@ -82,6 +82,9 @@ class Command:
     def mktempfile(self):
         return exactly_one(stdout_lines(self.execst(["mktemp"])))
 
+    def pwd(self):
+        return exactly_one(stdout_lines(self.execst(["pwd"])))
+
     def __tar_compression_option(self, tarfile):
         filename = os.path.basename(tarfile).lower()
         if filename.endswith(".tar"):

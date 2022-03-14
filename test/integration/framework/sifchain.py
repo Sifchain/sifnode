@@ -209,6 +209,27 @@ class Sifnoded:
             except URLError:
                 time.sleep(1)
 
+# See https://docs.cosmos.network/v0.42/core/grpc_rest.html
+# See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
+# See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
+class SifnodeGrpc:
+    def __init__(self):
+        pass
+
+    def ethbridge_lock(self):
+        pass
+
+    def ethbridge_burn(self):
+        pass
+
+
+def grpc_poc():
+    log.debug("Hello gRPC")
+    import grpc
+    import sifnode.ethbridge.v1.tx_pb2_grpc as tx_pb2_grpc
+    # import sifnode.ethbridge.v1.tx_pb2 as tx_pb2
+    c = grpc.insecure_channel("localhost:9090")
+
 
 class Sifgen:
     def __init__(self, cmd):
