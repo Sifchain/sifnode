@@ -92,7 +92,7 @@ func (srv msgServer) CreateUserClaim(ctx context.Context,
 func (srv msgServer) RunDistribution(ctx context.Context, distribution *types.MsgRunDistribution) (*types.MsgRunDistributionResponse, error) {
 	// Not checking whether the distribution exists or not .
 	// We only need to run and execute distribution records
-	// Distribute 10 drops for msg.DistributionName authorized to msg.DistributionRunner
+	// Distribute limited drops for msg.DistributionName authorized to msg.DistributionRunner
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	records, err := srv.Keeper.DistributeDrops(sdkCtx, sdkCtx.BlockHeight(), distribution.DistributionName, distribution.AuthorizedRunner, distribution.DistributionType, distribution.DistributionCount)
 	if err != nil {
