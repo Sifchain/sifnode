@@ -6,6 +6,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+// BeginBlock prunes / auto-cancels the providers expired unlock requests.
 func (k Keeper) BeginBlock(ctx sdk.Context) {
 	params := k.GetParams(ctx)
 	for it := k.GetLiquidityProviderIterator(ctx); it.Valid(); it.Next() {
@@ -22,6 +23,7 @@ func (k Keeper) BeginBlock(ctx sdk.Context) {
 	}
 }
 
+// EndBlock distributes rewards to pools based on the current reward period configurations.
 func EndBlock(ctx sdk.Context, _ abci.RequestEndBlock, keeper Keeper) []abci.ValidatorUpdate {
 	params := keeper.GetParams(ctx)
 	pools := keeper.GetPools(ctx)
@@ -68,8 +70,12 @@ func (k Keeper) PruneRewardPeriods(ctx sdk.Context, params types.Params) {
 }
 
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
-	distributed := k.GetRewardsDistributed(ctx)
-	remaining := period.Allocation.Sub(distributed)
+	rewardExecution := k.GetRewardExecution(ctx)
+	if rewardExecution.Id != period.Id {
+		rewardExecution.Id = period.Id
+		rewardExecution.Distributed = sdk.ZeroUint()
+	}
+	remaining := period.Allocation.Sub(rewardExecution.Distributed)
 	periodLength := period.EndBlock - period.StartBlock
 	blockDistribution := remaining.QuoUint64(periodLength)
 
@@ -95,18 +101,36 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		}
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
 		remaining = remaining.Sub(poolDistribution)
-		distributed = distributed.Add(poolDistribution)
+		rewardExecution.Distributed = rewardExecution.Distributed.Add(poolDistribution)
 		err = k.SetPool(ctx, pool)
 		if err != nil {
 			return err
 		}
 	}
 
-	k.SetRewardsDistributed(ctx, distributed)
+	k.SetRewardExecution(ctx, rewardExecution)
 
 	return nil
 }
 
+func (k Keeper) GetRewardExecution(ctx sdk.Context) types.RewardExecution {
+	var rewardExecution types.RewardExecution
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.RewardExecutionPrefix)
+	if bz == nil {
+		return types.RewardExecution{}
+	}
+	k.cdc.MustUnmarshal(bz, &rewardExecution)
+	return rewardExecution
+}
+
+func (k Keeper) SetRewardExecution(ctx sdk.Context, execution types.RewardExecution) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&execution)
+	store.Set(types.RewardExecutionPrefix, bz)
+}
+
+/*
 func (k Keeper) GetRewardsDistributed(ctx sdk.Context) sdk.Uint {
 	var rewardExecution types.RewardExecution
 	store := ctx.KVStore(k.storeKey)
@@ -126,6 +150,7 @@ func (k Keeper) SetRewardsDistributed(ctx sdk.Context, distributed sdk.Uint) {
 	bz := k.cdc.MustMarshal(&rewardsExecution)
 	store.Set(types.RewardExecutionPrefix, bz)
 }
+*/
 
 func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
 	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
@@ -188,6 +213,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, 
 				sdk.NewEvent(
 					types.EventTypeCancelUnlock,
 					sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+					sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
 					sdk.NewAttribute(types.AttributeKeyUnits, record.Units.String()),
 				),
 			})

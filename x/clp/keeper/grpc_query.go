@@ -220,3 +220,9 @@ func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityPr
 		Pagination:         pageRes,
 	}, nil
 }
+
+func (k Querier) GetRewardExecution(goCtx context.Context, req *types.RewardExecutionReq) (*types.RewardExecutionRes, error) {
+	execution := k.Keeper.GetRewardExecution(sdk.UnwrapSDKContext(goCtx))
+
+	return &types.RewardExecutionRes{RewardExecution: &execution}, nil
+}

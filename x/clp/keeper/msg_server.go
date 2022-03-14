@@ -49,7 +49,7 @@ func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlo
 		sdk.NewEvent(
 			types.EventTypeRequestUnlock,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+			sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
 			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
 		),
 		sdk.NewEvent(

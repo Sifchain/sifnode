@@ -37,6 +37,7 @@ service Query {
     option (google.api.http).get =
         "/sifchain/clp/v1/liquidity_provider_list/{symbol}";
   };
+  rpc GetRewardExecution(RewardExecutionReq) returns (RewardExecutionRes) {};
 }
 
 message PoolReq {
@@ -132,4 +133,10 @@ message LiquidityProvidersRes {
   repeated sifnode.clp.v1.LiquidityProvider liquidity_providers = 1;
   int64 height = 2;
   cosmos.base.query.v1beta1.PageResponse pagination = 3;
+}
+
+message RewardExecutionReq {}
+
+message RewardExecutionRes {
+  RewardExecution reward_execution = 1;
 }

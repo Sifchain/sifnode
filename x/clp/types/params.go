@@ -80,6 +80,9 @@ func validateRewardPeriods(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	for _, period := range v {
+		if period.Id == "" {
+			return fmt.Errorf("reward period id must be non-empty: %d", period.StartBlock)
+		}
 		if period.StartBlock == 0 {
 			return fmt.Errorf("reward period start block must be positive: %d", period.StartBlock)
 		}
