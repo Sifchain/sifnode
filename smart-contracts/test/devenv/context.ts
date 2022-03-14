@@ -9,6 +9,9 @@ import {sha256} from "ethers/lib/utils"
 
 // zero contract address
 export const nullContractAddress = "0x0000000000000000000000000000000000000000"
+// The hash value for ethereum on mainnet
+export const ethDenomHash = "sifBridge99990x0000000000000000000000000000000000000000"
+
 chai.use(solidity)
 
 const GWEI = Math.pow(10, 9)

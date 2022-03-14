@@ -23,6 +23,8 @@ export const crossChainLockFee: number = 1
 export const crossChainBurnFee: number = 1
 
 const rowanTokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+const ethereumCrossChainFeeToken: string =
+  "sifBridge99990x0000000000000000000000000000000000000000"
 
 const ConsensusNeeded = "49"
 
