@@ -27,6 +27,8 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 			return queryLPList(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryAllLP:
 			return queryAllLP(ctx, path[1:], req, legacyQuerierCdc, querier)
+		case types.QueryPmtpParams:
+			return queryPmtpParams(ctx, path[1:], req, legacyQuerierCdc, querier)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
 		}
@@ -136,6 +138,18 @@ func queryAllLP(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQue
 		return nil, err
 	}
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res.LiquidityProviders)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
+}
+
+func queryPmtpParams(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) { //nolint
+	res, err := querier.GetPmtpParams(sdk.WrapSDKContext(ctx), &types.PmtpParamsReq{})
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

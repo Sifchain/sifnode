@@ -220,3 +220,15 @@ func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityPr
 		Pagination:         pageRes,
 	}, nil
 }
+
+func (k Querier) GetPmtpParams(c context.Context, req *types.PmtpParamsReq) (*types.PmtpParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetParams(ctx)
+
+	rateParams := k.Keeper.GetPmtpRateParams(ctx)
+
+	epoch := k.Keeper.GetPmtpEpoch(ctx)
+
+	pmtpParamsResponse := types.NewPmtpParamsResponse(params, rateParams, epoch, ctx.BlockHeight())
+	return &pmtpParamsResponse, nil
+}

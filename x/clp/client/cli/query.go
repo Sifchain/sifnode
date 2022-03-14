@@ -30,6 +30,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdLiquidityProvider(queryRoute),
 		GetCmdLpList(queryRoute),
 		GetCmdAllLps(queryRoute),
+		GetCmdPmtpParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -248,6 +249,32 @@ func GetCmdAllLps(queryRoute string) *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "liquidityProviders")
+
+	return cmd
+}
+
+func GetCmdPmtpParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pmtp-params",
+		Short: "Get all pmtp parameters ",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			result, err := queryClient.GetPmtpParams(cmd.Context(), &types.PmtpParamsReq{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(result)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }

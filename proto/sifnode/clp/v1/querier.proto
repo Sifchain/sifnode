@@ -3,6 +3,7 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
+import "sifnode/clp/v1/params.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
 
@@ -36,6 +37,9 @@ service Query {
       returns (LiquidityProviderListRes) {
     option (google.api.http).get =
         "/sifchain/clp/v1/liquidity_provider_list/{symbol}";
+  };
+  rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
 }
 
@@ -132,4 +136,13 @@ message LiquidityProvidersRes {
   repeated sifnode.clp.v1.LiquidityProvider liquidity_providers = 1;
   int64 height = 2;
   cosmos.base.query.v1beta1.PageResponse pagination = 3;
+}
+
+message PmtpParamsReq {}
+
+message PmtpParamsRes {
+  sifnode.clp.v1.Params params = 1;
+  sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
+  sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
+  int64 height = 4;
 }

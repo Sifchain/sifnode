@@ -2,9 +2,10 @@ package rest
 
 import (
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	"net/http"
 	"strconv"
+
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -34,6 +35,10 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/getLpList",
 		getLpListHandler(cliCtx),
+	).Methods("GET")
+	r.HandleFunc(
+		"/clp/getPmtpParams",
+		getPmtpParamsHandler(cliCtx),
 	).Methods("GET")
 }
 
@@ -257,6 +262,26 @@ func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getPmtpParamsHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPmtpParams)
+
+		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
