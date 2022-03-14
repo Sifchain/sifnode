@@ -8,7 +8,7 @@ import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer"
 import {sha256} from "ethers/lib/utils"
 
 // The hash value for ethereum on mainnet
-export const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+export const ethDenomHash = "sifBridge99990x0000000000000000000000000000000000000000"
 
 chai.use(solidity)
 
