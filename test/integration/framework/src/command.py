@@ -76,11 +76,17 @@ class Command:
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
-    def mktempdir(self):
-        return exactly_one(stdout_lines(self.execst(["mktemp", "-d"])))
+    def mktempdir(self, parent_dir=None):
+        args = ["mktemp", "-d"] + (["-p", parent_dir] if parent_dir else [])
+        return exactly_one(stdout_lines(self.execst(args)))
 
-    def mktempfile(self):
-        return exactly_one(stdout_lines(self.execst(["mktemp"])))
+    def mktempfile(self, parent_dir=None):
+        args = ["mktemp"] + (["-p", parent_dir] if parent_dir else [])
+        return exactly_one(stdout_lines(self.execst(args)))
+
+    def chmod(self, path, mode_str, recursive=False):
+        args = ["chmod"] + (["-r"] if recursive else []) + [mode_str, path]
+        self.execst(args)
 
     def pwd(self):
         return exactly_one(stdout_lines(self.execst(["pwd"])))
