@@ -49,7 +49,7 @@ def random_string(length):
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
 def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*3))), *paths))
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*4))), *paths))
 
 def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)

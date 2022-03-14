@@ -38,8 +38,10 @@ def ensure_venv(venv_dir, requirements_txt, lock_file=None):
     else:
         wrapped()
 
+
 def load_main_module():
     base_dir = get_basedir()
+    src_dir = os.path.join(base_dir, "src")
     project_root = os.path.abspath(os.path.join(os.path.normpath(os.path.join(base_dir, *([os.path.pardir] * 3)))))
     venv_dir = os.path.join(base_dir, "venv")
     requirements_txt = os.path.join(base_dir, "requirements.txt")
@@ -48,6 +50,8 @@ def load_main_module():
     ensure_venv(venv_dir, requirements_txt, lock_file=lock_file)
     venv_lib_dir = glob.glob(os.path.join(venv_dir, "lib", "python3.*"))[0]
     sys.path = sys.path + [
+        src_dir,
+        os.path.join(base_dir, "build/generated"),
         os.path.join(venv_lib_dir, "site-packages"),
         os.path.join(project_root, "test", "integration"),  # For running integration tests in-process
     ]
