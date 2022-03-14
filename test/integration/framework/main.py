@@ -119,6 +119,11 @@ def main(argv):
         test_utils.recover_eth_from_test_accounts()
     elif what == "run-peggy2-tests":
         cmd.execst(["yarn", "test"], cwd=project.smart_contracts_dir)
+    elif what == "generate-python-grpc-stubs":
+        project.generate_python_protobuf_stubs()
+    elif what == "grpc-poc":
+        import sifchain
+        sifchain.grpc_poc()
     else:
         raise Exception("Missing/unknown command")
 
