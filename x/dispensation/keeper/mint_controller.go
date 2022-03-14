@@ -14,6 +14,9 @@ func (k Keeper) SetMintController(ctx sdk.Context, mintController types.MintCont
 func (k Keeper) GetMintController(ctx sdk.Context) types.MintController {
 	controller := types.MintController{}
 	store := ctx.KVStore(k.storeKey)
+	if !k.Exists(ctx, types.MintControllerPrefix) {
+		return controller
+	}
 	bz := store.Get(types.MintControllerPrefix)
 	k.cdc.MustUnmarshal(bz, &controller)
 	return controller
