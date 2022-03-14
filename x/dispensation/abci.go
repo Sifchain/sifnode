@@ -9,6 +9,9 @@ import (
 
 func BeginBlocker(ctx sdk.Context, k Keeper) {
 	// Verify mintTokens
+	if !k.TokensCanBeMinted(ctx) {
+		return
+	}
 	mintAmount, ok := sdk.NewIntFromString(types.MintAmountPerBlock)
 	if !ok {
 		ctx.Logger().Error("Unable to get mint amount")
