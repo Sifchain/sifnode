@@ -125,3 +125,9 @@ class Command:
     def sha1_of_file(self, path):
         res = self.execst(["sha1sum", "-b", path])
         return stdout_lines(res)[0][:40]
+
+    def download_url(self, url, output_file=None, output_dir=None):
+        args = ["curl", "--location", "--silent", "--show-error", url] + \
+            (["-O"] if not (output_dir or output_file) else []) + \
+            (["-o", output_file] if (output_file and not output_dir) else [])
+        self.execst(args, cwd=output_dir)
