@@ -309,3 +309,26 @@ class Project:
                 self.cmd.rm(os.path.join(cache_dir, "{}.tar".format(s)))
             cache = cache[:max_cache_items]
         self.cmd.write_text_file(cache_index, json.dumps(cache))
+
+    def project_python(self):
+        project_venv_dir = project_dir("test", "integration", "framework", "venv")
+        return os.path.join(project_venv_dir, "bin", "python3")
+
+    def generate_python_protobuf_stubs(self, path=None):
+        # https://grpc.io/
+        # https://grpc.github.io/grpc/python/grpc_asyncio.html
+        path = path or self.cmd.pwd()
+        workdir = path
+        project_proto_dir = self.project_dir("proto")
+        gogo_proto_dir = os.path.join(workdir, "gogoproto")
+        generated_dir = self.project_dir("test", "integration", "framework")
+        # self.cmd.rmf(generated_dir)
+        # self.cmd.mkdir(generated_dir)
+        self.cmd.execst(["git", "clone", "--depth", "1", "https://github.com/gogo/protobuf", gogo_proto_dir], pipe=False)
+        args = [self.project_python(), "-m", "grpc_tools.protoc", "-I", project_proto_dir, "-I", gogo_proto_dir,
+            "--python_out", generated_dir, "--grpc_python_out", generated_dir,
+            os.path.join(project_proto_dir, "sifnode/ethbridge/v1/tx.proto"),
+            os.path.join(project_proto_dir, "sifnode/ethbridge/v1/types.proto"),
+            os.path.join(project_proto_dir, "sifnode/oracle/v1/network_descriptor.proto"),
+            os.path.join(gogo_proto_dir, "gogoproto/gogo.proto")]
+        self.cmd.execst(args, pipe=False)
