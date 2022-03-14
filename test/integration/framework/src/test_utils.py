@@ -430,6 +430,8 @@ class EnvCtx:
         # Call of updateEthWhiteList will fail if we try to remove an item from whitelist which is not on the whitelist.
         return self.eth.wait_for_transaction_receipt(self.tx_update_bridge_bank_whitelist(token_addr, value))
 
+    # This function walks through all historical events LogWhiteListUpdate of a BridgeBanksmart contract and builds the
+    # current whitelist from live on-chain data.
     def get_whitelisted_tokens_from_bridge_bank_past_events(self):
         bridge_bank = self.get_bridge_bank_sc()
         past_events = self.smart_contract_get_past_events(bridge_bank, "LogWhiteListUpdate")
