@@ -36,7 +36,9 @@ func Test_BeginBlocker(t *testing.T) {
 
 	// Setup MintController Via InitGenesis
 	dispensation.InitGenesis(ctx, app.DispensationKeeper, types.NewGenesisState())
-	require.Equal(t, sdk.ZeroInt(), app.DispensationKeeper.GetMintController(ctx).TotalCounter.Amount)
+	controller, found := app.DispensationKeeper.GetMintController(ctx)
+	assert.True(t, found)
+	require.Equal(t, sdk.ZeroInt(), controller.TotalCounter.Amount)
 
 	for i := int64(0); i < expectedBlocks; i++ {
 		dispensation.BeginBlocker(ctx, app.DispensationKeeper)
