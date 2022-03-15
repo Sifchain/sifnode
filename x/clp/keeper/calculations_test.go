@@ -13,54 +13,100 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
+
+func TestKeeper_CheckBalances(t *testing.T) {
+	nativeAmount, _ := sdk.NewIntFromString("999999000000000000000000000")
+	externalAmount, _ := sdk.NewIntFromString("500000000000000000000000")
+	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+
+	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+		balances := []banktypes.Balance{
+			{
+				Address: address,
+				Coins: sdk.Coins{
+					sdk.NewCoin("catk", externalAmount),
+					sdk.NewCoin("cbtk", externalAmount),
+					sdk.NewCoin("cdash", externalAmount),
+					sdk.NewCoin("ceth", externalAmount),
+					sdk.NewCoin("clink", externalAmount),
+					sdk.NewCoin("rowan", nativeAmount),
+				},
+			},
+		}
+		gs := banktypes.DefaultGenesisState()
+		gs.Balances = append(gs.Balances, balances...)
+		bz, _ := app.AppCodec().MarshalJSON(gs)
+
+		genesisState["bank"] = bz
+
+		return genesisState
+	})
+
+	accAddress, _ := sdk.AccAddressFromBech32(address)
+
+	balances := app.BankKeeper.GetAllBalances(ctx, accAddress)
+	require.Contains(t, balances, sdk.Coin{
+		Denom: "catk", Amount: externalAmount,
+	})
+	require.Contains(t, balances, sdk.Coin{
+		Denom: "ceth", Amount: externalAmount,
+	})
+	require.Contains(t, balances, sdk.Coin{
+		Denom: "clink", Amount: externalAmount,
+	})
+}
 
 func TestKeeper_SwapOne(t *testing.T) {
 	testcases :=
 		[]struct {
-			name                string
-			createToken         bool
-			denom               string
-			decimals            int64
-			asset               types.Asset
-			fundAccount         bool
-			nativeBalance       sdk.Uint
-			externalBalance     sdk.Uint
-			createPool          bool
-			nativeAssetAmount   sdk.Uint
-			externalAssetAmount sdk.Uint
-			addLiquidity        bool
-			wBasis              sdk.Int
-			asymmetry           sdk.Int
-			swapResult          sdk.Uint
-			liquidityFee        sdk.Uint
-			priceImpact         sdk.Uint
-			expPanic            bool
-			expPanicMsg         string
-			err                 error
-			errString           error
+			name                  string
+			createToken           bool
+			denom                 string
+			decimals              int64
+			asset                 types.Asset
+			fundAccount           bool
+			nativeBalance         sdk.Uint
+			externalBalance       sdk.Uint
+			createPool            bool
+			nativeAssetAmount     sdk.Uint
+			externalAssetAmount   sdk.Uint
+			addLiquidity          bool
+			wBasis                sdk.Int
+			asymmetry             sdk.Int
+			swapResult            sdk.Uint
+			liquidityFee          sdk.Uint
+			priceImpact           sdk.Uint
+			expPanic              bool
+			expPanicMsg           string
+			createPoolErr         error
+			createPoolErrString   error
+			addLiquidityErr       error
+			addLiquidityErrString error
+			err                   error
+			errString             error
 		}{
-			// {
-			// 	name:                "token missing throws error",
-			// 	createToken:         false,
-			// 	denom:               "xxx",
-			// 	decimals:            18,
-			// 	asset:               types.Asset{Symbol: "xxx"},
-			// 	fundAccount:         true,
-			// 	nativeBalance:       sdk.NewUint(10000),
-			// 	externalBalance:     sdk.NewUint(10000),
-			// 	createPool:          true,
-			// 	nativeAssetAmount:   sdk.NewUint(998),
-			// 	externalAssetAmount: sdk.NewUint(998),
-			// 	addLiquidity:        true,
-			// 	wBasis:              sdk.NewInt(1000),
-			// 	asymmetry:           sdk.NewInt(10000),
-			// 	swapResult:          sdk.NewUint(20),
-			// 	liquidityFee:        sdk.NewUint(978),
-			// 	priceImpact:         sdk.NewUint(0),
-			// 	expPanic:            true,
-			// 	expPanicMsg:         "invalid memory address or nil pointer dereference",
-			// },
+			{
+				name:                "missing token throws error",
+				createToken:         false,
+				denom:               "xxx",
+				decimals:            18,
+				asset:               types.Asset{Symbol: "xxx"},
+				fundAccount:         true,
+				nativeBalance:       sdk.NewUint(10000),
+				externalBalance:     sdk.NewUint(10000),
+				createPool:          true,
+				nativeAssetAmount:   sdk.NewUint(998),
+				externalAssetAmount: sdk.NewUint(998),
+				addLiquidity:        true,
+				wBasis:              sdk.NewInt(1000),
+				asymmetry:           sdk.NewInt(10000),
+				swapResult:          sdk.NewUint(20),
+				liquidityFee:        sdk.NewUint(978),
+				priceImpact:         sdk.NewUint(0),
+				expPanic:            true,
+			},
 			{
 				name:                "successful swap one",
 				createToken:         true,
@@ -111,7 +157,14 @@ func TestKeeper_SwapOne(t *testing.T) {
 			if tc.createPool {
 				msgCreatePool := types.NewMsgCreatePool(signer, tc.asset, tc.nativeAssetAmount, tc.externalAssetAmount)
 				pool, err = clpKeeper.CreatePool(ctx, sdk.OneUint(), &msgCreatePool)
-				require.NoError(t, err)
+
+				if tc.createPoolErrString != nil {
+					require.EqualError(t, err, tc.createPoolErrString.Error())
+				} else if tc.createPoolErr == nil {
+					require.NoError(t, err)
+				} else {
+					require.ErrorIs(t, err, tc.createPoolErr)
+				}
 			}
 
 			var lp *types.LiquidityProvider
@@ -120,16 +173,29 @@ func TestKeeper_SwapOne(t *testing.T) {
 				msg := types.NewMsgAddLiquidity(signer, tc.asset, tc.nativeAssetAmount, tc.externalAssetAmount)
 				clpKeeper.CreateLiquidityProvider(ctx, &tc.asset, sdk.OneUint(), signer)
 				lp, err = clpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.OneUint(), sdk.NewUint(998))
-				require.NoError(t, err)
+
+				if tc.addLiquidityErrString != nil {
+					require.EqualError(t, err, tc.addLiquidityErrString.Error())
+				} else if tc.err == nil {
+					require.NoError(t, err)
+				} else {
+					require.ErrorIs(t, err, tc.addLiquidityErr)
+				}
 			}
 
 			normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 			_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
 				pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), tc.wBasis.String(), tc.asymmetry)
 			if tc.expPanic {
-				require.PanicsWithValue(t, tc.expPanicMsg, func() {
-					clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
-				})
+				if tc.expPanicMsg != "" {
+					require.PanicsWithValue(t, tc.expPanicMsg, func() {
+						clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+					})
+				} else {
+					require.Panics(t, func() {
+						clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+					})
+				}
 			} else {
 				swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
 				require.NoError(t, err)
