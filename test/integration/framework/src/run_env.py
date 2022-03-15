@@ -826,7 +826,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # This value is actually returned from HardhatNodeRunner. It comes from smart-contracts/hardhat.config.ts.
         # In Typescript, its value is obtained by 'require("hardhat").hre.network.config.chainId'.
         # See https://hardhat.org/advanced/hardhat-runtime-environment.html
-        # The value is not used; instead a hardcoded constant 31337 is passed to ebrelayerWitnessBuilder.
+        # The value is not used; instead a hardcoded constant 9999 is passed to ebrelayerWitnessBuilder.
         # Ask juniuszhou for details.
         hardhat_chain_id = 9999
         hardhat_accounts = self.signer_array_to_ethereum_accounts(hardhat.default_accounts(), hardhat_validator_count)
@@ -842,7 +842,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"
         ceth_symbol = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
-        assert ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+        print("ceth symbol is: {0}".format(ceth_symbol))
+        assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
         # Mint goes to validator
         mint_amount = [
             [999999 * 10**21, "rowan"],

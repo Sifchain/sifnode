@@ -97,7 +97,7 @@ def get_env_ctx_peggy2():
     eth_node_is_local = True
     generic_erc20_contract = "BridgeToken"
     ceth_symbol = sifchain.sifchain_denom_hash(ethereum_network_descriptor, eth.NULL_ADDRESS)
-    assert ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+    assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,

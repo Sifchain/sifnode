@@ -3,13 +3,17 @@ import json
 import time
 from command import buildcmd
 from common import *
+import typing
 
 
-def sifchain_denom_hash(network_descriptor, token_contract_address):
+def sifchain_denom_hash(network_descriptor_raw: typing.Union[int, str], token_contract_address: str) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
-    s = str(network_descriptor) + token_contract_address.lower()
-    return "sif" + hashlib.sha256(s.encode("UTF-8")).digest().hex()
+    network_descriptor = int(network_descriptor_raw)
+    assert network_descriptor > 0
+    assert network_descriptor <= 9999
+    denom = f"sifBridge{network_descriptor:04d}{token_contract_address.lower()}"
+    return denom
 
 def balance_delta(balances1, balances2):
     all_denoms = set(balances1.keys())
@@ -279,7 +283,7 @@ class Ebrelayer:
         args = [
             self.binary,
             init_what,
-            "--network-descriptor", str(network_descriptor),  # Network descriptor for the chain (31337)
+            "--network-descriptor", str(network_descriptor),  # Network descriptor for the chain (9999)
             "--tendermint-node", tendermint_node,  # URL to tendermint node
             "--web3-provider", web3_provider,  # Ethereum web3 service address (ws://localhost:8545/)
             "--bridge-registry-contract-address", bridge_registry_contract_address,
