@@ -828,7 +828,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # See https://hardhat.org/advanced/hardhat-runtime-environment.html
         # The value is not used; instead a hardcoded constant 31337 is passed to ebrelayerWitnessBuilder.
         # Ask juniuszhou for details.
-        hardhat_chain_id = 31337
+        hardhat_chain_id = 9999
         hardhat_accounts = self.signer_array_to_ethereum_accounts(hardhat.default_accounts(), hardhat_validator_count)
 
         self.hardhat.compile_smart_contracts()
@@ -1028,7 +1028,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
-        ethereum_cross_chain_fee_token = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
+        ethereum_cross_chain_fee_token = "sifBridge99990x0000000000000000000000000000000000000000"
+        assert hardhat_chain_id == int(ethereum_cross_chain_fee_token[9:13])  # Assume they should match
         gas_prices = [0.5, "rowan"]
         gas_adjustment = 1.5
         sifnode.peggy2_set_cross_chain_fee(admin_account_address, hardhat_chain_id,
