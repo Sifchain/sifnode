@@ -35,7 +35,6 @@ func Test_BeginBlocker(t *testing.T) {
 	assert.Equal(t, sdk.ZeroInt(), app.DispensationKeeper.GetBankKeeper().GetBalance(ctx, ecoPoolAddress, rowan).Amount)
 
 	// Setup MintController Via InitGenesis
-	dispensation.InitGenesis(ctx, app.DispensationKeeper, types.NewGenesisState())
 	controller, found := app.DispensationKeeper.GetMintController(ctx)
 	assert.True(t, found)
 	require.Equal(t, sdk.ZeroInt(), controller.TotalCounter.Amount)
