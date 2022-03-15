@@ -1084,6 +1084,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_address=evm_validator0_addr,
             ethereum_private_key=evm_validator0_key,
             keyring_backend="test",
+            keyring_dir=sifnode_relayer0_home,
             home=sifnode_relayer0_home,
         )
 
@@ -1101,6 +1102,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_address=evm_validator0_addr,
             ethereum_private_key=evm_validator0_key,
             keyring_backend="test",
+            keyring_dir=sifnode_relayer0_home,
             log_format="json",
             home=sifnode_witness0_home,
         )
