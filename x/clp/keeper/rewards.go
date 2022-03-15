@@ -70,16 +70,17 @@ func (k Keeper) PruneRewardPeriods(ctx sdk.Context, params types.Params) {
 }
 
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
-	rewardExecution := k.GetRewardExecution(ctx)
-	if rewardExecution.Id != period.Id {
-		rewardExecution.Id = period.Id
-		rewardExecution.Distributed = sdk.ZeroUint()
-	}
-	remaining := period.Allocation.Sub(rewardExecution.Distributed)
+	//rewardExecution := k.GetRewardExecution(ctx)
+	//if rewardExecution.Id != period.Id {
+	//	rewardExecution.Id = period.Id
+	//	rewardExecution.Distributed = sdk.ZeroUint()
+	//}
+	// todo remove unecesssary remaining counter here and in store
+	//remaining := period.Allocation.Sub(rewardExecution.Distributed)
 	periodLength := period.EndBlock - period.StartBlock
-	blockDistribution := remaining.QuoUint64(periodLength)
+	blockDistribution := period.Allocation.QuoUint64(periodLength)
 
-	if remaining.IsZero() || blockDistribution.IsZero() {
+	if /*remaining.IsZero() ||*/ blockDistribution.IsZero() {
 		return nil
 	}
 
@@ -91,24 +92,24 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	for _, pool := range pools {
 		weight := pool.NativeAssetBalance.Quo(totalDepth)
 		poolDistribution := blockDistribution.Mul(weight)
-		if poolDistribution.GT(remaining) {
-			poolDistribution = remaining
-		}
+		//if poolDistribution.GT(remaining) {
+		//		poolDistribution = remaining
+		//}
 		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromUint64(poolDistribution.Uint64())))
 		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
 		if err != nil {
 			return err
 		}
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
-		remaining = remaining.Sub(poolDistribution)
-		rewardExecution.Distributed = rewardExecution.Distributed.Add(poolDistribution)
+		//remaining = remaining.Sub(poolDistribution)
+		//rewardExecution.Distributed = rewardExecution.Distributed.Add(poolDistribution)
 		err = k.SetPool(ctx, pool)
 		if err != nil {
 			return err
 		}
 	}
 
-	k.SetRewardExecution(ctx, rewardExecution)
+	//k.SetRewardExecution(ctx, rewardExecution)
 
 	return nil
 }
