@@ -43,7 +43,7 @@ const config: HardhatUserConfig = {
       initialBaseFeePerGas: runCoverage ? 0 : 875000000,
       chainId: 9999,
       mining: {
-        auto: true,
+        auto: false,
         interval: 200,
       },
       forking: {

@@ -65,6 +65,7 @@ export async function executeLock(
       .connect(sender)
       .lock(sifchainRecipient, ethereumAddress.eth.address, amount, {
         value: amount,
+        gasLimit: 2000000
       })
   } else {
     await tokenContract.connect(sender).approve(contracts.bridgeBank.address, amount)
@@ -72,6 +73,7 @@ export async function executeLock(
       .connect(sender)
       .lock(sifchainRecipient, tokenContract.address, amount, {
         value: 0,
+        gasLimit: 2000000
       })
   }
   return tx
