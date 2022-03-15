@@ -5,6 +5,8 @@ import os
 # network descriptor is 1 for ethereum
 network_descriptor = 1
 
+bridge_bank_address = '0xB5F54ac4466f5ce7E0d8A5cB9FE7b8c0F35B7Ba8'
+
 # get all entries from product
 result = subprocess.run(['sifnoded', 'query', 'tokenregistry', 'entries', '--node',  'tcp://rpc-archive.sifchain.finance:80'], stdout=subprocess.PIPE).stdout.decode('utf-8')
 denoms = json.loads(result)['entries']
@@ -23,6 +25,14 @@ def composeMapping(old_denom, new_denom):
         'peggy1': old_denom,
         'peggy2': new_denom
     }
+
+# get all token address from mainnet by filter logs in bridge bank 
+def get_token_address():
+    result = subprocess.run(['yarn', 'integrationtest:whitelistedTokens', 
+    '--json_path', '../deployments/sifchain-1',
+    '--ethereum_network', 'mainnet',
+    '--bridgebank_address', bridge_bank_address,
+    '--network', 'mainnet'])
 
 folder = './'
 
