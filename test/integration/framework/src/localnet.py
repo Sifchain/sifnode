@@ -81,9 +81,13 @@ def run(cmd, argv):
 def download_ibc_binaries(cmd, chains_to_download=None, output_path=None):
     if not output_path:
         output_path = cmd.pwd()
+    else:
+        if not cmd.exists(output_path):
+            cmd.mkdir(output_path)
     config = get_localnet_config(cmd)
     tmpdir = cmd.mktempdir()
-    all_supported_chains = set(config.keys()).difference({"sifchain"})
+    # We prefer to compile sifchain. Sentinel uses sourceUrl, but there is no Makefile.
+    all_supported_chains = set(config.keys()).difference({"sifchain", "sentinel"})
     chains_to_download = chains_to_download or "all"
     if chains_to_download == "all":
         chains_to_download = all_supported_chains

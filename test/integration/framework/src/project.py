@@ -52,6 +52,8 @@ class Project:
             self.__rm_files_develop()
             self.__rm(self.project_dir("smart-contracts", "build"))  # truffle deploy
             self.__rm(self.project_dir("test", "integration", "vagrant", "data"))
+            self.__rm(self.project_dir("test", "integration", "src", ".pytest_cache"))
+            self.__rm(self.project_dir("test", "integration", "src", "py", ".pytest_cache"))
             self.__rm(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
 
             self.__rm(self.project_dir("deploy", "networks"))  # from running integration tests
@@ -85,6 +87,7 @@ class Project:
             for file in ["sifnoded", "ebrelayer", "sifgen"]:
                 self.__rm(os.path.join(self.go_bin_dir, file))
             self.__rm(self.project_dir("smart-contracts", "node_modules"))
+            self.__rm(self.project_dir("test", "localnet", "node_modules"))
 
         if level >= 2:
             if self.cmd.exists(self.go_path):
@@ -145,7 +148,6 @@ class Project:
     # TODO Merge
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
     # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    #
     def make_go_binaries_2(self):
         # Original: cd smart-contracts; make -C .. install
         self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
