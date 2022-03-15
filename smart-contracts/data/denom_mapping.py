@@ -26,31 +26,33 @@ def composeMapping(old_denom, new_denom):
         'peggy2': new_denom
     }
 
-# get all token address from mainnet by filter logs in bridge bank 
-def get_token_address():
-    result = subprocess.run(['yarn', 'integrationtest:whitelistedTokens', 
-    '--json_path', '../deployments/sifchain-1',
-    '--ethereum_network', 'mainnet',
-    '--bridgebank_address', bridge_bank_address,
-    '--network', 'mainnet'])
-
 folder = './'
 
 directory = os.fsencode(folder)
 denom_address_map = {}   
-for file in os.listdir(directory):
-     filename = os.fsdecode(file)
-     # all deployed contract in the files with prefix whitelist
-     if filename.startswith('whitelist'):
-        print(filename)
-        file = open(folder + '/' + filename)
-        data = json.load(file)
 
-        entries = data['array']
-        for entry in entries:
-            if 'symbol' in entry and 'address' in entry:
-                denom_address_map[entry['symbol']] = entry['address']
+# try get all contracts from whitelist_* files from same folder
+# but the contracts not completed
+# for file in os.listdir(directory):
+#      filename = os.fsdecode(file)
+#      # all deployed contract in the files with prefix whitelist
+#      if filename.startswith('whitelist'):
+#         print(filename)
+#         file = open(folder + '/' + filename)
+#         data = json.load(file)
 
+#         entries = data['array']
+#         for entry in entries:
+#             if 'symbol' in entry and 'address' in entry:
+#                 denom_address_map[entry['symbol']] = entry['address']
+
+# denom_contracts.json got from run following command in develop branch
+# yarn integrationtest:whitelistedTokens --json_path /Users/junius/github/sifnode/smart-contracts/deployments/sifchain-1  
+# --ethereum_network mainnet --bridgebank_address 0xB5F54ac4466f5ce7E0d8A5cB9FE7b8c0F35B7Ba8 --network mainnet
+
+data = json.load(open('denom_contracts.json'))
+for entry in data:
+    denom_address_map[entry['symbol']] = entry['token']
 
 # map denom in peggy 1.0 to peggy 2.0
 # if denom start with ibc, then denom is the same with peggy 2.0
