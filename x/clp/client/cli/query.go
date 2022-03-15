@@ -31,6 +31,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdLpList(queryRoute),
 		GetCmdAllLps(queryRoute),
 		GetCmdRewardExecution(queryRoute),
+		GetCmdParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -266,6 +267,32 @@ func GetCmdRewardExecution(queryRoute string) *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			result, err := queryClient.GetRewardExecution(context.Background(), &types.RewardExecutionReq{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(result)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Short: "Get the clp parameters",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			result, err := queryClient.GetParams(context.Background(), &types.ParamsReq{})
 			if err != nil {
 				return err
 			}

@@ -226,3 +226,10 @@ func (k Querier) GetRewardExecution(goCtx context.Context, req *types.RewardExec
 
 	return &types.RewardExecutionRes{RewardExecution: &execution}, nil
 }
+
+func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.ParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetParams(ctx)
+
+	return &types.ParamsRes{Params: &params}, nil
+}

@@ -3,6 +3,7 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
+import "sifnode/clp/v1/params.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
 
@@ -38,6 +39,7 @@ service Query {
         "/sifchain/clp/v1/liquidity_provider_list/{symbol}";
   };
   rpc GetRewardExecution(RewardExecutionReq) returns (RewardExecutionRes) {};
+  rpc GetParams(ParamsReq) returns (ParamsRes) {};
 }
 
 message PoolReq {
@@ -139,4 +141,10 @@ message RewardExecutionReq {}
 
 message RewardExecutionRes {
   RewardExecution reward_execution = 1;
+}
+
+message ParamsReq {}
+
+message ParamsRes {
+  Params params = 1;
 }

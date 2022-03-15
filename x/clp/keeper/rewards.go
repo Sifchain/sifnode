@@ -35,7 +35,7 @@ func EndBlock(ctx sdk.Context, _ abci.RequestEndBlock, keeper Keeper) []abci.Val
 		}
 	}
 
-	keeper.PruneRewardPeriods(ctx, params)
+	//keeper.PruneRewardPeriods(ctx, params)
 
 	return []abci.ValidatorUpdate{}
 }
