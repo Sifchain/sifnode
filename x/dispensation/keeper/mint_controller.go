@@ -11,25 +11,34 @@ func (k Keeper) SetMintController(ctx sdk.Context, mintController types.MintCont
 	store.Set(types.MintControllerPrefix, k.cdc.MustMarshal(&mintController))
 }
 
-func (k Keeper) GetMintController(ctx sdk.Context) types.MintController {
+func (k Keeper) GetMintController(ctx sdk.Context) (types.MintController, bool) {
 	controller := types.MintController{}
 	store := ctx.KVStore(k.storeKey)
 	if !k.Exists(ctx, types.MintControllerPrefix) {
-		return controller
+		return controller, false
 	}
 	bz := store.Get(types.MintControllerPrefix)
 	k.cdc.MustUnmarshal(bz, &controller)
-	return controller
+	return controller, true
 }
 
-func (k Keeper) AddMintAmount(ctx sdk.Context, mintedCoin sdk.Coin) {
-	controller := k.GetMintController(ctx)
+func (k Keeper) AddMintAmount(ctx sdk.Context, mintedCoin sdk.Coin) error {
+	controller, found := k.GetMintController(ctx)
+	if !found {
+		return types.ErrNotFoundMintController
+	}
 	controller.TotalCounter = controller.TotalCounter.Add(mintedCoin)
 	k.SetMintController(ctx, controller)
+	return nil
 }
 
 func (k Keeper) TokensCanBeMinted(ctx sdk.Context) bool {
-	totalCounter := k.GetMintController(ctx).TotalCounter
+	controller, found := k.GetMintController(ctx)
+	if !found {
+		ctx.Logger().Error(types.ErrNotFoundMintController.Error())
+		return false
+	}
+	totalCounter := controller.TotalCounter
 	maxMintAmount, ok := sdk.NewIntFromString(types.MaxMintAmount)
 	if !ok {
 		return ok
@@ -39,7 +48,12 @@ func (k Keeper) TokensCanBeMinted(ctx sdk.Context) bool {
 }
 
 func (k Keeper) IsLastBlock(ctx sdk.Context) bool {
-	totalCounter := k.GetMintController(ctx).TotalCounter.Amount
+	controller, found := k.GetMintController(ctx)
+	if !found {
+		ctx.Logger().Error(types.ErrNotFoundMintController.Error())
+		return false
+	}
+	totalCounter := controller.TotalCounter.Amount
 
 	maxMintAmount, ok := sdk.NewIntFromString(types.MaxMintAmount)
 	if !ok {

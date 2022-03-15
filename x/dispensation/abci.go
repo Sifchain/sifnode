@@ -24,7 +24,11 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 			ctx.Logger().Error("Unable to get max mint amount")
 			return
 		}
-		mintAmount = maxMintAmount.Sub(k.GetMintController(ctx).TotalCounter.Amount)
+		controller, found := k.GetMintController(ctx)
+		if !found {
+			ctx.Logger().Error(types.ErrNotFoundMintController.Error())
+		}
+		mintAmount = maxMintAmount.Sub(controller.TotalCounter.Amount)
 	}
 
 	mintCoins := sdk.NewCoins(sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, mintAmount))
@@ -49,5 +53,8 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 	if err != nil {
 		panic(fmt.Sprintf("Unable to send %s coins to address %s", mintCoins.String(), ecoPoolAddress.String()))
 	}
-	k.AddMintAmount(ctx, mintCoins[0])
+	err = k.AddMintAmount(ctx, mintCoins[0])
+	if err != nil {
+		panic(err)
+	}
 }
