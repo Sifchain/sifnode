@@ -17,6 +17,16 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 		ctx.Logger().Error("Unable to get mint amount")
 		return
 	}
+
+	if k.IsLastBlock(ctx) {
+		maxMintAmount, ok := sdk.NewIntFromString(types.MaxMintAmount)
+		if !ok {
+			ctx.Logger().Error("Unable to get max mint amount")
+			return
+		}
+		mintAmount = maxMintAmount.Sub(k.GetMintController(ctx).TotalCounter.Amount)
+	}
+
 	mintCoins := sdk.NewCoins(sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, mintAmount))
 	if !mintCoins.IsValid() || mintCoins.Len() != 1 {
 		ctx.Logger().Error(fmt.Sprintf("Trying to mint invalid coins %v", mintCoins))

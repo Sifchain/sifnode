@@ -29,10 +29,25 @@ func (k Keeper) AddMintAmount(ctx sdk.Context, mintedCoin sdk.Coin) {
 }
 
 func (k Keeper) TokensCanBeMinted(ctx sdk.Context) bool {
-	controller := k.GetMintController(ctx)
+	totalCounter := k.GetMintController(ctx).TotalCounter
 	maxMintAmount, ok := sdk.NewIntFromString(types.MaxMintAmount)
 	if !ok {
 		return ok
 	}
-	return controller.TotalCounter.IsLT(sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, maxMintAmount))
+	maxMintAmountCoin := sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, maxMintAmount)
+	return totalCounter.IsLT(maxMintAmountCoin)
+}
+
+func (k Keeper) IsLastBlock(ctx sdk.Context) bool {
+	totalCounter := k.GetMintController(ctx).TotalCounter.Amount
+
+	maxMintAmount, ok := sdk.NewIntFromString(types.MaxMintAmount)
+	if !ok {
+		return ok
+	}
+	blockMintAmount, ok := sdk.NewIntFromString(types.MintAmountPerBlock)
+	if !ok {
+		return ok
+	}
+	return maxMintAmount.Sub(totalCounter).LTE(blockMintAmount)
 }
