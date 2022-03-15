@@ -237,18 +237,23 @@ def grpc_poc():
     import sifnode.ethbridge.v1.query_pb2 as query_pb2
     import sifnode.ethbridge.v1.query_pb2_grpc as query_pb2_grpc
 
+    network_descriptor = 9999  # Set in run_env::Peggy2Environment.run()
+
     channel = grpc.insecure_channel("127.0.0.1:9090")
-    # client = tx_pb2_grpc.MsgStub(channel)
-    # msg_lock = tx_pb2.MsgLock(amount=str(1000), cosmos_sender="sender", crosschain_fee=str(0), denom_hash="denom_hash",
-    #                           ethereum_receiver="ethereum_receiver", network_descriptor=network_descriptor_pb2.NETWORK_DESCRIPTOR_ETHEREUM)
-    # msg_loc_res = client.Lock(msg_lock)
 
     client1 = query_pb2_grpc.QueryStub(channel)
-    req = query_pb2.QueryBlacklistRequest()
-    respoonse = client1.GetBlacklist(req)
+    client2 = tx_pb2_grpc.MsgStub(channel)
 
-    req2 = query_pb2.QueryCrosschainFeeConfigRequest(network_descriptor=31337)
-    response2 = client1.CrosschainFeeConfig(req2)
+    req1 = query_pb2.QueryBlacklistRequest()
+    res1 = client1.GetBlacklist(req1)
+
+    req2 = query_pb2.QueryCrosschainFeeConfigRequest(network_descriptor=network_descriptor)
+    res2 = client1.CrosschainFeeConfig(req2)
+
+    req3 = tx_pb2.MsgLock(amount=str(1000), cosmos_sender="sender", crosschain_fee=str(0), denom_hash="denom_hash",
+        ethereum_receiver="ethereum_receiver", network_descriptor=network_descriptor_pb2.NETWORK_DESCRIPTOR_ETHEREUM)
+    res3 = client2.Lock(req3)
+
     print()
 
 
