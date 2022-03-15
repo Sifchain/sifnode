@@ -34,11 +34,12 @@ func Test_BeginBlocker(t *testing.T) {
 	// Starting Balance of Ecopool is 0
 	assert.Equal(t, sdk.ZeroInt(), app.DispensationKeeper.GetBankKeeper().GetBalance(ctx, ecoPoolAddress, rowan).Amount)
 
-	// Setup MintController Via InitGenesis
+	// Verify starting counter
 	controller, found := app.DispensationKeeper.GetMintController(ctx)
 	assert.True(t, found)
 	require.Equal(t, sdk.ZeroInt(), controller.TotalCounter.Amount)
 
+	// Simulate Blocks
 	for i := int64(0); i < expectedBlocks; i++ {
 		dispensation.BeginBlocker(ctx, app.DispensationKeeper)
 		// Asserting for non-last block
