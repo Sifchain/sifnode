@@ -27,6 +27,7 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 		controller, found := k.GetMintController(ctx)
 		if !found {
 			ctx.Logger().Error(types.ErrNotFoundMintController.Error())
+			return
 		}
 		mintAmount = maxMintAmount.Sub(controller.TotalCounter.Amount)
 	}
