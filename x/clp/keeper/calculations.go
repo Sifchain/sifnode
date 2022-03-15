@@ -232,6 +232,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 }
 
 func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
+
 	if X.IsZero() && x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
