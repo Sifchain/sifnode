@@ -49,8 +49,9 @@ def main(argv):
             # - rm -rf networks/validators/localnet/$moniker/.sifnoded
             # - If you ran the execute_integration_test_*.sh you need to kill ganache-cli for proper cleanup
             #   as it might have been killed and started outside of our control
-        input("Press ENTER to exit...")
-        killall(processes)
+        if not in_github_ci:
+            input("Press ENTER to exit...")
+            killall(processes)
     elif what == "devenv":
         project.npx(["hardhat", "run", "scripts/devenv.ts"], cwd=project.smart_contracts_dir, pipe=False)
     elif what == "create_snapshot":
