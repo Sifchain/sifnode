@@ -86,3 +86,57 @@ func TestEndBlock(t *testing.T) {
 	supplyCheck := app.BankKeeper.GetSupply(ctx, "rowan")
 	require.True(t, supplyCheck.Equal(periodOneSupply))
 }
+
+func TestUseUnlockedLiquidity(t *testing.T) {
+	tt := []struct {
+		name     string
+		height   int64
+		use      sdk.Uint
+		unlocks  []*types.LiquidityUnlock
+		expected error
+	}{
+		{
+			name:     "No unlocks",
+			height:   1,
+			use:      sdk.NewUint(1000),
+			expected: types.ErrBalanceNotAvailable,
+		},
+		{
+			name:     "Available via split",
+			height:   50,
+			use:      sdk.NewUint(2000),
+			expected: nil,
+			unlocks: []*types.LiquidityUnlock{
+				{
+					RequestHeight: 1,
+					Units:         sdk.NewUint(1000),
+				},
+				{
+					RequestHeight: 1,
+					Units:         sdk.NewUint(1000),
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			app, ctx := test.CreateTestApp(false)
+			ctx = ctx.WithBlockHeight(tc.height)
+			params := app.ClpKeeper.GetParams(ctx)
+			params.LiquidityRemovalLockPeriod = 10
+			params.LiquidityRemovalCancelPeriod = 5
+			app.ClpKeeper.SetParams(ctx, params)
+			lp := types.LiquidityProvider{
+				Asset:                    &types.Asset{Symbol: "atom"},
+				LiquidityProviderUnits:   sdk.NewUint(100),
+				LiquidityProviderAddress: "sif123",
+				Unlocks:                  tc.unlocks,
+			}
+			app.ClpKeeper.SetLiquidityProvider(ctx, &lp)
+			err := app.ClpKeeper.UseUnlockedLiquidity(ctx, lp, sdk.NewUint(1000))
+			require.ErrorIs(t, err, tc.expected)
+		})
+	}
+}
