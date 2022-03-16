@@ -23,7 +23,7 @@ def bridge_bank_lock_eth(ctx, from_eth_acct, to_sif_acct, amount):
 def bridge_bank_lock_erc20(ctx, bridge_token, from_eth_acct, to_sif_acct, amount):
     assert ctx.eth.get_eth_balance(from_eth_acct) > max_gas_required * max_gas_price, "Not enough gas for test"
     assert ctx.get_erc20_token_balance(bridge_token.address, from_eth_acct) >= amount, "Not enough tokens for test"
-    return ctx.bridge_bank_lock_erc20(bridge_token.address, from_eth_acct, to_sif_acct, amount)
+    return ctx.bridge_bank_lock_erc20(bridge_token, from_eth_acct, to_sif_acct, amount)
 
 def is_blocklisted_exception(ctx, exception):
     return ctx.eth.is_contract_logic_error(exception, "Address is blocklisted")
