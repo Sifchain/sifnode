@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
@@ -53,9 +54,13 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return &types.MsgLockResponse{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
-	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
-	firstDoublePeg := doublePeg && srv.tokenRegistryKeeper.GetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
+	doublePeg := true
+	// all ibc tokens lock is double peg, burns via ibc token transfer message
+	if !strings.HasPrefix(msg.DenomHash, "ibc/") {
+		doublePeg = tokenMetadata.NetworkDescriptor != oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED && tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+	}
 
+	firstDoublePeg := doublePeg && srv.tokenRegistryKeeper.GetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata, firstDoublePeg)
 
 	if err != nil {
@@ -66,7 +71,10 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	logger.Info("sifnode emit lock event.", "message", msg)
 	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
-	srv.tokenRegistryKeeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
+
+	if firstDoublePeg {
+		srv.tokenRegistryKeeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
+	}
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
