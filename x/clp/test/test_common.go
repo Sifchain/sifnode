@@ -59,6 +59,13 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	return ctx, app
 }
 
+func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp.SifchainApp, sifapp.GenesisState) sifapp.GenesisState) (sdk.Context, *sifapp.SifchainApp) {
+	sifapp.SetConfig(false)
+	app := sifapp.SetupFromGenesis(isCheckTx, genesisTransformer)
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	return ctx, app
+}
+
 func GenerateRandomPool(numberOfPools int) []types.Pool {
 	var poolList []types.Pool
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
