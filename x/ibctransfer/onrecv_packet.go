@@ -49,7 +49,7 @@ func OnRecvPacketWhitelistConvert(
 				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
+				sdk.NewAttribute(transfertypes.AttributeKeyAmount, data.Amount),
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
@@ -67,13 +67,14 @@ func OnRecvPacketWhitelistConvert(
 			return acknowledgement
 		}
 	}
+
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypePacket,
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, data.Amount),
 			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
 		),
 	)

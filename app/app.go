@@ -1,14 +1,29 @@
 package app
 
 import (
-	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
 	"io"
 	"math/big"
 	"net/http"
 	"os"
 
+	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
+	"github.com/Sifchain/sifnode/x/clp"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/dispensation"
+	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
+	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	"github.com/Sifchain/sifnode/x/oracle"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry"
 	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -31,9 +46,6 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -65,6 +77,7 @@ import (
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -78,6 +91,7 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v2/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v2/modules/core"
+	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
 	ibcclientclient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
 	ibcclienttypes "github.com/cosmos/ibc-go/v2/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
@@ -86,29 +100,12 @@ import (
 	ibcmock "github.com/cosmos/ibc-go/v2/testing/mock"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
+	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
-
-	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
-	"github.com/Sifchain/sifnode/x/clp"
-	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/Sifchain/sifnode/x/dispensation"
-	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
-	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
-	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
-	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	"github.com/Sifchain/sifnode/x/oracle"
-	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	"github.com/Sifchain/sifnode/x/tokenregistry"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const appName = "sifnode"
@@ -145,7 +142,6 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
-		authzmodule.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
 
@@ -204,7 +200,6 @@ type SifchainApp struct {
 	DistrKeeper      distrkeeper.Keeper
 	EvidenceKeeper   evidencekeeper.Keeper
 	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	AuthzKeeper      authzkeeper.Keeper
 	TransferKeeper   ibctransferkeeper.Keeper
 	PortKeeper       ibcmock.PortKeeper
 	FeegrantKeeper   feegrantkeeper.Keeper
@@ -257,7 +252,6 @@ func NewSifApp(
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
-		authzkeeper.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -301,14 +295,9 @@ func NewSifApp(
 		app.GetSubspace(banktypes.ModuleName),
 		app.ModuleAccountAddrs(),
 	)
-	app.AuthzKeeper = authzkeeper.NewKeeper(
-		keys[authzkeeper.StoreKey],
-		appCodec,
-		app.BaseApp.MsgServiceRouter(),
-	)
 
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper,
+		appCodec, keys[feegrant.StoreKey], app.AccountKeeper,
 	)
 
 	stakingKeeper := stakingkeeper.NewKeeper(
@@ -328,6 +317,21 @@ func NewSifApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
+	/*
+	   Invariants are certain conditions which are checked , which should hold true to certify the network is not byzantine .
+	   The invariants are asserted in two places
+
+	   End of every block
+	   https://github.com/cosmos/cosmos-sdk/blob/d3a8e1e9535e4d980723fbabdc274cd55cf965ae/x/crisis/abci.go#L20
+	   Controlled by `invCheckPeriod`
+
+	   InitGenesis of the Crisis module.
+	   https://github.com/cosmos/cosmos-sdk/blob/d3a8e1e9535e4d980723fbabdc274cd55cf965ae/x/crisis/module.go#L147
+	   Controlled by `skipGenesisInvariants`
+
+	   We remove the invariant check from crisis module and add to be checked once every 600 blocks instead.
+	*/
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName), invCheckPeriod, app.BankKeeper, authtypes.FeeCollectorName,
 	)
@@ -397,6 +401,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
+		app.TokenRegistryKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -422,11 +427,6 @@ func NewSifApp(
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
-	var skipGenesisInvariants = false
-	opt := appOpts.Get(crisis.FlagSkipGenesisInvariants)
-	if opt, ok := opt.(bool); ok {
-		skipGenesisInvariants = opt
-	}
 	cfg := module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.configurator = cfg
 
@@ -452,7 +452,6 @@ func NewSifApp(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
-		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
@@ -480,7 +479,6 @@ func NewSifApp(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
-		authz.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -499,7 +497,6 @@ func NewSifApp(
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
-		authz.ModuleName,
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
@@ -558,7 +555,9 @@ func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) 
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-
+	// Init chain is called when the chain starts up
+	// Setting the module version here finalizes the version map which makes sure we can keep track of migrations and not migrate from 1 to 2 every time.
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
@@ -668,7 +667,7 @@ func (app *SifchainApp) RegisterTendermintService(clientCtx client.Context) {
 }
 
 // RegisterSwaggerAPI registers swagger route with API Server
-func RegisterSwaggerAPI(ctx client.Context, rtr *mux.Router) {
+func RegisterSwaggerAPI(_ client.Context, rtr *mux.Router) {
 	statikFS, err := fs.New()
 	if err != nil {
 		panic(err)

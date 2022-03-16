@@ -1,8 +1,9 @@
 package ante
 
 import (
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"strings"
+
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
