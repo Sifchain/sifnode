@@ -214,7 +214,7 @@ def test_run_online_singlekey_txn(claimType):
 
     # RUN DISPENSATION TXN; GET TXN HASH
     distribution_name = f"{str(resp['height'])}_{str(distributor)}"
-    distribution_count = 20
+    distribution_count = str(20)
     runtxnhash = run_dispensation(distribution_name, claimType, distribution_count, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
