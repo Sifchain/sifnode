@@ -11,6 +11,41 @@ import (
 	tenderminttypes "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
+func TestBeginBlock(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	params := app.ClpKeeper.GetParams(ctx)
+	params.LiquidityRemovalLockPeriod = 10
+	params.LiquidityRemovalCancelPeriod = 5
+	app.ClpKeeper.SetParams(ctx, params)
+	app.ClpKeeper.SetLiquidityProvider(ctx, &types.LiquidityProvider{
+		Asset:                    &types.Asset{Symbol: "atom"},
+		LiquidityProviderUnits:   sdk.NewUint(100),
+		LiquidityProviderAddress: "sif123",
+		Unlocks: []*types.LiquidityUnlock{
+			{
+				RequestHeight: 1,
+				Units:         sdk.NewUint(1000),
+			},
+			{
+				RequestHeight: 30,
+				Units:         sdk.NewUint(1000),
+			},
+		},
+	})
+	// cycle through enough blocks to prune the first record but not the second
+	for block := 1; block <= 16; block++ {
+		app.BeginBlock(abci.RequestBeginBlock{Header: tenderminttypes.Header{Height: int64(block)}})
+		app.EndBlock(abci.RequestEndBlock{Height: int64(block)})
+		app.Commit()
+	}
+	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, "atom", "sif123")
+	require.NoError(t, err)
+	expected := []*types.LiquidityUnlock{
+		{RequestHeight: 30, Units: sdk.NewUint(1000)},
+	}
+	require.Equal(t, expected, lp.Unlocks)
+}
+
 func TestEndBlock(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	// Setup reward period

@@ -50,6 +50,7 @@ func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params
 	return nil
 }
 
+/*
 func (k Keeper) PruneRewardPeriods(ctx sdk.Context, params types.Params) {
 	height := uint64(ctx.BlockHeight())
 	var write bool
@@ -68,7 +69,7 @@ func (k Keeper) PruneRewardPeriods(ctx sdk.Context, params types.Params) {
 		k.SetParams(ctx, params)
 	}
 }
-
+*/
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
 	//rewardExecution := k.GetRewardExecution(ctx)
 	//if rewardExecution.Id != period.Id {
