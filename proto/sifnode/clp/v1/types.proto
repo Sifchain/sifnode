@@ -40,8 +40,7 @@ message LiquidityProvider {
 
 message LiquidityUnlock {
   int64 request_height = 1;
-  int64 unlock_height = 2;
-  string units = 3 [
+  string units = 2 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];

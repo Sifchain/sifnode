@@ -41,7 +41,6 @@ func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlo
 	}
 	lp.Unlocks = append(lp.Unlocks, &types.LiquidityUnlock{
 		RequestHeight: ctx.BlockHeight(),
-		UnlockHeight:  0,
 		Units:         request.Units,
 	})
 	k.Keeper.SetLiquidityProvider(ctx, &lp)
