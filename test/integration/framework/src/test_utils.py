@@ -566,11 +566,6 @@ class EnvCtx:
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
         return sif_address
 
-    # smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
-    # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
-    def send_from_ethereum_to_sifchain(self):
-        assert False,"Not implemented yet"  # TODO
-
     def send_from_sifchain_to_sifchain(self, from_sif_addr, to_sif_addr, amounts):
         amounts_string = ",".join([sif_format_amount(*a) for a in amounts])
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
@@ -747,14 +742,22 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
-    def bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
-        txhash = self.tx_bridge_bank_lock_erc20(token_addr, from_eth_acct, to_sif_acct, amount)
+    def bridge_bank_lock_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
+        txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
-    # def bridge_bank_lock_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
-    #     self.approve_erc20_token(token_sc, from_eth_acct, amount)
-    #     txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
-    #     return self.eth.wait_for_transaction_receipt(txhash)
+    # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
+    # For Sifchain-native assets (rowan) we need to use "burn".
+    # Compare: smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
+    # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
+    def send_from_ethereum_to_sifchain(self, from_eth_acct, to_sif_acct, amount, token_sc=None):
+        if token_sc is None:
+            # ETH transfer
+            self.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
+        else:
+            # ERC20 token transfer
+            self.approve_erc20_token(token_sc, from_eth_acct, amount)
+            self.bridge_bank_lock_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
 
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
