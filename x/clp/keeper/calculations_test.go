@@ -96,44 +96,46 @@ func TestKeeper_SwapOne(t *testing.T) {
 
 func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 	testcases := []struct {
-		name                string
-		poolAsset           string
-		address             string
-		nativeBalance       sdk.Int
-		externalBalance     sdk.Int
-		nativeAssetAmount   sdk.Uint
-		externalAssetAmount sdk.Uint
-		poolUnits           sdk.Uint
-		calculateWithdraw   bool
-		normalizationFactor sdk.Dec
-		adjustExternalToken bool
-		swapAmount          sdk.Uint
-		wBasis              sdk.Int
-		asymmetry           sdk.Int
-		from                types.Asset
-		to                  types.Asset
-		swapResult          sdk.Uint
-		liquidityFee        sdk.Uint
-		priceImpact         sdk.Uint
-		expectedPool        types.Pool
-		err                 error
-		errString           error
+		name                   string
+		poolAsset              string
+		address                string
+		nativeBalance          sdk.Int
+		externalBalance        sdk.Int
+		nativeAssetAmount      sdk.Uint
+		externalAssetAmount    sdk.Uint
+		poolUnits              sdk.Uint
+		calculateWithdraw      bool
+		normalizationFactor    sdk.Dec
+		adjustExternalToken    bool
+		swapAmount             sdk.Uint
+		wBasis                 sdk.Int
+		asymmetry              sdk.Int
+		from                   types.Asset
+		to                     types.Asset
+		pmtpCurrentRunningRate sdk.Dec
+		swapResult             sdk.Uint
+		liquidityFee           sdk.Uint
+		priceImpact            sdk.Uint
+		expectedPool           types.Pool
+		err                    error
+		errString              error
 	}{
 		{
-			name:                "successful swap with single pool units",
-			poolAsset:           "eth",
-			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:       sdk.NewInt(10000),
-			externalBalance:     sdk.NewInt(10000),
-			nativeAssetAmount:   sdk.NewUint(998),
-			externalAssetAmount: sdk.NewUint(998),
-			poolUnits:           sdk.OneUint(),
-			calculateWithdraw:   true,
-			wBasis:              sdk.NewInt(1000),
-			asymmetry:           sdk.NewInt(10000),
-			swapResult:          sdk.NewUint(20),
-			liquidityFee:        sdk.NewUint(978),
-			priceImpact:         sdk.ZeroUint(),
+			name:                   "successful swap with single pool units",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.OneUint(),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(20),
+			liquidityFee:           sdk.NewUint(978),
+			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:        &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:   sdk.NewUint(100598),
@@ -142,20 +144,21 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			},
 		},
 		{
-			name:                "successful swap with equal amount of pool units",
-			poolAsset:           "eth",
-			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:       sdk.NewInt(10000),
-			externalBalance:     sdk.NewInt(10000),
-			nativeAssetAmount:   sdk.NewUint(998),
-			externalAssetAmount: sdk.NewUint(998),
-			poolUnits:           sdk.NewUint(998),
-			calculateWithdraw:   true,
-			wBasis:              sdk.NewInt(1000),
-			asymmetry:           sdk.NewInt(10000),
-			swapResult:          sdk.NewUint(165),
-			liquidityFee:        sdk.NewUint(8),
-			priceImpact:         sdk.ZeroUint(),
+			name:                   "successful swap with equal amount of pool units",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(165),
+			liquidityFee:           sdk.NewUint(8),
+			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:        &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:   sdk.NewUint(1098),
@@ -164,21 +167,22 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			},
 		},
 		{
-			name:                "failed swap with empty pool",
-			poolAsset:           "eth",
-			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:       sdk.NewInt(10000),
-			externalBalance:     sdk.NewInt(10000),
-			nativeAssetAmount:   sdk.NewUint(0),
-			externalAssetAmount: sdk.NewUint(0),
-			poolUnits:           sdk.NewUint(0),
-			calculateWithdraw:   false,
-			normalizationFactor: sdk.NewDec(0),
-			adjustExternalToken: true,
-			swapAmount:          sdk.NewUint(0),
-			swapResult:          sdk.NewUint(165),
-			liquidityFee:        sdk.NewUint(8),
-			priceImpact:         sdk.ZeroUint(),
+			name:                   "failed swap with empty pool",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(0),
+			externalAssetAmount:    sdk.NewUint(0),
+			poolUnits:              sdk.NewUint(0),
+			calculateWithdraw:      false,
+			normalizationFactor:    sdk.NewDec(0),
+			adjustExternalToken:    true,
+			swapAmount:             sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(165),
+			liquidityFee:           sdk.NewUint(8),
+			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:        &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:   sdk.NewUint(1098),
@@ -188,28 +192,67 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			errString: errors.New("not enough received asset tokens to swap"),
 		},
 		{
-			name:                "successful swap by inversing from/to assets",
-			poolAsset:           "eth",
-			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:       sdk.NewInt(10000),
-			externalBalance:     sdk.NewInt(10000),
-			nativeAssetAmount:   sdk.NewUint(998),
-			externalAssetAmount: sdk.NewUint(998),
-			poolUnits:           sdk.NewUint(998),
-			calculateWithdraw:   true,
-			wBasis:              sdk.NewInt(1000),
-			asymmetry:           sdk.NewInt(10000),
-			from:                types.Asset{Symbol: "eth"},
-			to:                  types.Asset{Symbol: "rowan"},
-			swapResult:          sdk.NewUint(41),
-			liquidityFee:        sdk.NewUint(8),
-			priceImpact:         sdk.ZeroUint(),
+			name:                   "successful swap by inversing from/to assets",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			from:                   types.Asset{Symbol: "eth"},
+			to:                     types.Asset{Symbol: "rowan"},
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(41),
+			liquidityFee:           sdk.NewUint(8),
+			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:        &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:   sdk.NewUint(957),
 				ExternalAssetBalance: sdk.NewUint(1098),
 				PoolUnits:            sdk.NewUint(998),
 			},
+		},
+		{
+			name:                   "successful swap with greater pmtp current running rate value",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.NewDec(10),
+			swapResult:             sdk.NewUint(909),
+			liquidityFee:           sdk.NewUint(8),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:        &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:   sdk.NewUint(1098),
+				ExternalAssetBalance: sdk.NewUint(89),
+				PoolUnits:            sdk.NewUint(998),
+			},
+		},
+		{
+			name:                   "failed swap with bigger pmtp current running rate value",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.NewDec(20),
+			errString:              errors.New("not enough received asset tokens to swap"),
 		},
 	}
 
@@ -321,7 +364,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				pool,
 				normalizationFactor,
 				adjustExternalToken,
-				sdk.OneDec(),
+				tc.pmtpCurrentRunningRate,
 			)
 
 			if tc.errString != nil {
