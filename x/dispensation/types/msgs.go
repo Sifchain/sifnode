@@ -142,8 +142,8 @@ func (m MsgRunDistribution) ValidateBasic() error {
 	if err != nil {
 		return errors.Wrapf(ErrInvalid, "Invalid Runner Address")
 	}
-	if m.DistributionCount > MaxRecordsPerBlock {
-		return errors.Wrapf(ErrInvalid, "Dispensation count cannot be greater than %d", MaxRecordsPerBlock)
+	if m.DistributionCount > MaxRecordsPerBlock || m.DistributionCount <= 0 {
+		return errors.Wrapf(ErrInvalid, "Dispensation count cannot be greater than %d or less than 1", MaxRecordsPerBlock)
 	}
 	return nil
 }
