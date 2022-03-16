@@ -110,6 +110,8 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		swapAmount          sdk.Uint
 		wBasis              sdk.Int
 		asymmetry           sdk.Int
+		from                types.Asset
+		to                  types.Asset
 		swapResult          sdk.Uint
 		liquidityFee        sdk.Uint
 		priceImpact         sdk.Uint
@@ -118,7 +120,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		errString           error
 	}{
 		{
-			name:                "swap with single pool units",
+			name:                "successful swap with single pool units",
 			poolAsset:           "eth",
 			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			nativeBalance:       sdk.NewInt(10000),
@@ -140,7 +142,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			},
 		},
 		{
-			name:                "swap with equal amount of pool units",
+			name:                "successful swap with equal amount of pool units",
 			poolAsset:           "eth",
 			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			nativeBalance:       sdk.NewInt(10000),
@@ -162,7 +164,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			},
 		},
 		{
-			name:                "swap with empty pool",
+			name:                "failed swap with empty pool",
 			poolAsset:           "eth",
 			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			nativeBalance:       sdk.NewInt(10000),
@@ -184,6 +186,30 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				PoolUnits:            sdk.NewUint(998),
 			},
 			errString: errors.New("not enough received asset tokens to swap"),
+		},
+		{
+			name:                "successful swap by inversing from/to assets",
+			poolAsset:           "eth",
+			address:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:       sdk.NewInt(10000),
+			externalBalance:     sdk.NewInt(10000),
+			nativeAssetAmount:   sdk.NewUint(998),
+			externalAssetAmount: sdk.NewUint(998),
+			poolUnits:           sdk.NewUint(998),
+			calculateWithdraw:   true,
+			wBasis:              sdk.NewInt(1000),
+			asymmetry:           sdk.NewInt(10000),
+			from:                types.Asset{Symbol: "eth"},
+			to:                  types.Asset{Symbol: "rowan"},
+			swapResult:          sdk.NewUint(41),
+			liquidityFee:        sdk.NewUint(8),
+			priceImpact:         sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:        &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:   sdk.NewUint(957),
+				ExternalAssetBalance: sdk.NewUint(1098),
+				PoolUnits:            sdk.NewUint(998),
+			},
 		},
 	}
 
@@ -279,10 +305,19 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				swapAmount = tc.swapAmount
 			}
 
+			from := tc.from
+			if from == (types.Asset{}) {
+				from = types.GetSettlementAsset()
+			}
+			to := tc.to
+			if to == (types.Asset{}) {
+				to = types.Asset{Symbol: tc.poolAsset}
+			}
+
 			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(
-				types.GetSettlementAsset(),
+				from,
 				swapAmount,
-				types.Asset{Symbol: tc.poolAsset},
+				to,
 				pool,
 				normalizationFactor,
 				adjustExternalToken,
@@ -303,163 +338,6 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			require.Equal(t, liquidityFee, tc.liquidityFee)
 			require.Equal(t, priceImpact, tc.priceImpact)
 			require.Equal(t, newPool, tc.expectedPool)
-		})
-	}
-}
-
-func TestKeeper_SwapOneNew(t *testing.T) {
-	testcases :=
-		[]struct {
-			name                  string
-			createToken           bool
-			denom                 string
-			decimals              int64
-			asset                 types.Asset
-			fundAccount           bool
-			nativeBalance         sdk.Uint
-			externalBalance       sdk.Uint
-			createPool            bool
-			nativeAssetAmount     sdk.Uint
-			externalAssetAmount   sdk.Uint
-			addLiquidity          bool
-			wBasis                sdk.Int
-			asymmetry             sdk.Int
-			swapResult            sdk.Uint
-			liquidityFee          sdk.Uint
-			priceImpact           sdk.Uint
-			expPanic              bool
-			expPanicMsg           string
-			createPoolErr         error
-			createPoolErrString   error
-			addLiquidityErr       error
-			addLiquidityErrString error
-			err                   error
-			errString             error
-		}{
-			{
-				name:                "missing token throws error",
-				createToken:         false,
-				denom:               "xxx",
-				decimals:            18,
-				asset:               types.Asset{Symbol: "xxx"},
-				fundAccount:         true,
-				nativeBalance:       sdk.NewUint(10000),
-				externalBalance:     sdk.NewUint(10000),
-				createPool:          true,
-				nativeAssetAmount:   sdk.NewUint(998),
-				externalAssetAmount: sdk.NewUint(998),
-				addLiquidity:        true,
-				wBasis:              sdk.NewInt(1000),
-				asymmetry:           sdk.NewInt(10000),
-				swapResult:          sdk.NewUint(20),
-				liquidityFee:        sdk.NewUint(978),
-				priceImpact:         sdk.NewUint(0),
-				expPanic:            true,
-			},
-			{
-				name:                "successful swap one",
-				createToken:         true,
-				denom:               "xxx",
-				decimals:            18,
-				asset:               types.Asset{Symbol: "eth"},
-				fundAccount:         true,
-				nativeBalance:       sdk.NewUint(10000),
-				externalBalance:     sdk.NewUint(10000),
-				createPool:          true,
-				nativeAssetAmount:   sdk.NewUint(998),
-				externalAssetAmount: sdk.NewUint(998),
-				addLiquidity:        true,
-				wBasis:              sdk.NewInt(1000),
-				asymmetry:           sdk.NewInt(10000),
-				swapResult:          sdk.NewUint(20),
-				liquidityFee:        sdk.NewUint(978),
-				priceImpact:         sdk.NewUint(0),
-			},
-		}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			ctx, app := test.CreateTestAppClp(false)
-			clpKeeper := app.ClpKeeper
-			signer := test.GenerateAddress(test.AddressKey1)
-
-			var err error
-
-			if tc.createToken {
-				app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
-					Denom:       tc.denom,
-					Decimals:    tc.decimals,
-					Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-				})
-			}
-
-			if tc.fundAccount {
-				externalCoin := sdk.NewCoin(tc.asset.Symbol, sdk.Int(tc.externalBalance))
-				nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(tc.nativeBalance))
-				err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-				require.NoError(t, err)
-			}
-
-			var pool *types.Pool
-
-			if tc.createPool {
-				msgCreatePool := types.NewMsgCreatePool(signer, tc.asset, tc.nativeAssetAmount, tc.externalAssetAmount)
-				pool, err = clpKeeper.CreatePool(ctx, sdk.OneUint(), &msgCreatePool)
-
-				if tc.createPoolErrString != nil {
-					require.EqualError(t, err, tc.createPoolErrString.Error())
-				} else if tc.createPoolErr == nil {
-					require.NoError(t, err)
-				} else {
-					require.ErrorIs(t, err, tc.createPoolErr)
-				}
-			}
-
-			var lp *types.LiquidityProvider
-
-			if tc.addLiquidity {
-				msg := types.NewMsgAddLiquidity(signer, tc.asset, tc.nativeAssetAmount, tc.externalAssetAmount)
-				clpKeeper.CreateLiquidityProvider(ctx, &tc.asset, sdk.OneUint(), signer)
-				lp, err = clpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.OneUint(), sdk.NewUint(998))
-
-				if tc.addLiquidityErrString != nil {
-					require.EqualError(t, err, tc.addLiquidityErrString.Error())
-				} else if tc.err == nil {
-					require.NoError(t, err)
-				} else {
-					require.ErrorIs(t, err, tc.addLiquidityErr)
-				}
-			}
-
-			normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
-			_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
-				pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), tc.wBasis.String(), tc.asymmetry)
-			if tc.expPanic {
-				if tc.expPanicMsg != "" {
-					require.PanicsWithValue(t, tc.expPanicMsg, func() {
-						clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
-					})
-				} else {
-					require.Panics(t, func() {
-						clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
-					})
-				}
-			} else {
-				swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, tc.asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
-				require.NoError(t, err)
-				require.Equal(t, swapResult, tc.swapResult)
-				require.Equal(t, liquidityFee, tc.liquidityFee)
-				require.Equal(t, priceImpact, tc.priceImpact)
-
-				if tc.errString != nil {
-					require.EqualError(t, err, tc.errString.Error())
-				} else if tc.err == nil {
-					require.NoError(t, err)
-				} else {
-					require.ErrorIs(t, err, tc.err)
-				}
-			}
 		})
 	}
 }

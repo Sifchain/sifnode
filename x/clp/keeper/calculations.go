@@ -19,17 +19,21 @@ func SwapOne(from types.Asset,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	liquidityFee, err := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
 	if err != nil {
+		// this branch will never be reached as err will always be nil
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
 	priceImpact, err := calcPriceImpact(X, x)
 	if err != nil {
+		// this branch will never be reached as err will always be nil
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
 	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 	if err != nil {
+		// this branch will never be reached as err will always be nil
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
 	if swapResult.GTE(Y) {
@@ -232,7 +236,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 }
 
 func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
-
 	if X.IsZero() && x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
