@@ -22,12 +22,12 @@ func SetTokenRegistryAdminCmd(defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-genesis-token-registry-admin [address_or_key_name]",
 		Short: "Set a genesis account for token registry to genesis.json",
-		Long: `Set a genesis account to genesis.json. The account has the privilege to update whitelist validators.
+		Long: `Set a genesis account to genesis.json. The account has the privilege to update token registry.
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			cdc := clientCtx.Codec //todo uncomment when the module is migrated
+			cdc := clientCtx.Codec
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
