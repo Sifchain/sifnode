@@ -94,13 +94,12 @@ def transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, number_of_
 
     # We do minting and approving just once for all iterations, but we could also do it each time separately.
     ctx.mint_generic_erc20_token(token_addr, total_amount, test_eth_acct_0)
-    ctx.approve_erc20_token(token_sc, test_eth_acct_0, total_amount)
 
     for i in range(number_of_times):
         # Send from Ethereum account 1 to Sifchain
         eth_balance_before_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
         sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
-        ctx.bridge_bank_lock_erc20(token_addr, test_eth_acct_0, test_sif_account, send_amount_0)
+        ctx.send_from_ethereum_to_sifchain(test_eth_acct_0, test_sif_account, send_amount_0, token_sc=token_sc)
         ctx.advance_blocks()
         sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
         eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
