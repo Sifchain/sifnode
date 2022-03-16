@@ -427,6 +427,20 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	assert.Equal(t, "2", swapResult.String())
 }
 
+func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
+	pool := types.Pool{
+		NativeAssetBalance:   sdk.NewUint(10),
+		ExternalAssetBalance: sdk.NewUint(100),
+	}
+	asset := types.Asset{}
+	normalizationFactor := sdk.NewDec(1)
+	adjustExternalToken := false
+
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, normalizationFactor, adjustExternalToken, sdk.NewDec(100))
+
+	require.Equal(t, swapResult, sdk.ZeroUint())
+}
+
 func TestKeeper_CalculateAssetsForLP(t *testing.T) {
 	_, app, ctx := createTestInput()
 	keeper := app.ClpKeeper
@@ -435,4 +449,211 @@ func TestKeeper_CalculateAssetsForLP(t *testing.T) {
 	native, external, _, _ := clpkeeper.CalculateAllAssetsForLP(pools[0], lpList[0])
 	assert.Equal(t, "100", external.String())
 	assert.Equal(t, "1000", native.String())
+}
+
+func TestKeeper_CalculatePoolUnits(t *testing.T) {
+	testcases := []struct {
+		name                 string
+		oldPoolUnits         sdk.Uint
+		nativeAssetBalance   sdk.Uint
+		externalAssetBalance sdk.Uint
+		nativeAssetAmount    sdk.Uint
+		externalAssetAmount  sdk.Uint
+		normalizationFactor  sdk.Dec
+		adjustExternalToken  bool
+		poolUnits            sdk.Uint
+		lpunits              sdk.Uint
+		err                  error
+		errString            error
+		panicErr             string
+	}{
+		{
+			name:                 "tx amount too low throws error",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.ZeroUint(),
+			externalAssetBalance: sdk.ZeroUint(),
+			nativeAssetAmount:    sdk.ZeroUint(),
+			externalAssetAmount:  sdk.ZeroUint(),
+			normalizationFactor:  sdk.ZeroDec(),
+			adjustExternalToken:  true,
+			errString:            errors.New("Tx amount is too low"),
+		},
+		{
+			name:                 "tx amount too low with no adjustment throws error",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.ZeroUint(),
+			externalAssetBalance: sdk.ZeroUint(),
+			nativeAssetAmount:    sdk.ZeroUint(),
+			externalAssetAmount:  sdk.ZeroUint(),
+			normalizationFactor:  sdk.ZeroDec(),
+			adjustExternalToken:  false,
+			errString:            errors.New("Tx amount is too low"),
+		},
+		{
+			name:                 "insufficient native funds throws error",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.ZeroUint(),
+			externalAssetBalance: sdk.ZeroUint(),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.ZeroDec(),
+			adjustExternalToken:  false,
+			errString:            errors.New("0: insufficient funds"),
+		},
+		{
+			name:                 "insufficient external funds throws error",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUint(100),
+			externalAssetBalance: sdk.ZeroUint(),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.ZeroUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			errString:            errors.New("0: insufficient funds"),
+		},
+		{
+			name:                 "as native asset balance zero then returns native asset amount",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.ZeroUint(),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.OneUint(),
+			lpunits:              sdk.OneUint(),
+		},
+		{
+			name:                 "fail to convert oldPoolUnits to Dec",
+			oldPoolUnits:         sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+			nativeAssetBalance:   sdk.NewUint(100),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.OneUint(),
+			lpunits:              sdk.OneUint(),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert nativeAssetBalance to Dec",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.OneUint(),
+			lpunits:              sdk.OneUint(),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert externalAssetBalance to Dec",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUint(100),
+			externalAssetBalance: sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.OneUint(),
+			lpunits:              sdk.OneUint(),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert nativeAssetAmount to Dec",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUint(100),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.OneUint(),
+			lpunits:              sdk.OneUint(),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert externalAssetAmount to Dec",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUint(100),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.OneUint(),
+			lpunits:              sdk.OneUint(),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "successful",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUint(100),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.ZeroUint(),
+			lpunits:              sdk.ZeroUint(),
+		},
+		{
+			name:                 "successful",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.NewUint(10000),
+			externalAssetBalance: sdk.NewUint(100),
+			nativeAssetAmount:    sdk.OneUint(),
+			externalAssetAmount:  sdk.OneUint(),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.ZeroUint(),
+			lpunits:              sdk.ZeroUint(),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.panicErr != "" {
+				require.PanicsWithError(t, tc.panicErr, func() {
+					clpkeeper.CalculatePoolUnits(
+						tc.oldPoolUnits,
+						tc.nativeAssetBalance,
+						tc.externalAssetBalance,
+						tc.nativeAssetAmount,
+						tc.externalAssetAmount,
+						tc.normalizationFactor,
+						tc.adjustExternalToken,
+					)
+				})
+				return
+			}
+
+			poolUnits, lpunits, err := clpkeeper.CalculatePoolUnits(
+				tc.oldPoolUnits,
+				tc.nativeAssetBalance,
+				tc.externalAssetBalance,
+				tc.nativeAssetAmount,
+				tc.externalAssetAmount,
+				tc.normalizationFactor,
+				tc.adjustExternalToken,
+			)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, poolUnits, tc.poolUnits)
+			require.Equal(t, lpunits, tc.lpunits)
+		})
+	}
 }

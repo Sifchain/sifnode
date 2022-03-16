@@ -85,8 +85,10 @@ func GetSwapFee(sentAmount sdk.Uint,
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 	if err != nil {
+		// this branch will never be reached as err will always be nil
 		return sdk.Uint{}
 	}
+
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()
 	}
