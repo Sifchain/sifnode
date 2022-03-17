@@ -167,6 +167,16 @@ class Sifnoded:
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 
+    def peggy2_lock_burn(self, sif_account_address, ethereum_reciver_address, amount, denom, cross_chain_fee, hardhat_chain_id, chain_id):
+        cmd = "burn"
+        if denom == 'rowan' or denom.startswith('ibc/'):
+            cmd = "lock"
+        args = ["tx", "ethbridge", cmd, sif_account_address, ethereum_reciver_address, amount, denom,
+                cross_chain_fee, str(hardhat_chain_id), "--from", sif_account_address, "--chain-id", chain_id, "--gas-prices",
+                "0.5rowan", "--gas-adjustment", "1.5", "-y"]
+        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+        return res
+
     def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False, log_file=None):
         sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=minimum_gas_prices,
             log_format_json=log_format_json)

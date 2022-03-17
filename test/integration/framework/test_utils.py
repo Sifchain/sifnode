@@ -525,6 +525,8 @@ class EnvCtx:
         assert on_peggy2_branch, "Only for Peggy2.0"
 
         direction = "burn"
+        if denom == "rowan" or denom.startswith("ibc/"):
+            direction = "lock"
         cross_chain_ceth_fee = self.cross_chain_fee_base * self.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(self.ethereum_network_descriptor),  # Mandatory
