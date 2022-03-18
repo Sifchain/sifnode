@@ -3,22 +3,16 @@ import json
 import os
 
 # algorithm to get denom in peggy2.0
-def getPeggy2Denom(network_descriptor, token_contract_address):
+def getPeggy2Denom(network_descriptor: int, token_contract_address: str):
     assert token_contract_address.startswith("0x")
-    assert network_descriptor > 0
+    assert network_descriptor >= 0
     assert network_descriptor <= 9999
     denom = f"sifBridge{network_descriptor:04d}{token_contract_address.lower()}"
     return denom
 
-# define the format of output file
-def composeMapping(old_denom, new_denom):
-    return {
-        'peggy1': old_denom,
-        'peggy2': new_denom
-    }
-
 # network descriptor is 1 for ethereum
 network_descriptor = 1
+eth_contract_address = '0x0000000000000000000000000000000000000000'
 
 def main():
     # get all entries from product
@@ -37,24 +31,36 @@ def main():
 
     missed_denom = []
     result = []
-    output_file = open('denom_mapping.json', 'w', encoding='utf-8')
+    reverse_result = []
+    output_file_1 = open('denom_mapping_peggy1_to_peggy2.json', 'w', encoding='utf-8')
+    output_file_2 = open('denom_mapping_peggy2_to_peggy1.json', 'w', encoding='utf-8')
 
     for item in denoms:
         denom = (item['denom'])
         if denom == 'rowan':
-            result.append(composeMapping(denom, denom))
+            result.append({denom: denom})
+            reverse_result.append({denom: denom})
+        elif denom == 'ceth':
+            eth_denom = getPeggy2Denom(network_descriptor, eth_contract_address)
+            result.append({denom: eth_denom})
+            reverse_result.append({eth_denom: denom})
         elif denom.startswith('ibc/'):
-            result.append(composeMapping(denom, denom))
+            result.append({denom: denom})
+            reverse_result.append({denom: denom})
         elif denom.startswith('c'):
             tmp_denom = denom[1:].upper()
             if tmp_denom in denom_address_map:
-                result.append(composeMapping(denom, getPeggy2Denom(network_descriptor, denom_address_map[tmp_denom])))
+                peggy2_denom = getPeggy2Denom(network_descriptor, denom_address_map[tmp_denom])
+                result.append({denom: peggy2_denom})
+                reverse_result.append({peggy2_denom: denom})
+
             else:
                 missed_denom.append(denom)
         else:
             missed_denom.append(denom)
 
-    json.dump({'array': result}, output_file)
+    json.dump({'array': result}, output_file_1)
+    json.dump({'array': reverse_result}, output_file_2)
 
     print("-------- items not found --------")
     # sort for better find out denom

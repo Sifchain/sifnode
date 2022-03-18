@@ -26,11 +26,8 @@ The result file is put the same folder as denom_contracts.json
 ```
 python3 denom_mapping.py
 ```
-the result file is denom_mapping.json, the schema is like 
-```
-{
-            "peggy1": "rowan",
-            "peggy2": "rowan"
-}
-```
+the result files is denom_mapping_peggy1_to_peggy2.json and denom_mapping_peggy2_to_peggy1.json.
+denom_mapping_peggy1_to_peggy2.json: key is denom in peggy1.0, value is denom in peggy2.0.
+denom_mapping_peggy2_to_peggy1.json: it is reverse to first json file.
+
 The script also prints out all denom not mapped, the main reason is the contract not found in the Ethereum.
