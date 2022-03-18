@@ -42,8 +42,8 @@ func (m *MsgRegister) ValidateBasic() error {
 	if err != nil {
 		return sdkerrors.Wrap(err, "invalid from address")
 	}
-	if m.Entry.Decimals <= 0 {
-		return errors.New("Decimals cannot be zero")
+	if m.Entry.Decimals < 0 {
+		return errors.New("Decimals cannot be less than zero")
 	}
 	return nil
 }
@@ -94,8 +94,8 @@ func (m *MsgRegisterAll) ValidateBasic() error {
 		if err != nil {
 			return sdkerrors.Wrap(err, "invalid from address")
 		}
-		if entry.Decimals <= 0 {
-			return errors.New("Decimals cannot be zero")
+		if entry.Decimals < 0 {
+			return errors.New("Decimals cannot be less than zero")
 		}
 	}
 	return nil
@@ -140,8 +140,8 @@ func (m *MsgSetRegistry) ValidateBasic() error {
 		if !coin.IsValid() {
 			return errors.New("Denom is not valid")
 		}
-		if entry.Decimals <= 0 {
-			return errors.New("Decimals cannot be zero")
+		if entry.Decimals < 0 {
+			return errors.New("Decimals cannot be less than zero")
 		}
 	}
 

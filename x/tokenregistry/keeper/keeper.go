@@ -84,63 +84,70 @@ func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry,
 	return nil, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found")
 }
 
-func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
-	wl := k.GetRegistry(ctx)
-
-	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
-			wl.Entries[i] = entry
-			k.SetRegistry(ctx, wl)
-			return
-		}
-	}
-	wl.Entries = append(wl.Entries, entry)
-	k.SetRegistry(ctx, wl)
-}
-
-func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	registry := k.GetRegistry(ctx)
-	updated := make([]*types.RegistryEntry, 0)
-	for _, t := range registry.Entries {
-		if t != nil && !strings.EqualFold(t.Denom, denom) {
-			updated = append(updated, t)
-		}
-	}
-	k.SetRegistry(ctx, types.Registry{
-		Entries: updated,
-	})
-}
-
-func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&wl)
-	store.Set(types.WhitelistStorePrefix, bz)
-}
-
-func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
-	var whitelist types.Registry
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.WhitelistStorePrefix)
-	if len(bz) == 0 {
-		return types.Registry{}
-	}
-	k.cdc.MustUnmarshal(bz, &whitelist)
-	return whitelist
-}
-
 func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
 	return append(types.TokenDenomPrefix, []byte(denom)...)
 }
 
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
-	result := types.RegistryEntry{}
-	registry := k.GetRegistry(ctx)
-	entry, _ := k.GetEntry(registry, denom)
-	if entry != nil {
-		result = *entry
+
+	var entry types.RegistryEntry
+	key := k.GetDenomPrefix(ctx, denom)
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(key)
+
+	k.cdc.MustUnmarshal(bz, &entry)
+
+	return entry
+}
+
+// SetToken add a new denom
+func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
+	entry.Sanitize()
+	key := k.GetDenomPrefix(ctx, entry.Denom)
+	store := ctx.KVStore(k.storeKey)
+
+	bz := k.cdc.MustMarshal(entry)
+
+	store.Set(key, bz)
+}
+
+// RemoveToken remove a token
+func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
+	key := k.GetDenomPrefix(ctx, denom)
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(key)
+}
+
+// GetRegistry get all token's metadata
+func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
+	var entries []*types.RegistryEntry
+
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.TokenDenomPrefix)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var registry types.RegistryEntry
+		key := iterator.Key()
+		bz := store.Get(key)
+		k.cdc.MustUnmarshal(bz, &registry)
+
+		entries = append(entries, &registry)
 	}
 
-	return result
+	return types.Registry{
+		Entries: entries,
+	}
+}
+
+// reset all registry
+func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
+	registry := k.GetRegistry(ctx)
+	for _, entry := range registry.Entries {
+		k.RemoveToken(ctx, entry.Denom)
+	}
+	for _, item := range wl.Entries {
+		k.SetToken(ctx, item)
+	}
 }
 
 func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
@@ -167,44 +174,13 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 }
 
 func (k keeper) AddMultipleTokens(ctx sdk.Context, entries []*types.RegistryEntry) {
-	wl := k.GetRegistry(ctx)
-
 	for _, entry := range entries {
-		found := false
-		for i := range wl.Entries {
-			// update if nil or the same denom
-			if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
-				wl.Entries[i] = entry
-				found = true
-				break
-			}
-		}
-		if !found {
-			wl.Entries = append(wl.Entries, entry)
-		}
+		k.SetToken(ctx, entry)
 	}
-
-	k.SetRegistry(ctx, wl)
 }
 
 func (k keeper) RemoveMultipleTokens(ctx sdk.Context, denoms []string) {
-	registry := k.GetRegistry(ctx)
-	remained := make([]*types.RegistryEntry, 0)
-
-	for _, t := range registry.Entries {
-		found := false
-		for _, denom := range denoms {
-			if t != nil && strings.EqualFold(t.Denom, denom) {
-				found = true
-			}
-
-		}
-		if !found {
-			remained = append(remained, t)
-		}
+	for _, denom := range denoms {
+		k.RemoveToken(ctx, denom)
 	}
-
-	k.SetRegistry(ctx, types.Registry{
-		Entries: remained,
-	})
 }
