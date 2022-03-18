@@ -9,6 +9,7 @@ from dispensation_envutils import create_online_singlekey_txn, create_new_sifadd
 query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
+# Skipping this test
 @pytest.mark.skip(reason="not now")
 def test_run_online_morethan10distribution_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
