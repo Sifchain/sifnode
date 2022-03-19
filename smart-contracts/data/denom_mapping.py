@@ -27,7 +27,7 @@ def main():
     # map denom in peggy 1.0 to peggy 2.0
     # if denom start with ibc, then denom is the same with peggy 2.0
     # if denom start with c, then remove c, call getPeggy2Denom
-    # if denom start with x, then remove x, call getPeggy2Denom
+    # if denom start with x, will be the same as peggy 1.0
 
     missed_denom = []
     result = []
@@ -45,6 +45,9 @@ def main():
             result.append({denom: eth_denom})
             reverse_result.append({eth_denom: denom})
         elif denom.startswith('ibc/'):
+            result.append({denom: denom})
+            reverse_result.append({denom: denom})
+        elif denom.startswith('x'):
             result.append({denom: denom})
             reverse_result.append({denom: denom})
         elif denom.startswith('c'):
