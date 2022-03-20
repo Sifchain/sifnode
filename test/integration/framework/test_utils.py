@@ -586,6 +586,7 @@ class EnvCtx:
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
+        print("+++++++++++++++ balances is ", res)
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
@@ -595,8 +596,10 @@ class EnvCtx:
         while True:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = sifchain.balance_delta(old_balances, new_balances)
+            print("++++ the delta is ", delta)
             if min_changes is not None:
-                if all([delta.get(denom, 0) >= amount for amount, denom in min_changes]):
+                if all([abs(delta.get(denom, 0)) >= amount for amount, denom in min_changes]):
+                    print("++++ the delta is over return after change reached")
                     return new_balances
             elif not sifchain.balance_zero(delta):
                 return new_balances
