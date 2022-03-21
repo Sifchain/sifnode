@@ -35,7 +35,7 @@ class InflateTokens:
 
     def get_whitelisted_tokens(self):
         whitelist = self.ctx.get_whitelisted_tokens_from_bridge_bank_past_events()
-        ibc_pattern = re.compile("^ibc\/([0-9a-fA-F]{64})$")
+        ibc_pattern = re.compile("^ibc/([0-9a-fA-F]{64})$")
         result = []
         for token_addr, value in whitelist.items():
             token_data = self.ctx.get_generic_erc20_token_data(token_addr)
