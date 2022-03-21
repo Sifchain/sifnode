@@ -280,6 +280,10 @@ class SifnodeClient:
             self.cmd.rm(tmp_file)
 
     def open_grpc_channel(self):
+        # See https://docs.cosmos.network/v0.44/core/proto-docs.html
+        # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
+        # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
+        # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
         import grpc
         return grpc.insecure_channel("127.0.0.1:9090")
 
@@ -310,140 +314,6 @@ class SifnodeClient:
 
     def sifnoded_exec(self, *args, **kwargs):
         return self.ctx.sifnode.sifnoded_exec(*args, **kwargs)
-
-
-# # See https://docs.cosmos.network/v0.44/core/proto-docs.html
-# # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
-# # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
-# # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
-# class SifnodeGrpc:
-#     def __init__(self):
-#         pass
-#
-#     def ethbridge_lock(self):
-#         pass
-#
-#     def ethbridge_burn(self):
-#         args = ["tx"]
-#         pass
-#
-#
-# def grpc_poc():
-#     log.debug("Hello gRPC")
-#     import grpc
-#     import sifnode.ethbridge.v1.tx_pb2_grpc as tx_pb2_grpc
-#     import sifnode.ethbridge.v1.tx_pb2 as tx_pb2
-#     import sifnode.oracle.v1.network_descriptor_pb2 as network_descriptor_pb2
-#     import sifnode.ethbridge.v1.query_pb2 as query_pb2
-#     import sifnode.ethbridge.v1.query_pb2_grpc as query_pb2_grpc
-#
-#     import cosmos.tx.v1beta1.service_pb2 as service_pb2
-#
-#     network_descriptor = 9999  # Set in run_env::Peggy2Environment.run()
-#
-#     channel = grpc.insecure_channel("127.0.0.1:9090")
-#
-#     client1 = query_pb2_grpc.QueryStub(channel)
-#     client2 = tx_pb2_grpc.MsgStub(channel)
-#
-#     req1 = query_pb2.QueryBlacklistRequest()
-#     res1 = client1.GetBlacklist(req1)
-#
-#     req2 = query_pb2.QueryCrosschainFeeConfigRequest(network_descriptor=network_descriptor)
-#     res2 = client1.CrosschainFeeConfig(req2)
-#
-#     req3 = tx_pb2.MsgLock(amount=str(1000), cosmos_sender="sender", crosschain_fee=str(0), denom_hash="denom_hash",
-#         ethereum_receiver="ethereum_receiver", network_descriptor=network_descriptor_pb2.NETWORK_DESCRIPTOR_ETHEREUM)
-#     res3 = client2.Lock(req3)
-#
-#     tx_plain_send = {
-#         "body": {
-#             "messages": [
-#                 {
-#                     "@type": "/cosmos.bank.v1beta1.MsgSend",
-#                     "from_address": "sif1n7ctv0zqyx78203lqssafejvgfhqephpnk5duc",
-#                     "to_address": "sif1c7z93gth8meuls88l9e53mkws8k4c3x4p6kayr",
-#                     "amount": [{"denom": "rowan", "amount": "1"}]
-#                 }
-#             ],
-#             "memo": "",
-#             "timeout_height": "0",
-#             "extension_options": [],
-#             "non_critical_extension_options": []
-#         },
-#         "auth_info": {
-#             "signer_infos": [],
-#             "fee": {"amount": [], "gas_limit": "200000", "payer": "", "granter": ""}
-#         },
-#         "signatures": []
-#     }
-#
-#     tx_ethbridge_lock = {
-#         "body": {
-#             "messages": [
-#                 {
-#                     "@type": "/sifnode.ethbridge.v1.MsgBurn",
-#                     "cosmos_sender": "sif18hsjhq8guhr5yj7n0q2764a76wmt3la2wykdjk",
-#                     "amount": "3000000000000000000",
-#                     "denom_hash": "sifBridge99990xc6ba8c3233ecf65b761049ef63466945c362edd2",
-#                     "network_descriptor": "NETWORK_DESCRIPTOR_HARDHAT",
-#                     "ethereum_receiver": "0xcDE217398B5A290005D5f247137211AEA992B937",
-#                     "crosschain_fee": "1"
-#                 }
-#             ],
-#             "memo": "",
-#             "timeout_height": "0",
-#             "extension_options": [],
-#             "non_critical_extension_options": []
-#         },
-#         "auth_info": {
-#             "signer_infos": [],
-#             "fee": {"amount": [{"denom": "rowan", "amount": "100000"}], "gas_limit": "200000", "payer": "", "granter": ""}
-#         },
-#         "signatures": []
-#     }
-#
-#     # sifnoded tx sign a.json --chain-id localnet --from sif18hsjhq8guhr5yj7n0q2764a76wmt3la2wykdjk --keyring-backend test --home /tmp/sifnodedNetwork/validators/localnet/little-leaf/.sifnoded
-#     signed_tx = {
-#         "body": {
-#             "messages": [
-#                 {
-#                     "@type": "/sifnode.ethbridge.v1.MsgBurn",
-#                     "cosmos_sender": "sif18hsjhq8guhr5yj7n0q2764a76wmt3la2wykdjk",
-#                     "amount": "3000000000000000000",
-#                     "denom_hash": "sifBridge99990xc6ba8c3233ecf65b761049ef63466945c362edd2",
-#                     "network_descriptor": "NETWORK_DESCRIPTOR_HARDHAT",
-#                     "ethereum_receiver": "0xcDE217398B5A290005D5f247137211AEA992B937",
-#                     "crosschain_fee": "1"
-#                 }
-#             ],
-#             "memo": "",
-#             "timeout_height": "0",
-#             "extension_options": [],
-#             "non_critical_extension_options": []
-#         },
-#         "auth_info": {
-#             "signer_infos": [
-#                 {
-#                     "public_key": {
-#                         "@type": "/cosmos.crypto.secp256k1.PubKey",
-#                         "key": "AtRIz7t6jZhX+7ZPLMmkqtF2BsZWB76164Kbh2g5KdIK"
-#                     },
-#                     "mode_info": {
-#                         "single": {"mode": "SIGN_MODE_DIRECT"}
-#                     },
-#                     "sequence": "0"
-#                 }
-#             ],
-#             "fee": {"amount": [{"denom": "rowan", "amount": "100000"}], "gas_limit": "200000", "payer": "", "granter": ""}
-#         },
-#         "signatures": [
-#             "x1TmzWEQk2qSDBHbGO5WZQq14MrG6KIu7RXWBNYoFyN8hgIrnrL6k8kBGrIdsUCpRFmAouVYJefYef3YzhkqBg=="
-#         ]
-#     }
-#     # To set sequence, add --sequence 12345 --offline --account-number
-#
-#     print()
 
 
 class Sifgen:
