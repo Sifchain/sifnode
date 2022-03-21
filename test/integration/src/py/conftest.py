@@ -4,7 +4,7 @@ import os
 import threading
 
 import pytest
-import integration_test_context
+import siftool_path
 
 import test_utilities
 from burn_lock_functions import decrease_log_level, force_log_level
