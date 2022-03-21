@@ -8,7 +8,7 @@
 import json
 import sys
 
-from command import Command
+from siftool.command import Command
 
 chains = {
     "akash": {"binary": "akash", "relayer": "ibc"},

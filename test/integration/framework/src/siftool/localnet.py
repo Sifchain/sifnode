@@ -1,7 +1,7 @@
 import os
 import json
-from command import Command
-from common import project_dir
+from siftool.command import Command
+from siftool.common import project_dir
 import logging
 
 
