@@ -6,8 +6,7 @@ import json
 import logging
 import re
 
-import siftool.eth
-import siftool.test_utils
+from siftool import eth, test_utils
 from siftool.common import *
 
 log = logging.getLogger(__name__)
