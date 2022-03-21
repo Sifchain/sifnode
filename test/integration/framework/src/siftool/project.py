@@ -1,6 +1,6 @@
 import os
 import json
-from common import *
+from siftool.common import *
 
 
 def force_kill_processes(cmd):
@@ -321,25 +321,84 @@ class Project:
         for d in ["build", "build/repos", "build/generated"]:
             self.cmd.mkdir(os.path.join(self.siftool_dir, d))
 
-    def generate_python_grpc_stubs(self, path=None):
+    def generate_python_protobuf_stubs(self):
         # https://grpc.io/
         # https://grpc.github.io/grpc/python/grpc_asyncio.html
-
         self._ensure_build_dirs()
         project_proto_dir = self.project_dir("proto")
-        gogo_proto_dir = os.path.join(self.siftool_dir, "build/repos/gogoproto")
+        third_party_proto_dir = self.project_dir("third_party", "proto")
         generated_dir = os.path.join(self.siftool_dir, "build/generated")
+        repos_dir = os.path.join(self.siftool_dir, "build/repos")
         self.cmd.rmf(generated_dir)
         self.cmd.mkdir(generated_dir)
-        self.cmd.rmf(gogo_proto_dir)
-        self.cmd.mkdir(gogo_proto_dir)
-        self.cmd.execst(["git", "clone", "--depth", "1", "https://github.com/gogo/protobuf", gogo_proto_dir], pipe=False)
-        args = [self.project_python(), "-m", "grpc_tools.protoc", "-I", project_proto_dir, "-I", gogo_proto_dir,
-            "--python_out", generated_dir, "--grpc_python_out", generated_dir,
+        cosmos_sdk_repo_dir = os.path.join(repos_dir, "cosmos-sdk")
+        cosmos_proto_repo_dir = os.path.join(repos_dir, "cosmos-proto")
+        # self.git_clone("https://github.com/gogo/protobuf", gogo_proto_dir, shallow=True)
+        self.git_clone("https://github.com/cosmos/cosmos-sdk.git", cosmos_sdk_repo_dir, checkout_commit="dd65ef87322baa2023f195635890a2128a03d318")
+        self.git_clone("https://github.com/cosmos/cosmos-proto.git", cosmos_proto_repo_dir, checkout_commit="213b76899fac883ac122728f7ab258166137be29")
+        cosmos_sdk_proto_dir = os.path.join(cosmos_sdk_repo_dir, "proto")
+        cosmos_proto_proto_dir = os.path.join(cosmos_proto_repo_dir, "proto")
+        includes = [
+            project_proto_dir,
+            third_party_proto_dir,
+            cosmos_sdk_proto_dir,
+            cosmos_proto_proto_dir,
+        ]
+
+        # We cannot compile all proto files due to conflicting/inconsistent definitions (e.g. coin.proto).
+        #
+        # def find_proto_files(path, excludes=()):
+        #     import re
+        #     tmp = [os.path.relpath(i, start=path) for i in
+        #         self.cmd.find_files(path, filter=lambda x: re.match(os.path.basename(x), "^(.*)\.proto$"))
+        #     return sorted(list(set(tmp).difference(set(excludes) if excludes else set())))
+        #
+        # project_proto_files = find_proto_files(project_proto_dir)
+        # third_party_proto_files = find_proto_files(third_party_proto_dir, excludes=[
+        #     "cosmos/base/coin.proto",
+        # ])
+        # cosmos_sdk_proto_files = find_proto_files(cosmos_sdk_proto_dir, excludes=[
+        #     "cosmos/base/query/v1beta1/pagination.proto",
+        # ])
+        # cosmos_proto_proto_files = find_proto_files(cosmos_proto_proto_dir)
+        # proto_files = project_proto_files + third_party_proto_files + cosmos_sdk_proto_files + cosmos_proto_proto_files
+
+        proto_files = [
             os.path.join(project_proto_dir, "sifnode/ethbridge/v1/tx.proto"),
             os.path.join(project_proto_dir, "sifnode/ethbridge/v1/query.proto"),
             os.path.join(project_proto_dir, "sifnode/ethbridge/v1/types.proto"),
             os.path.join(project_proto_dir, "sifnode/oracle/v1/network_descriptor.proto"),
             os.path.join(project_proto_dir, "sifnode/oracle/v1/types.proto"),
-            os.path.join(gogo_proto_dir, "gogoproto/gogo.proto")]
-        self.cmd.execst(args, pipe=False)
+            os.path.join(third_party_proto_dir, "gogoproto/gogo.proto"),
+            os.path.join(third_party_proto_dir, "google/api/annotations.proto"),
+            os.path.join(third_party_proto_dir, "google/api/http.proto"),
+            os.path.join(third_party_proto_dir, "cosmos/base/query/v1beta1/pagination.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/tx/v1beta1/service.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/base/abci/v1beta1/abci.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/tx/v1beta1/tx.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/tx/signing/v1beta1/signing.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/crypto/multisig/v1beta1/multisig.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/base/v1beta1/coin.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/abci/types.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/crypto/proof.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/crypto/keys.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/types.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/validator.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/params.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/block.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/evidence.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/version/types.proto"),
+            os.path.join(cosmos_proto_proto_dir, "cosmos_proto/cosmos.proto"),
+        ]
+
+        args = [self.project_python(), "-m", "grpc_tools.protoc"] + flatten_list([["-I", i] for i in includes]) + [
+            "--python_out", generated_dir, "--grpc_python_out", generated_dir] + proto_files
+        self.cmd.execst(args, pipe=True)
+
+    def git_clone(self, url, path, checkout_commit=None, shallow=False):
+        if self.cmd.exists(os.path.join(path, ".git")):
+            return
+        log.debug("Cloning repository '{}' into '{}',,,".format(url, path))
+        self.cmd.execst(["git", "clone", "-q"] + (["--depth", "1"] if shallow else []) + [url, path])
+        if checkout_commit:
+            self.cmd.execst(["git", "checkout", checkout_commit], cwd=path)

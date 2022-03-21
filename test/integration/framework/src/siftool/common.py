@@ -49,7 +49,7 @@ def random_string(length):
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
 def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*4))), *paths))
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*5))), *paths))
 
 def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)
@@ -89,6 +89,9 @@ def dict_merge(*dicts, override=True):
             if override or (k not in result):
                 result[k] = v
     return result
+
+def flatten_list(l):
+    return [item for sublist in l for item in sublist]
 
 def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)

@@ -2,7 +2,7 @@ import logging
 import time
 import web3
 
-from common import *
+from siftool.common import *
 
 
 ETH = 10**18
@@ -78,6 +78,12 @@ class EthereumTxWrapper:
         self.fixed_gas_args = None
         self.gas_estimate_fn = None
         self.used_tx_nonces = {}
+
+        # These are only set in get_env_ctx_peggy2(), otherwise they are undefined.
+        # self.cross_chain_fee_base = None
+        # self.cross_chain_lock_fee = None
+        # self.cross_chain_burn_fee = None
+        # self.ethereum_network_descriptor = None
 
     def _get_private_key(self, addr):
         addr = web3.Web3.toChecksumAddress(addr)

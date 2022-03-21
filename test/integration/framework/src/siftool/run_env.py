@@ -2,14 +2,14 @@ import json
 import re
 import time
 
-import eth
-import hardhat
-from truffle import Ganache
-from localnet import Localnet
-from command import Command
-from sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
-from project import Project, killall, force_kill_processes
-from common import *
+import siftool.eth as eth
+import siftool.hardhat as hardhat
+from siftool.truffle import Ganache
+from siftool.localnet import Localnet
+from siftool.command import Command
+from siftool.sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
+from siftool.project import Project, killall, force_kill_processes
+from siftool.common import *
 
 
 class Integrator(Ganache, Command):

@@ -1,7 +1,7 @@
 import json
 import web3
-from common import *
-from command import buildcmd
+from siftool.common import *
+from siftool.command import buildcmd
 
 
 class Hardhat:
