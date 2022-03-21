@@ -1,6 +1,6 @@
-import main as mod_main
-import geth as mod_geth
-from eth import ETH
+import siftool.main as mod_main
+import siftool.geth as mod_geth
+from siftool.eth import ETH
 
 
 def geth_proof_of_concept():

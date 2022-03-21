@@ -54,8 +54,8 @@ def load_main_module():
         os.path.join(venv_lib_dir, "site-packages"),
         os.path.join(project_root, "test", "integration"),  # For running integration tests in-process
     ]
-    import main as main_module
-    return main_module
+    import siftool.main as siftool_main
+    return siftool_main
 
 def main(argv):
     main_module = load_main_module()
