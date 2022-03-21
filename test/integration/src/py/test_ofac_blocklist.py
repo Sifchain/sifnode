@@ -1,7 +1,8 @@
 import pytest
 
-from integration_framework import main, common, eth, test_utils, inflate_tokens
-from common import *
+import siftool_path
+from siftool import eth, test_utils
+from siftool.common import *
 
 
 max_gas_required = 200000

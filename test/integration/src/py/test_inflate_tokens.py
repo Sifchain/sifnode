@@ -1,8 +1,9 @@
 import pytest
 
-from integration_framework import main, common, eth, test_utils, sifchain, inflate_tokens
-from inflate_tokens import InflateTokens
-from common import *
+import siftool_path
+from siftool import eth, sifchain
+from siftool.inflate_tokens import InflateTokens
+from siftool.common import *
 
 
 # Sifchain wallets to which we want to distribute
