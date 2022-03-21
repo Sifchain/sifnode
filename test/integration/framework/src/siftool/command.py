@@ -1,6 +1,6 @@
 import shutil
 import time
-from common import *
+from siftool.common import *
 
 
 def buildcmd(args, cwd=None, env=None):
@@ -45,6 +45,9 @@ class Command:
         if os.path.exists(path):
             os.remove(path)
 
+    def mv(self, src, dst):
+        os.rename(src, dst)
+
     def read_text_file(self, path):
         with open(path, "rt") as f:
             return f.read()  # TODO Convert to exec
@@ -72,6 +75,20 @@ class Command:
 
     def exists(self, path):
         return os.path.exists(path)
+
+    def is_dir(self, path):
+        return os.path.isdir(path) if self.exists(path) else False
+
+    def find_files(self, path, filter=None):
+        items = [os.path.join(path, name) for name in self.ls(path)]
+        result = []
+        for i in items:
+            if self.is_dir(i):
+                result.extend(self.find_files(i))
+            else:
+                if (filter is None) or filter(i):
+                    result.append(i)
+        return result
 
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)

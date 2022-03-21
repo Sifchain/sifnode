@@ -4,12 +4,12 @@ import random
 import time
 import web3
 
-import eth
-import truffle
-import hardhat
-import run_env
-import sifchain
-from common import *
+import siftool.eth as eth
+import siftool.truffle as truffle
+import siftool.hardhat as hardhat
+import siftool.run_env as run_env
+import siftool.sifchain as sifchain
+from siftool.common import *
 
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
@@ -118,10 +118,10 @@ def get_env_ctx_peggy2():
     # Monkeypatching for peggy2 extras
     # TODO These are set in run_env.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
     # Consider passing them via environment
-    ctx.cross_chain_fee_base = 1
-    ctx.cross_chain_lock_fee = 1
-    ctx.cross_chain_burn_fee = 1
-    ctx.ethereum_network_descriptor = ethereum_network_descriptor
+    ctx.eth.cross_chain_fee_base = 1
+    ctx.eth.cross_chain_lock_fee = 1
+    ctx.eth.cross_chain_burn_fee = 1
+    ctx.eth.ethereum_network_descriptor = ethereum_network_descriptor
 
     return ctx
 
@@ -277,6 +277,9 @@ class EnvCtx:
         self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
+        # Refactoring in progress: moving stuff into separate client that encapsulates things like url, home and chain_id
+        self.sifnode_client = sifchain.SifnodeClient(self.cmd, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
+        self.sifnode_client.ctx = self  # For cross-chain fees for Peggy2
         self.rowan_source = rowan_source
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
@@ -521,30 +524,6 @@ class EnvCtx:
         token_sc = self.get_generic_erc20_sc(erc20_token_addr)
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
-
-    def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom):
-        """ Sends ETH from Sifchain to Ethereum (burn) """
-
-        # TODO Move to sifchain.py
-
-        assert on_peggy2_branch, "Only for Peggy2.0"
-
-        direction = "burn"
-        cross_chain_ceth_fee = self.cross_chain_fee_base * self.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
-                "--network-descriptor", str(self.ethereum_network_descriptor),  # Mandatory
-                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
-                "--gas-prices", "0.5rowan",
-                "--gas-adjustment", "1.5",
-                "--output", "json",
-                "-y"
-            ] + \
-            self._sifnoded_home_arg() + \
-            self._sifnoded_chain_id_and_node_arg()
-        res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
-        result = json.loads(stdout(res))
-        assert "failed to execute message" not in result["raw_log"]
-        return result
 
     def create_sifchain_addr(self, moniker=None, fund_amounts=None):
         """
