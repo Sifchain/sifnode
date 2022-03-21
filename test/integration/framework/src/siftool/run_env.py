@@ -649,7 +649,7 @@ class IntegrationTestsEnvironment:
         }
         self.project.write_vagrantenv_sh(self.state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
 
-        import localnet
+        from siftool import localnet
         localnet.run_localnet_hook()
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc
