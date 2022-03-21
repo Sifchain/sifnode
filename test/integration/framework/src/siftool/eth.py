@@ -396,10 +396,10 @@ class ExponentiallyWeightedAverageFeeEstimator:
 __web3_enabled_unaudited_hdwallet_features = False
 
 # https://stackoverflow.com/questions/68050645/how-to-create-a-web3py-account-using-mnemonic-phrase
-def _mnemonic_to_private_key(mnemonic, account_path="m/44'/60'/0'/0/0"):
+def _mnemonic_to_private_key(mnemonic, derivation_path="m/44'/60'/0'/0/0"):
     a = web3.Web3().eth.account
     global __web3_enabled_unaudited_hdwallet_features
     if not __web3_enabled_unaudited_hdwallet_features:
         a.enable_unaudited_hdwallet_features()
         __web3_enabled_unaudited_hdwallet_features = True
-    return a.from_mnemonic(mnemonic, account_path=account_path).privateKey.hex()[2:]
+    return a.from_mnemonic(mnemonic, account_path=derivation_path).privateKey.hex()[2:]
