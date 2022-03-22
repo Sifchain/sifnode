@@ -20,4 +20,12 @@ message RewardPeriod {
   string allocation = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint"
   ];
+  repeated PoolMultiplier multipliers = 5;
+}
+
+message PoolMultiplier {
+  string asset = 1;
+  string multiplier = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
 }

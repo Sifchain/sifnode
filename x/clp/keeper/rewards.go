@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"strings"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -87,12 +89,13 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 
 	totalDepth := sdk.ZeroDec()
 	for _, pool := range pools {
-		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()))
+		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
 	}
 
 	for _, pool := range pools {
-
-		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Quo(totalDepth)
+		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
 		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
 		poolDistributionDec := weight.Mul(blockDistributionDec)
 		poolDistribution := sdk.NewUint(poolDistributionDec.TruncateInt().Uint64())
@@ -240,4 +243,16 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, 
 		lp.Unlocks = records
 		k.SetLiquidityProvider(ctx, &lp)
 	}
+}
+
+func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
+	for _, m := range period.Multipliers {
+		if strings.EqualFold(asset, m.Asset) {
+			if m.Multiplier != nil && !m.Multiplier.IsNil() {
+				return *m.Multiplier
+			}
+		}
+	}
+
+	return sdk.NewDec(1)
 }
