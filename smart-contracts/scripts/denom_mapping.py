@@ -20,7 +20,7 @@ def main():
     denoms = json.loads(result)['entries']
 
     denom_address_map = {}
-    data = json.load(open('denom_contracts.json'))
+    data = json.load(open('../data/denom_contracts.json'))
     for entry in data:
         denom_address_map[entry['symbol']] = entry['token']
 
@@ -30,40 +30,39 @@ def main():
     # if denom start with x, will be the same as peggy 1.0
 
     missed_denom = []
-    result = []
-    reverse_result = []
-    output_file_1 = open('denom_mapping_peggy1_to_peggy2.json', 'w', encoding='utf-8')
-    output_file_2 = open('denom_mapping_peggy2_to_peggy1.json', 'w', encoding='utf-8')
+    result = {}
+    reverse_result = {}
+    output_file_1 = open('../data/denom_mapping_peggy1_to_peggy2.json', 'w', encoding='utf-8')
+    output_file_2 = open('../data/denom_mapping_peggy2_to_peggy1.json', 'w', encoding='utf-8')
 
     for item in denoms:
         denom = (item['denom'])
         if denom == 'rowan':
-            result.append({denom: denom})
-            reverse_result.append({denom: denom})
+            result[denom] = denom
+            reverse_result[denom] = denom
         elif denom == 'ceth':
             eth_denom = getPeggy2Denom(network_descriptor, eth_contract_address)
-            result.append({denom: eth_denom})
-            reverse_result.append({eth_denom: denom})
+            result[denom] = eth_denom
+            reverse_result[eth_denom] = denom
         elif denom.startswith('ibc/'):
-            result.append({denom: denom})
-            reverse_result.append({denom: denom})
+            result[denom] = denom
+            reverse_result[denom] = denom
         elif denom.startswith('x'):
-            result.append({denom: denom})
-            reverse_result.append({denom: denom})
+            result[denom] = denom
+            reverse_result[denom] = denom
         elif denom.startswith('c'):
             tmp_denom = denom[1:].upper()
             if tmp_denom in denom_address_map:
                 peggy2_denom = getPeggy2Denom(network_descriptor, denom_address_map[tmp_denom])
-                result.append({denom: peggy2_denom})
-                reverse_result.append({peggy2_denom: denom})
-
+                result[denom] = peggy2_denom
+                reverse_result[peggy2_denom] = denom
             else:
                 missed_denom.append(denom)
         else:
             missed_denom.append(denom)
 
-    json.dump({'array': result}, output_file_1)
-    json.dump({'array': reverse_result}, output_file_2)
+    json.dump(result, output_file_1)
+    json.dump(reverse_result, output_file_2)
 
     print("-------- items not found --------")
     # sort for better find out denom
