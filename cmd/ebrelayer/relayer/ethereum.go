@@ -392,8 +392,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	if decodedEvent, err := bridgeBank.BridgeBankFilterer.ParseLogBurn(cLog); err == nil {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_BURN
 		event.To = append(event.To, decodedEvent.To...)
-		// burn doesn't have symbol or name
-		event.Symbol = decodedEvent.Denom
+		event.CosmosDenom = decodedEvent.Denom
 		event.Decimals = decodedEvent.Decimals
 		event.NetworkDescriptor = int32(networkDescriptor)
 		event.Value = decodedEvent.Value

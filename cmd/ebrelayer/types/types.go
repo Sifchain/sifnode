@@ -57,6 +57,7 @@ type EthereumEvent struct {
 	BridgeContractAddress common.Address
 	From                  common.Address
 	Token                 common.Address
+	CosmosDenom           string
 }
 
 // String implements fmt.Stringer
