@@ -17,7 +17,7 @@ service Msg {
 }
 
 message MsgRegister {
-  // from is equaliant to cosmos_sender
+  // from is equivalent to cosmos_sender
   string from = 1;
   RegistryEntry entry = 2;
 }
@@ -25,7 +25,7 @@ message MsgRegister {
 message MsgRegisterResponse {}
 
 message MsgRegisterAll {
-  // from is equaliant to cosmos_sender
+  // from is equivalent to cosmos_sender
   string from = 1;
   repeated RegistryEntry entries = 2;
 }
@@ -33,7 +33,7 @@ message MsgRegisterAll {
 message MsgRegisterAllResponse {}
 
 message MsgSetRegistry {
-  // from is equaliant to cosmos_sender
+  // from is equivalent to cosmos_sender
   string from = 1;
   Registry registry = 2;
 }
@@ -41,7 +41,7 @@ message MsgSetRegistry {
 message MsgSetRegistryResponse {}
 
 message MsgDeregister {
-  // from is equaliant to cosmos_sender
+  // from is equivalent to cosmos_sender
   string from = 1;
   string denom = 2;
 }
@@ -49,7 +49,7 @@ message MsgDeregister {
 message MsgDeregisterResponse {}
 
 message MsgDeregisterAll {
-  // from is equaliant to cosmos_sender
+  // from is equivalent to cosmos_sender
   string from = 1;
   repeated string denoms = 2;
 }
