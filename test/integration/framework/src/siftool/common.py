@@ -49,7 +49,7 @@ def random_string(length):
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
 def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*3))), *paths))
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*5))), *paths))
 
 def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)
@@ -90,6 +90,9 @@ def dict_merge(*dicts, override=True):
                 result[k] = v
     return result
 
+def flatten_list(l):
+    return [item for sublist in l for item in sublist]
+
 def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)
     return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
@@ -117,3 +120,5 @@ def template_transform(s, d):
 
 
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
+
+in_github_ci = (os.environ.get("CI") == "true") and os.environ.get("GITHUB_REPOSITORY") and os.environ.get("GITHUB_RUN_ID")

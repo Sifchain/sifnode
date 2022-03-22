@@ -127,7 +127,7 @@ func TestMintSuccess(t *testing.T) {
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddressVal1Pow2, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	entry := tokenregistrytypes.RegistryEntry{
-		Denom:         normalCreateMsg.EthBridgeClaim.DenomHash,
+		Denom:         normalCreateMsg.EthBridgeClaim.Denom,
 		DisplaySymbol: normalCreateMsg.EthBridgeClaim.Symbol,
 		Decimals:      18,
 		IsWhitelisted: true,
@@ -148,7 +148,7 @@ func TestMintSuccess(t *testing.T) {
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	// TODO peggy2merge
-	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.DenomHash, types.TestCoinIntAmount))
+	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.Denom, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -165,7 +165,7 @@ func TestMintSuccess(t *testing.T) {
 	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
 
-	expectedCoins = sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.DenomHash, types.TestCoinIntAmount))
+	expectedCoins = sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.Denom, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -291,7 +291,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denomHash := ethClaim1.DenomHash
+	denomHash := ethClaim1.Denom
 
 	entry := tokenregistrytypes.RegistryEntry{
 		Denom:         denomHash,
@@ -310,7 +310,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	mintedCoins := sdk.NewCoins(sdk.NewCoin(ethMsg1.EthBridgeClaim.DenomHash, coinsToMintAmount))
+	mintedCoins := sdk.NewCoins(sdk.NewCoin(ethMsg1.EthBridgeClaim.Denom, coinsToMintAmount))
 
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 

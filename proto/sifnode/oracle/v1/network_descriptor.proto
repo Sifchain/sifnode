@@ -7,7 +7,8 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
 
 // NetworkDescriptor is a unique identifier for all chains that Sifchain
-// enables.
+// enables. Numbers MUST BE BETWEEN 0-9999, Sifnode WILL PANIC if a number
+// is below 0 or larger then 9999 as we use human readable denoms.
 enum NetworkDescriptor {
   // Not currently in use
   NETWORK_DESCRIPTOR_UNSPECIFIED = 0;
@@ -24,5 +25,5 @@ enum NetworkDescriptor {
   // Ganache local testnet
   NETWORK_DESCRIPTOR_GANACHE = 5777;
   // Hardhat local testnet
-  NETWORK_DESCRIPTOR_HARDHAT = 31337;
+  NETWORK_DESCRIPTOR_HARDHAT = 9999;
 }

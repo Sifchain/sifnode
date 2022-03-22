@@ -1,6 +1,6 @@
 import os
 import json
-from common import *
+from siftool.common import *
 
 
 def force_kill_processes(cmd):
@@ -24,6 +24,7 @@ class Project:
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
         self.test_integration_dir = project_dir("test", "integration")
+        self.siftool_dir = project_dir("test", "integration", "framework")
         self.go_path = os.environ.get("GOPATH")
         if self.go_path is None:
             # https://pkg.go.dev/cmd/go#hdr-GOPATH_and_Modules
@@ -51,6 +52,8 @@ class Project:
             self.__rm_files_develop()
             self.__rm(self.project_dir("smart-contracts", "build"))  # truffle deploy
             self.__rm(self.project_dir("test", "integration", "vagrant", "data"))
+            self.__rm(self.project_dir("test", "integration", "src", ".pytest_cache"))
+            self.__rm(self.project_dir("test", "integration", "src", "py", ".pytest_cache"))
             self.__rm(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
 
             self.__rm(self.project_dir("deploy", "networks"))  # from running integration tests
@@ -84,6 +87,7 @@ class Project:
             for file in ["sifnoded", "ebrelayer", "sifgen"]:
                 self.__rm(os.path.join(self.go_bin_dir, file))
             self.__rm(self.project_dir("smart-contracts", "node_modules"))
+            self.__rm(self.project_dir("test", "localnet", "node_modules"))
 
         if level >= 2:
             if self.cmd.exists(self.go_path):
@@ -144,7 +148,6 @@ class Project:
     # TODO Merge
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
     # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    #
     def make_go_binaries_2(self):
         # Original: cd smart-contracts; make -C .. install
         self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
@@ -153,7 +156,8 @@ class Project:
         self.cmd.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
         # According to peggy2, the plan is to move from npm install to yarn, but there are some issues with yarn atm.
         # self.yarn(["install"], cwd=self.smart_contracts_dir)
-        self.cmd.execst(["npm", "install"], cwd=self.smart_contracts_dir, pipe=False)
+        # self.cmd.execst(["npm", "install"], cwd=self.smart_contracts_dir, pipe=False)
+        self.npm_install(self.smart_contracts_dir)
 
     def write_vagrantenv_sh(self, state_vars, data_dir, ethereum_websocket_address, chainnet):
         # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
@@ -222,12 +226,12 @@ class Project:
         self.install_smart_contracts_dependencies()
 
     def clean(self):
+        self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
+        self.cmd.rmf(os.path.join(self.siftool_dir, "build"))
         if on_peggy2_branch:
             for file in [".proto-gen", ".run", "cmd/ebrelayer/contract/generated/artifacts", "smart-contracts/.hardhat-compile"]:
                 self.cmd.rmf(self.project_dir(file))
         else:
-            self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
-
             # Output from "truffle compile"
             self.cmd.rmf(self.project_dir("smart-contracts", "build"))
 
@@ -281,7 +285,7 @@ class Project:
         cache = []
         if not self.cmd.exists(cache_dir):
             self.cmd.mkdir(cache_dir)
-        else:
+        if self.cmd.exists(cache_index):
             cache = json.loads(self.cmd.read_text_file(cache_index))
         idx = None
         for i, s in enumerate(cache):
@@ -308,3 +312,93 @@ class Project:
                 self.cmd.rm(os.path.join(cache_dir, "{}.tar".format(s)))
             cache = cache[:max_cache_items]
         self.cmd.write_text_file(cache_index, json.dumps(cache))
+
+    def project_python(self):
+        project_venv_dir = project_dir("test", "integration", "framework", "venv")
+        return os.path.join(project_venv_dir, "bin", "python3")
+
+    def _ensure_build_dirs(self):
+        for d in ["build", "build/repos", "build/generated"]:
+            self.cmd.mkdir(os.path.join(self.siftool_dir, d))
+
+    def generate_python_protobuf_stubs(self):
+        # https://grpc.io/
+        # https://grpc.github.io/grpc/python/grpc_asyncio.html
+        self._ensure_build_dirs()
+        project_proto_dir = self.project_dir("proto")
+        third_party_proto_dir = self.project_dir("third_party", "proto")
+        generated_dir = os.path.join(self.siftool_dir, "build/generated")
+        repos_dir = os.path.join(self.siftool_dir, "build/repos")
+        self.cmd.rmf(generated_dir)
+        self.cmd.mkdir(generated_dir)
+        cosmos_sdk_repo_dir = os.path.join(repos_dir, "cosmos-sdk")
+        cosmos_proto_repo_dir = os.path.join(repos_dir, "cosmos-proto")
+        # self.git_clone("https://github.com/gogo/protobuf", gogo_proto_dir, shallow=True)
+        self.git_clone("https://github.com/cosmos/cosmos-sdk.git", cosmos_sdk_repo_dir, checkout_commit="dd65ef87322baa2023f195635890a2128a03d318")
+        self.git_clone("https://github.com/cosmos/cosmos-proto.git", cosmos_proto_repo_dir, checkout_commit="213b76899fac883ac122728f7ab258166137be29")
+        cosmos_sdk_proto_dir = os.path.join(cosmos_sdk_repo_dir, "proto")
+        cosmos_proto_proto_dir = os.path.join(cosmos_proto_repo_dir, "proto")
+        includes = [
+            project_proto_dir,
+            third_party_proto_dir,
+            cosmos_sdk_proto_dir,
+            cosmos_proto_proto_dir,
+        ]
+
+        # We cannot compile all proto files due to conflicting/inconsistent definitions (e.g. coin.proto).
+        #
+        # def find_proto_files(path, excludes=()):
+        #     import re
+        #     tmp = [os.path.relpath(i, start=path) for i in
+        #         self.cmd.find_files(path, filter=lambda x: re.match(os.path.basename(x), "^(.*)\.proto$"))
+        #     return sorted(list(set(tmp).difference(set(excludes) if excludes else set())))
+        #
+        # project_proto_files = find_proto_files(project_proto_dir)
+        # third_party_proto_files = find_proto_files(third_party_proto_dir, excludes=[
+        #     "cosmos/base/coin.proto",
+        # ])
+        # cosmos_sdk_proto_files = find_proto_files(cosmos_sdk_proto_dir, excludes=[
+        #     "cosmos/base/query/v1beta1/pagination.proto",
+        # ])
+        # cosmos_proto_proto_files = find_proto_files(cosmos_proto_proto_dir)
+        # proto_files = project_proto_files + third_party_proto_files + cosmos_sdk_proto_files + cosmos_proto_proto_files
+
+        proto_files = [
+            os.path.join(project_proto_dir, "sifnode/ethbridge/v1/tx.proto"),
+            os.path.join(project_proto_dir, "sifnode/ethbridge/v1/query.proto"),
+            os.path.join(project_proto_dir, "sifnode/ethbridge/v1/types.proto"),
+            os.path.join(project_proto_dir, "sifnode/oracle/v1/network_descriptor.proto"),
+            os.path.join(project_proto_dir, "sifnode/oracle/v1/types.proto"),
+            os.path.join(third_party_proto_dir, "gogoproto/gogo.proto"),
+            os.path.join(third_party_proto_dir, "google/api/annotations.proto"),
+            os.path.join(third_party_proto_dir, "google/api/http.proto"),
+            os.path.join(third_party_proto_dir, "cosmos/base/query/v1beta1/pagination.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/tx/v1beta1/service.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/base/abci/v1beta1/abci.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/tx/v1beta1/tx.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/tx/signing/v1beta1/signing.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/crypto/multisig/v1beta1/multisig.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "cosmos/base/v1beta1/coin.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/abci/types.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/crypto/proof.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/crypto/keys.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/types.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/validator.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/params.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/block.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/types/evidence.proto"),
+            os.path.join(cosmos_sdk_proto_dir, "tendermint/version/types.proto"),
+            os.path.join(cosmos_proto_proto_dir, "cosmos_proto/cosmos.proto"),
+        ]
+
+        args = [self.project_python(), "-m", "grpc_tools.protoc"] + flatten_list([["-I", i] for i in includes]) + [
+            "--python_out", generated_dir, "--grpc_python_out", generated_dir] + proto_files
+        self.cmd.execst(args, pipe=True)
+
+    def git_clone(self, url, path, checkout_commit=None, shallow=False):
+        if self.cmd.exists(os.path.join(path, ".git")):
+            return
+        log.debug("Cloning repository '{}' into '{}',,,".format(url, path))
+        self.cmd.execst(["git", "clone", "-q"] + (["--depth", "1"] if shallow else []) + [url, path])
+        if checkout_commit:
+            self.cmd.execst(["git", "checkout", checkout_commit], cwd=path)

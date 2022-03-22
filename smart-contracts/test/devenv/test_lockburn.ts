@@ -28,7 +28,7 @@ describe("lock and burn tests", () => {
 
   const devEnvObject = readDevEnvObj("environment.json")
   // a generic sif address, nothing special about it
-  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 9999
 
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,

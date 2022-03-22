@@ -1,14 +1,7 @@
-from pprint import pprint
-from time import sleep
-from typing import Iterable
+import siftool_path
+from siftool import eth, test_utils, sifchain
+from siftool.common import *
 
-import pytest
-from integration_framework import main, common, eth, test_utils, inflate_tokens, sifchain
-import eth
-import test_utils
-import sifchain
-from common import *
-from test_utils import EnvCtx
 
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
@@ -41,8 +34,8 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     # > sifnoded tx ethbridge burn
     # Reduce amount for cross-chain fee. The same formula is used inside this function.
     eth_balance_before = ctx.eth.get_eth_balance(test_eth_account)
-    amount_to_send = amount_to_send - ctx.cross_chain_fee_base * ctx.cross_chain_burn_fee
-    ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, amount_to_send, ctx.ceth_symbol)
+    amount_to_send = amount_to_send - ctx.eth.cross_chain_fee_base * ctx.eth.cross_chain_burn_fee
+    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, amount_to_send, ctx.ceth_symbol)
 
     # Verify final balance
     ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before)
@@ -90,7 +83,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
     assert sif_balance_delta[ctx.ceth_symbol] == amount_to_send
 
     token_addr = token_sc.address
-    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_addr)
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_addr)
 
     send_amount_0 = 10 * 10**token_decimals
     send_amount_1 = 3 * 10**token_decimals
@@ -104,7 +97,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
         # Send from Ethereum account 1 to Sifchain
         eth_balance_before_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
         sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
-        ctx.bridge_bank_lock_erc20(token_sc, test_eth_acct_0, test_sif_account, send_amount_0)
+        ctx.send_from_ethereum_to_sifchain(test_eth_acct_0, test_sif_account, send_amount_0, token_sc=token_sc)
         ctx.advance_blocks()
         sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
         eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
@@ -118,7 +111,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
         # test_eth_account2 = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
         eth_balance_before_1 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_1)
         sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
-        ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct_1, send_amount_1, sif_denom_hash)
+        ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct_1, send_amount_1, sif_denom_hash)
 
         # TrollToken should time out, any legit ERC20 should pass.
         # Timeout needs to be long enough for any legit token (90s works for Hardhat, but might not work for Ropsten).

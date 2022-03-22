@@ -2,13 +2,14 @@ import json
 import re
 import time
 
-import eth
-import hardhat
-from truffle import Ganache
-from command import Command
-from sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
-from project import Project, killall, force_kill_processes
-from common import *
+import siftool.eth as eth
+import siftool.hardhat as hardhat
+from siftool.truffle import Ganache
+from siftool.localnet import Localnet
+from siftool.command import Command
+from siftool.sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
+from siftool.project import Project, killall, force_kill_processes
+from siftool.common import *
 
 
 class Integrator(Ganache, Command):
@@ -168,7 +169,6 @@ class Integrator(Ganache, Command):
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
-        sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
         sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
         sifnode.set_gen_denom_whitelist(denom_whitelist_file)
         return sifnodeadmin_addr
@@ -605,6 +605,11 @@ class IntegrationTestsEnvironment:
         # This script is also called from tests
 
         relayer_db_path = os.path.join(self.test_integration_dir, "sifchainrelayerdb")
+
+        # Prevent starting over dirty/existing relayer_db_path
+        if self.cmd.exists(relayer_db_path):
+            assert not self.cmd.ls(relayer_db_path), "relayer_db_path {} not empty".format(relayer_db_path)
+
         ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator1_moniker, validator1_mnemonic,
             ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=ebrelayer_log_file)
 
@@ -643,6 +648,9 @@ class IntegrationTestsEnvironment:
             "EBRELAYER_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
         self.project.write_vagrantenv_sh(self.state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
+
+        from siftool import localnet
+        localnet.run_localnet_hook()
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
@@ -818,9 +826,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # This value is actually returned from HardhatNodeRunner. It comes from smart-contracts/hardhat.config.ts.
         # In Typescript, its value is obtained by 'require("hardhat").hre.network.config.chainId'.
         # See https://hardhat.org/advanced/hardhat-runtime-environment.html
-        # The value is not used; instead a hardcoded constant 31337 is passed to ebrelayerWitnessBuilder.
+        # The value is not used; instead a hardcoded constant 9999 is passed to ebrelayerWitnessBuilder.
         # Ask juniuszhou for details.
-        hardhat_chain_id = 31337
+        hardhat_chain_id = 9999
         hardhat_accounts = self.signer_array_to_ethereum_accounts(hardhat.default_accounts(), hardhat_validator_count)
 
         self.hardhat.compile_smart_contracts()
@@ -834,13 +842,14 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"
         ceth_symbol = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
-        assert ceth_symbol == "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+        print("ceth symbol is: {0}".format(ceth_symbol))
+        assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
         # Mint goes to validator
         mint_amount = [
             [999999 * 10**21, "rowan"],
             [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [999999 * 10**21, ceth_symbol],
-        ]
+        ] + [[10**18, "test{}".format(i)] for i in range(1, 6)]
         validator_power = 100
         seed_ip_address = "10.10.1.1"
         tendermint_port = 26657
@@ -848,7 +857,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         tokens = [
             [10**20, "rowan"],
             [2 * 10**19, "ceth"]
-        ]
+        ] + [[10**18, "xtest{}".format(i)] for i in range(1, 6)]
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
         self.cmd.rmdir(sifnoded_network_dir)
@@ -1014,20 +1023,23 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         assert len(res) == 1
         assert res[0]["code"] == 0
 
-        # need sleep to wait last transaction included in block
-        time.sleep(5)
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        sifnode.wait_for_last_transaction_to_be_mined()
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
-        ethereum_cross_chain_fee_token = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
+        ethereum_cross_chain_fee_token = "sifBridge99990x0000000000000000000000000000000000000000"
+        assert hardhat_chain_id == int(ethereum_cross_chain_fee_token[9:13])  # Assume they should match
         gas_prices = [0.5, "rowan"]
         gas_adjustment = 1.5
         sifnode.peggy2_set_cross_chain_fee(admin_account_address, hardhat_chain_id,
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
             admin_account_name, chain_id, gas_prices, gas_adjustment)
 
-        # need sleep to wait last transaction included in block
-        time.sleep(5)
+        # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
+        # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
+        sifnode.wait_for_last_transaction_to_be_mined()
         sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
@@ -1072,6 +1084,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_address=evm_validator0_addr,
             ethereum_private_key=evm_validator0_key,
             keyring_backend="test",
+            keyring_dir=sifnode_relayer0_home,
             home=sifnode_relayer0_home,
         )
 
@@ -1089,6 +1102,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             ethereum_address=evm_validator0_addr,
             ethereum_private_key=evm_validator0_key,
             keyring_backend="test",
+            keyring_dir=sifnode_relayer0_home,
             log_format="json",
             home=sifnode_witness0_home,
         )
