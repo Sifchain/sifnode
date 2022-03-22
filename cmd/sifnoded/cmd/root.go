@@ -82,6 +82,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		SetGenesisWhitelisterAdminCmd(app.DefaultNodeHome),
 		AddGenesisValidatorCmd(app.DefaultNodeHome),
 		SetGenesisOracleAdminCmd(app.DefaultNodeHome),
+		SetTokenRegistryAdminCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 	)

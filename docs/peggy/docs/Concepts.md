@@ -47,3 +47,11 @@ We want to calculate denom hash of an ERC20 token 'JimmyToken' on an EVM network
    ```
    sifBridge00200xbf45bfc92ebd305d4c0baf8395c4299bdfce9ea2
    ```
+
+## OFAC Blocklist
+In order to comply with OFAC sanctions and to prevent Sifchain's DEX from being used for illegal purposes, Sifchain has deployed a separate contract called the Blocklist, this contract contains an array, and mapping of OFAC sanctioned EVM addresses which our smart contracts will query before processing a request. By storing each blocked address in both a mapping and an array we are able to quickly search if any address is currently blocked in O(1) time while also being able to query the entire set of blocked addresses for comparison during updates. If any request comes in from a prohibited address, the smart contracts will automatically reject the transaction. Every 24 hours, Sifchain runs a script against the OFAC website listing sanctioned addresses, extracts the EVM addresses from the document, queries all the addresses in the smart contract and then removes any addresses removed from the OFAC list and adds any new addresses not currently in the list to the list. This process is done in five parts:
+ 1. The script calls getFullList, which returns an array of all addresses currently blocked by the blocklist
+ 2. The script queries the OFAC website and extracts all valid EVM addresses
+ 3. The script identifies any addresses that are currently being blocked that are not on the OFAC blocklist and identifies any addresses that are not on the blocklist that are currently on the OFAC website
+ 4. The script calls removeFromBlocklist or batchRemoveFromBlocklist with the list of addresses that need to be removed from the blocklist
+ 5. The script calls addToBlocklist or batchAddtoBlocklist with the list of addresses that need to be added to the blocklist

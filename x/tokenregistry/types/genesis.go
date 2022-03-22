@@ -6,7 +6,22 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
+
+func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) (res []abci.ValidatorUpdate) {
+
+	if len(strings.TrimSpace(data.AdminAccount)) != 0 {
+		adminAddress, err := sdk.AccAddressFromBech32(data.AdminAccount)
+		if err != nil {
+			panic(err)
+		}
+		keeper.SetAdminAccount(ctx, adminAddress)
+	}
+
+	return []abci.ValidatorUpdate{}
+}
 
 func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisState {
 	var genesisState GenesisState
