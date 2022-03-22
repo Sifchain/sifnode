@@ -4,7 +4,7 @@ import time
 import typing
 from siftool.command import buildcmd
 from siftool.common import *
-
+from typing import Mapping
 
 def sifchain_denom_hash(network_descriptor_raw: typing.Union[int, str], token_contract_address: str) -> str:
     assert on_peggy2_branch
