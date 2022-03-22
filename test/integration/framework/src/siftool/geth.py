@@ -1,6 +1,6 @@
 import json
 import re
-from common import *
+from siftool.common import *
 
 
 def js_fmt(str, *params):
