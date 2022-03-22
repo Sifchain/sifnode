@@ -130,7 +130,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 
 	cost := crossChainFeeConfig.MinimumBurnCost
 	if firstDoublePeg {
-		cost = cost.Add(crossChainFeeConfig.FirstLockDoublePeggyCost)
+		cost = cost.Add(crossChainFeeConfig.FirstBurnDoublePeggyCost)
 	}
 
 	minimumBurn := cost.Mul(crossChainFeeConfig.FeeCurrencyGas)
@@ -323,7 +323,7 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 		msg.FeeCurrencyGas,
 		msg.MinimumBurnCost,
 		msg.MinimumLockCost,
-		msg.FirstLockDoublePeggyCost)
+		msg.FirstBurnDoublePeggyCost)
 }
 
 // ProcessSignProphecy processes the set sign prophecy from validator
