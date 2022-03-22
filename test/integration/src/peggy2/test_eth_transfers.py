@@ -1,7 +1,11 @@
 import siftool_path
+
 from siftool import eth, test_utils, sifchain
 from siftool.common import *
+from siftool.test_utils import EnvCtx
+from typing import Iterable
 
+# TODO for PR: Remove all print outs
 
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
@@ -151,12 +155,12 @@ def test_failhard_token_to_sifnode_and_back(ctx: EnvCtx):
 
     token_sc = deploy_failhard_for_test(ctx, test_eth_acct, test_account_token_balance)
     token_addr = token_sc.address
-    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_sc.address)
 
     ctx.bridge_bank_lock_eth(test_eth_acct, test_sif_account, 5000)
     ctx.advance_blocks(100)
 
-    sleep(10)
+    # sleep(10)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     # Locking erc20 token to sifchain
@@ -211,14 +215,14 @@ def test_unicodeToken_token_to_sifnode_and_back(ctx: EnvCtx):
 
     token_sc = deploy_unicodeToken_for_test(ctx, test_eth_acct, test_account_token_balance)
     token_addr = token_sc.address
-    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_sc.address)
 
 
     # TODO: Remove magic number here
     ctx.bridge_bank_lock_eth(test_eth_acct, test_sif_account, 5000)
     ctx.advance_blocks(100)
     # We sleep here coz waiting for eth to transfer, TODO: Use delta OR make it 1 step
-    sleep(10)
+    # sleep(10)
 
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
 
@@ -275,14 +279,14 @@ def test_commission_token_to_sifnode_and_back(ctx: EnvCtx):
     token_dev_fee = 10
     token_sc = deploy_commissiontoken_for_test(ctx, commission_dev_acct, token_dev_fee, test_eth_acct, test_account_token_balance)
     token_addr = token_sc.address
-    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_sc.address)
 
     # TODO: Remove magic number here
     ctx.bridge_bank_lock_eth(test_eth_acct, test_sif_account, 5000)
     ctx.advance_blocks()
 
     # TODO: Remove this magic sleep, why is it here?
-    sleep(10)
+    # sleep(10)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     assert eth_token_balance_before == test_account_token_balance
@@ -339,13 +343,13 @@ def test_randomtroll_token_to_sifnode_and_back(ctx: EnvCtx):
 
     token_sc = deploy_randomtrolltoken_for_test(ctx, [test_eth_acct], [test_account_token_balance])
     token_addr = token_sc.address
-    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.ethereum_network_descriptor, token_sc.address)
+    sif_denom_hash = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_sc.address)
 
     # TODO: Remove magic number here
     ctx.bridge_bank_lock_eth(test_eth_acct, test_sif_account, 5000)
     ctx.advance_blocks(100)
 
-    sleep(10)
+    # sleep(10)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     # Locking erc20 token to sifchain
