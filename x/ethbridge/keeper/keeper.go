@@ -78,6 +78,10 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	var coins sdk.Coins
 	var err error
 	switch claim.ClaimType {
+	// To lock the token in sifnode side, we have two different ways to handle it.
+	// lock the token in a specific account or just burn it.
+	// we decide to use the second method, so if token both locked and burned in ethereum side,
+	// we must mint the token to module account, then transfer to receiver.
 	case types.ClaimType_CLAIM_TYPE_LOCK:
 		coins = sdk.NewCoins(sdk.NewCoin(claim.Denom, claim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
