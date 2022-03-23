@@ -102,6 +102,9 @@ class Sifnoded:
     def set_genesis_oracle_admin(self, address):
         self.sifnoded_exec(["set-genesis-oracle-admin", address], sifnoded_home=self.home)
 
+    def set_genesis_token_registry_admin(self, address):
+        self.sifnoded_exec(["set-genesis-token-registry-admin", address], sifnoded_home=self.home)
+
     def set_genesis_whitelister_admin(self, address):
         self.sifnoded_exec(["set-genesis-whitelister-admin", address], sifnoded_home=self.home)
 
@@ -118,6 +121,7 @@ class Sifnoded:
         self.add_genesis_account(account_address, tokens)
         if is_admin:
             self.set_genesis_oracle_admin(account_address)
+            self.set_genesis_token_registry_admin(account_address)
         self.set_genesis_whitelister_admin(account_address)
         return account_address
 
@@ -238,6 +242,8 @@ class SifnodeClient:
         eth = self.ctx.eth
 
         direction = "burn"
+        if denom == "rowan" or denom.startswith("ibc/"):
+            direction = "lock"
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory

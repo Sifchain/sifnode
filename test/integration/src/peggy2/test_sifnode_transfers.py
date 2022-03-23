@@ -1,10 +1,7 @@
 import time
 
-from integration_framework import main, common, eth, test_utils, inflate_tokens, sifchain
-import eth
-import test_utils
-import sifchain
-from common import *
+from siftool import eth, test_utils, sifchain
+from siftool.common import *
 import web3
 
 fund_amount_eth = 10 * eth.ETH
@@ -29,7 +26,7 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
 
     amount_to_lock = 1 * rowan_unit
     # test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
-    ctx.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, amount_to_lock, "rowan",)
+    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, amount_to_lock, "rowan",)
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, [[amount_to_lock, "rowan"]])
 
     test_sif_account_after_lock_balance = ctx.get_sifchain_balance(test_sif_account)

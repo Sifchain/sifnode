@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -32,8 +33,9 @@ func (m msgServer) SetRegistry(ctx context.Context, req *types.MsgSetRegistry) (
 		return nil, err
 	}
 	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer for SetRegistry")
 	}
+	fmt.Printf("++++++ junius successful call SetRegistry \n")
 	m.keeper.SetRegistry(sdk.UnwrapSDKContext(ctx), *req.Registry)
 	return &types.MsgSetRegistryResponse{}, nil
 }
