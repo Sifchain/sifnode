@@ -102,11 +102,13 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 
 // SetToken add a new denom
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
-	entry.Sanitize()
-	key := k.GetDenomPrefix(ctx, entry.Denom)
+	// get a copy to avoid modify input
+	tmpCopy := *entry
+	tmpCopy.Sanitize()
+	key := k.GetDenomPrefix(ctx, tmpCopy.Denom)
 	store := ctx.KVStore(k.storeKey)
 
-	bz := k.cdc.MustMarshal(entry)
+	bz := k.cdc.MustMarshal(&tmpCopy)
 
 	store.Set(key, bz)
 }

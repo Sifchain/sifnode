@@ -29,6 +29,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgRegister struct {
+	// from is equivalent to cosmos_sender
 	From  string         `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
 	Entry *RegistryEntry `protobuf:"bytes,2,opt,name=entry,proto3" json:"entry,omitempty"`
 }
@@ -117,6 +118,7 @@ func (m *MsgRegisterResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgRegisterResponse proto.InternalMessageInfo
 
 type MsgRegisterAll struct {
+	// from is equivalent to cosmos_sender
 	From    string           `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
 	Entries []*RegistryEntry `protobuf:"bytes,2,rep,name=entries,proto3" json:"entries,omitempty"`
 }
@@ -205,6 +207,7 @@ func (m *MsgRegisterAllResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgRegisterAllResponse proto.InternalMessageInfo
 
 type MsgSetRegistry struct {
+	// from is equivalent to cosmos_sender
 	From     string    `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
 	Registry *Registry `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
 }
@@ -293,6 +296,7 @@ func (m *MsgSetRegistryResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgSetRegistryResponse proto.InternalMessageInfo
 
 type MsgDeregister struct {
+	// from is equivalent to cosmos_sender
 	From  string `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
 	Denom string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
 }
@@ -381,6 +385,7 @@ func (m *MsgDeregisterResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgDeregisterResponse proto.InternalMessageInfo
 
 type MsgDeregisterAll struct {
+	// from is equivalent to cosmos_sender
 	From   string   `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
 	Denoms []string `protobuf:"bytes,2,rep,name=denoms,proto3" json:"denoms,omitempty"`
 }
