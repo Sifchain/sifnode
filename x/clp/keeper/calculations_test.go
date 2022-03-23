@@ -657,3 +657,203 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		})
 	}
 }
+
+func TestKeeper_CalculateWithdrawal(t *testing.T) {
+	testcases := []struct {
+		name                 string
+		poolUnits            sdk.Uint
+		nativeAssetBalance   string
+		externalAssetBalance string
+		lpUnits              string
+		wBasisPoints         string
+		asymmetry            sdk.Int
+		panicErr             string
+	}{
+		{
+			name:                 "fail to convert nativeAssetBalance to Dec",
+			poolUnits:            sdk.NewUint(1),
+			nativeAssetBalance:   "10000000000000000000000000000000000000000000000000000000000000000000000000",
+			externalAssetBalance: "1",
+			lpUnits:              "1",
+			wBasisPoints:         "1",
+			asymmetry:            sdk.NewInt(1),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert externalAssetBalance to Dec",
+			poolUnits:            sdk.NewUint(1),
+			nativeAssetBalance:   "1",
+			externalAssetBalance: "10000000000000000000000000000000000000000000000000000000000000000000000000",
+			lpUnits:              "1",
+			wBasisPoints:         "1",
+			asymmetry:            sdk.NewInt(1),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert lpUnits to Dec",
+			poolUnits:            sdk.NewUint(1),
+			nativeAssetBalance:   "1",
+			externalAssetBalance: "1",
+			lpUnits:              "10000000000000000000000000000000000000000000000000000000000000000000000000",
+			wBasisPoints:         "1",
+			asymmetry:            sdk.NewInt(1),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert wBasisPoints to Dec",
+			poolUnits:            sdk.NewUint(1),
+			nativeAssetBalance:   "1",
+			externalAssetBalance: "1",
+			lpUnits:              "1",
+			wBasisPoints:         "10000000000000000000000000000000000000000000000000000000000000000000000000",
+			asymmetry:            sdk.NewInt(1),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "fail to convert asymmetry to Dec",
+			poolUnits:            sdk.NewUint(1),
+			nativeAssetBalance:   "1",
+			externalAssetBalance: "1",
+			lpUnits:              "1",
+			wBasisPoints:         "1",
+			asymmetry:            sdk.Int(sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000")),
+			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		},
+		{
+			name:                 "asymmetric value negative",
+			poolUnits:            sdk.NewUint(1),
+			nativeAssetBalance:   "1",
+			externalAssetBalance: "1",
+			lpUnits:              "1",
+			wBasisPoints:         "1",
+			asymmetry:            sdk.NewInt(-1000),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.panicErr != "" {
+				require.PanicsWithError(t, tc.panicErr, func() {
+					clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
+				})
+				return
+			}
+
+			w, x, y, z := clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
+
+			require.NotNil(t, w)
+			require.NotNil(t, x)
+			require.NotNil(t, y)
+			require.NotNil(t, z)
+		})
+	}
+}
+
+func TestKeeper_CalcLiquidityFee(t *testing.T) {
+	testcases := []struct {
+		name                string
+		toRowan             bool
+		normalizationFactor sdk.Dec
+		adjustExternalToken bool
+		X, x, Y             sdk.Uint
+		err                 error
+		errString           error
+	}{
+		{
+			name:                "Y zero",
+			toRowan:             true,
+			normalizationFactor: sdk.NewDec(1),
+			adjustExternalToken: true,
+			X:                   sdk.NewUint(1),
+			x:                   sdk.NewUint(1),
+			Y:                   sdk.NewUint(0),
+		},
+		{
+			name:                "adjust external token with rowan",
+			toRowan:             true,
+			normalizationFactor: sdk.NewDec(1),
+			adjustExternalToken: true,
+			X:                   sdk.NewUint(1),
+			x:                   sdk.NewUint(1),
+			Y:                   sdk.NewUint(1),
+		},
+		{
+			name:                "adjust external token without rowan",
+			toRowan:             false,
+			normalizationFactor: sdk.NewDec(1),
+			adjustExternalToken: true,
+			X:                   sdk.NewUint(1),
+			x:                   sdk.NewUint(1),
+			Y:                   sdk.NewUint(1),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestKeeper_CalcSwapResult(t *testing.T) {
+	testcases := []struct {
+		name                   string
+		toRowan                bool
+		normalizationFactor    sdk.Dec
+		adjustExternalToken    bool
+		X, x, Y                sdk.Uint
+		pmtpCurrentRunningRate sdk.Dec
+		err                    error
+		errString              error
+	}{
+		{
+			name:                   "adjust external token with rowan",
+			toRowan:                true,
+			normalizationFactor:    sdk.NewDec(1),
+			adjustExternalToken:    true,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+		},
+		{
+			name:                   "adjust external token without rowan",
+			toRowan:                false,
+			normalizationFactor:    sdk.NewDec(1),
+			adjustExternalToken:    true,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := clpkeeper.CalcSwapResult(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
