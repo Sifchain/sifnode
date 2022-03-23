@@ -14,8 +14,8 @@ import (
 )
 
 func TestKeeper_SetPmtpEpoch(t *testing.T) {
-	poolAsset := "eth"
-	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
 	externalBalance := sdk.NewInt(10000)
 
@@ -53,8 +53,8 @@ func TestKeeper_SetPmtpEpoch(t *testing.T) {
 }
 
 func TestKeeper_DecrementEpochCounter(t *testing.T) {
-	poolAsset := "eth"
-	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
 	externalBalance := sdk.NewInt(10000)
 
@@ -94,8 +94,8 @@ func TestKeeper_DecrementEpochCounter(t *testing.T) {
 }
 
 func TestKeeper_DecrementBlockCounter(t *testing.T) {
-	poolAsset := "eth"
-	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
 	externalBalance := sdk.NewInt(10000)
 
@@ -135,8 +135,8 @@ func TestKeeper_DecrementBlockCounter(t *testing.T) {
 }
 
 func TestKeeper_SetBlockCounter(t *testing.T) {
-	poolAsset := "eth"
-	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
 	externalBalance := sdk.NewInt(10000)
 

@@ -20,7 +20,7 @@ import (
 func TestKeeper_CheckBalances(t *testing.T) {
 	nativeAmount, _ := sdk.NewIntFromString("999999000000000000000000000")
 	externalAmount, _ := sdk.NewIntFromString("500000000000000000000000")
-	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
 
 	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 		balances := []banktypes.Balance{
@@ -95,27 +95,29 @@ func TestKeeper_SwapOne(t *testing.T) {
 }
 
 func TestKeeper_SwapOneFromGenesis(t *testing.T) {
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+
 	testcases := []struct {
 		name                   string
 		poolAsset              string
 		address                string
+		calculateWithdraw      bool
+		adjustExternalToken    bool
 		nativeBalance          sdk.Int
 		externalBalance        sdk.Int
+		wBasis                 sdk.Int
+		asymmetry              sdk.Int
 		nativeAssetAmount      sdk.Uint
 		externalAssetAmount    sdk.Uint
 		poolUnits              sdk.Uint
-		calculateWithdraw      bool
-		normalizationFactor    sdk.Dec
-		adjustExternalToken    bool
 		swapAmount             sdk.Uint
-		wBasis                 sdk.Int
-		asymmetry              sdk.Int
-		from                   types.Asset
-		to                     types.Asset
-		pmtpCurrentRunningRate sdk.Dec
 		swapResult             sdk.Uint
 		liquidityFee           sdk.Uint
 		priceImpact            sdk.Uint
+		normalizationFactor    sdk.Dec
+		pmtpCurrentRunningRate sdk.Dec
+		from                   types.Asset
+		to                     types.Asset
 		expectedPool           types.Pool
 		err                    error
 		errString              error
@@ -123,7 +125,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		{
 			name:                   "successful swap with single pool units",
 			poolAsset:              "eth",
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			address:                address,
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(998),
@@ -146,7 +148,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		{
 			name:                   "successful swap with equal amount of pool units",
 			poolAsset:              "eth",
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			address:                address,
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(998),
@@ -169,7 +171,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		{
 			name:                   "failed swap with empty pool",
 			poolAsset:              "eth",
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			address:                address,
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(0),
@@ -194,7 +196,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		{
 			name:                   "successful swap by inversing from/to assets",
 			poolAsset:              "eth",
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			address:                address,
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(998),
@@ -219,7 +221,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		{
 			name:                   "successful swap with greater pmtp current running rate value",
 			poolAsset:              "eth",
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			address:                address,
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(998),
@@ -242,7 +244,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		{
 			name:                   "failed swap with bigger pmtp current running rate value",
 			poolAsset:              "eth",
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			address:                address,
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(998),
@@ -618,6 +620,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.panicErr != "" {
+				// nolint:errcheck
 				require.PanicsWithError(t, tc.panicErr, func() {
 					clpkeeper.CalculatePoolUnits(
 						tc.oldPoolUnits,
@@ -754,8 +757,8 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 	testcases := []struct {
 		name                string
 		toRowan             bool
-		normalizationFactor sdk.Dec
 		adjustExternalToken bool
+		normalizationFactor sdk.Dec
 		X, x, Y             sdk.Uint
 		err                 error
 		errString           error
@@ -811,9 +814,9 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 	testcases := []struct {
 		name                   string
 		toRowan                bool
-		normalizationFactor    sdk.Dec
 		adjustExternalToken    bool
 		X, x, Y                sdk.Uint
+		normalizationFactor    sdk.Dec
 		pmtpCurrentRunningRate sdk.Dec
 		err                    error
 		errString              error
