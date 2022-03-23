@@ -98,14 +98,14 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
 		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
 		poolDistributionDec := weight.Mul(blockDistributionDec)
-		poolDistribution := sdk.NewUint(poolDistributionDec.TruncateInt().Uint64())
+		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
 		//if poolDistribution.GT(remaining) {
 		//		poolDistribution = remaining
 		//}
 		if poolDistribution.IsZero() {
 			continue
 		}
-		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromUint64(poolDistribution.Uint64())))
+		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
 		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
 		if err != nil {
 			return err
