@@ -4,12 +4,12 @@ import random
 import time
 import web3
 
-import eth
-import truffle
-import hardhat
-import run_env
-import sifchain
-from common import *
+import siftool.eth as eth
+import siftool.truffle as truffle
+import siftool.hardhat as hardhat
+import siftool.run_env as run_env
+import siftool.sifchain as sifchain
+from siftool.common import *
 
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
@@ -42,6 +42,7 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     if eth_user_private_keys:
         available_test_accounts = []
         for address, key in [[e["address"], e["key"]] for e in eth_user_private_keys]:
+            address, key = eth.validate_address_and_private_key(address, key)
             available_test_accounts.append(address)
             ctx.eth.set_private_key(address, key)
         ctx.available_test_eth_accounts = available_test_accounts
@@ -79,7 +80,9 @@ def get_env_ctx_peggy2():
     owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
     owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
     if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
-        owner_private_key = owner_private_key[2:]
+        owner_private_key = owner_private_key[2:]  # TODO Remove
+    owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+
     rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
     w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
@@ -115,10 +118,10 @@ def get_env_ctx_peggy2():
     # Monkeypatching for peggy2 extras
     # TODO These are set in run_env.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
     # Consider passing them via environment
-    ctx.cross_chain_fee_base = 1
-    ctx.cross_chain_lock_fee = 1
-    ctx.cross_chain_burn_fee = 1
-    ctx.ethereum_network_descriptor = ethereum_network_descriptor
+    ctx.eth.cross_chain_fee_base = 1
+    ctx.eth.cross_chain_lock_fee = 1
+    ctx.eth.cross_chain_burn_fee = 1
+    ctx.eth.ethereum_network_descriptor = ethereum_network_descriptor
 
     return ctx
 
@@ -167,7 +170,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     else:
         operator_address = env_vars["OPERATOR_ADDRESS"]
         operator_private_key = env_vars.get("OPERATOR_PRIVATE_KEY")
-    operator_address = web3.Web3.toChecksumAddress(operator_address)
+    operator_address, operator_private_key = eth.validate_address_and_private_key(operator_address, operator_private_key)
 
     # Already added below
     # collected_private_keys[operator_address] = operator_private_key
@@ -188,14 +191,14 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     if "SMART_CONTRACT_ARTIFACT_DIR" in env_vars:
         artifacts_dir = env_vars["SMART_CONTRACT_ARTIFACT_DIR"]
     elif deployment_name:
-        artifacts_dir = cmd.project.project_dir("smart-contracts/deployments/{}/build".format(deployment_name))
+        artifacts_dir = cmd.project.project_dir("smart-contracts/deployments/{}/build/contracts".format(deployment_name))
         if deployment_name == "sifchain-1":
             # Special case for Betanet because SifchainTestToken is not deployed there.
             # It's only available on Testnet, Devnet and in local environment.
             # However, BridgeToken will work on Betanet meaning that name(), symbol() and decimals() return meaningful values.
             generic_erc20_contract_name = "BridgeToken"
     else:
-        artifacts_dir = cmd.project.project_dir("smart-contracts/build")
+        artifacts_dir = cmd.project.project_dir("smart-contracts/build/contracts")
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
@@ -274,6 +277,9 @@ class EnvCtx:
         self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
+        # Refactoring in progress: moving stuff into separate client that encapsulates things like url, home and chain_id
+        self.sifnode_client = sifchain.SifnodeClient(self.cmd, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
+        self.sifnode_client.ctx = self  # For cross-chain fees for Peggy2
         self.rowan_source = rowan_source
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
@@ -427,6 +433,8 @@ class EnvCtx:
         # Call of updateEthWhiteList will fail if we try to remove an item from whitelist which is not on the whitelist.
         return self.eth.wait_for_transaction_receipt(self.tx_update_bridge_bank_whitelist(token_addr, value))
 
+    # This function walks through all historical events LogWhiteListUpdate of a BridgeBanksmart contract and builds the
+    # current whitelist from live on-chain data.
     def get_whitelisted_tokens_from_bridge_bank_past_events(self):
         bridge_bank = self.get_bridge_bank_sc()
         past_events = self.smart_contract_get_past_events(bridge_bank, "LogWhiteListUpdate")
@@ -517,29 +525,6 @@ class EnvCtx:
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
 
-    def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom):
-        """ Sends ETH from Sifchain to Ethereum (burn) """
-
-        # TODO Move to sifchain.py
-
-        assert on_peggy2_branch, "Only for Peggy2.0"
-
-        direction = "burn"
-        cross_chain_ceth_fee = self.cross_chain_fee_base * self.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
-                "--network-descriptor", str(self.ethereum_network_descriptor),  # Mandatory
-                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
-                "--gas-prices", "0.5rowan",
-                "--gas-adjustment", "1.5",
-                "-y"
-            ] + \
-            self._sifnoded_home_arg() + \
-            self._sifnoded_chain_id_and_node_arg()
-        res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
-        result = sifnoded_parse_output_lines(stdout(res))
-        assert "failed to execute message" not in result["raw_log"]
-        return result
-
     def create_sifchain_addr(self, moniker=None, fund_amounts=None):
         """
         Generates a new sifchain address in test keyring. If moniker is given, uses it, otherwise
@@ -559,11 +544,6 @@ class EnvCtx:
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
         return sif_address
-
-    # smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
-    # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
-    def send_from_ethereum_to_sifchain(self):
-        assert False,"Not implemented yet"  # TODO
 
     def send_from_sifchain_to_sifchain(self, from_sif_addr, to_sif_addr, amounts):
         amounts_string = ",".join([sif_format_amount(*a) for a in amounts])
@@ -605,8 +585,8 @@ class EnvCtx:
                 last_change_state = new_balances
                 last_change_time = now
             else:
-                delta = sifchain.balance_delta(new_balances, last_change_state)
-                if delta:
+                delta = sifchain.balance_delta(last_change_state, new_balances)
+                if not sifchain.balance_zero(delta):
                     last_change_state = new_balances
                     last_change_time = now
                     log.debug("New state detected: {}".format(delta))
@@ -741,9 +721,22 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
-    def bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
-        txhash = self.tx_bridge_bank_lock_erc20(token_addr, from_eth_acct, to_sif_acct, amount)
+    def bridge_bank_lock_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
+        txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
+
+    # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
+    # For Sifchain-native assets (rowan) we need to use "burn".
+    # Compare: smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
+    # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
+    def send_from_ethereum_to_sifchain(self, from_eth_acct, to_sif_acct, amount, token_sc=None):
+        if token_sc is None:
+            # ETH transfer
+            self.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
+        else:
+            # ERC20 token transfer
+            self.approve_erc20_token(token_sc, from_eth_acct, amount)
+            self.bridge_bank_lock_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
 
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
