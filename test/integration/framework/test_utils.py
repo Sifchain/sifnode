@@ -553,6 +553,7 @@ class EnvCtx:
         sif_address = acct["address"]
         if fund_amounts:
             rowan_source_balances = self.get_sifchain_balance(self.rowan_source)
+            print("++++++ rowan_source_balances is ", rowan_source_balances)
             for required_amount, denom in fund_amounts:
                 available_amount = rowan_source_balances.get(denom, 0)
                 assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
@@ -586,7 +587,7 @@ class EnvCtx:
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
-        print("+++++++++++++++ balances is ", res)
+        print("+++ balances is ", res)
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
