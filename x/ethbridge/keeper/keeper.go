@@ -78,12 +78,16 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	var coins sdk.Coins
 	var err error
 	switch claim.ClaimType {
+	// To lock the token in sifnode side, we have two different ways to handle it.
+	// lock the token in a specific account or just burn it.
+	// we decide to use the second method, so if token both locked and burned in ethereum side,
+	// we must mint the token to module account, then transfer to receiver.
 	case types.ClaimType_CLAIM_TYPE_LOCK:
 		coins = sdk.NewCoins(sdk.NewCoin(claim.Denom, claim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
-		coins = sdk.NewCoins(sdk.NewCoin(claim.Denom, claim.Amount))
-		err = nil
+		coins = sdk.NewCoins(sdk.NewCoin(claim.CosmosDenom, claim.Amount))
+		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:
 		err = types.ErrInvalidClaimType
 	}
@@ -116,7 +120,8 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
 	msg *types.MsgBurn,
-	tokenMetadata tokenregistrytypes.TokenMetadata) ([]byte, error) {
+	tokenMetadata tokenregistrytypes.TokenMetadata,
+	firstDoublePeg bool) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -127,7 +132,12 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	minimumBurn := crossChainFeeConfig.MinimumBurnCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	cost := crossChainFeeConfig.MinimumBurnCost
+	if firstDoublePeg {
+		cost = cost.Add(crossChainFeeConfig.FirstBurnDoublePeggyCost)
+	}
+
+	minimumBurn := cost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumBurn) {
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
@@ -189,8 +199,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
 	msg *types.MsgLock,
-	tokenMetadata tokenregistrytypes.TokenMetadata,
-	firstDoublePeg bool) ([]byte, error) {
+	tokenMetadata tokenregistrytypes.TokenMetadata) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -208,9 +217,6 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 
 	// check if it is the first time to do double peg
 	cost := crossChainFeeConfig.MinimumLockCost
-	if firstDoublePeg {
-		cost = cost.Add(crossChainFeeConfig.FirstLockDoublePeggyCost)
-	}
 
 	minimumLock := cost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumLock) {
@@ -321,7 +327,7 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 		msg.FeeCurrencyGas,
 		msg.MinimumBurnCost,
 		msg.MinimumLockCost,
-		msg.FirstLockDoublePeggyCost)
+		msg.FirstBurnDoublePeggyCost)
 }
 
 // ProcessSignProphecy processes the set sign prophecy from validator
