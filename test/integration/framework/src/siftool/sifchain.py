@@ -1,9 +1,9 @@
-import hashlib
+import base64
 import json
 import time
-from command import buildcmd
-from common import *
 import typing
+from siftool.command import buildcmd
+from siftool.common import *
 
 
 def sifchain_denom_hash(network_descriptor_raw: typing.Union[int, str], token_contract_address: str) -> str:
@@ -140,7 +140,8 @@ class Sifnoded:
         chain_id
     ):
         args = ["tx", "tokenregistry", "set-registry", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
-            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json", "--yes"]
+            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json",
+            "--yes"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return [json.loads(x) for x in stdout(res).splitlines()]
 
@@ -161,9 +162,6 @@ class Sifnoded:
         args = ["tx", "ethbridge", "update-consensus-needed", admin_account_address, str(hardhat_chain_id),
             consensus_needed, "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
             "0.5rowan", "--gas-adjustment", "1.5", "-y"]
-        # TODO Currently "sifnoded tx ethbridge" does not have a "update-consensus-needed" subcommand so this command
-        #      fails by printing help and exiting with errorcode 0. Wait for PR to be merged:
-        #      https://github.com/Sifchain/sifnode/pull/2263
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 
@@ -198,9 +196,21 @@ class Sifnoded:
         res = self.cmd.execst(args, stdin=stdin, cwd=cwd)
         return res
 
-    def get_status(self, host, port):
-        url = "http://{}:{}/node_info".format(host, port)
+    def _rpc_get(self, host, port, relative_url):
+        url = "http://{}:{}/{}".format(host, port, relative_url)
         return json.loads(http_get(url).decode("UTF-8"))
+
+    def get_status(self, host, port):
+        return self._rpc_get(host, port, "node_info")
+
+    def wait_for_last_transaction_to_be_mined(self, count=1):
+        # TODO return int(self._rpc_get(host, port, abci_info)["response"]["last_block_height"])
+        def latest_block_height():
+            args = ["status"]  # TODO --node
+            return int(json.loads(stderr(self.sifnoded_exec(args)))["SyncInfo"]["latest_block_height"])
+        initial_block = latest_block_height()
+        while latest_block_height() < initial_block + count:
+            time.sleep(1)
 
     def wait_up(self, host, port):
         while True:
@@ -209,6 +219,111 @@ class Sifnoded:
                 return self.get_status(host, port)
             except URLError:
                 time.sleep(1)
+
+
+# Refactoring in progress
+class SifnodeClient:
+    def __init__(self, cmd, node=None, home=None, chain_id=None, grpc_port=None):
+        self.cmd = cmd
+        self.binary = "sifnoded"
+        self.node = node
+        self.home = home
+        self.chain_id = chain_id
+        self.grpc_port = grpc_port
+
+    def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom, generate_only=False):
+        """ Sends ETH from Sifchain to Ethereum (burn) """
+        assert on_peggy2_branch, "Only for Peggy2.0"
+        assert self.ctx.eth
+        eth = self.ctx.eth
+
+        direction = "burn"
+        cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
+        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+                "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
+                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+                "--output", "json",
+                "-y"
+            ] + \
+            (["--generate-only"] if generate_only else []) + \
+            self._gas_prices_args() + \
+            self._home_args() + \
+            self._chain_id_and_node_args() + \
+            (self._keyring_backend_args() if not generate_only else [])
+        res = self.sifnoded_exec(args)
+        result = json.loads(stdout(res))
+        if not generate_only:
+            assert "failed to execute message" not in result["raw_log"]
+        return result
+
+    def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr, to_eth_addr, amount, denom):
+        tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
+        signed_tx = self.sign_transaction(tx, from_sif_addr)
+        encoded_tx = self.encode_transaction(signed_tx)
+        result = self.broadcast_tx(encoded_tx)
+        return result
+
+    def sign_transaction(self, tx, from_sif_addr, sequence=None):
+        tmp_tx_file = self.cmd.mktempfile()
+        account_number = 0  # TODO
+        try:
+            self.cmd.write_text_file(tmp_tx_file, json.dumps(tx))
+            args = ["tx", "sign", tmp_tx_file, "--from", from_sif_addr] + \
+                (["--sequence", str(sequence), "--offline", "--account-number", str(account_number)] if sequence else []) + \
+                self._home_args() + \
+                self._chain_id_and_node_args() + \
+                self._keyring_backend_args()
+            res = self.sifnoded_exec(args)
+            signed_tx = json.loads(stderr(res))
+            return signed_tx
+        finally:
+            self.cmd.rm(tmp_tx_file)
+
+    def encode_transaction(self, tx):
+        tmp_file = self.cmd.mktempfile()
+        try:
+            self.cmd.write_text_file(tmp_file, json.dumps(tx))
+            res = self.sifnoded_exec(["tx", "encode", tmp_file])
+            encoded_tx = base64.b64decode(stdout(res))
+            return encoded_tx
+        finally:
+            self.cmd.rm(tmp_file)
+
+    def open_grpc_channel(self):
+        # See https://docs.cosmos.network/v0.44/core/proto-docs.html
+        # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
+        # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
+        # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
+        import grpc
+        return grpc.insecure_channel("127.0.0.1:9090")
+
+    def broadcast_tx(self, encoded_tx):
+        import cosmos.tx.v1beta1.service_pb2
+        import cosmos.tx.v1beta1.service_pb2_grpc
+        broadcast_mode = cosmos.tx.v1beta1.service_pb2.BROADCAST_MODE_ASYNC
+        with self.open_grpc_channel() as channel:
+            tx_stub = cosmos.tx.v1beta1.service_pb2_grpc.ServiceStub(channel)
+            req = cosmos.tx.v1beta1.service_pb2.BroadcastTxRequest(tx_bytes=encoded_tx, mode=broadcast_mode)
+            resp = tx_stub.BroadcastTx(req)
+            return resp
+
+    def _gas_prices_args(self):
+        return ["--gas-prices", "0.5rowan", "--gas-adjustment", "1.5"]
+
+    def _chain_id_and_node_args(self):
+        return \
+           (["--node", self.node] if self.node else []) + \
+           (["--chain-id", self.chain_id] if self.chain_id else [])
+
+    def _keyring_backend_args(self):
+        keyring_backend = self.ctx.sifnode.keyring_backend
+        return ["--keyring-backend", keyring_backend] if keyring_backend else []
+
+    def _home_args(self):
+        return ["--home", self.home] if self.home else []
+
+    def sifnoded_exec(self, *args, **kwargs):
+        return self.ctx.sifnode.sifnoded_exec(*args, **kwargs)
 
 
 class Sifgen:
@@ -235,8 +350,8 @@ class Ebrelayer:
 
     def peggy2_build_ebrelayer_cmd(self, init_what, network_descriptor, tendermint_node, web3_provider,
         bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,
-        sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None, ethereum_private_key=None,
-        ethereum_address=None, home=None, cwd=None
+        keyring_dir=None, sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None,
+        ethereum_private_key=None, ethereum_address=None, home=None, cwd=None
     ):
         env = _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key)
         args = [
@@ -254,7 +369,7 @@ class Ebrelayer:
             (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
             (["--from", sign_with] if sign_with else []) + \
             (["--home", home] if home else []) + \
-            (["--keyring-dir", home] if home else []) + \
+            (["--keyring-dir", keyring_dir] if keyring_dir else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
         return buildcmd(args, env=env, cwd=cwd)

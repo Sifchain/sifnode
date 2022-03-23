@@ -3,7 +3,8 @@ import os
 import logging
 import test_utilities
 
-from integration_framework import main
+import siftool_path
+from siftool import main
 
 
 # TODO This class is obsolete, transitioning to test_utils.Peggy1EnvCtx
