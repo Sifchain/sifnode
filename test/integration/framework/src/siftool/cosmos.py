@@ -1,4 +1,4 @@
-from common import *
+from siftool.common import *
 
 akash_binary = "akash"
 

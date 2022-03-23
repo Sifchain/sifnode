@@ -38,6 +38,7 @@ def ensure_venv(venv_dir, requirements_txt, lock_file=None):
     else:
         wrapped()
 
+
 def load_main_module():
     base_dir = get_basedir()
     project_root = os.path.abspath(os.path.join(os.path.normpath(os.path.join(base_dir, *([os.path.pardir] * 3)))))
@@ -48,11 +49,13 @@ def load_main_module():
     ensure_venv(venv_dir, requirements_txt, lock_file=lock_file)
     venv_lib_dir = glob.glob(os.path.join(venv_dir, "lib", "python3.*"))[0]
     sys.path = sys.path + [
+        os.path.join(base_dir, "src"),
+        os.path.join(base_dir, "build/generated"),
         os.path.join(venv_lib_dir, "site-packages"),
         os.path.join(project_root, "test", "integration"),  # For running integration tests in-process
     ]
-    import main as main_module
-    return main_module
+    import siftool.main as siftool_main
+    return siftool_main
 
 def main(argv):
     main_module = load_main_module()

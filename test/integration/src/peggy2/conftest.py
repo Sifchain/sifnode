@@ -1,6 +1,7 @@
 import logging
 import pytest
-from integration_framework import test_utils
+import siftool_path
+from siftool import test_utils
 
 
 @pytest.fixture(scope="function")

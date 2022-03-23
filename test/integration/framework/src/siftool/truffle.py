@@ -28,7 +28,7 @@ class GanacheAbiProvider:
         self.deployed_smart_contract_address_overrides = deployed_smart_contract_address_overrides
 
     def get_descriptor(self, sc_name):
-        path = self.cmd.project.project_dir(self.artifacts_dir, "contracts/{}.json".format(sc_name))
+        path = self.cmd.project.project_dir(self.artifacts_dir, "{}.json".format(sc_name))
         tmp = json.loads(self.cmd.read_text_file(path))
         abi = tmp["abi"]
         bytecode = tmp["bytecode"]
