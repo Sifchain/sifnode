@@ -221,12 +221,6 @@ func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityPr
 	}, nil
 }
 
-func (k Querier) GetRewardExecution(goCtx context.Context, req *types.RewardExecutionReq) (*types.RewardExecutionRes, error) {
-	execution := k.Keeper.GetRewardExecution(sdk.UnwrapSDKContext(goCtx))
-
-	return &types.RewardExecutionRes{RewardExecution: &execution}, nil
-}
-
 func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.ParamsRes, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	params := k.Keeper.GetParams(ctx)

@@ -93,23 +93,6 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	return nil
 }
 
-func (k Keeper) GetRewardExecution(ctx sdk.Context) types.RewardExecution {
-	var rewardExecution types.RewardExecution
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.RewardExecutionPrefix)
-	if bz == nil {
-		return types.RewardExecution{}
-	}
-	k.cdc.MustUnmarshal(bz, &rewardExecution)
-	return rewardExecution
-}
-
-func (k Keeper) SetRewardExecution(ctx sdk.Context, execution types.RewardExecution) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&execution)
-	store.Set(types.RewardExecutionPrefix, bz)
-}
-
 func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
 	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
 	// Reduce liquidity in one or more unlock records.

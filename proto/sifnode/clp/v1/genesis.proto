@@ -16,5 +16,4 @@ message GenesisState {
   repeated string address_whitelist = 2;
   repeated sifnode.clp.v1.Pool pool_list = 3;
   repeated sifnode.clp.v1.LiquidityProvider liquidity_providers = 4;
-  RewardExecution reward_execution = 5;
 }

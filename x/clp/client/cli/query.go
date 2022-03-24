@@ -30,7 +30,6 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdLiquidityProvider(queryRoute),
 		GetCmdLpList(queryRoute),
 		GetCmdAllLps(queryRoute),
-		GetCmdRewardExecution(queryRoute),
 		GetCmdParams(queryRoute),
 	)
 	return clpQueryCmd
@@ -250,32 +249,6 @@ func GetCmdAllLps(queryRoute string) *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "liquidityProviders")
-
-	return cmd
-}
-
-func GetCmdRewardExecution(queryRoute string) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "reward-execution",
-		Short: "Get the current reward execution data",
-		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			result, err := queryClient.GetRewardExecution(context.Background(), &types.RewardExecutionReq{})
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(result)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }
