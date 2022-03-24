@@ -41,6 +41,6 @@ ignore:
   - "**/genesis.go"
   - "x/**/*.pb.go"
   - "**/*.pb.go"
-  - "**/*.pq.gw.go"
+  - "**/*.pb.gw.go"
   - "scripts/"
   - "contrib"
