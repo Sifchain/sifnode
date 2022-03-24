@@ -31,7 +31,7 @@ def balance_zero(balances):
 
 def is_peggy_denom(denom: str):
     """Returns true if denom came from the Peggy bridge"""
-    return str.startswith("sifBridge")
+    return str.startswith(denom, "sifBridge")
 
 
 def is_cosmos_native_denom(denom: str):
@@ -200,7 +200,7 @@ class Sifnoded:
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
     def build_start_cmd(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False):
-        args = [self.binary, "start"] + \
+        args = [self.binary, "start", "--trace"] + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--log_level", "debug"] if log_format_json else []) + \

@@ -37,8 +37,8 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     assert rowan_balance >= test_sif_account_after_lock_balance["rowan"]
 
     # Verify final balance
-    time.sleep(30)
-    # ctx.wait_for_eth_balance_change(rowan_contract_address, test_eth_account_initial_balance, amount_to_lock)
+    # time.sleep(30)
+    ctx.wait_for_eth_balance_change(rowan_contract_address, test_eth_account_initial_balance, amount_to_lock)
     test_eth_account_balance_after_lock = ctx.get_erc20_token_balance(rowan_contract_address, test_eth_account)
     print("+++++++++++++ after lock eth balance is ", test_eth_account_balance_after_lock)
     assert test_eth_account_balance_after_lock - amount_to_lock == test_eth_account_initial_balance

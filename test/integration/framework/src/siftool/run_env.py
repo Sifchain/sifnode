@@ -171,7 +171,7 @@ class Integrator(Ganache, Command):
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
         sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
         # token registry admin just for peggy2
-        # sifnode.set_genesis_token_registry_admin(sifnodeadmin_addr)
+        sifnode.set_genesis_token_registry_admin(sifnodeadmin_addr)
         sifnode.set_gen_denom_whitelist(denom_whitelist_file)
         return sifnodeadmin_addr
 
@@ -1021,7 +1021,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
         # TODO Try whitelister account instead of admin
-        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
+        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_name,
             chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 1
