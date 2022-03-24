@@ -693,6 +693,21 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			pmtpCurrentRunningRate: sdk.NewDec(20),
 			errString:              errors.New("not enough received asset tokens to swap"),
 		},
+		{
+			name:                   "failed swap with bigger pmtp current running rate value",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.NewDec(20),
+			errString:              errors.New("not enough received asset tokens to swap"),
+		},
 	}
 
 	for _, tc := range testcases {
