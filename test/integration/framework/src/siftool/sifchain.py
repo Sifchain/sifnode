@@ -37,7 +37,7 @@ def is_peggy_denom(denom: str):
 def is_cosmos_native_denom(denom: str):
     """Returns true if denom is a native cosmos token (Rowan, ibc)
     that was not imported using Peggy"""
-    return not is_peggy_denom(str)
+    return not is_peggy_denom(denom)
 
 
 def lock_or_burn_denom(denom: str):
@@ -256,6 +256,7 @@ class SifnodeClient:
         assert self.ctx.eth
         eth = self.ctx.eth
 
+        print("+++ denom is ", denom)
         direction = lock_or_burn_denom(denom)
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
