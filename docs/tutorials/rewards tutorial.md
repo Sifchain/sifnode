@@ -40,14 +40,24 @@ The param change proposal takes the format:
       "value": [
         {
           "id": "Sifrewards 1",
-          "start_block": "100",
-          "end_block": "199",
-          "allocation": "100"
+          "start_block": "1",
+          "end_block": "200000",
+          "allocation": "20000000"
         }
       ]
+    },
+    {
+      "subspace": "clp",
+      "key": "LiquidityRemovalCancelPeriod",
+      "value": "720"
+    },
+    {
+      "subspace": "clp",
+      "key": "LiquidityRemovalLockPeriod",
+      "value": "360"
     }
   ],
-  "deposit": "10000000stake"
+  "deposit": "10000000rowan"
 }
 ```
 
