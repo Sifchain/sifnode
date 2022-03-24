@@ -19,9 +19,6 @@ coverage:
         flags:
         paths:
           - "x/"
-          - "!x/**/client/" # ignore client package
-          - "!**/*.pb.go"
-          - "!**/*.pb.gw.go"
     changes: false
 
 comment:
@@ -39,8 +36,9 @@ ignore:
   - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
+  - "x/**/client/"
   - "x/**/*.pb.go"
   - "**/*.pb.go"
-  - "**/*.pq.gw.go"
+  - "**/*.pb.gw.go"
   - "scripts/"
   - "contrib"

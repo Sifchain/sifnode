@@ -114,7 +114,8 @@ def test_run_online_morethan10distribution_txn(claimType):
 
     # RUN DISPENSATION TXN; GET TXN HASH
     distribution_name = f"{str(resp['height'])}_{str(distributor)}"
-    runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
+    distribution_count = str(20)
+    runtxnhash = run_dispensation(distribution_name, claimType, distribution_count, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
 
