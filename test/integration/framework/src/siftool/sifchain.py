@@ -29,6 +29,23 @@ def balance_zero(balances):
     return len(balances) == 0
 
 
+def is_peggy_denom(denom: str):
+    """Returns true if denom came from the Peggy bridge"""
+    return str.startswith("sifBridge")
+
+
+def is_cosmos_native_denom(denom: str):
+    """Returns true if denom is a native cosmos token (Rowan, ibc)
+    that was not imported using Peggy"""
+    return not is_peggy_denom(str)
+
+
+def lock_or_burn_denom(denom: str):
+    """Returns the string \"lock\" if the denom is a cosmos-native denom, otherwise it
+    returns \"burn\""""
+    return "lock" if is_cosmos_native_denom(denom) else "burn"
+
+
 class Sifnoded:
     def __init__(self, cmd, home=None):
         self.cmd = cmd
@@ -170,9 +187,7 @@ class Sifnoded:
         return res
 
     def peggy2_lock_burn(self, sif_account_address, ethereum_reciver_address, amount, denom, cross_chain_fee, hardhat_chain_id, chain_id):
-        cmd = "burn"
-        if denom == 'rowan' or denom.startswith('ibc/'):
-            cmd = "lock"
+        cmd = self.lock_or_burn_denom(denom)
         args = ["tx", "ethbridge", cmd, sif_account_address, ethereum_reciver_address, amount, denom,
                 cross_chain_fee, str(hardhat_chain_id), "--from", sif_account_address, "--chain-id", chain_id, "--gas-prices",
                 "0.5rowan", "--gas-adjustment", "1.5", "-y"]
@@ -241,9 +256,7 @@ class SifnodeClient:
         assert self.ctx.eth
         eth = self.ctx.eth
 
-        direction = "burn"
-        if denom == "rowan" or denom.startswith("ibc/"):
-            direction = "lock"
+        direction = lock_or_burn_denom(denom)
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
