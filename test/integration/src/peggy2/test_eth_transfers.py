@@ -150,7 +150,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
 #   - Tokens burned on sifchain side
 #   - Tokens not depsoited on evm side
 #   - It SHOULD NOT halt the bridge
-def test_failhard_token_to_sifnode_does_not_halt_bridge(ctx: EnvCtx):
+def test_failhard_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
     test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"],
                                                               [fund_amount_ceth_cross_chain_fee, ctx.ceth_symbol]])
@@ -178,36 +178,35 @@ def test_failhard_token_to_sifnode_does_not_halt_bridge(ctx: EnvCtx):
     assert eth_token_balance_delta == (test_account_token_balance * -1), "User's token on evm should have decreased by sent amount"
 
     # The user has successfully locked token on evm, and got balance on sifchain
-    print("We have bridged the erc20 token into sif account and verified all account balances are as expected")
 
+    # Attempting to send arbitrary amount back to evm
     test_send_amount_back = test_account_token_balance - 15
 
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
 
     sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, ctx.ceth_symbol], [1, sif_denom_hash]])
-    print("Sif balance after sending from sifchain to ethereum:", sif_balance_after)
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
-    # We expect his sif ious to be burned, and ceth to be decreased for gas fee
     assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
-    assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee"
-    assert sif_balance_delta["rowan"] < 0
+    assert "rowan" in sif_balance_delta, "User should see change in rowan balance"
+    assert sif_balance_delta["rowan"] < 0, "User should see rowan balance decreased to pay for mining"
     assert ctx.ceth_symbol in sif_balance_delta, "User should see changes in the bridged token"
-    assert sif_balance_delta[ctx.ceth_symbol] < 0
-    assert sif_denom_hash in sif_balance_delta
+    assert sif_balance_delta[ctx.ceth_symbol] < 0, "User should see ceth balance decreased to pay for cross chain"
+    assert sif_denom_hash in sif_balance_delta, "User should see change in token balance"
     assert sif_balance_delta[sif_denom_hash] == -1 * test_send_amount_back, "User's token should've been burned regardless of evm tx status"
 
     with pytest.raises(Exception) as exception:
         ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr, timeout=90)
         assert exception.args[0] == "Timeout waiting for Ethereum balance to change", "We shouldn't see any changes on evm side, this was supposed to fail"
 
-    print("Attemping a valid tx to ensure this doesn't affect subsequent transactions")
-
     test_erc20_to_sifnode_and_back_first_time(ctx)
 
-
-def test_unicodeToken_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
+# Token with unicode in symbol should not have abnormal behavior in import & export flow
+# We expect the transfer from evm to sifchain to be successful,
+# We expect the transfer from sifchain to evm to be successful
+def test_unicodeToken_token_to_sifnode_and_back_succeed_and_does_not_halt_bridge(ctx: EnvCtx):
     test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"],
                                                               [fund_amount_ceth_cross_chain_fee, ctx.ceth_symbol]])
@@ -218,51 +217,55 @@ def test_unicodeToken_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx
     sif_denom_hash = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_sc.address)
 
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+    eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
 
     ctx.send_from_ethereum_to_sifchain(test_eth_acct, test_sif_account, test_account_token_balance, token_sc)
-    # (token_sc, test_eth_acct, test_sif_account, test_account_token_balance)
     ctx.advance_blocks()
 
     # Group these into 1 func
     sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
-    # TODO: Get eth after balance here
-
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
     assert sif_balance_delta[sif_denom_hash] == test_account_token_balance
 
-    # TODO: Assert eth balance delta here
+    eth_token_balance_after = ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr)
+    eth_token_balance_delta = eth_token_balance_after - eth_token_balance_before
+    assert eth_token_balance_delta == (test_account_token_balance * -1), "User's token on evm should have decreased by sent amount"
 
     # The user has successfully locked token on evm, and got balance on sifchain
-    print("We have bridged the erc20 token into sif account: ")
 
-    # Completed eth -> sif assertions. The tx has succeeded
+    # Attempting to send arbitrary amount back to evm
     test_send_amount_back = test_account_token_balance - 15
 
     eth_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
     ctx.advance_blocks()
 
+    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, ctx.ceth_symbol], [1, sif_denom_hash]])
+    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
+    assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
+    assert "rowan" in sif_balance_delta, "User should see change in rowan balance"
+    assert sif_balance_delta["rowan"] < 0, "User should see rowan balance decreased to pay for mining"
+    assert ctx.ceth_symbol in sif_balance_delta, "User should see changes in the bridged token"
+    assert sif_balance_delta[ctx.ceth_symbol] < 0, "User should see ceth balance decreased to pay for cross chain"
+    assert sif_denom_hash in sif_balance_delta, "User should see change in token balance"
+    assert sif_balance_delta[sif_denom_hash] == -1 * test_send_amount_back, "User's token should've been burned regardless of evm tx status"
+
     eth_balance_after = ctx.wait_for_eth_balance_change(test_eth_acct, eth_balance_before,
         token_addr=token_addr, timeout=90)
-
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, ctx.ceth_symbol], [1, sif_denom_hash]])
-
-    sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
-    assert sif_denom_hash in sif_balance_delta, "Should have seen changes in token's balance"
-    assert sif_balance_delta[sif_denom_hash] == (-1 * test_send_amount_back)
-
     eth_balance_delta = eth_balance_after - eth_balance_before
-    print("Eth balance delta", eth_balance_delta)
     assert eth_balance_delta == test_send_amount_back
 
     test_erc20_to_sifnode_and_back_first_time(ctx)
 
-
-# TODO: Add bridgebank balance assertion! Invariant is sif remaining balance === bridgebank balance! 1:1-backed
-def test_commission_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
+# Token with built-in fee deduction in _transfer() should not have abnormal behavior in import & export flow
+# We expect the transfer from evm to sifchain to be successful,
+#   - User should receive net balance reflecting fee deduction in contract's _transfer function
+# We expect the transfer from sifchain to evm to be successful
+def test_commission_token_to_sifnode_and_back_succeed_and_does_not_halt_bridge(ctx: EnvCtx):
     test_eth_acct, commission_dev_acct = [ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth) for _ in range(2)]
 
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"],
@@ -291,9 +294,8 @@ def test_commission_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
     eth_token_balance_after = ctx.wait_for_eth_balance_change(test_eth_acct, eth_token_balance_before, token_addr=token_addr)
     eth_token_balance_delta = eth_token_balance_after - eth_token_balance_before
     assert eth_token_balance_delta == (test_account_token_balance * -1), "User's token on evm should have decreased by sent amount"
-    print("We have bridged the erc20 token into sif account and verified all account balances are as expected")
 
-    # test_send_amount_back = test_account_token_balance - 200
+    # Arbitrary amount to be sent back
     test_send_amount_back = 20000
 
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
@@ -301,9 +303,7 @@ def test_commission_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
 
     sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes=[[1, "rowan"], [1, ctx.ceth_symbol], [1, sif_denom_hash]])
-    print("Sif balance after sending from sifchain to ethereum:", sif_balance_after)
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
-    # We expect his sif ious to be burned, and ceth to be decreased for gas fee
     assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
     assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee"
     assert sif_balance_delta["rowan"] < 0, "User should have rowan decreased to pay for fee"
@@ -312,16 +312,14 @@ def test_commission_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
     assert sif_denom_hash in sif_balance_delta
     assert sif_balance_delta[sif_denom_hash] == -1 * test_send_amount_back, "User's token should've been burned regardless of evm tx status"
 
-    # TODO: Get eth balance delta here, should be non-zero
     eth_token_balance_after = ctx.wait_for_eth_balance_change(test_eth_acct, old_balance=eth_token_balance_before, token_addr=token_addr)
-
     eth_token_balance_delta = eth_token_balance_after - eth_token_balance_before
     assert eth_token_balance_delta > 0, "Should've received non-zero amount"
-    assert eth_token_balance_delta < test_send_amount_back, "Should've received less amount than indicated"
-    print("ERC20 balance after: ", eth_token_balance_after, ". Sent amount: ", test_send_amount_back)
+    assert eth_token_balance_delta < test_send_amount_back, "Should've received less amount than indicated due to token's fee"
 
     test_erc20_to_sifnode_and_back_first_time(ctx)
 
+# Token with random return values should not halt the bridge
 def test_randomtroll_token_to_sifnode_does_not_halt_bridge(ctx: EnvCtx):
     test_eth_acct = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"],
@@ -334,7 +332,7 @@ def test_randomtroll_token_to_sifnode_does_not_halt_bridge(ctx: EnvCtx):
 
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
-    # Locking erc20 token to sifchain
+
     ctx.send_from_ethereum_to_sifchain(test_eth_acct, test_sif_account, test_account_token_balance, token_sc)
     ctx.advance_blocks()
 
@@ -342,7 +340,6 @@ def test_randomtroll_token_to_sifnode_does_not_halt_bridge(ctx: EnvCtx):
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
-    print(sif_balance_delta)
 
     test_erc20_to_sifnode_and_back_first_time(ctx)
 
