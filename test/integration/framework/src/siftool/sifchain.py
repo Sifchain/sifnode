@@ -256,7 +256,6 @@ class SifnodeClient:
         assert self.ctx.eth
         eth = self.ctx.eth
 
-        print("+++ denom is ", denom)
         direction = lock_or_burn_denom(denom)
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),

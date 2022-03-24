@@ -387,6 +387,13 @@ class EnvCtx:
         tx_opts = {"value": 0}
         return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
+    def tx_bridge_bank_burn_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
+        recipient = sif_addr_to_evm_arg(to_sif_acct)
+        bridge_bank = self.get_bridge_bank_sc()
+        # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
+        tx_opts = {"value": 0}
+        return self.eth.transact(bridge_bank.functions.burn, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
+
     def tx_approve_and_lock(self, token_sc, from_eth_acct, to_sif_acct, amount):
         bridge_bank_sc = self.get_bridge_bank_sc()
         txhash1 = self.tx_approve(token_sc, self.operator, bridge_bank_sc.address, amount)
@@ -561,7 +568,6 @@ class EnvCtx:
         sif_address = acct["address"]
         if fund_amounts:
             rowan_source_balances = self.get_sifchain_balance(self.rowan_source)
-            print("++++++ rowan_source_balances is ", rowan_source_balances)
             for required_amount, denom in fund_amounts:
                 available_amount = rowan_source_balances.get(denom, 0)
                 assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
@@ -590,7 +596,6 @@ class EnvCtx:
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
-        print("+++ balances is ", res)
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
@@ -600,10 +605,8 @@ class EnvCtx:
         while True:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = sifchain.balance_delta(old_balances, new_balances)
-            print("++++ the delta is ", delta)
             if min_changes is not None:
                 if all([abs(delta.get(denom, 0)) >= amount for amount, denom in min_changes]):
-                    print("++++ the delta is over return after change reached")
                     return new_balances
             elif not sifchain.balance_zero(delta):
                 return new_balances
@@ -754,18 +757,25 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
+    def bridge_bank_burn_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
+        txhash = self.tx_bridge_bank_burn_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
+        return self.eth.wait_for_transaction_receipt(txhash)
+
     # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
     # For Sifchain-native assets (rowan) we need to use "burn".
     # Compare: smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
     # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
-    def send_from_ethereum_to_sifchain(self, from_eth_acct, to_sif_acct, amount, token_sc=None):
+    def send_from_ethereum_to_sifchain(self, from_eth_acct, to_sif_acct, amount, token_sc=None, isLock=True):
         if token_sc is None:
             # ETH transfer
             self.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
         else:
             # ERC20 token transfer
             self.approve_erc20_token(token_sc, from_eth_acct, amount)
-            self.bridge_bank_lock_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
+            if isLock:
+                self.bridge_bank_lock_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
+            else:
+                self.bridge_bank_burn_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
 
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
