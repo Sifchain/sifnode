@@ -2,6 +2,7 @@ import json
 import os
 import random
 import time
+from typing import Iterable, Mapping
 import web3
 
 import siftool.eth as eth
@@ -266,13 +267,13 @@ def sif_addr_to_evm_arg(sif_address):
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
+    def __init__(self, cmd, w3_conn: web3.Web3, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
         rowan_source, ceth_symbol, generic_erc20_contract
     ):
         self.cmd = cmd
         self.w3_conn = w3_conn
-        self.eth = ctx_eth
-        self.abi_provider = abi_provider
+        self.eth: eth.EthereumTxWrapper = ctx_eth
+        self.abi_provider: hardhat.HardhatAbiProvider = abi_provider
         self.operator = operator
         self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
         self.sifnode_url = sifnode_url
@@ -313,7 +314,7 @@ class EnvCtx:
         abi, _, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         return self.w3_conn.eth.contract(abi=abi, address=address)
 
-    def get_erc20_token_balance(self, token_addr, eth_addr):
+    def get_erc20_token_balance(self, token_addr, eth_addr) -> int:
         token_sc = self.get_generic_erc20_sc(token_addr)
         return token_sc.functions.balanceOf(eth_addr).call()
 
@@ -566,7 +567,7 @@ class EnvCtx:
         res = json.loads(stdout(res))["balances"]
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
-    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes=None, polling_time=1, timeout=90, change_timeout=None):
+    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes: Iterable[Mapping[int, str]] =None, polling_time=1, timeout=90, change_timeout=None):
         start_time = time.time()
         last_change_time = None
         last_change_state = None
@@ -574,7 +575,7 @@ class EnvCtx:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = sifchain.balance_delta(old_balances, new_balances)
             if min_changes is not None:
-                if all([delta.get(denom, 0) >= amount for amount, denom in min_changes]):
+                if all(denom in delta for (_, denom) in min_changes):
                     return new_balances
             elif not sifchain.balance_zero(delta):
                 return new_balances
@@ -684,7 +685,7 @@ class EnvCtx:
             # self.scavenge_ether()
             pass
 
-    def wait_for_eth_balance_change(self, eth_addr, old_balance, timeout=90, polling_time=1, token_addr=None):
+    def wait_for_eth_balance_change(self, eth_addr, old_balance: int, timeout=90, polling_time=1, token_addr=None):
         start_time = time.time()
         while True:
             new_balance = self.get_erc20_token_balance(token_addr, eth_addr) if token_addr \
@@ -782,9 +783,9 @@ class EnvCtx:
 
 class ERC20TokenData:
     def __init__(self, symbol, name, decimals):
-        self.symbol = symbol
-        self.name = name
-        self.decimals = decimals
+        self.symbol: string = symbol
+        self.name: string = name
+        self.decimals: int = decimals
 
 
 def recover_eth_from_test_accounts():

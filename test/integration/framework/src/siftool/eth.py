@@ -65,7 +65,7 @@ class EthereumTxWrapper:
     """
 
     def __init__(self, w3_conn, is_local_node):
-        self.w3_conn = w3_conn
+        self.w3_conn: web3.Web3 = w3_conn
         self.use_eip_1559 = True
         self.private_keys = {}
         self.default_timeout = 600
