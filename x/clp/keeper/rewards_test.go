@@ -86,12 +86,10 @@ func TestEndBlock(t *testing.T) {
 	periodOneSupply := app.BankKeeper.GetSupply(ctx, "rowan")
 	require.False(t, startingSupply.Equal(periodOneSupply), "starting: %s period: %s", startingSupply.String(), periodOneSupply.String())
 	require.True(t, periodOneSupply.IsGTE(startingSupply))
-	//require.True(t, periodOneSupply.Sub(startingSupply).Sub(sdk.NewCoin("rowan", sdk.NewInt(60))).IsZero())
 	// check pool has expected increase
 	pool, err := app.ClpKeeper.GetPool(ctx, "atom")
 	require.NoError(t, err)
-	// TODO Cap this scenario from exceeding allocation, then update this assertion to the .Equal value
-	require.NotEqual(t, "74074074074074074000000990", pool.NativeAssetBalance.String())
+	require.Equal(t, "66666666666666666600001000", pool.NativeAssetBalance.String())
 	// TODO continue through another portion of the period and ensure supply is increased.
 	// continue through a non reward period
 	for block := 11; block <= 20; block++ {

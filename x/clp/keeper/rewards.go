@@ -37,8 +37,6 @@ func EndBlock(ctx sdk.Context, _ abci.RequestEndBlock, keeper Keeper) []abci.Val
 		}
 	}
 
-	//keeper.PruneRewardPeriods(ctx, params)
-
 	return []abci.ValidatorUpdate{}
 }
 
@@ -52,38 +50,12 @@ func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params
 	return nil
 }
 
-/*
-func (k Keeper) PruneRewardPeriods(ctx sdk.Context, params types.Params) {
-	height := uint64(ctx.BlockHeight())
-	var write bool
-	var periods []*types.RewardPeriod
-	for _, period := range params.RewardPeriods {
-		if period.EndBlock > height {
-			write = true
-			continue
-		}
-
-		periods = append(periods, period)
-	}
-
-	if write {
-		params.RewardPeriods = periods
-		k.SetParams(ctx, params)
-	}
-}
-*/
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
-	//rewardExecution := k.GetRewardExecution(ctx)
-	//if rewardExecution.Id != period.Id {
-	//	rewardExecution.Id = period.Id
-	//	rewardExecution.Distributed = sdk.ZeroUint()
-	//}
-	// todo remove unecesssary remaining counter here and in store
-	//remaining := period.Allocation.Sub(rewardExecution.Distributed)
 	periodLength := period.EndBlock - period.StartBlock + 1
 	blockDistribution := period.Allocation.QuoUint64(periodLength)
+	remaining := blockDistribution
 
-	if /*remaining.IsZero() ||*/ blockDistribution.IsZero() {
+	if remaining.IsZero() || blockDistribution.IsZero() {
 		return nil
 	}
 
@@ -99,9 +71,9 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
 		poolDistributionDec := weight.Mul(blockDistributionDec)
 		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
-		//if poolDistribution.GT(remaining) {
-		//		poolDistribution = remaining
-		//}
+		if poolDistribution.GT(remaining) {
+			poolDistribution = remaining
+		}
 		if poolDistribution.IsZero() {
 			continue
 		}
@@ -111,15 +83,12 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 			return err
 		}
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
-		//remaining = remaining.Sub(poolDistribution)
-		//rewardExecution.Distributed = rewardExecution.Distributed.Add(poolDistribution)
+		remaining = remaining.Sub(poolDistribution)
 		err = k.SetPool(ctx, pool)
 		if err != nil {
 			return err
 		}
 	}
-
-	//k.SetRewardExecution(ctx, rewardExecution)
 
 	return nil
 }
@@ -140,28 +109,6 @@ func (k Keeper) SetRewardExecution(ctx sdk.Context, execution types.RewardExecut
 	bz := k.cdc.MustMarshal(&execution)
 	store.Set(types.RewardExecutionPrefix, bz)
 }
-
-/*
-func (k Keeper) GetRewardsDistributed(ctx sdk.Context) sdk.Uint {
-	var rewardExecution types.RewardExecution
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.RewardExecutionPrefix)
-	if bz == nil {
-		return sdk.ZeroUint()
-	}
-	k.cdc.MustUnmarshal(bz, &rewardExecution)
-	return rewardExecution.Distributed
-}
-
-func (k Keeper) SetRewardsDistributed(ctx sdk.Context, distributed sdk.Uint) {
-	store := ctx.KVStore(k.storeKey)
-	rewardsExecution := types.RewardExecution{
-		Distributed: distributed,
-	}
-	bz := k.cdc.MustMarshal(&rewardsExecution)
-	store.Set(types.RewardExecutionPrefix, bz)
-}
-*/
 
 func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
 	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
