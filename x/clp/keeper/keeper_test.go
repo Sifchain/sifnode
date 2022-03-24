@@ -134,14 +134,14 @@ func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
 	testcases :=
 		[]struct {
 			name                string
-			asset               types.Asset
-			createToken         bool
 			denom               string
+			expPanicMsg         string
+			asset               types.Asset
 			decimals            int64
 			normalizationFactor sdk.Dec
+			createToken         bool
 			adjustExternalToken bool
 			expPanic            bool
-			expPanicMsg         string
 		}{
 			{
 				name:        "big decimals number throws error",

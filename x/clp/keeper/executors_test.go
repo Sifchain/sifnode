@@ -321,3 +321,9 @@ func TestKeeper_ParseToInt(t *testing.T) {
 	assert.True(t, boolean)
 	assert.Equal(t, res.String(), "1")
 }
+
+func TestKeeper_ParseToInt_WithBigNumber(t *testing.T) {
+	_, app := test.CreateTestAppClp(false)
+	_, boolean := app.ClpKeeper.ParseToInt("10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+	assert.False(t, boolean)
+}
