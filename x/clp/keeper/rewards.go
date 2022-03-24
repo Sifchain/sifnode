@@ -80,7 +80,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	//}
 	// todo remove unecesssary remaining counter here and in store
 	//remaining := period.Allocation.Sub(rewardExecution.Distributed)
-	periodLength := period.EndBlock - period.StartBlock
+	periodLength := period.EndBlock - period.StartBlock + 1
 	blockDistribution := period.Allocation.QuoUint64(periodLength)
 
 	if /*remaining.IsZero() ||*/ blockDistribution.IsZero() {
