@@ -52,7 +52,7 @@ func TestKeeper_SetFirstLockDoublePeg(t *testing.T) {
 	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE
 
 	assert.True(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
-	app.TokenRegistryKeeper.SetFirstLockDoublePeg(ctx, denom, networkDescriptor)
+	app.TokenRegistryKeeper.SetFirstDoublePeg(ctx, denom, networkDescriptor)
 	assert.False(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
 
 }

@@ -25,11 +25,10 @@ type Keeper interface {
 	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string
 	AddIBCTokenMetadata(ctx sdk.Context, metadata TokenMetadata, cosmosSender sdk.AccAddress) string
 	GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool
-	SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor)
+	SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor)
 }
 
 type AccountKeeper interface {
 	GetAccount(sdk.Context, sdk.AccAddress) authtypes.AccountI
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 }
-

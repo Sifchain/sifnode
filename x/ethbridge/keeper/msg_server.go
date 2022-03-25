@@ -141,7 +141,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
 	if firstDoublePeg {
-		srv.tokenRegistryKeeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
+		srv.tokenRegistryKeeper.SetFirstDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)

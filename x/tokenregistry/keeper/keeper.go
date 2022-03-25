@@ -152,7 +152,7 @@ func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 	return true
 }
 
-func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
+func (k keeper) SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
 	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
 	if firstLockDoublePeg {
 		registry := k.GetDenom(ctx, denom)
@@ -162,6 +162,6 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
 		k.SetToken(ctx, &registry)
 
-		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
+		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
 	}
 }
