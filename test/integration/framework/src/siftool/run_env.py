@@ -171,7 +171,7 @@ class Integrator(Ganache, Command):
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
         sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
         # token registry admin just for peggy2
-        sifnode.set_genesis_token_registry_admin(sifnodeadmin_addr)
+        # sifnode.set_genesis_token_registry_admin(sifnodeadmin_addr)
         sifnode.set_gen_denom_whitelist(denom_whitelist_file)
         return sifnodeadmin_addr
 

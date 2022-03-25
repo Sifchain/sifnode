@@ -13,6 +13,8 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     # get rowan contract
     rowan_sc = ctx.get_generic_erc20_sc(rowan_contract_address)
 
+    # ctx.set_denom(rowan_contract_address, "rowan")
+
     # Create/retrieve a test ethereum account
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
@@ -33,12 +35,21 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     eth_account_balance_after_mint = ctx.get_erc20_token_balance(rowan_contract_address, test_eth_account)
     print("rowan balance after mint", eth_account_balance_after_mint)
 
+    test_dummy_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_dummy_account)
+    print("test_dummy_sif_account_initial_balance", test_dummy_sif_account_initial_balance)
+
     # send rowan to dummy account
     ctx.send_from_ethereum_to_sifchain(test_eth_account, test_sif_dummy_account, mint_amount, token_sc=rowan_sc, isLock=False)
     ctx.advance_blocks()
     ctx.wait_for_eth_balance_change(test_eth_account, eth_account_balance_after_mint, token_addr=rowan_contract_address, timeout=90)
     eth_account_balance_after_lock = ctx.get_erc20_token_balance(rowan_contract_address, test_eth_account)
     print("rowan balance after lock", eth_account_balance_after_lock)
+
+    # ctx.wait_for_sif_balance_change(test_sif_account, test_dummy_sif_account_initial_balance, [[mint_amount, "rowan"]])
+    # time.sleep(60)
+    # test_dummy_sif_account_balance_after_lock = ctx.get_sifchain_balance(test_sif_dummy_account)
+    # print("test_dummy_sif_account_balance_after_lock", test_dummy_sif_account_balance_after_lock)
+    # assert test_dummy_sif_account_balance_after_lock == [mint_amount, "rowan"]
 
     # sif account initial balance
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
@@ -64,3 +75,19 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
 
     # check the rowan balance as expected
     assert eth_account_final_balance == eth_account_balance_after_lock + amount_to_lock
+
+    test_sif_account_before_receive = ctx.get_sifchain_balance(test_sif_account)
+    print("test_sif_account_before_receive is ", test_sif_account_before_receive)
+
+    ctx.send_from_ethereum_to_sifchain(test_eth_account, test_sif_account, amount_to_lock, token_sc=rowan_sc, isLock=False)
+    ctx.advance_blocks()
+
+    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_before_receive, [[amount_to_lock, "rowan"]])
+    # time.sleep(60)
+    test_sif_account_after_receive = ctx.get_sifchain_balance(test_sif_account)
+    print("test_sif_account_after_receive is ", test_sif_account_after_receive)
+
+    assert test_sif_account_after_receive["rowan"] == amount_to_lock + test_sif_account_before_receive["rowan"]
+
+
+

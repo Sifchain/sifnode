@@ -138,8 +138,8 @@ class Sifnoded:
         self.add_genesis_account(account_address, tokens)
         if is_admin:
             self.set_genesis_oracle_admin(account_address)
-            self.set_genesis_token_registry_admin(account_address)
-        self.set_genesis_whitelister_admin(account_address)
+            # self.set_genesis_token_registry_admin(account_address)
+            self.set_genesis_whitelister_admin(account_address)
         return account_address
 
     def peggy2_add_relayer_witness_account(self, name, tokens, evm_network_descriptor, validator_power, denom_whitelist_file):

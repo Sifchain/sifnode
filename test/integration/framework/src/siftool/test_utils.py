@@ -317,6 +317,10 @@ class EnvCtx:
         token_sc = self.get_generic_erc20_sc(token_addr)
         return token_sc.functions.balanceOf(eth_addr).call()
 
+    def get_erc20_token_denom(self, token_addr):
+        token_sc = self.get_generic_erc20_sc(token_addr)
+        return token_sc.functions.cosmosDenom().call()
+
     def send_erc20_tokens(self, token_addr, from_addr, to_addr, amount):
         token_sc = self.get_generic_erc20_sc(token_addr)
         return self.eth.transact_sync(token_sc.functions.transfer, from_addr)(to_addr, amount)
@@ -402,6 +406,10 @@ class EnvCtx:
             token_sc.functions.symbol().call(), from_eth_acct, to_sif_acct))
         return txhash1, txhash2
 
+    def tx_set_denom(self, token_sc, from_eth_acct, new_name):
+        tx_opts = {"value": 0}
+        return self.eth.transact(token_sc.functions.setDenom, from_eth_acct, tx_opts=tx_opts)(new_name)
+
     # </editor-fold>
 
     # Used from test_integration_framework.py, test_eth_transfers.py
@@ -420,6 +428,14 @@ class EnvCtx:
         if not on_peggy2_branch:
             self.update_bridge_bank_whitelist(token_sc.address, True)
         return token_sc
+
+    # set denom for a contract
+    def set_denom(self, token_addr, new_name):
+        token_sc = self.get_generic_erc20_sc(token_addr)
+        txhash = self.tx_set_denom(token_sc, "0x627306090abaB3A6e1400e9345bC60c78a8BEf57", new_name)
+        txrcpt = self.eth.wait_for_transaction_receipt(txhash)
+        assert self.get_erc20_token_denom(token_addr) == new_name
+        return txrcpt
 
     def mint_generic_erc20_token(self, token_addr, amount, recipient, minter=None):
         minter = minter or self.operator
