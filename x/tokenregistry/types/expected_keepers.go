@@ -26,6 +26,8 @@ type Keeper interface {
 	AddIBCTokenMetadata(ctx sdk.Context, metadata TokenMetadata, cosmosSender sdk.AccAddress) string
 	GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool
 	SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor)
+	AddMultipleTokens(ctx sdk.Context, entries []*RegistryEntry)
+	RemoveMultipleTokens(ctx sdk.Context, denoms []string)
 }
 
 type AccountKeeper interface {

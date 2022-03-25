@@ -42,8 +42,8 @@ func (m *MsgRegister) ValidateBasic() error {
 	if err != nil {
 		return sdkerrors.Wrap(err, "invalid from address")
 	}
-	if m.Entry.Decimals <= 0 {
-		return errors.New("Decimals cannot be zero")
+	if m.Entry.Decimals < 0 {
+		return errors.New("Decimals cannot be less than zero")
 	}
 	return nil
 }
@@ -53,6 +53,59 @@ func (m *MsgRegister) GetSignBytes() []byte {
 }
 
 func (m *MsgRegister) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.From)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// MsgRegisterAll
+
+func (m *MsgRegisterAll) Route() string {
+	return RouterKey
+}
+
+func (m *MsgRegisterAll) Type() string {
+	return "register-all"
+}
+
+func (m *MsgRegisterAll) ValidateBasic() error {
+	if m.Entries == nil {
+		return errors.New("no token entry specified")
+	}
+
+	for _, entry := range m.Entries {
+
+		if entry == nil {
+			return errors.New("entry not initialized")
+		}
+		if entry.Denom == "" {
+			return errors.New("no denom specified")
+		}
+		coin := sdk.Coin{
+			Denom:  entry.Denom,
+			Amount: sdk.OneInt(),
+		}
+		if !coin.IsValid() {
+			return errors.New("Denom is not valid")
+		}
+		_, err := sdk.AccAddressFromBech32(m.From)
+		if err != nil {
+			return sdkerrors.Wrap(err, "invalid from address")
+		}
+		if entry.Decimals < 0 {
+			return errors.New("Decimals cannot be less than zero")
+		}
+	}
+	return nil
+}
+
+func (m *MsgRegisterAll) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+func (m *MsgRegisterAll) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
 		panic(err)
@@ -87,8 +140,8 @@ func (m *MsgSetRegistry) ValidateBasic() error {
 		if !coin.IsValid() {
 			return errors.New("Denom is not valid")
 		}
-		if entry.Decimals <= 0 {
-			return errors.New("Decimals cannot be zero")
+		if entry.Decimals < 0 {
+			return errors.New("Decimals cannot be less than zero")
 		}
 	}
 
@@ -110,6 +163,7 @@ func (m *MsgSetRegistry) GetSigners() []sdk.AccAddress {
 	}
 	return []sdk.AccAddress{addr}
 }
+
 // MsgDeregister
 
 func (m *MsgDeregister) Route() string {
@@ -143,6 +197,50 @@ func (m *MsgDeregister) GetSignBytes() []byte {
 }
 
 func (m *MsgDeregister) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.From)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// MsgDeregisterAll
+
+func (m *MsgDeregisterAll) Route() string {
+	return RouterKey
+}
+
+func (m *MsgDeregisterAll) Type() string {
+	return "deregister-all"
+}
+
+func (m *MsgDeregisterAll) ValidateBasic() error {
+
+	for _, denom := range m.Denoms {
+
+		if denom == "" {
+			return errors.New("no denom specified")
+		}
+		coin := sdk.Coin{
+			Denom:  denom,
+			Amount: sdk.OneInt(),
+		}
+		if !coin.IsValid() {
+			return errors.New("Denom is not valid")
+		}
+		_, err := sdk.AccAddressFromBech32(m.From)
+		if err != nil {
+			return sdkerrors.Wrap(err, "invalid from address")
+		}
+	}
+	return nil
+}
+
+func (m *MsgDeregisterAll) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+func (m *MsgDeregisterAll) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
 		panic(err)
