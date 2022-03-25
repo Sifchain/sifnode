@@ -14,7 +14,7 @@ import (
 func (k Keeper) SetCrossChainFee(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
 	token string,
-	gas, lockCost, burnCost, firstLockDoublePeggyCost sdk.Int) {
+	gas, lockCost, burnCost, firstBurnDoublePeggyCost sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetCrossChainFeePrefix()
 	crossChainFee := types.CrossChainFeeConfig{
@@ -22,7 +22,7 @@ func (k Keeper) SetCrossChainFee(ctx sdk.Context,
 		FeeCurrencyGas:           gas,
 		MinimumLockCost:          lockCost,
 		MinimumBurnCost:          burnCost,
-		FirstLockDoublePeggyCost: firstLockDoublePeggyCost,
+		FirstBurnDoublePeggyCost: firstBurnDoublePeggyCost,
 	}
 	store.Set(key, k.cdc.MustMarshal(&crossChainFee))
 }

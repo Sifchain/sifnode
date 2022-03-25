@@ -73,7 +73,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	ethBridgeClaim.TokenName = event.Name
 	// the nonce from ethereum event is lock burn nonce, not transaction nonce
 	ethBridgeClaim.Denom = ethbridge.GetDenom(networkDescriptor, tokenContractAddress)
-
+	ethBridgeClaim.CosmosDenom = event.CosmosDenom
 	return ethBridgeClaim, nil
 }
 

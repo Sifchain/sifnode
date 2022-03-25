@@ -53,10 +53,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return &types.MsgLockResponse{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
-	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
-	firstDoublePeg := doublePeg && srv.tokenRegistryKeeper.GetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
-
-	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata, firstDoublePeg)
+	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata)
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
@@ -66,7 +63,6 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	logger.Info("sifnode emit lock event.", "message", msg)
 	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
-	srv.tokenRegistryKeeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
@@ -78,7 +74,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
-		doublePeg,
+		false,
 		globalSequence,
 		uint8(tokenMetadata.Decimals),
 		tokenMetadata.Name,
@@ -131,18 +127,25 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
-	prophecyID, err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata)
+	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+	firstDoublePeg := doublePeg && srv.tokenRegistryKeeper.GetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
+
+	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
+	prophecyID, err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata, firstDoublePeg)
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	logger.Info("sifnode emit burn event.", "message", msg)
-	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
-	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+	if firstDoublePeg {
+		srv.tokenRegistryKeeper.SetFirstDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
+	}
+
+	logger.Info("sifnode emit burn event.", "message", msg)
+	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,

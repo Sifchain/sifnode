@@ -35,7 +35,7 @@ type OracleKeeper interface {
 	ProcessSignProphecy(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error
 	GetCrossChainFee(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
 	GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.CrossChainFeeConfig, error)
-	SetFeeInfo(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string, gas, burnCost, lockCost, firstLockDoublePeggyCost sdk.Int) error
+	SetFeeInfo(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string, gas, burnCost, lockCost, firstBurnDoublePeggyCost sdk.Int) error
 	SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte)
 	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string,
 		cosmosSenderSequence uint64, ethereumReceiver, tokenDenomHash, tokenContractAddress string,

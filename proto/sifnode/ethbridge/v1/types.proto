@@ -45,6 +45,8 @@ message EthBridgeClaim {
   // Token decimals, name and symbol
   // Marked optional because messages sent by the relayer may not be hashed
   string denom = 13 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
+  // The original denom in sifnode,like rowan or ibc token
+  string cosmos_denom = 14 [ (gogoproto.moretags) = "yaml:\"cosmos_denom\"" ];
 }
 
 message PeggyTokens { repeated string tokens = 1; }
