@@ -2,6 +2,7 @@ package dispensation
 
 import (
 	"fmt"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -9,6 +10,8 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	keeper.SetMintController(ctx,
+		types.MintController{TotalCounter: sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.ZeroInt())})
 	if data.DistributionRecords != nil {
 		for _, record := range data.DistributionRecords.DistributionRecords {
 			err := keeper.SetDistributionRecord(ctx, *record)
