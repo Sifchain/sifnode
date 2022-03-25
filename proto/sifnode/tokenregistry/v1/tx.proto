@@ -12,16 +12,28 @@ service Msg {
   rpc TokenMetadataAdd(TokenMetadataAddRequest)
       returns (TokenMetadataAddResponse) {}
   rpc SetRegistry(MsgSetRegistry) returns (MsgSetRegistryResponse) {}
+  rpc RegisterAll(MsgRegisterAll) returns (MsgRegisterAllResponse) {}
+  rpc DeregisterAll(MsgDeregisterAll) returns (MsgDeregisterAllResponse) {}
 }
 
 message MsgRegister {
+  // from is equivalent to cosmos_sender
   string from = 1;
   RegistryEntry entry = 2;
 }
 
 message MsgRegisterResponse {}
 
+message MsgRegisterAll {
+  // from is equivalent to cosmos_sender
+  string from = 1;
+  repeated RegistryEntry entries = 2;
+}
+
+message MsgRegisterAllResponse {}
+
 message MsgSetRegistry {
+  // from is equivalent to cosmos_sender
   string from = 1;
   Registry registry = 2;
 }
@@ -29,11 +41,20 @@ message MsgSetRegistry {
 message MsgSetRegistryResponse {}
 
 message MsgDeregister {
+  // from is equivalent to cosmos_sender
   string from = 1;
   string denom = 2;
 }
 
 message MsgDeregisterResponse {}
+
+message MsgDeregisterAll {
+  // from is equivalent to cosmos_sender
+  string from = 1;
+  repeated string denoms = 2;
+}
+
+message MsgDeregisterAllResponse {}
 
 message TokenMetadataAddRequest {
   string cosmos_sender = 1;
