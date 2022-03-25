@@ -17,7 +17,7 @@ RUN go mod download
 
 COPY . .
 
-RUN make install
+RUN make install-bin
 
 #
 # Main
