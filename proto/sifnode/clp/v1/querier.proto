@@ -38,7 +38,9 @@ service Query {
     option (google.api.http).get =
         "/sifchain/clp/v1/liquidity_provider_list/{symbol}";
   };
-  rpc GetParams(ParamsReq) returns (ParamsRes) {};
+  rpc GetParams(ParamsReq) returns (ParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/params";
+  };
 }
 
 message PoolReq {

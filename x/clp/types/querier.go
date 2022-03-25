@@ -8,6 +8,7 @@ const (
 	QueryLiquidityProviderData = "liquidityProviderData"
 	QueryLPList                = "lpList"
 	QueryAllLP                 = "allLp"
+	QueryParams                = "params"
 )
 
 func NewQueryReqGetPool(symbol string) PoolReq {
