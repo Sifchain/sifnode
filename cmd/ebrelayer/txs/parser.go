@@ -23,7 +23,7 @@ const (
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
 func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator, sugaredLogger *zap.SugaredLogger) (ethbridge.EthBridgeClaim, error) {
-	witnessClaim := ethbridge.EthBridgeClaim{}
+	ethBridgeClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
 	networkDescriptor := oracletypes.NetworkDescriptor(event.NetworkDescriptor)
@@ -36,10 +36,10 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	// Recipient type casting ([]bytes -> sdk.AccAddress)
 	recipient, err := sdk.AccAddressFromBech32(string(event.To))
 	if err != nil {
-		return witnessClaim, err
+		return ethBridgeClaim, err
 	}
 	if recipient.Empty() {
-		return witnessClaim, errors.New("empty recipient address")
+		return ethBridgeClaim, errors.New("empty recipient address")
 	}
 
 	// Sender type casting (address.common -> string)
@@ -50,7 +50,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	switch event.ClaimType {
 	case ethbridge.ClaimType_CLAIM_TYPE_LOCK:
 		if symbol == "eth" && !isZeroAddress(event.Token) {
-			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
+			return ethBridgeClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
 	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
 		symbol = symbolTranslator.EthereumToSifchain(symbol)
@@ -59,22 +59,22 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	amount := sdk.NewIntFromBigInt(event.Value)
 
 	// Package the information in a unique EthBridgeClaim
-	witnessClaim.NetworkDescriptor = networkDescriptor
-	witnessClaim.BridgeContractAddress = bridgeContractAddress.String()
-	witnessClaim.EthereumLockBurnSequence = event.Nonce.Uint64()
-	witnessClaim.TokenContractAddress = tokenContractAddress.String()
-	witnessClaim.Symbol = symbol
-	witnessClaim.EthereumSender = sender.String()
-	witnessClaim.ValidatorAddress = valAddr.String()
-	witnessClaim.CosmosReceiver = recipient.String()
-	witnessClaim.Amount = amount
-	witnessClaim.ClaimType = event.ClaimType
-	witnessClaim.Decimals = int64(event.Decimals)
-	witnessClaim.TokenName = event.Name
+	ethBridgeClaim.NetworkDescriptor = networkDescriptor
+	ethBridgeClaim.BridgeContractAddress = bridgeContractAddress.String()
+	ethBridgeClaim.EthereumLockBurnSequence = event.Nonce.Uint64()
+	ethBridgeClaim.TokenContractAddress = tokenContractAddress.String()
+	ethBridgeClaim.Symbol = symbol
+	ethBridgeClaim.EthereumSender = sender.String()
+	ethBridgeClaim.ValidatorAddress = valAddr.String()
+	ethBridgeClaim.CosmosReceiver = recipient.String()
+	ethBridgeClaim.Amount = amount
+	ethBridgeClaim.ClaimType = event.ClaimType
+	ethBridgeClaim.Decimals = int64(event.Decimals)
+	ethBridgeClaim.TokenName = event.Name
 	// the nonce from ethereum event is lock burn nonce, not transaction nonce
-	witnessClaim.Denom = ethbridge.GetDenom(networkDescriptor, tokenContractAddress)
-	witnessClaim.CosmosDenom = event.CosmosDenom
-	return witnessClaim, nil
+	ethBridgeClaim.Denom = ethbridge.GetDenom(networkDescriptor, tokenContractAddress)
+	ethBridgeClaim.CosmosDenom = event.CosmosDenom
+	return ethBridgeClaim, nil
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
