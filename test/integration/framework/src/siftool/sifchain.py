@@ -4,7 +4,7 @@ import time
 import typing
 from siftool.command import buildcmd
 from siftool.common import *
-
+from typing import Mapping
 
 def sifchain_denom_hash(network_descriptor_raw: typing.Union[int, str], token_contract_address: str) -> str:
     assert on_peggy2_branch
@@ -15,7 +15,8 @@ def sifchain_denom_hash(network_descriptor_raw: typing.Union[int, str], token_co
     denom = f"sifBridge{network_descriptor:04d}{token_contract_address.lower()}"
     return denom
 
-def balance_delta(balances1, balances2):
+# Returns a dict of denom -> balance delta
+def balance_delta(balances1, balances2) -> Mapping[str, float]:
     all_denoms = set(balances1.keys())
     all_denoms.update(balances2.keys())
     result = {}

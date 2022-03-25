@@ -391,21 +391,14 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	}
 	if decodedEvent, err := bridgeBank.BridgeBankFilterer.ParseLogBurn(cLog); err == nil {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_BURN
+		event.From = decodedEvent.From
 		event.To = append(event.To, decodedEvent.To...)
 		event.CosmosDenom = decodedEvent.Denom
-		event.Decimals = decodedEvent.Decimals
-		event.NetworkDescriptor = int32(networkDescriptor)
+		event.Token = decodedEvent.Token
 		event.Value = decodedEvent.Value
 		event.Nonce = (&big.Int{}).Set(decodedEvent.Nonce)
-		event.From = decodedEvent.From
-		event.Token = decodedEvent.Token
-	}
-
-	// if event.Decimals is still 0, that means
-	// couldn't be decoded as either a lock or a burn
-	if event.Decimals == 0 {
-		sub.SugaredLogger.Errorw("could not parse lock or burn event", "log", cLog)
-		return event, false, errors.New("could not parse lock or burn event")
+		event.Decimals = decodedEvent.Decimals
+		event.NetworkDescriptor = int32(networkDescriptor)
 	}
 
 	instrumentation.PeggyCheckpointZap(
