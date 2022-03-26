@@ -33,7 +33,7 @@ const (
 	SetProphecy                    = "SetProphecy"
 	SetProphecyInfo                = "SetProphecyInfo"
 	SetWitnessLockBurnNonce        = "SetWitnessLockBurnNonce"
-	SetFirstLockDoublePeg          = "SetFirstLockDoublePeg"
+	SetFirstDoublePeg              = "SetFirstDoublePeg"
 	AddTokenMetadata               = "AddTokenMetadata"
 	GetTokenMetadata               = "GetTokenMetadata"
 	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"

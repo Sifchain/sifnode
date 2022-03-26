@@ -6,7 +6,7 @@ COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 IMAGE_TAG?=latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
-DOCKER := $(shell which docker)
+DOCKER:=$(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
@@ -110,6 +110,7 @@ proto_files=$(file <Makefile.protofiles)
 proto-all: proto-format proto-lint .proto-gen
 
 .proto-gen: $(proto_files)
+	@echo ${DOCKER}
 	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh -x ./scripts/protocgen.sh
 	touch $@
 .PHONY: .proto-gen

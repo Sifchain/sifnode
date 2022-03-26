@@ -399,10 +399,6 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		event.Token = decodedEvent.Token
 		event.Value = decodedEvent.Value
 		event.Nonce = (&big.Int{}).Set(decodedEvent.Nonce)
-		event.Decimals = decodedEvent.Decimals
-		event.NetworkDescriptor = int32(networkDescriptor)
-		// TODO: Which one is denom ?
-		// event.Symbol = decodedEvent.Denom
 	}
 
 	instrumentation.PeggyCheckpointZap(
