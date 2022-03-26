@@ -153,16 +153,16 @@ func RelayBatchProphecyCompletedToEthereum(
 	// sleep 2 seconds to wait for tx to go through before querying.
 	sleepThread(2)
 
-	// if err != nil {
-	sugaredLogger.Infow(
-		"cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs",
-		"batchID", batchID,
-		"batchClaimData", batchClaimData,
-		"batchSignatureData", batchSignatureData,
-		errorMessageKey, err,
-	)
-	// 	return err
-	// }
+	if err != nil {
+		sugaredLogger.Infow(
+			"cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs",
+			"batchID", batchID,
+			"batchClaimData", batchClaimData,
+			"batchSignatureData", batchSignatureData,
+			errorMessageKey, err,
+		)
+		return err
+	}
 
 	sugaredLogger.Infow("get SubmitProphecyClaimAggregatedSigs tx hash:", "TransactionHash", tx.Hash().Hex())
 
