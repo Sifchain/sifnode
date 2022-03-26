@@ -350,12 +350,14 @@ class EnvCtx:
         finally:
             self.w3_conn.eth.uninstall_filter(filter.filter_id)
 
-    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals):
+    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals, cosmosDenom=None):
         # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
         if on_peggy2_branch:
             # Use BridgeToken
             assert self.generic_erc20_contract == "BridgeToken"
-            cosmosDenom = "erc20denom"  # TODO Dummy variable since we're using BridgeToken instead of SifchainTestToken
+            if cosmosDenom is None:
+                cosmosDenom = "erc20denom"  # TODO Dummy variable since we're using BridgeToken instead of SifchainTestToken
+
             constructor_args = [name, symbol, decimals, cosmosDenom]
         else:
             # Use SifchainTestToken for TestNet and Devnet, and BridgeToken for Betanet
@@ -409,9 +411,9 @@ class EnvCtx:
     # </editor-fold>
 
     # Used from test_integration_framework.py, test_eth_transfers.py
-    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None, mint_amount=None, mint_recipient=None):
+    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None, mint_amount=None, mint_recipient=None, cosmosDenom=None):
         owner = self.operator if owner is None else owner
-        txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals)
+        txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals, cosmosDenom)
         txrcpt = self.eth.wait_for_transaction_receipt(txhash)
         token_addr = txrcpt.contractAddress
         token_sc = self.get_generic_erc20_sc(token_addr)

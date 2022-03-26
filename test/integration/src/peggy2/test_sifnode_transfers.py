@@ -3,13 +3,53 @@ import time
 from siftool import eth, test_utils, sifchain
 from siftool.common import *
 import web3
+from json_file_writer import write_registry_json, file_path
 
 fund_amount_eth = eth.ETH
 rowan_unit = test_utils.sifnode_funds_for_transfer_peggy1
 fund_amount_sif = 2 * rowan_unit
 rowan_contract_address = web3.Web3.toChecksumAddress('0x5fbdb2315678afecb367f032d93f642f64180aa3')
+ibc_token_symbol = 'ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE'
 
-def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
+fund_amount_ibc = 10000
+admin_account = "sifnodeadmin"
+
+def test_ibc_to_eth_and_back_to_sifnode_transfer_valid(ctx):
+    # deploy erc20 for ibc token
+    token_data: test_utils.ERC20TokenData = ctx.generate_random_erc20_token_data()
+    ibc_token_sc = ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, 18, cosmosDenom=ibc_token_symbol)
+    print("ibc token address", ibc_token_sc.address)
+    # Create/retrieve a test ethereum account
+    test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+
+    # create/retrieve a test sifchain account
+    test_sif_account = ctx.create_sifchain_addr(
+        fund_amounts=[[fund_amount_sif, "rowan"], [fund_amount_eth, ctx.ceth_symbol], [fund_amount_ibc, ibc_token_symbol]])
+
+    # write the ibc token entry to a json file
+    write_registry_json("ibc", ibc_token_sc.address)
+
+    # register the ibc token
+    ctx.sifnode.peggy2_token_registry_register_all(file_path, [0.5, "rowan"], 1.5, admin_account, ctx.sifnode_chain_id)
+
+    test_eth_account_init_balance = ctx.get_erc20_token_balance(ibc_token_sc.address, test_eth_account)
+    print("test_eth_account_init_balance", test_eth_account_init_balance)
+
+    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, fund_amount_ibc, ibc_token_symbol)
+    ctx.wait_for_eth_balance_change(test_eth_account, test_eth_account_init_balance, token_addr=ibc_token_sc.address, timeout=90)
+
+    test_eth_account_after_lock = ctx.get_erc20_token_balance(ibc_token_sc.address, test_eth_account)
+    print("test_eth_account_init_balance", test_eth_account_after_lock)
+    exit()
+
+    # lock ibc token
+    # wait for ibc token balance change in eth account
+    # assert balance change
+    # burn ibc toke in eth side
+    # wait for ibc token balance change in sifnode side
+    # assert balance change
+
+def not_test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     # get rowan contract
     rowan_sc = ctx.get_generic_erc20_sc(rowan_contract_address)
 

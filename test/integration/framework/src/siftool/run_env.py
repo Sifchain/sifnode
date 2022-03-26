@@ -860,7 +860,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
         tokens = [
             [10**20, "rowan"],
-            [2 * 10**19, ceth_symbol]
+            [2 * 10**19, ceth_symbol],
+            [10 ** 16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
         ] + [[10**18, "xtest{}".format(i)] for i in range(1, 6)]
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
