@@ -12,8 +12,6 @@ import siftool.run_env as run_env
 import siftool.sifchain as sifchain
 from siftool.common import *
 
-from eth_hash.main import Keccak256
-
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
 # This is to replace test_utilities.py, conftest.py, burn_lock_functions.py and integration_test_context.py.
 # Also to replace smart-contracts/scripts/...
@@ -382,11 +380,8 @@ class EnvCtx:
         return self.eth.transact(bridge_bank.functions.updateEthWhiteList, self.operator)(token_addr, value)
 
     def tx_grant_minter_role(self, token_sc, minter_addr):
-        # keccak = Keccak256(AutoBackend())
         self.get_erc20_token_role(token_sc, minter_addr)
         minter_role_hash = token_sc.functions.MINTER_ROLE().call()
-
-        print("minter role is ", minter_role_hash)
         self.eth.transact(token_sc.functions.grantRole, self.operator)(minter_role_hash, minter_addr)
         self.get_erc20_token_role(token_sc, minter_addr)
     
@@ -632,6 +627,7 @@ class EnvCtx:
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
+        print("++++++ sifbalance is ", sif_addr, res)
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes: Iterable[Mapping[int, str]] =None, polling_time=1, timeout=90, change_timeout=None):
@@ -764,6 +760,22 @@ class EnvCtx:
             if now - start_time > timeout:
                 raise Exception("Timeout waiting for Ethereum balance to change")
 
+    def wait_for_new_bridge_token_created(self, source_contract_addr, timeout=90, polling_time=1):
+        start_time = time.time()
+        while True:
+            cosmos_bridge_sc = self.get_cosmos_bridge_sc()
+            events = self.smart_contract_get_past_events(cosmos_bridge_sc, "LogNewBridgeTokenCreated")
+
+            if len(events) > 0:
+                for e in events:
+                    if e.args["sourceContractAddress"] == source_contract_addr:
+                        return e.args["bridgeTokenAddress"]
+
+            time.sleep(polling_time)
+            now = time.time()
+            if now - start_time > timeout:
+                raise Exception("Timeout waiting for Ethereum balance to change")
+
     def create_and_fund_eth_account(self, fund_from=None, fund_amount=None):
         if self.available_test_eth_accounts is not None:
             address = self.available_test_eth_accounts.pop(0)
@@ -806,6 +818,10 @@ class EnvCtx:
     def get_cosmos_token_in_white_list(self, token_addr) -> bool:
         bridge_bank_sc = self.get_bridge_bank_sc()
         return bridge_bank_sc.functions.getCosmosTokenInWhiteList(token_addr).call()
+
+    def get_destination_contract_address(self, source_contract_addr):
+        cosmos_bridge_sc = self.get_cosmos_bridge_sc()
+        return cosmos_bridge_sc.functions.sourceAddressToDestinationAddress(source_contract_addr).call()
 
     # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
     # For Sifchain-native assets (rowan) we need to use "burn".
