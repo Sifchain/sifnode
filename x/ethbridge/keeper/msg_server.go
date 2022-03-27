@@ -145,7 +145,6 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
-	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
