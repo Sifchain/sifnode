@@ -189,13 +189,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer.String())
-	assert.NoError(t, err)
-	lp.Unlocks = append(lp.Unlocks, &clptypes.LiquidityUnlock{
-		RequestHeight: 0,
-		Units:         lp.LiquidityProviderUnits,
-	})
-	app.ClpKeeper.SetLiquidityProvider(ctx, &lp)
+	UnlockAllliquidity(app, ctx, asset, signer, t)
 
 	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
@@ -258,13 +252,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	wBasis = sdk.NewInt(10000)
 	asymmetry = sdk.NewInt(10000)
 
-	nlp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, newLP.String())
-	assert.NoError(t, err)
-	nlp.Unlocks = append(nlp.Unlocks, &clptypes.LiquidityUnlock{
-		RequestHeight: 0,
-		Units:         nlp.LiquidityProviderUnits,
-	})
-	app.ClpKeeper.SetLiquidityProvider(ctx, &nlp)
+	UnlockAllliquidity(app, ctx, asset, newLP, t)
 
 	msg = clptypes.NewMsgRemoveLiquidity(newLP, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
@@ -360,14 +348,7 @@ func TestDecommisionPool(t *testing.T) {
 	assert.True(t, ok, "")
 	ok = clpKeeper.HasBalance(ctx, signer, lpCoinsNative)
 	assert.True(t, ok, "")
-	// Unlock All liquidity
-	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer.String())
-	assert.NoError(t, err)
-	lp.Unlocks = append(lp.Unlocks, &clptypes.LiquidityUnlock{
-		RequestHeight: 0,
-		Units:         lp.LiquidityProviderUnits,
-	})
-	app.ClpKeeper.SetLiquidityProvider(ctx, &lp)
+	UnlockAllliquidity(app, ctx, asset, signer, t)
 
 	msgrm := clptypes.NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(5001), sdk.NewInt(1))
 	res, err = handler(ctx, &msgrm)
@@ -449,4 +430,14 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryK
 	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, normalizationFactor, adjustExternalToken)
 	assert.NoError(t, err)
 	return emitAmount2
+}
+
+func UnlockAllliquidity(app *sifapp.SifchainApp, ctx sdk.Context, asset clptypes.Asset, lp sdk.AccAddress, t *testing.T) {
+	nlp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, lp.String())
+	assert.NoError(t, err)
+	nlp.Unlocks = append(nlp.Unlocks, &clptypes.LiquidityUnlock{
+		RequestHeight: 0,
+		Units:         nlp.LiquidityProviderUnits,
+	})
+	app.ClpKeeper.SetLiquidityProvider(ctx, &nlp)
 }
