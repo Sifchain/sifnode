@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // BeginBlock prunes / auto-cancels the providers expired unlock requests.
@@ -23,21 +22,6 @@ func (k Keeper) BeginBlock(ctx sdk.Context) {
 	//	}
 	//	k.PruneUnlockRecords(ctx, lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 	//}
-}
-
-// EndBlock distributes rewards to pools based on the current reward period configurations.
-func EndBlock(ctx sdk.Context, _ abci.RequestEndBlock, keeper Keeper) []abci.ValidatorUpdate {
-	params := keeper.GetParams(ctx)
-	pools := keeper.GetPools(ctx)
-	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
-	if currentPeriod != nil {
-		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return []abci.ValidatorUpdate{}
 }
 
 func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params) *types.RewardPeriod {

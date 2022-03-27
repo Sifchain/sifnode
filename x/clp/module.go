@@ -157,7 +157,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 // EndBlock returns the end blocker for the clp module. It returns no validator
 // updates.
 func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return keeper.EndBlock(ctx, req, am.keeper)
+	return EndBlocker(ctx, am.keeper)
 }
 
 func (AppModule) ConsensusVersion() uint64 { return 1 }
