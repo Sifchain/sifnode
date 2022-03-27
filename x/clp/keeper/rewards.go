@@ -10,19 +10,19 @@ import (
 
 // BeginBlock prunes / auto-cancels the providers expired unlock requests.
 func (k Keeper) BeginBlock(ctx sdk.Context) {
-	params := k.GetParams(ctx)
-	for it := k.GetLiquidityProviderIterator(ctx); it.Valid(); it.Next() {
-		value := it.Value()
-		var lp types.LiquidityProvider
-		if len(value) <= 0 {
-			continue
-		}
-		err := k.cdc.Unmarshal(value, &lp)
-		if err != nil {
-			continue
-		}
-		k.PruneUnlockRecords(ctx, lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
-	}
+	//params := k.GetParams(ctx)
+	//for it := k.GetLiquidityProviderIterator(ctx); it.Valid(); it.Next() {
+	//	value := it.Value()
+	//	var lp types.LiquidityProvider
+	//	if len(value) <= 0 {
+	//		continue
+	//	}
+	//	err := k.cdc.Unmarshal(value, &lp)
+	//	if err != nil {
+	//		continue
+	//	}
+	//	k.PruneUnlockRecords(ctx, lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+	//}
 }
 
 // EndBlock distributes rewards to pools based on the current reward period configurations.
