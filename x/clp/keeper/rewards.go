@@ -7,23 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// BeginBlock prunes / auto-cancels the providers expired unlock requests.
-func (k Keeper) BeginBlock(ctx sdk.Context) {
-	//params := k.GetParams(ctx)
-	//for it := k.GetLiquidityProviderIterator(ctx); it.Valid(); it.Next() {
-	//	value := it.Value()
-	//	var lp types.LiquidityProvider
-	//	if len(value) <= 0 {
-	//		continue
-	//	}
-	//	err := k.cdc.Unmarshal(value, &lp)
-	//	if err != nil {
-	//		continue
-	//	}
-	//	k.PruneUnlockRecords(ctx, lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
-	//}
-}
-
 func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params) *types.RewardPeriod {
 	height := uint64(ctx.BlockHeight())
 	for _, period := range params.RewardPeriods {
