@@ -6,12 +6,12 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
-	params := k.GetParams(ctx)
-	pools := k.GetPools(ctx)
-	currentPeriod := k.GetCurrentRewardPeriod(ctx, params)
+func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
+	params := keeper.GetParams(ctx)
+	pools := keeper.GetPools(ctx)
+	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
 	if currentPeriod != nil {
-		err := k.DistributeDepthRewards(ctx, currentPeriod, pools)
+		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
 		if err != nil {
 			panic(err)
 		}
