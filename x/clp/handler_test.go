@@ -177,16 +177,26 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.NoError(t, err)
 	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
+
 	msg := clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err := handler(ctx, &msg)
 	require.Error(t, err)
 	require.Nil(t, res)
+
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(10000)
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer.String())
+	assert.NoError(t, err)
+	lp.Unlocks = append(lp.Unlocks, &clptypes.LiquidityUnlock{
+		RequestHeight: 0,
+		Units:         lp.LiquidityProviderUnits,
+	})
+	app.ClpKeeper.SetLiquidityProvider(ctx, &lp)
+
 	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
@@ -247,6 +257,15 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.NotNil(t, res)
 	wBasis = sdk.NewInt(10000)
 	asymmetry = sdk.NewInt(10000)
+
+	nlp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, newLP.String())
+	assert.NoError(t, err)
+	nlp.Unlocks = append(nlp.Unlocks, &clptypes.LiquidityUnlock{
+		RequestHeight: 0,
+		Units:         nlp.LiquidityProviderUnits,
+	})
+	app.ClpKeeper.SetLiquidityProvider(ctx, &nlp)
+
 	msg = clptypes.NewMsgRemoveLiquidity(newLP, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
@@ -341,10 +360,20 @@ func TestDecommisionPool(t *testing.T) {
 	assert.True(t, ok, "")
 	ok = clpKeeper.HasBalance(ctx, signer, lpCoinsNative)
 	assert.True(t, ok, "")
+	// Unlock All liquidity
+	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer.String())
+	assert.NoError(t, err)
+	lp.Unlocks = append(lp.Unlocks, &clptypes.LiquidityUnlock{
+		RequestHeight: 0,
+		Units:         lp.LiquidityProviderUnits,
+	})
+	app.ClpKeeper.SetLiquidityProvider(ctx, &lp)
+
 	msgrm := clptypes.NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(5001), sdk.NewInt(1))
 	res, err = handler(ctx, &msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
 	msg := clptypes.NewMsgDecommissionPool(signer, asset.Symbol)
 	_, err = handler(ctx, &msg)
 	require.Error(t, err)

@@ -16,6 +16,5 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
 			panic(err)
 		}
 	}
-
 	return []abci.ValidatorUpdate{}
 }

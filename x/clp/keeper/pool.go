@@ -52,11 +52,15 @@ func (k Keeper) ExistsPool(ctx sdk.Context, symbol string) bool {
 	return k.Exists(ctx, key)
 }
 
-// Deprecated: GetPools use GetPoolsPaginated
 func (k Keeper) GetPools(ctx sdk.Context) []*types.Pool {
 	var poolList []*types.Pool
 	iterator := k.GetPoolsIterator(ctx)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var pool types.Pool
 		bytesValue := iterator.Value()
