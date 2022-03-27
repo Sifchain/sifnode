@@ -41,36 +41,36 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+func (keeper Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) Codec() codec.BinaryCodec {
-	return k.cdc
+func (keeper Keeper) Codec() codec.BinaryCodec {
+	return keeper.cdc
 }
 
-func (k Keeper) GetBankKeeper() types.BankKeeper {
-	return k.bankKeeper
+func (keeper Keeper) GetBankKeeper() types.BankKeeper {
+	return keeper.bankKeeper
 }
 
-func (k Keeper) GetAuthKeeper() types.AuthKeeper {
-	return k.authKeeper
+func (keeper Keeper) GetAuthKeeper() types.AuthKeeper {
+	return keeper.authKeeper
 }
 
-func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
-	store := ctx.KVStore(k.storeKey)
+func (keeper Keeper) Exists(ctx sdk.Context, key []byte) bool {
+	store := ctx.KVStore(keeper.storeKey)
 	return store.Has(key)
 }
 
-func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins) error {
-	return k.bankKeeper.SendCoins(ctx, from, to, coins)
+func (keeper Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins) error {
+	return keeper.bankKeeper.SendCoins(ctx, from, to, coins)
 }
 
-func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) bool {
-	return k.bankKeeper.HasBalance(ctx, addr, coin)
+func (keeper Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) bool {
+	return keeper.bankKeeper.HasBalance(ctx, addr, coin)
 }
 
-func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
+func (keeper Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 	normalizationFactor := sdk.NewDec(1)
 	adjustExternalToken := false
 	nf := decimals

@@ -17,7 +17,7 @@ func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params
 	return nil
 }
 
-func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
+func (keeper Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
 	periodLength := period.EndBlock - period.StartBlock + 1
 	blockDistribution := period.Allocation.QuoUint64(periodLength)
 	remaining := blockDistribution
@@ -28,12 +28,12 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 
 	totalDepth := sdk.ZeroDec()
 	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		m := keeper.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
 		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
 	}
 
 	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		m := keeper.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
 		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
 		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
 		poolDistributionDec := weight.Mul(blockDistributionDec)
@@ -45,13 +45,13 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 			continue
 		}
 		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
-		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
+		err := keeper.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
 		if err != nil {
 			return err
 		}
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
 		remaining = remaining.Sub(poolDistribution)
-		err = k.SetPool(ctx, pool)
+		err = keeper.SetPool(ctx, pool)
 		if err != nil {
 			return err
 		}
@@ -60,11 +60,11 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	return nil
 }
 
-func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
+func (keeper Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
 	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
 	// Reduce liquidity in one or more unlock records.
 	// Remove unlock records with zero units remaining.
-	params := k.GetParams(ctx)
+	params := keeper.GetParams(ctx)
 	currentHeight := ctx.BlockHeight()
 	lockPeriod := params.LiquidityRemovalLockPeriod
 
@@ -89,7 +89,8 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 	}
 
 	// prune records.
-	var records []*types.LiquidityUnlock
+	//var records []*types.LiquidityUnlock
+	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
 		/* move to begin blocker
 		if currentHeight >= record.RequestHeight + int64(lockPeriod) + cancelPeriod {
@@ -104,16 +105,17 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 	}
 
 	lp.Unlocks = records
-	k.SetLiquidityProvider(ctx, &lp)
+	keeper.SetLiquidityProvider(ctx, &lp)
 
 	return nil
 }
 
-func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
+func (keeper Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
 	currentHeight := ctx.BlockHeight()
 
 	var write bool
-	var records []*types.LiquidityUnlock
+	//var records []*types.LiquidityUnlock
+	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
 		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) {
 			// prune auto cancelled record
@@ -138,11 +140,11 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, 
 
 	if write {
 		lp.Unlocks = records
-		k.SetLiquidityProvider(ctx, &lp)
+		keeper.SetLiquidityProvider(ctx, &lp)
 	}
 }
 
-func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
+func (keeper Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
 	for _, m := range period.Multipliers {
 		if strings.EqualFold(asset, m.Asset) {
 			if m.Multiplier != nil && !m.Multiplier.IsNil() {

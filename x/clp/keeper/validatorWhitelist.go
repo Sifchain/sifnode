@@ -9,27 +9,27 @@ import (
 
 // Rename this feature to clp admin list to avoid confusion with Whitelist module
 
-func (k Keeper) SetClpWhiteList(ctx sdk.Context, validatorList []sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
+func (keeper Keeper) SetClpWhiteList(ctx sdk.Context, validatorList []sdk.AccAddress) {
+	store := ctx.KVStore(keeper.storeKey)
 	key := types.WhiteListValidatorPrefix
 	valList := make([]string, len(validatorList))
 	for i, entry := range validatorList {
 		valList[i] = entry.String()
 	}
-	store.Set(key, k.cdc.MustMarshal(&stakingtypes.ValAddresses{Addresses: valList}))
+	store.Set(key, keeper.cdc.MustMarshal(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
-func (k Keeper) ExistsClpWhiteList(ctx sdk.Context) bool {
+func (keeper Keeper) ExistsClpWhiteList(ctx sdk.Context) bool {
 	key := types.WhiteListValidatorPrefix
-	return k.Exists(ctx, key)
+	return keeper.Exists(ctx, key)
 }
 
-func (k Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
-	store := ctx.KVStore(k.storeKey)
+func (keeper Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
+	store := ctx.KVStore(keeper.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
 	valAddresses := &stakingtypes.ValAddresses{}
-	k.cdc.MustUnmarshal(bz, valAddresses)
+	keeper.cdc.MustUnmarshal(bz, valAddresses)
 	vl := make([]sdk.AccAddress, len(valAddresses.Addresses))
 	for i, entry := range valAddresses.Addresses {
 		addr, err := sdk.AccAddressFromBech32(entry)
@@ -41,11 +41,11 @@ func (k Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
 	return vl
 }
 
-func (k Keeper) ValidateAddress(ctx sdk.Context, address sdk.AccAddress) bool {
-	if !k.ExistsClpWhiteList(ctx) {
+func (keeper Keeper) ValidateAddress(ctx sdk.Context, address sdk.AccAddress) bool {
+	if !keeper.ExistsClpWhiteList(ctx) {
 		return false
 	}
-	valList := k.GetClpWhiteList(ctx)
+	valList := keeper.GetClpWhiteList(ctx)
 	for _, validator := range valList {
 		if validator.Equals(address) {
 			return true
