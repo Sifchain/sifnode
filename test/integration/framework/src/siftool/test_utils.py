@@ -12,6 +12,7 @@ import siftool.run_env as run_env
 import siftool.sifchain as sifchain
 from siftool.common import *
 
+from eth_hash.main import Keccak256
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
 # This is to replace test_utilities.py, conftest.py, burn_lock_functions.py and integration_test_context.py.
@@ -313,6 +314,12 @@ class EnvCtx:
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
+    def get_cosmos_bridge_sc(self):
+        abi, _, address = self.abi_provider.get_descriptor("CosmosBridge")
+        assert address, "No address for CosmosBridge"
+        result = self.w3_conn.eth.contract(address=address, abi=abi)
+        return result
+
     def get_generic_erc20_sc(self, address):
         abi, _, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         return self.w3_conn.eth.contract(abi=abi, address=address)
@@ -374,6 +381,23 @@ class EnvCtx:
         bridge_bank = self.get_bridge_bank_sc()
         return self.eth.transact(bridge_bank.functions.updateEthWhiteList, self.operator)(token_addr, value)
 
+    def tx_grant_minter_role(self, token_sc, minter_addr):
+        # keccak = Keccak256(AutoBackend())
+        self.get_erc20_token_role(token_sc, minter_addr)
+        minter_role_hash = token_sc.functions.MINTER_ROLE().call()
+
+        print("minter role is ", minter_role_hash)
+        self.eth.transact(token_sc.functions.grantRole, self.operator)(minter_role_hash, minter_addr)
+        self.get_erc20_token_role(token_sc, minter_addr)
+    
+    def get_erc20_token_role(self, token_sc, minter_addr):
+        minter_role_hash = "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6"
+        operator_is_minter = token_sc.functions.hasRole(minter_role_hash, self.operator).call()
+        print("+++ operator is minter", operator_is_minter)
+
+        minter_addr_is_minter = token_sc.functions.hasRole(minter_role_hash, minter_addr).call()
+        print("+++ new minter is minter", minter_addr_is_minter)
+
     def tx_approve(self, token_sc, from_addr, to_addr, amount):
         return self.eth.transact(token_sc.functions.approve, from_addr)(to_addr, amount)
 
@@ -399,6 +423,12 @@ class EnvCtx:
         # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
         tx_opts = {"value": 0}
         return self.eth.transact(bridge_bank.functions.burn, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
+
+    def tx_bridge_bank_add_existing_bridge_token(self, token_addr):
+        bridge_bank = self.get_bridge_bank_sc()
+        # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
+        tx_opts = {"value": 0}
+        return self.eth.transact(bridge_bank.functions.addExistingBridgeToken, self.operator, tx_opts=tx_opts)(token_addr)
 
     def tx_approve_and_lock(self, token_sc, from_eth_acct, to_sif_acct, amount):
         bridge_bank_sc = self.get_bridge_bank_sc()
@@ -766,6 +796,16 @@ class EnvCtx:
     def bridge_bank_burn_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):
         txhash = self.tx_bridge_bank_burn_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
+
+    def bridge_bank_add_existing_bridge_token(self, token_addr):
+        txhash = self.tx_bridge_bank_add_existing_bridge_token(token_addr)
+        self.eth.wait_for_transaction_receipt(txhash)
+        final_value = self.get_cosmos_token_in_white_list(token_addr)
+        assert final_value is True
+
+    def get_cosmos_token_in_white_list(self, token_addr) -> bool:
+        bridge_bank_sc = self.get_bridge_bank_sc()
+        return bridge_bank_sc.functions.getCosmosTokenInWhiteList(token_addr).call()
 
     # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
     # For Sifchain-native assets (rowan) we need to use "burn".
