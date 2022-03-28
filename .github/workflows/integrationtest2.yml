@@ -42,8 +42,7 @@ jobs:
 
       - name: Start standalone peggy
         run: |
-          ./test/integration/framework/siftool run-env &
-          sleep 120
+          ./test/integration/framework/siftool run-env
 
       - name: Run integration tests
         run: |
