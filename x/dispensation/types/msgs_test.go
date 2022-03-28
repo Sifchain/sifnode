@@ -351,7 +351,7 @@ func TestMsgRunDistribution(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType)
+	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType, 10)
 
 	assert.Equal(t, runner.String(), result.GetAuthorizedRunner())
 	assert.Equal(t, distributionName, result.DistributionName)
@@ -363,7 +363,7 @@ func TestMsgRunDistribution_Route(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType)
+	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType, 10)
 
 	key := result.Route()
 	key1 := types.RouterKey
@@ -375,7 +375,7 @@ func TestMsgRunDistribution_Type(t *testing.T) {
 	runner := sdk.AccAddress("addr2_______________")
 	distributionName := types.AttributeKeyDistributionName
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType)
+	result := types.NewMsgRunDistribution(runner.String(), distributionName, distributionType, 10)
 
 	typ := result.Type()
 	typ1 := types.MsgTypeRunDistribution
@@ -388,12 +388,28 @@ func TestMsgRunDistribution_validateBasic(t *testing.T) {
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
 
 	msg := types.MsgRunDistribution{
-		AuthorizedRunner: runner.String(),
-		DistributionName: distributionName,
-		DistributionType: distributionType,
+		AuthorizedRunner:  runner.String(),
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: 10,
 	}
 	err := msg.ValidateBasic()
 	assert.NoError(t, err)
+}
+
+func TestMsgRunDistribution_dispensationCount(t *testing.T) {
+	runner := sdk.AccAddress("addr2_______________")
+	distributionName := types.AttributeKeyDistributionName
+	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
+
+	msg := types.MsgRunDistribution{
+		AuthorizedRunner:  runner.String(),
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: -1,
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
 }
 
 func TestMsgRunDistribution_validateBasic_InvalidDistributiontype(t *testing.T) {
@@ -402,9 +418,10 @@ func TestMsgRunDistribution_validateBasic_InvalidDistributiontype(t *testing.T) 
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED
 
 	msg := types.MsgRunDistribution{
-		AuthorizedRunner: runner.String(),
-		DistributionName: distributionName,
-		DistributionType: distributionType,
+		AuthorizedRunner:  runner.String(),
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: 10,
 	}
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
@@ -415,9 +432,10 @@ func TestMsgRunDistribution_validateBasic_EmptyDistributionName(t *testing.T) {
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
 
 	msg := types.MsgRunDistribution{
-		AuthorizedRunner: runner.String(),
-		DistributionName: "",
-		DistributionType: distributionType,
+		AuthorizedRunner:  runner.String(),
+		DistributionName:  "",
+		DistributionType:  distributionType,
+		DistributionCount: 10,
 	}
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
@@ -428,9 +446,10 @@ func TestMsgRunDistribution_validateBasic_InvalidRunnerAddress(t *testing.T) {
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
 
 	msg := types.MsgRunDistribution{
-		AuthorizedRunner: types.AttributeKeyDistributionRunner,
-		DistributionName: distributionName,
-		DistributionType: distributionType,
+		AuthorizedRunner:  types.AttributeKeyDistributionRunner,
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: 10,
 	}
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
@@ -442,9 +461,10 @@ func TestMsgRunDistribution_GetSignBytes(t *testing.T) {
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
 
 	msg := types.MsgRunDistribution{
-		AuthorizedRunner: runner.String(),
-		DistributionName: distributionName,
-		DistributionType: distributionType,
+		AuthorizedRunner:  runner.String(),
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: 10,
 	}
 	byt := msg.GetSignBytes()
 	byt1 := sdk.MustSortJSON(types.ModuleCdc.MustMarshalJSON(&msg))
@@ -459,9 +479,10 @@ func TestMsgRunDistribution_GetSigners(t *testing.T) {
 	distributionType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
 
 	msg := types.MsgRunDistribution{
-		AuthorizedRunner: runner.String(),
-		DistributionName: distributionName,
-		DistributionType: distributionType,
+		AuthorizedRunner:  runner.String(),
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: 10,
 	}
 	result := msg.GetSigners()
 	addr, err := sdk.AccAddressFromBech32(msg.AuthorizedRunner)

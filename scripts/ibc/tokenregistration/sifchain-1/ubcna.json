@@ -2,12 +2,12 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/AB71F94BB809FB05FB4547C471A92C3F9826BA24E660BB4782B5ED61FB9AB867",
-      "base_denom": "uscrt",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-4",
-      "display_name": "Secret",
+      "denom": "ibc/7876FB1D317D993F1F54185DF6E405C7FE070B71E3A53AE0CEA5A86AC878EB7A",
+      "base_denom": "ubcna",
+      "path": "transfer/channel-25",
+      "ibc_channel_id": "channel-25",
+      "ibc_counterparty_channel_id": "channel-2",
+      "display_name": "Bitcanna",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "secret-4"
+      "ibc_counterparty_chain_id": "bitcanna-1"
     }
   ]
 }

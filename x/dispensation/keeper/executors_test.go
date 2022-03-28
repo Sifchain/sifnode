@@ -63,7 +63,7 @@ func TestKeeper_DistributeDrops_For_Address_Fail(t *testing.T) {
 	runner := ""
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, runner)
 	assert.NoError(t, err)
-	_, err1 := keeper.DistributeDrops(ctx, 4657424885079777562, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
+	_, err1 := keeper.DistributeDrops(ctx, 4657424885079777562, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, 10)
 	assert.NoError(t, err1)
 
 }
@@ -85,7 +85,7 @@ func TestKeeper_DistributeDrops_Fail(t *testing.T) {
 	runner := sdk.AccAddress("addr1_______________").String()
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, runner)
 	assert.NoError(t, err)
-	pendingRecords := keeper.GetLimitedRecordsForRunner(ctx, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	pendingRecords := keeper.GetLimitedRecordsForRunner(ctx, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, 10)
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
 		t.Log(recipientAddress, err)
@@ -113,9 +113,9 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	assert.NoError(t, err)
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, runner)
 	assert.NoError(t, err)
-	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, 10)
 	assert.NoError(t, err)
-	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, 10)
 	assert.NoError(t, err)
 	completedRecords := keeper.GetRecordsForNameAndStatus(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
 	assert.Equal(t, 6, len(completedRecords.DistributionRecords))

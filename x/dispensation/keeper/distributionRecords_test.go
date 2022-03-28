@@ -105,7 +105,7 @@ func TestKeeper_GetPendingRecordsLimited(t *testing.T) {
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, record.DistributionType)
 		assert.NoError(t, err)
 	}
-	assert.Len(t, keeper.GetLimitedRecordsForStatus(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 10)
+	assert.Len(t, keeper.GetLimitedRecordsForStatus(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 20)
 	assert.Len(t, keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 1000)
 }
 func TestKeeper_GetPendingRecordsLimitedMultipleDistributions(t *testing.T) {

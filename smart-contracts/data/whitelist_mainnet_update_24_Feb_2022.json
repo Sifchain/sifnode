@@ -1,0 +1,76 @@
+{
+  "array": [
+    {
+      "address": "0xabe580e7ee158da464b51ee1a83ac0289622e6be",
+      "name": "Offshift",
+      "symbol": "XFT",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/6236.png"
+    },
+    {
+      "address": "0xd13c7342e1ef687c5ad21b27c2b65d772cab5c8c",
+      "name": "Ultra Token",
+      "symbol": "UOS",
+      "decimals": 4,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/4189.png"
+    },
+    {
+      "address": "0x1b890fD37Cd50BeA59346fC2f8ddb7cd9F5Fabd5",
+      "name": "New Order",
+      "symbol": "NEWO",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/15922.png"
+    },
+    {
+      "address": "0xf1b99e3e573a1a9c5e6b2ce818b617f0e664e86b",
+      "name": "Opyn Squeeth",
+      "symbol": "oSQTH",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/17500.png"
+    },
+    {
+      "address": "0x15D4c048F83bd7e37d49eA4C83a07267Ec4203dA",
+      "name": "Gala",
+      "symbol": "GALA",
+      "decimals": 8,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/7080.png"
+    },
+    {
+      "address": "0xf418588522d5dd018b425E472991E52EBBeEEEEE",
+      "name": "Ethereum Push Notification Service",
+      "symbol": "PUSH",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/9111.png"
+    },
+    {
+      "address": "0x949d48eca67b17269629c7194f4b727d4ef9e5d6",
+      "name": "Merit Circle",
+      "symbol": "MC",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/13523.png"
+    },
+    {
+      "address": "0xe28b3b32b6c345a34ff64674606124dd5aceca30",
+      "name": "Injective Token",
+      "symbol": "INJ",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/7226.png"
+    }
+  ]
+}

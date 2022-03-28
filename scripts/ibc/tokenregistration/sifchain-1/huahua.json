@@ -2,12 +2,12 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/AB71F94BB809FB05FB4547C471A92C3F9826BA24E660BB4782B5ED61FB9AB867",
-      "base_denom": "uscrt",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-4",
-      "display_name": "Secret",
+      "denom": "ibc/B75D134EA563A1D0AEB6C8F60180453DC8FB3787C6D7598F4158B37454FDAF33",
+      "base_denom": "uhuahua",
+      "path": "transfer/channel-35",
+      "ibc_channel_id": "channel-35",
+      "ibc_counterparty_channel_id": "channel-8",
+      "display_name": "Chihuahua",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "secret-4"
+      "ibc_counterparty_chain_id": "chihuahua-1"
     }
   ]
 }
