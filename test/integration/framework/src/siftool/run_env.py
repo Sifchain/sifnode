@@ -860,7 +860,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         tendermint_port = 26657
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
         tokens = [
-            [10**20, "rowan"],
+            [10**22, "rowan"],
             [2 * 10**22, ceth_symbol],
             [10 ** 16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [10 ** 16, "sifBridge00030x1111111111111111111111111111111111111111"],

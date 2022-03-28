@@ -383,15 +383,11 @@ class EnvCtx:
         self.get_erc20_token_role(token_sc, minter_addr)
         minter_role_hash = token_sc.functions.MINTER_ROLE().call()
         self.eth.transact(token_sc.functions.grantRole, self.operator)(minter_role_hash, minter_addr)
-        self.get_erc20_token_role(token_sc, minter_addr)
-    
-    def get_erc20_token_role(self, token_sc, minter_addr):
-        minter_role_hash = "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6"
-        operator_is_minter = token_sc.functions.hasRole(minter_role_hash, self.operator).call()
-        print("+++ operator is minter", operator_is_minter)
+        assert self.get_erc20_token_role(token_sc, minter_addr) is True
 
-        minter_addr_is_minter = token_sc.functions.hasRole(minter_role_hash, minter_addr).call()
-        print("+++ new minter is minter", minter_addr_is_minter)
+    def get_erc20_token_role(self, token_sc, minter_addr):
+        minter_role_hash = token_sc.functions.MINTER_ROLE().call()
+        return token_sc.functions.hasRole(minter_role_hash, minter_addr).call()
 
     def tx_approve(self, token_sc, from_addr, to_addr, amount):
         return self.eth.transact(token_sc.functions.approve, from_addr)(to_addr, amount)
@@ -627,7 +623,6 @@ class EnvCtx:
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
-        print("++++++ sifbalance is ", sif_addr, res)
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
     def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes: Iterable[Mapping[int, str]] =None, polling_time=1, timeout=90, change_timeout=None):
