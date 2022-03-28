@@ -52,20 +52,20 @@ def test_erc20_to_sifnode_and_back_first_time(ctx):
     transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
 
 
-# def test_erc20_to_sifnode_and_back_multiple_times(ctx):
-#     token_decimals = 18
-#     token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
-#     transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 5, False)
+def test_erc20_to_sifnode_and_back_multiple_times(ctx):
+    token_decimals = 18
+    token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 5, False)
 
 
-# def test_trolltoken_to_sifnode_and_back(ctx):
-#     token_decimals = 0
-#     token_sc = deploy_trolltoken_for_test(ctx)
+def test_trolltoken_to_sifnode_and_back(ctx):
+    token_decimals = 0
+    token_sc = deploy_trolltoken_for_test(ctx)
     # TODO Depending on timeout is not reliable confirmation of test passing. Timeout can happen for many other reasons
     #      such as slow machine, Ethereum chain congestion, relayer crashing etc. It would be much better if we could
     #      use some specific information to confirm that we did in fact handle the token correctly (i.e. seeing a
     #      particular message in logs, or a specific event being emitted by BridgeBank etc.)
-    # transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, True)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, True)
 
 
 # Shared code used by different test scenarios

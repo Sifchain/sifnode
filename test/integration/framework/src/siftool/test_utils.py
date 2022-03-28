@@ -380,12 +380,12 @@ class EnvCtx:
         return self.eth.transact(bridge_bank.functions.updateEthWhiteList, self.operator)(token_addr, value)
 
     def tx_grant_minter_role(self, token_sc, minter_addr):
-        self.get_erc20_token_role(token_sc, minter_addr)
+        self.get_erc20_token_minter_role(token_sc, minter_addr)
         minter_role_hash = token_sc.functions.MINTER_ROLE().call()
         self.eth.transact(token_sc.functions.grantRole, self.operator)(minter_role_hash, minter_addr)
-        assert self.get_erc20_token_role(token_sc, minter_addr) is True
+        assert self.get_erc20_token_minter_role(token_sc, minter_addr) is True
 
-    def get_erc20_token_role(self, token_sc, minter_addr):
+    def get_erc20_token_minter_role(self, token_sc, minter_addr):
         minter_role_hash = token_sc.functions.MINTER_ROLE().call()
         return token_sc.functions.hasRole(minter_role_hash, minter_addr).call()
 
@@ -558,31 +558,6 @@ class EnvCtx:
         token_sc = self.get_generic_erc20_sc(erc20_token_addr)
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
-
-    def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom):
-        """ Sends ETH from Sifchain to Ethereum (burn) """
-
-        # TODO Move to sifchain.py
-
-        assert on_peggy2_branch, "Only for Peggy2.0"
-
-        direction = "burn"
-        if denom == "rowan" or denom.startswith("ibc/"):
-            direction = "lock"
-        cross_chain_ceth_fee = self.cross_chain_fee_base * self.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
-                "--network-descriptor", str(self.ethereum_network_descriptor),  # Mandatory
-                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
-                "--gas-prices", "0.5rowan",
-                "--gas-adjustment", "1.5",
-                "-y"
-            ] + \
-            self._sifnoded_home_arg() + \
-            self._sifnoded_chain_id_and_node_arg()
-        res = self.sifnode.sifnoded_exec(args, keyring_backend=self.sifnode.keyring_backend)
-        result = sifnoded_parse_output_lines(stdout(res))
-        assert "failed to execute message" not in result["raw_log"]
-        return result
 
     def create_sifchain_addr(self, moniker=None, fund_amounts=None):
         """

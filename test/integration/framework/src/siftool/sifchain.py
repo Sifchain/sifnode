@@ -139,7 +139,6 @@ class Sifnoded:
         self.add_genesis_account(account_address, tokens)
         if is_admin:
             self.set_genesis_oracle_admin(account_address)
-            # self.set_genesis_token_registry_admin(account_address)
             self.set_genesis_whitelister_admin(account_address)
         return account_address
 
@@ -184,14 +183,6 @@ class Sifnoded:
         args = ["tx", "ethbridge", "update-consensus-needed", admin_account_address, str(hardhat_chain_id),
             consensus_needed, "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
             "0.5rowan", "--gas-adjustment", "1.5", "-y"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
-        return res
-
-    def peggy2_lock_burn(self, sif_account_address, ethereum_reciver_address, amount, denom, cross_chain_fee, hardhat_chain_id, chain_id):
-        cmd = self.lock_or_burn_denom(denom)
-        args = ["tx", "ethbridge", cmd, sif_account_address, ethereum_reciver_address, amount, denom,
-                cross_chain_fee, str(hardhat_chain_id), "--from", sif_account_address, "--chain-id", chain_id, "--gas-prices",
-                "0.5rowan", "--gas-adjustment", "1.5", "-y"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 
