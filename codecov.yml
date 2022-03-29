@@ -32,6 +32,8 @@ ignore:
   - "*.proto"
   - "*.md"
   - "*.rst"
+  - "*.json"
+  - "*.lock"
   - "**/test_common.go"
   - "**/test_helpers.go"
   - "**/module.go"
