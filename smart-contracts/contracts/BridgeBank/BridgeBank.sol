@@ -566,6 +566,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
         _lockTokens(recipient[i], token[i], amount[i], startingLockBurnNonce + i);
       }
     }
+
+    // If we get any reentrant calls from the _{burn,lock}Tokens functions, 
+    // make sure that lockBurnNonce is what we expect it to be.
+    require(lockBurnNonce == startingLockBurnNonce - 1 + recipientLength, "M_P");
   }
 
   /**
