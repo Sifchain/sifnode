@@ -31,7 +31,7 @@ export async function checkSifnodeBurnState(
 ) {
   const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
     {
-      evmrelayer: "/tmp/sifnode/evmrelayer.log",
+      evmrelayer: "/tmp/sifnode/relayer.log",
       sifnoded: "/tmp/sifnode/sifnoded.log",
       witness: "/tmp/sifnode/witness.log",
     },
