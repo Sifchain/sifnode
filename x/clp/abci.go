@@ -26,7 +26,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.Logger(ctx).Info(fmt.Sprintf("Starting new policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	}
 	// default to current pmtp current running rate value
-	var pmtpCurrentRunningRate sdk.Dec = k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	// Manage Block Counter and Calculate R running
 	if currentHeight >= pmtpPeriodStartBlock &&
 		currentHeight <= pmtpPeriodEndBlock &&
