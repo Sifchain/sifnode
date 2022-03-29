@@ -3,12 +3,9 @@
 In this tutorial we will deploy and interact with a wasm smart-contract on a
 local sifnoded instance.
 
-Sifchain implements the same wasm functionality as Juno, and this tutorial is 
-basically taken from [their docs](https://docs.junonetwork.io/smart-contracts-and-junod-development/tutorial-erc-20).
-
-We will skip the part about writing and compiling the smart-contract. Instead we
-will deploy the precompiled file kept in `sc/cw_erc20.wasm` which, as the name 
-implies, implements erc20.
+We will skip writing and compiling the smart-contract. Instead we will deploy 
+the precompiled file kept in `sc/cw_erc20.wasm` which, as the name implies, 
+implements erc20.
 
 ## Setup
 
@@ -91,6 +88,7 @@ the initial balance should go to that account.
 sifnoded tx wasm instantiate 1 '{"name":"Poodle Coin","symbol":"POOD","decimals":6,"initial_balances":[{"address":"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd","amount":"12345678000"}]}' \
 --amount 50000rowan \
 --label "Poodlecoin erc20" \
+--no-admin \
 --from sif --keyring-backend test \
 --gas 1000000000000000000 \
 --broadcast-mode block \

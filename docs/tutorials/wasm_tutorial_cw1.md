@@ -41,6 +41,7 @@ able to spend rowan from that account.
 sifnoded tx wasm instantiate 1 '{"admins":["sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"],"mutable":false}' \
 --amount 5000000rowan \
 --label "CW1 Subkey" \
+--no-admin \
 --from sif --keyring-backend test \
 --gas 1000000000000000000 \
 --broadcast-mode block \
