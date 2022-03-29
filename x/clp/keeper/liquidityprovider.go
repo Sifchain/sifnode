@@ -10,43 +10,43 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp *types.LiquidityProvider) {
+func (keeper Keeper) SetLiquidityProvider(ctx sdk.Context, lp *types.LiquidityProvider) {
 	if !lp.Validate() {
 		return
 	}
-	store := ctx.KVStore(k.storeKey)
+	store := ctx.KVStore(keeper.storeKey)
 	key := types.GetLiquidityProviderKey(lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	store.Set(key, k.cdc.MustMarshal(lp))
+	store.Set(key, keeper.cdc.MustMarshal(lp))
 }
 
-func (k Keeper) GetLiquidityProvider(ctx sdk.Context, symbol string, lpAddress string) (types.LiquidityProvider, error) {
+func (keeper Keeper) GetLiquidityProvider(ctx sdk.Context, symbol string, lpAddress string) (types.LiquidityProvider, error) {
 	var lp types.LiquidityProvider
 	key := types.GetLiquidityProviderKey(symbol, lpAddress)
-	store := ctx.KVStore(k.storeKey)
-	if !k.Exists(ctx, key) {
+	store := ctx.KVStore(keeper.storeKey)
+	if !keeper.Exists(ctx, key) {
 		return lp, types.ErrLiquidityProviderDoesNotExist
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshal(bz, &lp)
+	keeper.cdc.MustUnmarshal(bz, &lp)
 	return lp, nil
 }
 
-func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
-	store := ctx.KVStore(k.storeKey)
+func (keeper Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(keeper.storeKey)
 	return sdk.KVStorePrefixIterator(store, types.LiquidityProviderPrefix)
 }
 
-func (k Keeper) GetAssetsForLiquidityProviderPaginated(ctx sdk.Context, lpAddress sdk.AccAddress,
+func (keeper Keeper) GetAssetsForLiquidityProviderPaginated(ctx sdk.Context, lpAddress sdk.AccAddress,
 	pagination *query.PageRequest) ([]*types.Asset, *query.PageResponse, error) {
 	var assetList []*types.Asset
-	store := ctx.KVStore(k.storeKey)
+	store := ctx.KVStore(keeper.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 	pageRes, err := query.FilteredPaginate(lpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var lp types.LiquidityProvider
 		if len(value) <= 0 {
 			return false, nil
 		}
-		err := k.cdc.Unmarshal(value, &lp)
+		err := keeper.cdc.Unmarshal(value, &lp)
 		if err != nil {
 			return false, err
 		}
@@ -67,26 +67,26 @@ func (k Keeper) GetAssetsForLiquidityProviderPaginated(ctx sdk.Context, lpAddres
 	return assetList, pageRes, nil
 }
 
-func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddress string) {
+func (keeper Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddress string) {
 	key := types.GetLiquidityProviderKey(symbol, lpAddress)
-	if !k.Exists(ctx, key) {
+	if !keeper.Exists(ctx, key) {
 		return
 	}
-	store := ctx.KVStore(k.storeKey)
+	store := ctx.KVStore(keeper.storeKey)
 	store.Delete(key)
 }
 
-func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset,
+func (keeper Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset,
 	pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
 	var lpList []*types.LiquidityProvider
-	store := ctx.KVStore(k.storeKey)
+	store := ctx.KVStore(keeper.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 	pageRes, err := query.FilteredPaginate(lpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var lp types.LiquidityProvider
 		if len(value) <= 0 {
 			return false, nil
 		}
-		err := k.cdc.Unmarshal(value, &lp)
+		err := keeper.cdc.Unmarshal(value, &lp)
 		if err != nil {
 			return false, err
 		}
@@ -107,14 +107,14 @@ func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset ty
 	return lpList, pageRes, nil
 }
 
-func (k Keeper) GetAllLiquidityProvidersPaginated(ctx sdk.Context,
+func (keeper Keeper) GetAllLiquidityProvidersPaginated(ctx sdk.Context,
 	pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
 	var lpList []*types.LiquidityProvider
-	store := ctx.KVStore(k.storeKey)
+	store := ctx.KVStore(keeper.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 	pageRes, err := query.Paginate(lpStore, pagination, func(key []byte, value []byte) error {
 		var liquidityProvider types.LiquidityProvider
-		err := k.cdc.Unmarshal(value, &liquidityProvider)
+		err := keeper.cdc.Unmarshal(value, &liquidityProvider)
 		if err != nil {
 			return err
 		}
