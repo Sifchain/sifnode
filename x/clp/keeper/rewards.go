@@ -110,7 +110,7 @@ func (keeper Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityPro
 	return nil
 }
 
-func (keeper Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
+func (keeper Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
 	currentHeight := ctx.BlockHeight()
 
 	var write bool
@@ -137,10 +137,9 @@ func (keeper Keeper) PruneUnlockRecords(ctx sdk.Context, lp types.LiquidityProvi
 		}
 		records = append(records, record)
 	}
-
 	if write {
 		lp.Unlocks = records
-		keeper.SetLiquidityProvider(ctx, &lp)
+		keeper.SetLiquidityProvider(ctx, lp)
 	}
 }
 
