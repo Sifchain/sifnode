@@ -33,7 +33,6 @@ export function sifwatch(
   // TODO: Const?
   const observables: Observable<SifEvent>[] = new Array()
 
-  // const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
   const evmRelayerLines = tailFileAsObservable(logs.evmrelayer)
   const evmRelayerEvents: Observable<EbRelayerEvent> = evmRelayerLines.pipe(
     map(jsonParseSimple),

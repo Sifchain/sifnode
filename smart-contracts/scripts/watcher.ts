@@ -13,7 +13,7 @@ import { EvmStateTransition, toEvmRelayerEvent } from "../src/watcher/ebrelayer"
 import { sifwatch } from "../src/watcher/watcher"
 
 async function main() {
-  const evmRelayerEvents = sifwatch("/tmp/sifnode/evmrelayer.log")
+  const evmRelayerEvents = sifwatch("/tmp/sifnode/relayer.log")
 
   evmRelayerEvents.subscribe({
     next: (x) => {

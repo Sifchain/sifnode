@@ -198,6 +198,8 @@ describe("Test Bridge Bank", function () {
 
   describe("Multi Lock ERC20 Tokens", function () {
     it("should allow user to multi-lock ERC20 tokens", async function () {
+      const previousNonce = await state.bridgeBank.connect(userOne).lockBurnNonce();
+
       // Attempt to lock tokens
       await state.bridgeBank
         .connect(userOne)
@@ -207,6 +209,8 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount],
           [false, false, false]
         );
+
+      (await state.bridgeBank.connect(userOne).lockBurnNonce()).should.be.bignumber.equal(previousNonce.add(3));
 
       // Confirm that the user has been minted the correct token
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));

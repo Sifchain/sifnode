@@ -23,7 +23,7 @@ export async function getContractFromTruffleArtifact<T extends BaseContract>(
   const truffle = require("@truffle/contract")
   const truffleContract = (truffle as any)(parsedArtifactContents)
   const contractData = truffleContract.networks[chainId]
-  const ethersContract = await hre.ethers.getContractAt(truffleContract.abi, contractData.address)
+  const ethersContract: BaseContract = await hre.ethers.getContractAt(truffleContract.abi, contractData.address)
   return ethersContract as T
 }
 

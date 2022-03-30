@@ -462,7 +462,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    *      such that tokens which charge fees on transfer are accurately represented.
    * @param token The bridgeToken's address
    * @param amount The amount of bridgeToken's to transfer to the bridgebank
-   * @return The balance that was transfered as reported by the getBalance command   
+   * @return The balance that was transfered as reported by the getBalance command
    */
   function transferBalance(address token, uint256 amount) private returns (uint256) {
     //The interface of the ERC20 token to interact with
@@ -478,10 +478,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     uint256 newBalance = getBalance(token);
 
     //Calculate the total amount transfered from the newbalance vs the old balance
-    //Since this contract uses solidity 0.8+ overflows from bad acting tokens should 
+    //Since this contract uses solidity 0.8+ overflows from bad acting tokens should
     //revert.
     uint256 transferedAmount = newBalance - oldBalance;
-    
+
     return transferedAmount;
   }
 
@@ -548,18 +548,28 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     require(token.length == amount.length, "M_P");
     require(token.length == isBurn.length, "M_P");
 
-    uint256 intermediateLockBurnNonce = lockBurnNonce;
+    uint256 recipientLength = recipient.length;
 
-    for (uint256 i = 0; i < recipient.length; i++) {
-      intermediateLockBurnNonce++;
+    // lockBurnNonce contains the previous nonce that was
+    // sent in the LogLock/LogBurn, so the first one we send
+    // should be lockBurnNonce + 1
+    uint256 startingLockBurnNonce = lockBurnNonce + 1;
 
+    // This is equivalent of lockBurnNonce = lockBurnNonce + recipientLength,
+    // but it avoids a read of storage
+    lockBurnNonce = startingLockBurnNonce - 1 + recipientLength;
+
+    for (uint256 i = 0; i < recipientLength; ++i) {
       if (isBurn[i]) {
-        _burnTokens(recipient[i], token[i], amount[i], intermediateLockBurnNonce);
+        _burnTokens(recipient[i], token[i], amount[i], startingLockBurnNonce + i);
       } else {
-        _lockTokens(recipient[i], token[i], amount[i], intermediateLockBurnNonce);
+        _lockTokens(recipient[i], token[i], amount[i], startingLockBurnNonce + i);
       }
     }
-    lockBurnNonce = intermediateLockBurnNonce;
+
+    // If we get any reentrant calls from the _{burn,lock}Tokens functions, 
+    // make sure that lockBurnNonce is what we expect it to be.
+    require(lockBurnNonce == startingLockBurnNonce - 1 + recipientLength, "M_P");
   }
 
   /**

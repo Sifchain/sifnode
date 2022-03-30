@@ -43,7 +43,7 @@ export async function executeLock(
  * @param sender Who is sending the ether to sifchain
  * @param sifchainRecipient What sifchain address is recieving the ERC20 tokens
  * @param tokenContract The ERC20 contract that is being bridged
- * @returns 
+ * @returns
  */
 export async function executeLock(
   contracts: DevEnvContracts,
@@ -85,7 +85,7 @@ export async function checkEvmLockState(
 ) {
   const [evmRelayerEvents, replayedEvents] = sifwatchReplayable(
     {
-      evmrelayer: "/tmp/sifnode/evmrelayer.log",
+      evmrelayer: "/tmp/sifnode/relayer.log",
       sifnoded: "/tmp/sifnode/sifnoded.log",
     },
     hardhat,
