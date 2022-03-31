@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
@@ -83,14 +84,19 @@ func validateRewardPeriods(i interface{}) error {
 		if period.Id == "" {
 			return fmt.Errorf("reward period id must be non-empty: %d", period.StartBlock)
 		}
-		if period.StartBlock == 0 {
-			return fmt.Errorf("reward period start block must be positive: %d", period.StartBlock)
+		if period.StartBlock < 0 {
+			return fmt.Errorf("reward period start block must be positive or zero: %d", period.StartBlock)
 		}
 		if period.EndBlock < period.StartBlock {
 			return fmt.Errorf("reward period start block must be before end block: %d %d", period.StartBlock, period.EndBlock)
 		}
 		if period.Allocation == nil || period.Allocation.IsZero() {
 			return fmt.Errorf("reward period allocation must be positive: %d", period.Allocation)
+		}
+		for _, multiplier := range period.Multipliers {
+			if multiplier.Multiplier.LTE(sdk.ZeroDec()) {
+				return fmt.Errorf("pool multiplier should be greater than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+			}
 		}
 	}
 	return nil

@@ -2,7 +2,10 @@ package test
 
 import (
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"math/rand"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +48,7 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+
 	app.ClpKeeper.SetParams(ctx, types.Params{
 		MinCreatePoolThreshold:       types.DefaultMinCreatePoolThreshold,
 		LiquidityRemovalLockPeriod:   0,
@@ -167,4 +171,31 @@ func GenerateWhitelistAddress(key string) sdk.AccAddress {
 		panic("Bech decode and hex decode don't match")
 	}
 	return res
+}
+
+func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Pool {
+	var poolList types.PoolsRes
+
+	file, err := filepath.Abs("test/pools_input.json")
+	if err != nil {
+		panic(err)
+	}
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(input, &poolList)
+	if err != nil {
+		panic(err)
+	}
+	// Set all pools
+	for _, pool := range poolList.Pools {
+		err := keeper.SetPool(ctx, pool)
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	return poolList.Pools
 }

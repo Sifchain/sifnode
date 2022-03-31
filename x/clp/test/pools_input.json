@@ -1,0 +1,26 @@
+{
+  "pools": [
+    {
+      "external_asset": {
+        "symbol": "cdash"
+      },
+      "native_asset_balance": "1000000000000000000",
+      "external_asset_balance": "1000000000000000000",
+      "pool_units": "1000000000000000000"
+    },
+    {
+      "external_asset": {
+        "symbol": "ceth"
+      },
+      "native_asset_balance": "1000000000000000000",
+      "external_asset_balance": "1000000000000000000",
+      "pool_units": "1000000000000000000"
+    }
+  ],
+  "clp_module_address": "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
+  "height": 37,
+  "pagination": {
+    "next_key": null,
+    "total": 0
+  }
+}
