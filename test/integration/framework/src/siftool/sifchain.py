@@ -3,6 +3,7 @@ import json
 import time
 import typing
 from siftool.command import buildcmd
+from siftool import cosmos
 from siftool.common import *
 from typing import Mapping
 

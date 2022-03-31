@@ -5,11 +5,7 @@ import time
 from typing import Iterable, Mapping
 import web3
 
-import siftool.eth as eth
-import siftool.truffle as truffle
-import siftool.hardhat as hardhat
-import siftool.run_env as run_env
-import siftool.sifchain as sifchain
+from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos
 from siftool.common import *
 
 
@@ -537,17 +533,21 @@ class EnvCtx:
         sif_address = acct["address"]
         if fund_amounts:
             rowan_source_balances = self.get_sifchain_balance(self.rowan_source)
-            for required_amount, denom in fund_amounts:
+            fund_amounts = cosmos.balance_normalize(fund_amounts)
+            for denom, required_amount in fund_amounts.items():
                 available_amount = rowan_source_balances.get(denom, 0)
                 assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
                     self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
+            new_balances = self.get_sifchain_balance(sif_address)
+            assert sifchain.balance_zero(sifchain.balance_delta(new_balances, cosmos.balance_normalize(fund_amounts)))
         return sif_address
 
     def send_from_sifchain_to_sifchain(self, from_sif_addr, to_sif_addr, amounts):
-        amounts_string = ",".join([sif_format_amount(*a) for a in amounts])
+        amounts = cosmos.balance_normalize(amounts)
+        amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
             self._sifnoded_chain_id_and_node_arg() + \
             self._sifnoded_fees_arg() + \
@@ -575,9 +575,8 @@ class EnvCtx:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = sifchain.balance_delta(old_balances, new_balances)
             if min_changes is not None:
-                # Previously:
-                # if all([delta.get(denom, 0) >= amount for amount, denom in min_changes]):
-                if all(denom in delta for (_, denom) in min_changes):
+                min_changes = cosmos.balance_normalize(min_changes)
+                if all([delta.get(denom, 0) >= amount for denom, amount in min_changes.items()]):
                     return new_balances
             elif not sifchain.balance_zero(delta):
                 return new_balances

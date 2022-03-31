@@ -845,7 +845,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
         # This goes to validator0, i.e. sifnode_validators[0]["address"]
         validator_mint_amounts = [
-            [999999 * 10**21, "rowan"],
+            [999999 * 10**27, "rowan"],
             [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [999999 * 10**21, ceth_symbol],
         ]
@@ -855,7 +855,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
         # These go to admin account, relayers and witnesses
         admin_account_mint_amounts = [
-            [10**20, "rowan"],
+            [10**27, "rowan"],
             [2 * 10**19, ceth_symbol]
         ]
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")

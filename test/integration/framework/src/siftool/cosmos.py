@@ -2,6 +2,42 @@ from siftool.common import *
 
 akash_binary = "akash"
 
+
+def balance_normalize(bal=None):
+    if type(bal) == list:
+        bal = dict(((k, v) for v, k in bal))
+    elif type(bal) == dict:
+        pass
+    else:
+        assert False, "Balances should be either a dict or a list"
+    return {k: v for k, v in bal.items() if v != 0}
+
+
+def balance_add(bal1, bal2):
+    result = {}
+    for denom in set(bal1.keys()).union(set(bal2.keys())):
+        val = bal1.get(denom, 0) + bal2.get(denom, 0)
+        if val != 0:
+            result[denom] = val
+    return result
+
+
+def balance_neg(bal):
+    return {k: -v for k, v in bal.items()}
+
+
+def balance_sub(bal1, bal2):
+    return balance_add(bal1, balance_neg(bal2))
+
+
+def balance_zero(bal):
+    return len(bal) == 0
+
+
+def balance_format(bal):
+    return ",".join("{}{}".format(v, k) for k, v in bal.items())
+
+
 # <editor-fold>
 
 # This is for Akash, but might be useful for other cosmos-based chains as well. (If not, it should be moved to separate
