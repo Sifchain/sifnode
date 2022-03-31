@@ -567,7 +567,7 @@ class EnvCtx:
         res = json.loads(stdout(res))["balances"]
         return dict(((x["denom"], int(x["amount"])) for x in res))
 
-    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes: Iterable[Mapping[int, str]] =None, polling_time=1, timeout=90, change_timeout=None):
+    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes: Iterable[Mapping[int, str]]=None, polling_time=1, timeout=90, change_timeout=None):
         start_time = time.time()
         last_change_time = None
         last_change_state = None
@@ -575,6 +575,8 @@ class EnvCtx:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = sifchain.balance_delta(old_balances, new_balances)
             if min_changes is not None:
+                # Previously:
+                # if all([delta.get(denom, 0) >= amount for amount, denom in min_changes]):
                 if all(denom in delta for (_, denom) in min_changes):
                     return new_balances
             elif not sifchain.balance_zero(delta):
