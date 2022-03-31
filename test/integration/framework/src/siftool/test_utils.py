@@ -710,7 +710,8 @@ class EnvCtx:
         if fund_amount is not None:
             fund_from = fund_from or self.operator
             funder_balance_before = self.eth.get_eth_balance(fund_from)
-            assert funder_balance_before >= fund_amount
+            assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: need {}, have {}" \
+                .format(fund_amount, funder_balance_before)
             target_balance_before = self.eth.get_eth_balance(address)
             difference = fund_amount - target_balance_before
             if difference > 0:

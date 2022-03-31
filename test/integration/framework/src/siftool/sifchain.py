@@ -222,6 +222,10 @@ class SifnodeClient:
         self.chain_id = chain_id
         self.grpc_port = grpc_port
 
+    def query_account(self, sif_addr):
+        result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
+        return result
+
     def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom, generate_only=False):
         """ Sends ETH from Sifchain to Ethereum (burn) """
         assert on_peggy2_branch, "Only for Peggy2.0"
@@ -254,9 +258,9 @@ class SifnodeClient:
         result = self.broadcast_tx(encoded_tx)
         return result
 
-    def sign_transaction(self, tx, from_sif_addr, sequence=None):
+    def sign_transaction(self, tx, from_sif_addr, sequence=None, account_number=None):
         tmp_tx_file = self.cmd.mktempfile()
-        account_number = 0  # TODO
+        assert (sequence is not None) == (account_number is not None)  # We need either both or none
         try:
             self.cmd.write_text_file(tmp_tx_file, json.dumps(tx))
             args = ["tx", "sign", tmp_tx_file, "--from", from_sif_addr] + \
