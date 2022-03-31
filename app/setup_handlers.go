@@ -1,6 +1,7 @@
 package app
 
 import (
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
@@ -12,6 +13,7 @@ const releaseVersion = "0.12.0"
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+		app.ClpKeeper.SetParams(ctx, clptypes.DefaultParams())
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 

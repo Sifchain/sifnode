@@ -27,11 +27,11 @@ message Pool {
   ];
 	string swap_price_native = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.moretags) = "yaml:\"swap_price \""
+    (gogoproto.moretags) = "yaml:\"swap_price_native \""
   ];
 	string swap_price_external = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.moretags) = "yaml:\"swap_price \""
+    (gogoproto.moretags) = "yaml:\"swap_price_external \""
   ];
 }
 
