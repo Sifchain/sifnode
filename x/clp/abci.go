@@ -2,10 +2,12 @@ package clp
 
 import (
 	"fmt"
+	"time"
+
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	"strconv"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,7 +32,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		})
 		k.Logger(ctx).Info(fmt.Sprintf("Starting new policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	}
-	var pmtpCurrentRunningRate sdk.Dec
+	// default to current pmtp current running rate value
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	// Epoch counters are used to keep track of policy execution
 	// EpochCounter tracks the number of Epochs completed
 	// BlockCounter tracks the number of Blocks completed in an Epoch
@@ -39,6 +42,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		currentHeight <= pmtpPeriodEndBlock &&
 		k.GetPmtpEpoch(ctx).EpochCounter > 0 {
 		pmtpCurrentRunningRate = k.PolicyCalculations(ctx)
+		fmt.Printf("pmtpCurrentRunningRate: %v\n\n", pmtpCurrentRunningRate)
 	}
 	// Manage Epoch Counter
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {

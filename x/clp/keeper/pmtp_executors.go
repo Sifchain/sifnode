@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -12,7 +14,7 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	// get governance rate
 	pmtpPeriodGovernanceRate := k.GetPmtpGovernaceRate(ctx)
 	// compute length of policy period in blocks
-	numBlocksInPolicyPeriod := pmtpPeriodStartBlock - pmtpPeriodEndBlock
+	numBlocksInPolicyPeriod := pmtpPeriodEndBlock - pmtpPeriodStartBlock + 1
 	// compute number of epochs in policy period
 	numEpochsInPolicyPeriod := numBlocksInPolicyPeriod / pmtpPeriodEpochLength
 	// compute pmtp period block rate
@@ -42,6 +44,10 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 	pools := k.GetPools(ctx)
 	// compute swap prices for each pool
 	for _, pool := range pools {
+
+		fmt.Printf("before pool.NativeAssetBalance: %v\n", pool.NativeAssetBalance)
+		fmt.Printf("before pool.ExternalAssetBalance: %v\n", pool.ExternalAssetBalance)
+
 		normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 		// compute swap_price_native
 		swapPriceNative, _, _, _, err := SwapOne(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
@@ -49,12 +55,16 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 			return err
 		}
 		// compute swap_price_external
-		swapPriceNative, _, _, _, err = SwapOne(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+		swapPriceExternal, _, _, _, err := SwapOne(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("swapPriceNative: %v\n", swapPriceNative)
+		fmt.Printf("swapPriceExternal: %v\n", swapPriceExternal)
+
 		pn := sdk.MustNewDecFromStr(swapPriceNative.String())
-		pe := sdk.MustNewDecFromStr(swapPriceNative.String())
+		pe := sdk.MustNewDecFromStr(swapPriceExternal.String())
 		pool.SwapPriceNative = &pn
 		pool.SwapPriceExternal = &pe
 		// set pool
@@ -62,6 +72,11 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("pool.NativeAssetBalance: %v\n", pool.NativeAssetBalance)
+		fmt.Printf("pool.ExternalAssetBalance: %v\n", pool.ExternalAssetBalance)
+		fmt.Printf("pool.SwapPriceNative: %v\n", *pool.SwapPriceNative)
+		fmt.Printf("pool.SwapPriceExternal: %v\n", *pool.SwapPriceExternal)
 	}
 	return nil
 }

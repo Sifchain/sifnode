@@ -51,6 +51,12 @@ func SwapOne(from types.Asset,
 }
 
 func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
+	// if pmtpCurrentRunningRate.IsNil() {
+	// 	if toRowan {
+	// 		return y.Quo(sdk.NewDec(1))
+	// 	}
+	// 	return y.Mul(sdk.NewDec(1))
+	// }
 	if toRowan {
 		return y.Quo(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
 	}
