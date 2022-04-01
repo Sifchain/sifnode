@@ -1,7 +1,7 @@
 const { ethers, upgrades } = require("hardhat");
 const web3 = require("web3");
 
-const { ROWAN_DENOM, ETHER_DENOM, DENOM_1, DENOM_2, DENOM_3, DENOM_4 } = require("./denoms");
+const { ROWAN_DENOM, ETHER_DENOM, DENOM_1, DENOM_2, DENOM_3, DENOM_4, IBC_DENOM } = require("./denoms");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -138,6 +138,7 @@ function initState({
         two: DENOM_2,
         three: DENOM_3,
         four: DENOM_4,
+        ibc: IBC_DENOM,
       },
     },
     initialValidators,

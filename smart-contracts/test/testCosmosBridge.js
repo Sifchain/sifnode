@@ -270,7 +270,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
+        cosmosDenom: state.constants.denom.ibc,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -388,7 +388,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
+        cosmosDenom: state.constants.denom.ibc,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -510,7 +510,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
+        cosmosDenom: state.constants.denom.ibc,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -543,7 +543,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
+        cosmosDenom: state.constants.denom.ibc,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -564,7 +564,7 @@ describe("Test Cosmos Bridge", function () {
           state.symbol,
           state.token.address,
           expectedAddress,
-          state.constants.denom.one
+          state.constants.denom.ibc
         );
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
@@ -589,7 +589,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
+        cosmosDenom: state.constants.denom.ibc,
         validators: [userOne, userTwo, userFour],
       });
 

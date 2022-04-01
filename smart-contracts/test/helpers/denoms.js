@@ -54,6 +54,12 @@ const DENOM_4 = generateDenom({
   isERC20: true,
 });
 
+const IBC_DENOM = generateDenom({
+  networkDescriptor: 1,
+  tokenAddress: "0x0000000000000000000000000000000000000000",
+  isERC20: false,
+});
+
 module.exports = {
   generateDenom,
   ROWAN_DENOM,
@@ -62,4 +68,5 @@ module.exports = {
   DENOM_2,
   DENOM_3,
   DENOM_4,
+  IBC_DENOM,
 };
