@@ -12,7 +12,7 @@ import (
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
 	DefaultPmtpStartBlock         int64  = 1
-	DefaultPmtpEndBlock           int64  = 10
+	DefaultPmtpEndBlock           int64  = 50
 )
 
 // Parameter store keys
@@ -57,8 +57,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
-		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("5.0"),
-		PmtpPeriodEpochLength:    5,
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.02"),
+		PmtpPeriodEpochLength:    10,
 		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
 		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
 	}
