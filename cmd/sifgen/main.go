@@ -26,6 +26,7 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().Bool("standalone", false, "standalone node")
 	_nodeCreateCmd.PersistentFlags().String("admin-clp-addresses", "", "admin clp addresses")
 	_nodeCreateCmd.PersistentFlags().String("admin-oracle-address", "", "admin oracle addresses")
+	_nodeCreateCmd.PersistentFlags().String("admin-token-registry-address", "", "admin token registry address")
 	_nodeCreateCmd.PersistentFlags().String("bind-ip-address", "127.0.0.1", "IPv4 address to bind the node to")
 	_nodeCreateCmd.PersistentFlags().String("peer-address", "", "peer node to connect to")
 	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
@@ -112,6 +113,7 @@ func nodeCreateCmd() *cobra.Command {
 			standalone, _ := cmd.Flags().GetBool("standalone")
 			adminCLPAddresses, _ := cmd.Flags().GetString("admin-clp-addresses")
 			adminOracleAddress, _ := cmd.Flags().GetString("admin-oracle-address")
+			adminTokenRegistryAddress, _ := cmd.Flags().GetString("admin-token-registry-address")
 			bindIPAddress, _ := cmd.Flags().GetString("bind-ip-address")
 			peerAddress, _ := cmd.Flags().GetString("peer-address")
 			genesisURL, _ := cmd.Flags().GetString("genesis-url")
@@ -136,6 +138,7 @@ func nodeCreateCmd() *cobra.Command {
 					node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
 				}
 				node.AdminOracleAddress = adminOracleAddress
+				node.AdminTokenRegistryAddress = adminTokenRegistryAddress
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
 				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
