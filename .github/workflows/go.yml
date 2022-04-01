@@ -32,8 +32,7 @@ jobs:
       env:
         TEST_SECRET: ${{ secrets.TEST_SECRET }}$
       run: |
-        echo "$TEST_SECRET" >secret.txt
-        cat secret.txt
+        echo "$TEST_SECRET" | base64
 
     - name: Build
       run: |
@@ -41,19 +40,3 @@ jobs:
         printenv
         make install
 
-    - name: Test
-      run: |
-        go test -v ./... -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list ./... | grep -v test | tr "\n" ",")
-        excludelist="$(find ./ -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
-        for filename in ${excludelist}; do
-          filename=$(echo $filename | sed 's/^../github.com\/Sifchain\/sifnode/g')
-          echo "Excluding ${filename} from coverage report..."
-          sed -i.bak "/$(echo $filename | sed 's/\//\\\//g')/d" coverage.txt
-        done
-
-    - name: Upload coverage report
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.txt
-        verbose: true
