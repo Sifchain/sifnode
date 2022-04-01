@@ -24,13 +24,12 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	pow := float64(numEpochsInPolicyPeriod) / float64(numBlocksInPolicyPeriod)
 	firstSection := math.Pow(base, pow)
 	pmtpPeriodBlockRate := firstSection - 1
-	decBlockrate, err := sdk.NewDecFromStr(fmt.Sprintf("%v", pmtpPeriodBlockRate))
+	decBlockrate, err := sdk.NewDecFromStr(fmt.Sprintf("%.18f", pmtpPeriodBlockRate))
 	if err != nil {
 		panic(err)
 	}
 	// set block rate
 	// Block and Epoch calculations are done only on policy start
-	fmt.Println("Setting Block Rate :", pmtpPeriodBlockRate)
 	k.SetPmtpBlockRate(ctx, decBlockrate)
 	k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 		EpochCounter: numEpochsInPolicyPeriod,

@@ -37,6 +37,9 @@ func Test_PmtpFloatCalculations(t *testing.T) {
 	//value := math.Pow(bint,bpow)
 	//dec := sdk.MustNewDecFromStr(fmt.Sprintf("%f", value)).MustFloat64(
 	fmt.Println(fbr, fpow)
+
+	fss := fmt.Sprintf("%.18f", 0.00000013751833967123872)
+	fmt.Println(fss)
 }
 func TestKeeper_PolicyRun(t *testing.T) {
 	SwapPriceNative := sdk.NewDec(2)
