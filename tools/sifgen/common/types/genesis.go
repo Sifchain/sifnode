@@ -63,6 +63,10 @@ type Crisis struct {
 	ConstantFee ConstantFee `json:"constant_fee"`
 }
 
+type TokenRegistry struct {
+	AdminAccount string `json:"admin_account"`
+}
+
 type ConstantFee struct {
 	Amount string `json:"amount"`
 	Denom  string `json:"denom"`
@@ -370,26 +374,27 @@ type Transfer struct {
 }
 
 type AppState struct {
-	Upgrade      struct{}      `json:"upgrade"`
-	Ethbridge    struct{}      `json:"ethbridge"`
-	Params       interface{}   `json:"params"`
-	Ibc          Ibc           `json:"ibc"`
-	Distribution Distribution  `json:"distribution"`
-	Staking      Staking       `json:"staking"`
-	Gov          Gov           `json:"gov"`
-	Mint         Mint          `json:"mint"`
-	Slashing     Slashing      `json:"slashing"`
-	Auth         Auth          `json:"auth"`
-	AuthZ        AuthZ         `json:"authz"`
-	Bank         Bank          `json:"bank"`
-	CLP          CLP           `json:"clp"`
-	Transfer     Transfer      `json:"transfer"`
-	Capability   Capability    `json:"capability"`
-	Dispensation Dispensation  `json:"dispensation"`
-	Oracle       Oracle        `json:"oracle"`
-	Evidence     EvidenceState `json:"evidence"`
-	Genutil      Genutil       `json:"genutil"`
-	Crisis       Crisis        `json:"crisis"`
+	Upgrade       struct{}      `json:"upgrade"`
+	Ethbridge     struct{}      `json:"ethbridge"`
+	Params        interface{}   `json:"params"`
+	Ibc           Ibc           `json:"ibc"`
+	Distribution  Distribution  `json:"distribution"`
+	Staking       Staking       `json:"staking"`
+	Gov           Gov           `json:"gov"`
+	Mint          Mint          `json:"mint"`
+	Slashing      Slashing      `json:"slashing"`
+	Auth          Auth          `json:"auth"`
+	AuthZ         AuthZ         `json:"authz"`
+	Bank          Bank          `json:"bank"`
+	CLP           CLP           `json:"clp"`
+	Transfer      Transfer      `json:"transfer"`
+	Capability    Capability    `json:"capability"`
+	Dispensation  Dispensation  `json:"dispensation"`
+	Oracle        Oracle        `json:"oracle"`
+	Evidence      EvidenceState `json:"evidence"`
+	Genutil       Genutil       `json:"genutil"`
+	Crisis        Crisis        `json:"crisis"`
+	TokenRegistry TokenRegistry `json:"tokenregistry"`
 }
 
 type Genesis struct {

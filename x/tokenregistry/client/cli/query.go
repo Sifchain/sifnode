@@ -73,7 +73,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "generate JSON for a token registration",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.MaximumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
