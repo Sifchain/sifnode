@@ -50,15 +50,9 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 
 		normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 		// compute swap_price_native
-		swapPriceNative, _, _, _, err := SwapOne(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-		if err != nil {
-			return err
-		}
+		swapPriceNative := CalcSwapPrice(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 		// compute swap_price_external
-		swapPriceExternal, _, _, _, err := SwapOne(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-		if err != nil {
-			return err
-		}
+		swapPriceExternal := CalcSwapPrice(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 
 		fmt.Printf("swapPriceNative: %v\n", swapPriceNative)
 		fmt.Printf("swapPriceExternal: %v\n", swapPriceExternal)
@@ -68,7 +62,7 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 		pool.SwapPriceNative = &pn
 		pool.SwapPriceExternal = &pe
 		// set pool
-		err = k.SetPool(ctx, pool)
+		err := k.SetPool(ctx, pool)
 		if err != nil {
 			return err
 		}
