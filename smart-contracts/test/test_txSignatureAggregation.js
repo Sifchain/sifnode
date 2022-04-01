@@ -208,7 +208,7 @@ describe("Gas Cost Tests", function () {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
@@ -427,17 +427,17 @@ describe("Gas Cost Tests", function () {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
-      const newlyCreatedTokenAddress1 = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress1 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress1).to.be.equal(expectedAddress1);
 
-      const newlyCreatedTokenAddress2 = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress2 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.two
       );
       expect(newlyCreatedTokenAddress2).to.be.equal(expectedAddress2);
 
-      const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress3 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.three
       );
       expect(newlyCreatedTokenAddress3).to.be.equal(expectedAddress3);

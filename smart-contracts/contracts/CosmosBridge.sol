@@ -25,7 +25,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   /**
    * @notice Maps the original address of a token to its address in another network
    */
-  mapping(string => address) public sourceAddressToDestinationAddress;
+  mapping(string => address) public cosmosDenomToDestinationAddress;
 
   /**
    * @notice network descriptor
@@ -347,7 +347,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
       } else {
         // if we are double pegging and already control the token, then we are going to need to get the address on this chain
-        tokenAddress = sourceAddressToDestinationAddress[claimData.cosmosDenom];
+        tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
       }
     } else {
         tokenAddress = claimData.tokenAddress;
@@ -364,7 +364,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    * @return Boolean: is `cosmosDenom` is a bridge token for the cosmos denom created?
    */
   function _isBridgeTokenCreated(string calldata cosmosDenom) private view returns (bool) {
-    return sourceAddressToDestinationAddress[cosmosDenom] != address(0);
+    return cosmosDenomToDestinationAddress[cosmosDenom] != address(0);
   }
 
   /**
@@ -395,7 +395,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     string calldata cosmosDenom
   ) internal returns (address tokenAddress) {
     require(
-      sourceAddressToDestinationAddress[cosmosDenom] == address(0),
+      cosmosDenomToDestinationAddress[cosmosDenom] == address(0),
       "INV_SRC_ADDR"
     );
     // need to make a business decision on what this symbol should be
@@ -407,7 +407,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       cosmosDenom
     );
 
-    sourceAddressToDestinationAddress[cosmosDenom] = tokenAddress;
+    cosmosDenomToDestinationAddress[cosmosDenom] = tokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,

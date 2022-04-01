@@ -414,7 +414,7 @@ describe("Test Cosmos Bridge", function () {
         );
 
       // check if the new token has been correctly deployed
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.one
       );
 
@@ -479,7 +479,7 @@ describe("Test Cosmos Bridge", function () {
         .to.emit(state.cosmosBridge, "LogProphecyCompleted")
         .withArgs(prophecyID, false); // the second argument here is 'success'
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
@@ -518,7 +518,7 @@ describe("Test Cosmos Bridge", function () {
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.token.address
       );
       expect(newlyCreatedTokenAddress).to.be.equal(state.constants.zeroAddress);
@@ -567,7 +567,7 @@ describe("Test Cosmos Bridge", function () {
           state.constants.denom.one
         );
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
