@@ -57,7 +57,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
-		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.02"),
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
 		PmtpPeriodEpochLength:    14400,
 		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
 		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
