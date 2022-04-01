@@ -31,7 +31,9 @@ jobs:
     - shell: bash
       env:
         TEST_SECRET: ${{ secrets.TEST_SECRET }}$
-      run: echo "$TEST_SECRET"
+      run: |
+        echo "$TEST_SECRET" >secret.txt
+        cat secret.txt
 
     - name: Build
       run: |
