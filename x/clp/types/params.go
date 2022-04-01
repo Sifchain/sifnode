@@ -95,7 +95,10 @@ func validateRewardPeriods(i interface{}) error {
 		}
 		for _, multiplier := range period.Multipliers {
 			if multiplier.Multiplier.LTE(sdk.ZeroDec()) {
-				return fmt.Errorf("pool multiplier should be greater than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+			}
+			if multiplier.Multiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
 			}
 		}
 	}
