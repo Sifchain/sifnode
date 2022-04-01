@@ -50,9 +50,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.DecrementEpochCounter(ctx)
 		k.SetBlockCounter(ctx, k.GetPmtpEpochLength(ctx))
 	}
-	// Last epoch is not included
+
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
-		currentHeight <= pmtpPeriodEndBlock {
+		currentHeight == pmtpPeriodEndBlock {
 		// Setting it to zero to check when we start policy
 		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 			EpochCounter: 0,
