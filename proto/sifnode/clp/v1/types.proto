@@ -57,3 +57,9 @@ message LiquidityProviderData {
   string native_asset_balance = 2;
   string external_asset_balance = 3;
 }
+
+message EventPolicy {
+  string event_type=1;
+  string pmtp_period_start_block = 2;
+  string pmtp_period_end_block = 3;
+}

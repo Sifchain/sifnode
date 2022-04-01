@@ -474,6 +474,7 @@ func NewSifApp(
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		dispensation.ModuleName,
+		clptypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,

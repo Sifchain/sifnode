@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -22,9 +23,17 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.GetPmtpEpoch(ctx).EpochCounter == 0 &&
 		k.GetPmtpEpoch(ctx).BlockCounter == 0 {
 		k.PolicyStart(ctx)
+		_ = ctx.EventManager().EmitTypedEvent(&types.EventPolicy{
+			EventType:            "policy_start",
+			PmtpPeriodStartBlock: strconv.Itoa(int(pmtpPeriodStartBlock)),
+			PmtpPeriodEndBlock:   strconv.Itoa(int(pmtpPeriodEndBlock)),
+		})
 		k.Logger(ctx).Info(fmt.Sprintf("Starting new policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 	}
 	var pmtpCurrentRunningRate sdk.Dec
+	// Epoch counters are used to keep track of policy execution
+	// EpochCounter tracks the number of Epochs completed
+	// BlockCounter tracks the number of Blocks completed in an Epoch
 	// Manage Block Counter and Calculate R running
 	if currentHeight >= pmtpPeriodStartBlock &&
 		currentHeight <= pmtpPeriodEndBlock &&
@@ -40,6 +49,11 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {
 		// Setting it to zero to check when we start policy
 		k.SetBlockCounter(ctx, 0)
+		_ = ctx.EventManager().EmitTypedEvent(&types.EventPolicy{
+			EventType:            "policy_end",
+			PmtpPeriodStartBlock: strconv.Itoa(int(pmtpPeriodStartBlock)),
+			PmtpPeriodEndBlock:   strconv.Itoa(int(pmtpPeriodEndBlock)),
+		})
 		k.Logger(ctx).Info(fmt.Sprintf("Ending Policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
 		return
 	}

@@ -11,8 +11,8 @@ import (
 // Default parameter namespace
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
-	DefaultPmtpStartBlock         int64  = 0
-	DefaultPmtpEndBlock           int64  = 0
+	DefaultPmtpStartBlock         int64  = 1
+	DefaultPmtpEndBlock           int64  = 101
 )
 
 // Parameter store keys
@@ -58,7 +58,7 @@ func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
 		PmtpPeriodGovernanceRate: sdk.ZeroDec(),
-		PmtpPeriodEpochLength:    7,
+		PmtpPeriodEpochLength:    10,
 		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
 		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
 	}
@@ -80,7 +80,7 @@ func (p Params) Validate() error {
 	if err := validatePmtpEndBlock(p.PmtpPeriodEndBlock); err != nil {
 		return err
 	}
-	if p.PmtpPeriodEndBlock < p.PmtpPeriodStartBlock {
+	if p.PmtpPeriodEndBlock <= p.PmtpPeriodStartBlock {
 		return fmt.Errorf(
 			"end block (%d) must be after begin block (%d)",
 			p.PmtpPeriodEndBlock, p.PmtpPeriodStartBlock,
