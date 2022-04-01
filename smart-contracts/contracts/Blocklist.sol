@@ -64,8 +64,10 @@ contract Blocklist is Ownable {
    * @dev Fails if at least one of the addresses was already blocklisted
    */
   function batchAddToBlocklist(address[] calldata accounts) external onlyOwner {
-    for (uint256 i = 0; i < accounts.length; i++) {
+    uint256 accountLength = accounts.length;
+    for (uint256 i = 0; i < accountLength;) {
       require(_addToBlocklist(accounts[i]));
+      unchecked { ++i; }
     }
   }
 
@@ -103,8 +105,10 @@ contract Blocklist is Ownable {
    * @dev Fails if at least one of the addresses was not blocklisted
    */
   function batchRemoveFromBlocklist(address[] calldata accounts) external onlyOwner {
-    for (uint256 i = 0; i < accounts.length; i++) {
+    uint256 accountLength = accounts.length;
+    for (uint256 i = 0; i < accountLength;) {
       require(_removeFromBlocklist(accounts[i]));
+      unchecked { ++i; }
     }
   }
 

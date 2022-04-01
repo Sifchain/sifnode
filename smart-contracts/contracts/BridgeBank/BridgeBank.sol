@@ -301,8 +301,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     onlyOwner
     returns (bool)
   {
-    for (uint256 i = 0; i < contractsAddresses.length; i++) {
+    uint256 contractLength = contractAddress.length;
+    for (uint256 i = 0; i < contractLength;) {
       setTokenInCosmosWhiteList(contractsAddresses[i], true);
+      unchecked{ ++i; }
     }
 
     return true;
@@ -542,29 +544,33 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     uint256[] calldata amount,
     bool[] calldata isBurn
   ) external whenNotPaused {
+    uint256 recipientLength = recipient.length;
+    uint256 tokenLength = token.length
     // all array inputs must be of the same length
     // else throw malformed params error
-    require(recipient.length == token.length, "M_P");
-    require(token.length == amount.length, "M_P");
-    require(token.length == isBurn.length, "M_P");
+    require(recipientLength == tokenLength, "M_P");
+    require(tokenLength == amount.length, "M_P");
+    require(tokenLength == isBurn.length, "M_P");
 
-    uint256 recipientLength = recipient.length;
 
     // lockBurnNonce contains the previous nonce that was
     // sent in the LogLock/LogBurn, so the first one we send
     // should be lockBurnNonce + 1
-    uint256 startingLockBurnNonce = lockBurnNonce + 1;
+    unchecked {
+      uint256 startingLockBurnNonce = lockBurnNonce + 1;  
+    }
 
     // This is equivalent of lockBurnNonce = lockBurnNonce + recipientLength,
     // but it avoids a read of storage
     lockBurnNonce = startingLockBurnNonce - 1 + recipientLength;
 
-    for (uint256 i = 0; i < recipientLength; ++i) {
+    for (uint256 i = 0; i < recipientLength;) {
       if (isBurn[i]) {
         _burnTokens(recipient[i], token[i], amount[i], startingLockBurnNonce + i);
       } else {
         _lockTokens(recipient[i], token[i], amount[i], startingLockBurnNonce + i);
       }
+      unchecked { ++i; }
     }
 
     // If we get any reentrant calls from the _{burn,lock}Tokens functions, 
@@ -742,10 +748,12 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     onlyOwner
     returns (bool)
   {
-    require(_tokens.length == _denoms.length, "INV_LEN");
+    uint256 tokenLength = _tokens.length;
+    require(tokenLength == _denoms.length, "INV_LEN");
 
-    for (uint256 i = 0; i < _tokens.length; i++) {
+    for (uint256 i = 0; i < tokenLength;) {
       _setBridgeTokenDenom(_tokens[i], _denoms[i]);
+      unchecked { ++i; }
     }
 
     return true;
@@ -782,10 +790,11 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @return true if the operation succeeded
    */
   function batchForceSetBridgeTokenDenom(address[] calldata _tokens) external returns (bool) {
-    for (uint256 i = 0; i < _tokens.length; i++) {
+    uint256 tokenLength = _tokens.length;
+    for (uint256 i = 0; i < tokenLength;) {
       _forceSetBridgeTokenDenom(_tokens[i]);
+      unchecked { ++i; }
     }
-
     return true;
   }
 

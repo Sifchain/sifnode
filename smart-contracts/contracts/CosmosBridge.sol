@@ -4,7 +4,6 @@ pragma solidity 0.8.0;
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
-import "hardhat/console.sol";
 
 /**
  * @title Cosmos Bridge
@@ -137,14 +136,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint256 cosmosSenderSequence,
     address payable ethereumReceiver,
     address tokenAddress,
-    uint256 amount,
-    string memory tokenName,
-    string memory tokenSymbol,
-    uint8 tokenDecimals,
     int32 _networkDescriptor,
-    bool doublePeg,
-    uint128 nonce,
-    string memory cosmosDenom
   ) public pure returns (uint256) {
     return
       uint256(
@@ -152,18 +144,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
           abi.encode(
             cosmosSender,
             cosmosSenderSequence,
-            // TODO to make sure same algorithm with sifnode side
-            // comment some items, need add some back 
             ethereumReceiver,
             tokenAddress,
-            // amount,
-            // tokenName,
-            // tokenSymbol,
-            // tokenDecimals,
             _networkDescriptor
-            // doublePeg,
-            // nonce,
-            // cosmosDenom
           )
         )
       );
@@ -204,7 +187,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     view
     returns (uint256 pow)
   {
-    for (uint256 i = 0; i < _validators.length; i++) {
+    uint256 validatorLength = _validators.length;
+    for (uint256 i = 0; i < validatorLength;) {
       SignatureData calldata validator = _validators[i];
 
       require(isActiveValidator(validator.signer), "INV_SIGNER");
@@ -214,11 +198,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         "INV_SIG"
       );
 
-      pow += getValidatorPower(validator.signer);
-
-      for (uint256 j = i + 1; j < _validators.length; j++) {
-        require(validator.signer != _validators[j].signer, "DUP_SIGNER");
+      unchecked {
+        pow += getValidatorPower(validator.signer); 
       }
+
+      for (uint256 j = i + 1; j < validatorLength;) {
+        require(validator.signer != _validators[j].signer, "DUP_SIGNER");
+        unchecked { ++j; }
+      }
+      unchecked { ++i; }
     }
   }
 
@@ -262,15 +250,18 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     ClaimData[] calldata claims,
     SignatureData[][] calldata signatureData
   ) external {
-    require(sigs.length == claims.length, "INV_CLM_LEN");
-    require(sigs.length == signatureData.length, "INV_SIG_LEN");
+    uint256 sigsLength = sigs.length;
+    uint256 claimLength = claims.length;
+    require(sigsLength == claimLength, "INV_CLM_LEN");
+    require(sigsLength == signatureData.length, "INV_SIG_LEN");
 
     uint256 intermediateNonce = lastNonceSubmitted;
-    lastNonceSubmitted += claims.length;
+    lastNonceSubmitted += claimLength;
 
-    for (uint256 i = 0; i < sigs.length; i++) {
+    for (uint256 i = 0; i < sigsLength;) {
       require(intermediateNonce + 1 + i == claims[i].nonce, "INV_ORD");
       _submitProphecyClaimAggregatedSigs(sigs[i], claims[i], signatureData[i]);
+      unchecked { ++i; }
     }
   }
 
@@ -400,14 +391,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     );
     // need to make a business decision on what this symbol should be
     // First lock of this asset, deploy new contract and get new symbol/token address
-    address tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
+    address newTokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
       name,
       symbol,
       decimals,
       cosmosDenom
     );
 
-    sourceAddressToDestinationAddress[sourceChainTokenAddress] = tokenAddress;
+    sourceAddressToDestinationAddress[sourceChainTokenAddress] = newTokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,
@@ -415,11 +406,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       name,
       symbol,
       sourceChainTokenAddress,
-      tokenAddress,
+      newTokenAddress,
       cosmosDenom
     );
 
-    return tokenAddress;
+    return newTokenAddress;
   }
 
   /**
