@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"fmt"
-
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"math"
 )
 
 func (k Keeper) PolicyStart(ctx sdk.Context) {
@@ -18,10 +18,20 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	// compute number of epochs in policy period
 	numEpochsInPolicyPeriod := numBlocksInPolicyPeriod / pmtpPeriodEpochLength
 	// compute pmtp period block rate
-	pmtpPeriodBlockRate := (sdk.NewDec(1).Add(pmtpPeriodGovernanceRate)).Power(uint64((numEpochsInPolicyPeriod / numBlocksInPolicyPeriod))).Sub(sdk.NewDec(1))
+	//pmtpPeriodBlockRate = (1 + pmtpPeriodGovernanceRate).Pow(numEpochsInPolicyPeriod / numBlocksInPolicyPeriod) - 1
+	// set block rate
+	base := sdk.NewDec(1).Add(pmtpPeriodGovernanceRate).MustFloat64()
+	pow := float64(numEpochsInPolicyPeriod) / float64(numBlocksInPolicyPeriod)
+	firstSection := math.Pow(base, pow)
+	pmtpPeriodBlockRate := firstSection - 1
+	decBlockrate, err := sdk.NewDecFromStr(fmt.Sprintf("%v", pmtpPeriodBlockRate))
+	if err != nil {
+		panic(err)
+	}
 	// set block rate
 	// Block and Epoch calculations are done only on policy start
-	k.SetPmtpBlockRate(ctx, pmtpPeriodBlockRate)
+	fmt.Println("Setting Block Rate :", pmtpPeriodBlockRate)
+	k.SetPmtpBlockRate(ctx, decBlockrate)
 	k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 		EpochCounter: numEpochsInPolicyPeriod,
 		BlockCounter: pmtpPeriodEpochLength,

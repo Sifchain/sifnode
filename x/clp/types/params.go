@@ -12,7 +12,7 @@ import (
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
 	DefaultPmtpStartBlock         int64  = 1
-	DefaultPmtpEndBlock           int64  = 2
+	DefaultPmtpEndBlock           int64  = 10
 )
 
 // Parameter store keys
@@ -57,8 +57,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
-		PmtpPeriodGovernanceRate: sdk.ZeroDec(),
-		PmtpPeriodEpochLength:    1,
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("5.0"),
+		PmtpPeriodEpochLength:    5,
 		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
 		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
 	}
@@ -86,7 +86,7 @@ func (p Params) Validate() error {
 			p.PmtpPeriodEndBlock, p.PmtpPeriodStartBlock,
 		)
 	}
-	if (p.PmtpPeriodEndBlock-p.PmtpPeriodStartBlock)%p.PmtpPeriodEpochLength != 0 {
+	if (p.PmtpPeriodEndBlock-p.PmtpPeriodStartBlock+1)%p.PmtpPeriodEpochLength != 0 {
 		return fmt.Errorf("all epochs must have equal number of blocks : %d", p.PmtpPeriodEpochLength)
 	}
 	return nil

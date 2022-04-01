@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 echo "Creating pools ceth and cdash"
-sifnoded tx clp create-pool --from sif --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
+sifnoded tx clp create-pool --from sif --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes --chain-id=localnet --keyring-backend=test
 
 sleep 5
-sifnoded tx clp create-pool --from sif --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
+sifnoded tx clp create-pool --from sif --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes --chain-id=localnet --keyring-backend=test
 
 echo "Query all pools"
 sleep 8

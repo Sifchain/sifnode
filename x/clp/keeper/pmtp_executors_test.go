@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"fmt"
+	"math/big"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -13,6 +15,29 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
+func Test_PmtpFloatCalculations(t *testing.T) {
+	pmtpPeriodGovernanceRate := sdk.MustNewDecFromStr("667577.111234534525628462")
+	numEpochsInPolicyPeriod := 10
+	numBlocksInPolicyPeriod := 100
+	pmtpPeriodBlockRate := (sdk.NewDec(1).Add(pmtpPeriodGovernanceRate))
+	pow := float64(numEpochsInPolicyPeriod) / float64(numBlocksInPolicyPeriod)
+	fmt.Println(pmtpPeriodBlockRate, pow)
+	s := 1.232322323223435445
+	//f:=strconv.FormatFloat(s, 'E', -1, 64)
+	f := fmt.Sprintf("%v", s)
+	bpow := sdk.MustNewDecFromStr(f).BigInt()
+	//bpow := sdk.MustNewDecFromStr(fmt.Sprintf("%f", 1.232322323223435445)).BigInt()
+	//bpow := big.NewFloat(1.232322323223435445)
+	bbr := pmtpPeriodBlockRate.BigInt()
+	fbr := new(big.Float).SetInt(bbr)
+	fpow := new(big.Float).SetInt(bpow)
+	fbr = fbr.Quo(fbr, big.NewFloat(1000000000000000000.00))
+	fpow = fpow.Quo(fpow, big.NewFloat(1000000000000000000.00))
+	//
+	//value := math.Pow(bint,bpow)
+	//dec := sdk.MustNewDecFromStr(fmt.Sprintf("%f", value)).MustFloat64(
+	fmt.Println(fbr, fpow)
+}
 func TestKeeper_PolicyRun(t *testing.T) {
 	SwapPriceNative := sdk.NewDec(2)
 	SwapPriceExternal := sdk.ZeroDec()

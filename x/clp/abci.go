@@ -42,17 +42,22 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		currentHeight <= pmtpPeriodEndBlock &&
 		k.GetPmtpEpoch(ctx).EpochCounter > 0 {
 		pmtpCurrentRunningRate = k.PolicyCalculations(ctx)
-		fmt.Printf("pmtpCurrentRunningRate: %v\n\n", pmtpCurrentRunningRate)
 	}
 	// Manage Epoch Counter
-	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {
+	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
+		currentHeight < pmtpPeriodEndBlock &&
+		currentHeight > pmtpPeriodStartBlock {
 		k.DecrementEpochCounter(ctx)
 		k.SetBlockCounter(ctx, k.GetPmtpEpochLength(ctx))
 	}
 	// Last epoch is not included
-	if k.GetPmtpEpoch(ctx).BlockCounter == 0 {
+	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
+		currentHeight <= pmtpPeriodEndBlock {
 		// Setting it to zero to check when we start policy
-		k.SetBlockCounter(ctx, 0)
+		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
+			EpochCounter: 0,
+			BlockCounter: 0,
+		})
 		_ = ctx.EventManager().EmitTypedEvent(&types.EventPolicy{
 			EventType:            "policy_end",
 			PmtpPeriodStartBlock: strconv.Itoa(int(pmtpPeriodStartBlock)),
