@@ -415,8 +415,9 @@ describe("Test Cosmos Bridge", function () {
 
       // check if the new token has been correctly deployed
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token.address
+        state.constants.denom.one
       );
+
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
       // check if the user received minted tokens
@@ -479,7 +480,7 @@ describe("Test Cosmos Bridge", function () {
         .withArgs(prophecyID, false); // the second argument here is 'success'
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token.address
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
@@ -567,7 +568,7 @@ describe("Test Cosmos Bridge", function () {
         );
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token.address
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 

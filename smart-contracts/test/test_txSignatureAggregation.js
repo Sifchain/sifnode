@@ -209,7 +209,7 @@ describe("Gas Cost Tests", function () {
       }
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
@@ -428,17 +428,17 @@ describe("Gas Cost Tests", function () {
       }
 
       const newlyCreatedTokenAddress1 = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress1).to.be.equal(expectedAddress1);
 
       const newlyCreatedTokenAddress2 = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token2.address
+        state.constants.denom.two
       );
       expect(newlyCreatedTokenAddress2).to.be.equal(expectedAddress2);
 
       const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token3.address
+        state.constants.denom.three
       );
       expect(newlyCreatedTokenAddress3).to.be.equal(expectedAddress3);
     });

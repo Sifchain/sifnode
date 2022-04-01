@@ -25,7 +25,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   /**
    * @notice Maps the original address of a token to its address in another network
    */
-  mapping(address => address) public sourceAddressToDestinationAddress;
+  mapping(string => address) public sourceAddressToDestinationAddress;
 
   /**
    * @notice network descriptor
@@ -334,8 +334,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(getProphecyStatus(pow), "INV_POW");
 
     address tokenAddress;
-    if (claimData.doublePeg) {
-      if (!_isDoublePeggedToken(claimData.tokenAddress)) {
+    if (claimData.doublePeg || isIbcToken(claimData.cosmosDenom)) {
+      if (!_isBridgeTokenCreated(claimData.cosmosDenom)) {
         // if we are double pegging AND we don't control the token, we deploy a new smart contract
         tokenAddress = _createNewBridgeToken(
           claimData.tokenSymbol,
@@ -347,10 +347,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
       } else {
         // if we are double pegging and already control the token, then we are going to need to get the address on this chain
-        tokenAddress = sourceAddressToDestinationAddress[claimData.tokenAddress];
+        tokenAddress = sourceAddressToDestinationAddress[claimData.cosmosDenom];
       }
     } else {
-      tokenAddress = claimData.tokenAddress;
+        tokenAddress = claimData.tokenAddress;
     }
 
     completeProphecyClaim(prophecyID, claimData.ethereumReceiver, tokenAddress, claimData.amount);
@@ -359,12 +359,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   }
 
   /**
-   * @dev Verifies if `tokenAddress` is a known token
-   * @param tokenAddress The address of the token
-   * @return Boolean: is `tokenAddress` a known token?
+   * @dev Verifies if `cosmosDenom` is a bridge token for the cosmos denom created
+   * @param cosmosDenom The cosmos denom of the token
+   * @return Boolean: is `cosmosDenom` is a bridge token for the cosmos denom created?
    */
-  function _isDoublePeggedToken(address tokenAddress) private view returns (bool) {
-    return sourceAddressToDestinationAddress[tokenAddress] != address(0);
+  function _isBridgeTokenCreated(string calldata cosmosDenom) private view returns (bool) {
+    return sourceAddressToDestinationAddress[cosmosDenom] != address(0);
   }
 
   /**
@@ -395,7 +395,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     string calldata cosmosDenom
   ) internal returns (address tokenAddress) {
     require(
-      sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
+      sourceAddressToDestinationAddress[cosmosDenom] == address(0),
       "INV_SRC_ADDR"
     );
     // need to make a business decision on what this symbol should be
@@ -407,7 +407,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       cosmosDenom
     );
 
-    sourceAddressToDestinationAddress[sourceChainTokenAddress] = tokenAddress;
+    sourceAddressToDestinationAddress[cosmosDenom] = tokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,
@@ -450,4 +450,42 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     // prophecy completed and whether or not the call to bridgebank was successful
     emit LogProphecyCompleted(prophecyID, success);
   }
+
+  /**
+   * @dev Verifies if `cosmosDenom` is a ibc token
+   * @param cosmosDenom The denom of the token in sifnode
+   * @return Boolean: is `cosmosDenom` a ibc token?
+   */
+  function isIbcToken(string calldata cosmosDenom) private view returns (bool) {
+    bytes calldata cosmosDenomBytes = bytes(cosmosDenom);
+    return verifyIbcDenomLength(cosmosDenomBytes) && verifyIbcPrefix(cosmosDenomBytes);
+  }
+
+/**
+   * @dev Validates if a cosmos denom has a correct prefix
+   * @param cosmosDenom The cosmos denom to check
+   * @return Boolean: does it have the correct prefix?
+   */
+  function verifyIbcPrefix(bytes calldata cosmosDenom) private pure returns (bool) {
+    // the hex for ibc/
+    bytes4 ibcInHex = 0x6962632f;
+
+    for (uint256 i = 0; i < ibcInHex.length; i++) {
+      if (ibcInHex[i] != cosmosDenom[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+/**
+   * @dev Validates if a cosmos has the correct length
+   * @param cosmosDenom The cosmos to check
+   * @return Boolean: does it have the correct length?
+   */
+  function verifyIbcDenomLength(bytes calldata cosmosDenom) private pure returns (bool) {
+    // ibc denom like ibc/B4314D0E670CB43C88A5DCA09F76E5E812BD831CC2FEC6E434C9E5A9D1F57953
+    return cosmosDenom.length == 68;
+  }
 }
+
