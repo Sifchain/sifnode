@@ -379,8 +379,7 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	ctx, app := test.CreateTestAppClp(false)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	eAsset, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {
 		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
@@ -408,13 +407,12 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryK
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Symbol)
 	assert.NoError(t, err)
-	registry := tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := tokenRegistryKeeper.GetEntry(registry, inPool.ExternalAsset.Symbol)
+	eAsset, err := tokenRegistryKeeper.GetRegistryEntry(ctx, inPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
 	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, normalizationFactor, adjustExternalToken)
 	assert.NoError(t, err)
-	eAsset, err = tokenRegistryKeeper.GetEntry(registry, outPool.ExternalAsset.Symbol)
+	eAsset, err = tokenRegistryKeeper.GetRegistryEntry(ctx, outPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	normalizationFactor, adjustExternalToken = keeper.GetNormalizationFactor(eAsset.Decimals)
 	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, normalizationFactor, adjustExternalToken)
