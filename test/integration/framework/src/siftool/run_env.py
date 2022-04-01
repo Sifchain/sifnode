@@ -1294,16 +1294,17 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # "env": {"ETHEREUM_PRIVATE_KEY": eth_accounts["validators"][0][1]},
                     "args": [
                         "init-witness",
-                        # TODO This is probably obsolete, need "--network-descriptor" etc.
-                        str(eth_chain_id),
-                        tcp_url,
-                        w3_url,
-                        evm_smart_contract_addrs["BridgeRegistry"],
-                        witness["name"],
+                        "--network-descriptor", str(eth_chain_id),
+                        "--tendermint-node", tcp_url,
+                        "--web3-provider", w3_url,
+                        "--bridge-registry-contract-address", evm_smart_contract_addrs["BridgeRegistry"],
+                        "--validator-mnemonic", witness["name"],
                         "--chain-id", "localnet",
                         "--node", tcp_url,
                         "--keyring-backend", "test",
                         "--from", witness["address"],
+                        # TODO: This shouldnt be needed, it defaults to --home value
+                        "--keyring-dir", witness["home"],
                         "--symbol-translator-file", "${workspaceFolder}/test/integration/config/symbol_translator.json",
                         "--home", witness["home"]
                     ]
