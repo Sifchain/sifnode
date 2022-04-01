@@ -15,6 +15,7 @@ func NewMigrator(keeper Keeper) Migrator {
 
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 	pools := m.keeper.GetPools(ctx)
+	m.keeper.SetParams(ctx, types.DefaultParams())
 	// compute swap prices for each pool
 	m.keeper.SetPmtpEpoch(ctx, types.PmtpEpoch{
 		EpochCounter: 0,
