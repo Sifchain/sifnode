@@ -419,7 +419,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	symbolTranslator *symbol_translator.SymbolTranslator,
 	lockBurnNonce uint64) (uint64, error) {
 
-	var prophecyClaims []*ethbridgetypes.EthBridgeClaim
+	var ethBridgeClaims []*ethbridgetypes.EthBridgeClaim
 
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
@@ -434,7 +434,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
-				prophecyClaims = append(prophecyClaims, &prophecyClaim)
+				ethBridgeClaims = append(ethBridgeClaims, &prophecyClaim)
 				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", prophecyClaim)
 				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
 			} else {
@@ -447,13 +447,13 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		}
 	}
 	sub.SugaredLogger.Infow("relay prophecy claims to cosmos.",
-		"prophecy claims length", len(prophecyClaims))
+		"prophecy claims length", len(ethBridgeClaims))
 
 	if len(events) == 0 {
 		return lockBurnNonce, nil
 	}
 
-	return lockBurnNonce, txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
+	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
 // GetLockBurnNonceFromCosmos via rpc
