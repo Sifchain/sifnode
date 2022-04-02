@@ -38,8 +38,6 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("clp-config-url", "", "URL of the JSON file to use to pre-populate CLPs during genesis")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
-	_nodeCreateCmd.PersistentFlags().Bool("enable-grpc", false, "enable gRPC")
-	_nodeCreateCmd.PersistentFlags().Bool("enable-api", false, "enable API")
 	_nodeCreateCmd.PersistentFlags().String("keyring-backend", "test", "keyring backend (os|file|kwallet|pass|test|memory)")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
@@ -124,8 +122,6 @@ func nodeCreateCmd() *cobra.Command {
 			govVotingPeriod, _ := cmd.Flags().GetDuration("gov-voting-period")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
-			enableGrpc, _ := cmd.Flags().GetBool("enable-grpc")
-			enableAPI, _ := cmd.Flags().GetBool("enable-api")
 			keyringBackend, _ := cmd.Flags().GetString("keyring-backend")
 
 			node := sifgen.NewSifgen(&args[0]).NewNode(keyringBackend)
@@ -151,8 +147,6 @@ func nodeCreateCmd() *cobra.Command {
 
 			node.IPAddr = bindIPAddress
 			node.WithCosmovisor = withCosmovisor
-			node.EnableGrpc = enableGrpc
-			node.EnableAPI = enableAPI
 			summary, err := node.Build()
 			if err != nil {
 				log.Fatal(err)
