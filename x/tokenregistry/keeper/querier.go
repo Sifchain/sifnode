@@ -8,20 +8,7 @@ import (
 )
 
 func NewLegacyQuerier(keeper types.Keeper) sdk.Querier {
-	querier := Querier{keeper}
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
-		switch path[0] {
-		case types.QueryEntries:
-			return queryDenoms(ctx, querier)
-		default:
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
-		}
+		return nil, sdkerrors.Wrap(sdkerrors.ErrNotSupported, "Token Registry Legacy Querier No Longer Available")
 	}
-}
-func queryDenoms(ctx sdk.Context, querier Querier) ([]byte, error) {
-	res, err := querier.Entries(sdk.WrapSDKContext(ctx), &types.QueryEntriesRequest{})
-	if err != nil {
-		return nil, err
-	}
-	return types.ModuleCdc.MarshalJSON(res)
 }
