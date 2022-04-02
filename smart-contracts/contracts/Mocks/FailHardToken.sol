@@ -46,7 +46,6 @@ contract FailHardToken is ERC20Burnable {
   }
 
   function transfer(address to, uint256 amount) public override returns (bool) {
-    console.log("FailHardToken: transfer() :: REVERT!");
 
     revert();
   }
@@ -57,14 +56,12 @@ contract FailHardToken is ERC20Burnable {
     uint256 value
   ) public override returns (bool) {
     if (!hasTransferredFromOnce) {
-      console.log("FailHardToken: transferFrom()");
 
       _transfer(from, to, value);
       hasTransferredFromOnce = true;
       return true;
     }
 
-    console.log("FailHardToken: transferFrom() :: REVERT!");
 
     revert();
   }

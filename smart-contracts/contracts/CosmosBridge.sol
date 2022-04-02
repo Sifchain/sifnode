@@ -121,14 +121,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    * @param cosmosSenderSequence Nonce of the Cosmos account sending this prophecy
    * @param ethereumReceiver Destination address
    * @param tokenAddress Original address
-   * @param amount How much should be transacted
-   * @param doublePeg Is this an already pegged token?
-   * @param nonce Global nonce for this kind of operation
    * @param _networkDescriptor Unique identifier of the network
-   * @param tokenName Name of the original token
-   * @param tokenSymbol Symbol of the original token
-   * @param tokenDecimals Number of decimals of the original token
-   * @param cosmosDenom Unique denom pertaining this token
    * @return A hash that uniquely identifies this Prophecy
    */
   function getProphecyID(
@@ -136,7 +129,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint256 cosmosSenderSequence,
     address payable ethereumReceiver,
     address tokenAddress,
-    int32 _networkDescriptor,
+    int32 _networkDescriptor
   ) public pure returns (uint256) {
     return
       uint256(
@@ -301,14 +294,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       claimData.cosmosSenderSequence,
       claimData.ethereumReceiver,
       claimData.tokenAddress,
-      claimData.amount,
-      claimData.tokenName,
-      claimData.tokenSymbol,
-      claimData.tokenDecimals,
-      claimData.networkDescriptor,
-      claimData.doublePeg,
-      claimData.nonce,
-      claimData.cosmosDenom
+      claimData.networkDescriptor
     );
 
     require(uint256(hashDigest) == prophecyID, "INV_DATA");

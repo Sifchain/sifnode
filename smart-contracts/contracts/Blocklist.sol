@@ -1,12 +1,12 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title Blocklist
  * @dev This contract manages a list of addresses and has a simple CRUD
  */
-contract Blocklist is Ownable {
+contract Blocklist is Ownable  {
   /**
    * @dev The index of each user in the list
    */
@@ -92,7 +92,7 @@ contract Blocklist is Ownable {
     address keyToMove = _userList[_userList.length - 1];
     _userList[rowToDelete] = keyToMove;
     _userIndex[keyToMove] = rowToDelete;
-    _userList.length--;
+    _userList.pop();
 
     emit removedFromBlocklist(account, msg.sender);
 

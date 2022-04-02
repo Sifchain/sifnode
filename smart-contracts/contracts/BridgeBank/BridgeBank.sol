@@ -301,7 +301,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     onlyOwner
     returns (bool)
   {
-    uint256 contractLength = contractAddress.length;
+    uint256 contractLength = contractsAddresses.length;
     for (uint256 i = 0; i < contractLength;) {
       setTokenInCosmosWhiteList(contractsAddresses[i], true);
       unchecked{ ++i; }
@@ -545,7 +545,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     bool[] calldata isBurn
   ) external whenNotPaused {
     uint256 recipientLength = recipient.length;
-    uint256 tokenLength = token.length
+    uint256 tokenLength = token.length;
     // all array inputs must be of the same length
     // else throw malformed params error
     require(recipientLength == tokenLength, "M_P");
@@ -556,9 +556,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     // lockBurnNonce contains the previous nonce that was
     // sent in the LogLock/LogBurn, so the first one we send
     // should be lockBurnNonce + 1
-    unchecked {
-      uint256 startingLockBurnNonce = lockBurnNonce + 1;  
-    }
+    uint256 startingLockBurnNonce = lockBurnNonce + 1;  
 
     // This is equivalent of lockBurnNonce = lockBurnNonce + recipientLength,
     // but it avoids a read of storage
