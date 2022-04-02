@@ -38,18 +38,14 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     amount_to_lock = 1 * rowan_unit
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, amount_to_lock, "rowan")
     ctx.advance_blocks()
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, [[amount_to_lock, "rowan"]])
-
-    # wait rowan change happened in sifnode account
-    test_sif_account_after_lock_balance = ctx.get_sifchain_balance(test_sif_account)
+    test_sif_account_after_lock_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, [[amount_to_lock, "rowan"]])
 
     # we need take the transaction fee into account
     rowan_balance = test_sif_account_initial_balance["rowan"] - amount_to_lock
     assert rowan_balance >= test_sif_account_after_lock_balance["rowan"]
 
     # wait the ethereum reciever's rowan balance change
-    ctx.wait_for_eth_balance_change(test_eth_account, test_eth_account_initial_balance, token_addr=rowan_contract_address, timeout=90)
-    eth_account_final_balance = ctx.get_erc20_token_balance(rowan_contract_address, test_eth_account)
+    eth_account_final_balance = ctx.wait_for_eth_balance_change(test_eth_account, test_eth_account_initial_balance, token_addr=rowan_contract_address, timeout=90)
 
     # check the rowan balance as expected
     assert eth_account_final_balance == test_eth_account_initial_balance + amount_to_lock
@@ -59,8 +55,7 @@ def test_rowan_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     ctx.send_from_ethereum_to_sifchain(test_eth_account, test_sif_account, amount_to_lock, token_sc=rowan_sc, isLock=False)
     ctx.advance_blocks()
 
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_before_receive, [[amount_to_lock, "rowan"]])
-    test_sif_account_after_receive = ctx.get_sifchain_balance(test_sif_account)
+    test_sif_account_after_receive = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_before_receive, [[amount_to_lock, "rowan"]])
 
     assert test_sif_account_after_receive["rowan"] == amount_to_lock + test_sif_account_before_receive["rowan"]
 
@@ -95,16 +90,14 @@ def test_double_peggy_token(ctx):
         final_test_eth_account_balance = ctx.get_erc20_token_balance(created_contract_address, test_eth_account)
     else:
         double_peggy_token_sc = ctx.get_generic_erc20_sc(destination_contract_address)
-        ctx.wait_for_eth_balance_change(test_eth_account, init_test_eth_account_balance, token_addr=destination_contract_address)
-        final_test_eth_account_balance = ctx.get_erc20_token_balance(destination_contract_address, test_eth_account)
+        final_test_eth_account_balance = ctx.wait_for_eth_balance_change(test_eth_account, init_test_eth_account_balance, token_addr=destination_contract_address)
 
     assert init_test_eth_account_balance + fund_amount_double_peggy == final_test_eth_account_balance
 
     init_test_sif_account_balance = ctx.get_sifchain_balance(test_sif_account)
 
     ctx.send_from_ethereum_to_sifchain(test_eth_account, test_sif_account, fund_amount_double_peggy, token_sc=double_peggy_token_sc, isLock=False)
-    ctx.wait_for_sif_balance_change(test_sif_account, init_test_sif_account_balance, [[fund_amount_double_peggy, double_peggy_symbol]])
-    final_test_sif_account_balance = ctx.get_sifchain_balance(test_sif_account)
+    final_test_sif_account_balance = ctx.wait_for_sif_balance_change(test_sif_account, init_test_sif_account_balance, [[fund_amount_double_peggy, double_peggy_symbol]])
     assert sifchain.balance_delta(init_test_sif_account_balance, final_test_sif_account_balance)[double_peggy_symbol] == fund_amount_double_peggy
 
 def test_ibc_to_eth_and_back_to_sifnode_transfer_valid(ctx):
@@ -134,9 +127,8 @@ def test_ibc_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     test_eth_account_init_balance = ctx.get_erc20_token_balance(ibc_token_sc.address, test_eth_account)
 
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, fund_amount_ibc, ibc_token_symbol)
-    ctx.wait_for_eth_balance_change(test_eth_account, test_eth_account_init_balance, token_addr=ibc_token_sc.address, timeout=90)
+    test_eth_account_after_lock = ctx.wait_for_eth_balance_change(test_eth_account, test_eth_account_init_balance, token_addr=ibc_token_sc.address, timeout=90)
 
-    test_eth_account_after_lock = ctx.get_erc20_token_balance(ibc_token_sc.address, test_eth_account)
     assert test_eth_account_after_lock == test_eth_account_init_balance + fund_amount_ibc
 
     test_sif_account_init_balance = ctx.get_sifchain_balance(test_sif_account)
@@ -145,8 +137,7 @@ def test_ibc_to_eth_and_back_to_sifnode_transfer_valid(ctx):
                                        isLock=False)
     ctx.advance_blocks()
 
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_init_balance, [[fund_amount_ibc, ibc_token_symbol]])
-    test_sif_account_after_receive = ctx.get_sifchain_balance(test_sif_account)
+    test_sif_account_after_receive = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_init_balance, [[fund_amount_ibc, ibc_token_symbol]])
 
     assert sifchain.balance_delta(test_sif_account_init_balance, test_sif_account_after_receive)[ibc_token_symbol] == fund_amount_ibc
 

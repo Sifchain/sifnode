@@ -608,7 +608,13 @@ class EnvCtx:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = sifchain.balance_delta(old_balances, new_balances)
             if min_changes is not None:
-                if all([abs(delta.get(denom, 0)) >= amount for amount, denom in min_changes]):
+                reached_changes = 0
+                # compare each denoms' delta, return the new balance if delta as expected accorind to min_changes
+                for amount, denom in min_changes:
+                    changed_value = delta.get(denom, 0)
+                    if abs(changed_value) >= amount:
+                        reached_changes += 1
+                if reached_changes >= len(min_changes):
                     return new_balances
             elif not sifchain.balance_zero(delta):
                 return new_balances
