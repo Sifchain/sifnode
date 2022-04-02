@@ -24,7 +24,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   uint256[100] private ___gap;
 
   /**
-   * @notice Maps the original address of a token to its address in another network
+   * @notice Maps the cosmos denom to its bridge token address
    */
   mapping(string => address) public cosmosDenomToDestinationAddress;
 
