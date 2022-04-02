@@ -27,11 +27,11 @@ message Pool {
   ];
 	string swap_price_native = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.moretags) = "yaml:\"swap_price \""
+    (gogoproto.moretags) = "yaml:\"swap_price_native \""
   ];
 	string swap_price_external = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.moretags) = "yaml:\"swap_price \""
+    (gogoproto.moretags) = "yaml:\"swap_price_external \""
   ];
 }
 
@@ -56,4 +56,10 @@ message LiquidityProviderData {
   sifnode.clp.v1.LiquidityProvider liquidity_provider = 1;
   string native_asset_balance = 2;
   string external_asset_balance = 3;
+}
+
+message EventPolicy {
+  string event_type=1;
+  string pmtp_period_start_block = 2;
+  string pmtp_period_end_block = 3;
 }

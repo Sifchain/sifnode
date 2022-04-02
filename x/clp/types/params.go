@@ -11,8 +11,8 @@ import (
 // Default parameter namespace
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
-	DefaultPmtpStartBlock         int64  = 0
-	DefaultPmtpEndBlock           int64  = 0
+	DefaultPmtpStartBlock         int64  = 211
+	DefaultPmtpEndBlock           int64  = 72210
 )
 
 // Parameter store keys
@@ -57,8 +57,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold:   DefaultMinCreatePoolThreshold,
-		PmtpPeriodGovernanceRate: sdk.ZeroDec(),
-		PmtpPeriodEpochLength:    7,
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
+		PmtpPeriodEpochLength:    14400,
 		PmtpPeriodStartBlock:     DefaultPmtpStartBlock,
 		PmtpPeriodEndBlock:       DefaultPmtpEndBlock,
 	}
@@ -80,13 +80,13 @@ func (p Params) Validate() error {
 	if err := validatePmtpEndBlock(p.PmtpPeriodEndBlock); err != nil {
 		return err
 	}
-	if p.PmtpPeriodEndBlock < p.PmtpPeriodStartBlock {
+	if p.PmtpPeriodEndBlock <= p.PmtpPeriodStartBlock {
 		return fmt.Errorf(
 			"end block (%d) must be after begin block (%d)",
 			p.PmtpPeriodEndBlock, p.PmtpPeriodStartBlock,
 		)
 	}
-	if (p.PmtpPeriodEndBlock-p.PmtpPeriodStartBlock)%p.PmtpPeriodEpochLength != 0 {
+	if (p.PmtpPeriodEndBlock-p.PmtpPeriodStartBlock+1)%p.PmtpPeriodEpochLength != 0 {
 		return fmt.Errorf("all epochs must have equal number of blocks : %d", p.PmtpPeriodEpochLength)
 	}
 	return nil
