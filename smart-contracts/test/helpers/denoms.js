@@ -11,6 +11,7 @@ const { network } = require("hardhat");
  * @returns {String} the final denom
  */
 function generateDenom({ networkDescriptor, tokenAddress, isERC20 }) {
+
   if (isERC20) {
     if (networkDescriptor < 0 || networkDescriptor > 9999) {
       throw("invalid ERC20 Network Descriptor")
@@ -19,7 +20,7 @@ function generateDenom({ networkDescriptor, tokenAddress, isERC20 }) {
   } else {
     const fullString = `${networkDescriptor}/${tokenAddress.toLowerCase()}`;
     const hash = crypto.createHash("sha256").update(fullString).digest("hex");
-    return `ibc/${prefix}${hash}`;
+    return `ibc/${hash}`;
   }
 }
 
