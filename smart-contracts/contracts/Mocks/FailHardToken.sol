@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "hardhat/console.sol";
 
 /**
  * @title FailHardToken
@@ -47,7 +46,6 @@ contract FailHardToken is ERC20Burnable {
   }
 
   function transfer(address to, uint256 amount) public override returns (bool) {
-    console.log("FailHardToken: transfer() :: REVERT!");
 
     revert();
   }
@@ -58,14 +56,12 @@ contract FailHardToken is ERC20Burnable {
     uint256 value
   ) public override returns (bool) {
     if (!hasTransferredFromOnce) {
-      console.log("FailHardToken: transferFrom()");
 
       _transfer(from, to, value);
       hasTransferredFromOnce = true;
       return true;
     }
 
-    console.log("FailHardToken: transferFrom() :: REVERT!");
 
     revert();
   }
