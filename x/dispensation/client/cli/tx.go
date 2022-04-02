@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -98,14 +99,14 @@ func GetCmdClaim() *cobra.Command {
 
 func GetCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "run [DistributionName] [DistributionType]",
+		Use:   "run [DistributionName] [DistributionType] [DistributionCount]",
 		Short: "run limited records dispensation by specifying the name / should only be called by the authorized runner",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			err = cobra.ExactArgs(2)(cmd, args)
+			err = cobra.ExactArgs(3)(cmd, args)
 			if err != nil {
 				return err
 			}
@@ -113,7 +114,11 @@ func GetCmdRun() *cobra.Command {
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
 			}
-			msg := types.NewMsgRunDistribution(clientCtx.GetFromAddress().String(), args[0], distributionType)
+			dispensationCount, err := strconv.ParseInt(args[2], 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid dispensation count :%d", dispensationCount)
+			}
+			msg := types.NewMsgRunDistribution(clientCtx.GetFromAddress().String(), args[0], distributionType, dispensationCount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

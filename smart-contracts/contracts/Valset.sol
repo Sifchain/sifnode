@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "./ValsetStorage.sol";
 
@@ -77,16 +77,19 @@ contract Valset is ValsetStorage {
     operator = _operator;
     currentValsetVersion = 0;
     _initialized = true;
+    
+    uint256 initValLength = _initValidators.length;
 
     require(
-      _initValidators.length == _initPowers.length,
+      initValLength == _initPowers.length,
       "Every validator must have a corresponding power"
     );
 
     resetValset();
 
-    for (uint256 i = 0; i < _initValidators.length; i++) {
+    for (uint256 i; i < initValLength;) {
       _addValidatorInternal(_initValidators[i], _initPowers[i]);
+      unchecked { ++i; }
     }
 
     emit LogValsetUpdated(currentValsetVersion, validatorCount, totalPower);
@@ -174,15 +177,17 @@ contract Valset is ValsetStorage {
     external
     onlyOperator
   {
+    uint256 valLength = _validators.length;
     require(
-      _validators.length == _powers.length,
+      valLength == _powers.length,
       "Every validator must have a corresponding power"
     );
 
     resetValset();
 
-    for (uint256 i = 0; i < _validators.length; i++) {
+    for (uint256 i; i < valLength;) {
       _addValidatorInternal(_validators[i], _powers[i]);
+      unchecked{ ++i; }
     }
 
     emit LogValsetUpdated(currentValsetVersion, validatorCount, totalPower);

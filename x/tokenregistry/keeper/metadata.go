@@ -10,6 +10,7 @@ import (
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Verifies if token name is IBC token
@@ -27,7 +28,13 @@ func IsIBCToken(name string) bool {
 // Fetches token metadata if it exists
 func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
 
-	entry := k.GetDenom(ctx, denomHash)
+	entry, err := k.GetRegistryEntry(ctx, denomHash)
+	if errors.IsOf(err, errors.ErrKeyNotFound) {
+		return types.TokenMetadata{}, false
+	}
+	if err != nil {
+		panic("Unahandled Registry Error")
+	}
 
 	// This is commented out because it is superceded by whats in develop, this change makes testing easier
 	// if !entry.IsWhitelisted {
@@ -57,7 +64,10 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 		ethbridgetypes.NewEthereumAddress(metadata.TokenAddress),
 	)
 
-	entry := k.GetDenom(ctx, denomHash)
+	entry, err := k.GetRegistryEntry(ctx, denomHash)
+	if err != nil {
+		entry = &types.RegistryEntry{}
+	}
 
 	// TODO disable the white list for integration, will remove it later
 	// if !entry.IsWhitelisted {
@@ -69,7 +79,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 	entry.Denom = denomHash
 	entry.IsWhitelisted = true
 
-	k.SetToken(ctx, &entry)
+	k.SetToken(ctx, entry)
 	// }
 
 	instrumentation.PeggyCheckpoint(k.Logger(ctx), instrumentation.AddTokenMetadata, "entry", entry)

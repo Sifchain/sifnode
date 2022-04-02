@@ -1,6 +1,6 @@
-#Common queries 
+# Common queries 
 
-##Channel Related
+## Channel Related
 
 - Query all channels for a chain
 ```shell
@@ -56,7 +56,7 @@ client_state:
 
 ```
 
-##Packet Related 
+## Packet Related 
 The transfer command emits the packet sequence in the events 
 Sequence can be considered similar to nonce , but it is specific to a channel
 ```json
@@ -85,7 +85,7 @@ Query if the ack for packet receipt is not present in the sending chain
 sifnoded q ibc channel  unreceived-acks transfer channel-101 --node=https://rpc-devnet.sifchain.finance:443 --chain-id=sifchain-devnet-1
 ```
 
-##Other Helpful queries
+## Other Helpful queries
 - Get the denom trace from the hash
 ```shell
 sifnoded q ibc-transfer denom-trace C782C1DE5F380BC8A5B7D490684894B439D31847A004B271D7B7BA07751E582A --node=https://rpc-devnet.sifchain.finance:443 --chain-id=sifchain-devnet-1
@@ -107,7 +107,7 @@ sifnoded q ibc-transfer escrow-address transfer channel-101 --node=https://rpc-d
 sif1j3mmq2dsfws0pv5fut3ce2252w0ere8g2alrvd
 ```
 
-##Sifchain Related Queries 
+## Sifchain Related Queries 
 - Query sifchain tokenregistry 
 ```shell
  sifnoded q ibc-transfer escrow-address transfer channel-101 --node=https://rpc-devnet.sifchain.finance:443 --chain-id=sifchain-devnet-1
@@ -136,3 +136,28 @@ sif1j3mmq2dsfws0pv5fut3ce2252w0ere8g2alrvd
             "unit_denom": ""
         }
 ```
+## Stuck Transfers
+
+Use `sifnoded ibc-diag stuck-txs` to get a list of stuck IBC transfers.
+
+For example, to get the list of stuck transfer from Sifchain to Terra:
+
+```
+sifnoded ibc-diag stuck-txs \
+--src-node http://rpc.sifchain.finance:80 \
+--dst-node http://public-node.terra.dev:26657 \
+--src-channel channel-18 \
+--dst-channel channel-7
+```
+
+and from Terra to Sifchain:
+
+```
+sifnoded ibc-diag stuck-txs \
+--src-node http://public-node.terra.dev:26657 \
+--dst-node http://rpc.sifchain.finance:80 \
+--src-channel channel-7 \
+--dst-channel channel-18
+```
+
+Use the regular IBC commands described above to find which channel ids to use.

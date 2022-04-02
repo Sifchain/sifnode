@@ -120,7 +120,7 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
     readonly ebrelayerDB = `levelDB.db`,
     readonly relayerdbPath = "./relayerdb",
     readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json",
-    readonly logFile = "/tmp/sifnode/evmrelayer.log"
+    readonly logFile = "/tmp/sifnode/relayer.log"
   ) {
     super()
     this.output = new Promise<EbrelayerResults>((res, rej) => {
