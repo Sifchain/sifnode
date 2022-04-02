@@ -210,7 +210,7 @@ describe("Test Bridge Bank", function () {
           [false, false, false]
         );
 
-      (await state.bridgeBank.connect(userOne).lockBurnNonce()).should.be.bignumber.equal(previousNonce.add(3));
+      (await state.bridgeBank.connect(userOne).lockBurnNonce()).should.be.equal(previousNonce.add(3));
 
       // Confirm that the user has been minted the correct token
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
