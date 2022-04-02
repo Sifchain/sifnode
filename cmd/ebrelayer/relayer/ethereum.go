@@ -426,21 +426,21 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		return lockBurnNonce, err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
+		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
-			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
-				ethBridgeClaims = append(ethBridgeClaims, &prophecyClaim)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", prophecyClaim)
-				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
+			if lockBurnNonce == 0 || ethBridgeClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
+				ethBridgeClaims = append(ethBridgeClaims, &ethBridgeClaim)
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", ethBridgeClaim)
+				lockBurnNonce = ethBridgeClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
 					"nextLockBurnNonce", lockBurnNonce,
-					"prophecyClaim.EthereumLockBurnNonce", prophecyClaim.EthereumLockBurnSequence)
+					"prophecyClaim.EthereumLockBurnNonce", ethBridgeClaim.EthereumLockBurnSequence)
 				return lockBurnNonce, errors.New("lock burn nonce is not expected")
 			}
 
