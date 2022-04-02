@@ -1,4 +1,4 @@
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -65,7 +65,7 @@ contract Blocklist is Ownable  {
    */
   function batchAddToBlocklist(address[] calldata accounts) external onlyOwner {
     uint256 accountLength = accounts.length;
-    for (uint256 i = 0; i < accountLength;) {
+    for (uint256 i; i < accountLength;) {
       require(_addToBlocklist(accounts[i]));
       unchecked { ++i; }
     }
@@ -106,7 +106,7 @@ contract Blocklist is Ownable  {
    */
   function batchRemoveFromBlocklist(address[] calldata accounts) external onlyOwner {
     uint256 accountLength = accounts.length;
-    for (uint256 i = 0; i < accountLength;) {
+    for (uint256 i; i < accountLength;) {
       require(_removeFromBlocklist(accounts[i]));
       unchecked { ++i; }
     }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "./ValsetStorage.sol";
 
@@ -87,7 +87,7 @@ contract Valset is ValsetStorage {
 
     resetValset();
 
-    for (uint256 i = 0; i < initValLength;) {
+    for (uint256 i; i < initValLength;) {
       _addValidatorInternal(_initValidators[i], _initPowers[i]);
       unchecked { ++i; }
     }
@@ -185,7 +185,7 @@ contract Valset is ValsetStorage {
 
     resetValset();
 
-    for (uint256 i = 0; i < valLength;) {
+    for (uint256 i; i < valLength;) {
       _addValidatorInternal(_validators[i], _powers[i]);
       unchecked{ ++i; }
     }

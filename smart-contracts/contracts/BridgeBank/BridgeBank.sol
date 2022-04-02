@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "./CosmosBank.sol";
 import "./EthereumWhitelist.sol";
@@ -749,7 +749,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     uint256 tokenLength = _tokens.length;
     require(tokenLength == _denoms.length, "INV_LEN");
 
-    for (uint256 i = 0; i < tokenLength;) {
+    for (uint256 i ; i < tokenLength;) {
       _setBridgeTokenDenom(_tokens[i], _denoms[i]);
       unchecked { ++i; }
     }

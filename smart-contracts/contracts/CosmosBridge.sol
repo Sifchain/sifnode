@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 
 /**
  * @title Cosmos Bridge
@@ -68,6 +70,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    */
   event LogProphecyCompleted(uint256 prophecyID, bool success);
 
+ /**
+  * @dev Event emitted when operator account is changed
+  */
+  event OperatorAccountChange(address newOperator);
+
   /**
    * @notice Initializer
    * @param _operator Address of the operator
@@ -100,6 +107,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   function changeOperator(address _newOperator) external onlyOperator {
     require(_newOperator != address(0), "invalid address");
     operator = _newOperator;
+    emit OperatorAccountChange(_newOperator);
   }
 
   /**
@@ -164,7 +172,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     bytes32 messageDigest = keccak256(
       abi.encodePacked("\x19Ethereum Signed Message:\n32", hashDigest)
     );
-    return signer == ecrecover(messageDigest, _v, _r, _s);
+    return signer == ECDSA.recover(messageDigest, _v, _r, _s);
   }
 
   /**
@@ -181,7 +189,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     returns (uint256 pow)
   {
     uint256 validatorLength = _validators.length;
-    for (uint256 i = 0; i < validatorLength;) {
+    for (uint256 i; i < validatorLength;) {
       SignatureData calldata validator = _validators[i];
 
       require(isActiveValidator(validator.signer), "INV_SIGNER");
@@ -251,7 +259,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint256 intermediateNonce = lastNonceSubmitted;
     lastNonceSubmitted += claimLength;
 
-    for (uint256 i = 0; i < sigsLength;) {
+    for (uint256 i; i < sigsLength;) {
       require(intermediateNonce + 1 + i == claims[i].nonce, "INV_ORD");
       _submitProphecyClaimAggregatedSigs(sigs[i], claims[i], signatureData[i]);
       unchecked { ++i; }
