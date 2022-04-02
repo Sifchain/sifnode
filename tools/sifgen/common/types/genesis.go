@@ -108,6 +108,8 @@ type CLPParams struct {
 	MinCreatePoolThreshold   json.Number `json:"min_create_pool_threshold"`
 	PMTPPeriodGovernanceRate string      `json:"pmtp_period_governance_rate"`
 	PMTPPeriodEpocLength     json.Number `json:"pmtp_period_epoch_length"`
+	PMTPPeriodStartBlock     json.Number `json:"pmtp_period_start_block"`
+	PMTPPeriodEndBlock       json.Number `json:"pmtp_period_end_block"`
 }
 
 type CLP struct {

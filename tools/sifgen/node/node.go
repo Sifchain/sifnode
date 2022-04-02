@@ -218,7 +218,7 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	if err = genesis.SetPMTPDefaults(common.DefaultNodeHome, "0.000000000000000000", 7); err != nil {
+	if err = genesis.SetPMTPDefaults(common.DefaultNodeHome, "0.10", 14400, 211, 72210); err != nil {
 		return err
 	}
 
