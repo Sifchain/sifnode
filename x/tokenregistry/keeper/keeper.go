@@ -151,6 +151,10 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 		var registry types.RegistryEntry
 		key := iterator.Key()
 		bz := store.Get(key)
+		if bz == nil {
+			// If some reason an entry is nil continue rather then panic
+			continue
+		}
 		k.cdc.MustUnmarshal(bz, &registry)
 
 		entries = append(entries, &registry)

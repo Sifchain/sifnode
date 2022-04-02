@@ -10,6 +10,7 @@ import (
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Verifies if token name is IBC token
@@ -28,8 +29,11 @@ func IsIBCToken(name string) bool {
 func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
 
 	entry, err := k.GetRegistryEntry(ctx, denomHash)
-	if err != nil {
+	if errors.IsOf(err, errors.ErrKeyNotFound) {
 		return types.TokenMetadata{}, false
+	}
+	if err != nil {
+		panic("Unahandled Registry Error")
 	}
 
 	// This is commented out because it is superceded by whats in develop, this change makes testing easier

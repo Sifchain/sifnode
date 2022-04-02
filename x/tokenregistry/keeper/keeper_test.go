@@ -186,8 +186,20 @@ func TestGetRegistryEntry(t *testing.T) {
 	actualEntry, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, "t2")
 	assert.NoError(t, err)
 	assert.Equal(t, entry3, *actualEntry)
+}
+
+func TestGetRegistryWithInvalidEntry(t *testing.T) {
+	app, ctx, _ := test.CreateTestApp(false)
+	entry1 := types.RegistryEntry{
+		Denom:       "rowan",
+		Decimals:    18,
+		Permissions: []types.Permission{types.Permission_CLP},
+	}
+
+	app.TokenRegistryKeeper.SetToken(ctx, &entry1)
+
 	// Invalid Entry
-	actualEntry, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, "InvalidToken")
+	actualEntry, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "InvalidToken")
 	assert.ErrorIs(t, err, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found"))
 	assert.Nil(t, actualEntry)
 }
