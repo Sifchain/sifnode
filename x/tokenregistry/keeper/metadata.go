@@ -29,7 +29,7 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 
 	entry, err := k.GetRegistryEntry(ctx, denomHash)
 	if err != nil {
-		entry = &types.RegistryEntry{}
+		return types.TokenMetadata{}, false
 	}
 
 	// This is commented out because it is superceded by whats in develop, this change makes testing easier

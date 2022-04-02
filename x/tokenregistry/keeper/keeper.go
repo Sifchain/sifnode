@@ -99,6 +99,7 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 
 // GetRegistryEntry to get a token from the Token Registry without looping
 // Returns Error if entry is not found, Panics if entry is found but unable to be Unmarshalled
+// Index Starts at 1, returns ordered data, not based upon insertion
 func (k keeper) GetRegistryEntry(ctx sdk.Context, denom string) (*types.RegistryEntry, error) {
 	var entry types.RegistryEntry
 	store := ctx.KVStore(k.storeKey)
@@ -124,12 +125,12 @@ func (k keeper) GetRegistryPaginated(ctx sdk.Context, page uint, limit uint) (ty
 	iterator := sdk.KVStorePrefixIteratorPaginated(store, types.TokenDenomPrefix, page, limit)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var registry types.RegistryEntry
+		var registryEntry types.RegistryEntry
 		key := iterator.Key()
 		bz := store.Get(key)
-		k.cdc.MustUnmarshal(bz, &registry)
+		k.cdc.MustUnmarshal(bz, &registryEntry)
 
-		entries = append(entries, &registry)
+		entries = append(entries, &registryEntry)
 	}
 
 	return types.Registry{
@@ -173,11 +174,11 @@ func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 }
 
 func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
-	registry, err := k.GetRegistryEntry(ctx, denom)
+	registryEntry, err := k.GetRegistryEntry(ctx, denom)
 	if err != nil {
 		panic("Invalid Denom for Get Double Peg")
 	}
-	if result, ok := registry.DoublePeggedNetworkMap[uint32(networkDescriptor)]; ok {
+	if result, ok := registryEntry.DoublePeggedNetworkMap[uint32(networkDescriptor)]; ok {
 		return result
 	}
 
@@ -187,17 +188,17 @@ func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 func (k keeper) SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
 	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
 	if firstLockDoublePeg {
-		registry, err := k.GetRegistryEntry(ctx, denom)
+		registryEntry, err := k.GetRegistryEntry(ctx, denom)
 		if err != nil {
 			panic("Invalid Denom for Set Double Peg")
 		}
-		if registry.DoublePeggedNetworkMap == nil {
-			registry.DoublePeggedNetworkMap = make(map[uint32]bool)
+		if registryEntry.DoublePeggedNetworkMap == nil {
+			registryEntry.DoublePeggedNetworkMap = make(map[uint32]bool)
 		}
-		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
-		k.SetToken(ctx, registry)
+		registryEntry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
+		k.SetToken(ctx, registryEntry)
 
-		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
+		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstDoublePeg, "networkDescriptor", networkDescriptor, "registry", registryEntry)
 	}
 }
 
