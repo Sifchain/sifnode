@@ -21,7 +21,8 @@ func Test_PmtpFloatCalculations(t *testing.T) {
 	numBlocksInPolicyPeriod := 100
 	pmtpPeriodBlockRate := (sdk.NewDec(1).Add(pmtpPeriodGovernanceRate))
 	pow := float64(numEpochsInPolicyPeriod) / float64(numBlocksInPolicyPeriod)
-	fmt.Println(pmtpPeriodBlockRate, pow)
+	require.Equal(t, pow, float64(0.1))
+	require.Equal(t, pmtpPeriodBlockRate, sdk.MustNewDecFromStr("667578.111234534525628462"))
 	s := 1.232322323223435445
 	//f:=strconv.FormatFloat(s, 'E', -1, 64)
 	f := fmt.Sprintf("%v", s)
@@ -36,14 +37,15 @@ func Test_PmtpFloatCalculations(t *testing.T) {
 	//
 	//value := math.Pow(bint,bpow)
 	//dec := sdk.MustNewDecFromStr(fmt.Sprintf("%f", value)).MustFloat64(
-	fmt.Println(fbr, fpow)
+	require.Equal(t, fbr.String(), "667578.1112")
+	require.Equal(t, fpow.String(), "1.232322323")
 
 	fss := fmt.Sprintf("%.18f", 0.00000013751833967123872)
-	fmt.Println(fss)
+	require.Equal(t, fss, "0.000000137518339671")
 }
 func TestKeeper_PolicyRun(t *testing.T) {
-	SwapPriceNative := sdk.NewDec(2)
-	SwapPriceExternal := sdk.ZeroDec()
+	SwapPriceNative := sdk.MustNewDecFromStr("1.996005992010000000")
+	SwapPriceExternal := sdk.MustNewDecFromStr("0.499001498002500000")
 
 	testcases := []struct {
 		name                   string
