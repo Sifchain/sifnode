@@ -43,8 +43,6 @@ type Node struct {
 	GenesisURL                string        `yaml:"-"`
 	Standalone                bool          `yaml:"-"`
 	WithCosmovisor            bool          `yaml:"-"`
-	EnableGrpc                bool          `yaml:"-"`
-	EnableAPI                 bool          `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -357,9 +355,10 @@ func (n *Node) replaceAppTOML() error {
 		return err
 	}
 
-	config.API.Enable = n.EnableAPI
+	config.API.Enable = true
+	config.API.Swagger = true
 	config.API.EnabledUnsafeCors = true
-	config.Grpc.Enable = n.EnableGrpc
+	config.Grpc.Enable = true
 
 	if err := toml.NewEncoder(file).Encode(config); err != nil {
 		return err
