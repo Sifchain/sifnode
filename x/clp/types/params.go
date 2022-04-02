@@ -11,7 +11,7 @@ import (
 // Default parameter namespace
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
-	DefaultPmtpStartBlock         int64  = 210
+	DefaultPmtpStartBlock         int64  = 211
 	DefaultPmtpEndBlock           int64  = 72210
 )
 
