@@ -10,11 +10,12 @@ type Keeper interface {
 	StoreKey() sdk.StoreKey
 	GetAdminKeeper() adminkeeper.Keeper
 	CheckEntryPermissions(entry *RegistryEntry, permissions []Permission) bool
-	GetEntry(registry Registry, denom string) (*RegistryEntry, error)
 	SetToken(ctx sdk.Context, entry *RegistryEntry)
 	RemoveToken(ctx sdk.Context, denom string)
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
-	GetRegistry(ctx sdk.Context) Registry
+	GetRegistry(ctx sdk.Context) Registry // Deprecated DO NOT USE
+	GetRegistryPaginated(ctx sdk.Context, page uint, limit uint) (Registry, error)
+	GetRegistryEntry(ctx sdk.Context, denom string) (*RegistryEntry, error)
 	SetRegistry(ctx sdk.Context, registry Registry)
 }

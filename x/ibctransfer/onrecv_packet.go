@@ -37,8 +37,7 @@ func OnRecvPacketWhitelistConvert(
 	// For a native token that has been returned, this will just be a base_denom,
 	// which will be on the whitelist.
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
-	registry := whitelistKeeper.GetRegistry(ctx)
-	mintedDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenom)
+	mintedDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenom)
 	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
@@ -56,7 +55,7 @@ func OnRecvPacketWhitelistConvert(
 		return acknowledgement
 	}
 	// TODO Add entries fpr Non-X versions of tokens to tokenRegistry
-	convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	convertToDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenomEntry.UnitDenom)
 	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.

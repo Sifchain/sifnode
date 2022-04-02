@@ -15,4 +15,7 @@ service Query {
 }
 
 message QueryEntriesResponse { Registry registry = 1; }
-message QueryEntriesRequest {}
+message QueryEntriesRequest {
+  uint64 page = 1;
+  uint64 limit = 2;
+}
