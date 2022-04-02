@@ -87,7 +87,7 @@ class EthereumTxWrapper:
 
     def _get_private_key(self, addr):
         addr = web3.Web3.toChecksumAddress(addr)
-        if not addr in self.private_keys:
+        if addr not in self.private_keys:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
