@@ -7,6 +7,8 @@ const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
 const { setup, getValidClaim } = require("./helpers/testFixture");
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 use(solidity);
@@ -71,7 +73,7 @@ describe("Test Cosmos Bridge", function () {
       sender: state.sender,
       senderSequence: state.senderSequence,
       recipientAddress: state.recipient.address,
-      tokenAddress: state.token.address,
+      tokenAddress: ZERO_ADDRESS,
       amount: state.amount,
       doublePeg: false,
       nonce: state.nonce,
@@ -98,7 +100,7 @@ describe("Test Cosmos Bridge", function () {
         state.networkDescriptor,
         state.name,
         state.symbol,
-        state.token.address,
+        ZERO_ADDRESS,
         expectedAddress,
         state.constants.denom.ibc
       );
@@ -117,7 +119,7 @@ describe("Test Cosmos Bridge", function () {
       sender: state.sender,
       senderSequence: state.senderSequence + 1,
       recipientAddress: state.recipient.address,
-      tokenAddress: state.token.address,
+      tokenAddress: ZERO_ADDRESS,
       amount: state.amount,
       doublePeg: false,
       nonce: state.nonce + 1,
@@ -140,5 +142,102 @@ describe("Test Cosmos Bridge", function () {
     const deployedToken = await deployedTokenFactory.attach(newlyCreatedTokenAddress);
     const endingBalance = await deployedToken.balanceOf(state.recipient.address);
     expect(endingBalance).to.be.equal(state.amount * 2);
+  });
+
+  it("should put the token address into map if a ibc token with existed bridge token address burn prophecy claim just for first time", async function () {
+    state.nonce = 1;
+
+    const { digest, claimData, signatures } = await getValidClaim({
+      sender: state.sender,
+      senderSequence: state.senderSequence,
+      recipientAddress: state.recipient.address,
+      tokenAddress: state.token_ibc.address,
+      amount: state.amount,
+      doublePeg: false,
+      nonce: state.nonce,
+      networkDescriptor: state.networkDescriptor,
+      tokenName: state.name,
+      tokenSymbol: state.symbol,
+      tokenDecimals: state.decimals,
+      cosmosDenom: state.constants.denom.ibc,
+      validators: [userOne, userTwo, userFour],
+    });
+
+    const expectedAddress = state.token_ibc.address;
+    await expect(
+      state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
+    )
+      .to.not.emit(state.cosmosBridge, "LogNewBridgeTokenCreated");
+
+    const existedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+      state.constants.denom.ibc
+    );
+    expect(existedTokenAddress).to.be.equal(expectedAddress);
+
+    // Send the same transaction again, the bridge token address keep the same
+    const {
+      digest: digest2,
+      claimData: claimData2,
+      signatures: signatures2,
+    } = await getValidClaim({
+      sender: state.sender,
+      senderSequence: state.senderSequence + 1,
+      recipientAddress: state.recipient.address,
+      tokenAddress: state.token_ibc.address,
+      amount: state.amount,
+      doublePeg: false,
+      nonce: state.nonce + 1,
+      networkDescriptor: state.networkDescriptor,
+      tokenName: state.name,
+      tokenSymbol: state.symbol,
+      tokenDecimals: state.decimals,
+      cosmosDenom: state.constants.denom.ibc,
+      validators: [userOne, userTwo, userFour],
+    });
+
+    await expect(
+      state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest2, claimData2, signatures2)
+    ).to.not.emit(state.cosmosBridge, "LogNewBridgeTokenCreated");
+
+    const existedTokenAddress2 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+      state.constants.denom.ibc
+    );
+    expect(existedTokenAddress2).to.be.equal(expectedAddress);
+
+    // event change the contract address for already bound ibc denom, the bridge token address keep the same
+    const {
+      digest: digest3,
+      claimData: claimData3,
+      signatures: signatures3,
+    } = await getValidClaim({
+      sender: state.sender,
+      senderSequence: state.senderSequence + 2,
+      recipientAddress: state.recipient.address,
+      tokenAddress: state.token.address,
+      amount: state.amount,
+      doublePeg: false,
+      nonce: state.nonce + 2,
+      networkDescriptor: state.networkDescriptor,
+      tokenName: state.name,
+      tokenSymbol: state.symbol,
+      tokenDecimals: state.decimals,
+      cosmosDenom: state.constants.denom.ibc,
+      validators: [userOne, userTwo, userFour],
+    });
+
+    await expect(
+      state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest3, claimData3, signatures3)
+    ).to.not.emit(state.cosmosBridge, "LogNewBridgeTokenCreated");
+
+    const existedTokenAddress3 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+      state.constants.denom.ibc
+    );
+    expect(existedTokenAddress3).to.be.equal(expectedAddress);
   });
 });

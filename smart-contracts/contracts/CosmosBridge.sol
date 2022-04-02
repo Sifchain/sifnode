@@ -319,7 +319,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(getProphecyStatus(pow), "INV_POW");
 
     address tokenAddress;
-    if (claimData.doublePeg || isIbcToken(claimData.cosmosDenom)) {
+    // 
+    if (claimData.doublePeg) {
       if (!_isBridgeTokenCreated(claimData.cosmosDenom)) {
         // if we are double pegging AND we don't control the token, we deploy a new smart contract
         tokenAddress = _createNewBridgeToken(
@@ -334,7 +335,31 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         // if we are double pegging and already control the token, then we are going to need to get the address on this chain
         tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
       }
-    } else {
+    } else if (isIbcToken(claimData.cosmosDenom)) {
+      
+      if (_isBridgeTokenCreated(claimData.cosmosDenom)) {
+        tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
+      } else {
+      // for ibc token we need consider two cases
+      // if bridge token already created before, but not in cosmosDenomToDestinationAddress
+      // we just put it in the map and can get the bridge token address from map next time
+      // if bridge token not created, we create it now
+        if (claimData.tokenAddress == address(0)) {
+          tokenAddress = _createNewBridgeToken(
+            claimData.tokenSymbol,
+            claimData.tokenName,
+            claimData.tokenAddress,
+            claimData.tokenDecimals,
+            claimData.networkDescriptor,
+            claimData.cosmosDenom
+          );
+        } else {
+          cosmosDenomToDestinationAddress[claimData.cosmosDenom] = claimData.tokenAddress;
+          tokenAddress = claimData.tokenAddress;
+        }
+      }
+    }
+    else {
         tokenAddress = claimData.tokenAddress;
     }
 
