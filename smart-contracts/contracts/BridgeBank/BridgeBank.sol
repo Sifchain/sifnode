@@ -556,7 +556,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     // lockBurnNonce contains the previous nonce that was
     // sent in the LogLock/LogBurn, so the first one we send
     // should be lockBurnNonce + 1
-    uint256 startingLockBurnNonce = lockBurnNonce + 1;  
+    uint256 startingLockBurnNonce = lockBurnNonce + 1;
 
     // This is equivalent of lockBurnNonce = lockBurnNonce + recipientLength,
     // but it avoids a read of storage
