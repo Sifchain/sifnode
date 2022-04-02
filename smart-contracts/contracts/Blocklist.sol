@@ -1,12 +1,12 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.4;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title Blocklist
  * @dev This contract manages a list of addresses and has a simple CRUD
  */
-contract Blocklist is Ownable {
+contract Blocklist is Ownable  {
   /**
    * @dev The index of each user in the list
    */
@@ -64,8 +64,10 @@ contract Blocklist is Ownable {
    * @dev Fails if at least one of the addresses was already blocklisted
    */
   function batchAddToBlocklist(address[] calldata accounts) external onlyOwner {
-    for (uint256 i = 0; i < accounts.length; i++) {
+    uint256 accountLength = accounts.length;
+    for (uint256 i; i < accountLength;) {
       require(_addToBlocklist(accounts[i]));
+      unchecked { ++i; }
     }
   }
 
@@ -90,7 +92,7 @@ contract Blocklist is Ownable {
     address keyToMove = _userList[_userList.length - 1];
     _userList[rowToDelete] = keyToMove;
     _userIndex[keyToMove] = rowToDelete;
-    _userList.length--;
+    _userList.pop();
 
     emit removedFromBlocklist(account, msg.sender);
 
@@ -103,8 +105,10 @@ contract Blocklist is Ownable {
    * @dev Fails if at least one of the addresses was not blocklisted
    */
   function batchRemoveFromBlocklist(address[] calldata accounts) external onlyOwner {
-    for (uint256 i = 0; i < accounts.length; i++) {
+    uint256 accountLength = accounts.length;
+    for (uint256 i; i < accountLength;) {
       require(_removeFromBlocklist(accounts[i]));
+      unchecked { ++i; }
     }
   }
 

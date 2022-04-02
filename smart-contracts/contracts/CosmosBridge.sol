@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 
 /**
  * @title Cosmos Bridge
@@ -69,6 +70,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    */
   event LogProphecyCompleted(uint256 prophecyID, bool success);
 
+ /**
+  * @dev Event emitted when operator account is changed
+  */
+  event OperatorAccountChange(address newOperator);
+
   /**
    * @notice Initializer
    * @param _operator Address of the operator
@@ -101,6 +107,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   function changeOperator(address _newOperator) external onlyOperator {
     require(_newOperator != address(0), "invalid address");
     operator = _newOperator;
+    emit OperatorAccountChange(_newOperator);
   }
 
   /**
@@ -122,14 +129,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    * @param cosmosSenderSequence Nonce of the Cosmos account sending this prophecy
    * @param ethereumReceiver Destination address
    * @param tokenAddress Original address
-   * @param amount How much should be transacted
-   * @param doublePeg Is this an already pegged token?
-   * @param nonce Global nonce for this kind of operation
    * @param _networkDescriptor Unique identifier of the network
-   * @param tokenName Name of the original token
-   * @param tokenSymbol Symbol of the original token
-   * @param tokenDecimals Number of decimals of the original token
-   * @param cosmosDenom Unique denom pertaining this token
    * @return A hash that uniquely identifies this Prophecy
    */
   function getProphecyID(
@@ -137,14 +137,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint256 cosmosSenderSequence,
     address payable ethereumReceiver,
     address tokenAddress,
-    uint256 amount,
-    string memory tokenName,
-    string memory tokenSymbol,
-    uint8 tokenDecimals,
-    int32 _networkDescriptor,
-    bool doublePeg,
-    uint128 nonce,
-    string memory cosmosDenom
+    int32 _networkDescriptor
   ) public pure returns (uint256) {
     return
       uint256(
@@ -152,18 +145,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
           abi.encode(
             cosmosSender,
             cosmosSenderSequence,
-            // TODO to make sure same algorithm with sifnode side
-            // comment some items, need add some back 
             ethereumReceiver,
             tokenAddress,
-            // amount,
-            // tokenName,
-            // tokenSymbol,
-            // tokenDecimals,
             _networkDescriptor
-            // doublePeg,
-            // nonce,
-            // cosmosDenom
           )
         )
       );
@@ -188,7 +172,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     bytes32 messageDigest = keccak256(
       abi.encodePacked("\x19Ethereum Signed Message:\n32", hashDigest)
     );
-    return signer == ecrecover(messageDigest, _v, _r, _s);
+    return signer == ECDSA.recover(messageDigest, _v, _r, _s);
   }
 
   /**
@@ -204,7 +188,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     view
     returns (uint256 pow)
   {
-    for (uint256 i = 0; i < _validators.length; i++) {
+    uint256 validatorLength = _validators.length;
+    for (uint256 i; i < validatorLength;) {
       SignatureData calldata validator = _validators[i];
 
       require(isActiveValidator(validator.signer), "INV_SIGNER");
@@ -214,11 +199,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         "INV_SIG"
       );
 
-      pow += getValidatorPower(validator.signer);
-
-      for (uint256 j = i + 1; j < _validators.length; j++) {
-        require(validator.signer != _validators[j].signer, "DUP_SIGNER");
+      unchecked {
+        pow += getValidatorPower(validator.signer); 
       }
+
+      for (uint256 j = i + 1; j < validatorLength;) {
+        require(validator.signer != _validators[j].signer, "DUP_SIGNER");
+        unchecked { ++j; }
+      }
+      unchecked { ++i; }
     }
   }
 
@@ -262,15 +251,18 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     ClaimData[] calldata claims,
     SignatureData[][] calldata signatureData
   ) external {
-    require(sigs.length == claims.length, "INV_CLM_LEN");
-    require(sigs.length == signatureData.length, "INV_SIG_LEN");
+    uint256 sigsLength = sigs.length;
+    uint256 claimLength = claims.length;
+    require(sigsLength == claimLength, "INV_CLM_LEN");
+    require(sigsLength == signatureData.length, "INV_SIG_LEN");
 
     uint256 intermediateNonce = lastNonceSubmitted;
-    lastNonceSubmitted += claims.length;
+    lastNonceSubmitted += claimLength;
 
-    for (uint256 i = 0; i < sigs.length; i++) {
+    for (uint256 i; i < sigsLength;) {
       require(intermediateNonce + 1 + i == claims[i].nonce, "INV_ORD");
       _submitProphecyClaimAggregatedSigs(sigs[i], claims[i], signatureData[i]);
+      unchecked { ++i; }
     }
   }
 
@@ -310,14 +302,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       claimData.cosmosSenderSequence,
       claimData.ethereumReceiver,
       claimData.tokenAddress,
-      claimData.amount,
-      claimData.tokenName,
-      claimData.tokenSymbol,
-      claimData.tokenDecimals,
-      claimData.networkDescriptor,
-      claimData.doublePeg,
-      claimData.nonce,
-      claimData.cosmosDenom
+      claimData.networkDescriptor
     );
 
     require(uint256(hashDigest) == prophecyID, "INV_DATA");
@@ -400,14 +385,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     );
     // need to make a business decision on what this symbol should be
     // First lock of this asset, deploy new contract and get new symbol/token address
-    address tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
+    address newTokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
       name,
       symbol,
       decimals,
       cosmosDenom
     );
 
-    cosmosDenomToDestinationAddress[cosmosDenom] = tokenAddress;
+    cosmosDenomToDestinationAddress[cosmosDenom] = newTokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,
@@ -415,11 +400,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       name,
       symbol,
       sourceChainTokenAddress,
-      tokenAddress,
+      newTokenAddress,
       cosmosDenom
     );
 
-    return tokenAddress;
+    return newTokenAddress;
   }
 
   /**
