@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { network } = require("hardhat");
 
 /**
  * @dev Generates a well-formed Denom
@@ -10,12 +11,16 @@ const crypto = require("crypto");
  * @returns {String} the final denom
  */
 function generateDenom({ networkDescriptor, tokenAddress, isERC20 }) {
-  const prefix = isERC20 ? "sif" : "ibc/";
-  const fullString = `${networkDescriptor}/${tokenAddress.toLowerCase()}`;
-  const hash = crypto.createHash("sha256").update(fullString).digest("hex");
-  const denom = `${prefix}${hash}`;
-
-  return denom;
+  if (isERC20) {
+    if (networkDescriptor < 0 || networkDescriptor > 9999) {
+      throw("invalid ERC20 Network Descriptor")
+    }
+    return `sifBridge${(networkDescriptor).toString().padStart(4, '0')}${tokenAddress.toLowerCase()}`
+  } else {
+    const fullString = `${networkDescriptor}/${tokenAddress.toLowerCase()}`;
+    const hash = crypto.createHash("sha256").update(fullString).digest("hex");
+    return `ibc/${prefix}${hash}`;
+  }
 }
 
 const ROWAN_DENOM = generateDenom({
