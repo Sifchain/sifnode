@@ -216,6 +216,8 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	genesis.SetRewardsDefaults(common.DefaultNodeHome,n.)
+
 	err = n.replaceConfigTOML()
 	if err != nil {
 		return err
