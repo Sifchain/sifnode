@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
@@ -65,9 +64,6 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
-	// we also take ibc token is bridge token, since it is not from sifnode
-	isBridgeToken := strings.HasPrefix(msg.DenomHash, "ibc/")
-
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
@@ -78,7 +74,9 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
-		isBridgeToken,
+		// we take all sifnode native tokens and ibc tokens as bridge token
+		// means cosmosBridge contract manage them automatically
+		true,
 		globalSequence,
 		uint8(tokenMetadata.Decimals),
 		tokenMetadata.Name,
