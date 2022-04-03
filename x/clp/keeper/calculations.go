@@ -338,9 +338,7 @@ func CalcSwapResult(toRowan bool,
 	if !toRowan {
 		y = y.Quo(normalizationFactor)
 	}
-	fmt.Printf("y: %v\n", y)
 	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
-	fmt.Printf("pmtp y: %v\n", y)
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
@@ -382,9 +380,7 @@ func CalcSwapResultDec(toRowan bool,
 	if !toRowan {
 		y = y.Quo(normalizationFactor)
 	}
-	fmt.Printf("y: %v\n", y)
 	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
-	fmt.Printf("pmtp y: %v\n", y)
 	return y
 }
 
