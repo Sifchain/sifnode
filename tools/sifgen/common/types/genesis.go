@@ -104,8 +104,24 @@ type Capability struct {
 	Owners []interface{} `json:"owners"`
 }
 
+type PoolMultiplier struct {
+	Asset      string `json:"asset"`
+	Multiplier string `json:"multiplier"`
+}
+
+type RewardPeriod struct {
+	ID          string            `json:"id"`
+	StartBlock  json.Number       `json:"start_block"`
+	EndBlock    json.Number       `json:"end_block"`
+	Allocation  string            `json:"allocation"`
+	Multipliers []*PoolMultiplier `json:"multipliers"`
+}
+
 type CLPParams struct {
-	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
+	MinCreatePoolThreshold       json.Number     `json:"min_create_pool_threshold"`
+	LiquidityRemovalLockPeriod   json.Number     `json:"liquidity_removal_lock_period"`
+	LiquidityRemovalCancelPeriod json.Number     `json:"liquidity_removal_cancel_period"`
+	RewardPeriod                 []*RewardPeriod `json:"reward_period"`
 }
 
 type CLP struct {

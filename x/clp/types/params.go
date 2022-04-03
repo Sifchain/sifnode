@@ -29,11 +29,31 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
+func DefaultRewardsPeriod() []*RewardPeriod {
+	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
+	cethMultiplier := sdk.MustNewDecFromStr("1.5")
+	rewardPeriods := []*RewardPeriod{
+		{
+			Id:         "RP_1",
+			StartBlock: 1,
+			EndBlock:   12 * 60 * 24 * 7,
+			Allocation: &rp_1_allocation,
+			Multipliers: []*PoolMultiplier{{
+				Asset:      "ceth",
+				Multiplier: &cethMultiplier,
+			}},
+		},
+	}
+	return rewardPeriods
+}
+
 // NewParams creates a new Params object
 func NewParams(minThreshold uint64) Params {
 	return Params{
-		MinCreatePoolThreshold:     minThreshold,
-		LiquidityRemovalLockPeriod: 12 * 60 * 24 * 7,
+		MinCreatePoolThreshold:       minThreshold,
+		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
+		RewardPeriods:                DefaultRewardsPeriod(),
 	}
 }
 
