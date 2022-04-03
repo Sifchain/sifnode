@@ -362,7 +362,7 @@ async function getValidClaim({
   tokenSymbol,
   tokenDecimals,
   networkDescriptor,
-  doublePeg,
+  bridgeToken,
   nonce,
   cosmosDenom,
   validators,
@@ -394,7 +394,7 @@ async function getValidClaim({
     tokenSymbol,
     tokenDecimals,
     networkDescriptor,
-    doublePeg,
+    bridgeToken,
     nonce,
     cosmosDenom,
   };
