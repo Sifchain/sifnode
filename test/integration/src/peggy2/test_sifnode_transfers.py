@@ -8,7 +8,7 @@ ibc_token_symbol = 'ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
 double_peggy_symbol = 'sifBridge00030x1111111111111111111111111111111111111111'
 fund_amount = 10000
 
-def bridge_token_to_eth_and_back_to_sifnode_transfer_valid(ctx, cosmos_denom, isFirstTime):
+def bridge_token_to_eth_and_back_to_sifnode_transfer_valid(ctx, cosmos_denom: str, isFirstTime: bool):
     # get cosmos denom's bridge token contract
     cosmos_denom_bridge_token_address = ctx.get_destination_contract_address(cosmos_denom)
     if isFirstTime:
