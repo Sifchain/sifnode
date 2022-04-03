@@ -78,7 +78,9 @@ def test_inflate_tokens_short(ctx):
     _test_inflate_tokens_parametrized(ctx, 3)
 
 
+# This test takes >1h, times out in GitHub CI
 @pytest.mark.skipif("on_peggy2_branch")
+@pytest.mark.skipif("in_github_ci")
 def test_inflate_tokens_long(ctx):
     _test_inflate_tokens_parametrized(ctx, 300)
 
