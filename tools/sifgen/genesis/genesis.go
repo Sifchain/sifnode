@@ -127,13 +127,13 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration
 	return nil
 }
 
-func SetRewardsDefaults(nodeHomeDir string, rewardsPeriod []*sifgentypes.RewardPeriod, liquidityRemovalLockPeriod uint64, liquidityRemovalCancelPeriod int64, periodEndBlock int64) error {
+func SetRewardsDefaults(nodeHomeDir string, rewardsPeriod []*sifgentypes.RewardPeriod, liquidityRemovalLockPeriod uint64, liquidityRemovalCancelPeriod int64) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	(*genesis).AppState.CLP.Params.RewardPeriod = rewardsPeriod
+	(*genesis).AppState.CLP.Params.RewardPeriods = rewardsPeriod
 	(*genesis).AppState.CLP.Params.LiquidityRemovalLockPeriod = json.Number(fmt.Sprintf("%d", liquidityRemovalLockPeriod))
 	(*genesis).AppState.CLP.Params.LiquidityRemovalCancelPeriod = json.Number(fmt.Sprintf("%d", liquidityRemovalCancelPeriod))
 	content, err := tmjson.Marshal(genesis)
