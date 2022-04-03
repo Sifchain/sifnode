@@ -91,6 +91,8 @@ func InitialRegistry() Registry {
 			{Denom: "clina", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cdaofi", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "ckeep", Decimals: 18, Permissions: []Permission{Permission_CLP}},
+			{Denom: "mindecimals", Decimals: 0, Permissions: []Permission{Permission_CLP}},
+			{Denom: "maxdecimals", Decimals: 255, Permissions: []Permission{Permission_CLP}},
 		},
 	}
 	for i := range entries.Entries {
