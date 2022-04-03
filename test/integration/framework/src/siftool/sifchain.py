@@ -30,6 +30,23 @@ def balance_zero(balances):
     return len(balances) == 0
 
 
+def is_peggy_denom(denom: str):
+    """Returns true if denom came from the Peggy bridge"""
+    return str.startswith(denom, "sifBridge")
+
+
+def is_cosmos_native_denom(denom: str):
+    """Returns true if denom is a native cosmos token (Rowan, ibc)
+    that was not imported using Peggy"""
+    return not is_peggy_denom(denom)
+
+
+def lock_or_burn_denom(denom: str):
+    """Returns the string \"lock\" if the denom is a cosmos-native denom, otherwise it
+    returns \"burn\""""
+    return "lock" if is_cosmos_native_denom(denom) else "burn"
+
+
 class Sifnoded:
     def __init__(self, cmd, home=None):
         self.cmd = cmd
@@ -103,6 +120,9 @@ class Sifnoded:
     def set_genesis_oracle_admin(self, address):
         self.sifnoded_exec(["set-genesis-oracle-admin", address], sifnoded_home=self.home)
 
+    def set_genesis_token_registry_admin(self, address):
+        self.sifnoded_exec(["set-genesis-token-registry-admin", address], sifnoded_home=self.home)
+
     def set_genesis_whitelister_admin(self, address):
         self.sifnoded_exec(["set-genesis-whitelister-admin", address], sifnoded_home=self.home)
 
@@ -119,7 +139,7 @@ class Sifnoded:
         self.add_genesis_account(account_address, tokens)
         if is_admin:
             self.set_genesis_oracle_admin(account_address)
-        self.set_genesis_whitelister_admin(account_address)
+            self.set_genesis_whitelister_admin(account_address)
         return account_address
 
     def peggy2_add_relayer_witness_account(self, name, tokens, evm_network_descriptor, validator_power, denom_whitelist_file):
@@ -172,7 +192,7 @@ class Sifnoded:
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
     def build_start_cmd(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False):
-        args = [self.binary, "start"] + \
+        args = [self.binary, "start", "--trace"] + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--log_level", "debug"] if log_format_json else []) + \
@@ -228,7 +248,7 @@ class SifnodeClient:
         assert self.ctx.eth
         eth = self.ctx.eth
 
-        direction = "burn"
+        direction = lock_or_burn_denom(denom)
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
