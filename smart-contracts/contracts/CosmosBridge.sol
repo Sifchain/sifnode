@@ -320,15 +320,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     address tokenAddress;
 
-    // for ibc token we need consider two cases
-    // if bridge token already created before, but not in cosmosDenomToDestinationAddress
-    // we just put it in the map and can get the bridge token address from map next time
-    // if bridge token not created, we create it now
+    // bridgeToken means the token from other EVM chain or ibc token
+    // we should deploy bridge token for them automatically
     if (claimData.bridgeToken) {
       if (_isBridgeTokenCreated(claimData.cosmosDenom)) {
         tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
       } else {
-        if (claimData.tokenAddress == address(0)) {
           tokenAddress = _createNewBridgeToken(
             claimData.tokenSymbol,
             claimData.tokenName,
@@ -337,10 +334,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.networkDescriptor,
             claimData.cosmosDenom
           );
-        } else {
-          cosmosDenomToDestinationAddress[claimData.cosmosDenom] = claimData.tokenAddress;
-          tokenAddress = claimData.tokenAddress;
-        }
       }
     }
     else {
