@@ -358,7 +358,7 @@ class EnvCtx:
         finally:
             self.w3_conn.eth.uninstall_filter(filter.filter_id)
 
-    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals, cosmosDenom=None) -> Contract:
+    def tx_deploy_new_generic_erc20_token(self, deployer_addr: str, name: str, symbol: str, decimals: int, cosmosDenom: str = None) -> Contract:
         # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
         if on_peggy2_branch:
             # Use BridgeToken
@@ -411,7 +411,7 @@ class EnvCtx:
         tx_opts = {"value": 0}
         return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
-    def tx_bridge_bank_burn_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount) -> HexBytes:
+    def tx_bridge_bank_burn_erc20(self, token_addr: str, from_eth_acct: str, to_sif_acct: str, amount: int) -> HexBytes:
         recipient = sif_addr_to_evm_arg(to_sif_acct)
         bridge_bank = self.get_bridge_bank_sc()
         # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
@@ -738,7 +738,7 @@ class EnvCtx:
             if now - start_time > timeout:
                 raise Exception("Timeout waiting for Ethereum balance to change")
 
-    def wait_for_new_bridge_token_created(self, cosmos_denom, timeout=90, polling_time=1) -> str:
+    def wait_for_new_bridge_token_created(self, cosmos_denom: str, timeout: int = 90, polling_time: int = 1) -> str:
         start_time = time.time()
         while True:
             cosmos_bridge_sc = self.get_cosmos_bridge_sc()
@@ -783,7 +783,7 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
-    def bridge_bank_burn_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount) -> TxReceipt:
+    def bridge_bank_burn_erc20(self, token_sc: Contract, from_eth_acct: str, to_sif_acct: str, amount: int) -> TxReceipt:
         txhash = self.tx_bridge_bank_burn_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
@@ -805,7 +805,7 @@ class EnvCtx:
     # For Sifchain-native assets (rowan) we need to use "burn".
     # Compare: smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
     # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
-    def send_from_ethereum_to_sifchain(self, from_eth_acct, to_sif_acct, amount, token_sc=None, isLock=True) -> TxReceipt:
+    def send_from_ethereum_to_sifchain(self, from_eth_acct: str, to_sif_acct: str, amount: int, token_sc: Contract = None, isLock: bool = True) -> TxReceipt:
         if token_sc is None:
             # ETH transfer
             self.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
