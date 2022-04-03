@@ -91,7 +91,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -139,7 +139,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.rowan.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -180,7 +180,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -208,8 +208,8 @@ describe("Gas Cost Tests", function () {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
@@ -248,7 +248,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -268,7 +268,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token2.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce + 1,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -288,7 +288,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token3.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce + 2,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -343,7 +343,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -363,7 +363,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token2.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce + 1,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -383,7 +383,7 @@ describe("Gas Cost Tests", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token3.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce + 2,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -427,18 +427,18 @@ describe("Gas Cost Tests", function () {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
-      const newlyCreatedTokenAddress1 = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
+      const newlyCreatedTokenAddress1 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress1).to.be.equal(expectedAddress1);
 
-      const newlyCreatedTokenAddress2 = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token2.address
+      const newlyCreatedTokenAddress2 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.two
       );
       expect(newlyCreatedTokenAddress2).to.be.equal(expectedAddress2);
 
-      const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token3.address
+      const newlyCreatedTokenAddress3 = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.three
       );
       expect(newlyCreatedTokenAddress3).to.be.equal(expectedAddress3);
     });

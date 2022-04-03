@@ -23,8 +23,8 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	storeKey sdk.StoreKey      // Unexposed key to access store from sdk.Context
+	cdc         codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	storeKey    sdk.StoreKey      // Unexposed key to access store from sdk.Context
 	stakeKeeper types.StakingKeeper
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
@@ -255,7 +255,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, prophecyInfo.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
 			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
-			sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
+			sdk.NewAttribute(types.AttributeKeyBridgeToken, strconv.FormatBool(prophecyInfo.BridgeToken)),
 			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
 			sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
 			sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
