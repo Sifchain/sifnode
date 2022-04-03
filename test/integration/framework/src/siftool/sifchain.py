@@ -249,6 +249,7 @@ class SifnodeClient:
         eth = self.ctx.eth
 
         direction = lock_or_burn_denom(denom)
+        print("++++++ direction is ", direction)
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory

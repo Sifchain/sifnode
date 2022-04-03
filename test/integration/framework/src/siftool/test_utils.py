@@ -736,7 +736,7 @@ class EnvCtx:
             if now - start_time > timeout:
                 raise Exception("Timeout waiting for Ethereum balance to change")
 
-    def wait_for_new_bridge_token_created(self, source_contract_addr, timeout=90, polling_time=1):
+    def wait_for_new_bridge_token_created(self, cosmos_denom, timeout=90, polling_time=1):
         start_time = time.time()
         while True:
             cosmos_bridge_sc = self.get_cosmos_bridge_sc()
@@ -744,7 +744,7 @@ class EnvCtx:
 
             if len(events) > 0:
                 for e in events:
-                    if e.args["sourceContractAddress"] == source_contract_addr:
+                    if e.args["cosmosDenom"] == cosmos_denom:
                         return e.args["bridgeTokenAddress"]
 
             time.sleep(polling_time)
@@ -795,9 +795,9 @@ class EnvCtx:
         bridge_bank_sc = self.get_bridge_bank_sc()
         return bridge_bank_sc.functions.getCosmosTokenInWhiteList(token_addr).call()
 
-    def get_destination_contract_address(self, source_contract_addr):
+    def get_destination_contract_address(self, cosmos_denom):
         cosmos_bridge_sc = self.get_cosmos_bridge_sc()
-        return cosmos_bridge_sc.functions.sourceAddressToDestinationAddress(source_contract_addr).call()
+        return cosmos_bridge_sc.functions.cosmosDenomToDestinationAddress(cosmos_denom).call()
 
     # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
     # For Sifchain-native assets (rowan) we need to use "burn".
