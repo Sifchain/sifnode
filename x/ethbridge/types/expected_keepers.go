@@ -39,7 +39,7 @@ type OracleKeeper interface {
 	SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte)
 	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string,
 		cosmosSenderSequence uint64, ethereumReceiver, tokenDenomHash, tokenContractAddress string,
-		tokenAmount sdk.Int, crosschainFee sdk.Int, doublePeg bool, globalNonce uint64,
+		tokenAmount sdk.Int, crosschainFee sdk.Int, bridgeToken bool, globalNonce uint64,
 		tokenDecimal uint8, tokenName, tokenSymbol string) error
 	GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
 	GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64

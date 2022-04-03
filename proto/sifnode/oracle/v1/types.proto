@@ -83,7 +83,7 @@ message ProphecyInfo {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"token_amount\""
   ];
-  bool double_peg = 10;
+  bool bridge_token = 10;
   uint64 global_sequence = 11;
   string crosschain_fee = 12 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

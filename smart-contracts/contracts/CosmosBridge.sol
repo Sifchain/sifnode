@@ -24,9 +24,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   uint256[100] private ___gap;
 
   /**
-   * @notice Maps the original address of a token to its address in another network
+   * @notice Maps the cosmos denom to its bridge token address
    */
-  mapping(address => address) public sourceAddressToDestinationAddress;
+  mapping(string => address) public cosmosDenomToDestinationAddress;
 
   /**
    * @notice network descriptor
@@ -234,7 +234,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     string tokenSymbol;
     uint8 tokenDecimals;
     int32 networkDescriptor;
-    bool doublePeg;
+    bool bridgeToken;
     uint128 nonce;
     string cosmosDenom;
   }
@@ -311,7 +311,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(signatureData.length > 0 && signatureData.length <= validatorCount, "INV_SIG_LEN");
 
     // ensure the networkDescriptor matches
-    if (!claimData.doublePeg) {
+    if (!claimData.bridgeToken) {
       require(_verifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
     }
 
@@ -319,23 +319,25 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(getProphecyStatus(pow), "INV_POW");
 
     address tokenAddress;
-    if (claimData.doublePeg) {
-      if (!_isDoublePeggedToken(claimData.tokenAddress)) {
-        // if we are double pegging AND we don't control the token, we deploy a new smart contract
-        tokenAddress = _createNewBridgeToken(
-          claimData.tokenSymbol,
-          claimData.tokenName,
-          claimData.tokenAddress,
-          claimData.tokenDecimals,
-          claimData.networkDescriptor,
-          claimData.cosmosDenom
-        );
+
+    // bridgeToken means the token from other EVM chain or ibc token
+    // we should deploy bridge token for them automatically
+    if (claimData.bridgeToken) {
+      if (_isBridgeTokenCreated(claimData.cosmosDenom)) {
+        tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
       } else {
-        // if we are double pegging and already control the token, then we are going to need to get the address on this chain
-        tokenAddress = sourceAddressToDestinationAddress[claimData.tokenAddress];
+          tokenAddress = _createNewBridgeToken(
+            claimData.tokenSymbol,
+            claimData.tokenName,
+            claimData.tokenAddress,
+            claimData.tokenDecimals,
+            claimData.networkDescriptor,
+            claimData.cosmosDenom
+          );
       }
-    } else {
-      tokenAddress = claimData.tokenAddress;
+    }
+    else {
+        tokenAddress = claimData.tokenAddress;
     }
 
     completeProphecyClaim(prophecyID, claimData.ethereumReceiver, tokenAddress, claimData.amount);
@@ -344,12 +346,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
   }
 
   /**
-   * @dev Verifies if `tokenAddress` is a known token
-   * @param tokenAddress The address of the token
-   * @return Boolean: is `tokenAddress` a known token?
+   * @dev Verifies if `cosmosDenom` is a bridge token for the cosmos denom created
+   * @param cosmosDenom The cosmos denom of the token
+   * @return Boolean: is `cosmosDenom` is a bridge token for the cosmos denom created?
    */
-  function _isDoublePeggedToken(address tokenAddress) private view returns (bool) {
-    return sourceAddressToDestinationAddress[tokenAddress] != address(0);
+  function _isBridgeTokenCreated(string calldata cosmosDenom) private view returns (bool) {
+    return cosmosDenomToDestinationAddress[cosmosDenom] != address(0);
   }
 
   /**
@@ -380,7 +382,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     string calldata cosmosDenom
   ) internal returns (address tokenAddress) {
     require(
-      sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
+      cosmosDenomToDestinationAddress[cosmosDenom] == address(0),
       "INV_SRC_ADDR"
     );
     // need to make a business decision on what this symbol should be
@@ -392,7 +394,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       cosmosDenom
     );
 
-    sourceAddressToDestinationAddress[sourceChainTokenAddress] = newTokenAddress;
+    cosmosDenomToDestinationAddress[cosmosDenom] = newTokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,

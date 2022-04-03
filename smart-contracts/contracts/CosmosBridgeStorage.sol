@@ -6,7 +6,7 @@ pragma solidity 0.8.4;
  * @dev Stores the operator's address,
         BridgeBank's address,
         networkDescriptor,
-        sourceAddressToDestinationAddress of a pegged token
+        cosmosDenomToDestinationAddress of a pegged token
  **/
 contract CosmosBridgeStorage {
   /**

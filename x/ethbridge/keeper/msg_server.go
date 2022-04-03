@@ -74,7 +74,9 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
-		false,
+		// we take all sifnode native tokens and ibc tokens as bridge token
+		// means cosmosBridge contract manage them automatically
+		true,
 		globalSequence,
 		uint8(tokenMetadata.Decimals),
 		tokenMetadata.Name,
@@ -156,6 +158,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
+		// for burn case, the double peg means it is a bridge token
 		doublePeg,
 		globalSequence,
 		uint8(tokenMetadata.Decimals),

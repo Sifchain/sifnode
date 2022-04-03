@@ -1,7 +1,7 @@
 const { ethers, upgrades } = require("hardhat");
 const web3 = require("web3");
 
-const { ROWAN_DENOM, ETHER_DENOM, DENOM_1, DENOM_2, DENOM_3, DENOM_4 } = require("./denoms");
+const { ROWAN_DENOM, ETHER_DENOM, DENOM_1, DENOM_2, DENOM_3, DENOM_4, IBC_DENOM } = require("./denoms");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -138,6 +138,7 @@ function initState({
         two: DENOM_2,
         three: DENOM_3,
         four: DENOM_4,
+        ibc: IBC_DENOM,
       },
     },
     initialValidators,
@@ -236,12 +237,19 @@ async function deployBaseContracts(state) {
     state.decimals,
     state.constants.denom.none
   );
+  state.token_ibc = await BridgeToken.deploy(
+    state.name,
+    state.symbol,
+    state.decimals,
+    state.constants.denom.ibc
+  );
 
   await state.token.deployed();
   await state.token1.deployed();
   await state.token2.deployed();
   await state.token3.deployed();
   await state.token_noDenom.deployed();
+  await state.token_ibc.deployed();
 
   // Grant the MINTER role to the operator:
   await state.token
@@ -259,6 +267,9 @@ async function deployBaseContracts(state) {
   await state.token_noDenom
     .connect(state.operator)
     .grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token_ibc
+    .connect(state.operator)
+    .grantRole(state.constants.roles.minter, state.operator.address);
 
   // Load user account with ERC20 tokens for testing
   await state.token.connect(state.operator).mint(state.user.address, state.amount * 2);
@@ -266,6 +277,7 @@ async function deployBaseContracts(state) {
   await state.token2.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token3.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token_noDenom.connect(state.operator).mint(state.user.address, state.amount * 2);
+  await state.token_ibc.connect(state.operator).mint(state.user.address, state.amount * 2);
 
   // Approve BridgeBank
   await state.token.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
@@ -273,6 +285,7 @@ async function deployBaseContracts(state) {
   await state.token2.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token3.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token_noDenom.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
+  await state.token_ibc.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
 
   // Deploy the Blocklist
   state.blocklist = await Blocklist.deploy();
@@ -349,7 +362,7 @@ async function getValidClaim({
   tokenSymbol,
   tokenDecimals,
   networkDescriptor,
-  doublePeg,
+  bridgeToken,
   nonce,
   cosmosDenom,
   validators,
@@ -381,7 +394,7 @@ async function getValidClaim({
     tokenSymbol,
     tokenDecimals,
     networkDescriptor,
-    doublePeg,
+    bridgeToken,
     nonce,
     cosmosDenom,
   };
