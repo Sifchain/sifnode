@@ -4,6 +4,7 @@ import random
 import time
 from typing import Iterable, Mapping
 import web3
+from web3.eth import Contract
 
 import siftool.eth as eth
 import siftool.truffle as truffle
@@ -312,7 +313,7 @@ class EnvCtx:
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
-    def get_cosmos_bridge_sc(self):
+    def get_cosmos_bridge_sc(self) -> Contract:
         abi, _, address = self.abi_provider.get_descriptor("CosmosBridge")
         assert address, "No address for CosmosBridge"
         result = self.w3_conn.eth.contract(address=address, abi=abi)
@@ -355,7 +356,7 @@ class EnvCtx:
         finally:
             self.w3_conn.eth.uninstall_filter(filter.filter_id)
 
-    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals, cosmosDenom=None):
+    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals, cosmosDenom=None) -> Contract:
         # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
         if on_peggy2_branch:
             # Use BridgeToken
