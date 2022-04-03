@@ -225,10 +225,11 @@ func TestBeginBlocker(t *testing.T) {
 }
 
 func TestBeginBlocker_Iterations(t *testing.T) {
-	type ExpectedPools []struct {
+	type ExpectedStates []struct {
 		pool              types.Pool
 		SwapPriceNative   sdk.Dec
 		SwapPriceExternal sdk.Dec
+		pmtpRateParams    types.PmtpRateParams
 	}
 
 	testcases := []struct {
@@ -247,7 +248,7 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		params                 types.Params
 		epoch                  types.PmtpEpoch
-		expectedPoolStates     ExpectedPools
+		expectedStates         ExpectedStates
 		err                    error
 		errString              error
 	}{
@@ -276,7 +277,7 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 				EpochCounter: 0,
 				BlockCounter: 0,
 			},
-			expectedPoolStates: ExpectedPools{
+			expectedStates: ExpectedStates{
 				{
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
@@ -284,8 +285,12 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 						ExternalAssetBalance: sdk.NewUint(1000),
 						PoolUnits:            sdk.NewUint(1000),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.996005992010000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.499001498002500000"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+					pmtpRateParams: types.PmtpRateParams{
+						PmtpPeriodBlockRate:    sdk.NewDec(0),
+						PmtpCurrentRunningRate: sdk.NewDec(0),
+					},
 				},
 				{
 					pool: types.Pool{
@@ -294,8 +299,12 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 						ExternalAssetBalance: sdk.NewUint(1000),
 						PoolUnits:            sdk.NewUint(1000),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.996005992010000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.499001498002500000"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+					pmtpRateParams: types.PmtpRateParams{
+						PmtpPeriodBlockRate:    sdk.NewDec(0),
+						PmtpCurrentRunningRate: sdk.NewDec(0),
+					},
 				},
 				{
 					pool: types.Pool{
@@ -304,8 +313,12 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 						ExternalAssetBalance: sdk.NewUint(1000),
 						PoolUnits:            sdk.NewUint(1000),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.996005992010000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.499001498002500000"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+					pmtpRateParams: types.PmtpRateParams{
+						PmtpPeriodBlockRate:    sdk.NewDec(0),
+						PmtpCurrentRunningRate: sdk.NewDec(0),
+					},
 				},
 				{
 					pool: types.Pool{
@@ -314,18 +327,12 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 						ExternalAssetBalance: sdk.NewUint(1000),
 						PoolUnits:            sdk.NewUint(1000),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.996005992010000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.499001498002500000"),
-				},
-				{
-					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
+					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+					pmtpRateParams: types.PmtpRateParams{
+						PmtpPeriodBlockRate:    sdk.NewDec(0),
+						PmtpCurrentRunningRate: sdk.NewDec(0),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.996005992010000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.499001498002500000"),
 				},
 			},
 		},
@@ -396,20 +403,21 @@ func TestBeginBlocker_Iterations(t *testing.T) {
 
 			app.ClpKeeper.SetParams(ctx, tc.params)
 			app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
-				PmtpPeriodBlockRate:    sdk.OneDec(),
-				PmtpCurrentRunningRate: sdk.OneDec(),
+				PmtpPeriodBlockRate:    sdk.ZeroDec(),
+				PmtpCurrentRunningRate: sdk.ZeroDec(),
 			})
 			app.ClpKeeper.SetPmtpEpoch(ctx, tc.epoch)
 
-			for i := 0; i < len(tc.expectedPoolStates); i++ {
+			for i := 0; i < len(tc.expectedStates); i++ {
 				clp.BeginBlocker(ctx, app.ClpKeeper)
 
 				got, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
 
-				tc.expectedPoolStates[i].pool.SwapPriceNative = &tc.expectedPoolStates[i].SwapPriceNative
-				tc.expectedPoolStates[i].pool.SwapPriceExternal = &tc.expectedPoolStates[i].SwapPriceExternal
+				tc.expectedStates[i].pool.SwapPriceNative = &tc.expectedStates[i].SwapPriceNative
+				tc.expectedStates[i].pool.SwapPriceExternal = &tc.expectedStates[i].SwapPriceExternal
 
-				require.Equal(t, tc.expectedPoolStates[i].pool, got)
+				require.Equal(t, tc.expectedStates[i].pool, got)
+				require.Equal(t, tc.expectedStates[i].pmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
 			}
 		})
 	}
