@@ -224,7 +224,7 @@ func TestBeginBlocker(t *testing.T) {
 	}
 }
 
-func TestBeginBlocker_Iterations(t *testing.T) {
+func TestBeginBlocker_Incremental(t *testing.T) {
 	type ExpectedStates []struct {
 		pool              types.Pool
 		SwapPriceNative   sdk.Dec
