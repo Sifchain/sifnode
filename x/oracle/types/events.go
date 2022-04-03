@@ -13,7 +13,7 @@ var (
 	AttributeKeyNetworkDescriptor    = "network_id"
 	AttributeKeyProphecyID           = "prophecy_id"
 	AttributeKeyTokenAddress         = "token_address"
-	AttributeKeyDoublePeggy          = "double_peggy"
+	AttributeKeyBridgeToken          = "bridge_token"
 	AttributeKeyGlobalNonce          = "global_sequence"
 	AttributeKeyEthereumAddresses    = "ethereum_addresses"
 

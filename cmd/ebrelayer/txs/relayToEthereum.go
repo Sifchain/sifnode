@@ -108,7 +108,7 @@ func RelayBatchProphecyCompletedToEthereum(
 			EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
 			TokenAddress:         common.HexToAddress(prophecyInfo.TokenContractAddress),
 			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
-			DoublePeg:            prophecyInfo.DoublePeg,
+			BridgeToken:          prophecyInfo.BridgeToken,
 			Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
 			NetworkDescriptor:    int32(prophecyInfo.NetworkDescriptor),
 			TokenName:            prophecyInfo.TokenName,

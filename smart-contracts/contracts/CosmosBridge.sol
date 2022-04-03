@@ -234,7 +234,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     string tokenSymbol;
     uint8 tokenDecimals;
     int32 networkDescriptor;
-    bool doublePeg;
+    bool bridgeToken;
     uint128 nonce;
     string cosmosDenom;
   }
@@ -311,7 +311,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(signatureData.length > 0 && signatureData.length <= validatorCount, "INV_SIG_LEN");
 
     // ensure the networkDescriptor matches
-    if (!claimData.doublePeg) {
+    if (!claimData.bridgeToken) {
       require(_verifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
     }
 
@@ -319,24 +319,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(getProphecyStatus(pow), "INV_POW");
 
     address tokenAddress;
-    // 
-    if (claimData.doublePeg) {
-      if (!_isBridgeTokenCreated(claimData.cosmosDenom)) {
-        // if we are double pegging AND we don't control the token, we deploy a new smart contract
-        tokenAddress = _createNewBridgeToken(
-          claimData.tokenSymbol,
-          claimData.tokenName,
-          claimData.tokenAddress,
-          claimData.tokenDecimals,
-          claimData.networkDescriptor,
-          claimData.cosmosDenom
-        );
-      } else {
-        // if we are double pegging and already control the token, then we are going to need to get the address on this chain
-        tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
-      }
-    } else if (isIbcToken(claimData.cosmosDenom)) {
-      
+    if (claimData.bridgeToken) {
       if (_isBridgeTokenCreated(claimData.cosmosDenom)) {
         tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
       } else {
@@ -460,42 +443,3 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     // prophecy completed and whether or not the call to bridgebank was successful
     emit LogProphecyCompleted(prophecyID, success);
   }
-
-  /**
-   * @dev Verifies if `cosmosDenom` is a ibc token
-   * @param cosmosDenom The denom of the token in sifnode
-   * @return Boolean: is `cosmosDenom` a ibc token?
-   */
-  function isIbcToken(string calldata cosmosDenom) private view returns (bool) {
-    bytes calldata cosmosDenomBytes = bytes(cosmosDenom);
-    return verifyIbcDenomLength(cosmosDenomBytes) && verifyIbcPrefix(cosmosDenomBytes);
-  }
-
-/**
-   * @dev Validates if a cosmos denom has a correct prefix
-   * @param cosmosDenom The cosmos denom to check
-   * @return Boolean: does it have the correct prefix?
-   */
-  function verifyIbcPrefix(bytes calldata cosmosDenom) private pure returns (bool) {
-    // the hex for ibc/
-    bytes4 ibcInHex = 0x6962632f;
-
-    for (uint256 i = 0; i < ibcInHex.length; i++) {
-      if (ibcInHex[i] != cosmosDenom[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-/**
-   * @dev Validates if a cosmos has the correct length
-   * @param cosmosDenom The cosmos to check
-   * @return Boolean: does it have the correct length?
-   */
-  function verifyIbcDenomLength(bytes calldata cosmosDenom) private pure returns (bool) {
-    // ibc denom like ibc/B4314D0E670CB43C88A5DCA09F76E5E812BD831CC2FEC6E434C9E5A9D1F57953
-    return cosmosDenom.length == 68;
-  }
-}
-
