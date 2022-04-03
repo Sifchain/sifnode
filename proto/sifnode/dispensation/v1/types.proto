@@ -70,3 +70,11 @@ message UserClaim {
 }
 
 message UserClaims { repeated UserClaim user_claims = 1; }
+
+message MintController {
+  cosmos.base.v1beta1.Coin total_counter = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.moretags) = "yaml:\"coins\""
+  ];
+}
