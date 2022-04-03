@@ -319,14 +319,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     require(getProphecyStatus(pow), "INV_POW");
 
     address tokenAddress;
+
+    // for ibc token we need consider two cases
+    // if bridge token already created before, but not in cosmosDenomToDestinationAddress
+    // we just put it in the map and can get the bridge token address from map next time
+    // if bridge token not created, we create it now
     if (claimData.bridgeToken) {
       if (_isBridgeTokenCreated(claimData.cosmosDenom)) {
         tokenAddress = cosmosDenomToDestinationAddress[claimData.cosmosDenom];
       } else {
-      // for ibc token we need consider two cases
-      // if bridge token already created before, but not in cosmosDenomToDestinationAddress
-      // we just put it in the map and can get the bridge token address from map next time
-      // if bridge token not created, we create it now
         if (claimData.tokenAddress == address(0)) {
           tokenAddress = _createNewBridgeToken(
             claimData.tokenSymbol,
@@ -443,3 +444,4 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     // prophecy completed and whether or not the call to bridgebank was successful
     emit LogProphecyCompleted(prophecyID, success);
   }
+}
