@@ -226,6 +226,7 @@ func TestBeginBlocker(t *testing.T) {
 
 func TestBeginBlocker_Incremental(t *testing.T) {
 	type ExpectedStates []struct {
+		height            int64
 		pool              types.Pool
 		SwapPriceNative   sdk.Dec
 		SwapPriceExternal sdk.Dec
@@ -279,6 +280,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			},
 			expectedStates: ExpectedStates{
 				{
+					height: 1,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -288,11 +290,12 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
 					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.NewDec(0),
-						PmtpCurrentRunningRate: sdk.NewDec(0),
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
+						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.000000000000000000"),
 					},
 				},
 				{
+					height: 2,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -302,36 +305,38 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
 					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.NewDec(0),
-						PmtpCurrentRunningRate: sdk.NewDec(0),
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
+						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.000000000000000000"),
 					},
 				},
 				{
+					height: 3,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
 						ExternalAssetBalance: sdk.NewUint(1000),
 						PoolUnits:            sdk.NewUint(1000),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.097803295605500089"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.907275450913636290"),
 					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.NewDec(0),
-						PmtpCurrentRunningRate: sdk.NewDec(0),
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
+						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.100000000000000089"),
 					},
 				},
 				{
+					height: 4,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
 						ExternalAssetBalance: sdk.NewUint(1000),
 						PoolUnits:            sdk.NewUint(1000),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.207583625166050196"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.824795864466942015"),
 					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.NewDec(0),
-						PmtpCurrentRunningRate: sdk.NewDec(0),
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
+						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.210000000000000196"),
 					},
 				},
 			},
@@ -410,12 +415,13 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 
 			for i := 0; i < len(tc.expectedStates); i++ {
 				clp.BeginBlocker(ctx, app.ClpKeeper)
-
+				ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 				got, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
 
 				tc.expectedStates[i].pool.SwapPriceNative = &tc.expectedStates[i].SwapPriceNative
 				tc.expectedStates[i].pool.SwapPriceExternal = &tc.expectedStates[i].SwapPriceExternal
 
+				require.Equal(t, tc.expectedStates[i].height, ctx.BlockHeight())
 				require.Equal(t, tc.expectedStates[i].pool, got)
 				require.Equal(t, tc.expectedStates[i].pmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
 			}
