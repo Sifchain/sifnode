@@ -14,29 +14,29 @@ import (
 )
 
 func TestKeeper_PolicyRun(t *testing.T) {
-	SwapPriceNative := sdk.MustNewDecFromStr("1.996005992010000000")
-	SwapPriceExternal := sdk.MustNewDecFromStr("0.499001498002500000")
-
 	testcases := []struct {
-		name                   string
-		createBalance          bool
-		createPool             bool
-		createLPs              bool
-		poolAsset              string
-		address                string
-		nativeBalance          sdk.Int
-		externalBalance        sdk.Int
-		nativeAssetAmount      sdk.Uint
-		externalAssetAmount    sdk.Uint
-		poolUnits              sdk.Uint
-		poolAssetPermissions   []tokenregistrytypes.Permission
-		nativeAssetPermissions []tokenregistrytypes.Permission
-		expectedPool           types.Pool
-		err                    error
-		errString              error
+		name                      string
+		createBalance             bool
+		createPool                bool
+		createLPs                 bool
+		poolAsset                 string
+		address                   string
+		nativeBalance             sdk.Int
+		externalBalance           sdk.Int
+		nativeAssetAmount         sdk.Uint
+		externalAssetAmount       sdk.Uint
+		poolUnits                 sdk.Uint
+		poolAssetDecimals         int64
+		poolAssetPermissions      []tokenregistrytypes.Permission
+		nativeAssetPermissions    []tokenregistrytypes.Permission
+		expectedPool              types.Pool
+		expectedSwapPriceNative   sdk.Dec
+		expectedSwapPriceExternal sdk.Dec
+		err                       error
+		errString                 error
 	}{
 		{
-			name:                   "default",
+			name:                   "18 decimals asset",
 			createBalance:          true,
 			createPool:             true,
 			createLPs:              true,
@@ -47,6 +47,7 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			nativeAssetAmount:      sdk.NewUint(1000),
 			externalAssetAmount:    sdk.NewUint(1000),
 			poolUnits:              sdk.NewUint(1000),
+			poolAssetDecimals:      18,
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			expectedPool: types.Pool{
@@ -54,9 +55,33 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				NativeAssetBalance:   sdk.NewUint(1000),
 				ExternalAssetBalance: sdk.NewUint(1000),
 				PoolUnits:            sdk.NewUint(1000),
-				SwapPriceNative:      &SwapPriceNative,
-				SwapPriceExternal:    &SwapPriceExternal,
 			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+		},
+		{
+			name:                   "cusdt with 6 decimals",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "cusdt",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUintFromString("1550459183129248235861408"),
+			externalAssetAmount:    sdk.NewUintFromString("174248776094"),
+			poolUnits:              sdk.NewUintFromString("1550459183129248235861408"),
+			poolAssetDecimals:      6,
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			expectedPool: types.Pool{
+				ExternalAsset:        &types.Asset{Symbol: "cusdt"},
+				NativeAssetBalance:   sdk.NewUintFromString("1550459183129248235861408"),
+				ExternalAssetBalance: sdk.NewUintFromString("174248776094"),
+				PoolUnits:            sdk.NewUintFromString("1550459183129248235861408"),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.000000000000112385"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8897963118404.021251000000000000"),
 		},
 	}
 
@@ -68,7 +93,7 @@ func TestKeeper_PolicyRun(t *testing.T) {
 					AdminAccount: tc.address,
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
-							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
+							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.poolAssetDecimals, Permissions: tc.poolAssetPermissions},
 							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: tc.nativeAssetPermissions},
 						},
 					},
@@ -129,9 +154,9 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				return genesisState
 			})
 
-			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(1))
+			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
 
-			err := app.ClpKeeper.PolicyRun(ctx, sdk.NewDec(1))
+			err := app.ClpKeeper.PolicyRun(ctx, sdk.NewDec(0))
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -144,6 +169,9 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			require.NoError(t, err)
 
 			pool, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
+
+			tc.expectedPool.SwapPriceNative = &tc.expectedSwapPriceNative
+			tc.expectedPool.SwapPriceExternal = &tc.expectedSwapPriceExternal
 
 			require.Equal(t, pool, tc.expectedPool)
 		})

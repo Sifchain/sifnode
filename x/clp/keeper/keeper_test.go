@@ -107,6 +107,12 @@ func TestKeeper_GetNormalizationFactor(t *testing.T) {
 				normalizationFactor: sdk.NewDec(100),
 				adjustExternalToken: false,
 			},
+			{
+				name:                "with 6 decimals",
+				decimals:            6,
+				normalizationFactor: sdk.NewDec(1000000000000),
+				adjustExternalToken: true,
+			},
 		}
 
 	for _, tc := range testcases {
