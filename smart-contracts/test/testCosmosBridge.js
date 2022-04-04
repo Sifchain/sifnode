@@ -349,14 +349,7 @@ describe("Test Cosmos Bridge", function () {
         state.senderSequence, // cosmosSenderSequence
         state.recipient.address, // ethereumReceiver
         state.constants.zeroAddress, // tokenAddress
-        state.amount, // amount
-        "Ether", // tokenName
-        "ETH", // tokenSymbol
-        state.decimals, // tokenDecimals
         state.networkDescriptor, // networkDescriptor
-        false, // doublePeg
-        state.nonce, // nonce
-        state.constants.denom.ether // cosmosDenom
       );
 
       // Doesn't revert, but user doesn't get the funds either
@@ -382,7 +375,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -414,9 +407,10 @@ describe("Test Cosmos Bridge", function () {
         );
 
       // check if the new token has been correctly deployed
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token.address
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.one
       );
+
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
       // check if the user received minted tokens
@@ -439,7 +433,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -455,14 +449,7 @@ describe("Test Cosmos Bridge", function () {
         state.senderSequence, // cosmosSenderSequence
         state.recipient.address, // ethereumReceiver
         state.token.address, // tokenAddress
-        state.amount, // amount
-        state.name, // tokenName
-        state.symbol, // tokenSymbol
-        state.decimals, // tokenDecimals
         state.networkDescriptor, // networkDescriptor
-        true, // doublePeg
-        state.nonce, // nonce
-        state.constants.denom.one // cosmosDenom
       );
 
       const expectedAddress = ethers.utils.getContractAddress({
@@ -478,8 +465,8 @@ describe("Test Cosmos Bridge", function () {
         .to.emit(state.cosmosBridge, "LogProphecyCompleted")
         .withArgs(prophecyID, false); // the second argument here is 'success'
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token.address
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
@@ -517,7 +504,7 @@ describe("Test Cosmos Bridge", function () {
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
         state.token.address
       );
       expect(newlyCreatedTokenAddress).to.be.equal(state.constants.zeroAddress);
@@ -536,7 +523,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -566,8 +553,8 @@ describe("Test Cosmos Bridge", function () {
           state.constants.denom.one
         );
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token.address
+      const newlyCreatedTokenAddress = await state.cosmosBridge.cosmosDenomToDestinationAddress(
+        state.constants.denom.one
       );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
@@ -582,7 +569,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: true,
+        bridgeToken: true,
         nonce: state.nonce + 1,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,

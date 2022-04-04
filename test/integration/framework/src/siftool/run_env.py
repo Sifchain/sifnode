@@ -848,6 +848,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             [999999 * 10**27, "rowan"],
             [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [999999 * 10**21, ceth_symbol],
+            [137 * 10**16, "sifBridge00030x1111111111111111111111111111111111111111"],
         ]
         validator_power = 100
         seed_ip_address = "10.10.1.1"
@@ -856,7 +857,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # These go to admin account, relayers and witnesses
         admin_account_mint_amounts = [
             [10**27, "rowan"],
-            [2 * 10**19, ceth_symbol]
+            [2 * 10**22, ceth_symbol],
+            [10 ** 16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
+            [10 ** 16, "sifBridge00030x1111111111111111111111111111111111111111"],
         ]
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
@@ -1021,7 +1024,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
         # TODO Try whitelister account instead of admin
-        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
+        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_name,
             chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 1

@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"strings"
 	"testing"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptest "github.com/Sifchain/sifnode/x/clp/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func getDenomWhiteListEntries() tokenregistrytypes.Registry {
@@ -182,6 +183,17 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 	}
 }
 
+// Get a token Entry from a token registry
+func getEntry(wl tokenregistrytypes.Registry, denom string) (*tokenregistrytypes.RegistryEntry, error) {
+	for i := range wl.Entries {
+		e := wl.Entries[i]
+		if e != nil && strings.EqualFold(e.Denom, denom) {
+			return wl.Entries[i], nil
+		}
+	}
+	return nil, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found")
+}
+
 func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	type TestCase struct {
 		Symbol           string `json:"symbol"`
@@ -205,7 +217,7 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	testcases := test.TestType
 	registry := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		entry, err := app.TokenRegistryKeeper.GetEntry(registry, test.Symbol)
+		entry, err := getEntry(registry, test.Symbol)
 		assert.NoError(t, err)
 		nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 		_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(

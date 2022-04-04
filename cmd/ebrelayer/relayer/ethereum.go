@@ -419,41 +419,41 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	symbolTranslator *symbol_translator.SymbolTranslator,
 	lockBurnNonce uint64) (uint64, error) {
 
-	var prophecyClaims []*ethbridgetypes.EthBridgeClaim
+	var ethBridgeClaims []*ethbridgetypes.EthBridgeClaim
 
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		return lockBurnNonce, err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
+		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
-			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
-				prophecyClaims = append(prophecyClaims, &prophecyClaim)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", prophecyClaim)
-				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
+			if lockBurnNonce == 0 || ethBridgeClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
+				ethBridgeClaims = append(ethBridgeClaims, &ethBridgeClaim)
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", ethBridgeClaim)
+				lockBurnNonce = ethBridgeClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
 					"nextLockBurnNonce", lockBurnNonce,
-					"prophecyClaim.EthereumLockBurnNonce", prophecyClaim.EthereumLockBurnSequence)
+					"prophecyClaim.EthereumLockBurnNonce", ethBridgeClaim.EthereumLockBurnSequence)
 				return lockBurnNonce, errors.New("lock burn nonce is not expected")
 			}
 
 		}
 	}
 	sub.SugaredLogger.Infow("relay prophecy claims to cosmos.",
-		"prophecy claims length", len(prophecyClaims))
+		"prophecy claims length", len(ethBridgeClaims))
 
 	if len(events) == 0 {
 		return lockBurnNonce, nil
 	}
 
-	return lockBurnNonce, txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
+	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
 // GetLockBurnNonceFromCosmos via rpc

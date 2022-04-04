@@ -1,9 +1,12 @@
+from typing import Union, Iterable, Mapping, List
 from siftool.common import *
 
 akash_binary = "akash"
 
+LegacyBalance = Iterable[List]
+Balance = Mapping[str, int]
 
-def balance_normalize(bal=None):
+def balance_normalize(bal: Union[Balance, LegacyBalance] = None):
     if type(bal) == list:
         bal = dict(((k, v) for v, k in bal))
     elif type(bal) == dict:
@@ -13,7 +16,7 @@ def balance_normalize(bal=None):
     return {k: v for k, v in bal.items() if v != 0}
 
 
-def balance_add(bal1, bal2):
+def balance_add(bal1: Balance, bal2: Balance) -> Balance:
     result = {}
     for denom in set(bal1.keys()).union(set(bal2.keys())):
         val = bal1.get(denom, 0) + bal2.get(denom, 0)
@@ -22,20 +25,37 @@ def balance_add(bal1, bal2):
     return result
 
 
-def balance_neg(bal):
+def balance_neg(bal: Balance) -> Balance:
     return {k: -v for k, v in bal.items()}
 
 
-def balance_sub(bal1, bal2):
+def balance_sub(bal1: Balance, bal2: Balance) -> Balance:
     return balance_add(bal1, balance_neg(bal2))
 
 
-def balance_zero(bal):
+def balance_zero(bal: Balance) -> bool:
     return len(bal) == 0
 
 
-def balance_format(bal):
+def balance_equal(bal1: Balance, bal2: Balance) -> bool:
+    return balance_zero(balance_sub(bal1, bal2))
+
+
+def balance_format(bal: Balance) -> str:
     return ",".join("{}{}".format(v, k) for k, v in bal.items())
+
+
+def balance_exceeds(bal: Balance, min_changes: Balance) -> bool:
+    have_all = False
+    for denom, required_value in min_changes.items():
+        actual_value = bal.get(denom, 0)
+        if required_value < 0:
+            have_all &= actual_value <= required_value
+        elif required_value > 0:
+            have_all &= actual_value >= required_value
+        else:
+            assert False
+    return have_all
 
 
 # <editor-fold>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 // This is a simple mock contract that allows us to call transferFrom()
 // and no other functions.

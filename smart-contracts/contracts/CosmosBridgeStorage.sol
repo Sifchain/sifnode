@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.0;
+pragma solidity 0.8.4;
 
 /**
  * @title Cosmos Bridge Storage
  * @dev Stores the operator's address,
         BridgeBank's address,
         networkDescriptor,
-        sourceAddressToDestinationAddress of a pegged token
+        cosmosDenomToDestinationAddress of a pegged token
  **/
 contract CosmosBridgeStorage {
   /**

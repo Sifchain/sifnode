@@ -32,7 +32,7 @@ type AuthKeeper interface {
 }
 
 type TokenRegistryKeeper interface {
-	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
 	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
-	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
+	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry // Deprecated DO NOT USE
+	GetRegistryEntry(ctx sdk.Context, denom string) (*tokenregistryTypes.RegistryEntry, error)
 }

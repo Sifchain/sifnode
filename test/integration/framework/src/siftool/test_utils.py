@@ -2,12 +2,14 @@ import json
 import os
 import random
 import time
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Union, List
 import web3
+from web3.eth import Contract
+from hexbytes import HexBytes
+from web3.types import TxReceipt
 
 from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos
 from siftool.common import *
-
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
 # This is to replace test_utilities.py, conftest.py, burn_lock_functions.py and integration_test_context.py.
@@ -282,6 +284,9 @@ class EnvCtx:
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
 
+    def get_current_block_number(self) -> int:
+        return self.eth.w3_conn.eth.block_number
+
     def advance_block_w3(self, number):
         for _ in range(number):
             # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
@@ -303,6 +308,12 @@ class EnvCtx:
     def get_bridge_bank_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("BridgeBank")
         assert address, "No address for BridgeBank"
+        result = self.w3_conn.eth.contract(address=address, abi=abi)
+        return result
+
+    def get_cosmos_bridge_sc(self) -> Contract:
+        abi, _, address = self.abi_provider.get_descriptor("CosmosBridge")
+        assert address, "No address for CosmosBridge"
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
@@ -343,12 +354,14 @@ class EnvCtx:
         finally:
             self.w3_conn.eth.uninstall_filter(filter.filter_id)
 
-    def tx_deploy_new_generic_erc20_token(self, deployer_addr, name, symbol, decimals):
+    def tx_deploy_new_generic_erc20_token(self, deployer_addr: str, name: str, symbol: str, decimals: int, cosmosDenom: str = None) -> Contract:
         # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
         if on_peggy2_branch:
             # Use BridgeToken
             assert self.generic_erc20_contract == "BridgeToken"
-            cosmosDenom = "erc20denom"  # TODO Dummy variable since we're using BridgeToken instead of SifchainTestToken
+            if cosmosDenom is None:
+                cosmosDenom = "erc20denom"  # TODO Dummy variable since we're using BridgeToken instead of SifchainTestToken
+
             constructor_args = [name, symbol, decimals, cosmosDenom]
         else:
             # Use SifchainTestToken for TestNet and Devnet, and BridgeToken for Betanet
@@ -364,6 +377,16 @@ class EnvCtx:
     def tx_update_bridge_bank_whitelist(self, token_addr, value=True):
         bridge_bank = self.get_bridge_bank_sc()
         return self.eth.transact(bridge_bank.functions.updateEthWhiteList, self.operator)(token_addr, value)
+
+    def tx_grant_minter_role(self, token_sc: Contract, minter_addr: str):
+        self.get_erc20_token_minter_role(token_sc, minter_addr)
+        minter_role_hash = token_sc.functions.MINTER_ROLE().call()
+        self.eth.transact(token_sc.functions.grantRole, self.operator)(minter_role_hash, minter_addr)
+        assert self.get_erc20_token_minter_role(token_sc, minter_addr) is True
+
+    def get_erc20_token_minter_role(self, token_sc: Contract, minter_addr: str) -> bool:
+        minter_role_hash = token_sc.functions.MINTER_ROLE().call()
+        return token_sc.functions.hasRole(minter_role_hash, minter_addr).call()
 
     def tx_approve(self, token_sc, from_addr, to_addr, amount):
         return self.eth.transact(token_sc.functions.approve, from_addr)(to_addr, amount)
@@ -384,6 +407,18 @@ class EnvCtx:
         tx_opts = {"value": 0}
         return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
+    def tx_bridge_bank_burn_erc20(self, token_addr: str, from_eth_acct: str, to_sif_acct: str, amount: int) -> HexBytes:
+        recipient = sif_addr_to_evm_arg(to_sif_acct)
+        bridge_bank = self.get_bridge_bank_sc()
+        # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
+        tx_opts = {"value": 0}
+        return self.eth.transact(bridge_bank.functions.burn, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
+
+    def tx_bridge_bank_add_existing_bridge_token(self, token_addr: str) -> HexBytes:
+        bridge_bank = self.get_bridge_bank_sc()
+        tx_opts = {"value": 0}
+        return self.eth.transact(bridge_bank.functions.addExistingBridgeToken, self.operator, tx_opts=tx_opts)(token_addr)
+
     def tx_approve_and_lock(self, token_sc, from_eth_acct, to_sif_acct, amount):
         bridge_bank_sc = self.get_bridge_bank_sc()
         txhash1 = self.tx_approve(token_sc, self.operator, bridge_bank_sc.address, amount)
@@ -395,9 +430,9 @@ class EnvCtx:
     # </editor-fold>
 
     # Used from test_integration_framework.py, test_eth_transfers.py
-    def deploy_new_generic_erc20_token(self, name, symbol, decimals, owner=None, mint_amount=None, mint_recipient=None):
+    def deploy_new_generic_erc20_token(self, name: str, symbol: str, decimals: int, owner: str = None, mint_amount: int = None, mint_recipient: str = None, cosmosDenom: str = None) -> Contract:
         owner = self.operator if owner is None else owner
-        txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals)
+        txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals, cosmosDenom)
         txrcpt = self.eth.wait_for_transaction_receipt(txhash)
         token_addr = txrcpt.contractAddress
         token_sc = self.get_generic_erc20_sc(token_addr)
@@ -560,25 +595,38 @@ class EnvCtx:
                 raise Exception(raw_log)
         return retval
 
-    def get_sifchain_balance(self, sif_addr):
+    def get_sifchain_balance(self, sif_addr) -> Mapping[str, int]:
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
-        return dict(((x["denom"], int(x["amount"])) for x in res))
+        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res) if amount != 0}
 
-    def wait_for_sif_balance_change(self, sif_addr, old_balances, min_changes: Iterable[Mapping[int, str]]=None, polling_time=1, timeout=90, change_timeout=None):
+    # Unless timed out, this function will exit:
+    # - if min_changes are given: when changes are greater.
+    # - if expected_balance is given: when balances are equal to that.
+    # - if neither min_changes nor expected_balance are given: when anything changes.
+    # You cannot use min_changes and expected_balance at the same time.
+    def wait_for_sif_balance_change(self, sif_addr: str, old_balances: cosmos.Balance, min_changes: cosmos.Balance = None,
+        expected_balance: cosmos.Balance = None, polling_time=1, timeout=90, change_timeout=None
+    ) -> cosmos.Balance:
+        assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         start_time = time.time()
         last_change_time = None
         last_change_state = None
+        min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
+        expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
         while True:
             new_balances = self.get_sifchain_balance(sif_addr)
-            delta = sifchain.balance_delta(old_balances, new_balances)
-            if min_changes is not None:
-                min_changes = cosmos.balance_normalize(min_changes)
-                if all([delta.get(denom, 0) >= amount for denom, amount in min_changes.items()]):
-                    return new_balances
-            elif not sifchain.balance_zero(delta):
+            delta = cosmos.balance_sub(old_balances, new_balances)
+            should_return = True
+            if expected_balance is not None:
+                should_return |= cosmos.balance_equal(new_balances)
+            elif min_changes is not None:
+                should_return |= cosmos.balance_exceeds(delta, min_changes)
+            else:
+                should_return |= not cosmos.balance_zero(delta)
+            if should_return:
                 return new_balances
             now = time.time()
             if (timeout is not None) and (now - start_time > timeout):
@@ -698,6 +746,22 @@ class EnvCtx:
             if now - start_time > timeout:
                 raise Exception("Timeout waiting for Ethereum balance to change")
 
+    def wait_for_new_bridge_token_created(self, cosmos_denom: str, timeout: int = 90, polling_time: int = 1) -> str:
+        start_time = time.time()
+        while True:
+            cosmos_bridge_sc = self.get_cosmos_bridge_sc()
+            events = self.smart_contract_get_past_events(cosmos_bridge_sc, "LogNewBridgeTokenCreated")
+
+            if len(events) > 0:
+                for e in events:
+                    if e.args["cosmosDenom"] == cosmos_denom:
+                        return e.args["bridgeTokenAddress"]
+
+            time.sleep(polling_time)
+            now = time.time()
+            if now - start_time > timeout:
+                raise Exception("Timeout waiting for Ethereum balance to change")
+
     def create_and_fund_eth_account(self, fund_from=None, fund_amount=None):
         if self.available_test_eth_accounts is not None:
             address = self.available_test_eth_accounts.pop(0)
@@ -728,18 +792,39 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
+    def bridge_bank_burn_erc20(self, token_sc: Contract, from_eth_acct: str, to_sif_acct: str, amount: int) -> TxReceipt:
+        txhash = self.tx_bridge_bank_burn_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
+        return self.eth.wait_for_transaction_receipt(txhash)
+
+    def bridge_bank_add_existing_bridge_token(self, token_addr: str):
+        txhash = self.tx_bridge_bank_add_existing_bridge_token(token_addr)
+        self.eth.wait_for_transaction_receipt(txhash)
+        final_value = self.get_cosmos_token_in_white_list(token_addr)
+        assert final_value is True
+
+    def get_cosmos_token_in_white_list(self, token_addr: str) -> bool:
+        bridge_bank_sc = self.get_bridge_bank_sc()
+        return bridge_bank_sc.functions.getCosmosTokenInWhiteList(token_addr).call()
+
+    def get_destination_contract_address(self, cosmos_denom: str) -> Contract:
+        cosmos_bridge_sc = self.get_cosmos_bridge_sc()
+        return cosmos_bridge_sc.functions.cosmosDenomToDestinationAddress(cosmos_denom).call()
+
     # TODO At the moment this is only for Ethereum-native assets (ETH and ERC20 tokens) which always use "lock".
     # For Sifchain-native assets (rowan) we need to use "burn".
     # Compare: smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
     # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
-    def send_from_ethereum_to_sifchain(self, from_eth_acct, to_sif_acct, amount, token_sc=None):
+    def send_from_ethereum_to_sifchain(self, from_eth_acct: str, to_sif_acct: str, amount: int, token_sc: Contract = None, isLock: bool = True) -> TxReceipt:
         if token_sc is None:
             # ETH transfer
             self.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
         else:
             # ERC20 token transfer
             self.approve_erc20_token(token_sc, from_eth_acct, amount)
-            self.bridge_bank_lock_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
+            if isLock:
+                self.bridge_bank_lock_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
+            else:
+                self.bridge_bank_burn_erc20(token_sc, from_eth_acct, to_sif_acct, amount)
 
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
