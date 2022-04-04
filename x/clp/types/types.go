@@ -62,5 +62,6 @@ func CreatePmtpParams(data Params) PmtpRateParams {
 	return PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.Dec{},
 		PmtpCurrentRunningRate: sdk.Dec{},
+		PmtpInterPolicyRate:    sdk.Dec{},
 	}
 }

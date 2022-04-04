@@ -58,13 +58,14 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			EpochCounter: 0,
 			BlockCounter: 0,
 		})
+		// Set inter policy rate to running rate
+		k.SetPmtpInterPolicyRate(ctx, pmtpCurrentRunningRate)
 		_ = ctx.EventManager().EmitTypedEvent(&types.EventPolicy{
 			EventType:            "policy_end",
 			PmtpPeriodStartBlock: strconv.Itoa(int(pmtpPeriodStartBlock)),
 			PmtpPeriodEndBlock:   strconv.Itoa(int(pmtpPeriodEndBlock)),
 		})
 		k.Logger(ctx).Info(fmt.Sprintf("Ending Policy | Start Height : %d | End Height : %d", pmtpPeriodStartBlock, pmtpPeriodEndBlock))
-		return
 	}
 
 	err := k.PolicyRun(ctx, pmtpCurrentRunningRate)
