@@ -10,7 +10,7 @@ func (k Keeper) GetMinCreatePoolThreshold(ctx sdk.Context) (res uint64) {
 	return res
 }
 
-func (k Keeper) GetPmtpGovernaceRate(ctx sdk.Context) (res sdk.Dec) {
+func (k Keeper) GetPmtpGovernanceRate(ctx sdk.Context) (res sdk.Dec) {
 	k.paramstore.Get(ctx, types.KeyPmtpPeriodGovernanceRate, &res)
 	return res
 }

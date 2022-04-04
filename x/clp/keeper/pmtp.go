@@ -13,7 +13,7 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	pmtpPeriodEndBlock := k.GetPmtpEndBlock(ctx)
 	pmtpPeriodEpochLength := k.GetPmtpEpochLength(ctx)
 	// get governance rate
-	pmtpPeriodGovernanceRate := k.GetPmtpGovernaceRate(ctx)
+	pmtpPeriodGovernanceRate := k.GetPmtpGovernanceRate(ctx)
 	// compute length of policy period in blocks
 	numBlocksInPolicyPeriod := pmtpPeriodEndBlock - pmtpPeriodStartBlock + 1
 	// compute number of epochs in policy period
@@ -41,9 +41,12 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	currentHeight := ctx.BlockHeight()
 	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
-	pmtpPeriodBlockRate := k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate
+	rateParams := k.GetPmtpRateParams(ctx)
+	pmtpPeriodBlockRate := rateParams.PmtpPeriodBlockRate
+	pmtpInterPolicyRate := rateParams.PmtpInterPolicyRate
 	// compute running rate
 	pmtpCurrentRunningRate := (sdk.NewDec(1).Add(pmtpPeriodBlockRate)).Power(uint64(currentHeight - pmtpPeriodStartBlock)).Sub(sdk.NewDec(1))
+	pmtpCurrentRunningRate = pmtpCurrentRunningRate.Add(pmtpInterPolicyRate)
 	// set running rate
 	k.SetPmtpCurrentRunningRate(ctx, pmtpCurrentRunningRate)
 	k.DecrementBlockCounter(ctx)
