@@ -20,7 +20,7 @@ sifnoded query clp lp ceth $(sifnoded keys show sif -a)
 
 echo "adding more liquidity"
 sleep 8
-sifnoded tx clp add-liquidity --from sif --symbol ceth --nativeAmount 1 --externalAmount 1 --yes
+sifnoded tx clp add-liquidity --from sif --symbol ceth --nativeAmount 10000000000000000000 --externalAmount 10000000000000000000 --yes --chain-id=localnet --keyring-backend=test
 
 echo "swap"
 sleep 8

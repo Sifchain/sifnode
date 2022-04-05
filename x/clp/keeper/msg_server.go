@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"github.com/pkg/errors"
 	"math"
 	"strconv"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -25,6 +27,56 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 var _ types.MsgServer = msgServer{}
+
+func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPmtpRates) (*types.MsgModifyPmtpRatesResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	// Set Block Rate is needed
+	if !strings.EqualFold(msg.BlockRate, "") {
+		blockRate, err := sdk.NewDecFromStr(msg.BlockRate)
+		if err != nil {
+			return nil, err
+		}
+		if blockRate.IsNegative() {
+			return nil, types.ErrRateCannotBeNegative
+		}
+		k.SetPmtpBlockRate(ctx, blockRate)
+	}
+
+	currentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+
+	// Set Running Rate if Needed
+	if !strings.EqualFold(msg.RunningRate, "") {
+		runningRate, err := sdk.NewDecFromStr(msg.RunningRate)
+		if err != nil {
+			return nil, err
+		}
+		if runningRate.IsNegative() {
+			return nil, types.ErrRateCannotBeNegative
+		}
+		k.SetPmtpCurrentRunningRate(ctx, runningRate)
+		currentRunningRate = runningRate
+	}
+
+	// End Policy If Needed
+	if msg.EndPolicy {
+		params := k.GetParams(ctx)
+		params.PmtpPeriodEndBlock = ctx.BlockHeight()
+		k.SetParams(ctx, params)
+		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
+			EpochCounter: 0,
+			BlockCounter: 0,
+		})
+		k.SetPmtpInterPolicyRate(ctx, currentRunningRate)
+	}
+	return &types.MsgModifyPmtpRatesResponse{}, nil
+}
 
 func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommissionPool) (*types.MsgDecommissionPoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)

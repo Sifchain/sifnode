@@ -2,8 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -11,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -29,6 +28,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdRemoveLiquidity(),
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
+		GetCmdModifyPmtpRates(),
 	)
 
 	return clpTxCmd
@@ -208,6 +208,43 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
+}
+
+func GetCmdModifyPmtpRates() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pmtp-rates",
+		Short: "Modify pmtp block rate and running rate",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			isEndPolicy := viper.GetBool(FlagEndCurrentPolicy)
+			signer := clientCtx.GetFromAddress()
+			fmt.Println(isEndPolicy, signer)
+			msg := types.MsgModifyPmtpRates{
+				Signer:      signer.String(),
+				BlockRate:   viper.GetString(FlagBlockRate),
+				RunningRate: viper.GetString(FlagRunningRate),
+				EndPolicy:   isEndPolicy,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsBlockRate)
+	cmd.Flags().AddFlagSet(FsRunningRate)
+	cmd.Flags().AddFlagSet(FsEndCurrentPolicy)
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+
 }
 
 func GetCmdSwap() *cobra.Command {
