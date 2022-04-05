@@ -1,9 +1,9 @@
 import time
 import threading
+from typing import List, Any
 
 import siftool_path
-from siftool import eth, test_utils, sifchain
-import siftool.cosmos  # gPRC generated stubs use "cosmos" namespace
+from siftool import eth, test_utils, cosmos
 from siftool.common import *
 
 import cosmos.tx.v1beta1.service_pb2 as cosmos_tx
@@ -40,7 +40,11 @@ sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
 rowan = "rowan"
 
 
-def test_load_tx_ethbridge_burn(ctx):
+def test_load_tx_ethbridge_burn_short(ctx: test_utils.EnvCtx):
+    _test_load_tx_ethbridge_burn(ctx, 123456 * eth.GWEI, [[2, 2], [2, 2]])
+
+
+def test_load_tx_ethbridge_burn(ctx: test_utils.EnvCtx):
     # Matrix of transactions that we want to send. A row (list) in the table corresponds to a sif account sending
     # transactions to eth accounts. The numbers are transaction counts, where each transaction is for amount_per_tx.
     # Each sif account uses a dedicated send thread.
@@ -56,37 +60,39 @@ def test_load_tx_ethbridge_burn(ctx):
     _test_load_tx_ethbridge_burn(ctx, amount_per_tx, transfer_table)
 
 
-def _test_load_tx_ethbridge_burn(ctx, amount_per_tx, transfer_table, randomize=None):
-    n_sif = len(transfer_table)
+def _test_load_tx_ethbridge_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, transfer_table: List[List[int]],
+    randomize: bool = None
+):
+    n_sif: int = len(transfer_table)
     assert n_sif > 0
-    n_eth = len(transfer_table[0])
+    n_eth: int = len(transfer_table[0])
     assert all([len(row) == n_eth for row in transfer_table]), "transfer_table has to be rectangular"
-    sum_sif = [sum(x) for x in transfer_table]
-    sum_eth = [sum([x[i] for x in transfer_table]) for i in range(n_eth)]
-    sum_all = sum([sum(x) for x in transfer_table])
+    sum_sif: List[int] = [sum(x) for x in transfer_table]
+    sum_eth: List[int] = [sum([x[i] for x in transfer_table]) for i in range(n_eth)]
+    sum_all: int = sum([sum(x) for x in transfer_table])
 
     # Create n_sif test sif accounts.
     # Each sif account needs sif_tx_burn_fee_in_rowan * rowan + sif_tx_burn_fee_in_ceth ceth for every transaction.
     # Theoretically, we could fund accounts with ceth here, but in a strict sense this would violate the balance sheets
     # (i.e. there might be an attempt to unlock ETH in the bridge bank without enough locked ETH available).
-    sif_acct_funds = [{
+    sif_acct_funds: List[cosmos.Balance] = [{
         rowan: sif_tx_burn_fee_in_rowan * n + sif_tx_burn_fee_buffer_in_rowan,
         # ctx.ceth_symbol: sif_tx_burn_fee_in_ceth * n
     } for n in sum_sif]
-    sif_accts = [ctx.create_sifchain_addr(fund_amounts=f) for f in sif_acct_funds]
+    sif_accts: List[cosmos.Address] = [ctx.create_sifchain_addr(fund_amounts=f) for f in sif_acct_funds]
 
     # Create a test ethereum accounts. They are just receiving ETH, so we don't need to fund them.
-    eth_accts = [ctx.create_and_fund_eth_account() for _ in range(n_eth)]
+    eth_accts: List[str] = [ctx.create_and_fund_eth_account() for _ in range(n_eth)]
 
     # Get initial balances
-    sif_balances_initial = [ctx.get_sifchain_balance(sif_acct) for sif_acct in sif_accts]
-    eth_balances_initial = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
+    sif_balances_initial: List[cosmos.Balance] = [ctx.get_sifchain_balance(sif_acct) for sif_acct in sif_accts]
+    eth_balances_initial: List[str] = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
     assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
 
     # Create a dispensation sif account that will receive all locked ETH and dispense it to each sif account
     # (we do this in one transaction because lock transactions take a lot of time).
     # Dispensation account needs rowan for distributing ceth to sif_accts.
-    dispensation_sif_acct = ctx.create_sifchain_addr(fund_amounts={rowan: n_sif * sif_tx_fee_in_rowan})
+    dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={rowan: n_sif * sif_tx_fee_in_rowan})
 
     # Transfer ETH from operator to dispensation_sif_acct (aka lock)
     old_balances = ctx.get_sifchain_balance(dispensation_sif_acct)
@@ -108,8 +114,8 @@ def _test_load_tx_ethbridge_burn(ctx, amount_per_tx, transfer_table, randomize=N
 
     # Generate transactions.
     # If randomize is given, then we pick target ethereum accounts in random order, otherwise we go from first to last.
-    start_time = time.time()
-    signed_encoded_txns = []
+    start_time: float = time.time()
+    signed_encoded_txns: List[List[bytes]] = []
     for i in range(n_sif):
         sif_acct = sif_accts[i]
         log.debug("Generating {} txns from {}...".format(sum_sif[i], sif_acct))
@@ -219,7 +225,7 @@ def _test_load_tx_ethbridge_burn(ctx, amount_per_tx, transfer_table, randomize=N
         assert expected_balance == actual_balance
 
 
-def choose_from(distr, rnd=None):
+def choose_from(distr: List[Any], rnd: random.Random = None) -> int:
     r = (rnd.randrange(sum(distr))) if rnd else 0
     s = 0
     for i, di in enumerate(distr):

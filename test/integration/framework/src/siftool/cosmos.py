@@ -3,10 +3,13 @@ from siftool.common import *
 
 akash_binary = "akash"
 
-LegacyBalance = Iterable[List]
+LegacyBalance = List[Union[int, str]]  # e.g. [[3, "rowan"], [2, "ibc/xxxxx"]]
 Balance = Mapping[str, int]
+CompatBalance = Union[LegacyBalance, Balance]
+Address = str
 
-def balance_normalize(bal: Union[Balance, LegacyBalance] = None):
+
+def balance_normalize(bal: CompatBalance = None):
     if type(bal) == list:
         bal = dict(((k, v) for v, k in bal))
     elif type(bal) == dict:
@@ -46,7 +49,7 @@ def balance_format(bal: Balance) -> str:
 
 
 def balance_exceeds(bal: Balance, min_changes: Balance) -> bool:
-    have_all = False
+    have_all = True
     for denom, required_value in min_changes.items():
         actual_value = bal.get(denom, 0)
         if required_value < 0:
