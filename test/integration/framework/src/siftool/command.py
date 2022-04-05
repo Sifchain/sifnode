@@ -1,9 +1,13 @@
 import shutil
 import time
+from typing import Mapping, List, Union, Optional
 from siftool.common import *
 
+ExecArgs = Mapping[str, Union[List[str], str, Mapping[str, str]]]
 
-def buildcmd(args, cwd=None, env=None):
+
+def buildcmd(args: Optional[str] = None, cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
+) -> ExecArgs:
     return dict((("args", args),) +
         ((("cwd", cwd),) if cwd is not None else ()) +
         ((("env", env),) if env is not None else ())
@@ -28,14 +32,14 @@ class Command:
         return proc.returncode, stdout_data, stderr_data
 
     # Default implementation of popen for environemnts to start long-lived processes
-    def popen(self, args, log_file=None, **kwargs):
+    def popen(self, args, log_file=None, **kwargs) -> subprocess.Popen:
         stdout = log_file or None
         stderr = log_file or None
         return popen(args, stdout=stdout, stderr=stderr, **kwargs)
 
     # Starts a process asynchronously (for sifnoded, hardhat, ebrelayer etc.)
     # The arguments should correspond to what buildcmd() returns.
-    def spawn_asynchronous_process(self, exec_args, log_file=None):
+    def spawn_asynchronous_process(self, exec_args: ExecArgs, log_file=None) -> subprocess.Popen:
         return self.popen(**exec_args, log_file=log_file)
 
     def ls(self, path):

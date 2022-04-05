@@ -3,7 +3,7 @@ from siftool.common import *
 
 akash_binary = "akash"
 
-LegacyBalance = List[Union[int, str]]  # e.g. [[3, "rowan"], [2, "ibc/xxxxx"]]
+LegacyBalance = List[List[Union[int, str]]]  # e.g. [[3, "rowan"], [2, "ibc/xxxxx"]]
 Balance = Mapping[str, int]
 CompatBalance = Union[LegacyBalance, Balance]
 Address = str

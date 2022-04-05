@@ -1,9 +1,9 @@
 import json
 import re
 import time
+from typing import List, Tuple, TextIO, Any
 
-import siftool.eth as eth
-import siftool.hardhat as hardhat
+from siftool import eth, hardhat, cosmos, command
 from siftool.truffle import Ganache
 from siftool.localnet import Localnet
 from siftool.command import Command
@@ -771,7 +771,7 @@ class IntegrationTestsEnvironment:
 
 
 class Peggy2Environment(IntegrationTestsEnvironment):
-    def __init__(self, cmd):
+    def __init__(self, cmd: Command):
         super().__init__(cmd)
         self.hardhat = hardhat.Hardhat(cmd)
 
@@ -844,7 +844,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         ceth_symbol = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
         assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
         # This goes to validator0, i.e. sifnode_validators[0]["address"]
-        validator_mint_amounts = [
+        validator_mint_amounts: cosmos.LegacyBalance = [
             [999999 * 10**27, "rowan"],
             [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [999999 * 10**21, ceth_symbol],
@@ -855,7 +855,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         tendermint_port = 26657
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
         # These go to admin account, relayers and witnesses
-        admin_account_mint_amounts = [
+        admin_account_mint_amounts: cosmos.LegacyBalance = [
             [10**27, "rowan"],
             [2 * 10**22, ceth_symbol],
             [10 ** 16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
@@ -926,10 +926,11 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # txrcpt = eth_tx.transact_sync(cosmos_bridge.functions.setBridgeBank, operator_addr)(bridge_bank_addr)
         return
 
-    def init_sifchain(self, sifnoded_network_dir, sifnoded_log_file, chain_id, hardhat_chain_id, validator_mint_amounts,
-        validator_power, seed_ip_address, tendermint_port, denom_whitelist_file, admin_account_mint_amounts,
-        registry_json, admin_account_name, ceth_symbol
-    ):
+    def init_sifchain(self, sifnoded_network_dir: str, sifnoded_log_file: TextIO, chain_id: str, hardhat_chain_id: int,
+        validator_mint_amounts: cosmos.LegacyBalance, validator_power: int, seed_ip_address: str, tendermint_port: int,
+        denom_whitelist_file: str, admin_account_mint_amounts: cosmos.LegacyBalance, registry_json: str,
+        admin_account_name: str, ceth_symbol: str
+    ) -> Tuple[str, command.ExecArgs, subprocess.Popen, str, cosmos.Address, List, List, List, str, str]:
         validator_count = 1
         relayer_count = 1
         witness_count = 1
@@ -1007,13 +1008,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         } for name in [f"witness-{i}" for i in range(witness_count)]]
 
         tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
-        # sifnoded
-        #     start
-        #     --log_level debug
-        #     --log_format json
-        #     --minimum-gas-prices 0.5rowan
-        #     --rpc.laddr tcp://0.0.0.0:26657
-        #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
         # @TODO Detect if sifnoded is already running, for now it fails silently and we wait forever in wait_for_sif_account_up
         sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=[0.5, "rowan"],
             log_format_json=True)

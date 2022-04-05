@@ -34,7 +34,7 @@ sif_tx_burn_fee_in_ceth = 1
 # sif_tx_burn_fee_in_rowan, We observed that if you try to fund sif accounts with just the exact amount of rowan
 # needed to pay fees (sif_tx_burn_fee_in_rowan * number_of_transactions), the bridge would stop forwarding after
 # approx. 200 transactions, and you would see in sifnoded logs this message:
-# {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"H\ufffd\ufffdx\ufffd,4\u0004\ufffd\u001fWSnn\ufffd\ufffd\ufffdp\ufffd\ufffdg\ufffdGں^\ufffd\ufffd*i\ufffdX","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
+# {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"...","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
 sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
 
 rowan = "rowan"
@@ -164,7 +164,7 @@ def _test_load_tx_ethbridge_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, tra
 
     # Get initial balances. The balances should not have been changed by now.
     sif_balances_before = [ctx.get_sifchain_balance(x) for x in sif_accts]  # Assert == sif_balances_initial (for rowan)
-    assert all([ctx.eth.get_eth_balance(eth_accts[i]) == eth_balances_initial[i] for i in range(n_eth)])  # Assert == eth_balances_initial
+    assert all([ctx.eth.get_eth_balance(eth_accts[i]) == eth_balances_initial[i] for i in range(n_eth)])
     assert all([ctx.get_sifchain_balance(sif_accts[i])[rowan] == sif_balances_before[i][rowan] for i in range(n_sif)])
 
     # Broadcast transactions
