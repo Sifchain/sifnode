@@ -49,14 +49,20 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 		params.PmtpPeriodGovernanceRate = rGov
 	}
 	if msg.StartNewPolicy {
-		if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
-			return nil, errors.New("Start block cannot be in the past")
-		}
-		if msg.PmtpPeriodStartBlock <= params.PmtpPeriodEndBlock {
-			return nil, errors.New("Policies cannot have overlaps")
-		}
+		// Check to see if the current policy has ended
 		if ctx.BlockHeight() < params.PmtpPeriodEndBlock {
 			return nil, errors.New("A new policy can be started only after the current policy has ended")
+		}
+
+		// Check to make sure new policy starts in the future so that PolicyStart from abci.go can be triggered
+		if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
+			return nil, errors.New("Start block cannot be in the past/current block")
+		}
+
+		// Check to see if start of new policy is not before the end of new policy
+		// This check is optional
+		if msg.PmtpPeriodStartBlock <= params.PmtpPeriodEndBlock {
+			return nil, errors.New("Policies cannot have overlaps")
 		}
 		params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
 		params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
