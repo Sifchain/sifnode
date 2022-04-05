@@ -245,6 +245,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 		nativeAssetAmount      sdk.Uint
 		externalAssetAmount    sdk.Uint
 		poolUnits              sdk.Uint
+		poolAssetDecimals      int64
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		params                 types.Params
@@ -254,7 +255,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 		errString              error
 	}{
 		{
-			name:                   "default",
+			name:                   "naive test",
 			createBalance:          true,
 			createPool:             true,
 			createLPs:              true,
@@ -265,6 +266,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			nativeAssetAmount:      sdk.NewUint(1000),
 			externalAssetAmount:    sdk.NewUint(1000),
 			poolUnits:              sdk.NewUint(1000),
+			poolAssetDecimals:      18,
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.Params{
@@ -290,27 +292,13 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
 					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.000000000000000000"),
+						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
 					},
 				},
 				{
 					height: 2,
-					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
-					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
-					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
-						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.000000000000000000"),
-					},
-				},
-				{
-					height: 3,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -322,10 +310,11 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.100000000000000089"),
+						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
 					},
 				},
 				{
-					height: 4,
+					height: 3,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -337,6 +326,23 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.210000000000000196"),
+						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
+					},
+				},
+				{
+					height: 4,
+					pool: types.Pool{
+						ExternalAsset:        &types.Asset{Symbol: "eth"},
+						NativeAssetBalance:   sdk.NewUint(1000),
+						ExternalAssetBalance: sdk.NewUint(1000),
+						PoolUnits:            sdk.NewUint(1000),
+					},
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.328341987682655322"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.749814422242674499"),
+					pmtpRateParams: types.PmtpRateParams{
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
+						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.331000000000000323"),
+						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
 					},
 				},
 			},
@@ -351,7 +357,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					AdminAccount: tc.address,
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
-							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
+							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.poolAssetDecimals, Permissions: tc.poolAssetPermissions},
 							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: tc.nativeAssetPermissions},
 						},
 					},
@@ -414,8 +420,8 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			app.ClpKeeper.SetPmtpEpoch(ctx, tc.epoch)
 
 			for i := 0; i < len(tc.expectedStates); i++ {
-				clp.BeginBlocker(ctx, app.ClpKeeper)
 				ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+				clp.BeginBlocker(ctx, app.ClpKeeper)
 				got, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
 
 				tc.expectedStates[i].pool.SwapPriceNative = &tc.expectedStates[i].SwapPriceNative
