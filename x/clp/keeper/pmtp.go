@@ -45,7 +45,7 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	pmtpPeriodBlockRate := rateParams.PmtpPeriodBlockRate
 	pmtpInterPolicyRate := rateParams.PmtpInterPolicyRate
 	// compute running rate
-	pmtpCurrentRunningRate := (sdk.NewDec(1).Add(pmtpPeriodBlockRate)).Power(uint64(currentHeight - pmtpPeriodStartBlock)).Sub(sdk.NewDec(1))
+	pmtpCurrentRunningRate := (sdk.NewDec(1).Add(pmtpPeriodBlockRate)).Power(uint64(currentHeight - pmtpPeriodStartBlock + 1)).Sub(sdk.NewDec(1))
 	pmtpCurrentRunningRate = pmtpCurrentRunningRate.Add(pmtpInterPolicyRate)
 	// set running rate
 	k.SetPmtpCurrentRunningRate(ctx, pmtpCurrentRunningRate)
