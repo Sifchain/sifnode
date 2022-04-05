@@ -9,7 +9,7 @@ CompatBalance = Union[LegacyBalance, Balance]
 Address = str
 
 
-def balance_normalize(bal: CompatBalance = None):
+def balance_normalize(bal: CompatBalance = None) -> Balance:
     if type(bal) == list:
         bal = dict(((k, v) for v, k in bal))
     elif type(bal) == dict:
