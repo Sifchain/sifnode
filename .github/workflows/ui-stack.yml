@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Check out sifnode
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js
         uses: actions/setup-node@v2.1.4
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out sifnode
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Save commit hash to env var
         run: echo "SIFNODE_COMMIT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
@@ -87,7 +87,7 @@ jobs:
         run: rm -rf node_modules
 
       - name: Check out sifchain-ui
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: "Sifchain/sifchain-ui"
           ref: "develop" # TODO: change to master once we have something deployed on the frontend
