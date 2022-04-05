@@ -9,7 +9,7 @@ Original design document: https://docs.google.com/document/d/1IhE2Y03Z48ROmTwO9-
 
 - setups two sifnode instances running independent chains + IBC relayer (ts-relayer)
 
-2. Brent's PoC (docker): https://github.com/Sifchain/sifchain-deploy/tree/feature/ibc-poc/docker/localnet/ibc
+2. PoC (docker): https://github.com/Sifchain/sifchain-deploy/tree/feature/ibc-poc/docker/localnet/ibc
 
 3. Test environment for testing the new Sifchain public SDK (Caner):
 
