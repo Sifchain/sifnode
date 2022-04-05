@@ -18,8 +18,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	// get current block height
 	currentHeight := ctx.BlockHeight()
 	// get PMTP period params
-	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
-	pmtpPeriodEndBlock := k.GetPmtpEndBlock(ctx)
+	pmtpPeriodStartBlock := k.GetPmtpParams(ctx).PmtpPeriodStartBlock
+	pmtpPeriodEndBlock := k.GetPmtpParams(ctx).PmtpPeriodEndBlock
 	// Start Policy
 	if currentHeight == pmtpPeriodStartBlock &&
 		k.GetPmtpEpoch(ctx).EpochCounter == 0 &&
@@ -48,7 +48,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		currentHeight < pmtpPeriodEndBlock &&
 		currentHeight > pmtpPeriodStartBlock {
 		k.DecrementEpochCounter(ctx)
-		k.SetBlockCounter(ctx, k.GetPmtpEpochLength(ctx))
+		k.SetBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
 	}
 
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&

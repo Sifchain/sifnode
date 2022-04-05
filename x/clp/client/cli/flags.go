@@ -17,22 +17,32 @@ const (
 	FlagBlockRate              = "blockRate"
 	FlagRunningRate            = "runningRate"
 	FlagEndCurrentPolicy       = "endPolicy"
+	FlagPeriodGovernanceRate   = "rGov"
+	FlagPmtpPeriodEpochLength  = "epochLength"
+	FlagPmtpPeriodStartBlock   = "pmtp_start"
+	FlagPmtpPeriodEndBlock     = "pmtp_end"
+	FlagNewPolicy              = "newPolicy"
 )
 
 // common flagsets to add to various functions
 var (
-	FsAssetSymbol         = flag.NewFlagSet("", flag.ContinueOnError)
-	FsNativeAssetAmount   = flag.NewFlagSet("", flag.ContinueOnError)
-	FsExternalAssetAmount = flag.NewFlagSet("", flag.ContinueOnError)
-	FsWBasisPoints        = flag.NewFlagSet("", flag.ContinueOnError)
-	FsAsymmetry           = flag.NewFlagSet("", flag.ContinueOnError)
-	FsSentAssetSymbol     = flag.NewFlagSet("", flag.ContinueOnError)
-	FsReceivedAssetSymbol = flag.NewFlagSet("", flag.ContinueOnError)
-	FsAmount              = flag.NewFlagSet("", flag.ContinueOnError)
-	FsMinReceivingAmount  = flag.NewFlagSet("", flag.ContinueOnError)
-	FsBlockRate           = flag.NewFlagSet("", flag.ContinueOnError)
-	FsRunningRate         = flag.NewFlagSet("", flag.ContinueOnError)
-	FsEndCurrentPolicy    = flag.NewFlagSet("", flag.ContinueOnError)
+	FsAssetSymbol            = flag.NewFlagSet("", flag.ContinueOnError)
+	FsNativeAssetAmount      = flag.NewFlagSet("", flag.ContinueOnError)
+	FsExternalAssetAmount    = flag.NewFlagSet("", flag.ContinueOnError)
+	FsWBasisPoints           = flag.NewFlagSet("", flag.ContinueOnError)
+	FsAsymmetry              = flag.NewFlagSet("", flag.ContinueOnError)
+	FsSentAssetSymbol        = flag.NewFlagSet("", flag.ContinueOnError)
+	FsReceivedAssetSymbol    = flag.NewFlagSet("", flag.ContinueOnError)
+	FsAmount                 = flag.NewFlagSet("", flag.ContinueOnError)
+	FsMinReceivingAmount     = flag.NewFlagSet("", flag.ContinueOnError)
+	FsBlockRate              = flag.NewFlagSet("", flag.ContinueOnError)
+	FsRunningRate            = flag.NewFlagSet("", flag.ContinueOnError)
+	FsEndCurrentPolicy       = flag.NewFlagSet("", flag.ContinueOnError)
+	FsPeriodGovernanceRate   = flag.NewFlagSet("", flag.ContinueOnError)
+	FsPmtpPeriodEpochLength  = flag.NewFlagSet("", flag.ContinueOnError)
+	FsPmtpPeriodStartBlock   = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagPmtpPeriodEndBlock = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagNewPolicy          = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -49,5 +59,10 @@ func init() {
 	FsBlockRate.String(FlagBlockRate, "", "Flag to modify Block rate")
 	FsRunningRate.String(FlagRunningRate, "", "Flag to modify Running rate")
 	FsEndCurrentPolicy.String(FlagEndCurrentPolicy, "", "Set flag to true to end current policy")
+	FsPeriodGovernanceRate.String(FlagPeriodGovernanceRate, "", "Modify rGov")
+	FsPmtpPeriodEpochLength.String(FlagPmtpPeriodEpochLength, "", "Modify rGov")
+	FsPmtpPeriodStartBlock.String(FlagPmtpPeriodStartBlock, "", "Modify pmtp start block")
+	FsFlagPmtpPeriodEndBlock.String(FlagPmtpPeriodEndBlock, "", "Modify pmtp end block")
+	FsFlagNewPolicy.String(FlagNewPolicy, "", "Set a new policy / Modify existing policy")
 
 }
