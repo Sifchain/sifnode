@@ -80,8 +80,8 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				ExternalAssetBalance: sdk.NewUintFromString("174248776094"),
 				PoolUnits:            sdk.NewUintFromString("1550459183129248235861408"),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.000000000000112385"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8897963118404.021251000000000000"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.112385271402000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.897963118404021251"),
 		},
 	}
 

@@ -29,3 +29,9 @@ func (k Keeper) SetPmtpCurrentRunningRate(ctx sdk.Context, runningRate sdk.Dec) 
 	currentParams.PmtpCurrentRunningRate = runningRate
 	k.SetPmtpRateParams(ctx, currentParams)
 }
+
+func (k Keeper) SetPmtpInterPolicyRate(ctx sdk.Context, interPolicyRate sdk.Dec) {
+	currentParams := k.GetPmtpRateParams(ctx)
+	currentParams.PmtpInterPolicyRate = interPolicyRate
+	k.SetPmtpRateParams(ctx, currentParams)
+}

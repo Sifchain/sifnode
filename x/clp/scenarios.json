@@ -1,0 +1,446 @@
+[
+    {
+        "name": "parity pool with 10% rate applied each block from from 1 to 40",
+        "create_balance": true,
+        "create_pool": true,
+        "create_lps": true,
+        "pool_asset": "eth",
+        "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+        "native_balance": "1000000000000000000",
+        "external_balance": "1000000000000000000",
+        "native_asset_amount": "1000",
+        "external_asset_amount": "1000",
+        "pool_units": "1000",
+        "pool_asset_decimals": 18,
+        "pool_asset_permissions": [
+            1
+        ],
+        "native_asset_permissions": [
+            1
+        ],
+        "params": {
+            "min_create_pool_threshold": 100,
+            "pmtp_period_governance_rate": "0.10",
+            "pmtp_period_epoch_length": 1,
+            "pmtp_period_start_block": 1,
+            "pmtp_period_end_block": 40
+        },
+        "epoch": {
+            "epoch_counter": 0,
+            "block_counter": 0
+        },
+        "expected_states": [
+            {
+                "height": 1,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "0.998002996005000000",
+                "swap_price_external": "0.998002996005000000",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "0.000000000000000000",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 2,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "1.097803295605500089",
+                "swap_price_external": "0.907275450913636290",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "0.100000000000000089",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 10,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "2.353238860041073689",
+                "swap_price_external": "0.423250693734324776",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "1.357947691000001718",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 20,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "6.103695550045858996",
+                "swap_price_external": "0.163181464715662744",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "5.115909044841464034",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 40,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "41.062611503632473657",
+                "swap_price_external": "0.024255884941629862",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "40.144777789250995162",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 41,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "41.062611503632473657",
+                "swap_price_external": "0.024255884941629862",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "40.144777789250995162",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 60,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000"
+                },
+                "swap_price_native": "41.062611503632473657",
+                "swap_price_external": "0.024255884941629862",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "40.144777789250995162",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            }
+        ]
+    },
+    {
+        "name": "eth with prod settings with 2% rate applied incrementally every 14400 blocks from 211 to 72211",
+        "create_balance": true,
+        "create_pool": true,
+        "create_lps": true,
+        "pool_asset": "eth",
+        "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+        "native_balance": "1000000000000000000",
+        "external_balance": "1000000000000000000",
+        "native_asset_amount": "49352380611368792060339203",
+        "external_asset_amount": "1576369012576526264262",
+        "pool_units": "49352380611368792060339203",
+        "pool_asset_decimals": 18,
+        "pool_asset_permissions": [
+            1
+        ],
+        "native_asset_permissions": [
+            1
+        ],
+        "params": {
+            "min_create_pool_threshold": 100,
+            "pmtp_period_governance_rate": "0.02",
+            "pmtp_period_epoch_length": 14400,
+            "pmtp_period_start_block": 211,
+            "pmtp_period_end_block": 72211
+        },
+        "epoch": {
+            "epoch_counter": 0,
+            "block_counter": 0
+        },
+        "expected_states": [
+            {
+                "height": 1,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000031941094000000",
+                "swap_price_external": "31307.631790289925000000",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000000000000000000",
+                    "pmtp_current_running_rate": "0.000000000000000000",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 210,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000031941094000000",
+                "swap_price_external": "31307.631790289925000000",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000000000000000000",
+                    "pmtp_current_running_rate": "0.000000000000000000",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 211,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000031941094000000",
+                "swap_price_external": "31307.631790289925000000",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.000000000000000000",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 212,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000031941137924252",
+                "swap_price_external": "31307.588737211665233829",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.000001375164297102",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 300,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000031945003494983",
+                "swap_price_external": "31303.800298162240722109",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.000122397028194344",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 1000,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000031975769018925",
+                "swap_price_external": "31273.681309718868352814",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.001085592714040541",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 10500,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000032396242687761",
+                "swap_price_external": "30867.777463243968089646",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.014249627384728838",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 14400,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000032570454922355",
+                "swap_price_external": "30702.672477708596111847",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.019703799824609869",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 14401,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000032570499712082",
+                "swap_price_external": "30702.630256547640155253",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.019705202084869008",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 28800,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000033221854883673",
+                "swap_price_external": "30100.667570566519756800",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.040097589759225701",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 43200,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000033886282661477",
+                "swap_price_external": "29510.466518886415535168",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.060899249771376570",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 72211,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000035265500222577",
+                "swap_price_external": "28356.325689968153346573",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.104079284904174982",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 72212,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000035265500222577",
+                "swap_price_external": "28356.325689968153346573",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.104079284904174982",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 100000,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203"
+                },
+                "swap_price_native": "0.000035265500222577",
+                "swap_price_external": "28356.325689968153346573",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375164297102",
+                    "pmtp_current_running_rate": "0.104079284904174982",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            }
+        ]
+    }
+]

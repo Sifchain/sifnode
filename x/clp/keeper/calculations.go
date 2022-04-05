@@ -60,7 +60,7 @@ func CalcSwapPrice(from types.Asset,
 
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 
-	swapResult := CalcSwapResultDec(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 
 	return swapResult
 }
@@ -342,7 +342,7 @@ func CalcSwapResult(toRowan bool,
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
-func CalcSwapResultDec(toRowan bool,
+func CalcSwapPriceResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
 	X, x, Y sdk.Uint,
@@ -377,7 +377,8 @@ func CalcSwapResultDec(toRowan bool,
 	d := s.Mul(s)
 	y := xd.Mul(Xd).Mul(Yd).Quo(d)
 	y = IncreasePrecision(y, minLen)
-	if !toRowan {
+	// we're looking for price in absolute units here
+	if toRowan {
 		y = y.Quo(normalizationFactor)
 	}
 	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
