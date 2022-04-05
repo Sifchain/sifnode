@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -28,8 +29,9 @@ var (
 	PoolPrefix               = []byte{0x00} // key for storing Pools
 	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
 	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
-	PmtpParamsPrefix         = []byte{0x03} // Key to store the Pmtp rate params
-	PmtpEpochPrefix          = []byte{0x04} // Key to store the Pmtp rate params
+	PmtpRateParamsPrefix     = []byte{0x03} // Key to store the Pmtp rate params
+	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
+	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
 )
 
 // Generates a key for storing a specific pool
@@ -46,4 +48,19 @@ func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
 func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
+}
+
+func GetDefaultPmtpParams() *PmtpParams {
+	//return &PmtpParams{
+	//	PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
+	//	PmtpPeriodEpochLength:    14440,
+	//	PmtpPeriodStartBlock:     211,
+	//	PmtpPeriodEndBlock:       72210,
+	//}
+	return &PmtpParams{
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     1,
+		PmtpPeriodEndBlock:       1000,
+	}
 }

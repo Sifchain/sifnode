@@ -141,7 +141,7 @@ message LiquidityProvidersRes {
 message PmtpParamsReq {}
 
 message PmtpParamsRes {
-  sifnode.clp.v1.Params params = 1;
+  sifnode.clp.v1.PmtpParams params = 1;
   sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
   sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
   int64 height = 4;

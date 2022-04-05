@@ -29,6 +29,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
 		GetCmdModifyPmtpRates(),
+		GetCmdUpdatePmtpParams(),
 	)
 
 	return clpTxCmd
@@ -219,7 +220,6 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			isEndPolicy := viper.GetBool(FlagEndCurrentPolicy)
 			signer := clientCtx.GetFromAddress()
 			fmt.Println(isEndPolicy, signer)
@@ -232,19 +232,48 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
-
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-
 	cmd.Flags().AddFlagSet(FsBlockRate)
 	cmd.Flags().AddFlagSet(FsRunningRate)
 	cmd.Flags().AddFlagSet(FsEndCurrentPolicy)
-
 	flags.AddTxFlagsToCmd(cmd)
-
 	return cmd
+}
 
+func GetCmdUpdatePmtpParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pmtp-params",
+		Short: "Update pmtp params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			isNewPolicy := viper.GetBool(FlagNewPolicy)
+			msg := types.MsgUpdatePmtpParams{
+				Signer:                   signer.String(),
+				StartNewPolicy:           isNewPolicy,
+				PmtpPeriodGovernanceRate: viper.GetString(FlagPeriodGovernanceRate),
+				PmtpPeriodEpochLength:    viper.GetInt64(FlagPmtpPeriodEpochLength),
+				PmtpPeriodStartBlock:     viper.GetInt64(FlagPmtpPeriodStartBlock),
+				PmtpPeriodEndBlock:       viper.GetInt64(FlagPmtpPeriodEndBlock),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsPeriodGovernanceRate)
+	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
+	cmd.Flags().AddFlagSet(FsPmtpPeriodStartBlock)
+	cmd.Flags().AddFlagSet(FsFlagPmtpPeriodEndBlock)
+	cmd.Flags().AddFlagSet(FsFlagNewPolicy)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
 
 func GetCmdSwap() *cobra.Command {

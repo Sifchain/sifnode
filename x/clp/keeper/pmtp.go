@@ -9,11 +9,12 @@ import (
 )
 
 func (k Keeper) PolicyStart(ctx sdk.Context) {
-	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
-	pmtpPeriodEndBlock := k.GetPmtpEndBlock(ctx)
-	pmtpPeriodEpochLength := k.GetPmtpEpochLength(ctx)
+	pmtpParams := k.GetPmtpParams(ctx)
+	pmtpPeriodStartBlock := pmtpParams.PmtpPeriodStartBlock
+	pmtpPeriodEndBlock := pmtpParams.PmtpPeriodEndBlock
+	pmtpPeriodEpochLength := pmtpParams.PmtpPeriodEpochLength
 	// get governance rate
-	pmtpPeriodGovernanceRate := k.GetPmtpGovernanceRate(ctx)
+	pmtpPeriodGovernanceRate := pmtpParams.PmtpPeriodGovernanceRate
 	// compute length of policy period in blocks
 	numBlocksInPolicyPeriod := pmtpPeriodEndBlock - pmtpPeriodStartBlock + 1
 	// compute number of epochs in policy period
@@ -40,7 +41,7 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 
 func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	currentHeight := ctx.BlockHeight()
-	pmtpPeriodStartBlock := k.GetPmtpStartBlock(ctx)
+	pmtpPeriodStartBlock := k.GetPmtpParams(ctx).PmtpPeriodStartBlock
 	rateParams := k.GetPmtpRateParams(ctx)
 	pmtpPeriodBlockRate := rateParams.PmtpPeriodBlockRate
 	pmtpInterPolicyRate := rateParams.PmtpInterPolicyRate

@@ -757,11 +757,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				}
 				clpGs := types.DefaultGenesisState()
 				clpGs.Params = types.Params{
-					MinCreatePoolThreshold:   100,
-					PmtpPeriodGovernanceRate: sdk.OneDec(),
-					PmtpPeriodEpochLength:    1,
-					PmtpPeriodStartBlock:     1,
-					PmtpPeriodEndBlock:       2,
+					MinCreatePoolThreshold: 100,
 				}
 				clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.address)
 				clpGs.PoolList = append(clpGs.PoolList, pools...)

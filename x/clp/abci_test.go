@@ -49,11 +49,7 @@ func TestBeginBlocker(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.Params{
-				MinCreatePoolThreshold:   types.DefaultMinCreatePoolThreshold,
-				PmtpPeriodGovernanceRate: sdk.OneDec(),
-				PmtpPeriodEpochLength:    1,
-				PmtpPeriodStartBlock:     0,
-				PmtpPeriodEndBlock:       10,
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 0,
@@ -75,11 +71,7 @@ func TestBeginBlocker(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.Params{
-				MinCreatePoolThreshold:   types.DefaultMinCreatePoolThreshold,
-				PmtpPeriodGovernanceRate: sdk.OneDec(),
-				PmtpPeriodEpochLength:    1,
-				PmtpPeriodStartBlock:     0,
-				PmtpPeriodEndBlock:       20,
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 10,
@@ -101,11 +93,7 @@ func TestBeginBlocker(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.Params{
-				MinCreatePoolThreshold:   types.DefaultMinCreatePoolThreshold,
-				PmtpPeriodGovernanceRate: sdk.OneDec(),
-				PmtpPeriodEpochLength:    0,
-				PmtpPeriodStartBlock:     10,
-				PmtpPeriodEndBlock:       20,
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 10,
@@ -127,11 +115,7 @@ func TestBeginBlocker(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.Params{
-				MinCreatePoolThreshold:   types.DefaultMinCreatePoolThreshold,
-				PmtpPeriodGovernanceRate: sdk.OneDec(),
-				PmtpPeriodEpochLength:    0,
-				PmtpPeriodStartBlock:     10,
-				PmtpPeriodEndBlock:       20,
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 10,
@@ -270,11 +254,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.Params{
-				MinCreatePoolThreshold:   types.DefaultMinCreatePoolThreshold,
-				PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
-				PmtpPeriodEpochLength:    1,
-				PmtpPeriodStartBlock:     1,
-				PmtpPeriodEndBlock:       40,
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 0,

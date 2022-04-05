@@ -14,6 +14,7 @@ service Msg {
   rpc DecommissionPool(MsgDecommissionPool)
       returns (MsgDecommissionPoolResponse);
   rpc ModifyPmtpRates(MsgModifyPmtpRates) returns (MsgModifyPmtpRatesResponse);
+  rpc UpdatePmtpParams(MsgUpdatePmtpParams) returns (MsgUpdatePmtpParamsResponse);
 }
 
 message MsgRemoveLiquidity {
@@ -79,6 +80,17 @@ message MsgModifyPmtpRates {
 }
 
 message MsgModifyPmtpRatesResponse {}
+
+message MsgUpdatePmtpParams {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string pmtp_period_governance_rate = 2;
+  bool start_new_policy = 3;
+  int64 pmtp_period_epoch_length = 4;
+  int64 pmtp_period_start_block = 5;
+  int64 pmtp_period_end_block = 6;
+}
+message MsgUpdatePmtpParamsResponse {}
+
 
 
 message MsgSwap {

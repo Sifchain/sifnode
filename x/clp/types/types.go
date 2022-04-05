@@ -52,16 +52,6 @@ func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance
 	return LiquidityProviderData{LiquidityProvider: &liquidityProvider, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
 
-func NewPmtpParamsResponse(params Params, pmtpRateParams PmtpRateParams, pmtpEpoch PmtpEpoch, height int64) PmtpParamsRes {
-	return PmtpParamsRes{Params: &params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
-}
-
-// ----------------------------------------------------------------------------
-// Pmtp types
-func CreatePmtpParams(data Params) PmtpRateParams {
-	return PmtpRateParams{
-		PmtpPeriodBlockRate:    sdk.Dec{},
-		PmtpCurrentRunningRate: sdk.Dec{},
-		PmtpInterPolicyRate:    sdk.Dec{},
-	}
+func NewPmtpParamsResponse(params *PmtpParams, pmtpRateParams PmtpRateParams, pmtpEpoch PmtpEpoch, height int64) PmtpParamsRes {
+	return PmtpParamsRes{Params: params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
 }

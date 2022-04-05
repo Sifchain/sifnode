@@ -139,11 +139,7 @@ func TestKeeper_PolicyRun(t *testing.T) {
 						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
 					}
 					clpGs.Params = types.Params{
-						MinCreatePoolThreshold:   100,
-						PmtpPeriodGovernanceRate: sdk.OneDec(),
-						PmtpPeriodEpochLength:    1,
-						PmtpPeriodStartBlock:     1,
-						PmtpPeriodEndBlock:       2,
+						MinCreatePoolThreshold: 100,
 					}
 					clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.address)
 					clpGs.PoolList = append(clpGs.PoolList, pools...)

@@ -221,9 +221,9 @@ func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityPr
 	}, nil
 }
 
-func (k Querier) GetPmtpParams(c context.Context, req *types.PmtpParamsReq) (*types.PmtpParamsRes, error) {
+func (k Querier) GetPmtpParams(c context.Context, _ *types.PmtpParamsReq) (*types.PmtpParamsRes, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	params := k.Keeper.GetParams(ctx)
+	params := k.Keeper.GetPmtpParams(ctx)
 
 	rateParams := k.Keeper.GetPmtpRateParams(ctx)
 

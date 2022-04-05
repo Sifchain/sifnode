@@ -28,6 +28,50 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetPmtpParams(ctx)
+	if !strings.EqualFold(msg.PmtpPeriodGovernanceRate, "") {
+		rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
+		if err != nil {
+			return nil, err
+		}
+		if rGov.IsNegative() {
+			return nil, types.ErrRateCannotBeNegative
+		}
+		params.PmtpPeriodGovernanceRate = rGov
+	}
+	if msg.StartNewPolicy {
+		// Check to see if the current policy has ended
+		if ctx.BlockHeight() < params.PmtpPeriodEndBlock {
+			return nil, errors.New("A new policy can be started only after the current policy has ended")
+		}
+
+		// Check to make sure new policy starts in the future so that PolicyStart from abci.go can be triggered
+		if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
+			return nil, errors.New("Start block cannot be in the past/current block")
+		}
+
+		// Check to see if start of new policy is not before the end of new policy
+		// This check is optional
+		if msg.PmtpPeriodStartBlock <= params.PmtpPeriodEndBlock {
+			return nil, errors.New("Policies cannot have overlaps")
+		}
+		params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
+		params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
+		params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
+	}
+	k.SetPmtpParams(ctx, params)
+	return &types.MsgUpdatePmtpParamsResponse{}, nil
+}
+
 func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPmtpRates) (*types.MsgModifyPmtpRatesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -66,9 +110,9 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 
 	// End Policy If Needed
 	if msg.EndPolicy {
-		params := k.GetParams(ctx)
+		params := k.GetPmtpParams(ctx)
 		params.PmtpPeriodEndBlock = ctx.BlockHeight()
-		k.SetParams(ctx, params)
+		k.SetPmtpParams(ctx, params)
 		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 			EpochCounter: 0,
 			BlockCounter: 0,
