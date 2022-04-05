@@ -14,7 +14,36 @@ var (
 	_ sdk.Msg = &MsgAddLiquidity{}
 	_ sdk.Msg = &MsgSwap{}
 	_ sdk.Msg = &MsgDecommissionPool{}
+	_ sdk.Msg = &MsgModifyPmtpRates{}
 )
+
+func (m *MsgModifyPmtpRates) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MsgModifyPmtpRates) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgModifyPmtpRates) Route() string {
+	return RouterKey
+}
+
+func (m MsgModifyPmtpRates) Type() string {
+	return "modify_pmtp_rates"
+}
+
+func (m MsgModifyPmtpRates) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
 	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}

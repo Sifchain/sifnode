@@ -13,6 +13,7 @@ service Msg {
   rpc Swap(MsgSwap) returns (MsgSwapResponse);
   rpc DecommissionPool(MsgDecommissionPool)
       returns (MsgDecommissionPoolResponse);
+  rpc ModifyPmtpRates(MsgModifyPmtpRates) returns (MsgModifyPmtpRatesResponse);
 }
 
 message MsgRemoveLiquidity {
@@ -68,6 +69,17 @@ message MsgAddLiquidity {
 }
 
 message MsgAddLiquidityResponse {}
+
+
+message MsgModifyPmtpRates {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string block_rate = 2 ;
+  string running_rate = 3 ;
+  bool end_policy = 4 ;
+}
+
+message MsgModifyPmtpRatesResponse {}
+
 
 message MsgSwap {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];

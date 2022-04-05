@@ -14,6 +14,9 @@ const (
 	FlagAsymmetry              = "asymmetry"
 	FlagAmount                 = "sentAmount"
 	FlagMinimumReceivingAmount = "minReceivingAmount"
+	FlagBlockRate              = "blockRate"
+	FlagRunningRate            = "runningRate"
+	FlagEndCurrentPolicy       = "endPolicy"
 )
 
 // common flagsets to add to various functions
@@ -27,6 +30,9 @@ var (
 	FsReceivedAssetSymbol = flag.NewFlagSet("", flag.ContinueOnError)
 	FsAmount              = flag.NewFlagSet("", flag.ContinueOnError)
 	FsMinReceivingAmount  = flag.NewFlagSet("", flag.ContinueOnError)
+	FsBlockRate           = flag.NewFlagSet("", flag.ContinueOnError)
+	FsRunningRate         = flag.NewFlagSet("", flag.ContinueOnError)
+	FsEndCurrentPolicy    = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -40,5 +46,8 @@ func init() {
 	FsReceivedAssetSymbol.String(FlagReceivedAssetSymbol, "", "Symbol for Received Asset")
 	FsAmount.String(FlagAmount, "", "Sent amount")
 	FsMinReceivingAmount.String(FlagMinimumReceivingAmount, "", "Min threshold for receiving amount")
+	FsBlockRate.String(FlagBlockRate, "", "Flag to modify Block rate")
+	FsRunningRate.String(FlagRunningRate, "", "Flag to modify Running rate")
+	FsEndCurrentPolicy.String(FlagEndCurrentPolicy, "", "Set flag to true to end current policy")
 
 }
