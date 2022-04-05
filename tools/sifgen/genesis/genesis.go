@@ -126,28 +126,6 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration
 	return nil
 }
 
-func SetPMTPDefaults(nodeHomeDir, periodGovernanceRate string, periodEpocLength uint64, periodStartBlock int64, periodEndBlock int64) error {
-	genesis, err := readGenesis(nodeHomeDir)
-	if err != nil {
-		return err
-	}
-
-	(*genesis).AppState.CLP.Params.PMTPPeriodGovernanceRate = periodGovernanceRate
-	(*genesis).AppState.CLP.Params.PMTPPeriodEpocLength = json.Number(fmt.Sprintf("%d", periodEpocLength))
-	(*genesis).AppState.CLP.Params.PMTPPeriodStartBlock = json.Number(fmt.Sprintf("%d", periodStartBlock))
-	(*genesis).AppState.CLP.Params.PMTPPeriodEndBlock = json.Number(fmt.Sprintf("%d", periodEndBlock))
-	content, err := tmjson.Marshal(genesis)
-	if err != nil {
-		return err
-	}
-
-	if err := writeGenesis(nodeHomeDir, content); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 	var genesis common.Genesis
 
