@@ -6,7 +6,7 @@ import string
 import random
 import yaml
 import urllib.request
-
+from typing import Optional, Mapping, Sequence, IO, Union
 
 log = logging.getLogger(__name__)
 
@@ -76,7 +76,10 @@ def mkcmd(args, env=None, cwd=None, stdin=None):
 # stdin will always be redirected to the returned process' stdin.
 # If pipe, the stdout and stderr will be redirected and available as stdout and stderr of the returned object.
 # If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
-def popen(args, cwd=None, env=None, text=None, stdin=None, stdout=None, stderr=None):
+def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[str, str]] = None,
+    text: Optional[bool] = None, stdin: Union[str, int, IO, None] = None, stdout: Optional[IO] = None,
+    stderr: Optional[IO] = None
+) -> subprocess.Popen:
     if env:
         env = dict_merge(os.environ, env)
     logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
