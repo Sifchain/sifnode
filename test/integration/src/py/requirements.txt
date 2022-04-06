@@ -17,7 +17,7 @@ pycallgraph==1.0.1
 pycodestyle==2.7.0
 pylint==2.7.4
 pyparsing==2.4.7
-pytest==6.2.3
+pytest==7.1.1
 PyYAML==5.4.1
 requests==2.25.1
 toml==0.10.2
