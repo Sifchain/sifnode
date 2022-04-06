@@ -5,6 +5,8 @@ package types
 const (
 	EventTypeCreatePool              = "created_new_pool"
 	EventTypeDecommissionPool        = "decommission_pool"
+	EventTypeAddNewPmtpPolicy        = "pmtp_new_policy"
+	EventTypeEndPmtpPolicy           = "pmtp_end_policy"
 	EventTypeCreateLiquidityProvider = "created_new_liquidity_provider"
 	EventTypeAddLiquidity            = "added_liquidity"
 	EventTypeRemoveLiquidity         = "removed_liquidity"
@@ -21,5 +23,7 @@ const (
 	AttributeKeyPool                 = "pool"
 	AttributeKeyHeight               = "height"
 	AttributeKeyLiquidityProvider    = "liquidity_provider"
+	AttributeKeyPmtpPolicyParams     = "pmtp_policy_params"
+	AttributeKeyPmtpRateParams       = "pmtp_rate_params"
 	AttributeValueCategory           = ModuleName
 )

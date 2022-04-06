@@ -245,17 +245,15 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 func GetCmdUpdatePmtpParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pmtp-params",
-		Short: "Update pmtp params",
+		Short: "Update pmtp params to set a new policy",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 			signer := clientCtx.GetFromAddress()
-			isNewPolicy := viper.GetBool(FlagNewPolicy)
 			msg := types.MsgUpdatePmtpParams{
 				Signer:                   signer.String(),
-				StartNewPolicy:           isNewPolicy,
 				PmtpPeriodGovernanceRate: viper.GetString(FlagPeriodGovernanceRate),
 				PmtpPeriodEpochLength:    viper.GetInt64(FlagPmtpPeriodEpochLength),
 				PmtpPeriodStartBlock:     viper.GetInt64(FlagPmtpPeriodStartBlock),
@@ -271,7 +269,16 @@ func GetCmdUpdatePmtpParams() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
 	cmd.Flags().AddFlagSet(FsPmtpPeriodStartBlock)
 	cmd.Flags().AddFlagSet(FsFlagPmtpPeriodEndBlock)
-	cmd.Flags().AddFlagSet(FsFlagNewPolicy)
+	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagPmtpPeriodStartBlock); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEndBlock); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

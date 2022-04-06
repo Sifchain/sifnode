@@ -50,7 +50,6 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	pmtpCurrentRunningRate = pmtpCurrentRunningRate.Add(pmtpInterPolicyRate)
 	// set running rate
 	k.SetPmtpCurrentRunningRate(ctx, pmtpCurrentRunningRate)
-	k.DecrementBlockCounter(ctx)
 	return pmtpCurrentRunningRate
 }
 
@@ -75,4 +74,9 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 		}
 	}
 	return nil
+}
+
+func (k Keeper) IsInsidePmtpWindow(ctx sdk.Context) bool {
+	params := k.GetPmtpParams(ctx)
+	return ctx.BlockHeight() <= params.PmtpPeriodEndBlock && ctx.BlockHeight() >= params.PmtpPeriodStartBlock
 }

@@ -14,13 +14,21 @@ func NewMigrator(keeper Keeper) Migrator {
 }
 
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
-	pools := m.keeper.GetPools(ctx)
-	m.keeper.SetParams(ctx, types.DefaultParams())
+
 	// compute swap prices for each pool
+	m.keeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
+		PmtpPeriodBlockRate:    sdk.ZeroDec(),
+		PmtpCurrentRunningRate: sdk.ZeroDec(),
+		PmtpInterPolicyRate:    sdk.ZeroDec(),
+	})
 	m.keeper.SetPmtpEpoch(ctx, types.PmtpEpoch{
 		EpochCounter: 0,
 		BlockCounter: 0,
 	})
+	m.keeper.SetPmtpParams(ctx, types.GetDefaultPmtpParams())
+	m.keeper.SetPmtpInterPolicyRate(ctx, sdk.NewDec(0))
+
+	pools := m.keeper.GetPools(ctx)
 	for _, pool := range pools {
 		spe := sdk.ZeroDec()
 		spn := sdk.ZeroDec()
