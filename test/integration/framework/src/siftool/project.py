@@ -232,8 +232,11 @@ class Project:
             for file in [".proto-gen", ".run", "cmd/ebrelayer/contract/generated/artifacts", "smart-contracts/.hardhat-compile"]:
                 self.cmd.rmf(self.project_dir(file))
         else:
-            # Output from "truffle compile"
+            # Output from "truffle compile" / "npx hardhat compile".
+            # Wrong contents can cause hardhat to fail compilation after switching branches.
             self.cmd.rmf(self.project_dir("smart-contracts", "build"))
+            self.cmd.rmf(self.project_dir("smart-contracts", "cache"))
+            self.cmd.rmf(self.project_dir("smart-contracts", "artifacts"))
 
             for filename in ["sifnoded", "ebrelayer", "sifgen"]:
                 self.cmd.rmf(os.path.join(self.go_bin_dir, filename))

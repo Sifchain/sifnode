@@ -1,36 +1,39 @@
 import base64
 import json
 import time
-import typing
-from siftool.command import buildcmd
+import grpc
+from typing import Mapping, Any
+from siftool import command, cosmos
 from siftool.common import *
 
-
-def sifchain_denom_hash(network_descriptor_raw: typing.Union[int, str], token_contract_address: str) -> str:
+def sifchain_denom_hash(network_descriptor: int, token_contract_address: str) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
-    network_descriptor = int(network_descriptor_raw)
-    assert network_descriptor > 0
-    assert network_descriptor <= 9999
+    assert type(network_descriptor) == int
+    assert network_descriptor in range(1, 10000)
     denom = f"sifBridge{network_descriptor:04d}{token_contract_address.lower()}"
     return denom
 
-def balance_delta(balances1, balances2):
-    all_denoms = set(balances1.keys())
-    all_denoms.update(balances2.keys())
-    result = {}
-    for denom in all_denoms:
-        change = balances2.get(denom, 0) - balances1.get(denom, 0)
-        if change != 0:
-            result[denom] = change
-    return result
+# Deprecated
+def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmos.Balance:
+    return cosmos.balance_sub(balances2, balances1)
 
-def balance_zero(balances):
-    return len(balances) == 0
+# Deprecated
+def balance_zero(balances: cosmos.Balance) -> bool:
+    return cosmos.balance_zero(balances)
+
+def is_cosmos_native_denom(denom: str) -> bool:
+    """Returns true if denom is a native cosmos token (Rowan, ibc)
+    that was not imported using Peggy"""
+    return not str.startswith(denom, "sifBridge")
+
+def import_generated_protobuf_sources():
+    import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
+    import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
 
 class Sifnoded:
-    def __init__(self, cmd, home=None):
+    def __init__(self, cmd, home: str = None):
         self.cmd = cmd
         self.binary = "sifnoded"
         self.home = home
@@ -102,6 +105,9 @@ class Sifnoded:
     def set_genesis_oracle_admin(self, address):
         self.sifnoded_exec(["set-genesis-oracle-admin", address], sifnoded_home=self.home)
 
+    def set_genesis_token_registry_admin(self, address):
+        self.sifnoded_exec(["set-genesis-token-registry-admin", address], sifnoded_home=self.home)
+
     def set_genesis_whitelister_admin(self, address):
         self.sifnoded_exec(["set-genesis-whitelister-admin", address], sifnoded_home=self.home)
 
@@ -118,7 +124,7 @@ class Sifnoded:
         self.add_genesis_account(account_address, tokens)
         if is_admin:
             self.set_genesis_oracle_admin(account_address)
-        self.set_genesis_whitelister_admin(account_address)
+            self.set_genesis_whitelister_admin(account_address)
         return account_address
 
     def peggy2_add_relayer_witness_account(self, name, tokens, evm_network_descriptor, validator_power, denom_whitelist_file):
@@ -170,14 +176,14 @@ class Sifnoded:
             log_format_json=log_format_json)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
-    def build_start_cmd(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False):
-        args = [self.binary, "start"] + \
+    def build_start_cmd(self, tcp_url: str = None, minimum_gas_prices=None, log_format_json=False):
+        args = [self.binary, "start", "--trace"] + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--log_level", "debug"] if log_format_json else []) + \
             (["--log_format", "json"] if log_format_json else []) + \
             (["--home", self.home] if self.home else [])
-        return buildcmd(args)
+        return command.buildcmd(args)
 
     def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
         args = [self.binary] + args + \
@@ -221,13 +227,19 @@ class SifnodeClient:
         self.chain_id = chain_id
         self.grpc_port = grpc_port
 
-    def send_from_sifchain_to_ethereum(self, from_sif_addr, to_eth_addr, amount, denom, generate_only=False):
+    def query_account(self, sif_addr):
+        result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
+        return result
+
+    def send_from_sifchain_to_ethereum(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int, denom: str,
+        generate_only: bool = False
+    ) -> Mapping:
         """ Sends ETH from Sifchain to Ethereum (burn) """
         assert on_peggy2_branch, "Only for Peggy2.0"
         assert self.ctx.eth
         eth = self.ctx.eth
 
-        direction = "burn"
+        direction = "lock" if is_cosmos_native_denom(denom) else "burn"
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
         args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
@@ -246,16 +258,20 @@ class SifnodeClient:
             assert "failed to execute message" not in result["raw_log"]
         return result
 
-    def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr, to_eth_addr, amount, denom):
+    def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
+        denom: str
+    ):
         tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
         signed_tx = self.sign_transaction(tx, from_sif_addr)
         encoded_tx = self.encode_transaction(signed_tx)
         result = self.broadcast_tx(encoded_tx)
         return result
 
-    def sign_transaction(self, tx, from_sif_addr, sequence=None):
+    def sign_transaction(self, tx: Mapping, from_sif_addr: cosmos.Address, sequence: int = None,
+        account_number: int = None
+    ) -> Mapping:
         tmp_tx_file = self.cmd.mktempfile()
-        account_number = 0  # TODO
+        assert (sequence is not None) == (account_number is not None)  # We need either both or none
         try:
             self.cmd.write_text_file(tmp_tx_file, json.dumps(tx))
             args = ["tx", "sign", tmp_tx_file, "--from", from_sif_addr] + \
@@ -269,7 +285,7 @@ class SifnodeClient:
         finally:
             self.cmd.rm(tmp_tx_file)
 
-    def encode_transaction(self, tx):
+    def encode_transaction(self, tx: Mapping[str, Any]) -> bytes:
         tmp_file = self.cmd.mktempfile()
         try:
             self.cmd.write_text_file(tmp_file, json.dumps(tx))
@@ -279,21 +295,19 @@ class SifnodeClient:
         finally:
             self.cmd.rm(tmp_file)
 
-    def open_grpc_channel(self):
+    def open_grpc_channel(self) -> grpc.Channel:
         # See https://docs.cosmos.network/v0.44/core/proto-docs.html
         # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
         # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
         # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
-        import grpc
         return grpc.insecure_channel("127.0.0.1:9090")
 
-    def broadcast_tx(self, encoded_tx):
-        import cosmos.tx.v1beta1.service_pb2
-        import cosmos.tx.v1beta1.service_pb2_grpc
-        broadcast_mode = cosmos.tx.v1beta1.service_pb2.BROADCAST_MODE_ASYNC
+    def broadcast_tx(self, encoded_tx: bytes):
+        import_generated_protobuf_sources()
+        broadcast_mode = cosmos_pb.BROADCAST_MODE_ASYNC
         with self.open_grpc_channel() as channel:
-            tx_stub = cosmos.tx.v1beta1.service_pb2_grpc.ServiceStub(channel)
-            req = cosmos.tx.v1beta1.service_pb2.BroadcastTxRequest(tx_bytes=encoded_tx, mode=broadcast_mode)
+            tx_stub = cosmos_pb_grpc.ServiceStub(channel)
+            req = cosmos_pb.BroadcastTxRequest(tx_bytes=encoded_tx, mode=broadcast_mode)
             resp = tx_stub.BroadcastTx(req)
             return resp
 
@@ -362,7 +376,7 @@ class Ebrelayer:
             (["--keyring-dir", keyring_dir] if keyring_dir else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
-        return buildcmd(args, env=env, cwd=cwd)
+        return command.buildcmd(args, env=env, cwd=cwd)
 
     # Legacy stuff - pre-peggy2
     # Called from IntegrationContext

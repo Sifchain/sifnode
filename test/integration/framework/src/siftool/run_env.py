@@ -1,9 +1,9 @@
 import json
 import re
 import time
+from typing import List, Tuple, TextIO, Any
 
-import siftool.eth as eth
-import siftool.hardhat as hardhat
+from siftool import eth, hardhat, cosmos, command
 from siftool.truffle import Ganache
 from siftool.localnet import Localnet
 from siftool.command import Command
@@ -771,7 +771,7 @@ class IntegrationTestsEnvironment:
 
 
 class Peggy2Environment(IntegrationTestsEnvironment):
-    def __init__(self, cmd):
+    def __init__(self, cmd: Command):
         super().__init__(cmd)
         self.hardhat = hardhat.Hardhat(cmd)
 
@@ -842,31 +842,38 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"
         ceth_symbol = sifchain_denom_hash(hardhat_chain_id, eth.NULL_ADDRESS)
-        print("ceth symbol is: {0}".format(ceth_symbol))
         assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
-        # Mint goes to validator
-        mint_amount = [
-            [999999 * 10**21, "rowan"],
+        # This goes to validator0, i.e. sifnode_validators[0]["address"]
+        validator_mint_amounts: cosmos.LegacyBalance = [
+            [999999 * 10**27, "rowan"],
             [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
             [999999 * 10**21, ceth_symbol],
-        ] + [[10**18, "test{}".format(i)] for i in range(1, 6)]
+            [137 * 10**16, "sifBridge00030x1111111111111111111111111111111111111111"],
+        ]
         validator_power = 100
         seed_ip_address = "10.10.1.1"
         tendermint_port = 26657
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
-        tokens = [
-            [10**20, "rowan"],
-            [2 * 10**19, "ceth"]
-        ] + [[10**18, "xtest{}".format(i)] for i in range(1, 6)]
+        # These go to admin account, relayers and witnesses
+        admin_account_mint_amounts: cosmos.LegacyBalance = [
+            [10**27, "rowan"],
+            [2 * 10**22, ceth_symbol],
+            [10 ** 16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
+            [10 ** 16, "sifBridge00030x1111111111111111111111111111111111111111"],
+        ]
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
         self.cmd.rmdir(sifnoded_network_dir)
         self.cmd.mkdir(sifnoded_network_dir)
         network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, sifnode_validators, \
             sifnode_relayers, sifnode_witnesses, sifnode_validator0_home, chain_dir = \
-                self.init_sifchain(sifnoded_network_dir, sifnoded_log_file, chain_id, hardhat_chain_id, mint_amount,
-                    validator_power, seed_ip_address, tendermint_port, denom_whitelist_file, tokens, registry_json,
-                    admin_account_name)
+                self.init_sifchain(sifnoded_network_dir, sifnoded_log_file, chain_id, hardhat_chain_id,
+                    validator_mint_amounts, validator_power, seed_ip_address, tendermint_port, denom_whitelist_file,
+                    admin_account_mint_amounts, registry_json, admin_account_name, ceth_symbol)
+
+        log.debug("ceth symbol is: {}".format(ceth_symbol))
+        log.debug("Admin account address: {}".format(admin_account_address))  # tokens
+        log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
 
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
         [relayer0_exec_args], [witness0_exec_args] = \
@@ -919,10 +926,11 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # txrcpt = eth_tx.transact_sync(cosmos_bridge.functions.setBridgeBank, operator_addr)(bridge_bank_addr)
         return
 
-    def init_sifchain(self, sifnoded_network_dir, sifnoded_log_file, chain_id, hardhat_chain_id, mint_amount,
-        validator_power, seed_ip_address, tendermint_port, denom_whitelist_file, tokens, registry_json,
-        admin_account_name
-    ):
+    def init_sifchain(self, sifnoded_network_dir: str, sifnoded_log_file: TextIO, chain_id: str, hardhat_chain_id: int,
+        validator_mint_amounts: cosmos.LegacyBalance, validator_power: int, seed_ip_address: str, tendermint_port: int,
+        denom_whitelist_file: str, admin_account_mint_amounts: cosmos.LegacyBalance, registry_json: str,
+        admin_account_name: str, ceth_symbol: str
+    ) -> Tuple[str, command.ExecArgs, subprocess.Popen, str, cosmos.Address, List, List, List, str, str]:
         validator_count = 1
         relayer_count = 1
         witness_count = 1
@@ -932,7 +940,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         network_config_file_path = self.cmd.mktempfile()
         try:
             self.cmd.sifgen_create_network(chain_id, validator_count, sifnoded_network_dir, network_config_file_path,
-                seed_ip_address, mint_amount=mint_amount)
+                seed_ip_address, mint_amount=validator_mint_amounts)
             network_config_file = self.cmd.read_text_file(network_config_file_path)
         finally:
             self.cmd.rm(network_config_file_path)
@@ -976,7 +984,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         sifnode = Sifnoded(self.cmd, home=validator0_home)
 
         # Create an ADMIN account on sifnode with name admin_account_name (e.g. "sifnodeadmin")
-        admin_account_address = sifnode.peggy2_add_account(admin_account_name, tokens, is_admin=True)
+        admin_account_address = sifnode.peggy2_add_account(admin_account_name, admin_account_mint_amounts, is_admin=True)
 
         # TODO Check if sifnoded_peggy2_add_relayer_witness_account can be executed offline (without sifnoded running)
         # TODO Check if sifnoded_peggy2_set_cross_chain_fee can be executed offline (without sifnoded running)
@@ -985,7 +993,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: "--home" is shared with sifnoded's "--home"
         relayers = [{
             "name": name,
-            "address": sifnode.peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
+            "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts, hardhat_chain_id,
                 validator_power, denom_whitelist_file),
             "home": validator0_home,
         } for name in [f"relayer-{i}" for i in range(relayer_count)]]
@@ -994,19 +1002,12 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: "--home" is shared with sifnoded's "--home"
         witnesses = [{
             "name": name,
-            "address": sifnode.peggy2_add_relayer_witness_account(name, tokens, hardhat_chain_id,
+            "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts, hardhat_chain_id,
                 validator_power, denom_whitelist_file),
             "home": validator0_home,
         } for name in [f"witness-{i}" for i in range(witness_count)]]
 
         tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
-        # sifnoded
-        #     start
-        #     --log_level debug
-        #     --log_format json
-        #     --minimum-gas-prices 0.5rowan
-        #     --rpc.laddr tcp://0.0.0.0:26657
-        #     --home /tmp/sifnodedNetwork/validators/localnet/xxx-yyy/.sifnoded
         # @TODO Detect if sifnoded is already running, for now it fails silently and we wait forever in wait_for_sif_account_up
         sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=[0.5, "rowan"],
             log_format_json=True)
@@ -1017,7 +1018,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
         # TODO Try whitelister account instead of admin
-        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_address,
+        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_name,
             chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 1
@@ -1029,7 +1030,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         cross_chain_fee_base = 1
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
-        ethereum_cross_chain_fee_token = "sifBridge99990x0000000000000000000000000000000000000000"
+        ethereum_cross_chain_fee_token = ceth_symbol
         assert hardhat_chain_id == int(ethereum_cross_chain_fee_token[9:13])  # Assume they should match
         gas_prices = [0.5, "rowan"]
         gas_adjustment = 1.5
@@ -1290,16 +1291,17 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # "env": {"ETHEREUM_PRIVATE_KEY": eth_accounts["validators"][0][1]},
                     "args": [
                         "init-witness",
-                        # TODO This is probably obsolete, need "--network-descriptor" etc.
-                        str(eth_chain_id),
-                        tcp_url,
-                        w3_url,
-                        evm_smart_contract_addrs["BridgeRegistry"],
-                        witness["name"],
+                        "--network-descriptor", str(eth_chain_id),
+                        "--tendermint-node", tcp_url,
+                        "--web3-provider", w3_url,
+                        "--bridge-registry-contract-address", evm_smart_contract_addrs["BridgeRegistry"],
+                        "--validator-mnemonic", witness["name"],
                         "--chain-id", "localnet",
                         "--node", tcp_url,
                         "--keyring-backend", "test",
                         "--from", witness["address"],
+                        # TODO: This shouldnt be needed, it defaults to --home value
+                        "--keyring-dir", witness["home"],
                         "--symbol-translator-file", "${workspaceFolder}/test/integration/config/symbol_translator.json",
                         "--home", witness["home"]
                     ]
