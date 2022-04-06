@@ -29,7 +29,7 @@ var (
 	PoolPrefix               = []byte{0x00} // key for storing Pools
 	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
 	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
-	RewardExecutionPrefix    = []byte{0x03}
+	RewardParamPrefix        = []byte{0x06}
 )
 
 // Generates a key for storing a specific pool

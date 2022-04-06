@@ -1,8 +1,11 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"path/filepath"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -30,9 +33,82 @@ func GetTxCmd() *cobra.Command {
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
 		GetCmdUnlockLiquidity(),
+		GetCmdUpdateRewardParams(),
+		GetCmdAddRewardPeriod(),
 	)
 
 	return clpTxCmd
+}
+func GetCmdAddRewardPeriod() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "reward-period",
+		Short: "Update reward params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			var rewardPeriods []*types.RewardPeriod
+			signer := clientCtx.GetFromAddress()
+			filePath := viper.GetString(FlagRewardPeriods)
+			file, err := filepath.Abs(filePath)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &rewardPeriods)
+			if err != nil {
+				return err
+			}
+			fmt.Println(rewardPeriods)
+			msg := types.MsgAddRewardPeriodRequest{
+				Signer:        signer.String(),
+				RewardPeriods: rewardPeriods,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsFlagRewardPeriods)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+func GetCmdUpdateRewardParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "reward-params",
+		Short: "Update reward params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			defaultMultiplier, err := sdk.NewDecFromStr(viper.GetString(FlagDefaultMultiplier))
+			if err != nil {
+				return err
+			}
+			msg := types.MsgUpdateRewardsParamsRequest{
+				Signer:                       signer.String(),
+				LiquidityRemovalCancelPeriod: viper.GetUint64(FlagLiquidityRemovalCancelPeriod),
+				LiquidityRemovalLockPeriod:   viper.GetUint64(FlagLiquidityRemovalLockPeriod),
+				DefaultMultiplier:            &defaultMultiplier,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
+	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
+	cmd.Flags().AddFlagSet(FsDefaultMultiplier)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
 
 func GetCmdCreatePool() *cobra.Command {

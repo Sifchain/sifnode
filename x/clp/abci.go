@@ -7,10 +7,10 @@ import (
 )
 
 func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
-	params := keeper.GetParams(ctx)
+	params := keeper.GetRewardsParams(ctx)
 	pools := keeper.GetPools(ctx)
 	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
-	if currentPeriod != nil {
+	if currentPeriod != nil && !currentPeriod.Allocation.IsZero() {
 		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
 		if err != nil {
 			panic(err)

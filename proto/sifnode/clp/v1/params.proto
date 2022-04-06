@@ -8,8 +8,14 @@ option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 // Params - used for initializing default parameter for clp at genesis
 message Params {
   uint64 min_create_pool_threshold = 1;
-  uint64 liquidity_removal_lock_period = 2; // in blocks
-  uint64 liquidity_removal_cancel_period = 3; // in blocks
+}
+
+message RewardParams {
+  uint64 liquidity_removal_lock_period = 1; // in blocks
+  uint64 liquidity_removal_cancel_period = 2; // in blocks
+  string default_multiplier = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
   repeated RewardPeriod reward_periods = 4;
 }
 

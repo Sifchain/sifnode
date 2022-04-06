@@ -15,7 +15,57 @@ var (
 	_ sdk.Msg = &MsgSwap{}
 	_ sdk.Msg = &MsgDecommissionPool{}
 	_ sdk.Msg = &MsgUnlockLiquidityRequest{}
+	_ sdk.Msg = &MsgUpdateRewardsParamsRequest{}
+	_ sdk.Msg = &MsgAddRewardPeriodRequest{}
 )
+
+func (m MsgAddRewardPeriodRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgAddRewardPeriodRequest) Type() string {
+	return "add_reward_period"
+}
+
+func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
+	return nil
+}
+
+func (m MsgAddRewardPeriodRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddRewardPeriodRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateRewardsParamsRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateRewardsParamsRequest) Type() string {
+	return "update_reward_params"
+}
+
+func (m MsgUpdateRewardsParamsRequest) ValidateBasic() error {
+	return nil
+}
+
+func (m MsgUpdateRewardsParamsRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateRewardsParamsRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
 	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}

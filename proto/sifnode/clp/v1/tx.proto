@@ -3,6 +3,7 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
+import "sifnode/clp/v1/params.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
@@ -14,6 +15,8 @@ service Msg {
   rpc DecommissionPool(MsgDecommissionPool)
       returns (MsgDecommissionPoolResponse);
   rpc UnlockLiquidity(MsgUnlockLiquidityRequest) returns (MsgUnlockLiquidityResponse);
+  rpc UpdateRewardsParams(MsgUpdateRewardsParamsRequest) returns (MsgUpdateRewardsParamsResponse);
+  rpc AddRewardPeriod(MsgAddRewardPeriodRequest) returns (MsgAddRewardPeriodResponse);
 }
 
 message MsgRemoveLiquidity {
@@ -108,3 +111,21 @@ message MsgUnlockLiquidityRequest {
 }
 
 message MsgUnlockLiquidityResponse {}
+
+message MsgUpdateRewardsParamsRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  uint64 liquidity_removal_lock_period = 2; // in blocks
+  uint64 liquidity_removal_cancel_period = 3; // in blocks
+  string default_multiplier = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
+}
+
+message MsgUpdateRewardsParamsResponse {}
+
+message MsgAddRewardPeriodRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  repeated RewardPeriod reward_periods = 2;
+}
+
+message MsgAddRewardPeriodResponse {}

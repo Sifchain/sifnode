@@ -10,17 +10,17 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func (keeper Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCreatePool) (*types.Pool, error) {
+func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCreatePool) (*types.Pool, error) {
 	// Defensive programming
 	if msg == nil {
 		return nil, errors.New("MsgCreatePool can not be nil")
 	}
-	extInt, ok := keeper.ParseToInt(msg.ExternalAssetAmount.String())
+	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
 
-	nativeInt, ok := keeper.ParseToInt(msg.NativeAssetAmount.String())
+	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -32,39 +32,39 @@ func (keeper Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.
 
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
 	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
-	if !keeper.bankKeeper.HasBalance(ctx, addr, externalAssetCoin) && !keeper.bankKeeper.HasBalance(ctx, addr, nativeAssetCoin) {
+	if !k.bankKeeper.HasBalance(ctx, addr, externalAssetCoin) && !k.bankKeeper.HasBalance(ctx, addr, nativeAssetCoin) {
 		return nil, types.ErrBalanceNotAvailable
 	}
 	pool := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
 	// Send coins from user to pool
-	err = keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.NewCoins(externalAssetCoin, nativeAssetCoin))
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.NewCoins(externalAssetCoin, nativeAssetCoin))
 	if err != nil {
 		return nil, err
 	}
 	// Pool creator becomes the first LP
-	err = keeper.SetPool(ctx, &pool)
+	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	return &pool, nil
 }
 
-func (keeper Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpunits sdk.Uint, lpaddress sdk.AccAddress) types.LiquidityProvider {
+func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpunits sdk.Uint, lpaddress sdk.AccAddress) types.LiquidityProvider {
 	lp := types.NewLiquidityProvider(asset, lpunits, lpaddress)
-	keeper.SetLiquidityProvider(ctx, &lp)
+	k.SetLiquidityProvider(ctx, &lp)
 
 	return lp
 }
 
-func (keeper Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
+func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
 	// Verify user has coins to add liquidiy
-	extInt, ok := keeper.ParseToInt(msg.ExternalAssetAmount.String())
+	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
 
-	nativeInt, ok := keeper.ParseToInt(msg.NativeAssetAmount.String())
+	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -85,11 +85,11 @@ func (keeper Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, p
 		return nil, err
 	}
 
-	if !keeper.bankKeeper.HasBalance(ctx, addr, coins[0]) && !keeper.bankKeeper.HasBalance(ctx, addr, coins[1]) {
+	if !k.bankKeeper.HasBalance(ctx, addr, coins[0]) && !k.bankKeeper.HasBalance(ctx, addr, coins[1]) {
 		return nil, types.ErrBalanceNotAvailable
 	}
 	// Send from user to pool
-	err = keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, coins)
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, coins)
 	if err != nil {
 		return nil, err
 	}
@@ -99,9 +99,9 @@ func (keeper Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, p
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(msg.ExternalAssetAmount)
 
 	// Create new Liquidity provider or add liquidity units
-	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
+	lp, err := k.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
 	if err != nil {
-		lp = keeper.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpUnits, addr)
+		lp = k.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpUnits, addr)
 		ctx.EventManager().EmitEvents(sdk.Events{
 			sdk.NewEvent(
 				types.EventTypeCreateLiquidityProvider,
@@ -113,38 +113,38 @@ func (keeper Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, p
 	}
 	lp.LiquidityProviderUnits = lp.LiquidityProviderUnits.Add(lpUnits)
 	// Save new pool balances
-	err = keeper.SetPool(ctx, &pool)
+	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	// Save LP
-	keeper.SetLiquidityProvider(ctx, &lp)
+	k.SetLiquidityProvider(ctx, &lp)
 	return &lp, err
 }
 
-func (keeper Keeper) RemoveLiquidityProvider(ctx sdk.Context, coins sdk.Coins, lp types.LiquidityProvider) error {
+func (k Keeper) RemoveLiquidityProvider(ctx sdk.Context, coins sdk.Coins, lp types.LiquidityProvider) error {
 	lpaddr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	if err != nil {
 		return err
 	}
 
-	err = keeper.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpaddr, coins)
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpaddr, coins)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToAddBalance, err.Error())
 	}
-	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
+	k.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	return nil
 }
 
-func (keeper Keeper) DecommissionPool(ctx sdk.Context, pool types.Pool) error {
-	err := keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
+func (k Keeper) DecommissionPool(ctx sdk.Context, pool types.Pool) error {
+	err := k.DestroyPool(ctx, pool.ExternalAsset.Symbol)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToDestroyPool, err.Error())
 	}
 	return nil
 }
 
-func (keeper Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetCoin sdk.Coin,
+func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetCoin sdk.Coin,
 	nativeAssetCoin sdk.Coin, lp types.LiquidityProvider, lpUnitsLeft, poolOriginalEB, poolOriginalNB sdk.Uint) error {
 	lpAddr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	if err != nil {
@@ -164,49 +164,49 @@ func (keeper Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalA
 		return sdkerrors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
 
-	err = keeper.SetPool(ctx, &pool)
+	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	// Send coins from pool to user
 	if !sendCoins.Empty() {
 		for _, coin := range sendCoins {
-			if !keeper.bankKeeper.HasBalance(ctx, types.GetCLPModuleAddress(), coin) {
+			if !k.bankKeeper.HasBalance(ctx, types.GetCLPModuleAddress(), coin) {
 				return types.ErrNotEnoughLiquidity
 			}
 		}
-		err = keeper.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpAddr, sendCoins)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpAddr, sendCoins)
 		if err != nil {
 			return err
 		}
 	}
 
 	if lpUnitsLeft.IsZero() {
-		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
+		k.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	} else {
 		lp.LiquidityProviderUnits = lpUnitsLeft
-		keeper.SetLiquidityProvider(ctx, &lp)
+		k.SetLiquidityProvider(ctx, &lp)
 	}
 	return nil
 }
 
-func (keeper Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.AccAddress) error {
-	if !keeper.bankKeeper.HasBalance(ctx, swapper, sentCoin) {
+func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.AccAddress) error {
+	if !k.bankKeeper.HasBalance(ctx, swapper, sentCoin) {
 		return types.ErrBalanceNotAvailable
 	}
-	err := keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.NewCoins(sentCoin))
+	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.NewCoins(sentCoin))
 	if err != nil {
 		return err
 	}
 	return nil
 
 }
-func (keeper Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
-	err := keeper.SetPool(ctx, &finalPool)
+func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
+	err := k.SetPool(ctx, &finalPool)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	sentAmountInt, ok := keeper.ParseToInt(sentAmount)
+	sentAmountInt, ok := k.ParseToInt(sentAmount)
 	if !ok {
 		return types.ErrUnableToParseInt
 	}
@@ -219,7 +219,7 @@ func (keeper Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool 
 		return err
 	}
 	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sentAmountInt)
-	err = keeper.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(sentCoin))
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(sentCoin))
 	if err != nil {
 		return err
 	}
@@ -227,6 +227,6 @@ func (keeper Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool 
 }
 
 // Use strings instead of Unit/Int in between conventions
-func (keeper Keeper) ParseToInt(nu string) (sdk.Int, bool) {
+func (k Keeper) ParseToInt(nu string) (sdk.Int, bool) {
 	return sdk.NewIntFromString(nu)
 }

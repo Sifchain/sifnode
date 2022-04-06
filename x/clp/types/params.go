@@ -50,10 +50,10 @@ func DefaultRewardsPeriod() []*RewardPeriod {
 // NewParams creates a new Params object
 func NewParams(minThreshold uint64) Params {
 	return Params{
-		MinCreatePoolThreshold:       minThreshold,
-		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
-		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
-		RewardPeriods:                DefaultRewardsPeriod(),
+		MinCreatePoolThreshold: minThreshold,
+		//LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		//LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
+		//RewardPeriods:                DefaultRewardsPeriod(),
 	}
 }
 
@@ -61,9 +61,9 @@ func NewParams(minThreshold uint64) Params {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
-		paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalLockPeriod, validateLiquidityBlockPeriod),
-		paramtypes.NewParamSetPair(KeyLiquidityRemovalCancelPeriod, &p.LiquidityRemovalCancelPeriod, validateLiquidityBlockPeriod),
-		paramtypes.NewParamSetPair(KeyRewardPeriods, &p.RewardPeriods, validateRewardPeriods),
+		//paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalLockPeriod, validateLiquidityBlockPeriod),
+		//paramtypes.NewParamSetPair(KeyLiquidityRemovalCancelPeriod, &p.LiquidityRemovalCancelPeriod, validateLiquidityBlockPeriod),
+		//paramtypes.NewParamSetPair(KeyRewardPeriods, &p.RewardPeriods, validateRewardPeriods),
 	}
 }
 
