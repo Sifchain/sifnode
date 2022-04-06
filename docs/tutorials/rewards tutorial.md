@@ -57,7 +57,7 @@ The param change proposal takes the format:
       "value": "360"
     }
   ],
-  "deposit": "10000000rowan"
+  "deposit": "10000000stake"
 }
 ```
 
