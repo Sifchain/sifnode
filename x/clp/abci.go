@@ -55,7 +55,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		currentHeight < pmtpPeriodEndBlock &&
 		currentHeight >= pmtpPeriodStartBlock {
 		k.DecrementEpochCounter(ctx)
-		k.Logger(ctx).Info(fmt.Sprintf("Finished Epoch | Epochs Left : %d ", k.GetPmtpEpoch(ctx).BlockCounter))
 		k.SetBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
 	}
 
