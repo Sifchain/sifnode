@@ -261,7 +261,7 @@ class EthereumTxWrapper:
             return txhash
         return wrapped_fn
 
-    def send_eth(self, from_addr, to_addr, amount):
+    def send_eth(self, from_addr: str, to_addr: str, amount: int):
         log.info(f"Sending {amount} wei from {from_addr} to {to_addr}...")
         tx = {"to": to_addr, "value": amount}
         txhash = self._send_raw_transaction(None, from_addr, tx)
