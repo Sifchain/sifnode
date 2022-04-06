@@ -116,7 +116,7 @@
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "44.259255568176098344",
-                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                    "pmtp_inter_policy_rate": "44.259255568176098344"
                 }
             },
             {
@@ -134,7 +134,7 @@
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "44.259255568176098344",
-                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                    "pmtp_inter_policy_rate": "44.259255568176098344"
                 }
             },
             {
@@ -152,7 +152,7 @@
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "44.259255568176098344",
-                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                    "pmtp_inter_policy_rate": "44.259255568176098344"
                 }
             }
         ]
