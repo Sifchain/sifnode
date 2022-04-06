@@ -11,8 +11,7 @@ data = json.load(codecs.open(
 policies = [
     {
         "params": {
-            "min_create_pool_threshold": 100,
-            "pmtp_period_governance_rate": 0.10,
+            "pmtp_period_governance_rate": "0.10",
             "pmtp_period_epoch_length": 1,
             "pmtp_period_start_block": 1,
             "pmtp_period_end_block": 40
@@ -24,8 +23,7 @@ policies = [
     },
     {
         "params": {
-            "min_create_pool_threshold": 100,
-            "pmtp_period_governance_rate": 0.02,
+            "pmtp_period_governance_rate": "0.02",
             "pmtp_period_epoch_length": 14400,
             "pmtp_period_start_block": 420001,
             "pmtp_period_end_block": 852000
@@ -35,10 +33,9 @@ policies = [
             "block_counter": 0
         }
     },
-        {
+    {
         "params": {
-            "min_create_pool_threshold": 100,
-            "pmtp_period_governance_rate": 0.0004,
+            "pmtp_period_governance_rate": "0.0004",
             "pmtp_period_epoch_length": 14400,
             "pmtp_period_start_block": 340021,
             "pmtp_period_end_block": 397620
@@ -48,10 +45,9 @@ policies = [
             "block_counter": 0
         }
     },
-            {
+    {
         "params": {
-            "min_create_pool_threshold": 100,
-            "pmtp_period_governance_rate": 10.0000,
+            "pmtp_period_governance_rate": "10.0000",
             "pmtp_period_epoch_length": 14400,
             "pmtp_period_start_block": 14401,
             "pmtp_period_end_block": 28800
@@ -82,6 +78,23 @@ for policy in policies:
     blockRate = pow(one + govRate, (numEpochsInPolicyPeriod / numBlocksInPolicyPeriod)) - one
 
     scenario = {
+        "create_balance": True,
+        "create_pool": True,
+        "create_lps": True,
+        "pool_asset": "ceth",
+        "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+        "native_balance": "1000000000000000000",
+        "external_balance": "1000000000000000000",
+        "native_asset_amount": "49352380611368792060339203",
+        "external_asset_amount": "1576369012576526264262",
+        "pool_units": "49352380611368792060339203",
+        "pool_asset_decimals": 18,
+        "pool_asset_permissions": [
+            1
+        ],
+        "native_asset_permissions": [
+            1
+        ],
         "params": policy["params"],
         "epoch": policy["epoch"],
         "expected_states": []
@@ -132,6 +145,6 @@ for policy in policies:
     scenarios.append(scenario)
 
 with open(os.path.join(os.path.dirname(__file__), "scenarios.json"), 'w') as json_file:
-    json.dump(scenarios, json_file)
+    json.dump(scenarios, json_file, indent=4)
 
         

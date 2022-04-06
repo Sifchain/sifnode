@@ -2,6 +2,7 @@ package clp_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -47,6 +48,7 @@ func TestScenarios(t *testing.T) {
 	}
 
 	file, err := ioutil.ReadFile("scenarios.json")
+	// file, err := ioutil.ReadFile("../../scripts/pmtp/scenarios.json")
 	require.Nil(t, err, "some error occured while reading file. Error: %s", err)
 	var scenarios Scenarios
 	err = json.Unmarshal([]byte(file), &scenarios)
@@ -54,79 +56,93 @@ func TestScenarios(t *testing.T) {
 
 	for _, tc := range scenarios {
 		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
-			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
-				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccount: tc.Address,
-					Registry: &tokenregistrytypes.Registry{
-						Entries: []*tokenregistrytypes.RegistryEntry{
-							{Denom: tc.PoolAsset, BaseDenom: tc.PoolAsset, Decimals: tc.PoolAssetDecimals, Permissions: tc.PoolAssetPermissions},
-							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: tc.NativeAssetPermissions},
+		ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+			trGs := &tokenregistrytypes.GenesisState{
+				AdminAccount: tc.Address,
+				Registry: &tokenregistrytypes.Registry{
+					Entries: []*tokenregistrytypes.RegistryEntry{
+						{Denom: tc.PoolAsset, BaseDenom: tc.PoolAsset, Decimals: tc.PoolAssetDecimals, Permissions: tc.PoolAssetPermissions},
+						{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: tc.NativeAssetPermissions},
+					},
+				},
+			}
+			bz, _ := app.AppCodec().MarshalJSON(trGs)
+			genesisState["tokenregistry"] = bz
+
+			if tc.CreateBalance {
+				balances := []banktypes.Balance{
+					{
+						Address: tc.Address,
+						Coins: sdk.Coins{
+							sdk.NewCoin(tc.PoolAsset, tc.ExternalBalance),
+							sdk.NewCoin("rowan", tc.NativeBalance),
 						},
 					},
 				}
-				bz, _ := app.AppCodec().MarshalJSON(trGs)
-				genesisState["tokenregistry"] = bz
 
-				if tc.CreateBalance {
-					balances := []banktypes.Balance{
+				bankGs := banktypes.DefaultGenesisState()
+				bankGs.Balances = append(bankGs.Balances, balances...)
+				bz, _ = app.AppCodec().MarshalJSON(bankGs)
+				genesisState["bank"] = bz
+			}
+
+			if tc.CreatePool {
+				pools := []*types.Pool{
+					{
+						ExternalAsset:        &types.Asset{Symbol: tc.PoolAsset},
+						NativeAssetBalance:   tc.NativeAssetAmount,
+						ExternalAssetBalance: tc.ExternalAssetAmount,
+						PoolUnits:            tc.PoolUnits,
+					},
+				}
+				clpGs := types.DefaultGenesisState()
+				if tc.CreateLPs {
+					lps := []*types.LiquidityProvider{
 						{
-							Address: tc.Address,
-							Coins: sdk.Coins{
-								sdk.NewCoin(tc.PoolAsset, tc.ExternalBalance),
-								sdk.NewCoin("rowan", tc.NativeBalance),
-							},
+							Asset:                    &types.Asset{Symbol: tc.PoolAsset},
+							LiquidityProviderAddress: tc.Address,
+							LiquidityProviderUnits:   tc.NativeAssetAmount,
 						},
 					}
-
-					bankGs := banktypes.DefaultGenesisState()
-					bankGs.Balances = append(bankGs.Balances, balances...)
-					bz, _ = app.AppCodec().MarshalJSON(bankGs)
-					genesisState["bank"] = bz
+					clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
 				}
-
-				if tc.CreatePool {
-					pools := []*types.Pool{
-						{
-							ExternalAsset:        &types.Asset{Symbol: tc.PoolAsset},
-							NativeAssetBalance:   tc.NativeAssetAmount,
-							ExternalAssetBalance: tc.ExternalAssetAmount,
-							PoolUnits:            tc.PoolUnits,
-						},
-					}
-					clpGs := types.DefaultGenesisState()
-					if tc.CreateLPs {
-						lps := []*types.LiquidityProvider{
-							{
-								Asset:                    &types.Asset{Symbol: tc.PoolAsset},
-								LiquidityProviderAddress: tc.Address,
-								LiquidityProviderUnits:   tc.NativeAssetAmount,
-							},
-						}
-						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
-					}
-					clpGs.Params = types.Params{
-						MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
-					}
-					clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.Address)
-					clpGs.PoolList = append(clpGs.PoolList, pools...)
-					bz, _ = app.AppCodec().MarshalJSON(clpGs)
-					genesisState["clp"] = bz
+				clpGs.Params = types.Params{
+					MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 				}
+				clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.Address)
+				clpGs.PoolList = append(clpGs.PoolList, pools...)
+				bz, _ = app.AppCodec().MarshalJSON(clpGs)
+				genesisState["clp"] = bz
+			}
 
-				return genesisState
-			})
+			return genesisState
+		})
 
-			app.ClpKeeper.SetPmtpParams(ctx, &tc.Params)
-			app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
-				PmtpPeriodBlockRate:    sdk.ZeroDec(),
-				PmtpCurrentRunningRate: sdk.ZeroDec(),
-				PmtpInterPolicyRate:    sdk.ZeroDec(),
-			})
-			app.ClpKeeper.SetPmtpEpoch(ctx, tc.Epoch)
+		app.ClpKeeper.SetPmtpParams(ctx, &tc.Params)
+		app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
+			PmtpPeriodBlockRate:    sdk.ZeroDec(),
+			PmtpCurrentRunningRate: sdk.ZeroDec(),
+			PmtpInterPolicyRate:    sdk.ZeroDec(),
+		})
+		app.ClpKeeper.SetPmtpEpoch(ctx, tc.Epoch)
 
-			for i := 0; i < len(tc.ExpectedStates); i++ {
-				for j := 0; j < 1000000; j++ {
+		// if tc.Params.PmtpPeriodStartBlock > 1 {
+		// 	ctx = ctx.WithBlockHeight(tc.Params.PmtpPeriodStartBlock - 1)
+		// } else {
+		// 	ctx = ctx.WithBlockHeight(tc.Params.PmtpPeriodStartBlock)
+		// }
+
+		for i := 0; i < len(tc.ExpectedStates); i++ {
+			name := fmt.Sprintf(
+				"pmtp_period_governance_rate=%s|pmtp_period_epoch_length=%v|pmtp_period_start_block=%v|pmtp_period_end_block=%v|height=%v",
+				tc.Params.PmtpPeriodGovernanceRate,
+				tc.Params.PmtpPeriodEpochLength,
+				tc.Params.PmtpPeriodStartBlock,
+				tc.Params.PmtpPeriodEndBlock,
+				tc.ExpectedStates[i].Height,
+			)
+			t.Run(name, func(t *testing.T) {
+				for j := 0; j < 100000; j++ {
 					ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 					clp.BeginBlocker(ctx, app.ClpKeeper)
 
@@ -143,7 +159,7 @@ func TestScenarios(t *testing.T) {
 						break
 					}
 				}
-			}
-		})
+			})
+		}
 	}
 }
