@@ -21,6 +21,7 @@ def bridge_bank_lock_eth(ctx, test_eth_account, test_sif_account, amount_to_send
 
 def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     threads_num = 2
+    ctx.w3_url = "ws://localhost:8545"
     # Create/retrieve a test ethereum account
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     nonce = 0
