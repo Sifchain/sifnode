@@ -39,7 +39,7 @@ func TestScenarios(t *testing.T) {
 		PoolAssetDecimals      int64                           `json:"pool_asset_decimals,omitempty"`
 		PoolAssetPermissions   []tokenregistrytypes.Permission `json:"pool_asset_permissions,omitempty"`
 		NativeAssetPermissions []tokenregistrytypes.Permission `json:"native_asset_permissions,omitempty"`
-		Params                 types.Params                    `json:"params,omitempty"`
+		Params                 types.PmtpParams                `json:"params,omitempty"`
 		Epoch                  types.PmtpEpoch                 `json:"epoch,omitempty"`
 		ExpectedStates         ExpectedStates                  `json:"expected_states,omitempty"`
 		Err                    error                           `json:"err,omitempty"`
@@ -105,7 +105,9 @@ func TestScenarios(t *testing.T) {
 						}
 						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
 					}
-					clpGs.Params = tc.Params
+					clpGs.Params = types.Params{
+						MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+					}
 					clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.Address)
 					clpGs.PoolList = append(clpGs.PoolList, pools...)
 					bz, _ = app.AppCodec().MarshalJSON(clpGs)
@@ -115,7 +117,7 @@ func TestScenarios(t *testing.T) {
 				return genesisState
 			})
 
-			app.ClpKeeper.SetParams(ctx, tc.Params)
+			app.ClpKeeper.SetPmtpParams(ctx, &tc.Params)
 			app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 				PmtpPeriodBlockRate:    sdk.ZeroDec(),
 				PmtpCurrentRunningRate: sdk.ZeroDec(),
@@ -126,9 +128,9 @@ func TestScenarios(t *testing.T) {
 			for i := 0; i < len(tc.ExpectedStates); i++ {
 				for j := 0; j < 1000000; j++ {
 					ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+					clp.BeginBlocker(ctx, app.ClpKeeper)
 
 					if tc.ExpectedStates[i].Height == ctx.BlockHeight() {
-						clp.BeginBlocker(ctx, app.ClpKeeper)
 						got, _ := app.ClpKeeper.GetPool(ctx, tc.PoolAsset)
 
 						tc.ExpectedStates[i].Pool.SwapPriceNative = &tc.ExpectedStates[i].SwapPriceNative

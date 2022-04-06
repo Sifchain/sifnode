@@ -232,7 +232,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 		poolAssetDecimals      int64
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
-		params                 types.Params
+		params                 types.PmtpParams
 		epoch                  types.PmtpEpoch
 		expectedStates         ExpectedStates
 		err                    error
@@ -253,8 +253,11 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			poolAssetDecimals:      18,
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			params: types.Params{
-				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+			params: types.PmtpParams{
+				PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
+				PmtpPeriodEpochLength:    1,
+				PmtpPeriodStartBlock:     1,
+				PmtpPeriodEndBlock:       40,
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 0,
@@ -263,22 +266,6 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			expectedStates: ExpectedStates{
 				{
 					height: 1,
-					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
-					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
-					pmtpRateParams: types.PmtpRateParams{
-						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
-						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.000000000000000000"),
-						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
-					},
-				},
-				{
-					height: 2,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -294,7 +281,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					},
 				},
 				{
-					height: 3,
+					height: 2,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -310,7 +297,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					},
 				},
 				{
-					height: 4,
+					height: 3,
 					pool: types.Pool{
 						ExternalAsset:        &types.Asset{Symbol: "eth"},
 						NativeAssetBalance:   sdk.NewUint(1000),
@@ -322,6 +309,22 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.331000000000000323"),
+						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
+					},
+				},
+				{
+					height: 4,
+					pool: types.Pool{
+						ExternalAsset:        &types.Asset{Symbol: "eth"},
+						NativeAssetBalance:   sdk.NewUint(1000),
+						ExternalAssetBalance: sdk.NewUint(1000),
+						PoolUnits:            sdk.NewUint(1000),
+					},
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.461176186450920973"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.681649474766067671"),
+					pmtpRateParams: types.PmtpRateParams{
+						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
+						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.464100000000000474"),
 						PmtpInterPolicyRate:    sdk.MustNewDecFromStr("0.000000000000000000"),
 					},
 				},
@@ -382,7 +385,9 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						}
 						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
 					}
-					clpGs.Params = tc.params
+					clpGs.Params = types.Params{
+						MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+					}
 					clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.address)
 					clpGs.PoolList = append(clpGs.PoolList, pools...)
 					bz, _ = app.AppCodec().MarshalJSON(clpGs)
@@ -392,7 +397,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				return genesisState
 			})
 
-			app.ClpKeeper.SetParams(ctx, tc.params)
+			app.ClpKeeper.SetPmtpParams(ctx, &tc.params)
 			app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 				PmtpPeriodBlockRate:    sdk.ZeroDec(),
 				PmtpCurrentRunningRate: sdk.ZeroDec(),
