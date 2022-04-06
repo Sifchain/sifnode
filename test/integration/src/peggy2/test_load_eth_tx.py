@@ -21,11 +21,15 @@ def bridge_bank_lock_eth(ctx, test_eth_account, test_sif_account, amount_to_send
 
 def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     threads_num = 2
-
     # Create/retrieve a test ethereum account
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-    nonce = ctx.eth.get_tx_nonce(test_eth_account)
-    print("nonce is ", nonce)
+    nonce = 0
+    conn_list = []
+    eth_list = []
+    for i in range(threads_num):
+        w3_conn = eth.web3_connect(ctx.w3_url, websocket_timeout=90)
+        conn_list.append(w3_conn)
+        eth_list.append(eth.EthereumTxWrapper(w3_conn, True))
 
     # create/retrieve a test sifchain account
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
@@ -40,11 +44,11 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     assert amount_to_send < fund_amount_eth
     threads = []
     for i in range(threads_num):
+        ctx.w3_conn = conn_list[i]
+        ctx.eth = eth_list[i]
         threads.append(threading.Thread(target=bridge_bank_lock_eth, args=(ctx, test_eth_account, test_sif_account, amount_to_send, nonce)))
         nonce = nonce + 1
-    # ctx.bridge_bank_lock_eth(test_eth_account, test_sif_account, amount_to_send)
 
-    # Broadcast transactions
     start_time = time.time()
     for t in threads:
         t.start()
@@ -62,4 +66,3 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     print("++++++ final balance is ", test_sif_account_final_balance)
     assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
     assert balance_diff[ctx.ceth_symbol] == amount_to_send
-    assert True == False
