@@ -2,9 +2,7 @@ import base64
 import json
 import time
 import grpc
-import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
-import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
-from typing import Mapping
+from typing import Mapping, Any
 from siftool import command, cosmos
 from siftool.common import *
 
@@ -28,6 +26,10 @@ def is_cosmos_native_denom(denom: str) -> bool:
     """Returns true if denom is a native cosmos token (Rowan, ibc)
     that was not imported using Peggy"""
     return not str.startswith(denom, "sifBridge")
+
+def import_generated_protobuf_sources():
+    import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
+    import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
 
 class Sifnoded:
@@ -258,7 +260,7 @@ class SifnodeClient:
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str
-    ) -> cosmos_pb.BroadcastTxResponse:
+    ):
         tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
         signed_tx = self.sign_transaction(tx, from_sif_addr)
         encoded_tx = self.encode_transaction(signed_tx)
@@ -283,7 +285,7 @@ class SifnodeClient:
         finally:
             self.cmd.rm(tmp_tx_file)
 
-    def encode_transaction(self, tx: Mapping) -> bytes:
+    def encode_transaction(self, tx: Mapping[str, Any]) -> bytes:
         tmp_file = self.cmd.mktempfile()
         try:
             self.cmd.write_text_file(tmp_file, json.dumps(tx))
@@ -300,7 +302,8 @@ class SifnodeClient:
         # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
         return grpc.insecure_channel("127.0.0.1:9090")
 
-    def broadcast_tx(self, encoded_tx) -> cosmos_pb.BroadcastTxResponse:
+    def broadcast_tx(self, encoded_tx: bytes):
+        import_generated_protobuf_sources()
         broadcast_mode = cosmos_pb.BROADCAST_MODE_ASYNC
         with self.open_grpc_channel() as channel:
             tx_stub = cosmos_pb_grpc.ServiceStub(channel)

@@ -1,6 +1,6 @@
 import time
 import threading
-from typing import List, Any
+from typing import List, Any, Iterable
 
 import siftool_path
 from siftool import eth, test_utils, cosmos
@@ -144,7 +144,7 @@ def _test_load_tx_ethbridge_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, tra
     log.debug("Transaction generation speed: {:.2f}/s".format(sum_all / (time.time() - start_time)))
 
     # Per-thread function for broadcasting transactions
-    def sif_acct_sender_fn(sif_acct, tx_stub, reqs):
+    def sif_acct_sender_fn(sif_acct: cosmos.Address, tx_stub: cosmos_tx_grpc.ServiceStub, reqs: Sequence[cosmos_tx.BroadcastTxRequest]):
         log.debug("Broadcasting {} txns from {}...".format(len(reqs), sif_acct))
         for req in reqs:
             tx_stub.BroadcastTx(req)
