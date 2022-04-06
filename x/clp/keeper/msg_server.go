@@ -38,6 +38,23 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
+	// Check to see if a policy is still running
+	if k.IsInsidePmtpWindow(ctx) {
+		return nil, types.ErrCannotStartPolicy
+	}
+	// Check to make sure new policy starts in the future so that PolicyStart from begin-block can be triggered
+	if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
+		return nil, errors.New("Start block cannot be in the past/current block")
+	}
+	// Check to see if start of new policy is not before the end of new policy
+	// This check is optional
+	if msg.PmtpPeriodStartBlock <= params.PmtpPeriodEndBlock {
+		return nil, errors.New("Policies cannot have overlaps")
+	}
+	params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
+	params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
+	params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
+
 	if !strings.EqualFold(msg.PmtpPeriodGovernanceRate, "") {
 		rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
 		if err != nil {
@@ -48,27 +65,20 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 		}
 		params.PmtpPeriodGovernanceRate = rGov
 	}
-	if msg.StartNewPolicy {
-		// Check to see if the current policy has ended
-		if ctx.BlockHeight() < params.PmtpPeriodEndBlock {
-			return nil, errors.New("A new policy can be started only after the current policy has ended")
-		}
 
-		// Check to make sure new policy starts in the future so that PolicyStart from abci.go can be triggered
-		if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
-			return nil, errors.New("Start block cannot be in the past/current block")
-		}
-
-		// Check to see if start of new policy is not before the end of new policy
-		// This check is optional
-		if msg.PmtpPeriodStartBlock <= params.PmtpPeriodEndBlock {
-			return nil, errors.New("Policies cannot have overlaps")
-		}
-		params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
-		params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
-		params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
-	}
 	k.SetPmtpParams(ctx, params)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeAddNewPmtpPolicy,
+			sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
 	return &types.MsgUpdatePmtpParamsResponse{}, nil
 }
 
@@ -81,8 +91,11 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
-	// Set Block Rate is needed
-	if !strings.EqualFold(msg.BlockRate, "") {
+	params := k.GetPmtpParams(ctx)
+	rateParams := k.GetPmtpRateParams(ctx)
+
+	// Set Block Rate is needed only if no policy is presently executing
+	if !strings.EqualFold(msg.BlockRate, "") && !k.IsInsidePmtpWindow(ctx) {
 		blockRate, err := sdk.NewDecFromStr(msg.BlockRate)
 		if err != nil {
 			return nil, err
@@ -90,13 +103,11 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 		if blockRate.IsNegative() {
 			return nil, types.ErrRateCannotBeNegative
 		}
-		k.SetPmtpBlockRate(ctx, blockRate)
+		rateParams.PmtpPeriodBlockRate = blockRate
 	}
 
-	currentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-
-	// Set Running Rate if Needed
-	if !strings.EqualFold(msg.RunningRate, "") {
+	// Set Running Rate if Needed only if no policy is presently executing
+	if !strings.EqualFold(msg.RunningRate, "") && !k.IsInsidePmtpWindow(ctx) {
 		runningRate, err := sdk.NewDecFromStr(msg.RunningRate)
 		if err != nil {
 			return nil, err
@@ -104,21 +115,34 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 		if runningRate.IsNegative() {
 			return nil, types.ErrRateCannotBeNegative
 		}
-		k.SetPmtpCurrentRunningRate(ctx, runningRate)
-		currentRunningRate = runningRate
+		rateParams.PmtpCurrentRunningRate = runningRate
 	}
-
-	// End Policy If Needed
-	if msg.EndPolicy {
-		params := k.GetPmtpParams(ctx)
+	events := sdk.EmptyEvents()
+	// End Policy If Needed , returns if not policy is presently
+	if msg.EndPolicy && k.IsInsidePmtpWindow(ctx) {
 		params.PmtpPeriodEndBlock = ctx.BlockHeight()
 		k.SetPmtpParams(ctx, params)
 		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 			EpochCounter: 0,
 			BlockCounter: 0,
 		})
-		k.SetPmtpInterPolicyRate(ctx, currentRunningRate)
+		k.SetPmtpInterPolicyRate(ctx, rateParams.PmtpCurrentRunningRate)
+		events = events.AppendEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeEndPmtpPolicy,
+				sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
+				sdk.NewAttribute(types.AttributeKeyPmtpRateParams, rateParams.String()),
+				sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+			),
+		})
 	}
+	k.SetPmtpRateParams(ctx, rateParams)
+	ctx.EventManager().EmitEvents(events)
 	return &types.MsgModifyPmtpRatesResponse{}, nil
 }
 

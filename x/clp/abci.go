@@ -34,25 +34,32 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	}
 	// default to current pmtp current running rate value
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	// Epoch counters are used to keep track of policy execution
-	// EpochCounter tracks the number of Epochs completed
-	// BlockCounter tracks the number of Blocks completed in an Epoch
-	// Manage Block Counter and Calculate R running
+
+	/*
+		Epoch counters are used to keep track of policy execution
+		EpochCounter tracks the number of Epochs left (Decrementing counter )
+		BlockCounter tracks the number of Blocks left (Decrementing counter ) in an Epoch
+	*/
+
+	// Manage Block Counter
 	if currentHeight >= pmtpPeriodStartBlock &&
 		currentHeight <= pmtpPeriodEndBlock &&
+		// TODO : Check this condition might not be needed
 		k.GetPmtpEpoch(ctx).EpochCounter > 0 {
+		// Calculate R running for policy params
 		pmtpCurrentRunningRate = k.PolicyCalculations(ctx)
+		k.DecrementBlockCounter(ctx)
 	}
 	// Manage Epoch Counter
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
 		currentHeight < pmtpPeriodEndBlock &&
-		currentHeight > pmtpPeriodStartBlock {
+		currentHeight >= pmtpPeriodStartBlock {
 		k.DecrementEpochCounter(ctx)
+		k.Logger(ctx).Info(fmt.Sprintf("Finished Epoch | Epochs Left : %d ", k.GetPmtpEpoch(ctx).BlockCounter))
 		k.SetBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
 	}
 
-	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
-		currentHeight == pmtpPeriodEndBlock {
+	if currentHeight == pmtpPeriodEndBlock {
 		// Setting it to zero to check when we start policy
 		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 			EpochCounter: 0,

@@ -34,4 +34,5 @@ var (
 	ErrAmountTooLow                    = sdkerrors.Register(ModuleName, 32, "Tx amount is too low")
 	ErrNotEnoughPermissions            = sdkerrors.Register(ModuleName, 33, "Signer does not have permissions to execute this action")
 	ErrRateCannotBeNegative            = sdkerrors.Register(ModuleName, 34, "Rate cannot be negative")
+	ErrCannotStartPolicy               = sdkerrors.Register(ModuleName, 35, "A new policy can be started only after the current policy has ended")
 )

@@ -15,8 +15,18 @@ import (
 
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	k.SetParams(ctx, data.Params)
-	k.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
+	// Initiate Pmtp
+	k.SetPmtpRateParams(ctx, types.PmtpRateParams{
+		PmtpPeriodBlockRate:    sdk.ZeroDec(),
+		PmtpCurrentRunningRate: sdk.ZeroDec(),
+		PmtpInterPolicyRate:    sdk.ZeroDec(),
+	})
+	k.SetPmtpEpoch(ctx, types.PmtpEpoch{
+		EpochCounter: 0,
+		BlockCounter: 0,
+	})
 	k.SetPmtpParams(ctx, types.GetDefaultPmtpParams())
+
 	k.SetPmtpInterPolicyRate(ctx, sdk.NewDec(0))
 	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
 		panic("AddressWhiteList must be set.")
