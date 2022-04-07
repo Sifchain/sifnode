@@ -3,7 +3,6 @@ package genesis
 import (
 	"encoding/json"
 	"fmt"
-	sifgentypes "github.com/Sifchain/sifnode/tools/sifgen/common/types"
 	"io/ioutil"
 	"time"
 
@@ -115,27 +114,6 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration
 	}
 
 	(*genesis).AppState.Gov.VotingParams.VotingPeriod = fmt.Sprintf("%v", period)
-	content, err := tmjson.Marshal(genesis)
-	if err != nil {
-		return err
-	}
-
-	if err := writeGenesis(nodeHomeDir, content); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func SetRewardsDefaults(nodeHomeDir string, rewardsPeriod []*sifgentypes.RewardPeriod, liquidityRemovalLockPeriod uint64, liquidityRemovalCancelPeriod int64) error {
-	genesis, err := readGenesis(nodeHomeDir)
-	if err != nil {
-		return err
-	}
-
-	(*genesis).AppState.CLP.Params.RewardPeriods = rewardsPeriod
-	(*genesis).AppState.CLP.Params.LiquidityRemovalLockPeriod = json.Number(fmt.Sprintf("%d", liquidityRemovalLockPeriod))
-	(*genesis).AppState.CLP.Params.LiquidityRemovalCancelPeriod = json.Number(fmt.Sprintf("%d", liquidityRemovalCancelPeriod))
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err

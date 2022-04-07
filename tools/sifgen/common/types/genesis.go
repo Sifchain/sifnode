@@ -118,10 +118,7 @@ type RewardPeriod struct {
 }
 
 type CLPParams struct {
-	MinCreatePoolThreshold       json.Number     `json:"min_create_pool_threshold"`
-	LiquidityRemovalLockPeriod   json.Number     `json:"liquidity_removal_lock_period"`
-	LiquidityRemovalCancelPeriod json.Number     `json:"liquidity_removal_cancel_period"`
-	RewardPeriods                []*RewardPeriod `json:"reward_periods"`
+	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
 }
 
 type CLP struct {
