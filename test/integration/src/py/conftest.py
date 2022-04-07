@@ -381,8 +381,8 @@ def ctx(request):
     snapshot_name = request.node.get_closest_marker("snapshot_name")
     if snapshot_name is not None:
         snapshot_name = snapshot_name.args[0]
+        logging.debug("Context setup: snapshot_name={}".format(repr(snapshot_name)))
     from siftool import test_utils
-    logging.error("Context setup: snapshot_name={}".format(repr(snapshot_name)))
     with test_utils.get_test_env_ctx() as ctx:
         yield ctx
         logging.debug("Test context cleanup")
