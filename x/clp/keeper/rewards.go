@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -18,8 +19,11 @@ func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardPara
 }
 
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
+
 	periodLength := period.EndBlock - period.StartBlock + 1
 	blockDistribution := period.Allocation.QuoUint64(periodLength)
+
+	fmt.Println("Rewards Allocation for block :", blockDistribution, periodLength, period.Allocation)
 	remaining := blockDistribution
 
 	if remaining.IsZero() || blockDistribution.IsZero() {

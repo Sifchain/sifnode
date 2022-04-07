@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -46,4 +47,31 @@ func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
 func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
+}
+
+func DefaultRewardsPeriod() []*RewardPeriod {
+	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
+	cethMultiplier := sdk.MustNewDecFromStr("1.5")
+	rewardPeriods := []*RewardPeriod{
+		{
+			Id:         "RP_1",
+			StartBlock: 1,
+			EndBlock:   12 * 60 * 24 * 7,
+			Allocation: &rp_1_allocation,
+			Multipliers: []*PoolMultiplier{{
+				Asset:      "ceth",
+				Multiplier: &cethMultiplier,
+			}},
+		},
+	}
+	return rewardPeriods
+}
+func GetDefaultRewardParams() *RewardParams {
+	zero := sdk.ZeroDec()
+	return &RewardParams{
+		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
+		DefaultMultiplier:            &zero,
+		RewardPeriods:                DefaultRewardsPeriod(),
+	}
 }

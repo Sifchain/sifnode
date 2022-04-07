@@ -3,8 +3,6 @@ package types
 import (
 	"bytes"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -29,31 +27,10 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func DefaultRewardsPeriod() []*RewardPeriod {
-	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
-	cethMultiplier := sdk.MustNewDecFromStr("1.5")
-	rewardPeriods := []*RewardPeriod{
-		{
-			Id:         "RP_1",
-			StartBlock: 1,
-			EndBlock:   12 * 60 * 24 * 7,
-			Allocation: &rp_1_allocation,
-			Multipliers: []*PoolMultiplier{{
-				Asset:      "ceth",
-				Multiplier: &cethMultiplier,
-			}},
-		},
-	}
-	return rewardPeriods
-}
-
 // NewParams creates a new Params object
 func NewParams(minThreshold uint64) Params {
 	return Params{
 		MinCreatePoolThreshold: minThreshold,
-		//LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
-		//LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
-		//RewardPeriods:                DefaultRewardsPeriod(),
 	}
 }
 
@@ -91,36 +68,6 @@ func validateLiquidityBlockPeriod(i interface{}) error {
 	_, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-	return nil
-}
-
-func validateRewardPeriods(i interface{}) error {
-	v, ok := i.([]*RewardPeriod)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-	for _, period := range v {
-		if period.Id == "" {
-			return fmt.Errorf("reward period id must be non-empty: %d", period.StartBlock)
-		}
-		if period.StartBlock < 0 {
-			return fmt.Errorf("reward period start block must be positive or zero: %d", period.StartBlock)
-		}
-		if period.EndBlock < period.StartBlock {
-			return fmt.Errorf("reward period start block must be before end block: %d %d", period.StartBlock, period.EndBlock)
-		}
-		if period.Allocation == nil || period.Allocation.IsZero() {
-			return fmt.Errorf("reward period allocation must be positive: %d", period.Allocation)
-		}
-		for _, multiplier := range period.Multipliers {
-			if multiplier.Multiplier.LTE(sdk.ZeroDec()) {
-				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
-			}
-			if multiplier.Multiplier.GT(sdk.MustNewDecFromStr("10.00")) {
-				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
-			}
-		}
 	}
 	return nil
 }

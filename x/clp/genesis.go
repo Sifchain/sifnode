@@ -15,6 +15,7 @@ import (
 
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	k.SetParams(ctx, data.Params)
+	k.SetRewardParams(ctx, types.GetDefaultRewardParams())
 	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
 		panic("AddressWhiteList must be set.")
 	}

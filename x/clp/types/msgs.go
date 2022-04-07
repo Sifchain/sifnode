@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,6 +29,25 @@ func (m MsgAddRewardPeriodRequest) Type() string {
 }
 
 func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
+	for _, period := range m.RewardPeriods {
+		if period.Id == "" {
+			return fmt.Errorf("reward period id must be non-empty: %d", period.StartBlock)
+		}
+		if period.StartBlock < 0 {
+			return fmt.Errorf("reward period start block must be positive or zero: %d", period.StartBlock)
+		}
+		if period.EndBlock < period.StartBlock {
+			return fmt.Errorf("reward period start block must be before end block: %d %d", period.StartBlock, period.EndBlock)
+		}
+		for _, multiplier := range period.Multipliers {
+			if multiplier.Multiplier.LT(sdk.ZeroDec()) {
+				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+			}
+			if multiplier.Multiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+			}
+		}
+	}
 	return nil
 }
 
@@ -52,6 +72,15 @@ func (m MsgUpdateRewardsParamsRequest) Type() string {
 }
 
 func (m MsgUpdateRewardsParamsRequest) ValidateBasic() error {
+	if m.LiquidityRemovalCancelPeriod < 0 {
+		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
+	}
+	if m.LiquidityRemovalLockPeriod < 0 {
+		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
+	}
+	if m.DefaultMultiplier.LT(sdk.ZeroDec()) {
+		return errors.Wrap(ErrInvalid, "DefaultMultiplier cannot be less than 0")
+	}
 	return nil
 }
 
