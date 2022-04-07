@@ -1,3 +1,4 @@
+import siftool_path
 from siftool import eth, test_utils, sifchain
 from siftool.common import *
 
@@ -70,8 +71,3 @@ def test_ibc_to_eth_and_back_to_sifnode_transfer_valid(ctx):
 def test_double_peg_to_eth_and_back_to_sifnode_transfer_valid(ctx):
     bridge_token_to_eth_and_back_to_sifnode_transfer_valid(ctx, double_peggy_symbol, isFirstTime=True)
     bridge_token_to_eth_and_back_to_sifnode_transfer_valid(ctx, double_peggy_symbol, isFirstTime=False)
-
-
-
-
-

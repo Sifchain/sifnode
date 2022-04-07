@@ -174,7 +174,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		"toBlockNumber", toBlockNumber)
 
 	// BlockResults API require the block number greater than zero
-	// When will this be zero?
+	// fromBlockNumber is set to 0 when entry is not found
 	if fromBlockNumber == 0 {
 		fromBlockNumber = 1
 	}
@@ -226,7 +226,11 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						// if global Sequence is less than expected, just ignore the event. it is normal to see processed Sequence coexist with expected one
 						// if global Sequence is larger than expected, it is wrong and we must miss something.
 						if cosmosMsg.GlobalSequence == globalSequence+1 {
-							instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosBurnMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
+							instrumentation.PeggyCheckpointZap(sub.SugaredLogger,
+								instrumentation.ReceiveCosmosBurnMessage,
+								zap.Reflect("cosmosMsg", cosmosMsg),
+								zap.Reflect("sub", sub),
+								"globalSequence", globalSequence)
 
 							sub.witnessSignProphecyID(txFactory, cosmosMsg)
 							// update expected global Sequence

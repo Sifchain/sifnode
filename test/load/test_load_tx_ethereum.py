@@ -1,14 +1,20 @@
-import threading
 import time
-import copy
+import threading
 
-import pytest
 import siftool_path
-from siftool.eth import NULL_ADDRESS
 from siftool import eth, test_utils, sifchain
+import siftool.cosmos  # gPRC generated stubs use "cosmos" namespace
 from siftool.common import *
-from siftool.test_utils import EnvCtx
-from typing import Iterable
+
+import cosmos.tx.v1beta1.service_pb2 as cosmos_tx
+import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
+
+
+# How to use:
+# test/integration/framework/siftool generate-python-protobuf-stubs
+# ... (be patient) ...
+# In separate window: test/integration/framework/siftool run-env
+# test/integration/framework/venv/bin/python3 test/integration/src/peggy2/test_eth_transfers_grpc.py
 
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
@@ -25,7 +31,7 @@ def bridge_bank_lock_eth(eth, bridge_bank, test_eth_account, recipient, amount_t
     txhash = eth.transact(bridge_bank.functions.lock, test_eth_account, tx_opts=tx_opts)(recipient, token_addr, amount_to_send)
     # eth.wait_for_transaction_receipt(txhash)
 
-def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
+def test_load_tx_ethereum(ctx):
     threads_num = 3
     # ctx.w3_url = "ws://localhost:8545"
     w3_url = ctx.w3_conn.provider.endpoint_uri
@@ -84,3 +90,12 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     print("++++++ final balance is ", test_sif_account_final_balance)
     assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
     assert balance_diff[ctx.ceth_symbol] == amount_to_send * threads_num
+
+
+# Enable running directly, i.e. without pytest
+if __name__ == "__main__":
+    basic_logging_setup()
+    from siftool import test_utils
+    ctx = test_utils.get_env_ctx()
+    test_load_tx_ethereum(ctx)
+

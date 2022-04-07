@@ -14,4 +14,3 @@ for p in paths:
     if not enabled:
         paths_to_add.append(p)
 sys.path.extend(paths_to_add)
-
