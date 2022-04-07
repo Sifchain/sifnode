@@ -112,6 +112,8 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 			return nil, types.ErrRateCannotBeNegative
 		}
 		rateParams.PmtpCurrentRunningRate = runningRate
+		// inter policy rate should always equal running rate between policies
+		rateParams.PmtpInterPolicyRate = runningRate
 	}
 	k.SetPmtpRateParams(ctx, rateParams)
 	events := sdk.EmptyEvents()
