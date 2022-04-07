@@ -45,7 +45,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file} .proto-gen
+install: ${smart_contract_file} go.sum .proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 install-bin: go.sum
@@ -111,7 +111,7 @@ proto-all: proto-format proto-lint .proto-gen
 
 .proto-gen: $(proto_files)
 	@echo ${DOCKER}
-	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh -x ./scripts/protocgen.sh
+	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh -x ./scripts/protocgen.sh
 	touch $@
 .PHONY: .proto-gen
 
