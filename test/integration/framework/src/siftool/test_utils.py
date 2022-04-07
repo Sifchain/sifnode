@@ -391,13 +391,13 @@ class EnvCtx:
     def tx_approve(self, token_sc, from_addr, to_addr, amount):
         return self.eth.transact(token_sc.functions.approve, from_addr)(to_addr, amount)
 
-    def tx_bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount, nonce):
+    def tx_bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount):
         recipient = sif_addr_to_evm_arg(to_sif_acct)
         bridge_bank = self.get_bridge_bank_sc()
         token_addr = eth.NULL_ADDRESS  # For "eth", otherwise use coin's address
         # Mandatory tx_opts: {"from": from_eth_acct, "gas": max_gas_required, "value": amount}
         # If "value" is missing, we get "call to non-contract"
-        tx_opts = {"value": amount, "nonce": nonce}
+        tx_opts = {"value": amount}
         return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
     def tx_bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
@@ -783,9 +783,9 @@ class EnvCtx:
                 assert self.eth.get_eth_balance(fund_from) < funder_balance_before - difference
         return address
 
-    def bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount, nonce):
+    def bridge_bank_lock_eth(self, from_eth_acct, to_sif_acct, amount):
         """ Sends ETH from Ethereum to Sifchain (lock) """
-        txhash = self.tx_bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount, nonce)
+        txhash = self.tx_bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
     def bridge_bank_lock_erc20(self, token_sc, from_eth_acct, to_sif_acct, amount):

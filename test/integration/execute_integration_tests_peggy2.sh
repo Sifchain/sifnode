@@ -17,4 +17,4 @@ function _autodetect_project_root {
 TEST_INTEGRATION_PY_DIR="$(_autodetect_project_root)/test/integration/src/peggy2"
 
 python3 -m pytest -olog_level=DEBUG -v -olog_file=/tmp/pytest-peggy2.log \
-  ${TEST_INTEGRATION_PY_DIR}/test_load_eth_tx.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_eth_transfers.py \
