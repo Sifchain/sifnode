@@ -227,3 +227,10 @@ func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.Params
 
 	return &types.ParamsRes{Params: &params}, nil
 }
+
+func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*types.RewardParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetRewardsParams(ctx)
+
+	return &types.RewardParamsRes{Params: params}, nil
+}

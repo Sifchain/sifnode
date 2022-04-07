@@ -32,4 +32,5 @@ var (
 	ErrUnableToParseInt                = sdkerrors.Register(ModuleName, 30, "Unable to parse to Int")
 	ErrReceivedAmountBelowExpected     = sdkerrors.Register(ModuleName, 31, "Unable to swap, received amount is below expected")
 	ErrAmountTooLow                    = sdkerrors.Register(ModuleName, 32, "Tx amount is too low")
+	ErrNotEnoughPermissions            = sdkerrors.Register(ModuleName, 35, "Signer does not have permissions to execute this action")
 )

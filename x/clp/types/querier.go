@@ -9,6 +9,7 @@ const (
 	QueryLPList                = "lpList"
 	QueryAllLP                 = "allLp"
 	QueryParams                = "params"
+	QueryRewardParams          = "rewardParams"
 )
 
 func NewQueryReqGetPool(symbol string) PoolReq {

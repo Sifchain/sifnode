@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,7 +16,85 @@ var (
 	_ sdk.Msg = &MsgSwap{}
 	_ sdk.Msg = &MsgDecommissionPool{}
 	_ sdk.Msg = &MsgUnlockLiquidityRequest{}
+	_ sdk.Msg = &MsgUpdateRewardsParamsRequest{}
+	_ sdk.Msg = &MsgAddRewardPeriodRequest{}
 )
+
+func (m MsgAddRewardPeriodRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgAddRewardPeriodRequest) Type() string {
+	return "add_reward_period"
+}
+
+func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
+	for _, period := range m.RewardPeriods {
+		if period.Id == "" {
+			return fmt.Errorf("reward period id must be non-empty: %d", period.StartBlock)
+		}
+		if period.StartBlock < 0 {
+			return fmt.Errorf("reward period start block must be positive or zero: %d", period.StartBlock)
+		}
+		if period.EndBlock < period.StartBlock {
+			return fmt.Errorf("reward period start block must be before end block: %d %d", period.StartBlock, period.EndBlock)
+		}
+		for _, multiplier := range period.Multipliers {
+			if multiplier.Multiplier.LT(sdk.ZeroDec()) {
+				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+			}
+			if multiplier.Multiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+			}
+		}
+	}
+	return nil
+}
+
+func (m MsgAddRewardPeriodRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddRewardPeriodRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateRewardsParamsRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateRewardsParamsRequest) Type() string {
+	return "update_reward_params"
+}
+
+func (m MsgUpdateRewardsParamsRequest) ValidateBasic() error {
+	if m.LiquidityRemovalCancelPeriod < 0 {
+		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
+	}
+	if m.LiquidityRemovalLockPeriod < 0 {
+		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
+	}
+	if m.DefaultMultiplier.LT(sdk.ZeroDec()) {
+		return errors.Wrap(ErrInvalid, "DefaultMultiplier cannot be less than 0")
+	}
+	return nil
+}
+
+func (m MsgUpdateRewardsParamsRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateRewardsParamsRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
 	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}

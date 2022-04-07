@@ -29,6 +29,8 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 			return queryAllLP(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryParams:
 			return queryParams(ctx, path[1:], req, legacyQuerierCdc, querier)
+		case types.QueryRewardParams:
+			return queryRewardParams(ctx, path[1:], req, legacyQuerierCdc, querier)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
 		}
@@ -146,6 +148,18 @@ func queryAllLP(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQue
 
 func queryParams(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) { //nolint
 	res, err := querier.GetParams(sdk.WrapSDKContext(ctx), &types.ParamsReq{})
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
+}
+
+func queryRewardParams(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) { //nolint
+	res, err := querier.GetRewardParams(sdk.WrapSDKContext(ctx), &types.RewardParamsReq{})
 	if err != nil {
 		return nil, err
 	}

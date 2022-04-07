@@ -14,12 +14,15 @@ import (
 func TestEndBlock(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	// Setup reward period
-	params := app.ClpKeeper.GetParams(ctx)
+	one := sdk.OneDec()
+	params := app.ClpKeeper.GetRewardsParams(ctx)
+	params.DefaultMultiplier = &one
+	app.ClpKeeper.SetRewardParams(ctx, params)
 	allocation := sdk.NewUintFromString("200000000000000000000000000")
 	params.RewardPeriods = []*types.RewardPeriod{
 		{Id: "Test 1", StartBlock: 1, EndBlock: 10, Allocation: &allocation},
 	}
-	app.ClpKeeper.SetParams(ctx, params)
+	app.ClpKeeper.SetRewardParams(ctx, params)
 	err := app.ClpKeeper.SetPool(ctx, &types.Pool{
 		ExternalAsset:        &types.Asset{Symbol: "atom"},
 		NativeAssetBalance:   sdk.NewUint(1000),
@@ -119,10 +122,10 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			app, ctx := test.CreateTestApp(false)
 			ctx = ctx.WithBlockHeight(tc.height)
-			params := app.ClpKeeper.GetParams(ctx)
+			params := app.ClpKeeper.GetRewardsParams(ctx)
 			params.LiquidityRemovalLockPeriod = 10
 			params.LiquidityRemovalCancelPeriod = 5
-			app.ClpKeeper.SetParams(ctx, params)
+			app.ClpKeeper.SetRewardParams(ctx, params)
 			lp := types.LiquidityProvider{
 				Asset:                    &types.Asset{Symbol: "atom"},
 				LiquidityProviderUnits:   sdk.NewUint(100),

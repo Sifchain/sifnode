@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"context"
-	"errors"
+	"github.com/pkg/errors"
+
+	"fmt"
 	"math"
 	"strconv"
 
@@ -16,6 +18,38 @@ import (
 
 type msgServer struct {
 	Keeper
+}
+
+func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpdateRewardsParamsRequest) (*types.MsgUpdateRewardsParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetRewardsParams(ctx)
+	params.LiquidityRemovalLockPeriod = msg.LiquidityRemovalLockPeriod
+	params.DefaultMultiplier = msg.DefaultMultiplier
+	params.LiquidityRemovalCancelPeriod = msg.LiquidityRemovalCancelPeriod
+	k.SetRewardParams(ctx, params)
+	return &types.MsgUpdateRewardsParamsResponse{}, err
+}
+
+func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewardPeriodRequest) (*types.MsgAddRewardPeriodResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetRewardsParams(ctx)
+	params.RewardPeriods = msg.RewardPeriods
+	k.SetRewardParams(ctx, params)
+	return &types.MsgAddRewardPeriodResponse{}, nil
 }
 
 // NewMsgServerImpl returns an implementation of the clp MsgServer interface
@@ -295,7 +329,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	// Prune pools
-	params := k.GetParams(ctx)
+	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 
 	//Calculate amount to withdraw

@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params) *types.RewardPeriod {
+func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardParams) *types.RewardPeriod {
 	height := uint64(ctx.BlockHeight())
 	for _, period := range params.RewardPeriods {
 		if height >= period.StartBlock && height <= period.EndBlock {
@@ -17,9 +17,11 @@ func (keeper Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params types.Params
 	return nil
 }
 
-func (keeper Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
+func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
+
 	periodLength := period.EndBlock - period.StartBlock + 1
 	blockDistribution := period.Allocation.QuoUint64(periodLength)
+
 	remaining := blockDistribution
 
 	if remaining.IsZero() || blockDistribution.IsZero() {
@@ -28,43 +30,44 @@ func (keeper Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.Rewar
 
 	totalDepth := sdk.ZeroDec()
 	for _, pool := range pools {
-		m := keeper.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
 		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
 	}
-
-	for _, pool := range pools {
-		m := keeper.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
-		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
-		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
-		poolDistributionDec := weight.Mul(blockDistributionDec)
-		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
-		if poolDistribution.GT(remaining) {
-			poolDistribution = remaining
-		}
-		if poolDistribution.IsZero() {
-			continue
-		}
-		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
-		err := keeper.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
-		if err != nil {
-			return err
-		}
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
-		remaining = remaining.Sub(poolDistribution)
-		err = keeper.SetPool(ctx, pool)
-		if err != nil {
-			return err
+	if totalDepth.GT(sdk.ZeroDec()) {
+		for _, pool := range pools {
+			m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
+			weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
+			blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
+			poolDistributionDec := weight.Mul(blockDistributionDec)
+			poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
+			if poolDistribution.GT(remaining) {
+				poolDistribution = remaining
+			}
+			if poolDistribution.IsZero() {
+				continue
+			}
+			rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
+			err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
+			if err != nil {
+				return err
+			}
+			pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
+			remaining = remaining.Sub(poolDistribution)
+			err = k.SetPool(ctx, pool)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (keeper Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
+func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
 	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
 	// Reduce liquidity in one or more unlock records.
 	// Remove unlock records with zero units remaining.
-	params := keeper.GetParams(ctx)
+	params := k.GetRewardsParams(ctx)
 	currentHeight := ctx.BlockHeight()
 	lockPeriod := params.LiquidityRemovalLockPeriod
 
@@ -105,12 +108,12 @@ func (keeper Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityPro
 	}
 
 	lp.Unlocks = records
-	keeper.SetLiquidityProvider(ctx, &lp)
+	k.SetLiquidityProvider(ctx, &lp)
 
 	return nil
 }
 
-func (keeper Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
+func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider, lockPeriod, cancelPeriod uint64) {
 	currentHeight := ctx.BlockHeight()
 
 	var write bool
@@ -139,11 +142,11 @@ func (keeper Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProv
 	}
 	if write {
 		lp.Unlocks = records
-		keeper.SetLiquidityProvider(ctx, lp)
+		k.SetLiquidityProvider(ctx, lp)
 	}
 }
 
-func (keeper Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
+func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod, ctx sdk.Context) sdk.Dec {
 	for _, m := range period.Multipliers {
 		if strings.EqualFold(asset, m.Asset) {
 			if m.Multiplier != nil && !m.Multiplier.IsNil() {
@@ -152,5 +155,5 @@ func (keeper Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod)
 		}
 	}
 
-	return sdk.NewDec(1)
+	return *k.GetRewardsParams(ctx).DefaultMultiplier
 }

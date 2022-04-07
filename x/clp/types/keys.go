@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -17,9 +18,8 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol      = "rowan"
-	PoolThrehold      = "1000000000000000000"
-	PoolUnitsMinValue = "1000000000"
+	NativeSymbol = "rowan"
+	PoolThrehold = "1000000000000000000"
 
 	MaxSymbolLength = 71
 	MaxWbasis       = 10000
@@ -29,7 +29,7 @@ var (
 	PoolPrefix               = []byte{0x00} // key for storing Pools
 	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
 	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
-	RewardExecutionPrefix    = []byte{0x03}
+	RewardParamPrefix        = []byte{0x06}
 )
 
 // Generates a key for storing a specific pool
@@ -46,4 +46,31 @@ func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
 func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
+}
+
+func DefaultRewardsPeriod() []*RewardPeriod {
+	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
+	cethMultiplier := sdk.MustNewDecFromStr("1.5")
+	rewardPeriods := []*RewardPeriod{
+		{
+			Id:         "RP_1",
+			StartBlock: 1,
+			EndBlock:   12 * 60 * 24 * 7,
+			Allocation: &rp_1_allocation,
+			Multipliers: []*PoolMultiplier{{
+				Asset:      "ceth",
+				Multiplier: &cethMultiplier,
+			}},
+		},
+	}
+	return rewardPeriods
+}
+func GetDefaultRewardParams() *RewardParams {
+	zero := sdk.ZeroDec()
+	return &RewardParams{
+		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
+		DefaultMultiplier:            &zero,
+		RewardPeriods:                DefaultRewardsPeriod(),
+	}
 }
