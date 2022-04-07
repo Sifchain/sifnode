@@ -16,14 +16,14 @@ First, intialize a local node from the `sifnode` root directory:
 echo "$(jq '.app_state.gov.voting_params.voting_period = "60s"' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json
 ```
 3. start the chain: `make run`
+4. Change the working directory `cd test/scenarios/clp`
 
 ## Create rowan/ceth liquidity pool
 
 1. Create pool: `make create-pool`
 2. Check pool: `make show-pool`
 
-Notice how the native balance increases. This is the rewards program at work as
-we will see in the next section.
+Notice how the native balance increases during the course of this test. This is the rewards program at work.
 
 ## Show CLP parameters
 
@@ -129,6 +129,8 @@ We have to wait 60s for the voting period to elapse, and the proposal to be
 accepted.
 
 4. Check params again: `make show-params`
+
+You will notice that `liquidity_removal_cancel_period: "720"` and `liquidity_removal_lock_period: "10"`
 
 ## Withdraw Liquidity
 
