@@ -15,3 +15,10 @@ def ctx(request):
     with test_utils.get_test_env_ctx() as ctx:
         yield ctx
         logging.debug("Test context cleanup")
+
+
+@pytest.fixture(autouse=True)
+def disable_web3_logging():
+    logging.getLogger("eth").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+    logging.getLogger("web3").setLevel(logging.WARNING)
