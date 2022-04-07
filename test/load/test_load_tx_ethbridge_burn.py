@@ -3,6 +3,7 @@ import threading
 from typing import List, Any, Iterable
 
 import siftool_path
+from load_testing import *
 from siftool import eth, test_utils, cosmos
 from siftool.common import *
 
@@ -20,24 +21,6 @@ import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
 # python (probably from grpc):
 # E0326 11:41:27.125006742  636480 fork_posix.cc:70]           Fork support is only compatible with the epoll1 and poll polling strategies
 # Maybe: https://github.com/grpc/grpc/issues/29044
-
-
-# Fees for sifchain -> sifchain transactions, paid by the sender.
-sif_tx_fee_in_rowan = 1 * 10**17
-
-# Fees for "ethbridge burn" transactions. Determined experimentally
-sif_tx_burn_fee_in_rowan = 100000
-sif_tx_burn_fee_in_ceth = 1
-
-# There seems to be a minimum amount of rowan that a sif account needs to own in order for the bridge to do an
-# "ethbridge burn". This amount does not seem to be actually used. For example, if you fund the account just with
-# sif_tx_burn_fee_in_rowan, We observed that if you try to fund sif accounts with just the exact amount of rowan
-# needed to pay fees (sif_tx_burn_fee_in_rowan * number_of_transactions), the bridge would stop forwarding after
-# approx. 200 transactions, and you would see in sifnoded logs this message:
-# {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"...","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
-sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
-
-rowan = "rowan"
 
 
 def test_load_tx_ethbridge_burn_short(ctx: test_utils.EnvCtx):
@@ -164,8 +147,8 @@ def _test_load_tx_ethbridge_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, tra
 
     # Get initial balances. The balances should not have been changed by now.
     sif_balances_before = [ctx.get_sifchain_balance(x) for x in sif_accts]  # Assert == sif_balances_initial (for rowan)
-    assert all([ctx.eth.get_eth_balance(eth_accts[i]) == eth_balances_initial[i] for i in range(n_eth)])
-    assert all([ctx.get_sifchain_balance(sif_accts[i])[rowan] == sif_balances_before[i][rowan] for i in range(n_sif)])
+    assert all(ctx.eth.get_eth_balance(eth_accts[i]) == eth_balances_initial[i] for i in range(n_eth))
+    assert all(ctx.get_sifchain_balance(sif_accts[i])[rowan] == sif_balances_before[i][rowan] for i in range(n_sif))
 
     # Broadcast transactions
     start_time = time.time()
@@ -223,17 +206,6 @@ def _test_load_tx_ethbridge_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, tra
         expected_balance = sum_eth[i] * amount_per_tx
         actual_balance = ctx.eth.get_eth_balance(eth_acct)
         assert expected_balance == actual_balance
-
-
-def choose_from(distr: List[Any], rnd: random.Random = None) -> int:
-    r = (rnd.randrange(sum(distr))) if rnd else 0
-    s = 0
-    for i, di in enumerate(distr):
-        s += di
-        if r < s:
-            distr[i] -= 1
-            return i
-    assert False
 
 
 # Enable running directly, i.e. without pytest
