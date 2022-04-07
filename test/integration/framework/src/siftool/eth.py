@@ -87,7 +87,7 @@ class EthereumTxWrapper:
 
     def _get_private_key(self, addr):
         addr = web3.Web3.toChecksumAddress(addr)
-        if not addr in self.private_keys:
+        if addr not in self.private_keys:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
@@ -261,7 +261,7 @@ class EthereumTxWrapper:
             return txhash
         return wrapped_fn
 
-    def send_eth(self, from_addr, to_addr, amount):
+    def send_eth(self, from_addr: str, to_addr: str, amount: int):
         log.info(f"Sending {amount} wei from {from_addr} to {to_addr}...")
         tx = {"to": to_addr, "value": amount}
         txhash = self._send_raw_transaction(None, from_addr, tx)
