@@ -3,10 +3,11 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -112,6 +113,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 		}
 		rateParams.PmtpCurrentRunningRate = runningRate
 	}
+	k.SetPmtpRateParams(ctx, rateParams)
 	events := sdk.EmptyEvents()
 	// End Policy If Needed , returns if not policy is presently
 	if msg.EndPolicy && k.IsInsidePmtpWindow(ctx) {
@@ -136,7 +138,6 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 			),
 		})
 	}
-	k.SetPmtpRateParams(ctx, rateParams)
 	ctx.EventManager().EmitEvents(events)
 	return &types.MsgModifyPmtpRatesResponse{}, nil
 }
