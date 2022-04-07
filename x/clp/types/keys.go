@@ -67,7 +67,7 @@ func DefaultRewardsPeriod() []*RewardPeriod {
 	return rewardPeriods
 }
 func GetDefaultRewardParams() *RewardParams {
-	zero := sdk.ZeroDec()
+	zero := sdk.OneDec()
 	return &RewardParams{
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,

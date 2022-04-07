@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -23,7 +22,6 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	periodLength := period.EndBlock - period.StartBlock + 1
 	blockDistribution := period.Allocation.QuoUint64(periodLength)
 
-	fmt.Println("Rewards Allocation for block :", blockDistribution, periodLength, period.Allocation)
 	remaining := blockDistribution
 
 	if remaining.IsZero() || blockDistribution.IsZero() {
@@ -32,12 +30,12 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 
 	totalDepth := sdk.ZeroDec()
 	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
 		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
 	}
 
 	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
 		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
 		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
 		poolDistributionDec := weight.Mul(blockDistributionDec)
@@ -147,7 +145,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 	}
 }
 
-func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
+func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod, ctx sdk.Context) sdk.Dec {
 	for _, m := range period.Multipliers {
 		if strings.EqualFold(asset, m.Asset) {
 			if m.Multiplier != nil && !m.Multiplier.IsNil() {
@@ -156,5 +154,5 @@ func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.
 		}
 	}
 
-	return sdk.NewDec(1)
+	return *k.GetRewardsParams(ctx).DefaultMultiplier
 }

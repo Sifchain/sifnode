@@ -29,8 +29,7 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 	multiplierDec1 := sdk.MustNewDecFromStr("0.5")
 	multiplierDec2 := sdk.MustNewDecFromStr("1.5")
 	allocations := sdk.NewUintFromString("2000000000000000000")
-	keeper.SetParams(ctx, types.Params{
-		MinCreatePoolThreshold:       types.DefaultMinCreatePoolThreshold,
+	keeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
 		RewardPeriods: []*types.RewardPeriod{{

@@ -50,9 +50,13 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 
 	app.ClpKeeper.SetParams(ctx, types.Params{
-		MinCreatePoolThreshold:       types.DefaultMinCreatePoolThreshold,
+		MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+	})
+	zero := sdk.OneDec()
+	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
+		DefaultMultiplier:            &zero,
 		RewardPeriods:                nil,
 	})
 	return ctx, app
