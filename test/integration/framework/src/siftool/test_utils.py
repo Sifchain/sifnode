@@ -620,13 +620,12 @@ class EnvCtx:
         while True:
             new_balances = self.get_sifchain_balance(sif_addr)
             delta = cosmos.balance_sub(new_balances, old_balances)
-            should_return = False
             if expected_balance is not None:
-                should_return |= cosmos.balance_equal(new_balances)
+                should_return = cosmos.balance_equal(new_balances)
             elif min_changes is not None:
-                should_return |= cosmos.balance_exceeds(delta, min_changes)
+                should_return = cosmos.balance_exceeds(delta, min_changes)
             else:
-                should_return |= not cosmos.balance_zero(delta)
+                should_return = not cosmos.balance_zero(delta)
             if should_return:
                 return new_balances
             now = time.time()
