@@ -121,7 +121,7 @@ func GetCmdAssets(queryRoute string) *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			lpAddress := args[1]
+			lpAddress := args[0]
 
 			assetReq := types.AssetListReq{
 				LpAddress: lpAddress,
