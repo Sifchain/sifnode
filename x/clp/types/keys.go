@@ -18,9 +18,8 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol      = "rowan"
-	PoolThrehold      = "1000000000000000000"
-	PoolUnitsMinValue = "1000000000"
+	NativeSymbol = "rowan"
+	PoolThrehold = "1000000000000000000"
 
 	MaxSymbolLength = 71
 	MaxWbasis       = 10000
@@ -67,7 +66,7 @@ func DefaultRewardsPeriod() []*RewardPeriod {
 	return rewardPeriods
 }
 func GetDefaultRewardParams() *RewardParams {
-	zero := sdk.OneDec()
+	zero := sdk.ZeroDec()
 	return &RewardParams{
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,

@@ -14,7 +14,10 @@ import (
 func TestEndBlock(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	// Setup reward period
+	one := sdk.OneDec()
 	params := app.ClpKeeper.GetRewardsParams(ctx)
+	params.DefaultMultiplier = &one
+	app.ClpKeeper.SetRewardParams(ctx, params)
 	allocation := sdk.NewUintFromString("200000000000000000000000000")
 	params.RewardPeriods = []*types.RewardPeriod{
 		{Id: "Test 1", StartBlock: 1, EndBlock: 10, Allocation: &allocation},

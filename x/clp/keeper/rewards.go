@@ -33,29 +33,30 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
 		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
 	}
-
-	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
-		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
-		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
-		poolDistributionDec := weight.Mul(blockDistributionDec)
-		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
-		if poolDistribution.GT(remaining) {
-			poolDistribution = remaining
-		}
-		if poolDistribution.IsZero() {
-			continue
-		}
-		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
-		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
-		if err != nil {
-			return err
-		}
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
-		remaining = remaining.Sub(poolDistribution)
-		err = k.SetPool(ctx, pool)
-		if err != nil {
-			return err
+	if totalDepth.GT(sdk.ZeroDec()) {
+		for _, pool := range pools {
+			m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period, ctx)
+			weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
+			blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
+			poolDistributionDec := weight.Mul(blockDistributionDec)
+			poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
+			if poolDistribution.GT(remaining) {
+				poolDistribution = remaining
+			}
+			if poolDistribution.IsZero() {
+				continue
+			}
+			rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
+			err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
+			if err != nil {
+				return err
+			}
+			pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
+			remaining = remaining.Sub(poolDistribution)
+			err = k.SetPool(ctx, pool)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
