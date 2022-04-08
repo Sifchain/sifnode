@@ -139,9 +139,6 @@ message MsgUpdateRewardsParamsRequest {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   uint64 liquidity_removal_lock_period = 2; // in blocks
   uint64 liquidity_removal_cancel_period = 3; // in blocks
-  string default_multiplier = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
-  ];
 }
 
 message MsgUpdateRewardsParamsResponse {}

@@ -90,7 +90,6 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 				return err
 			}
 			signer := clientCtx.GetFromAddress()
-			defaultMultiplier, err := sdk.NewDecFromStr(viper.GetString(FlagDefaultMultiplier))
 			if err != nil {
 				return err
 			}
@@ -98,7 +97,6 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 				Signer:                       signer.String(),
 				LiquidityRemovalCancelPeriod: viper.GetUint64(FlagLiquidityRemovalCancelPeriod),
 				LiquidityRemovalLockPeriod:   viper.GetUint64(FlagLiquidityRemovalLockPeriod),
-				DefaultMultiplier:            &defaultMultiplier,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -108,7 +106,6 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
-	cmd.Flags().AddFlagSet(FsDefaultMultiplier)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

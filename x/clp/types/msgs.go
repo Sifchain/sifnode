@@ -49,6 +49,12 @@ func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
 				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
 			}
 		}
+		if period.DefaultMultiplier.LT(sdk.ZeroDec()) {
+			return fmt.Errorf("default should be less than 0 |multiplier : %s", period.DefaultMultiplier.String())
+		}
+		if period.DefaultMultiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+			return fmt.Errorf("default multiplier should be greater than 10 | multiplier : %s", period.DefaultMultiplier.String())
+		}
 	}
 	return nil
 }
@@ -79,9 +85,6 @@ func (m MsgUpdateRewardsParamsRequest) ValidateBasic() error {
 	}
 	if m.LiquidityRemovalLockPeriod < 0 {
 		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
-	}
-	if m.DefaultMultiplier.LT(sdk.ZeroDec()) {
-		return errors.Wrap(ErrInvalid, "DefaultMultiplier cannot be less than 0")
 	}
 	return nil
 }
