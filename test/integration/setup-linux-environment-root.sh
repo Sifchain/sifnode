@@ -36,3 +36,8 @@ curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compo
 # install go
 wget -O /tmp/go.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+
+
+# install geth
+sudo add-apt-repository -y ppa:ethereum/ethereum && sudo apt-get update && sudo apt-get install ethereum
+
