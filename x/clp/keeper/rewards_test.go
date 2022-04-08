@@ -20,7 +20,7 @@ func TestEndBlock(t *testing.T) {
 	app.ClpKeeper.SetRewardParams(ctx, params)
 	allocation := sdk.NewUintFromString("200000000000000000000000000")
 	params.RewardPeriods = []*types.RewardPeriod{
-		{Id: "Test 1", StartBlock: 1, EndBlock: 10, Allocation: &allocation},
+		{RewardPeriodId: "Test 1", RewardPeriodStartBlock: 1, RewardPeriodEndBlock: 10, RewardPeriodAllocation: &allocation},
 	}
 	app.ClpKeeper.SetRewardParams(ctx, params)
 	err := app.ClpKeeper.SetPool(ctx, &types.Pool{
