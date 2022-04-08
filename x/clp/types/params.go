@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -60,14 +61,6 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	}
 	if v == 0 {
 		return fmt.Errorf("min create pool threshold must be positive: %d", v)
-	}
-	return nil
-}
-
-func validateLiquidityBlockPeriod(i interface{}) error {
-	_, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	return nil
 }

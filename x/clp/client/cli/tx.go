@@ -107,9 +107,9 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
 	cmd.Flags().AddFlagSet(FsDefaultMultiplier)
-	cmd.MarkFlagRequired(FlagLiquidityRemovalCancelPeriod)
-	cmd.MarkFlagRequired(FlagLiquidityRemovalLockPeriod)
-	cmd.MarkFlagRequired(FlagDefaultMultiplier)
+	_ = cmd.MarkFlagRequired(FlagLiquidityRemovalCancelPeriod)
+	_ = cmd.MarkFlagRequired(FlagLiquidityRemovalLockPeriod)
+	_ = cmd.MarkFlagRequired(FlagDefaultMultiplier)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
