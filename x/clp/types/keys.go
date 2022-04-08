@@ -79,16 +79,10 @@ func GetDefaultRewardParams() *RewardParams {
 }
 
 func GetDefaultPmtpParams() *PmtpParams {
-	//return &PmtpParams{
-	//	PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
-	//	PmtpPeriodEpochLength:    14440,
-	//	PmtpPeriodStartBlock:     211,
-	//	PmtpPeriodEndBlock:       72210,
-	//}
 	return &PmtpParams{
-		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
-		PmtpPeriodEpochLength:    1,
-		PmtpPeriodStartBlock:     1,
-		PmtpPeriodEndBlock:       1000,
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.0010"),
+		PmtpPeriodEpochLength:    14440,
+		PmtpPeriodStartBlock:     211,
+		PmtpPeriodEndBlock:       72210,
 	}
 }
