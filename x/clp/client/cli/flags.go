@@ -27,6 +27,10 @@ const (
 	FlagPmtpPeriodStartBlock         = "pmtp_start"
 	FlagPmtpPeriodEndBlock           = "pmtp_end"
 	FlagNewPolicy                    = "newPolicy"
+	FlagInflation                    = "inflation"
+	FlagInflationMax                 = "inflationMax"
+	FlagInflationMin                 = "inflationMin"
+	FlagAnnualProvisions             = "annualProvision"
 )
 
 // common flagsets to add to various functions
@@ -53,6 +57,10 @@ var (
 	FsPmtpPeriodStartBlock         = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagPmtpPeriodEndBlock       = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagNewPolicy                = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagInflation                = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagInflationMax             = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagInflationMin             = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagAnnualProvisions         = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -75,9 +83,12 @@ func init() {
 	FsPmtpPeriodStartBlock.String(FlagPmtpPeriodStartBlock, "", "Modify pmtp start block")
 	FsFlagPmtpPeriodEndBlock.String(FlagPmtpPeriodEndBlock, "", "Modify pmtp end block")
 	FsFlagNewPolicy.String(FlagNewPolicy, "", "Set a new policy / Modify existing policy")
-
 	FsLiquidityRemovalLockPeriod.String(FlagLiquidityRemovalLockPeriod, "", "Lock Period")
 	FsLiquidityRemovalCancelPeriod.String(FlagLiquidityRemovalCancelPeriod, "", "Unlock Period")
 	FsDefaultMultiplier.String(FlagDefaultMultiplier, "", "Pool Multiplier")
 	FsFlagRewardPeriods.String(FlagRewardPeriods, "", "Path to Json File containing reward periods")
+	FsFlagInflation.String(FlagInflation, "", "Inflation")
+	FsFlagInflationMax.String(FlagInflationMax, "", "Inflation Max")
+	FsFlagInflationMin.String(FlagInflationMin, "", "Inflation Min")
+	FsFlagAnnualProvisions.String(FlagAnnualProvisions, "", "Annual Provisions")
 }

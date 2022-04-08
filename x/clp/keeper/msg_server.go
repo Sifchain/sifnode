@@ -22,6 +22,29 @@ type msgServer struct {
 	Keeper
 }
 
+func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.MsgUpdateStakingRewardParams) (*types.MsgUpdateStakingRewardParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.mintKeeper.GetParams(ctx)
+	params.InflationMin = msg.InflationMin
+	params.InflationMax = msg.InflationMax
+
+	minter := k.mintKeeper.GetMinter(ctx)
+	minter.AnnualProvisions = msg.AnnualProvisions
+	minter.Inflation = msg.Inflation
+
+	k.mintKeeper.SetParams(ctx, params)
+	k.mintKeeper.SetMinter(ctx, minter)
+	return &types.MsgUpdateStakingRewardParamsResponse{}, err
+
+}
+
 func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpdateRewardsParamsRequest) (*types.MsgUpdateRewardsParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)

@@ -37,6 +37,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdAddRewardPeriod(),
 		GetCmdModifyPmtpRates(),
 		GetCmdUpdatePmtpParams(),
+		GetCmdUpdateStakingRewards(),
 	)
 
 	return clpTxCmd
@@ -316,6 +317,49 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsBlockRate)
 	cmd.Flags().AddFlagSet(FsRunningRate)
 	cmd.Flags().AddFlagSet(FsEndCurrentPolicy)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdUpdateStakingRewards() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "staking-rewards",
+		Short: "Update params to modify staking rewards",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgUpdateStakingRewardParams{
+				Signer:           signer.String(),
+				Inflation:        sdk.MustNewDecFromStr(viper.GetString(FlagInflation)),
+				InflationMax:     sdk.MustNewDecFromStr(viper.GetString(FlagInflationMax)),
+				InflationMin:     sdk.MustNewDecFromStr(viper.GetString(FlagInflationMin)),
+				AnnualProvisions: sdk.MustNewDecFromStr(viper.GetString(FlagAnnualProvisions)),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsFlagInflation)
+	cmd.Flags().AddFlagSet(FsFlagInflationMax)
+	cmd.Flags().AddFlagSet(FsFlagInflationMin)
+	cmd.Flags().AddFlagSet(FsFlagAnnualProvisions)
+	if err := cmd.MarkFlagRequired(FlagInflation); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagInflationMax); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagInflationMin); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagAnnualProvisions); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

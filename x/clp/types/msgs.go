@@ -20,7 +20,32 @@ var (
 	_ sdk.Msg = &MsgAddRewardPeriodRequest{}
 	_ sdk.Msg = &MsgModifyPmtpRates{}
 	_ sdk.Msg = &MsgUpdatePmtpParams{}
+	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 )
+
+func (m MsgUpdateStakingRewardParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateStakingRewardParams) Type() string {
+	return "update_staking_reward"
+}
+
+func (m MsgUpdateStakingRewardParams) ValidateBasic() error {
+	return nil
+}
+
+func (m MsgUpdateStakingRewardParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateStakingRewardParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
 
 func (m MsgAddRewardPeriodRequest) Route() string {
 	return RouterKey

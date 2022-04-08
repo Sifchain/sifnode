@@ -344,6 +344,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
 	// register the staking hooks
