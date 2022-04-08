@@ -1,10 +1,10 @@
 # CLP Withdrawal Scenario
 
-This purpose of this demo is to walk through a scenario of various attempts to
-withdraw liquidity from a liquidity pool. We will see what happens when we 
-attempt to withdraw liquidity before requesting it to be unlocked, and before
-the unlocking period expires. We will also see how to submit a governance 
-proposal to change the unlocking period. 
+The purpose of this demo is to go through various attempts at withdrawing 
+liquidity from a liquidity pool. We will see what happens when we attempt to 
+withdraw liquidity before it is fully unlocked. We will see how to send an 
+unocking request, and what happens if we try to withdraw before the unlocking
+period expires. We will also see how to update the reward parameters.
 
 ## Setup
 
@@ -31,9 +31,9 @@ Notice how the native balance increases during the course of this test. This is 
 
 ```
 params:
+  default_multiplier: "0.000000000000000000"
   liquidity_removal_cancel_period: "518400"
   liquidity_removal_lock_period: "120960"
-  min_create_pool_threshold: "100"
   reward_periods:
   - allocation: "10000000000000000000000"
     end_block: "120960"
@@ -116,27 +116,36 @@ before being able to withdraw our unlocked liquidity.
 ## Change Locking Period
 
 Let us try to reduce the locking period so that we don't have to wait until 
-block 121753. The proposal in `scripts/prop.json` sets the locking period to 10
-blocks.
+block 121753. We do this by submitting a special transaction from the admin 
+account:
 
-1. Submit Proposal: `make submit-proposal`
+1. Submit parameter change transaction: `make change-params`
 
-2. Vote `yes` to pass proposal: `make vote`
-
-3. Check proposal status: `make show-proposal`
-
-We have to wait 60s for the voting period to elapse, and the proposal to be
-accepted.
-
-4. Check params again: `make show-params`
+2. Check params again: `make show-params`
 
 You will notice that `liquidity_removal_cancel_period: "720"` and `liquidity_removal_lock_period: "10"`
 
 ## Withdraw Liquidity
 
+Now we only have to wait 10 blocks before being able to remove liquidity.
+
 1. Try removing liquidity again: `make remove-liquidity`
 
 2. Show status of liquidity provider: `make show-lp`
+
+```
+external_asset_balance: "1000000000000000000"
+height: "92"
+liquidity_provider:
+  asset:
+    symbol: ceth
+  liquidity_provider_address: sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd
+  liquidity_provider_units: "1000000000000000000"
+  unlocks:
+  - request_height: "64"
+    units: "0"
+native_asset_balance: "3273478835978835953"
+```
 
 Note that our liquidity units have dropped from 2*10^18 to 1*10^18 and the
 unlock request is fully consumed.

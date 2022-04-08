@@ -5,7 +5,7 @@ show-pool:
 	sifnoded q clp pool ceth
 
 show-params:
-	sifnoded q clp params
+	sifnoded q clp reward-params
 
 remove-liquidity:
 	./scripts/remove_liquidity.sh
@@ -16,11 +16,8 @@ show-lp:
 unlock-liquidity:
 	./scripts/unlock_liquidity.sh
 	
-submit-proposal:
-	./scripts/submit_proposal.sh
-
-view-proposal:
-	sifnoded q gov proposal 1
+change-params:
+	./scripts/change_params.sh
 
 vote:
 	./scripts/vote.sh
