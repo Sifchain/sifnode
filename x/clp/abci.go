@@ -2,13 +2,14 @@ package clp
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"strconv"
-	"time"
 )
 
 func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
@@ -16,7 +17,7 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 	params := keeper.GetRewardsParams(ctx)
 	pools := keeper.GetPools(ctx)
 	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
-	if currentPeriod != nil && !currentPeriod.Allocation.IsZero() {
+	if currentPeriod != nil && !currentPeriod.RewardPeriodAllocation.IsZero() {
 		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
 		if err != nil {
 			panic(err)

@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -51,38 +52,40 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	return append(LiquidityProviderPrefix, key...)
 }
 
-func DefaultRewardsPeriod() []*RewardPeriod {
-	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
-	cethMultiplier := sdk.MustNewDecFromStr("1.5")
-	rewardPeriods := []*RewardPeriod{
-		{
-			Id:         "RP_1",
-			StartBlock: 1,
-			EndBlock:   12 * 60 * 24 * 7,
-			Allocation: &rp_1_allocation,
-			Multipliers: []*PoolMultiplier{{
-				Asset:      "ceth",
-				Multiplier: &cethMultiplier,
-			}},
-		},
-	}
-	return rewardPeriods
-}
+// TODO remove
+// func DefaultRewardsPeriod() []*RewardPeriod {
+// 	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
+// 	cethMultiplier := sdk.MustNewDecFromStr("1.5")
+// 	rewardPeriods := []*RewardPeriod{
+// 		{
+// 			RewardPeriodId:         "RP_1",
+// 			RewardPeriodStartBlock: 1,
+// 			RewardPeriodEndBlock:   12 * 60 * 24 * 7,
+// 			RewardPeriodAllocation: &rp_1_allocation,
+// 			RewardPeriodPoolMultipliers: []*PoolMultiplier{{
+// 				PoolMultiplierAsset: "ceth",
+// 				Multiplier:          &cethMultiplier,
+// 			}},
+// 		},
+// 	}
+// 	return rewardPeriods
+// }
+
 func GetDefaultRewardParams() *RewardParams {
 	zero := sdk.ZeroDec()
 	return &RewardParams{
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
 		DefaultMultiplier:            &zero,
-		RewardPeriods:                DefaultRewardsPeriod(),
+		RewardPeriods:                nil,
 	}
 }
 
 func GetDefaultPmtpParams() *PmtpParams {
 	return &PmtpParams{
-		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.0010"),
-		PmtpPeriodEpochLength:    14440,
-		PmtpPeriodStartBlock:     211,
-		PmtpPeriodEndBlock:       72210,
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.0"),
+		PmtpPeriodEpochLength:    0,
+		PmtpPeriodStartBlock:     0,
+		PmtpPeriodEndBlock:       0,
 	}
 }

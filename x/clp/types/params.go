@@ -3,14 +3,13 @@ package types
 import (
 	"bytes"
 	"fmt"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Default parameter namespace
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
-	DefaultPmtpStartBlock         int64  = 211
-	DefaultPmtpEndBlock           int64  = 72210
 )
 
 // Parameter store keys
