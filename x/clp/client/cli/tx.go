@@ -42,7 +42,7 @@ func GetTxCmd() *cobra.Command {
 func GetCmdAddRewardPeriod() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reward-period",
-		Short: "Update reward params",
+		Short: "Update reward periods",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -107,7 +107,11 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
 	cmd.Flags().AddFlagSet(FsDefaultMultiplier)
+	cmd.MarkFlagRequired(FlagLiquidityRemovalCancelPeriod)
+	cmd.MarkFlagRequired(FlagLiquidityRemovalLockPeriod)
+	cmd.MarkFlagRequired(FlagDefaultMultiplier)
 	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }
 

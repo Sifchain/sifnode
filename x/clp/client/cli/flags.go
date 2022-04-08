@@ -15,9 +15,9 @@ const (
 	FlagAsymmetry                    = "asymmetry"
 	FlagAmount                       = "sentAmount"
 	FlagMinimumReceivingAmount       = "minReceivingAmount"
-	FlagLiquidityRemovalLockPeriod   = "lockPeriod"
-	FlagLiquidityRemovalCancelPeriod = "cancelPeriod"
-	FlagDefaultMultiplier            = "defaultMultiplier"
+	FlagLiquidityRemovalLockPeriod   = "lock-period"
+	FlagLiquidityRemovalCancelPeriod = "cancel-period"
+	FlagDefaultMultiplier            = "default-multiplier"
 	FlagRewardPeriods                = "path"
 )
 
@@ -51,8 +51,8 @@ func init() {
 	FsReceivedAssetSymbol.String(FlagReceivedAssetSymbol, "", "Symbol for Received Asset")
 	FsAmount.String(FlagAmount, "", "Sent amount")
 	FsMinReceivingAmount.String(FlagMinimumReceivingAmount, "", "Min threshold for receiving amount")
-	FsLiquidityRemovalLockPeriod.String(FlagLiquidityRemovalLockPeriod, "", "Lock Period")
-	FsLiquidityRemovalCancelPeriod.String(FlagLiquidityRemovalCancelPeriod, "", "Unlock Period")
-	FsDefaultMultiplier.String(FlagDefaultMultiplier, "", "Pool Multiplier")
+	FsLiquidityRemovalLockPeriod.String(FlagLiquidityRemovalLockPeriod, "", "Liquidity removal lock period (blocks)")
+	FsLiquidityRemovalCancelPeriod.String(FlagLiquidityRemovalCancelPeriod, "", "Liquidity removal cancellation period (blocks)")
+	FsDefaultMultiplier.String(FlagDefaultMultiplier, "", "Default pool multiplier for rewards")
 	FsFlagRewardPeriods.String(FlagRewardPeriods, "", "Path to Json File containing reward periods")
 }
