@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -94,4 +96,28 @@ func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Ass
 		return sdk.Dec{}, false
 	}
 	return k.GetNormalizationFactor(registryEntry.Decimals)
+}
+
+func (k Keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.AdminAccountStorePrefix
+	store.Set(key, k.cdc.MustMarshal(&gogotypes.BytesValue{Value: adminAccount}))
+}
+
+func (k Keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
+	account := k.GetAdminAccount(ctx)
+	if account == nil {
+		return false
+	}
+	return bytes.Equal(account, adminAccount)
+}
+
+func (k Keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.AdminAccountStorePrefix
+	bz := store.Get(key)
+	acc := gogotypes.BytesValue{}
+	k.cdc.MustUnmarshal(bz, &acc)
+	adminAccount = sdk.AccAddress(acc.Value)
+	return adminAccount
 }

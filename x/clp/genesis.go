@@ -28,6 +28,15 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 	k.SetPmtpParams(ctx, types.GetDefaultPmtpParams())
 
 	k.SetPmtpInterPolicyRate(ctx, sdk.NewDec(0))
+
+	if data.AdminAccount != "" {
+		addr, err := sdk.AccAddressFromBech32(data.AdminAccount)
+		if err != nil {
+			panic(err)
+		}
+		k.SetAdminAccount(ctx, addr)
+	}
+
 	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
 		panic("AddressWhiteList must be set.")
 	}
@@ -74,6 +83,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 		AddressWhitelist:   wl,
 		PoolList:           poolList,
 		LiquidityProviders: liquidityProviders,
+		AdminAccount:       keeper.GetAdminAccount(ctx).String(),
 	}
 }
 

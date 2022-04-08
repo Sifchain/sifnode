@@ -39,5 +39,8 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 			panic(err)
 		}
 	}
+	// SET ADMIN ACCOUNT
+	// m.keeper.SetAdminAccount()
+
 	return nil
 }

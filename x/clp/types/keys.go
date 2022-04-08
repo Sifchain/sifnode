@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -32,6 +33,7 @@ var (
 	PmtpRateParamsPrefix     = []byte{0x03} // Key to store the Pmtp rate params
 	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
 	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
+	AdminAccountStorePrefix  = []byte{0x06} // Key to store the admin account
 )
 
 // Generates a key for storing a specific pool

@@ -35,7 +35,7 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.Keeper.IsAdminAccount(ctx, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
@@ -84,7 +84,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.Keeper.IsAdminAccount(ctx, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
