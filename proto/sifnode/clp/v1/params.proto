@@ -13,9 +13,6 @@ message Params {
 message RewardParams {
   uint64 liquidity_removal_lock_period = 1; // in blocks
   uint64 liquidity_removal_cancel_period = 2; // in blocks
-  string reward_period_default_multiplier = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
-  ];
   repeated RewardPeriod reward_periods = 4;
 }
 
@@ -53,6 +50,9 @@ message RewardPeriod {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint"
   ];
   repeated PoolMultiplier reward_period_pool_multipliers = 5;
+  string reward_period_default_multiplier = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
 }
 
 message PoolMultiplier {

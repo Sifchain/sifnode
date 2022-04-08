@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -72,11 +71,9 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 // }
 
 func GetDefaultRewardParams() *RewardParams {
-	zero := sdk.ZeroDec()
 	return &RewardParams{
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
-		DefaultMultiplier:            &zero,
 		RewardPeriods:                nil,
 	}
 }
