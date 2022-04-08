@@ -37,3 +37,30 @@ now calling the following commands should display all the available pools in loc
 ```
 ./pools.sh
 ```
+
+# Test localnet using Sifgen
+
+Setup the node with `sifgen`
+
+```
+sifgen node create sifchain-1 sifnode1 "connect rocket hat athlete kind fall auction measure wage father bridge tackle midnight athlete benefit faculty shove okay win entire reveal kit era truly" \
+--admin-clp-addresses="sif1mxv2xmhm9r25cdxpwp4n43fd98t8xz97mg6xyt|sif1rkl3p87fanf8srn44lp9xrxx8smtux4mfjhwf2" \
+--admin-oracle-address=sif1mxv2xmhm9r25cdxpwp4n43fd98t8xz97mg6xyt \
+--standalone --with-cosmovisor
+```
+
+Setup cosmovisor:
+
+```
+export DAEMON_NAME=sifnoded
+export DAEMON_HOME=$HOME/.sifnoded
+export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
+export DAEMON_RESTART_AFTER_UPGRADE=true
+export UNSAFE_SKIP_BACKUP=true
+```
+
+Start the localnet chain:
+
+```
+cosmovisor start --rpc.laddr tcp://0.0.0.0:26657
+```
