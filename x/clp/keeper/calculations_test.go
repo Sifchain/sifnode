@@ -1263,7 +1263,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		name                   string
 		toRowan                bool
 		adjustExternalToken    bool
-		X, x, Y                sdk.Uint
+		X, x, Y, y             sdk.Uint
 		normalizationFactor    sdk.Dec
 		pmtpCurrentRunningRate sdk.Dec
 		err                    error
@@ -1277,6 +1277,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
+			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
 		},
 		{
@@ -1287,14 +1288,59 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
+			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
+		},
+		{
+			name:                   "x=0, X=0, Y=0",
+			toRowan:                true,
+			normalizationFactor:    sdk.NewDec(1),
+			adjustExternalToken:    false,
+			X:                      sdk.NewUint(0),
+			x:                      sdk.NewUint(0),
+			Y:                      sdk.NewUint(0),
+			y:                      sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
+		{
+			name:                   "x=1, X=1, Y=1",
+			toRowan:                true,
+			normalizationFactor:    sdk.NewDec(1),
+			adjustExternalToken:    false,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(1),
+			y:                      sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
+		{
+			name:                   "x=1, X=1, Y=4",
+			toRowan:                true,
+			normalizationFactor:    sdk.NewDec(1),
+			adjustExternalToken:    false,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(4),
+			y:                      sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
+		{
+			name:                   "x=1, X=1, Y=4, nf=10",
+			toRowan:                true,
+			normalizationFactor:    sdk.NewDec(10),
+			adjustExternalToken:    false,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(4),
+			y:                      sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := clpkeeper.CalcSwapResult(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+			y, err := clpkeeper.CalcSwapResult(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -1305,6 +1351,8 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+
+			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
 }

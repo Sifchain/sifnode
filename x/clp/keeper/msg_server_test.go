@@ -224,12 +224,15 @@ func TestMsgServer_Swap(t *testing.T) {
 		createPool             bool
 		createLPs              bool
 		poolAsset              string
+		decimals               int64
 		address                string
 		nativeBalance          sdk.Int
 		externalBalance        sdk.Int
 		nativeAssetAmount      sdk.Uint
 		externalAssetAmount    sdk.Uint
 		poolUnits              sdk.Uint
+		nativeBalanceEnd       sdk.Int
+		externalBalanceEnd     sdk.Int
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		msg                    *types.MsgSwap
@@ -256,6 +259,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:    false,
 			createLPs:     false,
 			poolAsset:     "eth",
+			decimals:      18,
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -271,6 +275,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:    false,
 			createLPs:     false,
 			poolAsset:     "eth",
+			decimals:      18,
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -286,6 +291,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:           false,
 			createLPs:            false,
 			poolAsset:            "eth",
+			decimals:             18,
 			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
@@ -302,12 +308,15 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:             true,
 			createLPs:              true,
 			poolAsset:              "eth",
+			decimals:               18,
 			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(1000),
 			externalAssetAmount:    sdk.NewUint(1000),
 			poolUnits:              sdk.NewUint(1000),
+			nativeBalanceEnd:       sdk.NewInt(10001),
+			externalBalanceEnd:     sdk.NewInt(9999),
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgSwap{
@@ -317,7 +326,6 @@ func TestMsgServer_Swap(t *testing.T) {
 				SentAmount:         sdk.NewUint(1),
 				MinReceivingAmount: sdk.NewUint(1),
 			},
-			errString: errors.New("Unable to swap, received amount is below expected"),
 		},
 		{
 			name:                   "received amount below expected",
@@ -325,12 +333,15 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:             true,
 			createLPs:              true,
 			poolAsset:              "eth",
+			decimals:               18,
 			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			nativeBalance:          sdk.NewInt(10000),
 			externalBalance:        sdk.NewInt(10000),
 			nativeAssetAmount:      sdk.NewUint(1000),
 			externalAssetAmount:    sdk.NewUint(1000),
 			poolUnits:              sdk.NewUint(1000),
+			nativeBalanceEnd:       sdk.NewInt(10083),
+			externalBalanceEnd:     sdk.NewInt(9900),
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgSwap{
@@ -340,7 +351,31 @@ func TestMsgServer_Swap(t *testing.T) {
 				SentAmount:         sdk.NewUint(100),
 				MinReceivingAmount: sdk.NewUint(1),
 			},
-			errString: errors.New("0rowan is smaller than 41rowan: insufficient funds: Unable to swap"),
+		},
+		{
+			name:                   "correct amount when external asset has twenty decimals",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "decvar",
+			decimals:               20,
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10),
+			externalBalance:        sdk.NewInt(10),
+			nativeAssetAmount:      sdk.NewUint(400),
+			externalAssetAmount:    sdk.NewUint(100),
+			poolUnits:              sdk.NewUint(100),
+			nativeBalanceEnd:       sdk.NewInt(14),
+			externalBalanceEnd:     sdk.NewInt(9),
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "decvar"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(1),
+				MinReceivingAmount: sdk.NewUint(0),
+			},
 		},
 	}
 
@@ -352,7 +387,7 @@ func TestMsgServer_Swap(t *testing.T) {
 					AdminAccount: tc.address,
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
-							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
+							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.decimals, Permissions: tc.poolAssetPermissions},
 							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: tc.nativeAssetPermissions},
 						},
 					},
@@ -361,12 +396,23 @@ func TestMsgServer_Swap(t *testing.T) {
 				genesisState["tokenregistry"] = bz
 
 				if tc.createBalance {
+					externalCLP, _ := sdk.NewIntFromString(tc.externalAssetAmount.String())
+					nativeCLP, _ := sdk.NewIntFromString(tc.nativeAssetAmount.String())
+					clpAddrs := app.AccountKeeper.GetModuleAddress("clp").String()
+
 					balances := []banktypes.Balance{
 						{
 							Address: tc.address,
 							Coins: sdk.Coins{
 								sdk.NewCoin(tc.poolAsset, tc.externalBalance),
 								sdk.NewCoin("rowan", tc.nativeBalance),
+							},
+						},
+						{
+							Address: clpAddrs,
+							Coins: sdk.Coins{
+								sdk.NewCoin(tc.poolAsset, externalCLP),
+								sdk.NewCoin("rowan", nativeCLP),
 							},
 						},
 					}
@@ -409,7 +455,7 @@ func TestMsgServer_Swap(t *testing.T) {
 				return genesisState
 			})
 
-			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(1))
+			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
 
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
@@ -424,6 +470,35 @@ func TestMsgServer_Swap(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+
+			sentAssetBalanceRequest := banktypes.QueryBalanceRequest{
+				Address: tc.address,
+				Denom:   tc.msg.SentAsset.Symbol,
+			}
+
+			sentAssetBalanceResponse, err := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &sentAssetBalanceRequest)
+			if err != nil {
+				t.Fatalf("err: %v", err)
+			}
+
+			sentAssetBalance := sentAssetBalanceResponse.Balance.Amount
+
+			require.Equal(t, tc.externalBalanceEnd.String(), sentAssetBalance.String())
+
+			nativeAssetBalanceRequest := banktypes.QueryBalanceRequest{
+				Address: tc.address,
+				Denom:   "rowan",
+			}
+
+			nativeAssetBalanceResponse, err := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &nativeAssetBalanceRequest)
+			if err != nil {
+				t.Fatalf("err: %v", err)
+			}
+
+			nativeAssetBalance := nativeAssetBalanceResponse.Balance.Amount
+
+			require.Equal(t, tc.nativeBalanceEnd.String(), nativeAssetBalance.String())
+
 		})
 	}
 }
