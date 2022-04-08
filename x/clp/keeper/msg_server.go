@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
-	"github.com/pkg/errors"
 
 	"fmt"
 	"math"

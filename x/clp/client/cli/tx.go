@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -124,19 +123,19 @@ func GetCmdCreatePool() *cobra.Command {
 				return err
 			}
 
-			flags := cmd.Flags()
+			f := cmd.Flags()
 
-			assetSymbol, err := flags.GetString(FlagAssetSymbol)
+			assetSymbol, err := f.GetString(FlagAssetSymbol)
 			if err != nil {
 				return err
 			}
 
-			externalAmount, err := flags.GetString(FlagExternalAssetAmount)
+			externalAmount, err := f.GetString(FlagExternalAssetAmount)
 			if err != nil {
 				return err
 			}
 
-			nativeAmount, err := flags.GetString(FlagNativeAssetAmount)
+			nativeAmount, err := f.GetString(FlagNativeAssetAmount)
 			if err != nil {
 				return err
 			}

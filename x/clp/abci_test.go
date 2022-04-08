@@ -1,12 +1,16 @@
 package clp_test
 
 import (
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -48,17 +52,7 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 			},
 		}},
 	})
-	"testing"
-
-	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/Sifchain/sifnode/x/clp/test"
-	"github.com/Sifchain/sifnode/x/clp/types"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/stretchr/testify/require"
-)
+}
 
 func TestBeginBlocker(t *testing.T) {
 	testcases := []struct {
