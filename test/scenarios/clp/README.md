@@ -11,12 +11,8 @@ period expires. We will also see how to update the reward parameters.
 First, intialize a local node from the `sifnode` root directory:
 
 1. Initialize the local chain: `make init`
-2. Decrease the governance voting period time before first start;
-```bash
-echo "$(jq '.app_state.gov.voting_params.voting_period = "60s"' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json
-```
-3. start the chain: `make run`
-4. Change the working directory `cd test/scenarios/clp`
+2. start the chain: `make run`
+3. Change the working directory `cd test/scenarios/clp`
 
 ## Create rowan/ceth liquidity pool
 
