@@ -31,21 +31,22 @@ var _ types.MsgServer = msgServer{}
 
 func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	response := &types.MsgUpdatePmtpParamsResponse{}
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
-		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
 	// Check to see if a policy is still running
 	if k.IsInsidePmtpWindow(ctx) {
-		return nil, types.ErrCannotStartPolicy
+		return response, types.ErrCannotStartPolicy
 	}
 	// Check to make sure new policy starts in the future so that PolicyStart from begin-block can be triggered
 	if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
-		return nil, errors.New("Start block cannot be in the past/current block")
+		return response, errors.New("Start block cannot be in the past/current block")
 	}
 	params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
 	params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
@@ -54,10 +55,7 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	if !strings.EqualFold(msg.PmtpPeriodGovernanceRate, "") {
 		rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
 		if err != nil {
-			return nil, err
-		}
-		if rGov.IsNegative() {
-			return nil, types.ErrRateCannotBeNegative
+			return response, err
 		}
 		params.PmtpPeriodGovernanceRate = rGov
 	}
@@ -80,12 +78,13 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 
 func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPmtpRates) (*types.MsgModifyPmtpRatesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	response := &types.MsgModifyPmtpRatesResponse{}
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
-		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
 	rateParams := k.GetPmtpRateParams(ctx)
@@ -94,10 +93,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if !strings.EqualFold(msg.BlockRate, "") && !k.IsInsidePmtpWindow(ctx) {
 		blockRate, err := sdk.NewDecFromStr(msg.BlockRate)
 		if err != nil {
-			return nil, err
-		}
-		if blockRate.IsNegative() {
-			return nil, types.ErrRateCannotBeNegative
+			return response, err
 		}
 		rateParams.PmtpPeriodBlockRate = blockRate
 	}
@@ -106,10 +102,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if !strings.EqualFold(msg.RunningRate, "") && !k.IsInsidePmtpWindow(ctx) {
 		runningRate, err := sdk.NewDecFromStr(msg.RunningRate)
 		if err != nil {
-			return nil, err
-		}
-		if runningRate.IsNegative() {
-			return nil, types.ErrRateCannotBeNegative
+			return response, err
 		}
 		rateParams.PmtpCurrentRunningRate = runningRate
 		// inter policy rate should always equal running rate between policies
@@ -141,7 +134,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 		})
 	}
 	ctx.EventManager().EmitEvents(events)
-	return &types.MsgModifyPmtpRatesResponse{}, nil
+	return response, nil
 }
 
 func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommissionPool) (*types.MsgDecommissionPoolResponse, error) {
