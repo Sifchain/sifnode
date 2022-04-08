@@ -1,6 +1,8 @@
 package clp_test
 
 import (
+	"testing"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
@@ -11,7 +13,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestEndBlocker(t *testing.T) {
@@ -37,17 +38,17 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
 		RewardPeriods: []*types.RewardPeriod{{
-			Id:         "1",
-			StartBlock: 0,
-			EndBlock:   2,
-			Allocation: &allocations,
-			Multipliers: []*types.PoolMultiplier{{
-				Asset:      "cdash",
-				Multiplier: &multiplierDec1,
+			RewardPeriodId:         "1",
+			RewardPeriodStartBlock: 0,
+			RewardPeriodEndBlock:   2,
+			RewardPeriodAllocation: &allocations,
+			RewardPeriodPoolMultipliers: []*types.PoolMultiplier{{
+				PoolMultiplierAsset: "cdash",
+				Multiplier:          &multiplierDec1,
 			},
 				{
-					Asset:      "ceth",
-					Multiplier: &multiplierDec2,
+					PoolMultiplierAsset: "ceth",
+					Multiplier:          &multiplierDec2,
 				},
 			},
 		}},

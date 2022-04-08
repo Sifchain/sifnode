@@ -10,7 +10,7 @@ import (
 func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardParams) *types.RewardPeriod {
 	height := uint64(ctx.BlockHeight())
 	for _, period := range params.RewardPeriods {
-		if height >= period.StartBlock && height <= period.EndBlock {
+		if height >= period.RewardPeriodStartBlock && height <= period.RewardPeriodEndBlock {
 			return period
 		}
 	}
@@ -19,8 +19,8 @@ func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardPara
 
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
 
-	periodLength := period.EndBlock - period.StartBlock + 1
-	blockDistribution := period.Allocation.QuoUint64(periodLength)
+	periodLength := period.RewardPeriodEndBlock - period.RewardPeriodStartBlock + 1
+	blockDistribution := period.RewardPeriodAllocation.QuoUint64(periodLength)
 
 	remaining := blockDistribution
 
@@ -147,13 +147,13 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 }
 
 func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
-	for _, m := range period.Multipliers {
-		if strings.EqualFold(asset, m.Asset) {
+	for _, m := range period.RewardPeriodPoolMultipliers {
+		if strings.EqualFold(asset, m.PoolMultiplierAsset) {
 			if m.Multiplier != nil && !m.Multiplier.IsNil() {
 				return *m.Multiplier
 			}
 		}
 	}
 
-	return *period.DefaultMultiplier
+	return *period.RewardPeriodDefaultMultiplier
 }

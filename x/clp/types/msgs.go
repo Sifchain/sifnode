@@ -2,8 +2,9 @@ package types
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -32,28 +33,28 @@ func (m MsgAddRewardPeriodRequest) Type() string {
 
 func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
 	for _, period := range m.RewardPeriods {
-		if period.Id == "" {
-			return fmt.Errorf("reward period id must be non-empty: %d", period.StartBlock)
+		if period.RewardPeriodId == "" {
+			return fmt.Errorf("reward period id must be non-empty: %d", period.RewardPeriodStartBlock)
 		}
-		if period.StartBlock < 0 {
-			return fmt.Errorf("reward period start block must be positive or zero: %d", period.StartBlock)
+		if period.RewardPeriodStartBlock < 0 {
+			return fmt.Errorf("reward period start block must be positive or zero: %d", period.RewardPeriodStartBlock)
 		}
-		if period.EndBlock < period.StartBlock {
-			return fmt.Errorf("reward period start block must be before end block: %d %d", period.StartBlock, period.EndBlock)
+		if period.RewardPeriodEndBlock < period.RewardPeriodStartBlock {
+			return fmt.Errorf("reward period start block must be before end block: %d %d", period.RewardPeriodStartBlock, period.RewardPeriodEndBlock)
 		}
-		for _, multiplier := range period.Multipliers {
+		for _, multiplier := range period.RewardPeriodPoolMultipliers {
 			if multiplier.Multiplier.LT(sdk.ZeroDec()) {
-				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.PoolMultiplierAsset, multiplier.Multiplier.String())
 			}
 			if multiplier.Multiplier.GT(sdk.MustNewDecFromStr("10.00")) {
-				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.Asset, multiplier.Multiplier.String())
+				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.PoolMultiplierAsset, multiplier.Multiplier.String())
 			}
 		}
-		if period.DefaultMultiplier.LT(sdk.ZeroDec()) {
-			return fmt.Errorf("default should be less than 0 |multiplier : %s", period.DefaultMultiplier.String())
+		if period.RewardPeriodDefaultMultiplier.LT(sdk.ZeroDec()) {
+			return fmt.Errorf("default should be less than 0 |multiplier : %s", period.RewardPeriodDefaultMultiplier.String())
 		}
-		if period.DefaultMultiplier.GT(sdk.MustNewDecFromStr("10.00")) {
-			return fmt.Errorf("default multiplier should be greater than 10 | multiplier : %s", period.DefaultMultiplier.String())
+		if period.RewardPeriodDefaultMultiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+			return fmt.Errorf("default multiplier should be greater than 10 | multiplier : %s", period.RewardPeriodDefaultMultiplier.String())
 		}
 	}
 	return nil
