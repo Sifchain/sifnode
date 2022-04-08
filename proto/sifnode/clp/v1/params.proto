@@ -19,6 +19,32 @@ message RewardParams {
   repeated RewardPeriod reward_periods = 4;
 }
 
+
+// These params are non-governable and are calculated on chain
+message PmtpRateParams {
+    string pmtp_period_block_rate = 2 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
+    string pmtp_current_running_rate = 3 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
+    string pmtp_inter_policy_rate = 4 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
+}
+
+message PmtpParams {
+    string pmtp_period_governance_rate = 1 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
+    int64 pmtp_period_epoch_length = 2;
+    int64 pmtp_period_start_block = 3;
+    int64 pmtp_period_end_block = 4;
+}
 message RewardPeriod {
   string id = 1;
   uint64 start_block = 2;

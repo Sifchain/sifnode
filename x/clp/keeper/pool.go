@@ -52,6 +52,7 @@ func (k Keeper) ExistsPool(ctx sdk.Context, symbol string) bool {
 	return k.Exists(ctx, key)
 }
 
+// GetPools Use GetPoolsPaginated for RPC queries
 func (k Keeper) GetPools(ctx sdk.Context) []*types.Pool {
 	var poolList []*types.Pool
 	iterator := k.GetPoolsIterator(ctx)

@@ -37,6 +37,10 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 		getLpListHandler(cliCtx),
 	).Methods("GET")
 	r.HandleFunc(
+		"/clp/getPmtpParams",
+		getPmtpParamsHandler(cliCtx),
+	).Methods("GET")
+	r.HandleFunc(
 		"/clp/params",
 		getParamsHandler(cliCtx),
 	).Methods("GET")
@@ -262,6 +266,26 @@ func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getPmtpParamsHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPmtpParams)
+
+		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}

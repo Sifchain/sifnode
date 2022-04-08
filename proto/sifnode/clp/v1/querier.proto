@@ -44,6 +44,9 @@ service Query {
   rpc GetRewardParams(RewardParamsReq) returns (RewardParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/reward_params";
   };
+  rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
+  };
 }
 
 message PoolReq {
@@ -151,4 +154,12 @@ message RewardParamsReq {}
 
 message RewardParamsRes {
   RewardParams params = 1;
+}
+message PmtpParamsReq {}
+
+message PmtpParamsRes {
+  sifnode.clp.v1.PmtpParams params = 1;
+  sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
+  sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
+  int64 height = 4;
 }

@@ -8,16 +8,14 @@ import (
 
 // Default parameter namespace
 const (
-	DefaultParamspace                    = ModuleName
 	DefaultMinCreatePoolThreshold uint64 = 100
+	DefaultPmtpStartBlock         int64  = 211
+	DefaultPmtpEndBlock           int64  = 72210
 )
 
 // Parameter store keys
 var (
-	KeyMinCreatePoolThreshold       = []byte("MinCreatePoolThreshold")
-	KeyLiquidityRemovalLockPeriod   = []byte("LiquidityRemovalLockPeriod")
-	KeyLiquidityRemovalCancelPeriod = []byte("LiquidityRemovalCancelPeriod")
-	KeyRewardPeriods                = []byte("RewardPeriods")
+	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -38,19 +36,21 @@ func NewParams(minThreshold uint64) Params {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
-		//paramtypes.NewParamSetPair(KeyLiquidityRemovalLockPeriod, &p.LiquidityRemovalLockPeriod, validateLiquidityBlockPeriod),
-		//paramtypes.NewParamSetPair(KeyLiquidityRemovalCancelPeriod, &p.LiquidityRemovalCancelPeriod, validateLiquidityBlockPeriod),
-		//paramtypes.NewParamSetPair(KeyRewardPeriods, &p.RewardPeriods, validateRewardPeriods),
 	}
 }
 
 // DefaultParams defines the parameters for this module
 func DefaultParams() Params {
-	return NewParams(DefaultMinCreatePoolThreshold)
+	return Params{
+		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
+	}
 }
 
 func (p Params) Validate() error {
-	return validateMinCreatePoolThreshold(p.MinCreatePoolThreshold)
+	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
+		return err
+	}
+	return nil
 }
 
 func validateMinCreatePoolThreshold(i interface{}) error {
@@ -60,14 +60,6 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	}
 	if v == 0 {
 		return fmt.Errorf("min create pool threshold must be positive: %d", v)
-	}
-	return nil
-}
-
-func validateLiquidityBlockPeriod(i interface{}) error {
-	_, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	return nil
 }

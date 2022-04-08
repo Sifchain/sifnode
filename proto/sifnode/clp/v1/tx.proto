@@ -17,6 +17,8 @@ service Msg {
   rpc UnlockLiquidity(MsgUnlockLiquidityRequest) returns (MsgUnlockLiquidityResponse);
   rpc UpdateRewardsParams(MsgUpdateRewardsParamsRequest) returns (MsgUpdateRewardsParamsResponse);
   rpc AddRewardPeriod(MsgAddRewardPeriodRequest) returns (MsgAddRewardPeriodResponse);
+  rpc ModifyPmtpRates(MsgModifyPmtpRates) returns (MsgModifyPmtpRatesResponse);
+  rpc UpdatePmtpParams(MsgUpdatePmtpParams) returns (MsgUpdatePmtpParamsResponse);
 }
 
 message MsgRemoveLiquidity {
@@ -72,6 +74,27 @@ message MsgAddLiquidity {
 }
 
 message MsgAddLiquidityResponse {}
+
+
+message MsgModifyPmtpRates {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string block_rate = 2 ;
+  string running_rate = 3 ;
+  bool end_policy = 4 ;
+}
+
+message MsgModifyPmtpRatesResponse {}
+
+message MsgUpdatePmtpParams {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string pmtp_period_governance_rate = 2;
+  int64 pmtp_period_epoch_length = 3;
+  int64 pmtp_period_start_block = 4;
+  int64 pmtp_period_end_block = 5;
+}
+message MsgUpdatePmtpParamsResponse {}
+
+
 
 message MsgSwap {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];

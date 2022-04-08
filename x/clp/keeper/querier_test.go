@@ -320,6 +320,24 @@ func TestQueryAllLPs(t *testing.T) {
 	assert.Equal(t, []*types.LiquidityProvider{&lp}, lpRes.LiquidityProviders)
 }
 
+func TestQueryPmtpParams(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+	keeper := app.ClpKeeper
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+	query.Path = ""
+	query.Data = nil
+	resBz, err := querier(ctx, []string{types.QueryPmtpParams}, query)
+	assert.NoError(t, err)
+	var pmtpParamsRes types.PmtpParamsRes
+	err = cdc.UnmarshalJSON(resBz, &pmtpParamsRes)
+	assert.NoError(t, err)
+}
+
 func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
 	pool := test.GenerateRandomPool(1)[0]
 	err := keeper.SetPool(ctx, &pool)

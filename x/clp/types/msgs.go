@@ -18,6 +18,8 @@ var (
 	_ sdk.Msg = &MsgUnlockLiquidityRequest{}
 	_ sdk.Msg = &MsgUpdateRewardsParamsRequest{}
 	_ sdk.Msg = &MsgAddRewardPeriodRequest{}
+	_ sdk.Msg = &MsgModifyPmtpRates{}
+	_ sdk.Msg = &MsgUpdatePmtpParams{}
 )
 
 func (m MsgAddRewardPeriodRequest) Route() string {
@@ -94,6 +96,83 @@ func (m MsgUpdateRewardsParamsRequest) GetSigners() []sdk.AccAddress {
 		panic(err)
 	}
 	return []sdk.AccAddress{addr}
+}
+
+func (m *MsgUpdatePmtpParams) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	if m.PmtpPeriodEpochLength <= 0 {
+		return fmt.Errorf("pmtp epoch length must be greated than zero: %d", m.PmtpPeriodEpochLength)
+	}
+	if m.PmtpPeriodStartBlock < 0 {
+		return fmt.Errorf("pmtp start block cannot be negative: %d", m.PmtpPeriodStartBlock)
+	}
+	// End block must be at-least 1
+	if m.PmtpPeriodEndBlock <= 0 {
+		return fmt.Errorf("pmtp end block cannot be negative: %d", m.PmtpPeriodStartBlock)
+	}
+	if m.PmtpPeriodEndBlock < m.PmtpPeriodStartBlock {
+		return fmt.Errorf(
+			"end block (%d) must be after begin block (%d)",
+			m.PmtpPeriodEndBlock, m.PmtpPeriodStartBlock,
+		)
+	}
+
+	if (m.PmtpPeriodEndBlock-m.PmtpPeriodStartBlock+1)%m.PmtpPeriodEpochLength != 0 {
+		return fmt.Errorf("all epochs must have equal number of blocks : %d", m.PmtpPeriodEpochLength)
+	}
+
+	return nil
+}
+
+func (m *MsgUpdatePmtpParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdatePmtpParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdatePmtpParams) Type() string {
+	return "update_pmtp_params"
+}
+
+func (m MsgUpdatePmtpParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m *MsgModifyPmtpRates) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MsgModifyPmtpRates) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgModifyPmtpRates) Route() string {
+	return RouterKey
+}
+
+func (m MsgModifyPmtpRates) Type() string {
+	return "modify_pmtp_rates"
+}
+
+func (m MsgModifyPmtpRates) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
