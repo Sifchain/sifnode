@@ -21,12 +21,6 @@ jobs:
     - name: Build
       run: make install
 
-    - name: Lint
-      uses: golangci/golangci-lint-action@v2.5.2
-      with:
-        version:
-          v1.45.2
-
     - name: Test
       run: |
         go test -v ./... -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list ./... | grep -v test | tr "\n" ",")
@@ -42,3 +36,9 @@ jobs:
       with:
         file: ./coverage.txt
         verbose: true
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v2.5.2
+      with:
+        version:
+          v1.45.2
