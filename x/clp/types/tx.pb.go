@@ -880,10 +880,9 @@ func (m *MsgUnlockLiquidityResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUnlockLiquidityResponse proto.InternalMessageInfo
 
 type MsgUpdateRewardsParamsRequest struct {
-	Signer                       string                                  `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty" yaml:"signer"`
-	LiquidityRemovalLockPeriod   uint64                                  `protobuf:"varint,2,opt,name=liquidity_removal_lock_period,json=liquidityRemovalLockPeriod,proto3" json:"liquidity_removal_lock_period,omitempty"`
-	LiquidityRemovalCancelPeriod uint64                                  `protobuf:"varint,3,opt,name=liquidity_removal_cancel_period,json=liquidityRemovalCancelPeriod,proto3" json:"liquidity_removal_cancel_period,omitempty"`
-	DefaultMultiplier            *github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=default_multiplier,json=defaultMultiplier,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"default_multiplier,omitempty"`
+	Signer                       string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty" yaml:"signer"`
+	LiquidityRemovalLockPeriod   uint64 `protobuf:"varint,2,opt,name=liquidity_removal_lock_period,json=liquidityRemovalLockPeriod,proto3" json:"liquidity_removal_lock_period,omitempty"`
+	LiquidityRemovalCancelPeriod uint64 `protobuf:"varint,3,opt,name=liquidity_removal_cancel_period,json=liquidityRemovalCancelPeriod,proto3" json:"liquidity_removal_cancel_period,omitempty"`
 }
 
 func (m *MsgUpdateRewardsParamsRequest) Reset()         { *m = MsgUpdateRewardsParamsRequest{} }
@@ -2350,18 +2349,6 @@ func (m *MsgUpdateRewardsParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, 
 	_ = i
 	var l int
 	_ = l
-	if m.DefaultMultiplier != nil {
-		{
-			size := m.DefaultMultiplier.Size()
-			i -= size
-			if _, err := m.DefaultMultiplier.MarshalTo(dAtA[i:]); err != nil {
-				return 0, err
-			}
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
-	}
 	if m.LiquidityRemovalCancelPeriod != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.LiquidityRemovalCancelPeriod))
 		i--
@@ -2772,10 +2759,6 @@ func (m *MsgUpdateRewardsParamsRequest) Size() (n int) {
 	}
 	if m.LiquidityRemovalCancelPeriod != 0 {
 		n += 1 + sovTx(uint64(m.LiquidityRemovalCancelPeriod))
-	}
-	if m.DefaultMultiplier != nil {
-		l = m.DefaultMultiplier.Size()
-		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
 }
@@ -4907,42 +4890,6 @@ func (m *MsgUpdateRewardsParamsRequest) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DefaultMultiplier", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_cosmos_cosmos_sdk_types.Dec
-			m.DefaultMultiplier = &v
-			if err := m.DefaultMultiplier.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

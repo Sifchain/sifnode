@@ -33,7 +33,6 @@ func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpda
 	}
 	params := k.GetRewardsParams(ctx)
 	params.LiquidityRemovalLockPeriod = msg.LiquidityRemovalLockPeriod
-	params.DefaultMultiplier = msg.DefaultMultiplier
 	params.LiquidityRemovalCancelPeriod = msg.LiquidityRemovalCancelPeriod
 	k.SetRewardParams(ctx, params)
 	return &types.MsgUpdateRewardsParamsResponse{}, err
