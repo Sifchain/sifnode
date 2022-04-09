@@ -271,10 +271,10 @@ class InflateTokens:
             self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, total_token_amount, total_eth_amount_gwei)
         self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, token_amount, target_sif_accounts, eth_amount_gwei)
 
-    def transfer_eth(self, from_eth_addr, amount_gewi, target_sif_accounts):
+    def transfer_eth(self, from_eth_addr, amount_gwei, target_sif_accounts):
         pending_txs = []
         for sif_acct in target_sif_accounts:
-            txrcpt = self.ctx.eth.tx_bridge_bank_lock_eth(from_eth_addr, sif_acct, amount_gewi * eth.GWEI)
+            txrcpt = self.ctx.eth.tx_bridge_bank_lock_eth(from_eth_addr, sif_acct, amount_gwei * eth.GWEI)
             pending_txs.append(txrcpt)
         self.wait_for_all(pending_txs)
 

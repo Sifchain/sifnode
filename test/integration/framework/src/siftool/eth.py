@@ -1,6 +1,7 @@
 import logging
 import time
 import web3
+from typing import NewType
 
 from siftool.common import *
 
@@ -9,6 +10,7 @@ ETH = 10**18
 GWEI = 10**9
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 MIN_TX_GAS = 21000
+Address = NewType("Address", str)
 
 log = logging.getLogger(__name__)
 

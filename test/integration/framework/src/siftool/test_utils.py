@@ -607,7 +607,7 @@ class EnvCtx:
     # - if expected_balance is given: when balances are equal to that.
     # - if neither min_changes nor expected_balance are given: when anything changes.
     # You cannot use min_changes and expected_balance at the same time.
-    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balances: cosmos.Balance,
+    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
         min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time=1,
         timeout=90, change_timeout=None
     ) -> cosmos.Balance:
@@ -616,28 +616,28 @@ class EnvCtx:
         expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
         start_time = time.time()
         last_change_time = None
-        last_change_state = None
+        last_changed_balance = None
         while True:
-            new_balances = self.get_sifchain_balance(sif_addr)
-            delta = cosmos.balance_sub(new_balances, old_balances)
+            new_balance = self.get_sifchain_balance(sif_addr)
+            delta = cosmos.balance_sub(new_balance, old_balance)
             if expected_balance is not None:
-                should_return = cosmos.balance_equal(new_balances)
+                should_return = cosmos.balance_equal(expected_balance, new_balance)
             elif min_changes is not None:
                 should_return = cosmos.balance_exceeds(delta, min_changes)
             else:
                 should_return = not cosmos.balance_zero(delta)
             if should_return:
-                return new_balances
+                return new_balance
             now = time.time()
             if (timeout is not None) and (now - start_time > timeout):
                 raise Exception("Timeout waiting for sif balance to change")
             if last_change_time is None:
-                last_change_state = new_balances
+                last_changed_balance = new_balance
                 last_change_time = now
             else:
-                delta = cosmos.balance_sub(new_balances, last_change_state)
+                delta = cosmos.balance_sub(new_balance, last_changed_balance)
                 if not cosmos.balance_zero(delta):
-                    last_change_state = new_balances
+                    last_changed_balance = new_balance
                     last_change_time = now
                     log.debug("New state detected: {}".format(delta))
                 if (change_timeout is not None) and (now - last_change_time > change_timeout):
