@@ -42,7 +42,7 @@ func TestIsBlacklisted(t *testing.T) {
 	for _, tc := range tt {
 		tc := tc
 		app, ctx := test.CreateTestApp(false)
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+		app.TokenRegistryKeeper.SetAdminAccount(ctx, types.ModuleName, adminAddress)
 		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
@@ -102,7 +102,7 @@ func TestSetBlacklist(t *testing.T) {
 	for _, tc := range tt {
 		tc := tc
 		app, ctx := test.CreateTestApp(false)
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+		app.TokenRegistryKeeper.SetAdminAccount(ctx, types.ModuleName, adminAddress)
 		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,

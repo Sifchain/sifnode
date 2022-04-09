@@ -28,7 +28,7 @@ func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpda
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, types.ModuleName, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetRewardsParams(ctx)
@@ -44,7 +44,7 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, types.ModuleName, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetRewardsParams(ctx)
@@ -68,7 +68,7 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, types.ModuleName, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
@@ -115,7 +115,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, types.ModuleName, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)

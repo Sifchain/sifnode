@@ -32,5 +32,5 @@ type OracleKeeper interface {
 }
 
 type TokenRegistryKeeper interface {
-	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
+	IsAdminAccount(ctx sdk.Context, moduleName string, adminAccount sdk.AccAddress) bool
 }

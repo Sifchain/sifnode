@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -24,28 +24,58 @@ func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
 	}
 }
 
-func (k keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
+func (k keeper) SetAdminAccount(ctx sdk.Context, moduleName string, adminAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.AdminAccountStorePrefix
-	store.Set(key, k.cdc.MustMarshal(&gogotypes.BytesValue{Value: adminAccount}))
+	key := types.GetAdminAccountKey(moduleName)
+
+	store.Set(key, k.cdc.MustMarshal(&types.AdminAccount{
+		ModuleName: moduleName,
+		Address:    adminAccount.String(),
+	}))
 }
 
-func (k keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
-	account := k.GetAdminAccount(ctx)
+func (k keeper) IsAdminAccount(ctx sdk.Context, moduleName string, adminAccount sdk.AccAddress) bool {
+	account := k.GetAdminAccount(ctx, moduleName)
 	if account == nil {
 		return false
 	}
 	return bytes.Equal(account, adminAccount)
 }
 
-func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
+func (k keeper) GetAdminAccount(ctx sdk.Context, moduleName string) (adminAccount sdk.AccAddress) {
+	var aA types.AdminAccount
 	store := ctx.KVStore(k.storeKey)
-	key := types.AdminAccountStorePrefix
+	key := types.GetAdminAccountKey(moduleName)
 	bz := store.Get(key)
-	acc := gogotypes.BytesValue{}
-	k.cdc.MustUnmarshal(bz, &acc)
-	adminAccount = sdk.AccAddress(acc.Value)
+	if len(bz) == 0 {
+		return sdk.AccAddress{}
+	}
+	k.cdc.MustUnmarshal(bz, &aA)
+	adminAccount = sdk.AccAddress(aA.Address)
 	return adminAccount
+}
+
+func (k keeper) GetAdminAccountIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.AdminAccountStorePrefix)
+}
+
+func (k keeper) GetAdminAccounts(ctx sdk.Context) *types.AdminAccounts {
+	var res types.AdminAccounts
+	iterator := k.GetAdminAccountIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var al types.AdminAccount
+		bytesValue := iterator.Value()
+		err := k.cdc.Unmarshal(bytesValue, &al)
+		if err != nil {
+			// Log unmarshal distribution error instead of panic.
+			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for admin account bytes : %s ", bytesValue))
+			continue
+		}
+		res.AdminAccounts = append(res.AdminAccounts, &al)
+	}
+	return &res
 }
 
 func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {

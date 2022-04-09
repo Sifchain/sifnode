@@ -17,7 +17,7 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 		return err
 	}
 
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, from) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, types.ModuleName, from) {
 		return oracletypes.ErrNotAdminAccount
 	}
 
