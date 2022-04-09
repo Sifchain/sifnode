@@ -474,12 +474,14 @@ func NewSifApp(
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		dispensation.ModuleName,
+		clptypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
+		clptypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
