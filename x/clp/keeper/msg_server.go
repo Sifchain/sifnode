@@ -31,16 +31,11 @@ func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.M
 	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
-	params := k.mintKeeper.GetParams(ctx)
-	params.InflationMin = msg.InflationMin
-	params.InflationMax = msg.InflationMax
+	if !(msg.Minter.AnnualProvisions.IsZero() && msg.Minter.Inflation.IsZero()) {
+		k.mintKeeper.SetMinter(ctx, msg.Minter)
+	}
+	k.mintKeeper.SetParams(ctx, msg.Params)
 
-	minter := k.mintKeeper.GetMinter(ctx)
-	minter.AnnualProvisions = msg.AnnualProvisions
-	minter.Inflation = msg.Inflation
-
-	k.mintKeeper.SetParams(ctx, params)
-	k.mintKeeper.SetMinter(ctx, minter)
 	return &types.MsgUpdateStakingRewardParamsResponse{}, err
 
 }

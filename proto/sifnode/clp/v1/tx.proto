@@ -22,24 +22,37 @@ service Msg {
   rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams) returns (MsgUpdateStakingRewardParamsResponse);
 }
 
-message MsgUpdateStakingRewardParams{
+//message MsgUpdateStakingRewardParams{
+//  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+//  string inflation = 2 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//  string inflation_max = 3 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//  string inflation_min = 4 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//  string annual_provisions = 5 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//}
+
+message MsgUpdateStakingRewardParams {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
-  string inflation = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+  string minter =2
+  [ (gogoproto.customtype) =
+      "github.com/cosmos/cosmos-sdk/x/mint/types.Minter",
     (gogoproto.nullable) = false
   ];
-  string inflation_max = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string inflation_min = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string annual_provisions = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string params =3
+  [ (gogoproto.customtype) =
+      "github.com/cosmos/cosmos-sdk/x/mint/types.Params",
+    (gogoproto.nullable) = false];
 }
 
 message MsgUpdateStakingRewardParamsResponse {}

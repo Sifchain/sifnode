@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"io/ioutil"
 	"path/filepath"
 
@@ -66,7 +67,6 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println(rewardPeriods)
 			msg := types.MsgAddRewardPeriodRequest{
 				Signer:        signer.String(),
 				RewardPeriods: rewardPeriods,
@@ -330,13 +330,42 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			params := minttypes.Params{}
+			minter := minttypes.Minter{}
+			filePathParams := viper.GetString(FlagMintParams)
+			file, err := filepath.Abs(filePathParams)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &params)
+			if err != nil {
+				return err
+			}
+			// Minter is an optional flag
+			filePathMinter := viper.GetString(FlagMinter)
+			if filePathMinter != "" {
+				file, err = filepath.Abs(filePathMinter)
+				if err != nil {
+					return err
+				}
+				input, err = ioutil.ReadFile(file)
+				if err != nil {
+					return err
+				}
+				err = json.Unmarshal(input, &minter)
+				if err != nil {
+					return err
+				}
+			}
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgUpdateStakingRewardParams{
-				Signer:           signer.String(),
-				Inflation:        sdk.MustNewDecFromStr(viper.GetString(FlagInflation)),
-				InflationMax:     sdk.MustNewDecFromStr(viper.GetString(FlagInflationMax)),
-				InflationMin:     sdk.MustNewDecFromStr(viper.GetString(FlagInflationMin)),
-				AnnualProvisions: sdk.MustNewDecFromStr(viper.GetString(FlagAnnualProvisions)),
+				Signer: signer.String(),
+				Params: params,
+				Minter: minter,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -344,20 +373,9 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().AddFlagSet(FsFlagInflation)
-	cmd.Flags().AddFlagSet(FsFlagInflationMax)
-	cmd.Flags().AddFlagSet(FsFlagInflationMin)
-	cmd.Flags().AddFlagSet(FsFlagAnnualProvisions)
-	if err := cmd.MarkFlagRequired(FlagInflation); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagInflationMax); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagInflationMin); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagAnnualProvisions); err != nil {
+	cmd.Flags().AddFlagSet(FsFlagMintParams)
+	cmd.Flags().AddFlagSet(FsFlagMinter)
+	if err := cmd.MarkFlagRequired(FlagMintParams); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 	flags.AddTxFlagsToCmd(cmd)
@@ -493,4 +511,23 @@ func GetCmdUnlockLiquidity() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
+}
+
+func ParseFile(f string, rewardPeriods interface{}) interface{} {
+	//var rewardPeriods []*types.RewardPeriod
+	//signer := clientCtx.GetFromAddress()
+	//filePath := viper.GetString(FlagRewardPeriods)
+	file, err := filepath.Abs(f)
+	if err != nil {
+		return err
+	}
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(input, &rewardPeriods)
+	if err != nil {
+		return err
+	}
+	return rewardPeriods
 }

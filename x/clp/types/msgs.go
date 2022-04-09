@@ -32,7 +32,7 @@ func (m MsgUpdateStakingRewardParams) Type() string {
 }
 
 func (m MsgUpdateStakingRewardParams) ValidateBasic() error {
-	return nil
+	return m.Params.Validate()
 }
 
 func (m MsgUpdateStakingRewardParams) GetSignBytes() []byte {
