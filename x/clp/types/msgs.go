@@ -12,6 +12,7 @@ import (
 
 var (
 	_ sdk.Msg = &MsgRemoveLiquidity{}
+	_ sdk.Msg = &MsgRemoveLiquidityUnits{}
 	_ sdk.Msg = &MsgCreatePool{}
 	_ sdk.Msg = &MsgAddLiquidity{}
 	_ sdk.Msg = &MsgSwap{}
@@ -289,6 +290,43 @@ func (m MsgRemoveLiquidity) GetSignBytes() []byte {
 }
 
 func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func NewMsgRemoveLiquidityUnits(signer sdk.AccAddress, externalAsset Asset, withdrawUnits sdk.Uint) MsgRemoveLiquidityUnits {
+	return MsgRemoveLiquidityUnits{Signer: signer.String(), ExternalAsset: &externalAsset, WithdrawUnits: withdrawUnits}
+}
+
+func (m MsgRemoveLiquidityUnits) Route() string {
+	return RouterKey
+}
+
+func (m MsgRemoveLiquidityUnits) Type() string {
+	return "remove_liquidity"
+}
+
+func (m MsgRemoveLiquidityUnits) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if !m.ExternalAsset.Validate() {
+		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
+	}
+	if !m.WithdrawUnits.GT(sdk.ZeroUint()) {
+		return sdkerrors.Wrap(ErrInValidAmount, fmt.Sprintf("Units must be greater than 0 : %s", m.WithdrawUnits.String()))
+	}
+	return nil
+}
+
+func (m MsgRemoveLiquidityUnits) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgRemoveLiquidityUnits) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
