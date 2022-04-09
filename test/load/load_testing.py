@@ -1,6 +1,9 @@
 import random
+from hexbytes import HexBytes
 from typing import Sequence, Any
+from web3.datastructures import AttributeDict
 
+from siftool import eth, test_utils
 
 # Fees for sifchain -> sifchain transactions, paid by the sender.
 sif_tx_fee_in_rowan = 1 * 10**17
@@ -18,6 +21,20 @@ sif_tx_burn_fee_in_ceth = 1
 sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
 
 rowan = "rowan"
+
+# Fee for transfering ERC20 tokens from an ethereum account to sif account (approve + lock). This is the maximum cost
+# for a single transfer (regardless of amount) that the sender needs to have in his account in order for transaction to
+# be processed. This value was determined experimentally with hardhat. Typical effective fee is 210542 GWEI per
+# transaction, but for some reason the logic requires sender to have more funds in his account.
+max_eth_transfer_fee = 10000000 * eth.GWEI
+
+
+def wait_for_all_tx_receipts(ctx: test_utils.EnvCtx, tx_hashes: Sequence[HexBytes]) -> Sequence[AttributeDict]:
+    result = []
+    for txhash in tx_hashes:
+        txrcpt = ctx.eth.wait_for_transaction_receipt(txhash)
+        result.append(txrcpt)
+    return result
 
 
 def choose_from(distr: Sequence[Any], rnd: random.Random = None) -> int:
