@@ -138,8 +138,8 @@ Object {
     "pprofPort": 13004,
     "prefix": "sent",
     "rpcPort": 11004,
-    "sourceUrl": "https://github.com/sentinel-official/sentinel/archive/refs/tags/v0.1.4.zip",
     "sourceRelativePath": "sentinel-0.1.4",
+    "sourceUrl": "https://github.com/sentinel-official/sentinel/archive/refs/tags/v0.1.4.zip",
     "testnet-1": Object {
       "channelId": 39,
       "counterpartyChannelId": 2,
