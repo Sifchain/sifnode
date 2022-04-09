@@ -19,14 +19,12 @@ from siftool.common import *
 CETH = "ceth"  # Peggy1 only (Peggy2.0 uses denom hash)
 ROWAN = "rowan"
 
-sifnode_funds_for_transfer_peggy1 = 10 ** 17  # rowan
-
+sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
 
 # This is called from test fixture and will optionally set a snapshot to run the test in.
 def get_test_env_ctx(snapshot_name=None):
     assert snapshot_name is None, "Not implemented yet"
     return get_env_ctx()
-
 
 # This returns an EnvCtx connected to a running environment.
 def get_env_ctx(cmd=None, env_file=None, env_vars=None):
@@ -52,14 +50,12 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
     sif_user_private_keys = ctx.cmd.project.read_peruser_config_file("sif-keys")
     if sif_user_private_keys:
         available_sif_accounts = ctx.sifnode.keys_list()
-        for name, address, mnemonic in [[e["name"], e["address"], e["mnemonic"].split(" ")] for e in
-                                        sif_user_private_keys]:
+        for name, address, mnemonic in [[e["name"], e["address"], e["mnemonic"].split(" ")] for e in sif_user_private_keys]:
             existing_acct = [a for a in available_sif_accounts if a["address"] == address]
             if not existing_acct:
                 acct = ctx.sifnode.keys_add(name, mnemonic)
                 assert acct["address"] == address, "Invalid address for sif account {}".format(name)
     return ctx
-
 
 def get_env_ctx_peggy2():
     cmd = run_env.Integrator()
@@ -104,7 +100,7 @@ def get_env_ctx_peggy2():
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-                 rowan_source, ceth_symbol, generic_erc20_contract)
+        rowan_source, ceth_symbol, generic_erc20_contract)
     if owner_private_key:
         ctx.eth.set_private_key(owner_address, owner_private_key)
 
@@ -127,7 +123,6 @@ def get_env_ctx_peggy2():
     ctx.eth.ethereum_network_descriptor = ethereum_network_descriptor
 
     return ctx
-
 
 def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     cmd = cmd or run_env.Integrator()
@@ -174,8 +169,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     else:
         operator_address = env_vars["OPERATOR_ADDRESS"]
         operator_private_key = env_vars.get("OPERATOR_PRIVATE_KEY")
-    operator_address, operator_private_key = eth.validate_address_and_private_key(operator_address,
-                                                                                  operator_private_key)
+    operator_address, operator_private_key = eth.validate_address_and_private_key(operator_address, operator_private_key)
 
     # Already added below
     # collected_private_keys[operator_address] = operator_private_key
@@ -196,8 +190,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     if "SMART_CONTRACT_ARTIFACT_DIR" in env_vars:
         artifacts_dir = env_vars["SMART_CONTRACT_ARTIFACT_DIR"]
     elif deployment_name:
-        artifacts_dir = cmd.project.project_dir(
-            "smart-contracts/deployments/{}/build/contracts".format(deployment_name))
+        artifacts_dir = cmd.project.project_dir("smart-contracts/deployments/{}/build/contracts".format(deployment_name))
         if deployment_name == "sifchain-1":
             # Special case for Betanet because SifchainTestToken is not deployed there.
             # It's only available on Testnet, Devnet and in local environment.
@@ -221,10 +214,9 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     eth_node_is_local = deployment_name is None
 
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
-    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id,
-                                              deployed_smart_contract_address_overrides)
+    abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id, deployed_smart_contract_address_overrides)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-                 rowan_source, CETH, generic_erc20_contract_name)
+        rowan_source, CETH, generic_erc20_contract_name)
     if operator_private_key:
         ctx.eth.set_private_key(operator_address, operator_private_key)
 
@@ -273,10 +265,9 @@ def sif_addr_to_evm_arg(sif_address):
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn: web3.Web3, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url,
-                 sifnode_chain_id,
-                 rowan_source, ceth_symbol, generic_erc20_contract
-                 ):
+    def __init__(self, cmd, w3_conn: web3.Web3, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
+        rowan_source, ceth_symbol, generic_erc20_contract
+    ):
         self.cmd = cmd
         self.w3_conn = w3_conn
         self.eth: eth.EthereumTxWrapper = ctx_eth
@@ -286,8 +277,7 @@ class EnvCtx:
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         # Refactoring in progress: moving stuff into separate client that encapsulates things like url, home and chain_id
-        self.sifnode_client = sifchain.SifnodeClient(self.cmd, node=sifnode_url, home=sifnoded_home,
-                                                     chain_id=sifnode_chain_id, grpc_port=9090)
+        self.sifnode_client = sifchain.SifnodeClient(self.cmd, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
         self.sifnode_client.ctx = self  # For cross-chain fees for Peggy2
         self.rowan_source = rowan_source
         self.ceth_symbol = ceth_symbol
@@ -364,8 +354,7 @@ class EnvCtx:
         finally:
             self.w3_conn.eth.uninstall_filter(filter.filter_id)
 
-    def tx_deploy_new_generic_erc20_token(self, deployer_addr: str, name: str, symbol: str, decimals: int,
-                                          cosmosDenom: str = None) -> Contract:
+    def tx_deploy_new_generic_erc20_token(self, deployer_addr: str, name: str, symbol: str, decimals: int, cosmosDenom: str = None) -> Contract:
         # return self.tx_deploy("SifchainTestToken", self.operator, [name, symbol, decimals])
         if on_peggy2_branch:
             # Use BridgeToken
@@ -409,46 +398,39 @@ class EnvCtx:
         # Mandatory tx_opts: {"from": from_eth_acct, "gas": max_gas_required, "value": amount}
         # If "value" is missing, we get "call to non-contract"
         tx_opts = {"value": amount}
-        return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr,
-                                                                                             amount)
+        return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
     def tx_bridge_bank_lock_erc20(self, token_addr, from_eth_acct, to_sif_acct, amount):
         recipient = sif_addr_to_evm_arg(to_sif_acct)
         bridge_bank = self.get_bridge_bank_sc()
         # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
         tx_opts = {"value": 0}
-        return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr,
-                                                                                             amount)
+        return self.eth.transact(bridge_bank.functions.lock, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
     def tx_bridge_bank_burn_erc20(self, token_addr: str, from_eth_acct: str, to_sif_acct: str, amount: int) -> HexBytes:
         recipient = sif_addr_to_evm_arg(to_sif_acct)
         bridge_bank = self.get_bridge_bank_sc()
         # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
         tx_opts = {"value": 0}
-        return self.eth.transact(bridge_bank.functions.burn, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr,
-                                                                                             amount)
+        return self.eth.transact(bridge_bank.functions.burn, from_eth_acct, tx_opts=tx_opts)(recipient, token_addr, amount)
 
     def tx_bridge_bank_add_existing_bridge_token(self, token_addr: str) -> HexBytes:
         bridge_bank = self.get_bridge_bank_sc()
         tx_opts = {"value": 0}
-        return self.eth.transact(bridge_bank.functions.addExistingBridgeToken, self.operator, tx_opts=tx_opts)(
-            token_addr)
+        return self.eth.transact(bridge_bank.functions.addExistingBridgeToken, self.operator, tx_opts=tx_opts)(token_addr)
 
     def tx_approve_and_lock(self, token_sc, from_eth_acct, to_sif_acct, amount):
         bridge_bank_sc = self.get_bridge_bank_sc()
         txhash1 = self.tx_approve(token_sc, self.operator, bridge_bank_sc.address, amount)
         txhash2 = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         log.debug("tx_approve_and_lock: {} '{}' ({}) from {} to {}".format(amount, token_sc.functions.name().call(),
-                                                                           token_sc.functions.symbol().call(),
-                                                                           from_eth_acct, to_sif_acct))
+            token_sc.functions.symbol().call(), from_eth_acct, to_sif_acct))
         return txhash1, txhash2
 
     # </editor-fold>
 
     # Used from test_integration_framework.py, test_eth_transfers.py
-    def deploy_new_generic_erc20_token(self, name: str, symbol: str, decimals: int, owner: str = None,
-                                       mint_amount: int = None, mint_recipient: str = None,
-                                       cosmosDenom: str = None) -> Contract:
+    def deploy_new_generic_erc20_token(self, name: str, symbol: str, decimals: int, owner: str = None, mint_amount: int = None, mint_recipient: str = None, cosmosDenom: str = None) -> Contract:
         owner = self.operator if owner is None else owner
         txhash = self.tx_deploy_new_generic_erc20_token(owner, name, symbol, decimals, cosmosDenom)
         txrcpt = self.eth.wait_for_transaction_receipt(txhash)
@@ -500,12 +482,10 @@ class EnvCtx:
             # for inflate_tokens where it matters which tokens should be deployed and which not.
             if token_addr in result:
                 if result[token_addr] == value:
-                    log.warning(
-                        f"Redundant event in BridgeBank's past LogWhiteListUpdate: token_addr={token_addr}, value={value}, blockNumber={e.blockNumber}")
+                    log.warning(f"Redundant event in BridgeBank's past LogWhiteListUpdate: token_addr={token_addr}, value={value}, blockNumber={e.blockNumber}")
             else:
                 if not value:
-                    log.warning(
-                        f"Redundant event in BridgeBank's past LogWhiteListUpdate: token_addr={token_addr}, value={value}, blockNumber={e.blockNumber}")
+                    log.warning(f"Redundant event in BridgeBank's past LogWhiteListUpdate: token_addr={token_addr}, value={value}, blockNumber={e.blockNumber}")
             result[token_addr] = value
         return result
 
@@ -577,8 +557,7 @@ class EnvCtx:
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
 
-    def create_sifchain_addr(self, moniker: str = None,
-                             fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance] = None):
+    def create_sifchain_addr(self, moniker: str = None, fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance] = None):
         """
         Generates a new sifchain address in test keyring. If moniker is given, uses it, otherwise
         generates a random one 'test-xxx'. If fund_amounts is given, the sifchain funds are transferred
@@ -593,8 +572,7 @@ class EnvCtx:
             for denom, required_amount in fund_amounts.items():
                 available_amount = rowan_source_balances.get(denom, 0)
                 assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
-                    self.rowan_source, sif_format_amount(required_amount, denom),
-                    sif_format_amount(available_amount, denom))
+                    self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
@@ -606,11 +584,10 @@ class EnvCtx:
         amounts = cosmos.balance_normalize(amounts)
         amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
-               self._sifnoded_chain_id_and_node_arg() + \
-               self._sifnoded_fees_arg() + \
-               ["--yes", "--output", "json"]
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home,
-                                         keyring_backend=self.sifnode.keyring_backend)
+            self._sifnoded_chain_id_and_node_arg() + \
+            self._sifnoded_fees_arg() + \
+            ["--yes", "--output", "json"]
+        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
         retval = json.loads(stdout(res))
         raw_log = retval["raw_log"]
         for bad_thing in ["insufficient funds", "signature verification failed"]:
@@ -620,7 +597,7 @@ class EnvCtx:
 
     def get_sifchain_balance(self, sif_addr: cosmos.Address) -> cosmos.Balance:
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
-               self._sifnoded_chain_id_and_node_arg()
+            self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
         return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res) if amount != 0}
@@ -631,10 +608,9 @@ class EnvCtx:
     # - if neither min_changes nor expected_balance are given: when anything changes.
     # You cannot use min_changes and expected_balance at the same time.
     def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balances: cosmos.Balance,
-                                    min_changes: cosmos.CompatBalance = None,
-                                    expected_balance: cosmos.CompatBalance = None, polling_time=1,
-                                    timeout=90, change_timeout=None
-                                    ) -> cosmos.Balance:
+        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time=1,
+        timeout=90, change_timeout=None
+    ) -> cosmos.Balance:
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
         expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
@@ -707,13 +683,13 @@ class EnvCtx:
         try:
             self.cmd.write_text_file(tmp_registry_json, json.dumps(token_data, indent=4))
             args = ["tx", "tokenregistry", "register", tmp_registry_json] + \
-                   self._sifnoded_chain_id_and_node_arg() + \
-                   self._sifnoded_fees_arg() + [
-                       "--from", from_sif_addr,
-                       "--output", "json",
-                       "--broadcast-mode", "block",  # One of sync|async|block; block will actually get us raw_message
-                       "--yes"
-                   ]
+                self._sifnoded_chain_id_and_node_arg() + \
+                self._sifnoded_fees_arg() + [
+                "--from", from_sif_addr,
+                "--output", "json",
+                "--broadcast-mode", "block",  # One of sync|async|block; block will actually get us raw_message
+                "--yes"
+            ]
             res = self.cmd.sifnoded_exec(args, keyring_backend="test")
             res = json.loads(stdout(res))
             # Example of successful output: {"height":"196804","txhash":"C8252E77BCD441A005666A4F3D76C99BD35F9CB49AA1BE44CBE2FFCC6AD6ADF4","codespace":"","code":0,"data":"0A270A252F7369666E6F64652E746F6B656E72656769737472792E76312E4D73675265676973746572","raw_log":"[{\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/sifnode.tokenregistry.v1.MsgRegister\"}]}]}]","logs":[{"msg_index":0,"log":"","events":[{"type":"message","attributes":[{"key":"action","value":"/sifnode.tokenregistry.v1.MsgRegister"}]}]}],"info":"","gas_wanted":"200000","gas_used":"115149","tx":null,"timestamp":""}
@@ -727,12 +703,12 @@ class EnvCtx:
 
     def _sifnoded_chain_id_and_node_arg(self):
         return [] + \
-               (["--node", self.sifnode_url] if self.sifnode_url else []) + \
-               (["--chain-id", self.sifnode_chain_id] if self.sifnode_chain_id else [])
+            (["--node", self.sifnode_url] if self.sifnode_url else []) + \
+            (["--chain-id", self.sifnode_chain_id] if self.sifnode_chain_id else [])
 
     def _sifnoded_home_arg(self):
         return [] + \
-               (["--home", self.sifnode.home] if self.sifnode.home else [])
+            (["--home", self.sifnode.home] if self.sifnode.home else [])
 
     # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
     # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
@@ -743,7 +719,7 @@ class EnvCtx:
         return 200000
 
     def _sifnoded_fees_arg(self):
-        sifnode_tx_fees = [10 ** 17, "rowan"]
+        sifnode_tx_fees = [10**17, "rowan"]
         return [
             # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
             # "--gas-prices", "0.5rowan", "--gas-adjustment", "1.5",
@@ -816,8 +792,7 @@ class EnvCtx:
         txhash = self.tx_bridge_bank_lock_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
-    def bridge_bank_burn_erc20(self, token_sc: Contract, from_eth_acct: str, to_sif_acct: str,
-                               amount: int) -> TxReceipt:
+    def bridge_bank_burn_erc20(self, token_sc: Contract, from_eth_acct: str, to_sif_acct: str, amount: int) -> TxReceipt:
         txhash = self.tx_bridge_bank_burn_erc20(token_sc.address, from_eth_acct, to_sif_acct, amount)
         return self.eth.wait_for_transaction_receipt(txhash)
 
@@ -839,8 +814,7 @@ class EnvCtx:
     # For Sifchain-native assets (rowan) we need to use "burn".
     # Compare: smart-contracts/scripts/test/{sendLockTx.js OR sendBurnTx.js}
     # sendBurnTx is called when sifchain_symbol == "rowan", sendLockTx otherwise
-    def send_from_ethereum_to_sifchain(self, from_eth_acct: str, to_sif_acct: str, amount: int,
-                                       token_sc: Contract = None, isLock: bool = True) -> TxReceipt:
+    def send_from_ethereum_to_sifchain(self, from_eth_acct: str, to_sif_acct: str, amount: int, token_sc: Contract = None, isLock: bool = True) -> TxReceipt:
         if token_sc is None:
             # ETH transfer
             self.bridge_bank_lock_eth(from_eth_acct, to_sif_acct, amount)
@@ -863,8 +837,7 @@ class EnvCtx:
         if to_add:
             result[0] = self.eth.transact_sync(blocklist_sc.functions.batchAddToBlocklist, self.operator)(to_add)
         if to_remove:
-            result[1] = self.eth.transact_sync(blocklist_sc.functions.batchRemoveFromBlocklist, self.operator)(
-                to_remove)
+            result[1] = self.eth.transact_sync(blocklist_sc.functions.batchRemoveFromBlocklist, self.operator)(to_remove)
         current_entries = blocklist_sc.functions.getFullList().call()
         assert set(addrs) == set(current_entries)
         return result
@@ -875,12 +848,9 @@ class EnvCtx:
         if on_peggy2_branch:
             pass
         else:
-            assert (self.sifnode_chain_id != "sifchain-testnet-1") or (
-                        bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
-            assert (self.sifnode_chain_id != "sifchain-devnet-1") or (
-                        bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
-            assert (self.sifnode_chain_id != "localnet") or (
-                        bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
+            assert (self.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
+            assert (self.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
+            assert (self.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
         assert bridge_bank_sc.functions.owner().call() == self.operator, \
             "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
@@ -889,14 +859,13 @@ class EnvCtx:
         available_accounts = self.sifnode.keys_list()
         rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
         assert len(rowan_source_account) == 1, "There should be exactly one key in test keystore corresponding to " \
-                                               "ROWAN_SOURCE {}".format(self.rowan_source)
+            "ROWAN_SOURCE {}".format(self.rowan_source)
         if len(rowan_source_account) != 1:
             raise Exception
         rowan_source_balance = self.get_sifchain_balance(self.rowan_source).get(ROWAN, 0)
-        min_rowan_source_balance = 10 * 10 ** 18
+        min_rowan_source_balance = 10 * 10**18
         assert rowan_source_balance > min_rowan_source_balance, "ROWAN_SOURCE should have at least {}rowan balance, " \
-                                                                "but has only {}rowan".format(min_rowan_source_balance,
-                                                                                              rowan_source_balance)
+            "but has only {}rowan".format(min_rowan_source_balance, rowan_source_balance)
 
 
 class ERC20TokenData:
@@ -917,10 +886,10 @@ def recover_eth_from_test_accounts():
         balance = ctx.eth.get_eth_balance(addr)
         to_recover = balance - tx_cost
         if to_recover > 0:
-            log.info("Account {}: balance={}, to_recover={}".format(addr, balance // eth.GWEI, to_recover // eth.GWEI))
+            log.info("Account {}: balance={}, to_recover={}".format(addr, balance//eth.GWEI, to_recover//eth.GWEI))
             ctx.eth.send_eth(addr, ctx.operator, to_recover)
             total_recovered += to_recover
-    log.info("Total recovered: {} ETH".format(total_recovered / eth.ETH))
+    log.info("Total recovered: {} ETH".format(total_recovered/eth.ETH))
 
 
 def sifnoded_parse_output_lines(stdout):
