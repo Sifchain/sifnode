@@ -13,6 +13,7 @@ const (
 	FlagExternalAssetAmount          = "externalAmount"
 	FlagWBasisPoints                 = "wBasis"
 	FlagAsymmetry                    = "asymmetry"
+	FlagWithdrawUnits                = "withdrawUnits"
 	FlagAmount                       = "sentAmount"
 	FlagMinimumReceivingAmount       = "minReceivingAmount"
 	FlagLiquidityRemovalLockPeriod   = "lockPeriod"
@@ -37,6 +38,7 @@ var (
 	FsExternalAssetAmount          = flag.NewFlagSet("", flag.ContinueOnError)
 	FsWBasisPoints                 = flag.NewFlagSet("", flag.ContinueOnError)
 	FsAsymmetry                    = flag.NewFlagSet("", flag.ContinueOnError)
+	FsWithdrawUnits                = flag.NewFlagSet("", flag.ContinueOnError)
 	FsSentAssetSymbol              = flag.NewFlagSet("", flag.ContinueOnError)
 	FsReceivedAssetSymbol          = flag.NewFlagSet("", flag.ContinueOnError)
 	FsAmount                       = flag.NewFlagSet("", flag.ContinueOnError)
@@ -63,6 +65,7 @@ func init() {
 	FsExternalAssetAmount.String(FlagExternalAssetAmount, "", "External Asset Amount")
 	FsWBasisPoints.String(FlagWBasisPoints, "", "WBasis Points ")
 	FsAsymmetry.String(FlagAsymmetry, "", "Asymmetry")
+	FsWithdrawUnits.String(FlagWithdrawUnits, "", "Withdraw Units ")
 	FsSentAssetSymbol.String(FlagSentAssetSymbol, "", "Symbol for Sent Asset")
 	FsReceivedAssetSymbol.String(FlagReceivedAssetSymbol, "", "Symbol for Received Asset")
 	FsAmount.String(FlagAmount, "", "Sent amount")
