@@ -63,11 +63,9 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 		PmtpPeriodStartBlock:     1,
 		PmtpPeriodEndBlock:       2,
 	})
-	zero := sdk.OneDec()
 	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
-		DefaultMultiplier:            &zero,
 		RewardPeriods:                nil,
 	})
 	return ctx, app
@@ -81,11 +79,9 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 	app.ClpKeeper.SetParams(ctx, types.Params{
 		MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
 	})
-	zero := sdk.OneDec()
 	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
-		DefaultMultiplier:            &zero,
 		RewardPeriods:                nil,
 	})
 	return ctx, app

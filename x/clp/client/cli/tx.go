@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"log"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -14,7 +16,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -31,6 +32,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdCreatePool(),
 		GetCmdAddLiquidity(),
 		GetCmdRemoveLiquidity(),
+		GetCmdRemoveLiquidityUnits(),
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
 		GetCmdUnlockLiquidity(),
@@ -91,7 +93,6 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 				return err
 			}
 			signer := clientCtx.GetFromAddress()
-			defaultMultiplier, err := sdk.NewDecFromStr(viper.GetString(FlagDefaultMultiplier))
 			if err != nil {
 				return err
 			}
@@ -99,7 +100,6 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 				Signer:                       signer.String(),
 				LiquidityRemovalCancelPeriod: viper.GetUint64(FlagLiquidityRemovalCancelPeriod),
 				LiquidityRemovalLockPeriod:   viper.GetUint64(FlagLiquidityRemovalLockPeriod),
-				DefaultMultiplier:            &defaultMultiplier,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -109,7 +109,6 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
-	cmd.Flags().AddFlagSet(FsDefaultMultiplier)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -282,6 +281,44 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagAsymmetry); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdRemoveLiquidityUnits() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "remove-liquidity-units",
+		Short: "Remove liquidity from a pool by number of units",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
+			wU := viper.GetString(FlagWithdrawUnits)
+
+			signer := clientCtx.GetFromAddress()
+			withdrawUnits := sdk.NewUintFromString(wU)
+
+			msg := types.NewMsgRemoveLiquidityUnits(signer, externalAsset, withdrawUnits)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsAssetSymbol)
+	cmd.Flags().AddFlagSet(FsWithdrawUnits)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagWithdrawUnits); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 

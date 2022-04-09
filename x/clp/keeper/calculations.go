@@ -169,6 +169,40 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
+func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
+	externalAssetBalance string, lpUnits string, withdrawUnits sdk.Uint) (sdk.Uint, sdk.Uint, sdk.Uint) {
+	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
+
+	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
+	}
+	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
+	}
+	lpUnitsF, err := sdk.NewDecFromStr(lpUnits)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", lpUnits, err))
+	}
+	withdrawUnitsF, err := sdk.NewDecFromStr(withdrawUnits.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", withdrawUnits, err))
+	}
+
+	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
+	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
+
+	//if asymmetry is 0 we don't need to swap
+	lpUnitsLeft := lpUnitsF.Sub(withdrawUnitsF)
+
+	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt())
+}
+
+// More details on the formula
+// https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 
 //native asset balance  : currently in pool before adding
 //external asset balance : currently in pool before adding

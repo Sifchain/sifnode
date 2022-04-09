@@ -1,0 +1,14 @@
+[
+    {
+        "id": "RP_1",
+        "start_block": 51,
+        "end_block": 60,
+        "allocation": "1000000000000",
+        "multipliers": [
+            {
+                "asset": "cusdt",
+                "multiplier": "1"
+            }
+        ]
+    }
+]

@@ -2,6 +2,7 @@ package clp
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -26,6 +27,9 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgRemoveLiquidity:
 			res, err := msgServer.RemoveLiquidity(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgRemoveLiquidityUnits:
+			res, err := msgServer.RemoveLiquidityUnits(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgSwap:
 			res, err := msgServer.Swap(sdk.WrapSDKContext(ctx), msg)

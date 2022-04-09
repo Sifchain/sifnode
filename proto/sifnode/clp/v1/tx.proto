@@ -9,6 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
 service Msg {
   rpc RemoveLiquidity(MsgRemoveLiquidity) returns (MsgRemoveLiquidityResponse);
+  rpc RemoveLiquidityUnits(MsgRemoveLiquidityUnits) returns (MsgRemoveLiquidityUnitsResponse);
   rpc CreatePool(MsgCreatePool) returns (MsgCreatePoolResponse);
   rpc AddLiquidity(MsgAddLiquidity) returns (MsgAddLiquidityResponse);
   rpc Swap(MsgSwap) returns (MsgSwapResponse);
@@ -74,6 +75,19 @@ message MsgRemoveLiquidity {
 }
 
 message MsgRemoveLiquidityResponse {}
+
+message MsgRemoveLiquidityUnits {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  sifnode.clp.v1.Asset external_asset = 2
+      [ (gogoproto.moretags) = "yaml:\"external_asset\"" ];
+  string withdraw_units = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"withdraw_units\""
+  ];
+}
+
+message MsgRemoveLiquidityUnitsResponse {}
 
 message MsgCreatePool {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
@@ -175,9 +189,6 @@ message MsgUpdateRewardsParamsRequest {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   uint64 liquidity_removal_lock_period = 2; // in blocks
   uint64 liquidity_removal_cancel_period = 3; // in blocks
-  string default_multiplier = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
-  ];
 }
 
 message MsgUpdateRewardsParamsResponse {}
