@@ -32,8 +32,10 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 	for _, pool := range pools {
 		spe := sdk.ZeroDec()
 		spn := sdk.ZeroDec()
+		rpnd := sdk.ZeroUint()
 		pool.SwapPriceExternal = &spe
 		pool.SwapPriceNative = &spn
+		pool.RewardPeriodNativeDistributed = rpnd
 		err := m.keeper.SetPool(ctx, pool)
 		if err != nil {
 			panic(err)
