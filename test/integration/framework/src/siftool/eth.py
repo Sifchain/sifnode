@@ -1,7 +1,9 @@
 import logging
 import time
 import web3
-from typing import NewType
+from hexbytes import HexBytes
+from web3.datastructures import AttributeDict
+from typing import NewType, Sequence
 
 from siftool.common import *
 
@@ -243,6 +245,15 @@ class EthereumTxWrapper:
         signed_tx = self.w3_conn.eth.account.sign_transaction(tx, private_key=private_key)
         txhash = self.w3_conn.eth.send_raw_transaction(signed_tx.rawTransaction)
         return txhash
+
+    def wait_for_all_transaction_receipts(self, tx_hashes: Sequence[HexBytes], sleep_time: int = 5,
+        timeout: Union[int, None] = None
+    ) -> Sequence[AttributeDict]:
+        result = []
+        for txhash in tx_hashes:
+            txrcpt = self.wait_for_transaction_receipt(txhash, sleep_time=sleep_time, timeout=timeout)
+            result.append(txrcpt)
+        return result
 
     def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None):
         return self.w3_conn.eth.wait_for_transaction_receipt(txhash, timeout=timeout, poll_latency=sleep_time)
