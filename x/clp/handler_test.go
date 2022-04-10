@@ -450,8 +450,6 @@ func TestUnlockLiquidity(t *testing.T) {
 	require.NoError(t, err)
 	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
-	wBasis = sdk.NewInt(1000)
-	asymmetry = sdk.NewInt(10000)
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	res, err := handler(ctx, &msgCreatePool)
 	require.NoError(t, err)

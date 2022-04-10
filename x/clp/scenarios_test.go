@@ -48,11 +48,10 @@ func TestScenarios(t *testing.T) {
 	}
 
 	file, err := ioutil.ReadFile("scenarios.json")
-	// file, err := ioutil.ReadFile("../../scripts/pmtp/scenarios.json")
-	require.Nil(t, err, "some error occured while reading file. Error: %s", err)
+	require.Nil(t, err, "some error occurred while reading file. Error: %s", err)
 	var scenarios Scenarios
-	err = json.Unmarshal([]byte(file), &scenarios)
-	require.Nil(t, err, "error occured during unmarshalling. Error: %s", err)
+	err = json.Unmarshal(file, &scenarios)
+	require.Nil(t, err, "error occurred during unmarshalling. Error: %s", err)
 
 	for _, tc := range scenarios {
 		tc := tc
@@ -126,13 +125,8 @@ func TestScenarios(t *testing.T) {
 		})
 		app.ClpKeeper.SetPmtpEpoch(ctx, tc.Epoch)
 
-		// if tc.Params.PmtpPeriodStartBlock > 1 {
-		// 	ctx = ctx.WithBlockHeight(tc.Params.PmtpPeriodStartBlock - 1)
-		// } else {
-		// 	ctx = ctx.WithBlockHeight(tc.Params.PmtpPeriodStartBlock)
-		// }
-
 		for i := 0; i < len(tc.ExpectedStates); i++ {
+			idx := i
 			name := fmt.Sprintf(
 				"pmtp_period_governance_rate=%s|pmtp_period_epoch_length=%v|pmtp_period_start_block=%v|pmtp_period_end_block=%v|height=%v",
 				tc.Params.PmtpPeriodGovernanceRate,
@@ -146,15 +140,15 @@ func TestScenarios(t *testing.T) {
 					ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 					clp.BeginBlocker(ctx, app.ClpKeeper)
 
-					if tc.ExpectedStates[i].Height == ctx.BlockHeight() {
+					if tc.ExpectedStates[idx].Height == ctx.BlockHeight() {
 						got, _ := app.ClpKeeper.GetPool(ctx, tc.PoolAsset)
 
-						tc.ExpectedStates[i].Pool.SwapPriceNative = &tc.ExpectedStates[i].SwapPriceNative
-						tc.ExpectedStates[i].Pool.SwapPriceExternal = &tc.ExpectedStates[i].SwapPriceExternal
+						tc.ExpectedStates[idx].Pool.SwapPriceNative = &tc.ExpectedStates[idx].SwapPriceNative
+						tc.ExpectedStates[idx].Pool.SwapPriceExternal = &tc.ExpectedStates[idx].SwapPriceExternal
 
-						require.Equal(t, tc.ExpectedStates[i].Height, ctx.BlockHeight())
-						require.Equal(t, tc.ExpectedStates[i].Pool, got)
-						require.Equal(t, tc.ExpectedStates[i].PmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
+						require.Equal(t, tc.ExpectedStates[idx].Height, ctx.BlockHeight())
+						require.Equal(t, tc.ExpectedStates[idx].Pool, got)
+						require.Equal(t, tc.ExpectedStates[idx].PmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
 
 						break
 					}
