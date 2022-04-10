@@ -608,8 +608,8 @@ class EnvCtx:
     # - if neither min_changes nor expected_balance are given: when anything changes.
     # You cannot use min_changes and expected_balance at the same time.
     def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
-        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time=1,
-        timeout=90, change_timeout=None
+        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
+        timeout: int = 90, change_timeout: int = None
     ) -> cosmos.Balance:
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
