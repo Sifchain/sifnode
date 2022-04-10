@@ -3,7 +3,7 @@
 set -x
 
 sifnoded tx tokenregistry register denoms/rowan.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \
@@ -13,7 +13,7 @@ sifnoded tx tokenregistry register denoms/rowan.json \
   --broadcast-mode block
 
 sifnoded tx tokenregistry register denoms/ceth.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \
@@ -23,7 +23,7 @@ sifnoded tx tokenregistry register denoms/ceth.json \
   --broadcast-mode block
 
 sifnoded tx tokenregistry register denoms/cusdc.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \
@@ -33,7 +33,7 @@ sifnoded tx tokenregistry register denoms/cusdc.json \
   --broadcast-mode block
 
 sifnoded tx tokenregistry register denoms/cusdt.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \
@@ -43,7 +43,7 @@ sifnoded tx tokenregistry register denoms/cusdt.json \
   --broadcast-mode block
 
 sifnoded tx tokenregistry register denoms/uatom.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \
@@ -53,7 +53,7 @@ sifnoded tx tokenregistry register denoms/uatom.json \
   --broadcast-mode block
 
 sifnoded tx tokenregistry register denoms/ujuno.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \
@@ -63,7 +63,7 @@ sifnoded tx tokenregistry register denoms/ujuno.json \
   --broadcast-mode block
 
 sifnoded tx tokenregistry register denoms/uluna.json \
-  --node tcp://"${SIFNODE_P2P_HOSTNAME}":26657 \
+  --node ${SIFNODE_NODE} \
   --chain-id "${SIFNODE_CHAIN_ID}" \
   --from "${ADMIN_ADDRESS}" \
   --keyring-backend test \

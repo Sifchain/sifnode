@@ -2,5 +2,4 @@
 
 set -x
 
-SIF_ACCT=$(echo ${ADMIN_MNEMONIC} | sifnoded keys add sif --recover --keyring-backend=test)
-echo $SIF_ACCT
+echo ${ADMIN_MNEMONIC} | sifnoded keys add ${SIF_ACT} --recover --keyring-backend=test
