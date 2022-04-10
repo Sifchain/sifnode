@@ -549,22 +549,3 @@ func GetCmdUnlockLiquidity() *cobra.Command {
 
 	return cmd
 }
-
-func ParseFile(f string, rewardPeriods interface{}) interface{} {
-	//var rewardPeriods []*types.RewardPeriod
-	//signer := clientCtx.GetFromAddress()
-	//filePath := viper.GetString(FlagRewardPeriods)
-	file, err := filepath.Abs(f)
-	if err != nil {
-		return err
-	}
-	input, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(input, &rewardPeriods)
-	if err != nil {
-		return err
-	}
-	return rewardPeriods
-}

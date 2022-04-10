@@ -1,9 +1,0 @@
-{
-  "mint_denom": "rowan",
-  "inflation_rate_change": "0.13",
-  "inflation_max": "0.67",
-  "inflation_min": "0.47",
-  "goal_bonded": "0.78",
-  "blocks_per_year": 650000
-}
-
