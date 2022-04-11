@@ -19,10 +19,11 @@ def balance_normalize(bal: CompatBalance = None) -> Balance:
     return {k: v for k, v in bal.items() if v != 0}
 
 
-def balance_add(bal1: Balance, bal2: Balance) -> Balance:
+def balance_add(*bal: Balance) -> Balance:
     result = {}
-    for denom in set(bal1.keys()).union(set(bal2.keys())):
-        val = bal1.get(denom, 0) + bal2.get(denom, 0)
+    all_denoms = set(flatten_list([[*b.keys()] for b in bal]))
+    for denom in all_denoms:
+        val = sum(b.get(denom, 0) for b in bal)
         if val != 0:
             result[denom] = val
     return result
@@ -32,8 +33,8 @@ def balance_neg(bal: Balance) -> Balance:
     return {k: -v for k, v in bal.items()}
 
 
-def balance_sub(bal1: Balance, bal2: Balance) -> Balance:
-    return balance_add(bal1, balance_neg(bal2))
+def balance_sub(bal1: Balance, *bal2: Balance) -> Balance:
+    return balance_add(bal1, *[balance_neg(b) for b in bal2])
 
 
 def balance_zero(bal: Balance) -> bool:
