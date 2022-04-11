@@ -309,10 +309,11 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				{
 					height: 1,
 					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
+						ExternalAsset:                 &types.Asset{Symbol: "eth"},
+						NativeAssetBalance:            sdk.NewUint(1000),
+						ExternalAssetBalance:          sdk.NewUint(1000),
+						PoolUnits:                     sdk.NewUint(1000),
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
 					SwapPriceNative:   sdk.MustNewDecFromStr("1.097803295605500089"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.907275450913636290"),
@@ -325,10 +326,11 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				{
 					height: 2,
 					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
+						ExternalAsset:                 &types.Asset{Symbol: "eth"},
+						NativeAssetBalance:            sdk.NewUint(1000),
+						ExternalAssetBalance:          sdk.NewUint(1000),
+						PoolUnits:                     sdk.NewUint(1000),
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
 					SwapPriceNative:   sdk.MustNewDecFromStr("1.207583625166050196"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.824795864466942015"),
@@ -341,10 +343,11 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				{
 					height: 3,
 					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
+						ExternalAsset:                 &types.Asset{Symbol: "eth"},
+						NativeAssetBalance:            sdk.NewUint(1000),
+						ExternalAssetBalance:          sdk.NewUint(1000),
+						PoolUnits:                     sdk.NewUint(1000),
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
 					SwapPriceNative:   sdk.MustNewDecFromStr("1.328341987682655322"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.749814422242674499"),
@@ -357,10 +360,11 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				{
 					height: 4,
 					pool: types.Pool{
-						ExternalAsset:        &types.Asset{Symbol: "eth"},
-						NativeAssetBalance:   sdk.NewUint(1000),
-						ExternalAssetBalance: sdk.NewUint(1000),
-						PoolUnits:            sdk.NewUint(1000),
+						ExternalAsset:                 &types.Asset{Symbol: "eth"},
+						NativeAssetBalance:            sdk.NewUint(1000),
+						ExternalAssetBalance:          sdk.NewUint(1000),
+						PoolUnits:                     sdk.NewUint(1000),
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
 					SwapPriceNative:   sdk.MustNewDecFromStr("1.461176186450920973"),
 					SwapPriceExternal: sdk.MustNewDecFromStr("0.681649474766067671"),
@@ -447,16 +451,18 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			app.ClpKeeper.SetPmtpEpoch(ctx, tc.epoch)
 
 			for i := 0; i < len(tc.expectedStates); i++ {
+				expectedState := tc.expectedStates[i]
+
 				ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 				clp.BeginBlocker(ctx, app.ClpKeeper)
 				got, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
 
-				tc.expectedStates[i].pool.SwapPriceNative = &tc.expectedStates[i].SwapPriceNative
-				tc.expectedStates[i].pool.SwapPriceExternal = &tc.expectedStates[i].SwapPriceExternal
+				expectedState.pool.SwapPriceNative = &expectedState.SwapPriceNative
+				expectedState.pool.SwapPriceExternal = &expectedState.SwapPriceExternal
 
-				require.Equal(t, tc.expectedStates[i].height, ctx.BlockHeight())
-				require.Equal(t, tc.expectedStates[i].pool, got)
-				require.Equal(t, tc.expectedStates[i].pmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
+				require.Equal(t, expectedState.height, ctx.BlockHeight())
+				require.Equal(t, expectedState.pool, got)
+				require.Equal(t, expectedState.pmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
 			}
 		})
 	}
