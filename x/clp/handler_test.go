@@ -441,8 +441,6 @@ func TestUnlockLiquidity(t *testing.T) {
 	externalDenom := "eth"
 	initialBalance := sdk.NewUintFromString("100000000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("10000000000000000000")        // Amount funded to pool , This same amount is used both for native and external asset
-	wBasis := sdk.NewInt(1000)
-	asymmetry := sdk.NewInt(10000)
 	asset := clptypes.NewAsset(externalDenom)
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
@@ -450,8 +448,8 @@ func TestUnlockLiquidity(t *testing.T) {
 	require.NoError(t, err)
 	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
 	require.NoError(t, err)
-	wBasis = sdk.NewInt(1000)
-	asymmetry = sdk.NewInt(10000)
+	wBasis := sdk.NewInt(1000)
+	asymmetry := sdk.NewInt(10000)
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	res, err := handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
