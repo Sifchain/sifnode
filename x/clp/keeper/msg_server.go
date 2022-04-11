@@ -175,6 +175,9 @@ func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlo
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
+	// Prune unlocks
+	params := k.GetRewardsParams(ctx)
+	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 	totalUnlocks := sdk.ZeroUint()
 	for _, unlock := range lp.Unlocks {
 		totalUnlocks = totalUnlocks.Add(unlock.Units)
