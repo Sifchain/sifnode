@@ -1,7 +1,7 @@
 import random
 from typing import Sequence, Any
-
-from siftool import eth, test_utils
+from siftool import eth, test_utils, cosmos, sifchain
+from siftool.common import *
 
 # Fees for sifchain -> sifchain transactions, paid by the sender.
 sif_tx_fee_in_rowan = 1 * 10**17
@@ -25,6 +25,47 @@ rowan = "rowan"
 # be processed. This value was determined experimentally with hardhat. Typical effective fee is 210542 GWEI per
 # transaction, but for some reason the logic requires sender to have more funds in his account.
 max_eth_transfer_fee = 10000000 * eth.GWEI
+
+
+def get_sif_tx_fees(ctx):
+    return {rowan: sif_tx_fee_in_rowan}
+
+
+def get_sif_burn_fees(ctx):
+    return {rowan: sif_tx_burn_fee_in_rowan, ctx.ceth_symbol: sif_tx_burn_fee_in_ceth}
+
+
+def send_from_sifchain_to_sifchain(ctx: test_utils.EnvCtx, from_addr: cosmos.Address, to_addr: cosmos.Address,
+    amounts: cosmos.Balance
+) -> cosmos.Balance:
+    from_balance_before = ctx.get_sifchain_balance(from_addr)
+    to_balance_before = ctx.get_sifchain_balance(to_addr)
+    ctx.send_from_sifchain_to_sifchain(from_addr, to_addr, amounts)
+    from_expected_balance = cosmos.balance_sub(from_balance_before, amounts)
+    to_expected_balance = cosmos.balance_add(to_balance_before, amounts)
+    to_balance_after = ctx.wait_for_sif_balance_change(to_addr, to_balance_before, expected_balance=to_expected_balance)
+    from_balance_after = cosmos.balance_sub(from_balance_before, amounts)
+    assert to_balance_after == ctx.get_sifchain_balance(to_addr)
+    assert cosmos.balance_equal(from_balance_after, from_expected_balance)
+    assert cosmos.balance_equal(to_balance_after, to_expected_balance)
+    return to_balance_after
+
+
+def send_erc20_from_sifchain_to_ethereum(ctx: test_utils.EnvCtx, from_addr: cosmos.Address, to_addr: eth.Address,
+    amount: int, denom: str
+):
+    assert on_peggy2_branch
+    ethereum_network_descriptor, token_address = sifchain.sifchain_denom_hash_to_token_contract_address(denom)
+    assert ethereum_network_descriptor == ctx.eth.ethereum_network_descriptor  # Note: peggy2 only
+    sif_balance_before = ctx.get_sifchain_balance(from_addr)
+    eth_balance_before = ctx.get_erc20_token_balance(token_address, to_addr)
+    ctx.sifnode_client.send_from_sifchain_to_ethereum(from_addr, to_addr, amount, denom)
+    ctx.wait_for_eth_balance_change(to_addr, eth_balance_before, token_addr=token_address)
+    sif_balance_after = ctx.get_sifchain_balance(from_addr)
+    eth_balance_after = ctx.get_erc20_token_balance(token_address, to_addr)
+    sif_burn_fees = get_sif_burn_fees(ctx)
+    assert cosmos.balance_equal(sif_balance_after, cosmos.balance_sub(sif_balance_before, {denom: amount},  sif_burn_fees))
+    assert eth_balance_after == eth_balance_before + amount
 
 
 def choose_from(distr: Sequence[Any], rnd: random.Random = None) -> int:

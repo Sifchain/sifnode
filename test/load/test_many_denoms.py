@@ -1,10 +1,9 @@
-import logging.handlers
+import sys
 import time
 import logging
 from typing import Callable, Tuple, Iterable, List
 
 import siftool_path
-
 from siftool import cosmos, eth, sifchain, test_utils
 from siftool.common import *
 from load_testing import *
@@ -21,7 +20,7 @@ def batch_deploy_erc20_tokens(ctx: test_utils.EnvCtx, count: int, deployer_addr:
     txhashes = []
     for i in range(count):
         name, symbol, decimals = token_data_provider(i)
-        constructor_args = [name, symbol, decimals, "cosmos_denom"]  # Dummy value for cosmos_denom, actual denom will be sifBridgeDDDD0xXXX...X
+        constructor_args = [name, symbol, decimals, "dummy_value_for_cosmos_denom"]  # Dummy value for cosmos_denom, actual denom will be sifBridgeDDDD0xXXX...X
         txhash = ctx.eth.transact(token_sc.constructor, deployer_addr)(*constructor_args)
         txhashes.append(txhash)
     txrcpts = ctx.eth.wait_for_all_transaction_receipts(txhashes)
@@ -62,11 +61,13 @@ def batch_approve_and_lock_erc20_tokens(ctx: test_utils.EnvCtx, from_eth_acct: e
     ctx.eth.wait_for_all_transaction_receipts(txrcpts)
 
 
-def test(ctx):
-    _test(ctx, 5000)
+def test(ctx: test_utils.EnvCtx):
+    _test(ctx, 2)
 
 
-def _test(ctx, number_of_erc20_tokens):
+def _test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int):
+    assert number_of_erc20_tokens > 1
+
     token_name_base = random_string(4)
     owner = ctx.operator
 
@@ -121,3 +122,36 @@ def _test(ctx, number_of_erc20_tokens):
 
     log.debug("Total: {:.2f} s, {:.2f} items/s".format(total_time,
         number_of_erc20_tokens / total_time if total_time > 0 else 0))
+
+    transfer = {rowan: sif_tx_fee_in_rowan}
+    ctx.send_from_sifchain_to_sifchain(ctx.rowan_source, sif_recipient, transfer)
+
+    expected_balance_1 = cosmos.balance_add(expected_balance, transfer)
+    ctx.wait_for_sif_balance_change(sif_recipient, sif_balance_after, expected_balance=expected_balance_1)
+
+    tx_fee = get_sif_tx_fees(ctx)
+    tmp_sif_accounts = [ctx.create_sifchain_addr(fund_amounts=tx_fee) for _ in range(1)]
+
+    denom1, denom2 = sif_denoms[0:2]
+    transfer = {denom1: amount, denom2: 1}
+    expected_balance_2 = cosmos.balance_sub(expected_balance_1, transfer, tx_fee)
+    prev_balance = ctx.get_sifchain_balance(tmp_sif_accounts[0])
+    ctx.send_from_sifchain_to_sifchain(sif_recipient, tmp_sif_accounts[0], transfer)
+    ctx.wait_for_sif_balance_change(tmp_sif_accounts[0], prev_balance, transfer)
+    assert cosmos.balance_equal(ctx.get_sifchain_balance(sif_recipient), expected_balance_2)
+    assert cosmos.balance_equal(ctx.get_sifchain_balance(tmp_sif_accounts[0]), cosmos.balance_add(tx_fee, transfer))
+
+    sif_burn_fees = get_sif_burn_fees(ctx)
+    send_from_sifchain_to_sifchain(ctx, ctx.rowan_source, sif_recipient, sif_burn_fees)
+
+    test_eth_accts = [ctx.create_and_fund_eth_account() for _ in range(1)]
+    send_erc20_from_sifchain_to_ethereum(ctx, sif_recipient, test_eth_accts[0], amount - 1, denom2)
+
+
+# Enable running directly, i.e. without pytest
+if __name__ == "__main__":
+    basic_logging_setup()
+    ctx = test_utils.get_env_ctx()
+    number_of_erc20_tokens = int(sys.argv[1]) if len(sys.argv) == 2 else 2
+    _test(ctx, number_of_erc20_tokens)
+    log.info("Success")
