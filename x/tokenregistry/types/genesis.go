@@ -18,6 +18,13 @@ func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisS
 	}
 	return genesisState
 }
+func DefaultGenesisState() *GenesisState {
+
+	return &GenesisState{
+		AdminAccounts: InitialAdminAccounts(),
+		Registry:      InitialRegistry(),
+	}
+}
 
 func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
@@ -30,7 +37,38 @@ func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]
 	return genesisState
 }
 
-func InitialRegistry() Registry {
+func InitialAdminAccounts() *AdminAccounts {
+	return &AdminAccounts{
+		AdminAccounts: []*AdminAccount{
+			{
+				AdminType:    AdminType_CLPDEX,
+				AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			},
+			{
+				AdminType:    AdminType_CLPDEX,
+				AdminAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+			},
+			{
+				AdminType:    AdminType_PMTPREWARDS,
+				AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			},
+			{
+				AdminType:    AdminType_PMTPREWARDS,
+				AdminAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+			},
+			{
+				AdminType:    AdminType_ETHBRIDGE,
+				AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			},
+			{
+				AdminType:    AdminType_TOKENREGISTRY,
+				AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			},
+		},
+	}
+}
+
+func InitialRegistry() *Registry {
 	entries := Registry{
 		Entries: []*RegistryEntry{
 			{Denom: "rowan", Decimals: 18, Permissions: []Permission{Permission_CLP}},
@@ -98,5 +136,5 @@ func InitialRegistry() Registry {
 			entries.Entries[i].BaseDenom = entries.Entries[i].Denom
 		}
 	}
-	return entries
+	return &entries
 }

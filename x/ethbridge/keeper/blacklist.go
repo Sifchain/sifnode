@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,7 +18,7 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 		return err
 	}
 
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, types.ModuleName, from) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_ETHBRIDGE, from) {
 		return oracletypes.ErrNotAdminAccount
 	}
 

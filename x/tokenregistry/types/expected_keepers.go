@@ -6,8 +6,8 @@ import (
 )
 
 type Keeper interface {
-	IsAdminAccount(ctx sdk.Context, moduleName string, adminAccount sdk.AccAddress) bool
-	SetAdminAccount(ctx sdk.Context, moduleName string, adminAccount sdk.AccAddress)
+	IsAdminAccount(ctx sdk.Context, moduleName AdminType, adminAccount sdk.AccAddress) bool
+	SetAdminAccount(ctx sdk.Context, account *AdminAccount)
 	CheckEntryPermissions(entry *RegistryEntry, permissions []Permission) bool
 	GetEntry(registry Registry, denom string) (*RegistryEntry, error)
 	SetToken(ctx sdk.Context, entry *RegistryEntry)

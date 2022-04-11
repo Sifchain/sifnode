@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"time"
 )
 
@@ -63,8 +64,39 @@ type Crisis struct {
 	ConstantFee ConstantFee `json:"constant_fee"`
 }
 
+type AdminAccount struct {
+	AdminType    types.AdminType `json:"admin_type"`
+	AdminAddress string          `json:"admin_address"`
+}
+type AdminAccounts struct {
+	AdminAccounts []*AdminAccount `json:"admin_accounts"`
+}
+
+type Registry struct {
+	Entries []*RegistryEntry
+}
+
+type RegistryEntry struct {
+	Decimals                 int64
+	Denom                    string
+	BaseDenom                string
+	Path                     string
+	IbcChannelId             string
+	IbcCounterpartyChannelId string
+	DisplayName              string
+	DisplaySymbol            string
+	Network                  string
+	Address                  string
+	ExternalSymbol           string
+	TransferLimit            string
+	Permissions              []types.Permission
+	UnitDenom                string
+	IbcCounterpartyDenom     string
+	IbcCounterpartyChainId   string
+}
 type TokenRegistry struct {
-	AdminAccount string `json:"admin_account"`
+	AdminAccount AdminAccounts `json:"admin_account"`
+	Registry     Registry      `json:"registry"`
 }
 
 type ConstantFee struct {

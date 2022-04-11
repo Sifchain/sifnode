@@ -53,9 +53,17 @@ message RegistryEntry {
   string ibc_counterparty_chain_id = 18;
 }
 
+
+enum AdminType {
+  CLPDEX = 0;
+  PMTPREWARDS = 1;
+  TOKENREGISTRY = 2;
+  ETHBRIDGE = 3;
+}
+
 message AdminAccount {
-  string moduleName = 1;
-  string address = 2;
+  AdminType admin_type = 1;
+  string admin_address = 2;
 }
 
 message AdminAccounts { repeated AdminAccount admin_accounts = 1; }

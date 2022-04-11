@@ -24,3 +24,11 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 	m.keeper.SetRegistry(ctx, registry)
 	return nil
 }
+
+func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
+	accounts := tkrtypes.InitialAdminAccounts()
+	for _, account := range accounts.AdminAccounts {
+		m.keeper.SetAdminAccount(ctx, account)
+	}
+	return nil
+}

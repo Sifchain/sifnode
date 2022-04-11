@@ -18,7 +18,7 @@ func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (*types
 	if err != nil {
 		return nil, err
 	}
-	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), types.ModuleName, addr) {
+	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), types.AdminType_TOKENREGISTRY, addr) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
 	m.keeper.SetToken(sdk.UnwrapSDKContext(ctx), req.Entry)
@@ -30,7 +30,7 @@ func (m msgServer) SetRegistry(ctx context.Context, req *types.MsgSetRegistry) (
 	if err != nil {
 		return nil, err
 	}
-	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), types.ModuleName, addr) {
+	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), types.AdminType_TOKENREGISTRY, addr) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
 	m.keeper.SetRegistry(sdk.UnwrapSDKContext(ctx), *req.Registry)
@@ -42,7 +42,7 @@ func (m msgServer) Deregister(ctx context.Context, req *types.MsgDeregister) (*t
 	if err != nil {
 		return nil, err
 	}
-	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), types.ModuleName, addr) {
+	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), types.AdminType_TOKENREGISTRY, addr) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
 	m.keeper.RemoveToken(sdk.UnwrapSDKContext(ctx), req.Denom)

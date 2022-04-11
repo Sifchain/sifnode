@@ -19,7 +19,7 @@ import (
 
 func SetGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-genesis-whitelister-admin [address_or_key_name]",
+		Use:   "set-genesis-whitelist-admin [address_or_key_name]",
 		Short: "Add a genesis account to genesis.json that has permission to edit token whitelist.",
 		Long: `Add a genesis account to genesis.json. The provided account must specify
 the account address or key name. If a key name is given,
@@ -56,7 +56,17 @@ the address will be looked up in the local Keybase.
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 			state := tokenregistrytypes.UnmarshalGenesis(cdc, appState[tokenregistrytypes.ModuleName])
-			state.AdminAccount = addr.String()
+			fmt.Println(addr)
+			a := []*tokenregistrytypes.AdminAccount{
+				{
+					AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
+					AdminAddress: addr.String(),
+				},
+			}
+			if state.AdminAccounts.AdminAccounts != nil {
+				a = append(a, state.AdminAccounts.AdminAccounts...)
+			}
+			state.AdminAccounts.AdminAccounts = a
 			stateBz, err := json.Marshal(state)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
