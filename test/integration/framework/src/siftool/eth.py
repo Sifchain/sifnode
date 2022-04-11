@@ -1,6 +1,7 @@
 import logging
 import time
 import web3
+import eth_typing
 from hexbytes import HexBytes
 from web3.datastructures import AttributeDict
 from typing import NewType, Sequence
@@ -12,7 +13,7 @@ ETH = 10**18
 GWEI = 10**9
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 MIN_TX_GAS = 21000
-Address = NewType("Address", str)
+Address = eth_typing.AnyAddress
 
 log = logging.getLogger(__name__)
 

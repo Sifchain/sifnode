@@ -321,7 +321,7 @@ class EnvCtx:
         abi, _, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         return self.w3_conn.eth.contract(abi=abi, address=address)
 
-    def get_erc20_token_balance(self, token_addr, eth_addr) -> int:
+    def get_erc20_token_balance(self, token_addr: eth.Address, eth_addr: eth.Address) -> int:
         token_sc = self.get_generic_erc20_sc(token_addr)
         return token_sc.functions.balanceOf(eth_addr).call()
 
@@ -580,7 +580,9 @@ class EnvCtx:
             assert cosmos.balance_zero(cosmos.balance_sub(new_balances, fund_amounts))
         return sif_address
 
-    def send_from_sifchain_to_sifchain(self, from_sif_addr, to_sif_addr, amounts):
+    def send_from_sifchain_to_sifchain(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address,
+        amounts: cosmos.Balance
+    ):
         amounts = cosmos.balance_normalize(amounts)
         amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
