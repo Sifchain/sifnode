@@ -17,29 +17,33 @@ func TestEndBlock(t *testing.T) {
 	params := app.ClpKeeper.GetRewardsParams(ctx)
 
 	allocation := sdk.NewUintFromString("200000000000000000000000000")
+	oneDec := sdk.OneDec()
 	params.RewardPeriods = []*types.RewardPeriod{
-		{RewardPeriodId: "Test 1", RewardPeriodStartBlock: 1, RewardPeriodEndBlock: 10, RewardPeriodAllocation: &allocation},
+		{RewardPeriodId: "Test 1", RewardPeriodStartBlock: 1, RewardPeriodEndBlock: 10, RewardPeriodAllocation: &allocation, RewardPeriodDefaultMultiplier: &oneDec},
 	}
 	app.ClpKeeper.SetRewardParams(ctx, params)
 	err := app.ClpKeeper.SetPool(ctx, &types.Pool{
-		ExternalAsset:        &types.Asset{Symbol: "atom"},
-		NativeAssetBalance:   sdk.NewUint(1000),
-		ExternalAssetBalance: sdk.NewUint(1000),
-		PoolUnits:            sdk.NewUint(1000),
+		ExternalAsset:                 &types.Asset{Symbol: "atom"},
+		NativeAssetBalance:            sdk.NewUint(1000),
+		ExternalAssetBalance:          sdk.NewUint(1000),
+		PoolUnits:                     sdk.NewUint(1000),
+		RewardPeriodNativeDistributed: sdk.ZeroUint(),
 	})
 	require.NoError(t, err)
 	err = app.ClpKeeper.SetPool(ctx, &types.Pool{
-		ExternalAsset:        &types.Asset{Symbol: "cusdc"},
-		NativeAssetBalance:   sdk.NewUint(1000),
-		ExternalAssetBalance: sdk.NewUint(1000),
-		PoolUnits:            sdk.NewUint(1000),
+		ExternalAsset:                 &types.Asset{Symbol: "cusdc"},
+		NativeAssetBalance:            sdk.NewUint(1000),
+		ExternalAssetBalance:          sdk.NewUint(1000),
+		PoolUnits:                     sdk.NewUint(1000),
+		RewardPeriodNativeDistributed: sdk.ZeroUint(),
 	})
 	require.NoError(t, err)
 	err = app.ClpKeeper.SetPool(ctx, &types.Pool{
-		ExternalAsset:        &types.Asset{Symbol: "ceth"},
-		NativeAssetBalance:   sdk.NewUint(1000),
-		ExternalAssetBalance: sdk.NewUint(1000),
-		PoolUnits:            sdk.NewUint(1000),
+		ExternalAsset:                 &types.Asset{Symbol: "ceth"},
+		NativeAssetBalance:            sdk.NewUint(1000),
+		ExternalAssetBalance:          sdk.NewUint(1000),
+		PoolUnits:                     sdk.NewUint(1000),
+		RewardPeriodNativeDistributed: sdk.ZeroUint(),
 	})
 	require.NoError(t, err)
 	startingSupply := app.BankKeeper.GetSupply(ctx, "rowan")
