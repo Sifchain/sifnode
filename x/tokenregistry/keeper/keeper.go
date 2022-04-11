@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -59,12 +58,7 @@ func (k keeper) GetAdminAccountsForType(ctx sdk.Context, adminType types.AdminTy
 	for ; iterator.Valid(); iterator.Next() {
 		var al types.AdminAccount
 		bytesValue := iterator.Value()
-		err := k.cdc.Unmarshal(bytesValue, &al)
-		if err != nil {
-			// Log unmarshal distribution error instead of panic.
-			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for admin account bytes : %s ", bytesValue))
-			continue
-		}
+		k.cdc.MustUnmarshal(bytesValue, &al)
 		if al.AdminType == adminType {
 			res.AdminAccounts = append(res.AdminAccounts, &al)
 		}
@@ -84,14 +78,8 @@ func (k keeper) GetAdminAccounts(ctx sdk.Context) *types.AdminAccounts {
 	for ; iterator.Valid(); iterator.Next() {
 		var al types.AdminAccount
 		bytesValue := iterator.Value()
-		err := k.cdc.Unmarshal(bytesValue, &al)
-		if err != nil {
-			// Log unmarshal distribution error instead of panic.
-			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for admin account bytes : %s ", bytesValue))
-			continue
-		}
+		k.cdc.MustUnmarshal(bytesValue, &al)
 		res.AdminAccounts = append(res.AdminAccounts, &al)
-
 	}
 	return &res
 }
