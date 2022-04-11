@@ -795,10 +795,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			lp, _ := app.ClpKeeper.GetLiquidityProvider(ctx, tc.poolAsset, tc.address)
 
 			require.Equal(t, pool, types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: tc.poolAsset},
-				NativeAssetBalance:   tc.nativeAssetAmount,
-				ExternalAssetBalance: tc.externalAssetAmount,
-				PoolUnits:            tc.poolUnits,
+				ExternalAsset:                 &types.Asset{Symbol: tc.poolAsset},
+				NativeAssetBalance:            tc.nativeAssetAmount,
+				ExternalAssetBalance:          tc.externalAssetAmount,
+				PoolUnits:                     tc.poolUnits,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			})
 
 			var normalizationFactor sdk.Dec
