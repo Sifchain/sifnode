@@ -29,9 +29,6 @@ jobs:
 
       - name: Start standalone peggy
         run: |
-          echo $PATH
-          which sifgen
-          which ebrelayer
           ./test/integration/framework/siftool run-env
 
       - name: Run integration tests
