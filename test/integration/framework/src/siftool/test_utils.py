@@ -2,17 +2,13 @@ import json
 import os
 import random
 import time
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Union, List
 import web3
 from web3.eth import Contract
 from hexbytes import HexBytes
 from web3.types import TxReceipt
 
-import siftool.eth as eth
-import siftool.truffle as truffle
-import siftool.hardhat as hardhat
-import siftool.run_env as run_env
-import siftool.sifchain as sifchain
+from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos
 from siftool.common import *
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
@@ -95,7 +91,7 @@ def get_env_ctx_peggy2():
     sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
     assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
     sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
-    ethereum_network_descriptor = dot_env_vars["ETH_CHAIN_ID"]
+    ethereum_network_descriptor = int(dot_env_vars["ETH_CHAIN_ID"])
 
     eth_node_is_local = True
     generic_erc20_contract = "BridgeToken"
@@ -561,7 +557,7 @@ class EnvCtx:
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
 
-    def create_sifchain_addr(self, moniker=None, fund_amounts=None):
+    def create_sifchain_addr(self, moniker: str = None, fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance] = None):
         """
         Generates a new sifchain address in test keyring. If moniker is given, uses it, otherwise
         generates a random one 'test-xxx'. If fund_amounts is given, the sifchain funds are transferred
@@ -571,18 +567,22 @@ class EnvCtx:
         acct = self.sifnode.keys_add_1(moniker)
         sif_address = acct["address"]
         if fund_amounts:
+            fund_amounts = cosmos.balance_normalize(fund_amounts)  # Convert from old format if neccessary
             rowan_source_balances = self.get_sifchain_balance(self.rowan_source)
-            for required_amount, denom in fund_amounts:
+            for denom, required_amount in fund_amounts.items():
                 available_amount = rowan_source_balances.get(denom, 0)
                 assert available_amount >= required_amount, "Rowan source {} would need {}, but only has {}".format(
                     self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
             self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
+            new_balances = self.get_sifchain_balance(sif_address)
+            assert cosmos.balance_zero(cosmos.balance_sub(new_balances, fund_amounts))
         return sif_address
 
     def send_from_sifchain_to_sifchain(self, from_sif_addr, to_sif_addr, amounts):
-        amounts_string = ",".join([sif_format_amount(*a) for a in amounts])
+        amounts = cosmos.balance_normalize(amounts)
+        amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
             self._sifnoded_chain_id_and_node_arg() + \
             self._sifnoded_fees_arg() + \
@@ -595,30 +595,38 @@ class EnvCtx:
                 raise Exception(raw_log)
         return retval
 
-    def get_sifchain_balance(self, sif_addr):
+    def get_sifchain_balance(self, sif_addr: cosmos.Address) -> cosmos.Balance:
         args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
         res = json.loads(stdout(res))["balances"]
-        return dict(((x["denom"], int(x["amount"])) for x in res))
+        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res) if amount != 0}
 
-    def wait_for_sif_balance_change(self, sif_addr: str, old_balances: Iterable[Mapping[str, int]], min_changes: Iterable[Mapping[int, str]] =None, polling_time=1, timeout=90, change_timeout=None) -> Iterable[Mapping[str, int]]:
+    # Unless timed out, this function will exit:
+    # - if min_changes are given: when changes are greater.
+    # - if expected_balance is given: when balances are equal to that.
+    # - if neither min_changes nor expected_balance are given: when anything changes.
+    # You cannot use min_changes and expected_balance at the same time.
+    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balances: cosmos.Balance,
+        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time=1,
+        timeout=90, change_timeout=None
+    ) -> cosmos.Balance:
+        assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
+        min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
+        expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
         start_time = time.time()
         last_change_time = None
         last_change_state = None
         while True:
             new_balances = self.get_sifchain_balance(sif_addr)
-            delta = sifchain.balance_delta(old_balances, new_balances)
-            if min_changes is not None:
-                reached_changes = 0
-                # compare each denoms' delta, return the new balance if delta as expected accorind to min_changes
-                for amount, denom in min_changes:
-                    changed_value = delta.get(denom, 0)
-                    if abs(changed_value) >= amount:
-                        reached_changes += 1
-                if reached_changes >= len(min_changes):
-                    return new_balances
-            elif not sifchain.balance_zero(delta):
+            delta = cosmos.balance_sub(new_balances, old_balances)
+            if expected_balance is not None:
+                should_return = cosmos.balance_equal(new_balances)
+            elif min_changes is not None:
+                should_return = cosmos.balance_exceeds(delta, min_changes)
+            else:
+                should_return = not cosmos.balance_zero(delta)
+            if should_return:
                 return new_balances
             now = time.time()
             if (timeout is not None) and (now - start_time > timeout):
@@ -627,8 +635,8 @@ class EnvCtx:
                 last_change_state = new_balances
                 last_change_time = now
             else:
-                delta = sifchain.balance_delta(last_change_state, new_balances)
-                if not sifchain.balance_zero(delta):
+                delta = cosmos.balance_sub(new_balances, last_change_state)
+                if not cosmos.balance_zero(delta):
                     last_change_state = new_balances
                     last_change_time = now
                     log.debug("New state detected: {}".format(delta))
@@ -765,7 +773,8 @@ class EnvCtx:
         if fund_amount is not None:
             fund_from = fund_from or self.operator
             funder_balance_before = self.eth.get_eth_balance(fund_from)
-            assert funder_balance_before >= fund_amount
+            assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: need {}, have {}" \
+                .format(fund_amount, funder_balance_before)
             target_balance_before = self.eth.get_eth_balance(address)
             difference = fund_amount - target_balance_before
             if difference > 0:
