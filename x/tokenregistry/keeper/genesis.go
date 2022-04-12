@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -12,12 +11,8 @@ func (k keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	if state.AdminAccounts != nil {
 
 		for _, adminAccount := range state.AdminAccounts.AdminAccounts {
-			fmt.Println("Setting Admin account ", adminAccount)
 			k.SetAdminAccount(ctx, adminAccount)
 		}
-	}
-	if state.Registry != nil {
-		k.SetRegistry(ctx, *state.Registry)
 	}
 	return []abci.ValidatorUpdate{}
 }

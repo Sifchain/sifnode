@@ -172,7 +172,7 @@ func TestBeginBlocker(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccount: tc.address,
+					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
@@ -383,7 +383,7 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccount: tc.address,
+					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.poolAssetDecimals, Permissions: tc.poolAssetPermissions},
