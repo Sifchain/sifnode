@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"io/ioutil"
 	"path/filepath"
 
@@ -39,6 +40,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdAddRewardPeriod(),
 		GetCmdModifyPmtpRates(),
 		GetCmdUpdatePmtpParams(),
+		GetCmdUpdateStakingRewards(),
 	)
 
 	return clpTxCmd
@@ -67,7 +69,6 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println(rewardPeriods)
 			msg := types.MsgAddRewardPeriodRequest{
 				Signer:        signer.String(),
 				RewardPeriods: rewardPeriods,
@@ -353,6 +354,67 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsBlockRate)
 	cmd.Flags().AddFlagSet(FsRunningRate)
 	cmd.Flags().AddFlagSet(FsEndCurrentPolicy)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdUpdateStakingRewards() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "staking-rewards",
+		Short: "Update params to modify staking rewards",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			params := minttypes.Params{}
+			minter := minttypes.Minter{}
+			filePathParams := viper.GetString(FlagMintParams)
+			file, err := filepath.Abs(filePathParams)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &params)
+			if err != nil {
+				return err
+			}
+			// Minter is an optional flag
+			filePathMinter := viper.GetString(FlagMinter)
+			if filePathMinter != "" {
+				file, err = filepath.Abs(filePathMinter)
+				if err != nil {
+					return err
+				}
+				input, err = ioutil.ReadFile(file)
+				if err != nil {
+					return err
+				}
+				err = json.Unmarshal(input, &minter)
+				if err != nil {
+					return err
+				}
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgUpdateStakingRewardParams{
+				Signer: signer.String(),
+				Params: params,
+				Minter: minter,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsFlagMintParams)
+	cmd.Flags().AddFlagSet(FsFlagMinter)
+	if err := cmd.MarkFlagRequired(FlagMintParams); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
