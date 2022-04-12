@@ -24,6 +24,7 @@ export ADMIN_MNEMONIC="race draft rival universe maid cheese steel logic crowd f
 export SIF_ACT=sif
 export SIFNODE_CHAIN_ID=localnet
 export SIFNODE_P2P_HOSTNAME=localhost
+export SIFNODE_NODE=tcp://${SIFNODE_P2P_HOSTNAME}:26657
 ```
 
 and now register the tokens and create 6 pools against those tokens by calling:

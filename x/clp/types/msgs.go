@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -62,9 +60,6 @@ func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
 		if period.RewardPeriodId == "" {
 			return fmt.Errorf("reward period id must be non-empty: %d", period.RewardPeriodStartBlock)
 		}
-		if period.RewardPeriodStartBlock < 0 {
-			return fmt.Errorf("reward period start block must be positive or zero: %d", period.RewardPeriodStartBlock)
-		}
 		if period.RewardPeriodEndBlock < period.RewardPeriodStartBlock {
 			return fmt.Errorf("reward period start block must be before end block: %d %d", period.RewardPeriodStartBlock, period.RewardPeriodEndBlock)
 		}
@@ -107,12 +102,6 @@ func (m MsgUpdateRewardsParamsRequest) Type() string {
 }
 
 func (m MsgUpdateRewardsParamsRequest) ValidateBasic() error {
-	if m.LiquidityRemovalCancelPeriod < 0 {
-		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
-	}
-	if m.LiquidityRemovalLockPeriod < 0 {
-		return errors.Wrap(ErrInvalid, "LiquidityRemovalCancelPeriod cannot be less than 0")
-	}
 	return nil
 }
 

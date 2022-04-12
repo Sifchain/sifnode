@@ -25,18 +25,21 @@ async function createAssetRewardsFile() {
     const asset = entry ? entry.denom : `???${poolName}???`;
 
     return {
-      asset,
+      pool_multiplier_asset: asset,
       multiplier,
     };
   });
 
-  const rewards = {
-    id: "RP_1",
-    start_block: 1,
-    end_block: 100,
-    allocation,
-    multipliers,
-  };
+  const rewards = [
+    {
+      reward_period_id: "RP_1",
+      reward_period_start_block: 1,
+      reward_period_end_block: 100,
+      reward_period_allocation: allocation,
+      reward_period_pool_multipliers: multipliers,
+      reward_period_default_multiplier: "0.0",
+    },
+  ];
 
   fs.writeFileSync("./rewards.json", JSON.stringify(rewards, null, 2));
 }

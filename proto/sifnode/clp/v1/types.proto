@@ -33,6 +33,11 @@ message Pool {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.moretags) = "yaml:\"swap_price_external \""
   ];
+  string reward_period_native_distributed = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"reward_period_native_distributed\""
+  ];
 }
 
 message LiquidityProvider {
