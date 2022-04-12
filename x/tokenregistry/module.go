@@ -105,6 +105,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
 	m := keeper.NewMigrator(am.Keeper)
 	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer2)
+	if err != nil {
+		panic(err)
+	}
 	err = cfg.RegisterMigration(types.ModuleName, 2, m.MigrateToVer3)
 	if err != nil {
 		panic(err)
