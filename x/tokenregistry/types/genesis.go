@@ -37,6 +37,29 @@ func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]
 	return genesisState
 }
 
+func ProdAdminAccounts() *AdminAccounts {
+	return &AdminAccounts{
+		AdminAccounts: []*AdminAccount{
+			{
+				AdminType:    AdminType_PMTPREWARDS,
+				AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
+			},
+			{
+				AdminType:    AdminType_CLPDEX,
+				AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
+			},
+			{
+				AdminType:    AdminType_TOKENREGISTRY,
+				AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
+			},
+			{
+				AdminType:    AdminType_ETHBRIDGE,
+				AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
+			},
+		},
+	}
+}
+
 func InitialAdminAccounts() *AdminAccounts {
 	return &AdminAccounts{
 		AdminAccounts: []*AdminAccount{
@@ -51,6 +74,10 @@ func InitialAdminAccounts() *AdminAccounts {
 			{
 				AdminType:    AdminType_PMTPREWARDS,
 				AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			},
+			{
+				AdminType:    AdminType_PMTPREWARDS,
+				AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
 			},
 			{
 				AdminType:    AdminType_PMTPREWARDS,

@@ -26,7 +26,14 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
-	accounts := tkrtypes.InitialAdminAccounts()
+	accounts := tkrtypes.AdminAccounts{}
+	if ctx.ChainID() == "sifchain-1" {
+		gen := tkrtypes.ProdAdminAccounts()
+		accounts = *gen
+	} else {
+		gen := tkrtypes.InitialAdminAccounts()
+		accounts = *gen
+	}
 	for _, account := range accounts.AdminAccounts {
 		m.keeper.SetAdminAccount(ctx, account)
 	}
