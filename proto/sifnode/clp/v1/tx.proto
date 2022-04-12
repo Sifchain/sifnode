@@ -20,7 +20,43 @@ service Msg {
   rpc AddRewardPeriod(MsgAddRewardPeriodRequest) returns (MsgAddRewardPeriodResponse);
   rpc ModifyPmtpRates(MsgModifyPmtpRates) returns (MsgModifyPmtpRatesResponse);
   rpc UpdatePmtpParams(MsgUpdatePmtpParams) returns (MsgUpdatePmtpParamsResponse);
+  rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams) returns (MsgUpdateStakingRewardParamsResponse);
 }
+
+//message MsgUpdateStakingRewardParams{
+//  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+//  string inflation = 2 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//  string inflation_max = 3 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//  string inflation_min = 4 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//  string annual_provisions = 5 [
+//    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+//    (gogoproto.nullable) = false
+//  ];
+//}
+
+message MsgUpdateStakingRewardParams {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string minter =2
+  [ (gogoproto.customtype) =
+      "github.com/cosmos/cosmos-sdk/x/mint/types.Minter",
+    (gogoproto.nullable) = false
+  ];
+  string params =3
+  [ (gogoproto.customtype) =
+      "github.com/cosmos/cosmos-sdk/x/mint/types.Params",
+    (gogoproto.nullable) = false];
+}
+
+message MsgUpdateStakingRewardParamsResponse {}
 
 message MsgRemoveLiquidity {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
