@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -81,7 +82,7 @@ func GetDefaultRewardParams() *RewardParams {
 func GetDefaultPmtpParams() *PmtpParams {
 	return &PmtpParams{
 		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.0"),
-		PmtpPeriodEpochLength:    0,
+		PmtpPeriodEpochLength:    1,
 		PmtpPeriodStartBlock:     0,
 		PmtpPeriodEndBlock:       0,
 	}
