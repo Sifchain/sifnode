@@ -79,17 +79,6 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 	sifapp.SetConfig(false)
 	app := sifapp.SetupFromGenesis(isCheckTx, genesisTransformer)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	app.TokenRegistryKeeper.SetRegistry(ctx, tokenregistrytypes.Registry{
-		Entries: []*tokenregistrytypes.RegistryEntry{
-			{Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-			{Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-			{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-			{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-			{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-			{Denom: "atom", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
-		},
-	})
 
 	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.OneDec(),
