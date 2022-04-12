@@ -19,22 +19,22 @@ threads_num = 3
 amount_to_send = 10000
 
 def bridge_bank_lock_burn(eth_tx_wrapper: eth.EthereumTxWrapper, bridge_bank_sc: Contract, test_eth_account: str, 
-    recipient: str, amount_to_send: int, nonce: int, token_sc: Contract = None, isLock: bool = True):
+    recipient: str, token_amount: int, nonce: int, token_sc: Contract = None, isLock: bool = True):
 
     if token_sc is None:
-        tx_opts = {"value": amount_to_send, "nonce": nonce}
+        tx_opts = {"value": token_amount, "nonce": nonce}
         token_addr = NULL_ADDRESS
     else:
         tx_opts = {"value": 0, "nonce": nonce}
         token_addr = token_sc.address 
-        eth_tx_wrapper.transact_sync(token_sc.functions.approve, test_eth_account, tx_opts=tx_opts)(bridge_bank_sc.address, amount_to_send)
+        eth_tx_wrapper.transact_sync(token_sc.functions.approve, test_eth_account, tx_opts=tx_opts)(bridge_bank_sc.address, token_amount)
         tx_opts = {"value": 0, "nonce": nonce+1}
 
     if isLock:
         function = bridge_bank_sc.functions.lock
     else:
         function = bridge_bank_sc.functions.burn
-    eth_tx_wrapper.transact(function, test_eth_account, tx_opts=tx_opts)(recipient, token_addr, amount_to_send)
+    eth_tx_wrapper.transact(function, test_eth_account, tx_opts=tx_opts)(recipient, token_addr, token_amount)
 
 
 def test_load_burn_rowan(ctx):
