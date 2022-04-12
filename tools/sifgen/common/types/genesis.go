@@ -81,8 +81,8 @@ type RegistryEntry struct {
 	Denom                    string
 	BaseDenom                string
 	Path                     string
-	IbcChannelId             string
-	IbcCounterpartyChannelId string
+	IbcChannelID             string
+	IbcCounterpartyChannelID string
 	DisplayName              string
 	DisplaySymbol            string
 	Network                  string
@@ -92,7 +92,7 @@ type RegistryEntry struct {
 	Permissions              []types.Permission
 	UnitDenom                string
 	IbcCounterpartyDenom     string
-	IbcCounterpartyChainId   string
+	IbcCounterpartyChainID   string
 }
 type TokenRegistry struct {
 	AdminAccount AdminAccounts `json:"admin_account"`

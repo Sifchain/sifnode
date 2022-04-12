@@ -34,8 +34,15 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 		gen := tkrtypes.InitialAdminAccounts()
 		accounts = *gen
 	}
+	m.keeper.DeleteOldAdminAccount(ctx)
 	for _, account := range accounts.AdminAccounts {
 		m.keeper.SetAdminAccount(ctx, account)
 	}
 	return nil
+}
+
+func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+	key := tkrtypes.AdminAccountStorePrefix
+	store.Delete(key)
 }
