@@ -20,10 +20,14 @@ jobs:
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
 
-      - name: Setup integration test environment
-        run: |
-          source $HOME/.bash_profile
-          make clean && make install && make tests
+      - name: Clean
+        run: make clean
+
+      - name: Build
+        run: make
+
+      - name: Unit test
+        run: make tests
 
       - name: Start standalone peggy
         run: |
