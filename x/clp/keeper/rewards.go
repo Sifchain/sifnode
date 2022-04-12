@@ -19,7 +19,11 @@ func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardPara
 
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeriod, pools []*types.Pool) error {
 	height := uint64(ctx.BlockHeight())
-
+	if height == period.RewardPeriodStartBlock {
+		rewardsParams := k.GetRewardsParams(ctx)
+		rewardsParams.RewardPeriodStartTime = ctx.BlockTime().String()
+		k.SetRewardParams(ctx, rewardsParams)
+	}
 	periodLength := period.RewardPeriodEndBlock - period.RewardPeriodStartBlock + 1
 	blockDistribution := period.RewardPeriodAllocation.QuoUint64(periodLength)
 
@@ -33,16 +37,16 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	for _, pool := range pools {
 		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
 		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
+		if height == period.RewardPeriodStartBlock {
+			pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
+			err := k.SetPool(ctx, pool)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	if totalDepth.GT(sdk.ZeroDec()) {
 		for _, pool := range pools {
-			if height == period.RewardPeriodStartBlock {
-				pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
-				err := k.SetPool(ctx, pool)
-				if err != nil {
-					return err
-				}
-			}
 
 			m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
 			weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)

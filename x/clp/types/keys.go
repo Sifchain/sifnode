@@ -76,6 +76,7 @@ func GetDefaultRewardParams() *RewardParams {
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
 		RewardPeriods:                nil,
+		RewardPeriodStartTime:        "",
 	}
 }
 

@@ -14,6 +14,7 @@ message RewardParams {
   uint64 liquidity_removal_lock_period = 1; // in blocks
   uint64 liquidity_removal_cancel_period = 2; // in blocks
   repeated RewardPeriod reward_periods = 4;
+  string reward_period_start_time = 5; // start time of the current (or last) reward period
 }
 
 
