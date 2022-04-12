@@ -74,6 +74,7 @@ func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 	normalizationFactor := sdk.NewDec(1)
 	adjustExternalToken := false
 	nf := decimals
+	fmt.Println("decimals", decimals)
 	if nf != 18 {
 		var diffFactor int64
 		if nf < 18 {

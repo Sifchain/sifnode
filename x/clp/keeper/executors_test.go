@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -92,9 +91,7 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool", err)
 	_, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), nil)
 	assert.Error(t, err, "MsgCreatePool can not be nil")
 	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
@@ -162,9 +159,7 @@ func TestKeeper_CreateLiquidityProvider(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	asset := types.NewAsset("eth")
 	lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-	if err != nil {
-		fmt.Println("Error Creating Liquidity Provider :", err)
-	}
+	require.NoError(t, err, "Error Creating Liquidity Provider :", err)
 	lp := app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), lpAddess)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.LiquidityProviderAddress, "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
@@ -229,9 +224,7 @@ func TestKeeper_DecommissionPool(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool :", err)
 
 	err = app.ClpKeeper.DecommissionPool(ctx, *pool)
 	require.NoError(t, err)
@@ -274,18 +267,14 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, assetEth, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	_, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool :", err)
 	externalCoin = sdk.NewCoin(assetDash.Symbol, sdk.Int(sdk.NewUint(10000)))
 	nativeCoin = sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 
 	msgCreatePool = types.NewMsgCreatePool(signer, assetDash, nativeAssetAmount, externalAssetAmount)
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool :", err)
 	// Test Parameters for swap
 	// initialBalance: Initial account balance for all assets created.
 	initialBalance := sdk.NewUintFromString("1000000000000000000000")

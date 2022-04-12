@@ -67,7 +67,6 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println(rewardPeriods)
 			msg := types.MsgAddRewardPeriodRequest{
 				Signer:        signer.String(),
 				RewardPeriods: rewardPeriods,
@@ -337,7 +336,6 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 			}
 			isEndPolicy := viper.GetBool(FlagEndCurrentPolicy)
 			signer := clientCtx.GetFromAddress()
-			fmt.Println(isEndPolicy, signer)
 			msg := types.MsgModifyPmtpRates{
 				Signer:      signer.String(),
 				BlockRate:   viper.GetString(FlagBlockRate),
