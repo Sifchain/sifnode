@@ -96,8 +96,6 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
 
 // Start a Cosmos chain subscription
 func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
-	defer completionEvent.Done()
-	time.Sleep(time.Second)
 	client, err := tmclient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
@@ -108,8 +106,6 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 	if err := client.Start(); err != nil {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
-		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
@@ -198,7 +194,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 			sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 			for _, event := range txLog.Events {
 
-				claimType := getOracleClaimType(event.GetType())
+				claimType := getProphecyClaimType(event.GetType())
 
 				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
 
@@ -260,8 +256,8 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 	}
 }
 
-// getOracleClaimType sets the OracleClaim's claim type based upon the witnessed event type
-func getOracleClaimType(eventType string) types.Event {
+// getProphecyClaimType sets the OracleClaim's claim type based upon the witnessed event type
+func getProphecyClaimType(eventType string) types.Event {
 	var claimType types.Event
 	switch eventType {
 	case types.MsgBurn.String():
