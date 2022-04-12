@@ -397,8 +397,8 @@ class Ebrelayer:
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else []) + \
             (["--maxFeePerGasFlag", str(max_fee_per_gas)] if max_fee_per_gas is not None else []) + \
-            (["--maxPriorityFeePerGasFlag", str(max_priority_fee_per_gas)] if max_priority_fee_per_gas is not None else [])
-
+            (["--maxPriorityFeePerGasFlag", str(max_priority_fee_per_gas)] if max_priority_fee_per_gas is not None else []) + \
+            (["--broadcast-mode", "sync"])
         return command.buildcmd(args, env=env, cwd=cwd)
 
     # Legacy stuff - pre-peggy2
