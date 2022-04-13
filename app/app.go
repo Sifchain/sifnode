@@ -501,11 +501,11 @@ func NewSifApp(
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
+		tokenregistrytypes.ModuleName,
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-		tokenregistry.ModuleName,
 	)
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
