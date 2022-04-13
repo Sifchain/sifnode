@@ -29,6 +29,15 @@ def balance_add(*bal: Balance) -> Balance:
     return result
 
 
+def balance_mul(bal: Balance, multiplier: Union[int, float]) -> Balance:
+    result = {}
+    for denom, value in bal.items():
+        val = value * multiplier
+        if val != 0:
+            result[denom] = val
+    return result
+
+
 def balance_neg(bal: Balance) -> Balance:
     return {k: -v for k, v in bal.items()}
 

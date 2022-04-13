@@ -82,7 +82,7 @@ def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[
 ) -> subprocess.Popen:
     if env:
         env = dict_merge(os.environ, env)
-    logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+    log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 def dict_merge(*dicts, override=True):
@@ -108,6 +108,7 @@ def basic_logging_setup():
     logging.getLogger("eth").setLevel(logging.WARNING)
     logging.getLogger("websockets").setLevel(logging.WARNING)
     logging.getLogger("web3").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
