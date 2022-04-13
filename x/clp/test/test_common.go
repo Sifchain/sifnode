@@ -70,6 +70,7 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
+		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
 	return ctx, app
@@ -96,6 +97,7 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
+		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
 	return ctx, app

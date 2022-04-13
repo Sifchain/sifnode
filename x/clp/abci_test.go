@@ -37,6 +37,7 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 	keeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
+		RewardPeriodStartTime:        "",
 		RewardPeriods: []*types.RewardPeriod{{
 			RewardPeriodId:         "1",
 			RewardPeriodStartBlock: 0,
