@@ -56,6 +56,14 @@ func ProdAdminAccounts() *AdminAccounts {
 				AdminType:    AdminType_ETHBRIDGE,
 				AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
 			},
+			{
+				AdminType:    AdminType_TOKENREGISTRY,
+				AdminAddress: "sif1tpypxpppcf5lea47vcvgy09675nllmcucxydvu",
+			},
+			{
+				AdminType:    AdminType_ETHBRIDGE,
+				AdminAddress: "sif1tpypxpppcf5lea47vcvgy09675nllmcucxydvu",
+			},
 		},
 	}
 }
