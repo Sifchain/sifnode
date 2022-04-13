@@ -1,21 +1,91 @@
 package clp
 
 import (
+	"encoding/json"
 	"fmt"
-	"math"
-
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/types"
+	types2 "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	abci "github.com/tendermint/tendermint/abci/types"
-
-	"github.com/Sifchain/sifnode/x/clp/keeper"
-	"github.com/Sifchain/sifnode/x/clp/types"
+	"io/ioutil"
+	"math"
+	"path/filepath"
 )
 
+func GeneratePerfData(ctx sdk.Context, k keeper.Keeper) error {
+	var inputs types.Pools
+	file, err := filepath.Abs("pools.json")
+	if err != nil {
+		return err
+	}
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(input, &inputs)
+	if err != nil {
+		return err
+	}
+	k.GetTokenRegistryKeeper().SetRegistry(ctx, types2.Registry{})
+	multipliers := []*types.PoolMultiplier{}
+	cethMultiplier := sdk.MustNewDecFromStr("1.5")
+	rp_1_allocation := sdk.NewUintFromString("1550459183129248235861408")
+	for _, pool := range inputs {
+		err := k.SetPool(ctx, &pool)
+		if err != nil {
+			return err
+		}
+		r := types2.RegistryEntry{
+			Decimals:                 18,
+			Denom:                    pool.ExternalAsset.Symbol,
+			BaseDenom:                "",
+			Path:                     "",
+			IbcChannelId:             "",
+			IbcCounterpartyChannelId: "",
+			DisplayName:              "",
+			DisplaySymbol:            "",
+			Network:                  "",
+			Address:                  "",
+			ExternalSymbol:           "",
+			TransferLimit:            "",
+			Permissions:              []types2.Permission{types2.Permission_CLP},
+			UnitDenom:                "",
+			IbcCounterpartyDenom:     "",
+			IbcCounterpartyChainId:   "",
+		}
+		multipliers = append(multipliers, &types.PoolMultiplier{
+			PoolMultiplierAsset: pool.ExternalAsset.Symbol,
+			Multiplier:          &cethMultiplier,
+		})
+		k.GetTokenRegistryKeeper().SetToken(ctx, &r)
+	}
+	rp := types.RewardParams{
+		LiquidityRemovalLockPeriod:   1,
+		LiquidityRemovalCancelPeriod: 70,
+		RewardPeriods: []*types.RewardPeriod{
+			{
+				RewardPeriodId:                "RP_1",
+				RewardPeriodStartBlock:        1,
+				RewardPeriodEndBlock:          1100,
+				RewardPeriodAllocation:        &rp_1_allocation,
+				RewardPeriodPoolMultipliers:   multipliers,
+				RewardPeriodDefaultMultiplier: &cethMultiplier,
+			},
+		},
+	}
+	k.SetRewardParams(ctx, &rp)
+	return nil
+}
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	err := GeneratePerfData(ctx, k)
+	if err != nil {
+		fmt.Println(err)
+	}
 	k.SetParams(ctx, data.Params)
-	k.SetRewardParams(ctx, types.GetDefaultRewardParams())
+	//k.SetRewardParams(ctx, types.GetDefaultRewardParams())
 	// Initiate Pmtp
 	k.SetPmtpRateParams(ctx, types.PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.ZeroDec(),

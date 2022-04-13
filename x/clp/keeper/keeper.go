@@ -54,6 +54,9 @@ func (k Keeper) Codec() codec.BinaryCodec {
 func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
+func (k Keeper) GetTokenRegistryKeeper() types.TokenRegistryKeeper {
+	return k.tokenRegistryKeeper
+}
 
 func (k Keeper) GetAuthKeeper() types.AuthKeeper {
 	return k.authKeeper

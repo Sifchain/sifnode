@@ -27,6 +27,7 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 }
 
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+	fmt.Println("Block Starting : ", ctx.BlockHeight(), ":", ctx.BlockTime().String())
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 	// get current block height
 	currentHeight := ctx.BlockHeight()
