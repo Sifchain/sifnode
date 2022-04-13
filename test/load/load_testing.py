@@ -54,9 +54,7 @@ def send_from_sifchain_to_sifchain(ctx: test_utils.EnvCtx, from_addr: cosmos.Add
 def send_erc20_from_sifchain_to_ethereum(ctx: test_utils.EnvCtx, from_addr: cosmos.Address, to_addr: eth.Address,
     amount: int, denom: str
 ):
-    assert on_peggy2_branch
-    ethereum_network_descriptor, token_address = sifchain.sifchain_denom_hash_to_token_contract_address(denom)
-    assert ethereum_network_descriptor == ctx.eth.ethereum_network_descriptor  # Note: peggy2 only
+    token_address = get_erc20_token_address(ctx, denom)
     sif_balance_before = ctx.get_sifchain_balance(from_addr)
     eth_balance_before = ctx.get_erc20_token_balance(token_address, to_addr)
     ctx.sifnode_client.send_from_sifchain_to_ethereum(from_addr, to_addr, amount, denom)
@@ -66,6 +64,13 @@ def send_erc20_from_sifchain_to_ethereum(ctx: test_utils.EnvCtx, from_addr: cosm
     sif_burn_fees = get_sif_burn_fees(ctx)
     assert cosmos.balance_equal(sif_balance_after, cosmos.balance_sub(sif_balance_before, {denom: amount},  sif_burn_fees))
     assert eth_balance_after == eth_balance_before + amount
+
+
+def get_erc20_token_address(ctx: test_utils.EnvCtx, sif_denom_hash: str) -> eth.Address:
+    assert on_peggy2_branch
+    ethereum_network_descriptor, token_address = sifchain.sifchain_denom_hash_to_token_contract_address(sif_denom_hash)
+    assert ethereum_network_descriptor == ctx.eth.ethereum_network_descriptor  # Note: peggy2 only
+    return token_address
 
 
 def choose_from(distr: Sequence[Any], rnd: random.Random = None) -> int:
