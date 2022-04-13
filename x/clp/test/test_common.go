@@ -43,13 +43,17 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	sifapp.SetConfig(false)
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "atom", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetRegistry(ctx, tokenregistrytypes.Registry{
+		Entries: []*tokenregistrytypes.RegistryEntry{
+			{Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "atom", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+		},
+	})
 	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.OneDec(),
 		PmtpCurrentRunningRate: sdk.OneDec(),
@@ -77,8 +81,18 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 	app := sifapp.SetupFromGenesis(isCheckTx, genesisTransformer)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 
+	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
+		PmtpPeriodBlockRate:    sdk.OneDec(),
+		PmtpCurrentRunningRate: sdk.OneDec(),
+	})
 	app.ClpKeeper.SetParams(ctx, types.Params{
-		MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+		MinCreatePoolThreshold: 100,
+	})
+	app.ClpKeeper.SetPmtpParams(ctx, &types.PmtpParams{
+		PmtpPeriodGovernanceRate: sdk.OneDec(),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     1,
+		PmtpPeriodEndBlock:       2,
 	})
 	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
@@ -229,4 +243,17 @@ func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Po
 
 	}
 	return poolList.Pools
+}
+
+func GetAdmins(address string) *tokenregistrytypes.AdminAccounts {
+	return &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
+		{
+			AdminType:    tokenregistrytypes.AdminType_CLPDEX,
+			AdminAddress: address,
+		},
+		{
+			AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
+			AdminAddress: address,
+		},
+	}}
 }

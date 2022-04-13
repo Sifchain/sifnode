@@ -338,7 +338,6 @@ func GetCmdModifyPmtpRates() *cobra.Command {
 			}
 			isEndPolicy := viper.GetBool(FlagEndCurrentPolicy)
 			signer := clientCtx.GetFromAddress()
-			fmt.Println(isEndPolicy, signer)
 			msg := types.MsgModifyPmtpRates{
 				Signer:      signer.String(),
 				BlockRate:   viper.GetString(FlagBlockRate),

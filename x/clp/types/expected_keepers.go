@@ -34,5 +34,5 @@ type TokenRegistryKeeper interface {
 	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
 	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
 	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
-	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
+	IsAdminAccount(ctx sdk.Context, moduleName tokenregistryTypes.AdminType, adminAccount sdk.AccAddress) bool
 }

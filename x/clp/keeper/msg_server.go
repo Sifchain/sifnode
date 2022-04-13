@@ -28,7 +28,7 @@ func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.M
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	if !(msg.Minter.AnnualProvisions.IsZero() && msg.Minter.Inflation.IsZero()) {
@@ -41,34 +41,36 @@ func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.M
 }
 
 func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpdateRewardsParamsRequest) (*types.MsgUpdateRewardsParamsResponse, error) {
+	response := &types.MsgUpdateRewardsParamsResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
-		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetRewardsParams(ctx)
 	params.LiquidityRemovalLockPeriod = msg.LiquidityRemovalLockPeriod
 	params.LiquidityRemovalCancelPeriod = msg.LiquidityRemovalCancelPeriod
 	k.SetRewardParams(ctx, params)
-	return &types.MsgUpdateRewardsParamsResponse{}, err
+	return response, err
 }
 
 func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewardPeriodRequest) (*types.MsgAddRewardPeriodResponse, error) {
+	response := &types.MsgAddRewardPeriodResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
-		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetRewardsParams(ctx)
 	params.RewardPeriods = msg.RewardPeriods
 	k.SetRewardParams(ctx, params)
-	return &types.MsgAddRewardPeriodResponse{}, nil
+	return response, nil
 }
 
 // NewMsgServerImpl returns an implementation of the clp MsgServer interface
@@ -86,7 +88,7 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
@@ -133,7 +135,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, signer) {
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
@@ -234,6 +236,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if err != nil {
 		return nil, err
 	}
+	// TODO : Deprecate this Admin in favor of TokenRegistry
 	if !k.Keeper.ValidateAddress(ctx, addAddr) {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "user does not have permission to decommission pool")
 	}
