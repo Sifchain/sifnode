@@ -52,25 +52,6 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	return append(LiquidityProviderPrefix, key...)
 }
 
-// TODO remove
-// func DefaultRewardsPeriod() []*RewardPeriod {
-// 	rp_1_allocation := sdk.NewUintFromString("10000000000000000000000")
-// 	cethMultiplier := sdk.MustNewDecFromStr("1.5")
-// 	rewardPeriods := []*RewardPeriod{
-// 		{
-// 			RewardPeriodId:         "RP_1",
-// 			RewardPeriodStartBlock: 1,
-// 			RewardPeriodEndBlock:   12 * 60 * 24 * 7,
-// 			RewardPeriodAllocation: &rp_1_allocation,
-// 			RewardPeriodPoolMultipliers: []*PoolMultiplier{{
-// 				PoolMultiplierAsset: "ceth",
-// 				Multiplier:          &cethMultiplier,
-// 			}},
-// 		},
-// 	}
-// 	return rewardPeriods
-// }
-
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
