@@ -2,8 +2,9 @@ package types
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"time"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -73,26 +74,26 @@ type AdminAccounts struct {
 }
 
 type Registry struct {
-	Entries []*RegistryEntry
+	Entries []*RegistryEntry `json:"entries"`
 }
 
 type RegistryEntry struct {
-	Decimals                 int64
-	Denom                    string
-	BaseDenom                string
-	Path                     string
-	IbcChannelID             string
-	IbcCounterpartyChannelID string
-	DisplayName              string
-	DisplaySymbol            string
-	Network                  string
-	Address                  string
-	ExternalSymbol           string
-	TransferLimit            string
-	Permissions              []types.Permission
-	UnitDenom                string
-	IbcCounterpartyDenom     string
-	IbcCounterpartyChainID   string
+	Decimals                 int64              `json:"deciamls"`
+	Denom                    string             `json:"denom"`
+	BaseDenom                string             `json:"base_denom"`
+	Path                     string             `json:"path"`
+	IbcChannelID             string             `json:"ibc_channel_id"`
+	IbcCounterpartyChannelID string             `json:"ibc_counterparty_id"`
+	DisplayName              string             `json:"display_name"`
+	DisplaySymbol            string             `json:"display_symbol"`
+	Network                  string             `json:"network"`
+	Address                  string             `json:"address"`
+	ExternalSymbol           string             `json:"external_symbol"`
+	TransferLimit            string             `json:"transfer_limit"`
+	Permissions              []types.Permission `json:"permissions"`
+	UnitDenom                string             `json:"unit_denom"`
+	IbcCounterpartyDenom     string             `json:"ibc_counterparty_denom"`
+	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
 }
 type TokenRegistry struct {
 	AdminAccount AdminAccounts `json:"admin_account"`
