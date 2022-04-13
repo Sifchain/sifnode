@@ -96,8 +96,8 @@ type RegistryEntry struct {
 	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
 }
 type TokenRegistry struct {
-	AdminAccount AdminAccounts `json:"admin_account"`
-	Registry     Registry      `json:"registry"`
+	AdminAccounts AdminAccounts `json:"admin_accounts"`
+	Registry      Registry      `json:"registry"`
 }
 
 type ConstantFee struct {
