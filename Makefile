@@ -45,7 +45,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: ${smart_contract_file} go.sum .proto-gen
+install: go.sum ${smart_contract_file} .proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 install-bin: go.sum
