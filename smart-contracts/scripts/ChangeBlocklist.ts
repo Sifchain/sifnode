@@ -12,12 +12,8 @@ async function finishUpdate() {
     // Set the blocklist variable
     console.log("Setting the blocklist variable");
     await bridgebank.connect(operator).setBlocklist(BlockListAddress);
-
-    // Unpause the bridgebank
-    console.log("Unpausing the variable");
-    await bridgebank.connect(pauser).unpause();
 }
 
 finishUpdate()
-    .then(() => {console.log("Tests completed")})
+    .then(() => {console.log("Bridgebank Blocklist Updated")})
     .catch((err)=> console.error("Encountered an error:", err))
