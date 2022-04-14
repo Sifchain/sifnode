@@ -8,6 +8,11 @@ from siftool.eth import NULL_ADDRESS
 from siftool.common import *
 from web3.eth import Contract
 import web3
+
+from eth_typing import (
+    ChecksumAddress,
+)
+
 # In separate window: test/integration/framework/siftool run-env
 # test/integration/framework/venv/bin/python3 test/load/test_load_tx_ethereum.py
 
@@ -37,7 +42,7 @@ def bridge_bank_lock_burn(eth_tx_wrapper: eth.EthereumTxWrapper, bridge_bank_sc:
     eth_tx_wrapper.transact(function, test_eth_account, tx_opts=tx_opts)(recipient, token_addr, token_amount)
 
 
-def test_load_burn_rowan(ctx):
+def test_load_burn_rowan(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
@@ -89,7 +94,7 @@ def test_load_burn_rowan(ctx):
     assert balance_diff[rowan_cosmos_denom] == amount_to_send * threads_num
 
 
-def test_load_erc20_to_sifnode(ctx):
+def test_load_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
@@ -145,7 +150,7 @@ def test_load_erc20_to_sifnode(ctx):
     assert exactly_one(list(balance_diff.keys())) == erc20_cosmos_denom
     assert balance_diff[erc20_cosmos_denom] == amount_to_send * threads_num
 
-def test_load_multiple_erc20_to_sifnode(ctx):
+def test_load_multiple_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
@@ -207,7 +212,7 @@ def test_load_multiple_erc20_to_sifnode(ctx):
     for i in range(threads_num):
         assert balance_diff[erc20_cosmos_denoms[i]] == amount_to_send
 
-def test_load_tx_eth(ctx):
+def test_load_tx_eth(ctx: test_utils.EnvCtx):
     w3_url = ctx.w3_conn.provider.endpoint_uri
     eth_tx_wrappers = []
     threads = []
