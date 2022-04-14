@@ -1,0 +1,14 @@
+{
+    "entries": [
+        {
+            "decimals": 6,
+            "denom": "cusdt",
+            "base_denom": "cusdt",
+            "permissions": [
+                "CLP",
+                "IBCEXPORT",
+                "IBCIMPORT"
+            ]
+        }
+    ]
+}

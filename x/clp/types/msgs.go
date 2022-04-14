@@ -10,11 +10,189 @@ import (
 
 var (
 	_ sdk.Msg = &MsgRemoveLiquidity{}
+	_ sdk.Msg = &MsgRemoveLiquidityUnits{}
 	_ sdk.Msg = &MsgCreatePool{}
 	_ sdk.Msg = &MsgAddLiquidity{}
 	_ sdk.Msg = &MsgSwap{}
 	_ sdk.Msg = &MsgDecommissionPool{}
+	_ sdk.Msg = &MsgUnlockLiquidityRequest{}
+	_ sdk.Msg = &MsgUpdateRewardsParamsRequest{}
+	_ sdk.Msg = &MsgAddRewardPeriodRequest{}
+	_ sdk.Msg = &MsgModifyPmtpRates{}
+	_ sdk.Msg = &MsgUpdatePmtpParams{}
+	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 )
+
+func (m MsgUpdateStakingRewardParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateStakingRewardParams) Type() string {
+	return "update_staking_reward"
+}
+
+func (m MsgUpdateStakingRewardParams) ValidateBasic() error {
+	return m.Params.Validate()
+}
+
+func (m MsgUpdateStakingRewardParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateStakingRewardParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgAddRewardPeriodRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgAddRewardPeriodRequest) Type() string {
+	return "add_reward_period"
+}
+
+func (m MsgAddRewardPeriodRequest) ValidateBasic() error {
+	for _, period := range m.RewardPeriods {
+		if period.RewardPeriodId == "" {
+			return fmt.Errorf("reward period id must be non-empty: %d", period.RewardPeriodStartBlock)
+		}
+		if period.RewardPeriodEndBlock < period.RewardPeriodStartBlock {
+			return fmt.Errorf("reward period start block must be before end block: %d %d", period.RewardPeriodStartBlock, period.RewardPeriodEndBlock)
+		}
+		for _, multiplier := range period.RewardPeriodPoolMultipliers {
+			if multiplier.Multiplier.LT(sdk.ZeroDec()) {
+				return fmt.Errorf("pool multiplier should be less than 0 | pool : %s , multiplier : %s", multiplier.PoolMultiplierAsset, multiplier.Multiplier.String())
+			}
+			if multiplier.Multiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+				return fmt.Errorf("pool multiplier should be greater than 10 | pool : %s , multiplier : %s", multiplier.PoolMultiplierAsset, multiplier.Multiplier.String())
+			}
+		}
+		if period.RewardPeriodDefaultMultiplier.LT(sdk.ZeroDec()) {
+			return fmt.Errorf("default should be less than 0 |multiplier : %s", period.RewardPeriodDefaultMultiplier.String())
+		}
+		if period.RewardPeriodDefaultMultiplier.GT(sdk.MustNewDecFromStr("10.00")) {
+			return fmt.Errorf("default multiplier should be greater than 10 | multiplier : %s", period.RewardPeriodDefaultMultiplier.String())
+		}
+	}
+	return nil
+}
+
+func (m MsgAddRewardPeriodRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddRewardPeriodRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateRewardsParamsRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateRewardsParamsRequest) Type() string {
+	return "update_reward_params"
+}
+
+func (m MsgUpdateRewardsParamsRequest) ValidateBasic() error {
+	return nil
+}
+
+func (m MsgUpdateRewardsParamsRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateRewardsParamsRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m *MsgUpdatePmtpParams) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	if m.PmtpPeriodEpochLength <= 0 {
+		return fmt.Errorf("pmtp epoch length must be greated than zero: %d", m.PmtpPeriodEpochLength)
+	}
+	if m.PmtpPeriodStartBlock < 0 {
+		return fmt.Errorf("pmtp start block cannot be negative: %d", m.PmtpPeriodStartBlock)
+	}
+	// End block must be at-least 1
+	if m.PmtpPeriodEndBlock <= 0 {
+		return fmt.Errorf("pmtp end block cannot be negative: %d", m.PmtpPeriodStartBlock)
+	}
+	if m.PmtpPeriodEndBlock < m.PmtpPeriodStartBlock {
+		return fmt.Errorf(
+			"end block (%d) must be after begin block (%d)",
+			m.PmtpPeriodEndBlock, m.PmtpPeriodStartBlock,
+		)
+	}
+
+	if (m.PmtpPeriodEndBlock-m.PmtpPeriodStartBlock+1)%m.PmtpPeriodEpochLength != 0 {
+		return fmt.Errorf("all epochs must have equal number of blocks : %d", m.PmtpPeriodEpochLength)
+	}
+
+	return nil
+}
+
+func (m *MsgUpdatePmtpParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdatePmtpParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdatePmtpParams) Type() string {
+	return "update_pmtp_params"
+}
+
+func (m MsgUpdatePmtpParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m *MsgModifyPmtpRates) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MsgModifyPmtpRates) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgModifyPmtpRates) Route() string {
+	return RouterKey
+}
+
+func (m MsgModifyPmtpRates) Type() string {
+	return "modify_pmtp_rates"
+}
+
+func (m MsgModifyPmtpRates) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
 	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}
@@ -133,6 +311,43 @@ func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
+func NewMsgRemoveLiquidityUnits(signer sdk.AccAddress, externalAsset Asset, withdrawUnits sdk.Uint) MsgRemoveLiquidityUnits {
+	return MsgRemoveLiquidityUnits{Signer: signer.String(), ExternalAsset: &externalAsset, WithdrawUnits: withdrawUnits}
+}
+
+func (m MsgRemoveLiquidityUnits) Route() string {
+	return RouterKey
+}
+
+func (m MsgRemoveLiquidityUnits) Type() string {
+	return "remove_liquidity"
+}
+
+func (m MsgRemoveLiquidityUnits) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if !m.ExternalAsset.Validate() {
+		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
+	}
+	if !m.WithdrawUnits.GT(sdk.ZeroUint()) {
+		return sdkerrors.Wrap(ErrInValidAmount, fmt.Sprintf("Units must be greater than 0 : %s", m.WithdrawUnits.String()))
+	}
+	return nil
+}
+
+func (m MsgRemoveLiquidityUnits) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgRemoveLiquidityUnits) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
 func NewMsgAddLiquidity(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAddLiquidity {
 	return MsgAddLiquidity{Signer: signer.String(), ExternalAsset: &externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
@@ -210,6 +425,24 @@ func (m MsgCreatePool) GetSignBytes() []byte {
 }
 
 func (m MsgCreatePool) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUnlockLiquidityRequest) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if !m.ExternalAsset.Validate() {
+		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
+	}
+	return nil
+}
+
+func (m MsgUnlockLiquidityRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

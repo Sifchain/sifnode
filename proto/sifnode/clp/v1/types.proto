@@ -25,6 +25,19 @@ message Pool {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"pool_units\""
   ];
+	string swap_price_native = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.moretags) = "yaml:\"swap_price_native \""
+  ];
+	string swap_price_external = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.moretags) = "yaml:\"swap_price_external \""
+  ];
+  string reward_period_native_distributed = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"reward_period_native_distributed\""
+  ];
 }
 
 message LiquidityProvider {
@@ -35,6 +48,20 @@ message LiquidityProvider {
     (gogoproto.moretags) = "yaml:\"liquidity_provider_units\""
   ];
   string liquidity_provider_address = 3;
+  repeated LiquidityUnlock unlocks = 4;
+}
+
+message LiquidityUnlock {
+  int64 request_height = 1;
+  string units = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message PmtpEpoch {
+  int64 epoch_counter = 1;
+  int64 block_counter = 2;
 }
 
 message WhiteList { repeated string validator_list = 1; }
@@ -43,4 +70,10 @@ message LiquidityProviderData {
   sifnode.clp.v1.LiquidityProvider liquidity_provider = 1;
   string native_asset_balance = 2;
   string external_asset_balance = 3;
+}
+
+message EventPolicy {
+  string event_type=1;
+  string pmtp_period_start_block = 2;
+  string pmtp_period_end_block = 3;
 }

@@ -344,6 +344,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
 	// register the staking hooks
@@ -474,12 +475,14 @@ func NewSifApp(
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		dispensation.ModuleName,
+		clptypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
+		clptypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -498,11 +501,11 @@ func NewSifApp(
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
+		tokenregistrytypes.ModuleName,
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-		tokenregistry.ModuleName,
 	)
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
