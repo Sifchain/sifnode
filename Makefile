@@ -75,6 +75,7 @@ test-peggy:
 
 tests: test-peggy
 	@go test -v -coverprofile .testCoverage.txt ./...
+	echo Completed $?
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
