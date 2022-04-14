@@ -23,11 +23,11 @@ jobs:
       - name: Clean
         run: make clean
 
-      - name: Build
-        run: make install
+      # - name: Build
+      #   run: make install
 
       - name: Unit test
-        run: make tests
+        run: make install && make tests
 
       - name: Start standalone peggy
         run: |
