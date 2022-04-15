@@ -35,6 +35,21 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 	return nil
 }
 
+func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
+	accounts := tkrtypes.AdminAccounts{}
+	if ctx.ChainID() == "sifchain-1" {
+		gen := tkrtypes.ProdAdminAccounts()
+		accounts = *gen
+	} else {
+		gen := tkrtypes.InitialAdminAccounts()
+		accounts = *gen
+	}
+	for _, account := range accounts.AdminAccounts {
+		m.keeper.SetAdminAccount(ctx, account)
+	}
+	return nil
+}
+
 func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	key := tkrtypes.AdminAccountStorePrefix
