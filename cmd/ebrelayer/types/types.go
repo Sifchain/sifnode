@@ -121,7 +121,7 @@ func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte,
 
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
-	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\nGlobal sequence: %v\n", c.NetworkDescriptor.String(), c.ProphecyID, c.GlobalSequence)
+	return fmt.Sprintf("Network id: %v. Prophecy ID: %v. Global sequence: %v", c.NetworkDescriptor.String(), c.ProphecyID, c.GlobalSequence)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys
