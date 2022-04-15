@@ -41,39 +41,44 @@ def bridge_bank_lock_burn(eth_tx_wrapper: eth.EthereumTxWrapper, bridge_bank_sc:
         function = bridge_bank_sc.functions.burn
     eth_tx_wrapper.transact(function, test_eth_account, tx_opts=tx_opts)(recipient, token_addr, token_amount)
 
-
-def test_load_burn_rowan(ctx: test_utils.EnvCtx):
-    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
-
-    rowan_cosmos_denom = "rowan"
-    w3_url = ctx.w3_conn.provider.endpoint_uri
+def batch_create_eth_account(sc_addr: str, sc_address) -> []:
     test_eth_accounts = []
+    for i in range(threads_num):
+        test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+        if sc_address is not None:
+            if isinstance(sc_address, list):
+                ctx.mint_generic_erc20_token(sc_address[i], amount_to_send, test_eth_account)
+            else:
+                ctx.mint_generic_erc20_token(sc_address, amount_to_send, test_eth_account)
+        test_eth_accounts.append(test_eth_account)
+    return test_eth_accounts
+
+def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account, test_eth_accounts: [], sc_address, isLock):
+    w3_url = ctx.w3_conn.provider.endpoint_uri
     threads = []
     conn_list = []
     eth_tx_wrappers = []
-
-    # Create test ethereum accounts and mint token to each account
     for i in range(threads_num):
-        test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-        ctx.mint_generic_erc20_token(rowan_contract_address, amount_to_send, test_eth_account)
-        test_eth_accounts.append(test_eth_account)
-
-    for i in range(threads_num):
-        w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
-        conn_list.append(w3_conn)
-        bridge_bank_abi, _, bridge_bank_address = ctx.abi_provider.get_descriptor("BridgeBank")
-        bridge_bank_sc = w3_conn.eth.contract(abi=bridge_bank_abi, address=bridge_bank_address)
-        rowan_abi, _, _ = ctx.abi_provider.get_descriptor("BridgeToken")
-        rowan_sc = w3_conn.eth.contract(abi=rowan_abi, address=rowan_contract_address)
-        test_eth_account = test_eth_accounts[i]
-        nonce = w3_conn.eth.get_transaction_count(test_eth_account)
-        recipient = test_utils.sif_addr_to_evm_arg(test_sif_account)
-        eth_tx_wrapper = eth.EthereumTxWrapper(w3_conn, ctx.eth.is_local_node)
-        eth_tx_wrapper.set_private_key(test_eth_account, ctx.eth._get_private_key(test_eth_account))
-        eth_tx_wrappers.append(eth_tx_wrapper)
-        threads.append(threading.Thread(target=bridge_bank_lock_burn, args=(
-            eth_tx_wrapper, bridge_bank_sc, test_eth_account, recipient, amount_to_send, nonce, rowan_sc, False)))
+            w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
+            conn_list.append(w3_conn)
+            bridge_bank_abi, _, bridge_bank_address = ctx.abi_provider.get_descriptor("BridgeBank")
+            bridge_bank_sc = w3_conn.eth.contract(abi=bridge_bank_abi, address=bridge_bank_address)
+            if sc_address is not None:
+                sc_abi, _, _ = ctx.abi_provider.get_descriptor("BridgeToken")
+                if isinstance(sc_address, list):
+                    erc20_contract = w3_conn.eth.contract(abi=sc_abi, address=sc_address[i])
+                else:
+                    erc20_contract = w3_conn.eth.contract(abi=sc_abi, address=sc_address)
+            else:
+                erc20_contract = None
+            test_eth_account = test_eth_accounts[i]
+            nonce = w3_conn.eth.get_transaction_count(test_eth_account)
+            recipient = test_utils.sif_addr_to_evm_arg(test_sif_account)
+            eth_tx_wrapper = eth.EthereumTxWrapper(w3_conn, ctx.eth.is_local_node)
+            eth_tx_wrapper.set_private_key(test_eth_account, ctx.eth._get_private_key(test_eth_account))
+            eth_tx_wrappers.append(eth_tx_wrapper)
+            threads.append(threading.Thread(target=bridge_bank_lock_burn, args=(
+                eth_tx_wrapper, bridge_bank_sc, test_eth_account, recipient, amount_to_send, nonce, erc20_contract, isLock)))
 
     for t in threads:
         t.start()
@@ -83,6 +88,14 @@ def test_load_burn_rowan(ctx: test_utils.EnvCtx):
 
     ctx.advance_blocks()
 
+def test_load_burn_rowan(ctx: test_utils.EnvCtx):
+    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
+
+    rowan_cosmos_denom = "rowan"
+    test_eth_accounts = batch_create_eth_account(ctx, rowan_contract_address)    
+
+    run_multi_thread(ctx, test_sif_account, test_eth_accounts, rowan_contract_address, False)
     # Verify final balance
     expected_change = [[amount_to_send * threads_num, rowan_cosmos_denom]]
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
@@ -105,41 +118,13 @@ def test_load_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     erc20_cosmos_denom = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, erc20_sc_address)
 
     w3_url = ctx.w3_conn.provider.endpoint_uri
-    test_eth_accounts = []
     threads = []
     conn_list = []
     eth_tx_wrappers = []
 
-    # Create test ethereum accounts and mint token to each account
-    for i in range(threads_num):
-        test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-        ctx.mint_generic_erc20_token(erc20_sc_address, amount_to_send, test_eth_account)
-        test_eth_accounts.append(test_eth_account)
+    test_eth_accounts = batch_create_eth_account(ctx, erc20_sc_address)    
+    run_multi_thread(ctx, test_sif_account, test_eth_accounts, erc20_sc_address, True)
 
-    for i in range(threads_num):
-        w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
-        conn_list.append(w3_conn)
-        bridge_bank_abi, _, bridge_bank_address = ctx.abi_provider.get_descriptor("BridgeBank")
-        bridge_bank_sc = w3_conn.eth.contract(abi=bridge_bank_abi, address=bridge_bank_address)
-        erc20_abi, _, _ = ctx.abi_provider.get_descriptor("BridgeToken")
-        erc20_sc = w3_conn.eth.contract(abi=erc20_abi, address=erc20_sc_address)
-        test_eth_account = test_eth_accounts[i]
-        nonce = w3_conn.eth.get_transaction_count(test_eth_account)
-        recipient = test_utils.sif_addr_to_evm_arg(test_sif_account)
-        eth_tx_wrapper = eth.EthereumTxWrapper(w3_conn, ctx.eth.is_local_node)
-        eth_tx_wrapper.set_private_key(test_eth_account, ctx.eth._get_private_key(test_eth_account))
-        eth_tx_wrappers.append(eth_tx_wrapper)
-        threads.append(threading.Thread(target=bridge_bank_lock_burn, args=(
-            eth_tx_wrapper, bridge_bank_sc, test_eth_account, recipient, amount_to_send, nonce, erc20_sc)))
-
-    start_time = time.time()
-    for t in threads:
-        t.start()
-
-    for t in threads:
-        t.join()
-
-    ctx.advance_blocks()
 
     expected_change = [[amount_to_send * threads_num, erc20_cosmos_denom]]
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
@@ -163,43 +148,8 @@ def test_load_multiple_erc20_to_sifnode(ctx: test_utils.EnvCtx):
         erc20_contract_addresses.append(erc20_sc.address)
         erc20_cosmos_denoms.append(sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, erc20_sc.address))
 
-    w3_url = ctx.w3_conn.provider.endpoint_uri
-    test_eth_accounts = []
-    threads = []
-    conn_list = []
-    eth_tx_wrappers = []
-
-    # Create test ethereum accounts and mint token to each account
-    for i in range(threads_num):
-        test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-        ctx.mint_generic_erc20_token(erc20_contract_addresses[i], amount_to_send, test_eth_account)
-        test_eth_accounts.append(test_eth_account)
-
-    for i in range(threads_num):
-        w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
-        conn_list.append(w3_conn)
-        
-        bridge_bank_abi, _, bridge_bank_address = ctx.abi_provider.get_descriptor("BridgeBank")
-        bridge_bank_sc = w3_conn.eth.contract(abi=bridge_bank_abi, address=bridge_bank_address)
-        erc20_abi, _, _ = ctx.abi_provider.get_descriptor("BridgeToken")
-        erc20_sc = w3_conn.eth.contract(abi=erc20_abi, address=erc20_contract_addresses[i])
-        test_eth_account = test_eth_accounts[i]
-        nonce = w3_conn.eth.get_transaction_count(test_eth_account)
-        recipient = test_utils.sif_addr_to_evm_arg(test_sif_account)
-        eth_tx_wrapper = eth.EthereumTxWrapper(w3_conn, ctx.eth.is_local_node)
-        eth_tx_wrapper.set_private_key(test_eth_account, ctx.eth._get_private_key(test_eth_account))
-        eth_tx_wrappers.append(eth_tx_wrapper)
-        threads.append(threading.Thread(target=bridge_bank_lock_burn, args=(
-            eth_tx_wrapper, bridge_bank_sc, test_eth_account, recipient, amount_to_send, nonce, erc20_sc)))
-
-    start_time = time.time()
-    for t in threads:
-        t.start()
-
-    for t in threads:
-        t.join()
-
-    ctx.advance_blocks()
+    test_eth_accounts = batch_create_eth_account(ctx, erc20_contract_addresses)    
+    run_multi_thread(ctx, test_sif_account, test_eth_accounts, erc20_contract_addresses, True)
 
     expected_changes = []
     for i in range(threads_num):
@@ -213,42 +163,14 @@ def test_load_multiple_erc20_to_sifnode(ctx: test_utils.EnvCtx):
         assert balance_diff[erc20_cosmos_denoms[i]] == amount_to_send
 
 def test_load_tx_eth(ctx: test_utils.EnvCtx):
-    w3_url = ctx.w3_conn.provider.endpoint_uri
-    eth_tx_wrappers = []
-    threads = []
-    test_eth_accounts = []
-    conn_list = []
-
-    for i in range(threads_num):
-        test_eth_accounts.append(ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth))
-
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
+    test_eth_accounts = batch_create_eth_account(ctx, None)   
+    run_multi_thread(ctx, test_sif_account, test_eth_accounts, None, True)
+
     assert amount_to_send < fund_amount_eth
     
-    for i in range(threads_num):
-        w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
-        conn_list.append(w3_conn)
-        bridge_bank_abi, _, bridge_bank_address = ctx.abi_provider.get_descriptor("BridgeBank")
-        bridge_bank_sc = w3_conn.eth.contract(abi=bridge_bank_abi, address=bridge_bank_address)
-        test_eth_account = test_eth_accounts[i]
-        nonce = w3_conn.eth.get_transaction_count(test_eth_account)
-        recipient = test_utils.sif_addr_to_evm_arg(test_sif_account)
-        eth_tx_wrapper = eth.EthereumTxWrapper(w3_conn, ctx.eth.is_local_node)
-        eth_tx_wrapper.set_private_key(test_eth_account, ctx.eth._get_private_key(test_eth_account))
-        eth_tx_wrappers.append(eth_tx_wrapper)
-        threads.append(threading.Thread(target=bridge_bank_lock_burn, args=(
-            eth_tx_wrapper, bridge_bank_sc, test_eth_account, recipient, amount_to_send, nonce, None)))
-
-    for t in threads:
-        t.start()
-
-    for t in threads:
-        t.join()
-
-    ctx.advance_blocks()
-
     # Verify final balance
     expected_change = [[amount_to_send * threads_num, ctx.ceth_symbol]]
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
