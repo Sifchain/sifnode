@@ -3,8 +3,8 @@ require("dotenv").config();
 import {print} from "../../scripts/helpers/utils";
 import {getList} from "./ofacParser";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumberish, Wallet } from "ethers";
-import { Blocklist } from "../../build";
+import { BigNumberish, Wallet, Contract } from "ethers";
+// import { Blocklist } from "../../build";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import {FetchWallet} from "../../scripts/helpers/KeyHandler";
 
@@ -22,7 +22,7 @@ interface State {
   evm: string[];
   toAdd: string[];
   toRemove: string[];
-  blocklistInstance: Blocklist;
+  blocklistInstance: Contract;
   activeAccount: Wallet;
   idealGasPrice: BigNumberish;
 }
@@ -71,7 +71,7 @@ async function setupState(hre: HardhatRuntimeEnvironment, blocklistAddress: stri
 
   // Set the EVM list
   print("yellow", "Fetching EVM blocklist...");
-  const evm = await blocklistInstance.getFullList();
+  const evm: string[] = await blocklistInstance.getFullList();
   print("cyan", `EVM LIST : ${evm}`);
   print("cyan", `----`);
 
@@ -122,7 +122,7 @@ async function addToBlocklist(state: State) {
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
       .addToBlocklist(state.toAdd[0], { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .catch((e: Error) => {
         throw e;
       });
   } else {
@@ -130,7 +130,7 @@ async function addToBlocklist(state: State) {
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
       .batchAddToBlocklist(state.toAdd, { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .catch((e: Error) => {
         throw e;
       });
   }
@@ -152,7 +152,7 @@ async function removeFromBlocklist(state: State) {
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
       .removeFromBlocklist(state.toRemove[0], { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .catch((e: Error) => {
         throw e;
       });
   } else {
@@ -160,7 +160,7 @@ async function removeFromBlocklist(state: State) {
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
       .batchRemoveFromBlocklist(state.toRemove, { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .catch((e: Error) => {
         throw e;
       });
   }

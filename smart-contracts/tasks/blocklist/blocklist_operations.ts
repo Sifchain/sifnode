@@ -1,7 +1,8 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Blocklist } from "../../build";
+// import { Blocklist } from "../../build";
 import { Wallet } from "ethers";
 import { FetchWallet } from "../../scripts/helpers/KeyHandler";
+import { Contract } from "ethers";
 import {print} from "../../scripts/helpers/utils";
 
 /**
@@ -11,7 +12,7 @@ import {print} from "../../scripts/helpers/utils";
  * @param wallet The ethers wallet to interact with the contract with
  * @returns a promise of the Blocklist object
  */
-async function GetBlocklist(hre: HardhatRuntimeEnvironment, contractAddress: string, wallet: Wallet): Promise<Blocklist> {
+async function GetBlocklist(hre: HardhatRuntimeEnvironment, contractAddress: string, wallet: Wallet): Promise<Contract> {
     print("yellow", `Connecting to Blocklist at address ${contractAddress}`);
     const blocklistFactory = await hre.ethers.getContractFactory("Blocklist", wallet);
     const blocklist = await blocklistFactory.attach(contractAddress);
