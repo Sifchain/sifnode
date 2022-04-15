@@ -1,17 +1,15 @@
 import time
 import threading
 import copy 
+from typing import List
 
 import siftool_path
 from siftool import eth, test_utils, sifchain
 from siftool.eth import NULL_ADDRESS
 from siftool.common import *
 from web3.eth import Contract
+from web3.eth import Account
 import web3
-
-from eth_typing import (
-    ChecksumAddress,
-)
 
 # In separate window: test/integration/framework/siftool run-env
 # test/integration/framework/venv/bin/python3 test/load/test_load_tx_ethereum.py
@@ -24,7 +22,7 @@ threads_num = 3
 amount_to_send = 10000
 
 def bridge_bank_lock_burn(eth_tx_wrapper: eth.EthereumTxWrapper, bridge_bank_sc: Contract, test_eth_account: str, 
-    recipient: str, token_amount: int, nonce: int, token_sc: Contract = None, isLock: bool = True):
+    recipient: str, token_amount: int, nonce: int, token_sc: Union[Contract,  None], isLock: bool):
 
     if token_sc is None:
         tx_opts = {"value": token_amount, "nonce": nonce}
@@ -41,23 +39,26 @@ def bridge_bank_lock_burn(eth_tx_wrapper: eth.EthereumTxWrapper, bridge_bank_sc:
         function = bridge_bank_sc.functions.burn
     eth_tx_wrapper.transact(function, test_eth_account, tx_opts=tx_opts)(recipient, token_addr, token_amount)
 
-def batch_create_eth_account(sc_addr: str, sc_address) -> []:
-    test_eth_accounts = []
+
+def batch_create_eth_account(ctx: test_utils.EnvCtx, sc_address: Union[str, List[str], None]) -> List[Account]:
+    test_eth_accounts: List[Account] = []
     for i in range(threads_num):
-        test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+        test_eth_account: Account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+        test_eth_accounts.append(test_eth_account)
         if sc_address is not None:
             if isinstance(sc_address, list):
                 ctx.mint_generic_erc20_token(sc_address[i], amount_to_send, test_eth_account)
             else:
                 ctx.mint_generic_erc20_token(sc_address, amount_to_send, test_eth_account)
-        test_eth_accounts.append(test_eth_account)
+        
     return test_eth_accounts
 
-def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account, test_eth_accounts: [], sc_address, isLock):
+def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account: str, test_eth_accounts: List[Account], sc_address: Union[str, List[str], None], isLock: bool):
     w3_url = ctx.w3_conn.provider.endpoint_uri
-    threads = []
-    conn_list = []
-    eth_tx_wrappers = []
+    threads: List[threading.Thread] = []
+    conn_list: List[web3.Web3] = []
+    eth_tx_wrappers: List[eth.EthereumTxWrapper] = []
+
     for i in range(threads_num):
             w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
             conn_list.append(w3_conn)
@@ -89,14 +90,13 @@ def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account, test_eth_accounts
     ctx.advance_blocks()
 
 def test_load_burn_rowan(ctx: test_utils.EnvCtx):
+    rowan_cosmos_denom = "rowan"
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
-
-    rowan_cosmos_denom = "rowan"
+    
     test_eth_accounts = batch_create_eth_account(ctx, rowan_contract_address)    
 
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, rowan_contract_address, False)
-    # Verify final balance
     expected_change = [[amount_to_send * threads_num, rowan_cosmos_denom]]
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
@@ -117,14 +117,8 @@ def test_load_erc20_to_sifnode(ctx: test_utils.EnvCtx):
 
     erc20_cosmos_denom = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, erc20_sc_address)
 
-    w3_url = ctx.w3_conn.provider.endpoint_uri
-    threads = []
-    conn_list = []
-    eth_tx_wrappers = []
-
     test_eth_accounts = batch_create_eth_account(ctx, erc20_sc_address)    
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, erc20_sc_address, True)
-
 
     expected_change = [[amount_to_send * threads_num, erc20_cosmos_denom]]
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
@@ -192,4 +186,3 @@ if __name__ == "__main__":
     test_load_erc20_to_sifnode(ctx)
     test_load_multiple_erc20_to_sifnode(ctx)
     print("load test from ethereum to sifnode done.")
-
