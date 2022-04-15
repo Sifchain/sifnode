@@ -1,9 +1,9 @@
 /**
  * Responsible for fetching deployment data and returning a valid ethers contract instance
  */
-const fs = require("fs");
-const { ethers, network } = require("hardhat");
-const { print } = require("./utils");
+import fs from "fs";
+import { ethers, network } from "hardhat";
+import { print } from "./utils";
 
 // By default, this will work with a mainnet fork,
 // but it can also be used to fork Ropsten
@@ -20,7 +20,7 @@ const PROXY_ADMIN_ADDRESS = "0x7c6c6ea036e56efad829af5070c8fb59dc163d88";
  * @param {number} chainId
  * @returns An object containing the factory, the instance, its address and the first user found in the accounts list
  */
-async function getDeployedContract(deploymentName, contractName, chainId) {
+export async function getDeployedContract(deploymentName: string, contractName: string, chainId: number) {
   deploymentName = deploymentName ?? DEFAULT_DEPLOYMENT_NAME;
   contractName = contractName ?? "BridgeBank";
   chainId = chainId ?? 1;
@@ -56,7 +56,7 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
  * @param {string} accountName A name that will appear in the logs to facilitate things
  * @returns An ethers SIGNER object
  */
-async function impersonateAccount(address, newBalance, accountName) {
+export async function impersonateAccount(address: string, newBalance: string, accountName: string) {
   accountName = accountName ? ` (${accountName})` : "";
 
   print("magenta", `🔒 Impersonating account ${address}${accountName}`);
@@ -80,7 +80,7 @@ async function impersonateAccount(address, newBalance, accountName) {
  * @param {string} address
  * @param {string | number} newBalance
  */
-async function setNewEthBalance(address, newBalance) {
+export async function setNewEthBalance(address: string, newBalance: string | number) {
   const newValue = `0x${newBalance.toString(16)}`;
   await ethers.provider.send("hardhat_setBalance", [address, newValue]);
 
@@ -90,7 +90,7 @@ async function setNewEthBalance(address, newBalance) {
 /**
  * Throws an error if USE_FORKING is not set in .env
  */
-function enforceForking() {
+export function enforceForking() {
   const forkingActive = !!process.env.USE_FORKING;
   if (!forkingActive) {
     throw new Error("❌ Forking is not active. Operation aborted.");
@@ -106,9 +106,46 @@ function enforceForking() {
  * @param {string} contractAddress
  * @returns An instance of the contract on the currently connected network
  */
-async function getContractAt(contractName, contractAddress) {
+export async function getContractAt(contractName: string, contractAddress: string) {
   const factory = await ethers.getContractFactory(contractName);
   return await factory.attach(contractAddress);
+}
+
+interface StorageObject {
+  contract: string;
+  label: string;
+  type: string;
+  src: string;
+}
+
+interface InjectInManifestParam{
+  topContractMainnetAddress: string;
+  parsedManifest: ContractManifestFile;
+  contractName: string;
+  previousLabel: string;
+  newVarObject: StorageObject;
+  previousGapSize: number;
+  newGapSize: number;
+  newTypeName: string;
+  newTypeLabel: string;
+}
+
+interface TypesObject {
+  [key: string]: {
+    label: string
+  }
+}
+
+interface ContractManifestFile {
+  impls: {
+    [key: string]: {
+      address: string;
+      layout: {
+        storage: StorageObject[];
+        types: TypesObject;
+      }
+    }
+  }
 }
 
 /**
@@ -142,7 +179,7 @@ async function getContractAt(contractName, contractAddress) {
      newTypeLabel: "contract IBlocklist",
    }
   */
-function injectInManifest({
+export function injectInManifest({
   topContractMainnetAddress,
   parsedManifest,
   contractName,
@@ -152,7 +189,7 @@ function injectInManifest({
   newGapSize,
   newTypeName,
   newTypeLabel,
-}) {
+}: InjectInManifestParam) {
   // Make a copy of the manifest
   parsedManifest = { ...parsedManifest };
 
@@ -196,7 +233,7 @@ function injectInManifest({
   });
 
   // Replace the size of the gap
-  newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(previousGapSize, newGapSize);
+  newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(String(previousGapSize), String(newGapSize));
 
   // GAP IN TYPES
   // In the Types object of the manifest, add a new gap with the new size
@@ -225,6 +262,12 @@ function injectInManifest({
   return parsedManifest;
 }
 
+export interface ReplaceTypesInManifestParams {
+  parsedManifest: ContractManifestFile;
+  originalType: string;
+  newType: string;
+}
+
 /**
  * Replaces all instances of originalTypeName for newTypeName in a manifest
  * @dev we'll expect a parsedManifest here to maintain the pattern established in injectInManifest()
@@ -240,7 +283,7 @@ function injectInManifest({
  *   newType: "t_string_memory_ptr",
  * });
  */
-function replaceTypesInManifest({ parsedManifest, originalType, newType }) {
+export function replaceTypesInManifest({ parsedManifest, originalType, newType }: ReplaceTypesInManifestParams) {
   // Make a copy of the manifest
   parsedManifest = { ...parsedManifest };
 
@@ -251,7 +294,7 @@ function replaceTypesInManifest({ parsedManifest, originalType, newType }) {
   return reconstructedManifest;
 }
 
-module.exports = {
+export default {
   PROXY_ADMIN_ADDRESS,
   getDeployedContract,
   impersonateAccount,

@@ -21,11 +21,14 @@
   "allowJs": true,
   "include": [
     "./scripts",
+    "./scripts/helpers",
     "./deploy",
     "./test",
+    "./tasks",
+    "./tasks/blocklist",
     "./build",
     "./recover/test"
-  ],
+   ],
   "files": [
     "./hardhat.config.ts"
   ]
