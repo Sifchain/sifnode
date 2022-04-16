@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import {BridgeBank__factory} from "../build";
 
 const BridgeBankAddress = "0xB5F54ac4466f5ce7E0d8A5cB9FE7b8c0F35B7Ba8";
-const BlockListAddress = "0x9C8a2011cCb697D7EDe3c94f9FBa5686a04DeACB";
+const BlockListAddress = "0xa74d631Ac62F028b839a60251E9e3Cf905736826";
 
 async function finishUpdate() {
     const [admin, operator, pauser] = await ethers.getSigners();
