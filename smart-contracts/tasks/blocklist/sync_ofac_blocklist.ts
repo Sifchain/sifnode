@@ -121,7 +121,7 @@ async function addToBlocklist(state: State) {
   if (state.toAdd.length === 1) {
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
-      .addToBlocklist(state.toAdd[0], { gasPrice: state.idealGasPrice })
+      .addToBlocklist(state.toAdd[0], { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
       .catch((e: Error) => {
         throw e;
       });
@@ -129,7 +129,7 @@ async function addToBlocklist(state: State) {
     // there are many addresses to add
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
-      .batchAddToBlocklist(state.toAdd, { gasPrice: state.idealGasPrice })
+      .batchAddToBlocklist(state.toAdd, { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
       .catch((e: Error) => {
         throw e;
       });
@@ -151,7 +151,7 @@ async function removeFromBlocklist(state: State) {
   if (state.toRemove.length === 1) {
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
-      .removeFromBlocklist(state.toRemove[0], { gasPrice: state.idealGasPrice })
+      .removeFromBlocklist(state.toRemove[0], { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
       .catch((e: Error) => {
         throw e;
       });
@@ -159,7 +159,7 @@ async function removeFromBlocklist(state: State) {
     // there are many addresses to remove
     tx = await state.blocklistInstance
       .connect(state.activeAccount)
-      .batchRemoveFromBlocklist(state.toRemove, { gasPrice: state.idealGasPrice })
+      .batchRemoveFromBlocklist(state.toRemove, { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
       .catch((e: Error) => {
         throw e;
       });

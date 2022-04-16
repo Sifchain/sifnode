@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
     mainnet: {
       url: networkUrl,
       accounts: keyList,
-      gas: 2000000,
+      gas: 6000000,
       gasPrice: "auto",
       gasMultiplier: 1.2,
     },
