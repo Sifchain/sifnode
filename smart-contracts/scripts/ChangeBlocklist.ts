@@ -5,7 +5,7 @@ const BridgeBankAddress = "0xB5F54ac4466f5ce7E0d8A5cB9FE7b8c0F35B7Ba8";
 const BlockListAddress = "0xa74d631Ac62F028b839a60251E9e3Cf905736826";
 
 async function finishUpdate() {
-    const [admin, operator, pauser] = await ethers.getSigners();
+    const [operator] = await ethers.getSigners();
     const factory = await ethers.getContractFactory("BridgeBank") as BridgeBank__factory;
     const bridgebank = await factory.attach(BridgeBankAddress);
 
