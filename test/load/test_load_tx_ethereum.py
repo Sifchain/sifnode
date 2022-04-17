@@ -6,7 +6,7 @@ from typing import List
 import siftool_path
 from siftool import eth, test_utils, sifchain
 from siftool.eth import NULL_ADDRESS
-from siftool.cosmos import balance_equal, balance_add, balance_normalize
+from siftool.cosmos import balance_equal, balance_add
 from siftool.common import *
 from web3.eth import Contract
 from web3.eth import Account
@@ -93,23 +93,21 @@ def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account: str, test_eth_acc
 def test_load_burn_rowan(ctx: test_utils.EnvCtx):
     rowan_cosmos_denom = "rowan"
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-    test_sif_account_initial_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
     
     test_eth_accounts = batch_create_eth_account(ctx, rowan_contract_address)    
 
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, rowan_contract_address, False)
-    expected_change = [[amount_to_send * threads_num, rowan_cosmos_denom]]
+    expected_change = {rowan_cosmos_denom: amount_to_send * threads_num}
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
     test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
-
-    balance_diff = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
-    assert balance_normalize(balance_diff) == {"rowan": amount_to_send * threads_num}
+    assert balance_equal(test_sif_account_final_balance, balance_add(test_sif_account_initial_balance, expected_change))
 
 
 def test_load_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-    test_sif_account_initial_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
     token_decimals = 18
     token_data: test_utils.ERC20TokenData = ctx.generate_random_erc20_token_data()
@@ -120,16 +118,15 @@ def test_load_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     test_eth_accounts = batch_create_eth_account(ctx, erc20_sc_address)    
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, erc20_sc_address, True)
 
-    expected_change = [[amount_to_send * threads_num, erc20_cosmos_denom]]
+    expected_change = {erc20_cosmos_denom: amount_to_send * threads_num}
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
-    test_sif_account_final_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
-    expected_final_balance = balance_add(test_sif_account_initial_balance, balance_normalize(expected_change))
-    assert balance_equal(test_sif_account_final_balance, expected_final_balance)
+    test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
+    assert balance_equal(test_sif_account_final_balance, balance_add(test_sif_account_initial_balance, expected_change))
 
 def test_load_multiple_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-    test_sif_account_initial_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
     erc20_contract_addresses = []
     erc20_cosmos_denoms = []
@@ -143,20 +140,17 @@ def test_load_multiple_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     test_eth_accounts = batch_create_eth_account(ctx, erc20_contract_addresses)    
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, erc20_contract_addresses, True)
 
-    expected_changes = []
+    expected_changes = {}
     for i in range(threads_num):
-        expected_changes.append([amount_to_send, erc20_cosmos_denoms[i]])
+        expected_changes = balance_add(expected_changes, {erc20_cosmos_denoms[i]: amount_to_send})
 
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_changes)
-
-    test_sif_account_final_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
-    expected_final_balance = balance_add(test_sif_account_initial_balance, balance_normalize(expected_changes))
-
-    assert balance_equal(test_sif_account_final_balance, expected_final_balance)
+    test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
+    assert balance_equal(test_sif_account_final_balance, balance_add(test_sif_account_initial_balance, expected_changes))
 
 def test_load_tx_eth(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-    test_sif_account_initial_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
+    test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
 
     test_eth_accounts = batch_create_eth_account(ctx, None)   
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, None, True)
@@ -164,12 +158,11 @@ def test_load_tx_eth(ctx: test_utils.EnvCtx):
     assert amount_to_send < fund_amount_eth
     
     # Verify final balance
-    expected_change = [[amount_to_send * threads_num, ctx.ceth_symbol]]
+    expected_change = {ctx.ceth_symbol: amount_to_send * threads_num}
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
-    test_sif_account_final_balance = balance_normalize(ctx.get_sifchain_balance(test_sif_account))
-    expected_balance = balance_add(test_sif_account_initial_balance, {ctx.ceth_symbol: amount_to_send * threads_num})
-    assert balance_equal(expected_balance, test_sif_account_final_balance)
+    test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
+    assert balance_equal(balance_add(expected_change, test_sif_account_initial_balance), test_sif_account_final_balance)
 
 
 # Enable running directly, i.e. without pytest
