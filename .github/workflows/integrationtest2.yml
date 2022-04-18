@@ -51,7 +51,7 @@ jobs:
       - name: Run integration tests
         run: |
           source ~/.bash_profile
-          pushd test/integration && python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v -s src/peggy2/test_eth_transfers.py
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v -s src/peggy2/test_eth_transfers.py
 
       # - name: Archive logs from test
       #   uses: actions/upload-artifact@v2
