@@ -43,6 +43,7 @@ jobs:
       - name: Start standalone peggy
         run: |
           source ~/.bash_profile
+          export PATH=./test/integration/framework/venv/bin/python3:$PATH
           ./test/integration/framework/siftool run-env
 
       - name: Run integration tests
