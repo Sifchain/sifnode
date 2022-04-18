@@ -21,15 +21,17 @@
  */
 
 require("dotenv").config();
-const fs = require("fs");
-const { ethers } = require("hardhat");
-const _ = require("lodash");
+
+import fs from "fs";
+import { ethers } from "hardhat";
+import _ from "lodash";
+import { print } from "./helpers/utils";
 
 const sifnodeDS = require("../data/ds_sifnode_whitelist.json");
 const addressListFile = process.env.ADDRESS_LIST_SOURCE;
 const destinationFile = process.env.ADDRESS_LIST_DESTINATION;
 
-function generateDenom(symbol) {
+function generateDenom(symbol: string): string {
   const denom = "c" + symbol.toLowerCase();
   return denom;
 }
@@ -77,18 +79,6 @@ async function main() {
 
   print("cyan", `DONE! These results have been written to ${destinationFile}:`);
   print("cyan", JSON.stringify(finalList, null, 2));
-}
-
-const colors = {
-  green: "\x1b[42m\x1b[37m",
-  red: "\x1b[41m\x1b[37m",
-  yellow: "\x1b[33m",
-  cyan: "\x1b[36m",
-  close: "\x1b[0m",
-};
-function print(color, message, breakLine) {
-  const lb = breakLine ? "\n" : "";
-  console.log(`${colors[color]}${message}${colors.close}${lb}`);
 }
 
 main()

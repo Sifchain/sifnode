@@ -10,12 +10,14 @@ import "reflect-metadata" // needed by tsyringe
 import "@typechain/hardhat"
 import "@nomiclabs/hardhat-waffle";
 
+import "./tasks/task_blocklist";
 
-const { print } = require("./scripts/helpers/utils")
+
+import { print } from "./scripts/helpers/utils";
 
 const networkUrl = process.env["NETWORK_URL"] ?? "http://needToSetNETWORK_URL.nothing"
-const activePrivateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-const keyList = ["0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"]
+const activePrivateKey = process.env["ETHEREUM_PRIVATE_KEY"] ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+const keyList = [activePrivateKey]
 
 if (!networkUrl) {
   print("error", "ABORTED! Missing NETWORK_URL env variable")
@@ -60,7 +62,7 @@ const config: HardhatUserConfig = {
     mainnet: {
       url: networkUrl,
       accounts: keyList,
-      gas: 2000000,
+      gas: 6000000,
       gasPrice: "auto",
       gasMultiplier: 1.2,
     },

@@ -1,7 +1,7 @@
 /**
  * List of colors to be used in the `print` function
  */
-const colors = {
+export const colors = {
   // simple font colors
   black: "\x1b[30m",
   red: "\x1b[31m",
@@ -33,13 +33,15 @@ const colors = {
   close: "\x1b[0m",
 };
 
+export type Colors = keyof typeof colors;
+
 /**
  * Prints a colored message on your console/terminal
  * @param {string} color Can be one of the above colors
  * @param {string} message Whatever string
  * @param {bool} breakLine Should it break line after the message?
  */
-function print(color, message, breakLine) {
+export function print(color: Colors, message: string, breakLine: boolean = false) {
   const lb = breakLine ? "\n" : "";
   console.log(`${colors[color]}${message}${colors.close}${lb}`);
 }
@@ -49,9 +51,15 @@ function print(color, message, breakLine) {
  * @param {string} symbol
  * @returns {bool} does the symbol match the RegExp?
  */
-function isValidSymbol(symbol) {
+export function isValidSymbol(symbol: string): boolean {
   const regexp = new RegExp("^[a-zA-Z0-9]+$");
   return regexp.test(symbol);
+}
+
+interface FilenameProperties {
+  prefix: string;
+  extension: string;
+  directory: string;
 }
 
 /**
@@ -61,7 +69,7 @@ function isValidSymbol(symbol) {
  * @param {string} directory The target directory of the file, something like 'data'
  * @returns {string} The generated filename, something like 'data/whitelist_14_sep_2021.json'
  */
-function generateTodayFilename({ prefix, extension, directory }) {
+export function generateTodayFilename({ prefix, extension, directory }: FilenameProperties): string {
   // setup month names
   const monthNames = [
     "Jan",
@@ -101,11 +109,23 @@ function generateTodayFilename({ prefix, extension, directory }) {
 }
 
 /**
+ * Provides a promised based sleep function that will allow you to await
+ * a period of time in milliseconds.
+ * @param ms The time to wait in milliseconds
+ * @returns Promise of void type that resolves after the timer goes off
+ */
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((res) => {
+    setTimeout(res, ms);
+  });
+}
+
+/**
  * Busts cache
  * @param {string} url The url to be cacheBusted
  * @returns {string} The same URL with something like '?cacheBuster=95508245028' appended to it
  */
-function cacheBuster(url) {
+export function cacheBuster(url: string) {
   const rand = Math.floor(Math.random() * (9999999999 - 2) + 1);
   const cacheBuster = `?cacheBuster=${rand}`;
   const finalUrl = `${url}${cacheBuster}`;
@@ -117,7 +137,7 @@ function cacheBuster(url) {
  * @param {array} list Your array
  * @returns {array} an array containing no duplicates
  */
-function removeDuplicates(list) {
+export function removeDuplicates<T>(list: T[]): T[] {
   const uniqueSet = new Set(list);
   return [...uniqueSet];
 }
@@ -128,7 +148,7 @@ function removeDuplicates(list) {
  * @param {array} List 2
  * @returns {bool} Do they have the same elements and length?
  */
-function hasSameElementsAndLength(a, b) {
+export function hasSameElementsAndLength(a: unknown[], b: unknown[]): boolean {
   if (a.length !== b.length) return false;
   const uniqueValues = new Set([...a, ...b]);
   for (const v of uniqueValues) {
@@ -144,7 +164,7 @@ function hasSameElementsAndLength(a, b) {
  * @param {string} symbol The symbol that should be converted to a V1 denom
  * @returns {string} The denom, something like 'ceth'
  */
-function generateV1Denom(symbol) {
+export function generateV1Denom(symbol: string): string {
   const denom = "c" + symbol.toLowerCase();
   return denom;
 }
@@ -152,7 +172,7 @@ function generateV1Denom(symbol) {
 /**
  * Model of an object that the Sifnode team cares about
  */
-const SIFNODE_MODEL = {
+export const SIFNODE_MODEL = {
   decimals: "",
   denom: "",
   base_denom: "",
@@ -171,7 +191,7 @@ const SIFNODE_MODEL = {
   ibc_counterparty_chain_id: "",
 };
 
-function extractPrivateKeys(envString) {
+export function extractPrivateKeys(envString: string): string[] {
   let finalList = [];
   if (envString.indexOf(",") == -1) {
     // there is only one key here
@@ -182,15 +202,3 @@ function extractPrivateKeys(envString) {
 
   return finalList;
 }
-
-module.exports = {
-  print,
-  isValidSymbol,
-  generateTodayFilename,
-  cacheBuster,
-  removeDuplicates,
-  hasSameElementsAndLength,
-  generateV1Denom,
-  SIFNODE_MODEL,
-  extractPrivateKeys,
-};

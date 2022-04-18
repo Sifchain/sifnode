@@ -1,9 +1,12 @@
 require("dotenv").config();
 
-const support = require("./helpers/forkingSupport");
-const { print } = require("./helpers/utils");
-const parser = require("./helpers/ofacParser");
-const { ethers } = require("hardhat");
+import {print} from "../../scripts/helpers/utils";
+import {getList} from "./ofacParser";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BigNumberish, Wallet, Contract } from "ethers";
+// import { Blocklist } from "../../build";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import {FetchWallet} from "../../scripts/helpers/KeyHandler";
 
 // Defaults to the Ethereum Mainnet address
 const BLOCKLIST_ADDRESS =
@@ -14,43 +17,30 @@ const USE_FORKING = !!process.env.USE_FORKING;
 // Will estimate gas and multiply the result by this value (wiggle room)
 const GAS_PRICE_BUFFER = 1.2;
 
-const state = {
-  ofac: [],
-  evm: [],
-  toAdd: [],
-  toRemove: [],
-  blocklistInstance: null,
-  activeAccount: null,
-  idealGasPrice: null,
-};
+interface State {
+  ofac: string[];
+  evm: string[];
+  toAdd: string[];
+  toRemove: string[];
+  blocklistInstance: Contract;
+  activeAccount: Wallet;
+  idealGasPrice: BigNumberish;
+}
 
-async function main() {
+export async function SyncOfacBlocklist(hre: HardhatRuntimeEnvironment, blocklistAddress: string, walletName: string, walletPassword: string, ofacURL: string) {
   print("highlight", "~~~ SYNC OFAC BLOCKLIST ~~~");
 
   // Fetches lists, compares them and figures out what has to be added or removed
-  await setupState();
+  const state = await setupState(hre, blocklistAddress, walletName, walletPassword, ofacURL);
 
-  // Get the current account
-  const accounts = await ethers.getSigners();
-  state.activeAccount = accounts[0];
-
-  // If we're forking, we want to impersonate the owner account
-  if (USE_FORKING) {
-    const signerOwner = await setupForking();
-    state.activeAccount = signerOwner;
-  } else {
     print("cyan", `🤵 Active account is ${state.activeAccount.address}`);
-  }
-
-  // Estimate gasPrice:
-  state.idealGasPrice = await estimateGasPrice();
 
   // Add addresses to the blocklist
-  await addToBlocklist();
+  await addToBlocklist(state);
   print("cyan", `----`);
 
   // Remove addresses from the blocklist
-  await removeFromBlocklist();
+  await removeFromBlocklist(state);
   print("cyan", `----`);
 
   // Print success
@@ -58,61 +48,68 @@ async function main() {
   print("highlight", "~~~ DONE ~~~");
 }
 
-async function setupState() {
+async function setupState(hre: HardhatRuntimeEnvironment, blocklistAddress: string, walletName: string, walletPassword: string, ofacURL: string) : Promise<State> {
+  const ethers = hre.ethers;
+  
+  const wallet = await FetchWallet(hre, walletName, walletPassword)
+  if (wallet === false) {
+    print("error", "Could not fetch wallet, exiting");
+    throw(`Could not fetch walletName: ${walletName}`);
+    }
+  const activeAccount = wallet
   // Set the deployed blocklist instance
-  state.blocklistInstance = await support.getContractAt("Blocklist", BLOCKLIST_ADDRESS);
+  const blocklistFactory = await ethers.getContractFactory("Blocklist", wallet);
+  const blocklistInstance = await blocklistFactory.attach(blocklistAddress);
+
+   // Estimate gasPrice:
+  const idealGasPrice = await estimateGasPrice(hre);
 
   // Set the OFAC list
-  state.ofac = await parser.getList();
-  print("cyan", `OFAC LIST: ${state.ofac}`);
+  const ofac = await getList(ofacURL);
+  print("cyan", `OFAC LIST: ${ofac}`);
   print("cyan", `----`);
 
   // Set the EVM list
   print("yellow", "Fetching EVM blocklist...");
-  state.evm = await state.blocklistInstance.getFullList();
-  print("cyan", `EVM LIST : ${state.evm}`);
+  const evm: string[] = await blocklistInstance.getFullList();
+  print("cyan", `EVM LIST : ${evm}`);
   print("cyan", `----`);
 
-  // Find out what the diff betweeen lists is
+  // Find out what the diff between lists is
   print("yellow", "Calculating Diff...");
 
   // Addresses that must be added don't exist on evm, but exist on ofac
-  state.toAdd = state.ofac.filter((address) => !state.evm.includes(address));
-  print("cyan", `Will add: ${state.toAdd}`);
+  const toAdd = ofac.filter((address) => !evm.includes(address));
+  print("cyan", `Will add: ${toAdd}`);
 
   // Addresses that must be removed exist on evm, but don't exist on ofac
-  state.toRemove = state.evm.filter((address) => !state.ofac.includes(address));
-  print("cyan", `Will remove: ${state.toRemove}`);
+  const toRemove = evm.filter((address) => !ofac.includes(address));
+  print("cyan", `Will remove: ${toRemove}`);
   print("cyan", "----");
+  
+  return {
+    ofac, 
+    toAdd, 
+    toRemove, 
+    idealGasPrice, 
+    blocklistInstance, 
+    evm,
+    activeAccount,
+  }
 }
 
-async function setupForking() {
-  print("magenta", "MAINNET FORKING :: IMPERSONATE ACCOUNT");
-  // Fetch the current owner of the blocklist
-  const ownerAddress = await state.blocklistInstance.owner();
-
-  // Impersonate the blocklist owner
-  const owner = await support.impersonateAccount(ownerAddress, "10000000000000000000");
-
-  // Set the owner as the caller for blocklist functions
-  state.blocklistInstance = state.blocklistInstance.connect(owner);
-
-  print("cyan", "----");
-  return owner;
-}
-
-async function estimateGasPrice() {
+async function estimateGasPrice(hre: HardhatRuntimeEnvironment) {
   console.log("Estimating ideal Gas price, please wait...");
 
-  const gasPrice = await ethers.provider.getGasPrice();
+  const gasPrice = await hre.ethers.provider.getGasPrice();
   const finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
 
-  console.log(`Using ideal Gas price: ${ethers.utils.formatUnits(finalGasPrice, "gwei")} GWEI`);
+  console.log(`Using ideal Gas price: ${hre.ethers.utils.formatUnits(finalGasPrice, "gwei")} GWEI`);
 
   return finalGasPrice;
 }
 
-async function addToBlocklist() {
+async function addToBlocklist(state: State) {
   if (state.toAdd.length === 0) {
     print("yellow", "The are no new addresses to add to the blocklist");
     return;
@@ -123,15 +120,17 @@ async function addToBlocklist() {
   let tx;
   if (state.toAdd.length === 1) {
     tx = await state.blocklistInstance
-      .addToBlocklist(state.toAdd[0], { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .connect(state.activeAccount)
+      .addToBlocklist(state.toAdd[0], { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
+      .catch((e: Error) => {
         throw e;
       });
   } else {
     // there are many addresses to add
     tx = await state.blocklistInstance
-      .batchAddToBlocklist(state.toAdd, { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .connect(state.activeAccount)
+      .batchAddToBlocklist(state.toAdd, { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
+      .catch((e: Error) => {
         throw e;
       });
   }
@@ -140,7 +139,7 @@ async function addToBlocklist() {
   print("h_green", `TX Hash: ${tx.hash}`);
 }
 
-async function removeFromBlocklist() {
+async function removeFromBlocklist(state: State) {
   if (state.toRemove.length === 0) {
     print("yellow", "The are no addresses to remove from the blocklist");
     return;
@@ -151,15 +150,17 @@ async function removeFromBlocklist() {
   let tx;
   if (state.toRemove.length === 1) {
     tx = await state.blocklistInstance
-      .removeFromBlocklist(state.toRemove[0], { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .connect(state.activeAccount)
+      .removeFromBlocklist(state.toRemove[0], { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
+      .catch((e: Error) => {
         throw e;
       });
   } else {
     // there are many addresses to remove
     tx = await state.blocklistInstance
-      .batchRemoveFromBlocklist(state.toRemove, { gasPrice: state.idealGasPrice })
-      .catch((e) => {
+      .connect(state.activeAccount)
+      .batchRemoveFromBlocklist(state.toRemove, { gasPrice: state.idealGasPrice, gasLimit: 6000000 })
+      .catch((e: Error) => {
         throw e;
       });
   }
@@ -168,7 +169,7 @@ async function removeFromBlocklist() {
   print("h_green", `TX Hash: ${tx.hash}`);
 }
 
-function treatCommonErrors(e) {
+function treatCommonErrors(e: Error) {
   if (e.message.indexOf("getFullList") !== -1) {
     print(
       "h_red",
@@ -193,10 +194,3 @@ function treatCommonErrors(e) {
     console.error({ e });
   }
 }
-
-main()
-  .catch((error) => {
-    treatCommonErrors(error);
-    process.exit(0);
-  })
-  .finally(() => process.exit(0));

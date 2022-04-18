@@ -203,7 +203,7 @@ export class RowanContract {
         "erowan",
         "erowan",
         18,
-        "cosmosDenom"
+        "rowan"
       )) as BridgeToken
     })
   }
