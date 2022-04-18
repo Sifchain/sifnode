@@ -21,8 +21,11 @@ jobs:
           bash test/integration/setup-linux-environment.sh
 
       - name: Check environemnt
-        run:
-          cat ~/.bash_profile && echo $GOPATH
+        run: |
+          cat ~/.bash_profile
+          echo GOPath: $GOPATH
+          source ~/.bash_profile
+          echo GOPath: $GOPATH
 
       - name: Clean
         run: make clean
@@ -31,7 +34,9 @@ jobs:
       #   run: make install
 
       - name: Unit test
-        run: make install && make tests
+        run: |
+          source ~/.bash_profile
+          make install && make tests
 
       - name: Start standalone peggy
         run: |
