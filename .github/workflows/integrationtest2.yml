@@ -26,6 +26,8 @@ jobs:
           echo GOPath: $GOPATH
           source ~/.bash_profile
           echo GOPath: $GOPATH
+          which python3
+          which python
 
       - name: Clean
         run: make clean
