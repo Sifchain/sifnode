@@ -20,6 +20,10 @@ jobs:
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
 
+      - name: Check environemnt
+        run:
+          cat ~/.bash_profile && echo $GOPATH
+
       - name: Clean
         run: make clean
 
