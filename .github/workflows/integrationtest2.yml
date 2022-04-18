@@ -40,10 +40,12 @@ jobs:
 
       - name: Start standalone peggy
         run: |
+          source ~/.bash_profile
           ./test/integration/framework/siftool run-env
 
       - name: Run integration tests
         run: |
+          source ~/.bash_profile
           pushd test/integration && python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v -s src/peggy2/test_eth_transfers.py
 
       # - name: Archive logs from test
