@@ -67,7 +67,8 @@ jobs:
         run: |
           source ~/.bash_profile
           sleep 30
-          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py::test_erc20_to_sifnode_and_back_first_time || cat /tmp/sifnode/sifnoded.log
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py::test_erc20_to_sifnode_and_back_first_time || cat /tmp/sifnode/sifnoded.log && exit 1
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py || cat /tmp/sifnode/sifnoded.log && exit 1
           cat /tmp/int-test.out
 
       # TODO: Remove before commit
