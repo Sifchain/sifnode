@@ -57,14 +57,16 @@ jobs:
           which sifnoded
           which sifgen
           which ebrelayer
-          ps aux | grep sifnoded
-          ps aux | grep ebrelayer
+          echo "Finding sifnoded"
+          ps aux | grep sifnoded | grep start | grep -v grep
+          echo "Finding ebrelayer"
+          ps aux | grep ebrelayer | grep -v grep
           lsof -i :8545
 
       - name: Run integration tests
         run: |
           source ~/.bash_profile
-          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth_transfer_valid
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth_transfer_valid || cat /tmp/sifnode/sifnoded.log
           cat /tmp/int-test.out
 
       # TODO: Remove before commit
