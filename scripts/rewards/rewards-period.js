@@ -6,10 +6,10 @@ async function createAssetRewardsFile() {
   const csv = fs.readFileSync("./pools.csv", "utf-8");
   const entries = JSON.parse(fs.readFileSync("./entries.json", "utf-8")).result
     .registry.entries;
-  const lines = csv.split("\r\n");
+  const lines = csv.split("\r\n").filter((line) => line.split(",")[1] !== "");
 
   let [, allocation] = lines[0].split('"');
-  allocation = parseInt(allocation.trim().split(",").join(""));
+  allocation = `${allocation.trim().split(",").join("")}${"0".repeat(18)}`;
 
   const multipliers = lines.slice(1).map((line) => {
     const [, poolName, multiplier] = line.split(",");
