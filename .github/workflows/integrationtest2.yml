@@ -52,7 +52,11 @@ jobs:
         run: |
           source ~/.bash_profile
           pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth_transfer_valid
+          cat /tmp/int-test.out
 
+      - name: Testing file scope
+        run:
+          ls -lt /tmp/int-test.out
       # - name: Archive logs from test
       #   uses: actions/upload-artifact@v2
       #   if: always()
