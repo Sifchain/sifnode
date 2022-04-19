@@ -20,6 +20,7 @@ jobs:
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
 
+      # TODO: Remove before commit
       - name: Check environemnt
         run: |
           cat ~/.bash_profile
@@ -48,12 +49,25 @@ jobs:
           which python3
           ./test/integration/framework/siftool run-env
 
+      - name: Flight check before running integration tests
+        run: |
+          source ~/.bash_profile
+          which python
+          which python3
+          which sifnode
+          which sifgen
+          which ebrelayer
+          ps aux | grep sifnoded
+          ps aux | grep ebrelayer
+          lsof -i :8545
+
       - name: Run integration tests
         run: |
           source ~/.bash_profile
           pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth_transfer_valid
           cat /tmp/int-test.out
 
+      # TODO: Remove before commit
       - name: Testing file scope
         run:
           ls -lt /tmp/int-test.out
