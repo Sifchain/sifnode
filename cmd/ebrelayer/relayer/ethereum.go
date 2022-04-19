@@ -225,10 +225,10 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	}
 
 	lenEthLogs := len(ethLogs)
+	// we query the log with specific lockBurnNonce, it should be less than 2
 	if lenEthLogs == 0 {
 		sub.SugaredLogger.Debugw("no results from filter", "lenEthLogs", lenEthLogs)
 		return
-		// we query the log with specific lockBurnNonce, it should be less than 2
 	} else if lenEthLogs > 1 {
 		sub.SugaredLogger.Debugw("length of results from filter more than one", "lenEthLogs", lenEthLogs)
 		return
