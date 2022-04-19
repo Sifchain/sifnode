@@ -54,7 +54,7 @@ jobs:
           source ~/.bash_profile
           which python
           which python3
-          which sifnode
+          which sifnoded
           which sifgen
           which ebrelayer
           ps aux | grep sifnoded
