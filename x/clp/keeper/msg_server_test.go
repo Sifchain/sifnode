@@ -1053,3 +1053,64 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 		})
 	}
 }
+
+func TestUnlockLiquidity(t *testing.T) {
+	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+		trGs := &tokenregistrytypes.GenesisState{
+			Registry: &tokenregistrytypes.Registry{
+				Entries: []*tokenregistrytypes.RegistryEntry{
+					{Denom: "ceth", BaseDenom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+					{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+				},
+			},
+		}
+		bz, _ := app.AppCodec().MarshalJSON(trGs)
+		genesisState["tokenregistry"] = bz
+
+		balances := []banktypes.Balance{
+			{
+				Address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				Coins: sdk.Coins{
+					sdk.NewCoin("ceth", sdk.Int(sdk.NewUintFromString(types.PoolThrehold)).MulRaw(2)),
+					sdk.NewCoin("rowan", sdk.Int(sdk.NewUintFromString(types.PoolThrehold)).MulRaw(2)),
+				},
+			},
+		}
+
+		bankGs := banktypes.DefaultGenesisState()
+		bankGs.Balances = append(bankGs.Balances, balances...)
+		bz, _ = app.AppCodec().MarshalJSON(bankGs)
+		genesisState["bank"] = bz
+
+		return genesisState
+	})
+
+	msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
+
+	_, err := msgServer.CreatePool(sdk.WrapSDKContext(ctx), &types.MsgCreatePool{
+		Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		ExternalAsset:       &types.Asset{Symbol: "ceth"},
+		NativeAssetAmount:   sdk.NewUintFromString(types.PoolThrehold),
+		ExternalAssetAmount: sdk.NewUintFromString(types.PoolThrehold),
+	})
+	require.NoError(t, err)
+	_, err = msgServer.AddLiquidity(sdk.WrapSDKContext(ctx), &types.MsgAddLiquidity{
+		Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		ExternalAsset:       &types.Asset{Symbol: "ceth"},
+		NativeAssetAmount:   sdk.NewUint(1000),
+		ExternalAssetAmount: sdk.NewUint(1000),
+	})
+	require.NoError(t, err)
+	_, err = msgServer.UnlockLiquidity(sdk.WrapSDKContext(ctx), &types.MsgUnlockLiquidityRequest{
+		Signer:        "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		ExternalAsset: &types.Asset{Symbol: "ceth"},
+		Units:         sdk.NewUint(1000),
+	})
+	require.NoError(t, err)
+	_, err = msgServer.RemoveLiquidityUnits(sdk.WrapSDKContext(ctx), &types.MsgRemoveLiquidityUnits{
+		Signer:        "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		ExternalAsset: &types.Asset{Symbol: "ceth"},
+		WithdrawUnits: sdk.NewUint(1000),
+	})
+	require.NoError(t, err)
+}
