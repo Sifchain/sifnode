@@ -41,6 +41,8 @@ const (
 	maxFeePerGasFlag                  = "maxFeePerGasFlag"
 	maxPriorityFeePerGasFlag          = "maxPriorityFeePerGasFlag"
 	ethereumChainIdFlag               = "ethereum-chain-id"
+	sifnodeGrpcEntryPointFlag         = "sifnode-grpc"
+	defaultSifnodeGrpc                = "0.0.0.0:9090"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -110,7 +112,7 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic --chain-id=peggy",
+		Use:     "init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic --chain-id=peggy --sifnode-grpc 0.0.0.0:9090",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
 		Args:    cobra.ExactArgs(0),
 		Example: "ebrelayer init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  --chain-id=peggy",
@@ -129,7 +131,7 @@ func initWitnessCmd() *cobra.Command {
 		Use:     "init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic ",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
 		Args:    cobra.ExactArgs(0),
-		Example: "ebrelayer init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  --chain-id=peggy",
+		Example: "ebrelayer init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  --chain-id=peggy --sifnode-grpc 0.0.0.0:9090",
 		RunE:    RunInitWitnessCmd,
 	}
 	flags.AddTxFlagsToCmd(initWitnessCmd)
@@ -250,6 +252,16 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.New("validator moniker is empty")
 	}
 
+	sifnodeGrpc, err := cmd.Flags().GetString(sifnodeGrpcEntryPointFlag)
+	if err != nil {
+		// set default value
+		sifnodeGrpc = defaultSifnodeGrpc
+	}
+
+	if len(sifnodeGrpc) == 0 {
+		sifnodeGrpc = defaultSifnodeGrpc
+	}
+
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
 	logConfig.Encoding = "json"
@@ -287,6 +299,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		web3Provider,
 		contractAddress,
 		sugaredLogger,
+		sifnodeGrpc,
 	)
 
 	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
@@ -304,6 +317,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		maxFeePerGas,
 		maxPriorityFeePerGas,
 		ethereumChainId,
+		sifnodeGrpc,
 	)
 
 	waitForAll := sync.WaitGroup{}
@@ -401,6 +415,16 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		return errors.New("validator moniker is empty")
 	}
 
+	sifnodeGrpc, err := cmd.Flags().GetString(sifnodeGrpcEntryPointFlag)
+	if err != nil {
+		// set default value
+		sifnodeGrpc = defaultSifnodeGrpc
+	}
+
+	if len(sifnodeGrpc) == 0 {
+		sifnodeGrpc = defaultSifnodeGrpc
+	}
+
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Encoding = "json"
 	logConfig.Sampling = nil
@@ -432,6 +456,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		web3Provider,
 		contractAddress,
 		sugaredLogger,
+		sifnodeGrpc,
 	)
 
 	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
@@ -449,6 +474,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		maxFeePerGas,
 		maxPriorityFeePerGas,
 		ethereumChainId,
+		sifnodeGrpc,
 	)
 
 	waitForAll := sync.WaitGroup{}

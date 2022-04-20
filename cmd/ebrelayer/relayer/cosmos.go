@@ -61,6 +61,7 @@ type CosmosSub struct {
 	MaxFeePerGas            *big.Int
 	MaxPriorityFeePerGas    *big.Int
 	EthereumChainId         *big.Int
+	SifnodeGrpc             string
 }
 
 // NewCosmosSub initializes a new CosmosSub
@@ -74,7 +75,8 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
 	sugaredLogger *zap.SugaredLogger,
 	maxFeePerGas,
 	maxPriorityFeePerGas,
-	ethereumChainId *big.Int) CosmosSub {
+	ethereumChainId *big.Int,
+	sifnodeGrpc string) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -88,6 +90,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
 		MaxFeePerGas:            maxFeePerGas,
 		MaxPriorityFeePerGas:    maxPriorityFeePerGas,
 		EthereumChainId:         ethereumChainId,
+		SifnodeGrpc:             sifnodeGrpc,
 	}
 }
 
@@ -337,7 +340,7 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, uint64, error) {
 
-	gRpcClientConn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+	gRpcClientConn, err := grpc.Dial(sub.SifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return 0, 0, err
 	}
