@@ -70,6 +70,6 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	_ = mm.InitGenesis(ctx, sifapp.AppCodec(), appState)
 	// Assert validator
 	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkIdentity(TestNetworkDescriptor))
-	expectedValidators := []oracletypes.ValidatorWhiteList{{WhiteList: map[string]uint32{expectedValidatorBech32: 100}}}
+	expectedValidators := oracletypes.ValidatorWhiteList{WhiteList: map[string]uint32{expectedValidatorBech32: 100}}
 	require.Equal(t, expectedValidators, validators)
 }
