@@ -91,6 +91,8 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 
 	prophecyInfoArray := GetAllProphciesCompleted(sub.SifnodeGrpc, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
 
+	// send the prophecy by batch, maximum is 5 prophecies in each batch
+	// compute how many batches needed, last batch may less than 5
 	batches := (len(prophecyInfoArray) + 4) / 5
 
 	for batch := 0; batch < batches; batch++ {

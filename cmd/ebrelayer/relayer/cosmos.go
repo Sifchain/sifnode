@@ -235,7 +235,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 								zap.Reflect("sub", sub),
 								"globalSequence", globalSequence)
 
-							sub.witnessSignProphecyID(txFactory, cosmosMsg)
+							sub.witnessSignAndBroadcastProphecy(txFactory, cosmosMsg)
 							// update expected global Sequence
 							globalSequence++
 
@@ -291,7 +291,7 @@ func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, c
 }
 
 // witness node sign against prophecyID of lock and burn message and send the singnature in message back to Sifnode.
-func (sub CosmosSub) witnessSignProphecyID(
+func (sub CosmosSub) witnessSignAndBroadcastProphecy(
 	txFactory tx.Factory,
 	cosmosMsg types.CosmosMsg,
 ) {
