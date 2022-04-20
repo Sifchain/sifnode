@@ -45,7 +45,7 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to get validator address: %w", err)
 			}
 
-			power, err := strconv.ParseUint(args[0], 10, 32)
+			power, err := strconv.ParseUint(args[2], 10, 32)
 			if err != nil {
 				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
