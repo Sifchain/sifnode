@@ -232,3 +232,17 @@ func (k Querier) GetPmtpParams(c context.Context, _ *types.PmtpParamsReq) (*type
 	pmtpParamsResponse := types.NewPmtpParamsResponse(params, rateParams, epoch, ctx.BlockHeight())
 	return &pmtpParamsResponse, nil
 }
+
+func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.ParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetParams(ctx)
+
+	return &types.ParamsRes{Params: &params}, nil
+}
+
+func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*types.RewardParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetRewardsParams(ctx)
+
+	return &types.RewardParamsRes{Params: params}, nil
+}

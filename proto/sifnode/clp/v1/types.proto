@@ -33,6 +33,11 @@ message Pool {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.moretags) = "yaml:\"swap_price_external \""
   ];
+  string reward_period_native_distributed = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"reward_period_native_distributed\""
+  ];
 }
 
 message LiquidityProvider {
@@ -43,6 +48,15 @@ message LiquidityProvider {
     (gogoproto.moretags) = "yaml:\"liquidity_provider_units\""
   ];
   string liquidity_provider_address = 3;
+  repeated LiquidityUnlock unlocks = 4;
+}
+
+message LiquidityUnlock {
+  int64 request_height = 1;
+  string units = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message PmtpEpoch {

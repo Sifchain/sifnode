@@ -8,6 +8,8 @@ const (
 	QueryLiquidityProviderData = "liquidityProviderData"
 	QueryLPList                = "lpList"
 	QueryAllLP                 = "allLp"
+	QueryParams                = "params"
+	QueryRewardParams          = "rewardParams"
 	QueryPmtpParams            = "pmtpParams"
 )
 

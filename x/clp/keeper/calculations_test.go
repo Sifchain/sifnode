@@ -139,10 +139,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(978),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(100598),
-				ExternalAssetBalance: sdk.NewUint(978),
-				PoolUnits:            sdk.NewUint(1),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(100598),
+				ExternalAssetBalance:          sdk.NewUint(978),
+				PoolUnits:                     sdk.NewUint(1),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -162,10 +163,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(833),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(833),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -212,10 +214,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(957),
-				ExternalAssetBalance: sdk.NewUint(1098),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(957),
+				ExternalAssetBalance:          sdk.NewUint(1098),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -235,10 +238,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(915),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(915),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -258,10 +262,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(907),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(907),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -281,10 +286,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(899),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(899),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -304,10 +310,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(891),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(891),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -327,10 +334,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(882),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(882),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -350,10 +358,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(874),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(874),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -373,10 +382,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(866),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(866),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -396,10 +406,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(858),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(858),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -419,10 +430,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(849),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(849),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -442,10 +454,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(841),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(841),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -465,10 +478,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(833),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(833),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -488,10 +502,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(750),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(750),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -511,10 +526,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(668),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(668),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -534,10 +550,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(585),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(585),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -557,10 +574,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(502),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(502),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -580,10 +598,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(420),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(420),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -603,10 +622,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(337),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(337),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -626,10 +646,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(254),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(254),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -649,10 +670,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(172),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(172),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -672,10 +694,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1098),
-				ExternalAssetBalance: sdk.NewUint(89),
-				PoolUnits:            sdk.NewUint(998),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(89),
+				PoolUnits:                     sdk.NewUint(998),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 		},
 		{
@@ -715,7 +738,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccount: tc.address,
+					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
@@ -772,10 +795,11 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			lp, _ := app.ClpKeeper.GetLiquidityProvider(ctx, tc.poolAsset, tc.address)
 
 			require.Equal(t, pool, types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: tc.poolAsset},
-				NativeAssetBalance:   tc.nativeAssetAmount,
-				ExternalAssetBalance: tc.externalAssetAmount,
-				PoolUnits:            tc.poolUnits,
+				ExternalAsset:                 &types.Asset{Symbol: tc.poolAsset},
+				NativeAssetBalance:            tc.nativeAssetAmount,
+				ExternalAssetBalance:          tc.externalAssetAmount,
+				PoolUnits:                     tc.poolUnits,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			})
 
 			var normalizationFactor sdk.Dec
@@ -806,7 +830,6 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			if to == (types.Asset{}) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
-
 			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(
 				from,
 				swapAmount,

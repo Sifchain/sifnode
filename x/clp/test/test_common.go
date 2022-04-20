@@ -2,7 +2,10 @@ package test
 
 import (
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"math/rand"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -40,11 +43,17 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	sifapp.SetConfig(false)
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
-	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetRegistry(ctx, tokenregistrytypes.Registry{
+		Entries: []*tokenregistrytypes.RegistryEntry{
+			{Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "atom", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+		},
+	})
 	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.OneDec(),
 		PmtpCurrentRunningRate: sdk.OneDec(),
@@ -58,6 +67,12 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 		PmtpPeriodStartBlock:     1,
 		PmtpPeriodEndBlock:       2,
 	})
+	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
+		LiquidityRemovalLockPeriod:   0,
+		LiquidityRemovalCancelPeriod: 2,
+		RewardPeriodStartTime:        "",
+		RewardPeriods:                nil,
+	})
 	return ctx, app
 }
 
@@ -65,6 +80,26 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 	sifapp.SetConfig(false)
 	app := sifapp.SetupFromGenesis(isCheckTx, genesisTransformer)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+
+	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
+		PmtpPeriodBlockRate:    sdk.OneDec(),
+		PmtpCurrentRunningRate: sdk.OneDec(),
+	})
+	app.ClpKeeper.SetParams(ctx, types.Params{
+		MinCreatePoolThreshold: 100,
+	})
+	app.ClpKeeper.SetPmtpParams(ctx, &types.PmtpParams{
+		PmtpPeriodGovernanceRate: sdk.OneDec(),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     1,
+		PmtpPeriodEndBlock:       2,
+	})
+	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
+		LiquidityRemovalLockPeriod:   0,
+		LiquidityRemovalCancelPeriod: 2,
+		RewardPeriodStartTime:        "",
+		RewardPeriods:                nil,
+	})
 	return ctx, app
 }
 
@@ -181,4 +216,44 @@ func GenerateWhitelistAddress(key string) sdk.AccAddress {
 		panic("Bech decode and hex decode don't match")
 	}
 	return res
+}
+
+func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Pool {
+	var poolList types.PoolsRes
+
+	file, err := filepath.Abs("test/pools_input.json")
+	if err != nil {
+		panic(err)
+	}
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(input, &poolList)
+	if err != nil {
+		panic(err)
+	}
+	// Set all pools
+	for _, pool := range poolList.Pools {
+		err := keeper.SetPool(ctx, pool)
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	return poolList.Pools
+}
+
+func GetAdmins(address string) *tokenregistrytypes.AdminAccounts {
+	return &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
+		{
+			AdminType:    tokenregistrytypes.AdminType_CLPDEX,
+			AdminAddress: address,
+		},
+		{
+			AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
+			AdminAddress: address,
+		},
+	}}
 }

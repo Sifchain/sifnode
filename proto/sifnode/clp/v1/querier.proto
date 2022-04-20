@@ -38,6 +38,12 @@ service Query {
     option (google.api.http).get =
         "/sifchain/clp/v1/liquidity_provider_list/{symbol}";
   };
+  rpc GetParams(ParamsReq) returns (ParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/params";
+  };
+  rpc GetRewardParams(RewardParamsReq) returns (RewardParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/reward_params";
+  };
   rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
@@ -138,6 +144,17 @@ message LiquidityProvidersRes {
   cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
+message ParamsReq {}
+
+message ParamsRes {
+  Params params = 1;
+}
+
+message RewardParamsReq {}
+
+message RewardParamsRes {
+  RewardParams params = 1;
+}
 message PmtpParamsReq {}
 
 message PmtpParamsRes {

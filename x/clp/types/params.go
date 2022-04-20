@@ -10,17 +10,11 @@ import (
 // Default parameter namespace
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
-	DefaultPmtpStartBlock         int64  = 211
-	DefaultPmtpEndBlock           int64  = 72210
 )
 
 // Parameter store keys
 var (
-	KeyMinCreatePoolThreshold   = []byte("MinCreatePoolThreshold")
-	KeyPmtpPeriodGovernanceRate = []byte("PmtpPeriodGovernanceRate")
-	KeyPmtpEpochLength          = []byte("PmtpEpochLength")
-	KeyPmtpStartBlock           = []byte("PmtpStartBlock")
-	KeyPmtpEndBlock             = []byte("PmtpEndBlock")
+	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)

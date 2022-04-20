@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -32,6 +33,7 @@ var (
 	PmtpRateParamsPrefix     = []byte{0x03} // Key to store the Pmtp rate params
 	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
 	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
+	RewardParamPrefix        = []byte{0x06}
 )
 
 // Generates a key for storing a specific pool
@@ -50,17 +52,20 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	return append(LiquidityProviderPrefix, key...)
 }
 
+func GetDefaultRewardParams() *RewardParams {
+	return &RewardParams{
+		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
+		RewardPeriods:                nil,
+		RewardPeriodStartTime:        "",
+	}
+}
+
 func GetDefaultPmtpParams() *PmtpParams {
-	//return &PmtpParams{
-	//	PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
-	//	PmtpPeriodEpochLength:    14440,
-	//	PmtpPeriodStartBlock:     211,
-	//	PmtpPeriodEndBlock:       72210,
-	//}
 	return &PmtpParams{
-		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
+		PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.0"),
 		PmtpPeriodEpochLength:    1,
-		PmtpPeriodStartBlock:     1,
-		PmtpPeriodEndBlock:       1000,
+		PmtpPeriodStartBlock:     0,
+		PmtpPeriodEndBlock:       0,
 	}
 }

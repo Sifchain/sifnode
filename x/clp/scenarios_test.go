@@ -49,16 +49,16 @@ func TestScenarios(t *testing.T) {
 
 	file, err := ioutil.ReadFile("scenarios.json")
 	// file, err := ioutil.ReadFile("../../scripts/pmtp/scenarios.json")
-	require.Nil(t, err, "some error occured while reading file. Error: %s", err)
+	require.Nil(t, err, "some error occurred while reading file. Error: %s", err)
 	var scenarios Scenarios
-	err = json.Unmarshal([]byte(file), &scenarios)
-	require.Nil(t, err, "error occured during unmarshalling. Error: %s", err)
+	err = json.Unmarshal(file, &scenarios)
+	require.Nil(t, err, "error occurred during unmarshalling. Error: %s", err)
 
 	for _, tc := range scenarios {
 		tc := tc
 		ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 			trGs := &tokenregistrytypes.GenesisState{
-				AdminAccount: tc.Address,
+				AdminAccounts: test.GetAdmins(tc.Address),
 				Registry: &tokenregistrytypes.Registry{
 					Entries: []*tokenregistrytypes.RegistryEntry{
 						{Denom: tc.PoolAsset, BaseDenom: tc.PoolAsset, Decimals: tc.PoolAssetDecimals, Permissions: tc.PoolAssetPermissions},
@@ -141,20 +141,21 @@ func TestScenarios(t *testing.T) {
 				tc.Params.PmtpPeriodEndBlock,
 				tc.ExpectedStates[i].Height,
 			)
+			expectedState := tc.ExpectedStates[i]
 			t.Run(name, func(t *testing.T) {
 				for j := 0; j < 100000; j++ {
 					ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 					clp.BeginBlocker(ctx, app.ClpKeeper)
 
-					if tc.ExpectedStates[i].Height == ctx.BlockHeight() {
+					if expectedState.Height == ctx.BlockHeight() {
 						got, _ := app.ClpKeeper.GetPool(ctx, tc.PoolAsset)
 
-						tc.ExpectedStates[i].Pool.SwapPriceNative = &tc.ExpectedStates[i].SwapPriceNative
-						tc.ExpectedStates[i].Pool.SwapPriceExternal = &tc.ExpectedStates[i].SwapPriceExternal
+						expectedState.Pool.SwapPriceNative = &expectedState.SwapPriceNative
+						expectedState.Pool.SwapPriceExternal = &expectedState.SwapPriceExternal
 
-						require.Equal(t, tc.ExpectedStates[i].Height, ctx.BlockHeight())
-						require.Equal(t, tc.ExpectedStates[i].Pool, got)
-						require.Equal(t, tc.ExpectedStates[i].PmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
+						require.Equal(t, expectedState.Height, ctx.BlockHeight())
+						require.Equal(t, expectedState.Pool, got)
+						require.Equal(t, expectedState.PmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
 
 						break
 					}

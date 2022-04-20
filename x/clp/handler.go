@@ -2,6 +2,7 @@ package clp
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -27,6 +28,9 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgRemoveLiquidity:
 			res, err := msgServer.RemoveLiquidity(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgRemoveLiquidityUnits:
+			res, err := msgServer.RemoveLiquidityUnits(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgSwap:
 			res, err := msgServer.Swap(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
@@ -37,6 +41,18 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			res, err := msgServer.UpdatePmtpParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
+		case *types.MsgUnlockLiquidityRequest:
+			res, err := msgServer.UnlockLiquidity(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgUpdateRewardsParamsRequest:
+			res, err := msgServer.UpdateRewardsParams(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgAddRewardPeriodRequest:
+			res, err := msgServer.AddRewardPeriod(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgUpdateStakingRewardParams:
+			res, err := msgServer.UpdateStakingRewardParams(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
 			return nil, errors.Wrap(errors.ErrUnknownRequest, errMsg)

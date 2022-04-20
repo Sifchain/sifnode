@@ -30,6 +30,8 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdLiquidityProvider(queryRoute),
 		GetCmdLpList(queryRoute),
 		GetCmdAllLps(queryRoute),
+		GetCmdParams(queryRoute),
+		GetCmdRewardsParams(queryRoute),
 		GetCmdPmtpParams(queryRoute),
 	)
 	return clpQueryCmd
@@ -121,7 +123,7 @@ func GetCmdAssets(queryRoute string) *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			lpAddress := args[1]
+			lpAddress := args[0]
 
 			assetReq := types.AssetListReq{
 				LpAddress: lpAddress,
@@ -250,6 +252,50 @@ func GetCmdAllLps(queryRoute string) *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "liquidityProviders")
 
+	return cmd
+}
+
+func GetCmdParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Short: "Get the clp parameters",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetParams(context.Background(), &types.ParamsReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdRewardsParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "reward-params",
+		Short: "Get the clp reward params",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetRewardParams(context.Background(), &types.RewardParamsReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 

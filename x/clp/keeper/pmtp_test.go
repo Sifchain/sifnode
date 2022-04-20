@@ -51,10 +51,11 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "eth"},
-				NativeAssetBalance:   sdk.NewUint(1000),
-				ExternalAssetBalance: sdk.NewUint(1000),
-				PoolUnits:            sdk.NewUint(1000),
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1000),
+				ExternalAssetBalance:          sdk.NewUint(1000),
+				PoolUnits:                     sdk.NewUint(1000),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
 			expectedSwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
@@ -75,10 +76,11 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			expectedPool: types.Pool{
-				ExternalAsset:        &types.Asset{Symbol: "cusdt"},
-				NativeAssetBalance:   sdk.NewUintFromString("1550459183129248235861408"),
-				ExternalAssetBalance: sdk.NewUintFromString("174248776094"),
-				PoolUnits:            sdk.NewUintFromString("1550459183129248235861408"),
+				ExternalAsset:                 &types.Asset{Symbol: "cusdt"},
+				NativeAssetBalance:            sdk.NewUintFromString("1550459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("174248776094"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.112385271402000000"),
 			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.897963118404021251"),
@@ -90,7 +92,12 @@ func TestKeeper_PolicyRun(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccount: tc.address,
+					AdminAccounts: &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
+						{
+							AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
+							AdminAddress: tc.address,
+						},
+					}},
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.poolAssetDecimals, Permissions: tc.poolAssetPermissions},

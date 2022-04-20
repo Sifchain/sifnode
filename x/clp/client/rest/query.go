@@ -40,6 +40,14 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 		"/clp/getPmtpParams",
 		getPmtpParamsHandler(cliCtx),
 	).Methods("GET")
+	r.HandleFunc(
+		"/clp/getRewardParams",
+		getRewardParamsHandler(cliCtx),
+	).Methods("GET")
+	r.HandleFunc(
+		"/clp/params",
+		getParamsHandler(cliCtx),
+	).Methods("GET")
 }
 
 func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
@@ -275,6 +283,46 @@ func getPmtpParamsHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPmtpParams)
+
+		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getRewardParamsHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryRewardParams)
+
+		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getParamsHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParams)
 
 		res, height, err := cliCtx.Query(route)
 		if err != nil {

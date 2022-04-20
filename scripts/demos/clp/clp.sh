@@ -16,7 +16,7 @@ sifnoded query clp pool ceth
 
 echo "Query Liquidity Provider / Pool creator is the first lp for the pool"
 sleep 8
-sifnoded query clp lp ceth $(sifnoded keys show sif -a)
+sifnoded query clp lp ceth $(sifnoded keys show sif -a )
 
 echo "adding more liquidity"
 sleep 8

@@ -3,6 +3,8 @@ package types
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -63,8 +65,39 @@ type Crisis struct {
 	ConstantFee ConstantFee `json:"constant_fee"`
 }
 
+type AdminAccount struct {
+	AdminType    types.AdminType `json:"admin_type"`
+	AdminAddress string          `json:"admin_address"`
+}
+type AdminAccounts struct {
+	AdminAccounts []*AdminAccount `json:"admin_accounts"`
+}
+
+type Registry struct {
+	Entries []*RegistryEntry `json:"entries"`
+}
+
+type RegistryEntry struct {
+	Decimals                 int64              `json:"deciamls"`
+	Denom                    string             `json:"denom"`
+	BaseDenom                string             `json:"base_denom"`
+	Path                     string             `json:"path"`
+	IbcChannelID             string             `json:"ibc_channel_id"`
+	IbcCounterpartyChannelID string             `json:"ibc_counterparty_id"`
+	DisplayName              string             `json:"display_name"`
+	DisplaySymbol            string             `json:"display_symbol"`
+	Network                  string             `json:"network"`
+	Address                  string             `json:"address"`
+	ExternalSymbol           string             `json:"external_symbol"`
+	TransferLimit            string             `json:"transfer_limit"`
+	Permissions              []types.Permission `json:"permissions"`
+	UnitDenom                string             `json:"unit_denom"`
+	IbcCounterpartyDenom     string             `json:"ibc_counterparty_denom"`
+	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
+}
 type TokenRegistry struct {
-	AdminAccount string `json:"admin_account"`
+	AdminAccounts AdminAccounts `json:"admin_accounts"`
+	Registry      Registry      `json:"registry"`
 }
 
 type ConstantFee struct {
@@ -102,6 +135,19 @@ type Bank struct {
 type Capability struct {
 	Index  string        `json:"index"`
 	Owners []interface{} `json:"owners"`
+}
+
+type PoolMultiplier struct {
+	Asset      string `json:"asset"`
+	Multiplier string `json:"multiplier"`
+}
+
+type RewardPeriod struct {
+	ID          string            `json:"id"`
+	StartBlock  json.Number       `json:"start_block"`
+	EndBlock    json.Number       `json:"end_block"`
+	Allocation  string            `json:"allocation"`
+	Multipliers []*PoolMultiplier `json:"multipliers"`
 }
 
 type CLPParams struct {

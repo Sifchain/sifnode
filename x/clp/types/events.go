@@ -10,6 +10,8 @@ const (
 	EventTypeCreateLiquidityProvider = "created_new_liquidity_provider"
 	EventTypeAddLiquidity            = "added_liquidity"
 	EventTypeRemoveLiquidity         = "removed_liquidity"
+	EventTypeRequestUnlock           = "request_unlock_liquidity"
+	EventTypeCancelUnlock            = "cancel_unlock_liquidity"
 	EventTypeSwap                    = "swap_successful"
 	EventTypeSwapFailed              = "swap_failed"
 	AttributeKeyThreshold            = "min_threshold"
@@ -23,6 +25,7 @@ const (
 	AttributeKeyPool                 = "pool"
 	AttributeKeyHeight               = "height"
 	AttributeKeyLiquidityProvider    = "liquidity_provider"
+	AttributeKeyUnits                = "liquidity_units"
 	AttributeKeyPmtpPolicyParams     = "pmtp_policy_params"
 	AttributeKeyPmtpRateParams       = "pmtp_rate_params"
 	AttributeValueCategory           = ModuleName

@@ -2,16 +2,29 @@ package clp
 
 import (
 	"fmt"
-	"time"
-
 	"strconv"
+	"time"
 
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
-
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
+
+func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+	params := keeper.GetRewardsParams(ctx)
+	pools := keeper.GetPools(ctx)
+	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
+	if currentPeriod != nil && !currentPeriod.RewardPeriodAllocation.IsZero() {
+		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return []abci.ValidatorUpdate{}
+}
 
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)

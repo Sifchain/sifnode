@@ -14,8 +14,9 @@ func NewMigrator(keeper Keeper) Migrator {
 }
 
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
-
-	// compute swap prices for each pool
+	// Initiate Rewards
+	m.keeper.SetRewardParams(ctx, types.GetDefaultRewardParams())
+	// Initiate PMTP
 	m.keeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.ZeroDec(),
 		PmtpCurrentRunningRate: sdk.ZeroDec(),
@@ -27,13 +28,14 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 	})
 	m.keeper.SetPmtpParams(ctx, types.GetDefaultPmtpParams())
 	m.keeper.SetPmtpInterPolicyRate(ctx, sdk.NewDec(0))
-
 	pools := m.keeper.GetPools(ctx)
 	for _, pool := range pools {
 		spe := sdk.ZeroDec()
 		spn := sdk.ZeroDec()
+		rpnd := sdk.ZeroUint()
 		pool.SwapPriceExternal = &spe
 		pool.SwapPriceNative = &spn
+		pool.RewardPeriodNativeDistributed = rpnd
 		err := m.keeper.SetPool(ctx, pool)
 		if err != nil {
 			panic(err)
