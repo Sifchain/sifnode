@@ -9,7 +9,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/stretchr/testify/require"
@@ -42,7 +41,6 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	initCmd.SetArgs([]string{"init", "test", "--home=" + homeDir})
 	app.SetConfig(false)
 	expectedValidatorBech32 := "sifvaloper1rwqp4q88ue83ag3kgnmxxypq0td59df4782tjn"
-	expectedValidator, err := sdk.ValAddressFromBech32(expectedValidatorBech32)
 	require.NoError(t, err)
 	addValCmd, _ := NewRootCmd()
 	addValBuf := new(bytes.Buffer)
@@ -72,5 +70,6 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	_ = mm.InitGenesis(ctx, sifapp.AppCodec(), appState)
 	// Assert validator
 	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkIdentity(TestNetworkDescriptor))
-	require.Equal(t, []sdk.ValAddress{expectedValidator}, validators.GetAllValidators())
+	expectedValidators := []oracletypes.ValidatorWhiteList{{WhiteList: map[string]uint32{expectedValidatorBech32: 100}}}
+	require.Equal(t, expectedValidators, validators)
 }
