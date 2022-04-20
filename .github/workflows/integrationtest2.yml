@@ -66,6 +66,7 @@ jobs:
       - name: Run integration tests
         run: |
           source ~/.bash_profile
+          sleep 30
           pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py || cat /tmp/sifnode/sifnoded.log && popd
 
       # TODO: Remove before commit
