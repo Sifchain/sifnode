@@ -12,9 +12,9 @@ const (
 	QueryEthereumLockBurnSequence  = "ethereumLockBurnSequence"
 	QueryWitnessLockBurnSequence   = "witnessLockBurnSequence"
 	QueryGlobalSequenceBlockNumber = "globalSequenceBlockNumber"
-	QueryProphciesCompleted = "prophciesCompleted"
+	QueryProphciesCompleted        = "prophciesCompleted"
 
-	QueryBlacklist   = "blacklist"
+	QueryBlacklist = "blacklist"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -93,16 +93,16 @@ func NewGlobalSequenceBlockNumberResponse(blockNumber uint64) QueryGlobalSequenc
 }
 
 // NewProphciesCompletedRequest creates a new NewGlobalSequenceBlockNumberResponse instance
-func NewProphciesCompletedRequest(networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) *QueryProphciesCompletedRequest {
-	return &QueryProphciesCompletedRequest{
+func NewProphciesCompletedRequest(networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) *QueryPropheciesCompletedRequest {
+	return &QueryPropheciesCompletedRequest{
 		NetworkDescriptor: networkDescriptor,
 		GlobalSequence:    globalSequence,
 	}
 }
 
 // NewQueryProphciesCompletedResponse creates a new QueryWitnessLockBurnSequenceResponse instance
-func NewQueryProphciesCompletedResponse(prophecyInfo []*types.ProphecyInfo) QueryProphciesCompletedResponse {
-	return QueryProphciesCompletedResponse{
+func NewQueryProphciesCompletedResponse(prophecyInfo []*types.ProphecyInfo) QueryPropheciesCompletedResponse {
+	return QueryPropheciesCompletedResponse{
 		ProphecyInfo: prophecyInfo,
 	}
 }
