@@ -3,6 +3,7 @@ on:
   push:
     paths-ignore:
       - "ui/**"
+      - "**"
 
 jobs:
   test:
