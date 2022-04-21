@@ -20,21 +20,8 @@ jobs:
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
 
-      # TODO: Remove before commit
-      - name: Check environemnt
-        run: |
-          cat ~/.bash_profile
-          echo GOPath: $GOPATH
-          source ~/.bash_profile
-          echo GOPath: $GOPATH
-          which python3
-          which python
-
       - name: Clean
         run: make clean
-
-      # - name: Build
-      #   run: make install
 
       - name: Unit test
         run: |
@@ -45,40 +32,18 @@ jobs:
         run: |
           source ~/.bash_profile
           export PATH=./test/integration/framework/venv/bin/python3:$PATH
-          which python
-          which python3
           ./test/integration/framework/siftool run-env
 
-      - name: Flight check before running integration tests
-        run: |
-          source ~/.bash_profile
-          which python
-          which python3
-          which sifnoded
-          which sifgen
-          which ebrelayer
-          echo "Finding sifnoded"
-          ps aux | grep sifnoded | grep start | grep -v grep
-          echo "Finding ebrelayer"
-          ps aux | grep ebrelayer | grep -v grep
-          lsof -i :8545
-
+      # This sleep is needed for the tests to work
       - name: Run integration tests
         run: |
           source ~/.bash_profile
           sleep 30
-          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py || cat /tmp/sifnode/sifnoded.log && popd
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py
 
-      # TODO: Remove before commit
-      - name: Cat test output file scope
-        run:
-          cat /tmp/int-test.out
-
-
-
-      # - name: Archive logs from test
-      #   uses: actions/upload-artifact@v2
-      #   if: always()
-      #   with:
-      #     name: testlogs2
-      #     path: test/integration
+      - name: Archive logs from test
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: testlogs2
+          path: test/integration
