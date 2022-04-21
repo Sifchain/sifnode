@@ -3,7 +3,7 @@ import time
 import web3
 import eth_typing
 from hexbytes import HexBytes
-from web3.datastructures import AttributeDict
+from web3.types import TxReceipt
 from typing import NewType, Sequence
 
 from siftool.common import *
@@ -249,14 +249,14 @@ class EthereumTxWrapper:
 
     def wait_for_all_transaction_receipts(self, tx_hashes: Sequence[HexBytes], sleep_time: int = 5,
         timeout: Union[int, None] = None
-    ) -> Sequence[AttributeDict]:
+    ) -> Sequence[TxReceipt]:
         result = []
         for txhash in tx_hashes:
             txrcpt = self.wait_for_transaction_receipt(txhash, sleep_time=sleep_time, timeout=timeout)
             result.append(txrcpt)
         return result
 
-    def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None):
+    def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None) -> TxReceipt:
         return self.w3_conn.eth.wait_for_transaction_receipt(txhash, timeout=timeout, poll_latency=sleep_time)
 
     def transact_sync(self, smart_contract_function, eth_addr, tx_opts=None, timeout=None):
