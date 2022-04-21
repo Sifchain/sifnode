@@ -60,7 +60,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, err
 	}
 
-	logger.Info("sifnode emit lock event.", "message", msg)
+	logger.Info("sifnode emit lock event.", "tx_msg", msg)
 	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
@@ -146,7 +146,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		srv.tokenRegistryKeeper.SetFirstDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 	}
 
-	logger.Info("sifnode emit burn event.", "message", msg)
+	logger.Info("sifnode emit burn event.", "tx_msg", msg)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
