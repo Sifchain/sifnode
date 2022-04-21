@@ -13,8 +13,10 @@ import subprocess
 def execst(args, cwd=None):
     return subprocess.run(args, cwd=cwd, check=True, capture_output=False)
 
+
 def get_basedir():
     return os.path.abspath(os.path.join(os.path.normpath(os.path.dirname(__file__))))
+
 
 def init_venv(venv_dir, requirements_txt):
     execst(["python3", "-m", "venv", venv_dir])
@@ -22,6 +24,7 @@ def init_venv(venv_dir, requirements_txt):
     execst([venv_pip, "install", "--upgrade", "pip"])
     execst([venv_pip, "install", "wheel"])
     execst([venv_pip, "install", "-r", requirements_txt])
+
 
 def ensure_venv(venv_dir, requirements_txt, lock_file=None):
     def wrapped():
@@ -48,18 +51,21 @@ def load_main_module():
 
     ensure_venv(venv_dir, requirements_txt, lock_file=lock_file)
     venv_lib_dir = glob.glob(os.path.join(venv_dir, "lib", "python3.*"))[0]
-    sys.path = sys.path + [
+    paths = [
         os.path.join(base_dir, "src"),
         os.path.join(base_dir, "build/generated"),
         os.path.join(venv_lib_dir, "site-packages"),
-        os.path.join(project_root, "test", "integration"),  # For running integration tests in-process
     ]
+    paths_to_add = [p for p in paths if not any(os.path.realpath(p) == os.path.realpath(s) for s in sys.path)]
+    sys.path.extend(paths_to_add)
     import siftool.main as siftool_main
     return siftool_main
+
 
 def main(argv):
     main_module = load_main_module()
     main_module.main(argv)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

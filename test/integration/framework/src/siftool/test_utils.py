@@ -321,7 +321,7 @@ class EnvCtx:
         abi, _, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         return self.w3_conn.eth.contract(abi=abi, address=address)
 
-    def get_erc20_token_balance(self, token_addr, eth_addr) -> int:
+    def get_erc20_token_balance(self, token_addr: eth.Address, eth_addr: eth.Address) -> int:
         token_sc = self.get_generic_erc20_sc(token_addr)
         return token_sc.functions.balanceOf(eth_addr).call()
 
@@ -580,7 +580,9 @@ class EnvCtx:
             assert cosmos.balance_zero(cosmos.balance_sub(new_balances, fund_amounts))
         return sif_address
 
-    def send_from_sifchain_to_sifchain(self, from_sif_addr, to_sif_addr, amounts):
+    def send_from_sifchain_to_sifchain(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address,
+        amounts: cosmos.Balance
+    ):
         amounts = cosmos.balance_normalize(amounts)
         amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
@@ -607,37 +609,37 @@ class EnvCtx:
     # - if expected_balance is given: when balances are equal to that.
     # - if neither min_changes nor expected_balance are given: when anything changes.
     # You cannot use min_changes and expected_balance at the same time.
-    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balances: cosmos.Balance,
-        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time=1,
-        timeout=90, change_timeout=None
+    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
+        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
+        timeout: int = 90, change_timeout: int = None
     ) -> cosmos.Balance:
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
         expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
         start_time = time.time()
         last_change_time = None
-        last_change_state = None
+        last_changed_balance = None
         while True:
-            new_balances = self.get_sifchain_balance(sif_addr)
-            delta = cosmos.balance_sub(new_balances, old_balances)
+            new_balance = self.get_sifchain_balance(sif_addr)
+            delta = cosmos.balance_sub(new_balance, old_balance)
             if expected_balance is not None:
-                should_return = cosmos.balance_equal(new_balances)
+                should_return = cosmos.balance_equal(expected_balance, new_balance)
             elif min_changes is not None:
                 should_return = cosmos.balance_exceeds(delta, min_changes)
             else:
                 should_return = not cosmos.balance_zero(delta)
             if should_return:
-                return new_balances
+                return new_balance
             now = time.time()
             if (timeout is not None) and (now - start_time > timeout):
                 raise Exception("Timeout waiting for sif balance to change")
             if last_change_time is None:
-                last_change_state = new_balances
+                last_changed_balance = new_balance
                 last_change_time = now
             else:
-                delta = cosmos.balance_sub(new_balances, last_change_state)
+                delta = cosmos.balance_sub(new_balance, last_changed_balance)
                 if not cosmos.balance_zero(delta):
-                    last_change_state = new_balances
+                    last_changed_balance = new_balance
                     last_change_time = now
                     log.debug("New state detected: {}".format(delta))
                 if (change_timeout is not None) and (now - last_change_time > change_timeout):
