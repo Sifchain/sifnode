@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -42,7 +43,11 @@ func TestIsBlacklisted(t *testing.T) {
 	for _, tc := range tt {
 		tc := tc
 		app, ctx := test.CreateTestApp(false)
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+		admin := tokenregistrytypes.AdminAccount{
+			AdminType:    tokenregistrytypes.AdminType_ETHBRIDGE,
+			AdminAddress: adminAddress.String(),
+		}
+		app.TokenRegistryKeeper.SetAdminAccount(ctx, &admin)
 		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
@@ -102,7 +107,11 @@ func TestSetBlacklist(t *testing.T) {
 	for _, tc := range tt {
 		tc := tc
 		app, ctx := test.CreateTestApp(false)
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+		admin := tokenregistrytypes.AdminAccount{
+			AdminType:    tokenregistrytypes.AdminType_ETHBRIDGE,
+			AdminAddress: adminAddress.String(),
+		}
+		app.TokenRegistryKeeper.SetAdminAccount(ctx, &admin)
 		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,

@@ -26,8 +26,8 @@ message MsgOpen {
 message MsgOpenResponse {}
 
 message MsgClose {
-    string signer = 1;
-    uint64 id = 2;
+  string signer = 1;
+  uint64 id = 2;
 }
 
 message MsgCloseResponse {}

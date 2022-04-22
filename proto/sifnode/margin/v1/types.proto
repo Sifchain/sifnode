@@ -4,9 +4,7 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
-message GenesisState {
-  Params params = 1;
-}
+message GenesisState { Params params = 1; }
 
 message Params {
   string leverage_max = 1 [
@@ -46,7 +44,6 @@ enum Position {
   LONG = 1;
   SHORT = 2;
 }
-
 
 message MTP {
   string address = 1;

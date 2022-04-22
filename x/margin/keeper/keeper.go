@@ -161,7 +161,7 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	   But a upgraded version that include swap, updating bouding curve (to be inside the old one)
 	   One can think about this as a state jump:
 	*/
-	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorForAsset(ctx, pool.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}

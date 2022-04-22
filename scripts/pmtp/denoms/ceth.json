@@ -1,0 +1,15 @@
+{
+    "entries": [
+        {
+            "decimals": 18,
+            "denom": "ceth",
+            "base_denom": "ceth",
+            "ibc_counterparty_denom": "xeth",
+            "permissions": [
+                "CLP",
+                "IBCEXPORT",
+                "IBCIMPORT"
+            ]
+        }
+    ]
+}

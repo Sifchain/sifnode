@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,11 +21,12 @@ type Keeper struct {
 	bankKeeper          types.BankKeeper
 	authKeeper          types.AuthKeeper
 	tokenRegistryKeeper types.TokenRegistryKeeper
+	mintKeeper          mintkeeper.Keeper
 	paramstore          paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -35,6 +37,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		bankKeeper:          bankkeeper,
 		authKeeper:          accountKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
+		mintKeeper:          mintKeeper,
 		paramstore:          ps,
 	}
 	return keeper
@@ -87,9 +90,9 @@ func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 	return normalizationFactor, adjustExternalToken
 }
 
-func (k Keeper) GetNormalizationFactorForAsset(ctx sdk.Context, asset string) (sdk.Dec, bool, error) {
+func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Asset) (sdk.Dec, bool, error) {
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset)
+	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset.Symbol)
 	if err != nil {
 		return sdk.Dec{}, false, tokenregistrytypes.ErrNotFound
 	}
