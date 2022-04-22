@@ -89,9 +89,9 @@ func TestKeeper_SwapOne(t *testing.T) {
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
 	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
 	assert.NoError(t, err)
-	assert.Equal(t, swapResult.String(), "20")
-	assert.Equal(t, liquidityFee.String(), "978")
-	assert.Equal(t, priceImpact.String(), "0")
+	assert.Equal(t, "20", swapResult.String())
+	assert.Equal(t, "978", liquidityFee.String())
+	assert.Equal(t, "0", priceImpact.String())
 }
 
 func TestKeeper_SwapOneFromGenesis(t *testing.T) {
