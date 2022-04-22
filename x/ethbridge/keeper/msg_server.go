@@ -2,10 +2,10 @@ package keeper
 
 import (
 	"context"
-	"strconv"
 	"fmt"
+	"strconv"
 
-  sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
@@ -26,28 +26,32 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 var _ types.MsgServer = msgServer{}
 
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
+	response := &types.MsgLockResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	if srv.IsPaused(ctx) {
+		return response, types.ErrPaused
+	}
 	fmt.Println("GO |===== Starting to Log ")
 	logger := srv.Keeper.Logger(ctx)
 	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
+		return response, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
 	}
 	fmt.Println("GO | Exists Peggy Token")
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 	fmt.Println("GO |===== Exists Account")
 	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
-		return nil, err
+		return response, err
 	}
 	fmt.Println("GO |===== Process lock event")
 	logger.Info("sifnode emit lock event.",
@@ -77,33 +81,36 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 	})
 
-	return &types.MsgLockResponse{}, nil
+	return response, nil
 }
 
 func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
+	response := &types.MsgBurnResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
-
+	if srv.IsPaused(ctx) {
+		return response, types.ErrPaused
+	}
 	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		logger.Error("Native token can't be burn.",
 			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+		return response, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
 	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
 	if err := srv.Keeper.ProcessBurn(ctx, cosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
-		return nil, err
+		return response, err
 	}
 
 	logger.Info("sifnode emit burn event.",
@@ -133,7 +140,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		),
 	})
 
-	return &types.MsgBurnResponse{}, nil
+	return response, nil
 
 }
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {

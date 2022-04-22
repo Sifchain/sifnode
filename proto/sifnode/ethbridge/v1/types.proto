@@ -52,3 +52,7 @@ message GenesisState {
   string ceth_receive_account = 1;
   repeated string peggy_tokens = 2;
 }
+
+message Pauser {
+  bool is_paused = 1;
+}
