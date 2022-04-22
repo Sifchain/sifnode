@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -337,43 +338,25 @@ func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalT
 func CalcSwapResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
-	X, x, Y sdk.Uint,
+	X_, x_, Y_ sdk.Uint,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, error) {
-	if !ValidateZero([]sdk.Uint{X, x, Y}) {
+	if !ValidateZero([]sdk.Uint{X_, x_, Y_}) {
 		return sdk.ZeroUint(), nil
 	}
 
-	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
-	if adjustExternalToken {
-		if toRowan {
-			X = X.Mul(nf)
-			x = x.Mul(nf)
-		} else {
-			Y = Y.Mul(nf)
-		}
-	} else {
-		if toRowan {
-			Y = Y.Mul(nf)
-		} else {
-			X = X.Mul(nf)
-			x = x.Mul(nf)
-		}
-	}
+	X := X_.BigInt()
+	x := x_.BigInt()
+	Y := Y_.BigInt()
 
-	minLen := GetMinLen([]sdk.Uint{X, x, Y})
-	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
-	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
-	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
+	var s, d, d2, d3, y big.Int
+	s.Add(X, x)    // s = X + x
+	d.Mul(&s, &s)  // d = (X + x)**2
+	d2.Mul(X, Y)   // d2 = X * Y
+	d3.Mul(x, &d2) // d3 = x * X * Y
+	y.Quo(&d3, &d) // y = d3 / d = (x * X * Y) / (X + x)**2
 
-	s := xd.Add(Xd)
-	d := s.Mul(s)
-	y := xd.Mul(Xd).Mul(Yd).Quo(d)
-	y = IncreasePrecision(y, minLen)
-	if !toRowan {
-		y = y.Quo(normalizationFactor)
-	}
-	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
-	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
+	y_ := CalcSwapPmtp(toRowan, sdk.NewDecFromBigInt(&y), pmtpCurrentRunningRate)
+	return sdk.NewUintFromBigInt(y_.RoundInt().BigInt()), nil
 }
 
 func CalcSwapPriceResult(toRowan bool,
