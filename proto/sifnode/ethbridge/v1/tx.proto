@@ -18,7 +18,14 @@ service Msg {
       returns (MsgUpdateCethReceiverAccountResponse);
   rpc RescueCeth(MsgRescueCeth) returns (MsgRescueCethResponse);
   rpc SetBlacklist(MsgSetBlacklist) returns (MsgSetBlacklistResponse);
+  rpc SetPauser(MsgPauser) returns (MsgPauserResponse);
 }
+
+message MsgPauser {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  bool is_paused = 2 ;
+}
+message MsgPauserResponse{}
 
 // MsgLock defines a message for locking coins and triggering a related event
 message MsgLock {

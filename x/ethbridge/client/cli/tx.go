@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/ethbridge/utils"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
@@ -405,6 +406,38 @@ func GetCmdSetBlacklist() *cobra.Command {
 
 			msg.From = clientCtx.FromAddress.String()
 
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdPauser() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-pauser",
+		Short: "pause or unpause Lock and Burn transactions",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			is_paused, err := utils.ParseStringToBool(args[0])
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgPauser{
+				Signer:   signer.String(),
+				IsPaused: is_paused,
+			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

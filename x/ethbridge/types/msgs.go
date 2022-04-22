@@ -17,6 +17,33 @@ const (
 	lockGasCost = 60000000000 * 393000
 )
 
+var _ sdk.Msg = &MsgPauser{}
+
+// Route should return the name of the module
+func (msg MsgPauser) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgPauser) Type() string { return "pauser" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgPauser) ValidateBasic() error {
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgPauser) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgPauser) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	ethereumChainID int64, cosmosSender sdk.AccAddress,

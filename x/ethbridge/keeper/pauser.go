@@ -18,12 +18,6 @@ func (k Keeper) GetPauser(ctx sdk.Context) *types.Pauser {
 	return &pauser
 }
 
-func (k Keeper) Pause(ctx sdk.Context) {
-	pauser := k.GetPauser(ctx)
-	pauser.IsPaused = true
-	k.SetPauser(ctx, pauser)
-}
-
 func (k Keeper) IsPaused(ctx sdk.Context) bool {
 	return k.GetPauser(ctx).IsPaused
 }

@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,10 +26,25 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+func (srv msgServer) SetPauser(goCtx context.Context, msg *types.MsgPauser) (*types.MsgPauserResponse, error) {
+	response := &types.MsgPauserResponse{}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !srv.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_ETHBRIDGE, signer) {
+		return response, types.ErrNotEnoughPermissions
+	}
+
+	srv.Keeper.SetPauser(ctx, &types.Pauser{IsPaused: msg.IsPaused})
+	return response, nil
+}
+
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
 	response := &types.MsgLockResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if srv.IsPaused(ctx) {
+	if srv.Keeper.IsPaused(ctx) {
 		return response, types.ErrPaused
 	}
 	fmt.Println("GO |===== Starting to Log ")
@@ -88,7 +104,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	response := &types.MsgBurnResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
-	if srv.IsPaused(ctx) {
+	if srv.Keeper.IsPaused(ctx) {
 		return response, types.ErrPaused
 	}
 	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
