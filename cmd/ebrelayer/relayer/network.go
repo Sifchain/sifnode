@@ -8,6 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+const DefaultGrpcEntryPoint = "0.0.0.0:9090"
+
 // IsWebsocketURL returns true if the given URL is a websocket URL
 func IsWebsocketURL(rawurl string) bool {
 	u, err := url.Parse(rawurl)

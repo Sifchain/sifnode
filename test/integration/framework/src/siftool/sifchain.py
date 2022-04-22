@@ -2,17 +2,27 @@ import base64
 import json
 import time
 import grpc
-from typing import Mapping, Any
-from siftool import command, cosmos
+import re
+import web3
+from typing import Mapping, Any, Tuple
+from siftool import command, cosmos, eth
 from siftool.common import *
 
-def sifchain_denom_hash(network_descriptor: int, token_contract_address: str) -> str:
+def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
     assert type(network_descriptor) == int
     assert network_descriptor in range(1, 10000)
     denom = f"sifBridge{network_descriptor:04d}{token_contract_address.lower()}"
     return denom
+
+def sifchain_denom_hash_to_token_contract_address(token_hash: str) -> Tuple[int, eth.Address]:
+    m = re.match("^sifBridge(\\d{4})0x([0-9a-fA-F]{40})$", token_hash)
+    if not m:
+        raise Exception("Invalid sifchain denom '{}'".format(token_hash))
+    network_descriptor = int(m[1])
+    token_address = web3.Web3.toChecksumAddress(m[2])
+    return network_descriptor, token_address
 
 # Deprecated
 def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmos.Balance:

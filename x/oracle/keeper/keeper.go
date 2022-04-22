@@ -204,7 +204,6 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 
 	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
 
-	// ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
 	if recoveredAddr.String() != ethereumAddress {
 		return errors.New("incorrect ethereum signature")
 	}
