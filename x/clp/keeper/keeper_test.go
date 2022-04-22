@@ -203,7 +203,7 @@ func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
 					clpKeeper.GetNormalizationFactorFromAsset(ctx, tc.asset)
 				})
 			} else {
-				normalizationFactor, adjustExternalToken := clpKeeper.GetNormalizationFactorFromAsset(ctx, tc.asset)
+				normalizationFactor, adjustExternalToken, _ := clpKeeper.GetNormalizationFactorFromAsset(ctx, tc.asset)
 
 				require.NotNil(t, normalizationFactor)
 				require.Equal(t, tc.normalizationFactor, normalizationFactor)

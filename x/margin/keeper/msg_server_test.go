@@ -764,17 +764,23 @@ func TestKeeper_OpenClose(t *testing.T) {
 			nativeAsset := clptypes.NativeSymbol
 			externalAsset := clptypes.Asset{Symbol: tt.externalAsset}
 
+			SwapPriceNative := sdk.ZeroDec()
+			SwapPriceExternal := sdk.ZeroDec()
+
 			pool := clptypes.Pool{
-				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(1000000000000),
-				ExternalAssetBalance: sdk.NewUint(1000000000000),
-				NativeCustody:        sdk.ZeroUint(),
-				ExternalCustody:      sdk.ZeroUint(),
-				NativeLiabilities:    sdk.ZeroUint(),
-				ExternalLiabilities:  sdk.ZeroUint(),
-				PoolUnits:            sdk.ZeroUint(),
-				Health:               sdk.ZeroDec(),
-				InterestRate:         sdk.NewDecWithPrec(1, 1),
+				ExternalAsset:                 &externalAsset,
+				NativeAssetBalance:            sdk.NewUint(1000000000000),
+				ExternalAssetBalance:          sdk.NewUint(1000000000000),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				PoolUnits:                     sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			}
 
 			marginKeeper.SetEnabledPools(ctx, []string{tt.externalAsset})
@@ -845,16 +851,19 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.Equal(t, openExpectedMTP, openMTP)
 
 			openExpectedPool := clptypes.Pool{
-				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(1000000001000),
-				ExternalAssetBalance: sdk.NewUint(999999996000),
-				NativeCustody:        sdk.ZeroUint(),
-				ExternalCustody:      sdk.NewUint(4000),
-				NativeLiabilities:    sdk.NewUint(1000),
-				ExternalLiabilities:  sdk.ZeroUint(),
-				PoolUnits:            sdk.ZeroUint(),
-				Health:               sdk.NewDecWithPrec(999999999000000002, 18),
-				InterestRate:         sdk.NewDecWithPrec(1, 1),
+				ExternalAsset:                 &externalAsset,
+				NativeAssetBalance:            sdk.NewUint(1000000001000),
+				ExternalAssetBalance:          sdk.NewUint(999999996000),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.NewUint(4000),
+				NativeLiabilities:             sdk.NewUint(1000),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				PoolUnits:                     sdk.ZeroUint(),
+				Health:                        sdk.NewDecWithPrec(999999999000000002, 18),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			}
 
 			openPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
@@ -867,16 +876,19 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			closeExpectedPool := clptypes.Pool{
-				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   sdk.NewUint(999999993200),
-				ExternalAssetBalance: sdk.NewUint(1000000000000),
-				NativeCustody:        sdk.ZeroUint(),
-				ExternalCustody:      sdk.ZeroUint(),
-				NativeLiabilities:    sdk.ZeroUint(),
-				ExternalLiabilities:  sdk.ZeroUint(),
-				PoolUnits:            sdk.ZeroUint(),
-				Health:               sdk.NewDecWithPrec(999999999000000002, 18),
-				InterestRate:         sdk.NewDecWithPrec(1, 1),
+				ExternalAsset:                 &externalAsset,
+				NativeAssetBalance:            sdk.NewUint(999999993200),
+				ExternalAssetBalance:          sdk.NewUint(1000000000000),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				PoolUnits:                     sdk.ZeroUint(),
+				Health:                        sdk.NewDecWithPrec(999999999000000002, 18),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			}
 
 			closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
@@ -1448,17 +1460,23 @@ func TestKeeper_EC(t *testing.T) {
 			nativeAsset := clptypes.NativeSymbol
 			externalAsset := clptypes.Asset{Symbol: ec.externalAsset}
 
+			SwapPriceNative := sdk.ZeroDec()
+			SwapPriceExternal := sdk.ZeroDec()
+
 			pool := clptypes.Pool{
-				ExternalAsset:        &externalAsset,
-				NativeAssetBalance:   testItem.X_A,
-				ExternalAssetBalance: testItem.Y_A,
-				NativeCustody:        sdk.ZeroUint(),
-				ExternalCustody:      sdk.ZeroUint(),
-				NativeLiabilities:    sdk.ZeroUint(),
-				ExternalLiabilities:  sdk.ZeroUint(),
-				PoolUnits:            sdk.ZeroUint(),
-				Health:               sdk.ZeroDec(),
-				InterestRate:         sdk.NewDecWithPrec(1, 1),
+				ExternalAsset:                 &externalAsset,
+				NativeAssetBalance:            testItem.X_A,
+				ExternalAssetBalance:          testItem.Y_A,
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				PoolUnits:                     sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			}
 
 			marginKeeper.SetEnabledPools(ctx, []string{ec.externalAsset})
@@ -1530,16 +1548,19 @@ func TestKeeper_EC(t *testing.T) {
 					require.Equal(t, openExpectedMTP, openMTP)
 
 					openExpectedPool := clptypes.Pool{
-						ExternalAsset:        &externalAsset,
-						NativeAssetBalance:   chunkItem.poolNativeAssetBalanceAfterOpen,
-						ExternalAssetBalance: chunkItem.poolExternalAssetBalanceAfterOpen,
-						NativeCustody:        sdk.ZeroUint(),
-						ExternalCustody:      chunkItem.mtpCustodyAmount,
-						NativeLiabilities:    msgOpen.CollateralAmount,
-						ExternalLiabilities:  sdk.ZeroUint(),
-						PoolUnits:            sdk.ZeroUint(),
-						Health:               chunkItem.poolHealthAfterOpen,
-						InterestRate:         sdk.NewDecWithPrec(1, 1),
+						ExternalAsset:                 &externalAsset,
+						NativeAssetBalance:            chunkItem.poolNativeAssetBalanceAfterOpen,
+						ExternalAssetBalance:          chunkItem.poolExternalAssetBalanceAfterOpen,
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               chunkItem.mtpCustodyAmount,
+						NativeLiabilities:             msgOpen.CollateralAmount,
+						ExternalLiabilities:           sdk.ZeroUint(),
+						PoolUnits:                     sdk.ZeroUint(),
+						Health:                        chunkItem.poolHealthAfterOpen,
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
+						SwapPriceNative:               &SwapPriceNative,
+						SwapPriceExternal:             &SwapPriceExternal,
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					}
 					openPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
 					require.Equal(t, openExpectedPool, openPool)
@@ -1559,16 +1580,19 @@ func TestKeeper_EC(t *testing.T) {
 					require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterClose)), app.BankKeeper.GetBalance(ctx, signer, ec.externalAsset))
 
 					closeExpectedPool := clptypes.Pool{
-						ExternalAsset:        &externalAsset,
-						NativeAssetBalance:   chunkItem.poolNativeAssetBalanceAfterClose,
-						ExternalAssetBalance: chunkItem.poolExternalAssetBalanceAfterClose,
-						NativeCustody:        sdk.ZeroUint(),
-						ExternalCustody:      sdk.ZeroUint(),
-						NativeLiabilities:    sdk.ZeroUint(),
-						ExternalLiabilities:  sdk.ZeroUint(),
-						PoolUnits:            sdk.ZeroUint(),
-						Health:               chunkItem.poolHealthAfterClose,
-						InterestRate:         sdk.NewDecWithPrec(1, 1),
+						ExternalAsset:                 &externalAsset,
+						NativeAssetBalance:            chunkItem.poolNativeAssetBalanceAfterClose,
+						ExternalAssetBalance:          chunkItem.poolExternalAssetBalanceAfterClose,
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						PoolUnits:                     sdk.ZeroUint(),
+						Health:                        chunkItem.poolHealthAfterClose,
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
+						SwapPriceNative:               &SwapPriceNative,
+						SwapPriceExternal:             &SwapPriceExternal,
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					}
 					closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
 					require.Equal(t, closeExpectedPool, closePool)
@@ -1593,17 +1617,23 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 
 	msgServer := keeper.NewMsgServerImpl(marginKeeper)
 
+	SwapPriceNative := sdk.ZeroDec()
+	SwapPriceExternal := sdk.ZeroDec()
+
 	pool := clptypes.Pool{
-		ExternalAsset:        &externalAsset,
-		NativeAssetBalance:   sdk.NewUint(1000000000000),
-		ExternalAssetBalance: sdk.NewUint(1000000000000),
-		NativeCustody:        sdk.ZeroUint(),
-		ExternalCustody:      sdk.ZeroUint(),
-		NativeLiabilities:    sdk.ZeroUint(),
-		ExternalLiabilities:  sdk.ZeroUint(),
-		PoolUnits:            sdk.ZeroUint(),
-		Health:               sdk.ZeroDec(),
-		InterestRate:         sdk.NewDecWithPrec(1, 1),
+		ExternalAsset:                 &externalAsset,
+		NativeAssetBalance:            sdk.NewUint(1000000000000),
+		ExternalAssetBalance:          sdk.NewUint(1000000000000),
+		NativeCustody:                 sdk.ZeroUint(),
+		ExternalCustody:               sdk.ZeroUint(),
+		NativeLiabilities:             sdk.ZeroUint(),
+		ExternalLiabilities:           sdk.ZeroUint(),
+		PoolUnits:                     sdk.ZeroUint(),
+		Health:                        sdk.ZeroDec(),
+		InterestRate:                  sdk.NewDecWithPrec(1, 1),
+		SwapPriceNative:               &SwapPriceNative,
+		SwapPriceExternal:             &SwapPriceExternal,
+		RewardPeriodNativeDistributed: sdk.ZeroUint(),
 	}
 
 	marginKeeper.SetEnabledPools(ctx, []string{externalAsset.Symbol})
