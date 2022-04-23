@@ -391,13 +391,13 @@ func getProphciesCompletedHandler(cliCtx client.Context, storeName string) http.
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewProphciesCompletedRequest(oracletypes.NetworkDescriptor(networkDescriptor), uint64(globalSequence)))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewPropheciesCompletedRequest(oracletypes.NetworkDescriptor(networkDescriptor), uint64(globalSequence)))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryProphciesCompleted)
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryPropheciesCompleted)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

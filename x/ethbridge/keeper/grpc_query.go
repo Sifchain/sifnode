@@ -111,7 +111,7 @@ func (srv queryServer) GlobalSequenceBlockNumber(ctx context.Context, req *types
 	return &res, nil
 }
 
-func (srv queryServer) ProphciesCompleted(ctx context.Context, req *types.QueryProphciesCompletedRequest) (*types.QueryProphciesCompletedResponse, error) {
+func (srv queryServer) PropheciesCompleted(ctx context.Context, req *types.QueryPropheciesCompletedRequest) (*types.QueryPropheciesCompletedResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.NetworkDescriptor
@@ -119,7 +119,7 @@ func (srv queryServer) ProphciesCompleted(ctx context.Context, req *types.QueryP
 
 	prophecyInfo := srv.Keeper.oracleKeeper.GetProphecyInfoWithScopeGlobalSequence(sdkCtx, networkDescriptor, globalSequence)
 
-	res := types.QueryProphciesCompletedResponse{
+	res := types.QueryPropheciesCompletedResponse{
 		ProphecyInfo: prophecyInfo,
 	}
 
