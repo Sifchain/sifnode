@@ -56,6 +56,7 @@ type EthereumSub struct {
 	CliCtx                  client.Context
 	PrivateKey              *ecdsa.PrivateKey
 	SugaredLogger           *zap.SugaredLogger
+	SifnodeGrpc             string
 }
 
 // NewKeybase create a new keybase instance
@@ -79,6 +80,7 @@ func NewEthereumSub(
 	ethProvider string,
 	registryContractAddress common.Address,
 	sugaredLogger *zap.SugaredLogger,
+	sifnodeGrpc string,
 ) EthereumSub {
 
 	return EthereumSub{
@@ -90,6 +92,7 @@ func NewEthereumSub(
 		ValidatorAddress:        nil,
 		CliCtx:                  cliCtx,
 		SugaredLogger:           sugaredLogger,
+		SifnodeGrpc:             sifnodeGrpc,
 	}
 }
 
@@ -462,8 +465,7 @@ func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
 
-	// TODO cannot use this ip address
-	conn, err := grpc.Dial(DefaultGrpcEntryPoint, grpc.WithInsecure())
+	conn, err := grpc.Dial(sub.SifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return 0, err
 	}

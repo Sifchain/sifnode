@@ -89,7 +89,7 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 		return
 	}
 
-	prophecyInfoArray := GetAllProphciesCompleted(sub.TmProvider, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
+	prophecyInfoArray := GetAllPropheciesCompleted(sub.SifnodeGrpc, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
 
 	// send the prophecy by batch, maximum is 5 prophecies in each batch
 	// compute how many batches needed, last batch may less than 5
@@ -161,8 +161,8 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 // 1. Call ethereum and get lastNonceSubmitted
 // 2. Call this function with the lastNonceSubmitted on ethereum side
 // 3. This function returns all of the prophecies that need to be relayed from sifchain to that EVM chain
-func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
-	conn, err := grpc.Dial(DefaultGrpcEntryPoint, grpc.WithInsecure())
+func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
+	conn, err := grpc.Dial(sifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
 	}
