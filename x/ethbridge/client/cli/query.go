@@ -66,6 +66,28 @@ func GetCmdGetEthBridgeProphecy() *cobra.Command {
 		},
 	}
 }
+func GetPauserStatus() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pauser",
+		Short: "Query pauser status",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			req := &types.QueryPauserRequest{}
+			res, err := queryClient.GetPauserStatus(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
 
 func GetCmdGetBlacklist() *cobra.Command {
 	cmd := &cobra.Command{

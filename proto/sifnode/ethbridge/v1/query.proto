@@ -12,6 +12,7 @@ service Query {
   // EthProphecy queries an EthProphecy
   rpc EthProphecy(QueryEthProphecyRequest) returns (QueryEthProphecyResponse) {}
   rpc GetBlacklist(QueryBlacklistRequest) returns (QueryBlacklistResponse) {}
+  rpc GetPauserStatus(QueryPauserRequest) returns (QueryPauserResponse);
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -41,4 +42,9 @@ message QueryBlacklistRequest {
 
 message QueryBlacklistResponse {
   repeated string addresses = 1;
+}
+
+message QueryPauserRequest{}
+message QueryPauserResponse{
+  bool is_paused =1;
 }
