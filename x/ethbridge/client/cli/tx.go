@@ -429,14 +429,14 @@ func GetCmdPauser() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			is_paused, err := utils.ParseStringToBool(args[0])
+			isPaused, err := utils.ParseStringToBool(args[0])
 			if err != nil {
 				return err
 			}
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgPauser{
 				Signer:   signer.String(),
-				IsPaused: is_paused,
+				IsPaused: isPaused,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
