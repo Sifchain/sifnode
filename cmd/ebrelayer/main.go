@@ -529,6 +529,11 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		"",
 		"the Ethereum chain id (defaults to --network-descriptor)",
 	)
+	cmd.Flags().String(
+		sifnodeGrpcEntryPointFlag,
+		"",
+		"The sifnode grpc url",
+	)
 }
 
 func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTranslator, error) {
