@@ -8,9 +8,10 @@ import (
 )
 
 func (k keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.ValidatorUpdate {
-	admins := types.InitialAdminAccounts()
-	for _, admin := range admins.AdminAccounts {
-		k.SetAdminAccount(ctx, admin)
+	if state.AdminAccounts != nil {
+		for _, adminAccount := range state.AdminAccounts.AdminAccounts {
+			k.SetAdminAccount(ctx, adminAccount)
+		}
 	}
 	if state.Registry != nil {
 		k.SetRegistry(ctx, *state.Registry)
