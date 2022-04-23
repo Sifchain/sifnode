@@ -204,12 +204,12 @@ func GetProphecyCompleted() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryProphciesCompletedRequest{
+			req := &types.QueryPropheciesCompletedRequest{
 				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
 				GlobalSequence:    uint64(globalSequence),
 			}
 
-			res, err := queryClient.ProphciesCompleted(context.Background(), req)
+			res, err := queryClient.PropheciesCompleted(context.Background(), req)
 			if err != nil {
 				return err
 			}
