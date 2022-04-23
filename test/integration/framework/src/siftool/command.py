@@ -1,9 +1,13 @@
 import shutil
 import time
-from common import *
+from typing import Mapping, List, Union, Optional
+from siftool.common import *
+
+ExecArgs = Mapping[str, Union[List[str], str, Mapping[str, str]]]
 
 
-def buildcmd(args, cwd=None, env=None):
+def buildcmd(args: Optional[str] = None, cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
+) -> ExecArgs:
     return dict((("args", args),) +
         ((("cwd", cwd),) if cwd is not None else ()) +
         ((("env", env),) if env is not None else ())
@@ -28,19 +32,25 @@ class Command:
         return proc.returncode, stdout_data, stderr_data
 
     # Default implementation of popen for environemnts to start long-lived processes
-    def popen(self, args, log_file=None, **kwargs):
+    def popen(self, args, log_file=None, **kwargs) -> subprocess.Popen:
         stdout = log_file or None
         stderr = log_file or None
         return popen(args, stdout=stdout, stderr=stderr, **kwargs)
 
     # Starts a process asynchronously (for sifnoded, hardhat, ebrelayer etc.)
     # The arguments should correspond to what buildcmd() returns.
-    def spawn_asynchronous_process(self, exec_args, log_file=None):
+    def spawn_asynchronous_process(self, exec_args: ExecArgs, log_file=None) -> subprocess.Popen:
         return self.popen(**exec_args, log_file=log_file)
+
+    def ls(self, path):
+        return os.listdir(path)
 
     def rm(self, path):
         if os.path.exists(path):
             os.remove(path)
+
+    def mv(self, src, dst):
+        os.rename(src, dst)
 
     def read_text_file(self, path):
         with open(path, "rt") as f:
@@ -70,14 +80,37 @@ class Command:
     def exists(self, path):
         return os.path.exists(path)
 
+    def is_dir(self, path):
+        return os.path.isdir(path) if self.exists(path) else False
+
+    def find_files(self, path, filter=None):
+        items = [os.path.join(path, name) for name in self.ls(path)]
+        result = []
+        for i in items:
+            if self.is_dir(i):
+                result.extend(self.find_files(i))
+            else:
+                if (filter is None) or filter(i):
+                    result.append(i)
+        return result
+
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
-    def mktempdir(self):
-        return exactly_one(stdout_lines(self.execst(["mktemp", "-d"])))
+    def mktempdir(self, parent_dir=None):
+        args = ["mktemp", "-d"] + (["-p", parent_dir] if parent_dir else [])
+        return exactly_one(stdout_lines(self.execst(args)))
 
-    def mktempfile(self):
-        return exactly_one(stdout_lines(self.execst(["mktemp"])))
+    def mktempfile(self, parent_dir=None):
+        args = ["mktemp"] + (["-p", parent_dir] if parent_dir else [])
+        return exactly_one(stdout_lines(self.execst(args)))
+
+    def chmod(self, path, mode_str, recursive=False):
+        args = ["chmod"] + (["-r"] if recursive else []) + [mode_str, path]
+        self.execst(args)
+
+    def pwd(self):
+        return exactly_one(stdout_lines(self.execst(["pwd"])))
 
     def __tar_compression_option(self, tarfile):
         filename = os.path.basename(tarfile).lower()
@@ -91,7 +124,7 @@ class Command:
     def tar_create(self, path, tarfile):
         comp = self.__tar_compression_option(tarfile)
         # tar on 9p filesystem reports "file shrank by ... bytes" and exits with errorcode 1
-        tar_quirks = True
+        tar_quirks = False
         if tar_quirks:
             tmpdir = self.mktempdir()
             try:
@@ -115,3 +148,13 @@ class Command:
     def tcp_probe_connect(self, host, port):
         res = self.execst(["nc", "-z", host, str(port)], check_exit=False)
         return res[0] == 0
+
+    def sha1_of_file(self, path):
+        res = self.execst(["sha1sum", "-b", path])
+        return stdout_lines(res)[0][:40]
+
+    def download_url(self, url, output_file=None, output_dir=None):
+        args = ["curl", "--location", "--silent", "--show-error", url] + \
+            (["-O"] if not (output_dir or output_file) else []) + \
+            (["-o", output_file] if (output_file and not output_dir) else [])
+        self.execst(args, cwd=output_dir)

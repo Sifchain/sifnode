@@ -1,19 +1,49 @@
-import hashlib
+import base64
 import json
 import time
-from command import buildcmd
-from common import *
+import grpc
+import re
+import web3
+from typing import Mapping, Any, Tuple
+from siftool import command, cosmos, eth
+from siftool.common import *
 
-
-def sifchain_denom_hash(network_descriptor, token_contract_address):
+def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
-    s = str(network_descriptor) + token_contract_address.lower()
-    return "sif" + hashlib.sha256(s.encode("UTF-8")).digest().hex()
+    assert type(network_descriptor) == int
+    assert network_descriptor in range(1, 10000)
+    denom = f"sifBridge{network_descriptor:04d}{token_contract_address.lower()}"
+    return denom
+
+def sifchain_denom_hash_to_token_contract_address(token_hash: str) -> Tuple[int, eth.Address]:
+    m = re.match("^sifBridge(\\d{4})0x([0-9a-fA-F]{40})$", token_hash)
+    if not m:
+        raise Exception("Invalid sifchain denom '{}'".format(token_hash))
+    network_descriptor = int(m[1])
+    token_address = web3.Web3.toChecksumAddress(m[2])
+    return network_descriptor, token_address
+
+# Deprecated
+def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmos.Balance:
+    return cosmos.balance_sub(balances2, balances1)
+
+# Deprecated
+def balance_zero(balances: cosmos.Balance) -> bool:
+    return cosmos.balance_zero(balances)
+
+def is_cosmos_native_denom(denom: str) -> bool:
+    """Returns true if denom is a native cosmos token (Rowan, ibc)
+    that was not imported using Peggy"""
+    return not str.startswith(denom, "sifBridge")
+
+def import_generated_protobuf_sources():
+    import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
+    import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
 
 class Sifnoded:
-    def __init__(self, cmd, home=None):
+    def __init__(self, cmd, home: str = None):
         self.cmd = cmd
         self.binary = "sifnoded"
         self.home = home
@@ -85,6 +115,9 @@ class Sifnoded:
     def set_genesis_oracle_admin(self, address):
         self.sifnoded_exec(["set-genesis-oracle-admin", address], sifnoded_home=self.home)
 
+    def set_genesis_token_registry_admin(self, address):
+        self.sifnoded_exec(["set-genesis-token-registry-admin", address], sifnoded_home=self.home)
+
     def set_genesis_whitelister_admin(self, address):
         self.sifnoded_exec(["set-genesis-whitelister-admin", address], sifnoded_home=self.home)
 
@@ -101,7 +134,7 @@ class Sifnoded:
         self.add_genesis_account(account_address, tokens)
         if is_admin:
             self.set_genesis_oracle_admin(account_address)
-        self.set_genesis_whitelister_admin(account_address)
+            self.set_genesis_whitelister_admin(account_address)
         return account_address
 
     def peggy2_add_relayer_witness_account(self, name, tokens, evm_network_descriptor, validator_power, denom_whitelist_file):
@@ -122,8 +155,9 @@ class Sifnoded:
     def peggy2_token_registry_register_all(self, registry_path, gas_prices, gas_adjustment, from_account,
         chain_id
     ):
-        args = ["tx", "tokenregistry", "register-all", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
-            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--yes"]
+        args = ["tx", "tokenregistry", "set-registry", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
+            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json",
+            "--yes"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return [json.loads(x) for x in stdout(res).splitlines()]
 
@@ -139,19 +173,27 @@ class Sifnoded:
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 
+    def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, chain_id):
+        consensus_needed = "49"
+        args = ["tx", "ethbridge", "update-consensus-needed", admin_account_address, str(hardhat_chain_id),
+            consensus_needed, "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
+            "0.5rowan", "--gas-adjustment", "1.5", "-y"]
+        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+        return res
+
     def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False, log_file=None):
         sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=minimum_gas_prices,
             log_format_json=log_format_json)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
-    def build_start_cmd(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False):
-        args = [self.binary, "start"] + \
+    def build_start_cmd(self, tcp_url: str = None, minimum_gas_prices=None, log_format_json=False):
+        args = [self.binary, "start", "--trace"] + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--log_level", "debug"] if log_format_json else []) + \
             (["--log_format", "json"] if log_format_json else []) + \
             (["--home", self.home] if self.home else [])
-        return buildcmd(args)
+        return command.buildcmd(args)
 
     def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
         args = [self.binary] + args + \
@@ -160,9 +202,21 @@ class Sifnoded:
         res = self.cmd.execst(args, stdin=stdin, cwd=cwd)
         return res
 
-    def get_status(self, host, port):
-        url = "http://{}:{}/node_info".format(host, port)
+    def _rpc_get(self, host, port, relative_url):
+        url = "http://{}:{}/{}".format(host, port, relative_url)
         return json.loads(http_get(url).decode("UTF-8"))
+
+    def get_status(self, host, port):
+        return self._rpc_get(host, port, "node_info")
+
+    def wait_for_last_transaction_to_be_mined(self, count=1):
+        # TODO return int(self._rpc_get(host, port, abci_info)["response"]["last_block_height"])
+        def latest_block_height():
+            args = ["status"]  # TODO --node
+            return int(json.loads(stderr(self.sifnoded_exec(args)))["SyncInfo"]["latest_block_height"])
+        initial_block = latest_block_height()
+        while latest_block_height() < initial_block + count:
+            time.sleep(1)
 
     def wait_up(self, host, port):
         while True:
@@ -171,6 +225,119 @@ class Sifnoded:
                 return self.get_status(host, port)
             except URLError:
                 time.sleep(1)
+
+
+# Refactoring in progress
+class SifnodeClient:
+    def __init__(self, cmd, node=None, home=None, chain_id=None, grpc_port=None):
+        self.cmd = cmd
+        self.binary = "sifnoded"
+        self.node = node
+        self.home = home
+        self.chain_id = chain_id
+        self.grpc_port = grpc_port
+
+    def query_account(self, sif_addr):
+        result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
+        return result
+
+    def send_from_sifchain_to_ethereum(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int, denom: str,
+        generate_only: bool = False
+    ) -> Mapping:
+        """ Sends ETH from Sifchain to Ethereum (burn) """
+        assert on_peggy2_branch, "Only for Peggy2.0"
+        assert self.ctx.eth
+        eth = self.ctx.eth
+
+        direction = "lock" if is_cosmos_native_denom(denom) else "burn"
+        cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
+        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+                "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
+                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+                "--output", "json",
+                "-y"
+            ] + \
+            (["--generate-only"] if generate_only else []) + \
+            self._gas_prices_args() + \
+            self._home_args() + \
+            self._chain_id_and_node_args() + \
+            (self._keyring_backend_args() if not generate_only else [])
+        res = self.sifnoded_exec(args)
+        result = json.loads(stdout(res))
+        if not generate_only:
+            assert "failed to execute message" not in result["raw_log"]
+        return result
+
+    def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
+        denom: str
+    ):
+        tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
+        signed_tx = self.sign_transaction(tx, from_sif_addr)
+        encoded_tx = self.encode_transaction(signed_tx)
+        result = self.broadcast_tx(encoded_tx)
+        return result
+
+    def sign_transaction(self, tx: Mapping, from_sif_addr: cosmos.Address, sequence: int = None,
+        account_number: int = None
+    ) -> Mapping:
+        tmp_tx_file = self.cmd.mktempfile()
+        assert (sequence is not None) == (account_number is not None)  # We need either both or none
+        try:
+            self.cmd.write_text_file(tmp_tx_file, json.dumps(tx))
+            args = ["tx", "sign", tmp_tx_file, "--from", from_sif_addr] + \
+                (["--sequence", str(sequence), "--offline", "--account-number", str(account_number)] if sequence else []) + \
+                self._home_args() + \
+                self._chain_id_and_node_args() + \
+                self._keyring_backend_args()
+            res = self.sifnoded_exec(args)
+            signed_tx = json.loads(stderr(res))
+            return signed_tx
+        finally:
+            self.cmd.rm(tmp_tx_file)
+
+    def encode_transaction(self, tx: Mapping[str, Any]) -> bytes:
+        tmp_file = self.cmd.mktempfile()
+        try:
+            self.cmd.write_text_file(tmp_file, json.dumps(tx))
+            res = self.sifnoded_exec(["tx", "encode", tmp_file])
+            encoded_tx = base64.b64decode(stdout(res))
+            return encoded_tx
+        finally:
+            self.cmd.rm(tmp_file)
+
+    def open_grpc_channel(self) -> grpc.Channel:
+        # See https://docs.cosmos.network/v0.44/core/proto-docs.html
+        # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
+        # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
+        # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
+        return grpc.insecure_channel("127.0.0.1:9090")
+
+    def broadcast_tx(self, encoded_tx: bytes):
+        import_generated_protobuf_sources()
+        broadcast_mode = cosmos_pb.BROADCAST_MODE_ASYNC
+        with self.open_grpc_channel() as channel:
+            tx_stub = cosmos_pb_grpc.ServiceStub(channel)
+            req = cosmos_pb.BroadcastTxRequest(tx_bytes=encoded_tx, mode=broadcast_mode)
+            resp = tx_stub.BroadcastTx(req)
+            return resp
+
+    def _gas_prices_args(self):
+        return ["--gas-prices", "0.5rowan", "--gas-adjustment", "1.5"]
+
+    def _chain_id_and_node_args(self):
+        return \
+           (["--node", self.node] if self.node else []) + \
+           (["--chain-id", self.chain_id] if self.chain_id else [])
+
+    def _keyring_backend_args(self):
+        keyring_backend = self.ctx.sifnode.keyring_backend
+        return ["--keyring-backend", keyring_backend] if keyring_backend else []
+
+    def _home_args(self):
+        return ["--home", self.home] if self.home else []
+
+    def sifnoded_exec(self, *args, **kwargs):
+        return self.ctx.sifnode.sifnoded_exec(*args, **kwargs)
 
 
 class Sifgen:
@@ -197,14 +364,14 @@ class Ebrelayer:
 
     def peggy2_build_ebrelayer_cmd(self, init_what, network_descriptor, tendermint_node, web3_provider,
         bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,
-        sign_with=None, symbol_translator_file=None, relayerdb_path=None, log_format=None, extra_args=None,
+        keyring_dir=None, sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None,
         ethereum_private_key=None, ethereum_address=None, home=None, cwd=None
     ):
         env = _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key)
         args = [
             self.binary,
             init_what,
-            "--network-descriptor", str(network_descriptor),  # Network descriptor for the chain (31337)
+            "--network-descriptor", str(network_descriptor),  # Network descriptor for the chain (9999)
             "--tendermint-node", tendermint_node,  # URL to tendermint node
             "--web3-provider", web3_provider,  # Ethereum web3 service address (ws://localhost:8545/)
             "--bridge-registry-contract-address", bridge_registry_contract_address,
@@ -215,11 +382,11 @@ class Ebrelayer:
             (["--node", node] if node else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
             (["--from", sign_with] if sign_with else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--home", home] if home else []) + \
+            (["--keyring-dir", keyring_dir] if keyring_dir else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else [])
-        return buildcmd(args, env=env, cwd=cwd)
+        return command.buildcmd(args, env=env, cwd=cwd)
 
     # Legacy stuff - pre-peggy2
     # Called from IntegrationContext
