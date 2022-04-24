@@ -469,6 +469,10 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 
+	if !msg.Asymmetry.IsZero() {
+		return nil, types.ErrAsymmetricRemove
+	}
+
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
