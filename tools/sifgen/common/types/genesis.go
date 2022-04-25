@@ -176,10 +176,6 @@ type MarginParams struct {
 	Pools                []string    `json:"pools,omitempty"`
 }
 
-type TokenRegistry struct {
-	AdminAccount string `json:"admin_account"`
-}
-
 type Dispensation struct {
 	DistributionRecords interface{} `json:"distribution_records"`
 	Distributions       interface{} `json:"distributions"`
