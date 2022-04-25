@@ -21,6 +21,7 @@ const (
 	networkDescriptor = uint32(1)
 	privateKeyStr     = "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
 	validatorMoniker  = "validatorMoniker"
+	sifnodeGrpc       = "0.0.0.0:9090"
 )
 
 func TestNewCosmosSub(t *testing.T) {
@@ -48,7 +49,8 @@ func TestNewCosmosSub(t *testing.T) {
 		sugaredLogger,
 		maxFeePerGas,
 		maxPriorityFeePerGas,
-		ethereumChainId)
+		ethereumChainId,
+		sifnodeGrpc)
 
 	require.NotEqual(t, sub, nil)
 }

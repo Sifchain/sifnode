@@ -10,8 +10,12 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-// ProphecyLiftTime is used to clean outdated prophecy info from keeper
-const ProphecyLiftTime = 520000
+const (
+	// ProphecyLiftTime is used to clean outdated prophecy info from keeper
+	ProphecyLiftTime = 520000
+	// Max prophecy returned in one query
+	MaxProphecyQueryResult = 10
+)
 
 // GetProphecies returns all prophecies
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
@@ -203,7 +207,7 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 	result := []*types.ProphecyInfo{}
 
 	globalSequence := startGlobalSequence
-	for {
+	for i := 0; i < MaxProphecyQueryResult; i++ {
 		prophecyID, ok := k.GetProphecyIDByNetworkDescriptorGlobalNonce(ctx, networkDescriptor, globalSequence)
 		if !ok {
 			return result
@@ -225,5 +229,5 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 		globalSequence++
 		result = append(result, &prophecyInfo)
 	}
-
+	return result
 }

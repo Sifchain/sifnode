@@ -61,6 +61,7 @@ type CosmosSub struct {
 	MaxFeePerGas            *big.Int
 	MaxPriorityFeePerGas    *big.Int
 	EthereumChainId         *big.Int
+	SifnodeGrpc             string
 }
 
 // NewCosmosSub initializes a new CosmosSub
@@ -74,7 +75,8 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
 	sugaredLogger *zap.SugaredLogger,
 	maxFeePerGas,
 	maxPriorityFeePerGas,
-	ethereumChainId *big.Int) CosmosSub {
+	ethereumChainId *big.Int,
+	sifnodeGrpc string) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -88,6 +90,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
 		MaxFeePerGas:            maxFeePerGas,
 		MaxPriorityFeePerGas:    maxPriorityFeePerGas,
 		EthereumChainId:         ethereumChainId,
+		SifnodeGrpc:             sifnodeGrpc,
 	}
 }
 
@@ -207,9 +210,14 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						sub.SugaredLogger.Errorw("sifchain client receive a malformed burn/lock message.",
 							errorMessageKey, err.Error())
 						/**
-						TODO: This continue would cause the bridge to be stuck.
+						When fail to parse the event data, only thing relayer can do just skip it.
+						If the wrong event's global sequence is not we expected, then no impact for relayer
+						to process next event. But if glocal sequence is next one,
+						this continue would cause the bridge to be stuck, since sifnode requires each relayer
+						strictly submit the prophecy according to global sequence
 						This is same as skipping a msg, the next cosmosMsg.GlobalSequence
-						will be +2 of current global sequence,
+						will be +2 of current global sequence. then only solution is upgrade the relayer to
+						the version can handle this specific event.
 						*/
 						continue
 					}
@@ -337,7 +345,7 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, uint64, error) {
 
-	gRpcClientConn, err := grpc.Dial(DefaultGrpcEntryPoint, grpc.WithInsecure())
+	gRpcClientConn, err := grpc.Dial(sub.SifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return 0, 0, err
 	}
