@@ -129,6 +129,12 @@ for policy in policies:
                         "native_asset_balance": pool["native_asset_balance"],
                         "external_asset_balance": pool["external_asset_balance"],
                         "pool_units": pool["pool_units"],
+                        "native_custody": "0",
+                        "external_custody": "0",
+                        "native_liabilities": "0",
+                        "external_liabilities": "0",
+                        "health": "0",
+                        "interest_rate": "0.000000000000000000",
                         "reward_period_native_distributed": "0"
                     },
                     "swap_price_native": "{:.18f}".format(round(swapPriceNative, 18)),
