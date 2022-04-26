@@ -282,7 +282,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	}
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
-	if !slipAdjustment.Equal(sdk.OneDec()) {
+	if sdk.OneDec().Sub(slipAdjustment).GT(sdk.NewDecWithPrec(1, 4)) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
 	}
 
