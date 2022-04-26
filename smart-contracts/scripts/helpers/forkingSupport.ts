@@ -4,6 +4,7 @@
 import fs from "fs";
 import { ethers, network } from "hardhat";
 import { print } from "./utils";
+import { Contract } from "ethers";
 
 // By default, this will work with a mainnet fork,
 // but it can also be used to fork Ropsten
@@ -20,7 +21,7 @@ const PROXY_ADMIN_ADDRESS = "0x7c6c6ea036e56efad829af5070c8fb59dc163d88";
  * @param {number} chainId
  * @returns An object containing the factory, the instance, its address and the first user found in the accounts list
  */
-export async function getDeployedContract(deploymentName: string, contractName: string, chainId: number) {
+export async function getDeployedContract<T extends Contract>(deploymentName: string, contractName: string, chainId: number) {
   deploymentName = deploymentName ?? DEFAULT_DEPLOYMENT_NAME;
   contractName = contractName ?? "BridgeBank";
   chainId = chainId ?? 1;
@@ -36,7 +37,7 @@ export async function getDeployedContract(deploymentName: string, contractName: 
   const accounts = await ethers.getSigners();
   const activeUser = accounts[0];
 
-  const contract = new ethers.Contract(address, ethersInterface, activeUser);
+  const contract = new ethers.Contract(address, ethersInterface, activeUser) as T;
   const instance = await contract.attach(address);
 
   print("green", `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`);
