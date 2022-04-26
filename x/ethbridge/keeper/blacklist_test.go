@@ -106,28 +106,27 @@ func TestSetBlacklist(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		app, ctx := test.CreateTestApp(false)
-		admin := tokenregistrytypes.AdminAccount{
-			AdminType:    tokenregistrytypes.AdminType_ETHBRIDGE,
-			AdminAddress: adminAddress.String(),
-		}
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, &admin)
-		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
-			From:      adminAddress.String(),
-			Addresses: tc.addresses,
+		t.Run(tc.name, func(t *testing.T) {
+			app, ctx := test.CreateTestApp(false)
+			app.TokenRegistryKeeper.SetAdminAccount(ctx, adminAddress)
+			err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+				From:      adminAddress.String(),
+				Addresses: tc.addresses,
+			})
+			require.NoError(t, err)
+			err = app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+				From:      adminAddress.String(),
+				Addresses: tc.updated,
+			})
+
+			require.NoError(t, err)
+			for _, address := range tc.expectTrue {
+				require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
+			}
+			for _, address := range tc.expectFalse {
+				require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
+			}
 		})
-		require.NoError(t, err)
-		err = app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
-			From:      adminAddress.String(),
-			Addresses: tc.updated,
-		})
-		require.NoError(t, err)
-		for _, address := range tc.expectTrue {
-			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
-		}
-		for _, address := range tc.expectFalse {
-			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
-		}
 	}
 }
 

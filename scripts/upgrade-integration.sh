@@ -33,6 +33,7 @@ export DAEMON_NAME=sifnoded
 export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
 
 make clean
+rm -rf ~/.sifnoded
 rm -rf sifnode.log
 
 rm -rf $GOPATH/bin/sifnoded
@@ -44,7 +45,7 @@ rm -rf $GOPATH/bin/new/sifnoded
 git checkout $CurrentBinary
 make install
 cp $GOPATH/bin/sifnoded $GOPATH/bin/old/
-chmod +x $GOPATH/sifnoded
+chmod +x $GOPATH/bin/sifnoded
 sifnoded init test --chain-id=localnet -o
 
 echo "Generating deterministic account - sif"
