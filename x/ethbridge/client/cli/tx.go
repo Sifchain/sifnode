@@ -24,7 +24,7 @@ func parseNetworkDescriptor(networkDescriptorStr string) (oracletypes.NetworkDes
 	networkDescriptor, err := strconv.Atoi(networkDescriptorStr)
 	if err != nil {
 		return -1, err
-	} else if networkDescriptor < 0 || networkDescriptor > 9999 { // TODO: This is a hardcoded max, find another way to express it
+	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
 		return -1, errors.Errorf("Invalid %s. Valid range: [0-9999], received %d", types.FlagEthereumChainID, networkDescriptor)
 	} else if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 		return -1, errors.Errorf("Invalid %s. Invalid value, received %d", types.FlagEthereumChainID, networkDescriptor)
