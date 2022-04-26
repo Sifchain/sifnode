@@ -200,6 +200,7 @@ func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
 
 			if tc.expPanic {
 				require.PanicsWithValue(t, tc.expPanicMsg, func() {
+					// nolint:errcheck
 					clpKeeper.GetNormalizationFactorFromAsset(ctx, tc.asset)
 				})
 			} else {
