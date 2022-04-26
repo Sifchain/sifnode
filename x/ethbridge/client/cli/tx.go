@@ -20,6 +20,18 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
+func parseNetworkDescriptor(networkDescriptorStr string) (oracletypes.NetworkDescriptor, error) {
+	networkDescriptor, err := strconv.Atoi(networkDescriptorStr)
+	if err != nil {
+		return -1, err
+	} else if networkDescriptor < 0 || networkDescriptor > 9999 { // TODO: This is a hardcoded max, find another way to express it
+		return -1, errors.Errorf("Invalid %s. Valid range: [0-9999], received %d", types.FlagEthereumChainID, networkDescriptor)
+	} else if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return -1, errors.Errorf("Invalid %s. Invalid value, received %d", types.FlagEthereumChainID, networkDescriptor)
+	}
+	return oracletypes.NetworkDescriptor(networkDescriptor), nil
+}
+
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
@@ -37,12 +49,12 @@ func GetCmdBurn() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			networkDescriptorStr, err := flags.GetString(types.FlagEthereumChainID)
 			if err != nil {
 				return err
 			}
 
-			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
+			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -77,7 +89,7 @@ func GetCmdBurn() *cobra.Command {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
+			msg := types.NewMsgBurn(networkDescriptor, cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -114,12 +126,12 @@ func GetCmdLock() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			networkDescriptorStr, err := flags.GetString(types.FlagEthereumChainID)
 			if err != nil {
 				return err
 			}
 
-			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
+			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -150,7 +162,7 @@ func GetCmdLock() *cobra.Command {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
+			msg := types.NewMsgLock(networkDescriptor, cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
