@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	chtypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
+	chtypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	"github.com/spf13/cobra"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 

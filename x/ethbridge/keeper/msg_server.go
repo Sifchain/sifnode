@@ -31,7 +31,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	logger := srv.Keeper.Logger(ctx)
 	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
+		return nil, errors.Errorf("pegged token %s can't be lock", msg.Symbol)
 	}
 	fmt.Println("GO | Exists Peggy Token")
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
@@ -85,9 +85,9 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	logger := srv.Keeper.Logger(ctx)
 
 	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("Native token can't be burn.",
+		logger.Error("native token can't be burn",
 			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+		return nil, errors.Errorf("native token %s can't be burn", msg.Symbol)
 	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
