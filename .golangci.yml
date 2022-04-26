@@ -8,20 +8,18 @@ linters:
     - deadcode
     - depguard
     - dogsled
+    - exportloopref
     - goconst
     - revive
     - gofmt
 #    - goimports
-    - golint
+    - revive
     - gosec
     - govet
     - ineffassign
-#    - interfacer
-    - maligned
     - misspell
     - nakedret
     - prealloc
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck
