@@ -84,6 +84,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		SetGenesisOracleAdminCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
+		NewIBCDiagCmd(),
 	)
 	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, createSimappAndExport, addModuleInitFlags)
 	// add keybase, auxiliary RPC, query, and tx child commands

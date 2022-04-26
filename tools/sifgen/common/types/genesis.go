@@ -3,6 +3,8 @@ package types
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -63,6 +65,41 @@ type Crisis struct {
 	ConstantFee ConstantFee `json:"constant_fee"`
 }
 
+type AdminAccount struct {
+	AdminType    types.AdminType `json:"admin_type"`
+	AdminAddress string          `json:"admin_address"`
+}
+type AdminAccounts struct {
+	AdminAccounts []*AdminAccount `json:"admin_accounts"`
+}
+
+type Registry struct {
+	Entries []*RegistryEntry `json:"entries"`
+}
+
+type RegistryEntry struct {
+	Decimals                 int64              `json:"deciamls"`
+	Denom                    string             `json:"denom"`
+	BaseDenom                string             `json:"base_denom"`
+	Path                     string             `json:"path"`
+	IbcChannelID             string             `json:"ibc_channel_id"`
+	IbcCounterpartyChannelID string             `json:"ibc_counterparty_id"`
+	DisplayName              string             `json:"display_name"`
+	DisplaySymbol            string             `json:"display_symbol"`
+	Network                  string             `json:"network"`
+	Address                  string             `json:"address"`
+	ExternalSymbol           string             `json:"external_symbol"`
+	TransferLimit            string             `json:"transfer_limit"`
+	Permissions              []types.Permission `json:"permissions"`
+	UnitDenom                string             `json:"unit_denom"`
+	IbcCounterpartyDenom     string             `json:"ibc_counterparty_denom"`
+	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
+}
+type TokenRegistry struct {
+	AdminAccounts AdminAccounts `json:"admin_accounts"`
+	Registry      Registry      `json:"registry"`
+}
+
 type ConstantFee struct {
 	Amount string `json:"amount"`
 	Denom  string `json:"denom"`
@@ -100,6 +137,19 @@ type Capability struct {
 	Owners []interface{} `json:"owners"`
 }
 
+type PoolMultiplier struct {
+	Asset      string `json:"asset"`
+	Multiplier string `json:"multiplier"`
+}
+
+type RewardPeriod struct {
+	ID          string            `json:"id"`
+	StartBlock  json.Number       `json:"start_block"`
+	EndBlock    json.Number       `json:"end_block"`
+	Allocation  string            `json:"allocation"`
+	Multipliers []*PoolMultiplier `json:"multipliers"`
+}
+
 type CLPParams struct {
 	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
 }
@@ -124,10 +174,6 @@ type MarginParams struct {
 	HealthGainFactor     string      `json:"health_gain_factor"`
 	EpochLength          json.Number `json:"epoch_length,omitempty"`
 	Pools                []string    `json:"pools,omitempty"`
-}
-
-type TokenRegistry struct {
-	AdminAccount string `json:"admin_account"`
 }
 
 type Dispensation struct {
@@ -401,7 +447,6 @@ type AppState struct {
 	Bank          Bank          `json:"bank"`
 	CLP           CLP           `json:"clp"`
 	Margin        Margin        `json:"margin"`
-	TokenRegistry TokenRegistry `json:"tokenregistry"`
 	Transfer      Transfer      `json:"transfer"`
 	Capability    Capability    `json:"capability"`
 	Dispensation  Dispensation  `json:"dispensation"`
@@ -409,6 +454,7 @@ type AppState struct {
 	Evidence      EvidenceState `json:"evidence"`
 	Genutil       Genutil       `json:"genutil"`
 	Crisis        Crisis        `json:"crisis"`
+	TokenRegistry TokenRegistry `json:"tokenregistry"`
 }
 
 type Genesis struct {

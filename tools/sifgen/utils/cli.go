@@ -137,6 +137,10 @@ func (c CLI) SetGenesisOracleAdmin(address, nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir, "--keyring-backend", c.keyringBackend)
 }
 
+func (c CLI) SetGenesisWhitelisterAdmin(address, nodeDir string) (*string, error) {
+	return c.shellExec("sifnoded", "set-genesis-whitelister-admin", address, "--home", nodeDir, "--keyring-backend", c.keyringBackend)
+}
+
 func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, outputFile, nodeID, pubKey, ipV4Addr, chainID string) (*string, error) {
 	var input [][]byte
 	if c.keyringBackend == keyring.BackendFile {

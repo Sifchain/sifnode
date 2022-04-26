@@ -17,7 +17,7 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorForAsset(sdk.Context, string) (sdk.Dec, bool, error)
+	GetNormalizationFactorFromAsset(sdk.Context, clptypes.Asset) (sdk.Dec, bool, error)
 
 	ValidateZero(inputs []sdk.Uint) bool
 	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec

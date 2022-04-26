@@ -66,9 +66,9 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 			errString: errors.New("mtp not found"),
 		},
 		{
-			name: "msg other",
-			msg:  msgOther,
-			err:  sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request"),
+			name:      "msg other",
+			msg:       msgOther,
+			errString: errors.New("unrecognized margin message type: <nil>: unknown request"),
 		},
 	}
 

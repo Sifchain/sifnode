@@ -161,7 +161,7 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	   But a upgraded version that include swap, updating bouding curve (to be inside the old one)
 	   One can think about this as a state jump:
 	*/
-	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorForAsset(ctx, pool.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}
@@ -285,7 +285,10 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CollateralAmount)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
 	}
-	k.ClpKeeper().SetPool(ctx, pool)
+	err = k.ClpKeeper().SetPool(ctx, pool)
+	if err != nil {
+		return err
+	}
 
 	return k.SetMTP(ctx, mtp)
 }
@@ -372,6 +375,7 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 }
 
 func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+	// nolint:ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	CollateralAmount := mtp.CollateralAmount
 	LiabilitiesP := mtp.LiabilitiesP
