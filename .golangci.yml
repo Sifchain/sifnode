@@ -9,8 +9,8 @@ linters:
     - depguard
     - dogsled
     - goconst
-#    - gocritic
-#    - gofmt
+    - revive
+    - gofmt
 #    - goimports
     - golint
     - gosec

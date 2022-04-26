@@ -23,7 +23,6 @@ func TestCreateGetProphecy(t *testing.T) {
 	ctx, _, _, _, oracleKeeper, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	validator1Pow3 := validatorAddresses[0]
 
-
 	//Test normal Creation
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := oracleKeeper.ProcessClaim(ctx, oracleClaim)

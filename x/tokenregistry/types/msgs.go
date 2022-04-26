@@ -106,6 +106,7 @@ func (m *MsgSetRegistry) GetSigners() []sdk.AccAddress {
 	}
 	return []sdk.AccAddress{addr}
 }
+
 // MsgDeregister
 
 func (m *MsgDeregister) Route() string {

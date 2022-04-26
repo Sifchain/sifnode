@@ -57,7 +57,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
-	//    do we retry, 
+	//    do we retry,
 	//        if so, how many times do we try?
 	if err != nil {
 		sugaredLogger.Errorw(
