@@ -331,9 +331,8 @@ func (sub CosmosSub) witnessSignAndBroadcastProphecy(
 	signProphecy := ethbridgetypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
-	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.WitnessSignProphecy, zap.Reflect("prophecy", signProphecy))
-
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
+	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.WitnessSignProphecy, zap.Reflect("prophecy", signProphecy))
 
 }
 

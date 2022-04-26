@@ -146,7 +146,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		srv.tokenRegistryKeeper.SetFirstDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 	}
 
-	logger.Info("sifnode emit burn event.", "tx_msg", msg)
+	logger.Info("sifnode emitting burn event.", "tx_msg", msg)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
@@ -196,6 +196,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyGlobalSequence, strconv.FormatInt(int64(globalSequence), 10)),
 		),
 	})
+
+	logger.Info("sifnode emitted burn event.", "tx_msg", msg)
 
 	return &types.MsgBurnResponse{}, nil
 }

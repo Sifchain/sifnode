@@ -16,7 +16,7 @@ import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
 # test/integration/framework/siftool generate-python-protobuf-stubs
 # ... (be patient) ...
 # In separate window: test/integration/framework/siftool run-env
-# test/integration/framework/venv/bin/python3 test/integration/src/peggy2/test_eth_transfers_grpc.py
+# test/integration/framework/venv/bin/python3 test/load/test_load_tx_ethbridge_burn.py
 
 # Current issues:
 # python (probably from grpc):
@@ -27,7 +27,7 @@ eth_account_number = 2
 sif_account_number = 1
 transaction_number = 2
 
-# build the transfer matrix 
+# build the transfer matrix
 def build_transfer_table() -> [[int]]:
     transfer_table = [[transaction_number for y in range(eth_account_number)] for x in range(sif_account_number)]
     return transfer_table
@@ -68,7 +68,7 @@ def test_single_sif_to_multiple_eth_account_burn_erc20(ctx: test_utils.EnvCtx):
     token_data: test_utils.ERC20TokenData = ctx.generate_random_erc20_token_data()
     erc20_sc = ctx.deploy_new_generic_erc20_token(token_data.name, token_data.symbol, token_decimals)
     # mint token to operator account
-    ctx.mint_generic_erc20_token(erc20_sc.address, total_amount, ctx.operator) 
+    ctx.mint_generic_erc20_token(erc20_sc.address, total_amount, ctx.operator)
     ctx.advance_blocks()
 
     transfer_table = build_transfer_table()
@@ -90,7 +90,7 @@ def test_load_tx_ethbridge_burn_eth_short(ctx: test_utils.EnvCtx):
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, None)
 
 # test multiple sif accounts burn ceth to multiple ethereum accounts
-def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):   
+def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):
     # Matrix of transactions that we want to send. A row (list) in the table corresponds to a sif account sending
     # transactions to eth accounts. The numbers are transaction counts, where each transaction is for amount_per_tx.
     # Each sif account uses a dedicated send thread.
@@ -138,7 +138,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     sif_balances_initial: List[cosmos.Balance] = [ctx.get_sifchain_balance(sif_acct) for sif_acct in sif_accts]
     eth_balances_initial: List[str] = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
     assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
-    
+
     if token_address is not None:
         erc20_balances_initial: List[str] = [ctx.get_erc20_token_balance(token_address, eth_acct) for eth_acct in eth_accts]
         assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
@@ -272,7 +272,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     last_change_time = None
     last_change = None
     last_change_timeout = 90
-    cumulative_timeout = 30 + sum_all * 10  # Equivalent to min rate of 0.1 tps
+    cumulative_timeout = sum_all * 100  # Equivalent to min rate of 0.1 tps
     while True:
         if token_address == None:
             token_balances = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
