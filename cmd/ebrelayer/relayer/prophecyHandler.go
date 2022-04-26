@@ -21,7 +21,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-const wakeupTimer = 60
+const wakeupTimer = 10
 
 // StartProphecyHandler start Cosmos chain subscription and process prophecy completed message
 func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {

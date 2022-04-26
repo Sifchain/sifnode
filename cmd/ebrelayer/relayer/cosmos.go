@@ -39,7 +39,7 @@ import (
 
 const (
 	errorMessageKey      = "errorMessage"
-	cosmosSleepDuration  = 1
+	cosmosSleepDuration  = 60
 	maxCosmosQueryBlocks = 5000
 	// ProphecyLifeTime signature info life time on chain
 	blockTimeInSecond = 5
@@ -250,6 +250,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						}
 					}
 				}
+				// time.Sleep(10)
 			}
 		}
 
