@@ -3,6 +3,7 @@ on:
   push:
     paths-ignore:
       - "ui/**"
+      - "**" # This is added to disable this github workflow. execute_integration_tests_against_test_chain_clp is deprecated
 
 jobs:
   test:
