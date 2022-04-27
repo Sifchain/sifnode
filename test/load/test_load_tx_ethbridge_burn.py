@@ -25,6 +25,19 @@ rowan_contract_address = "0x000000000000000"
 # E0326 11:41:27.125006742  636480 fork_posix.cc:70]           Fork support is only compatible with the epoll1 and poll polling strategies
 # Maybe: https://github.com/grpc/grpc/issues/29044
 
+eth_account_number = 2
+sif_account_number = 1
+transaction_number = 2
+
+def build_transfer_table() -> [[int]]:
+    transfer_table = [[int]]
+    for i in range(sif_account_number):
+        column = []
+        for i in range(eth_account_number):
+            column.append(transaction_number)
+        transfer_table.append(column)
+    return transfer_table
+
 def burn_rowan_get_erc20_address(ctx: test_utils.EnvCtx):
     token_address = ctx.get_destination_contract_address(rowan)
     if token_address != NULL_ADDRESS:
@@ -45,18 +58,9 @@ def test_single_sif_to_multiple_eth_account_lock_rowan(ctx: test_utils.EnvCtx):
     rowan_token_address = burn_rowan_get_erc20_address(ctx)
     rowan_sc = ctx.get_generic_erc20_sc(rowan_token_address)
 
-    # build the transfer_table
-    eth_account_number = 2
-    transaction_number = 2
-    transfer_table = []
-    first_column = []
-    for i in range(eth_account_number):
-        first_column.append(transaction_number)
-    
-    # can extend the test case to multiple sif account via add more column
-    transfer_table.append(first_column)
-
+    transfer_table = build_transfer_table()
     amount_per_tx = 1000100101
+
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, rowan_sc, isRowan=True)
 
 # test single sif account burn erc20 to multiple ethereum accounts
@@ -70,33 +74,17 @@ def test_single_sif_to_multiple_eth_account_burn_erc20(ctx: test_utils.EnvCtx):
     ctx.mint_generic_erc20_token(erc20_sc.address, total_amount, ctx.operator) 
     ctx.advance_blocks()
 
-    # build the transfer_table
-    eth_account_number = 2
-    transaction_number = 2
-    transfer_table = []
-    first_column = []
-    for i in range(eth_account_number):
-        first_column.append(transaction_number)
-    
-    # can extend the test case to multiple sif account via add more column
-    transfer_table.append(first_column)
-
+    transfer_table = build_transfer_table()
     amount_per_tx = 1000100101
+
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, erc20_sc)
 
 # test single sif account burn ceth to multiple ethereum accounts
 def test_single_sif_to_multiple_eth_account_burn_eth(ctx: test_utils.EnvCtx):
-    eth_account_number = 2
-    transaction_number = 2
-    transfer_table = []
-    first_column = []
-    for i in range(eth_account_number):
-        first_column.append(transaction_number)
-    
-    transfer_table.append(first_column)
-
+    transfer_table = build_transfer_table()
     amount_per_tx = 1000100101
     eth_sc = ctx.get_generic_erc20_sc(NULL_ADDRESS)
+
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, eth_sc)
 
 def test_load_tx_ethbridge_burn_eth_short(ctx: test_utils.EnvCtx):
