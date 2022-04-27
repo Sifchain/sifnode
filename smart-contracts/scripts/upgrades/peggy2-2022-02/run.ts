@@ -152,7 +152,7 @@ async function main() {
   await resumeBridgeBank(contracts.bridgeBank, signers);
 
   // Clean up temporary files
-  cleanup();
+  // cleanup();
 
   print("highlight", "~~~ DONE! 👏 Everything worked as expected. ~~~");
 
