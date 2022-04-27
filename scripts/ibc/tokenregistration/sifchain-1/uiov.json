@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/F20C4E30E4202C11FE009D6D58B2FF212C99084CB6F767287A51A93EFD960086",
+      "base_denom": "uiov",
+      "path": "transfer/channel-54",
+      "ibc_channel_id": "channel-54",
+      "ibc_counterparty_channel_id": "channel-18",
+      "display_name": "Starname",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "iov-mainnet-ibc"
+    }
+  ]
+}
