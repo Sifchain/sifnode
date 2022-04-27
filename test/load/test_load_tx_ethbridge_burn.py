@@ -190,8 +190,6 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
         b_sif_acct_before = ctx.get_sifchain_balance(sif_acct)
         b_disp_acct_before = ctx.get_sifchain_balance(dispensation_sif_acct)
 
-        print("++++ b_sif_acct_before and b_disp_acct_before", b_sif_acct_before, b_disp_acct_before)
-
         # if token is ceth, combine and fund
         if ctx.ceth_symbol == token_denom:
             amount = sum_sif[i] * (amount_per_tx + sif_tx_burn_fee_in_ceth)
@@ -202,14 +200,11 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
             ctx.send_from_sifchain_to_sifchain(dispensation_sif_acct, sif_acct, {ctx.ceth_symbol: sum_sif[i] * sif_tx_burn_fee_in_ceth})
             # rowan got when the sif account init
             # if token_denom != rowan:
-            print("++++ ", token_denom, amount_per_tx)
             b_sif_acct_before = ctx.wait_for_sif_balance_change(sif_acct, b_sif_acct_before)
             ctx.send_from_sifchain_to_sifchain(dispensation_sif_acct, sif_acct, {token_denom: sum_sif[i] * amount_per_tx})
 
             b_sif_acct_after = ctx.wait_for_sif_balance_change(sif_acct, b_sif_acct_before)
         b_disp_acct_after = ctx.get_sifchain_balance(dispensation_sif_acct)
-
-        # print("++++++++++++++++++++++++ balance as ", b_sif_acct_after, b_disp_acct_after)
 
     # Get sif account info (for account_number and sequence)
     sif_acct_infos = [ctx.sifnode_client.query_account(sif_acct) for sif_acct in sif_accts]
@@ -297,14 +292,10 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
             balance_delta = sum([token_balances[i] - eth_balances_initial[i] for i in range(n_eth)])
         else:
             token_balances = [ctx.get_erc20_token_balance(token_sc.address, eth_acct) for eth_acct in eth_accts]
-            print("++++++++++++++++++++++++++++++++++ token_balances", token_balances)
-
-
             balance_delta = sum([token_balances[i] - eth_balances_initial[i] for i in range(n_eth)])
 
         now = time.time()
         total = sum_all * amount_per_tx
-        print("++++++++++++++++++++++++++++++++++ total and delta", token_balances, balance_delta)
 
         still_to_go = total - balance_delta
         pct_done = balance_delta / total * 100
@@ -329,7 +320,6 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
         actual_balance = ctx.get_sifchain_balance(sif_acct)
         assert actual_balance.get(ctx.ceth_symbol, 0) == 0
         print("========= actual_balance.get(rowan", actual_balance.get(rowan, 0))
-
         assert actual_balance.get(rowan, 0) == sif_tx_burn_fee_buffer_in_rowan
 
     # Verify final eth balances
@@ -347,10 +337,10 @@ if __name__ == "__main__":
     basic_logging_setup()
     from siftool import test_utils
     ctx = test_utils.get_env_ctx()
-    # test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
-    # test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
-    # test_single_sif_to_multiple_eth_account_burn_eth(ctx)
-    # test_load_tx_ethbridge_burn_eth_short(ctx)
+    test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
+    test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
+    test_single_sif_to_multiple_eth_account_burn_eth(ctx)
+    test_load_tx_ethbridge_burn_eth_short(ctx)
     test_load_tx_ethbridge_burn_eth(ctx)
 
 
