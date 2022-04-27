@@ -1266,17 +1266,17 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y)
+			//fee := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y)
 
-			if tc.errString != nil {
-				require.EqualError(t, err, tc.errString.Error())
-				return
-			}
-			if tc.err != nil {
-				require.ErrorIs(t, err, tc.err)
-				return
-			}
-			require.NoError(t, err)
+			//if tc.errString != nil {
+			//	require.EqualError(t, err, tc.errString.Error())
+			//	return
+			//}
+			//if tc.err != nil {
+			//	require.ErrorIs(t, err, tc.err)
+			//	return
+			//}
+			//require.NoError(t, err)
 		})
 	}
 }
@@ -1363,17 +1363,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y, err := clpkeeper.CalcSwapResult(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
-
-			if tc.errString != nil {
-				require.EqualError(t, err, tc.errString.Error())
-				return
-			}
-			if tc.err != nil {
-				require.ErrorIs(t, err, tc.err)
-				return
-			}
-			require.NoError(t, err)
+			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
