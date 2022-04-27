@@ -1101,6 +1101,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 						tc.externalAssetAmount,
 						tc.normalizationFactor,
 						tc.adjustExternalToken,
+						sdk.NewDecWithPrec(1, 4),
 					)
 				})
 				return
@@ -1114,6 +1115,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 				tc.externalAssetAmount,
 				tc.normalizationFactor,
 				tc.adjustExternalToken,
+				sdk.NewDecWithPrec(1, 4),
 			)
 
 			if tc.errString != nil {
