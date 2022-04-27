@@ -12,8 +12,6 @@ from siftool.common import *
 import cosmos.tx.v1beta1.service_pb2 as cosmos_tx
 import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
 
-rowan_contract_address = "0x000000000000000"
-
 # How to use:
 # test/integration/framework/siftool generate-python-protobuf-stubs
 # ... (be patient) ...
