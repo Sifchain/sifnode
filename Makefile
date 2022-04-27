@@ -73,8 +73,11 @@ coverage:
 test-peggy:
 	make -C smart-contracts tests
 
-tests: test-peggy
+test-go:
 	@go test -v -coverprofile .testCoverage.txt ./...
+
+tests: test-peggy test-go
+# 	@go test -v -coverprofile .testCoverage.txt ./...
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
@@ -113,6 +116,7 @@ proto-all: proto-format proto-lint .proto-gen
 
 .proto-gen: $(proto_files)
 	@echo ${DOCKER}
+	# The v0.3 tag is the latest known tag to work, up until 0.7	
 	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh -x ./scripts/protocgen.sh
 	touch $@
 .PHONY: .proto-gen
