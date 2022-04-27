@@ -103,7 +103,7 @@ func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.SymmetryThresholdPrefix)
 	if bz == nil {
-		return sdk.NewDecWithPrec(1, 4)
+		return sdk.NewDecWithPrec(5, 5)
 	}
 	var setThreshold types.MsgSetSymmetryThreshold
 	k.cdc.MustUnmarshal(bz, &setThreshold)
