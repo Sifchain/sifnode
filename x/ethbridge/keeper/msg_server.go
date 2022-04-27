@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"strconv"
 
@@ -47,13 +46,11 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	if srv.Keeper.IsPaused(ctx) {
 		return response, types.ErrPaused
 	}
-	fmt.Println("GO |===== Starting to Log ")
 	logger := srv.Keeper.Logger(ctx)
 	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
 		return response, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
 	}
-	fmt.Println("GO | Exists Peggy Token")
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		return response, err
@@ -64,12 +61,10 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
-	fmt.Println("GO |===== Exists Account")
 	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return response, err
 	}
-	fmt.Println("GO |===== Process lock event")
 	logger.Info("sifnode emit lock event.",
 		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
 		"CosmosSender", msg.CosmosSender,
