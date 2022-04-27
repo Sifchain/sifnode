@@ -224,7 +224,6 @@ const (
 
 //// returns context and app with params set on account keeper
 func CreateSimulatorApp(isCheckTx bool) (sdk.Context, *app.SifchainApp) {
-	app.SetConfig(false)
 	sifchainApp := app.Setup(isCheckTx)
 	ctx := sifchainApp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	sifchainApp.TokenRegistryKeeper.SetRegistry(ctx, tokenregistryTypes.Registry{
