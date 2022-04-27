@@ -47,8 +47,46 @@ func TestMsgServer_Lock(t *testing.T) {
 	// Lock Success
 	_, err = msgServer.Lock(sdk.WrapSDKContext(ctx), &msg)
 	require.NoError(t, err)
+}
 
-	receiverCoins = app.BankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins.String(), string(""))
+func TestMsgServer_Burn(t *testing.T) {
+	ctx, app := test.CreateSimulatorApp(false)
+	receiverCoins := app.BankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, sdk.NewCoins())
+
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+	app.TokenRegistryKeeper.SetAdminAccount(ctx, &types2.AdminAccount{
+		AdminType:    types2.AdminType_ETHBRIDGE,
+		AdminAddress: cosmosReceivers[0].String(),
+	})
+	app.EthbridgeKeeper.AddPeggyToken(ctx, "stake")
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+	msgPause := types.MsgPauser{
+		Signer:   cosmosReceivers[0].String(),
+		IsPaused: true,
+	}
+	msgUnPause := types.MsgPauser{
+		Signer:   cosmosReceivers[0].String(),
+		IsPaused: false,
+	}
+	msgServer := keeper2.NewMsgServerImpl(app.EthbridgeKeeper)
+
+	// Pause Transactions
+	_, err := msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgPause)
+	require.NoError(t, err)
+
+	// Fail Burn
+	_, err = msgServer.Burn(sdk.WrapSDKContext(ctx), &msg)
+	require.Error(t, err)
+
+	// Unpause Transactions
+	_, err = msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgUnPause)
+	require.NoError(t, err)
+
+	// Burn Success
+	_, err = msgServer.Burn(sdk.WrapSDKContext(ctx), &msg)
+	require.NoError(t, err)
 
 }
