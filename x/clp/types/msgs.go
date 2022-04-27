@@ -460,7 +460,7 @@ func (m MsgSetSymmetryThreshold) Type() string {
 }
 
 func (m MsgSetSymmetryThreshold) ValidateBasic() error {
-	if m.Signer != "" {
+	if m.Signer == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 
