@@ -7,7 +7,7 @@ import (
 )
 
 func TestParseStringToBool(t *testing.T) {
-	tc := []struct {
+	tt := []struct {
 		name     string
 		input    string
 		expected bool
@@ -56,11 +56,12 @@ func TestParseStringToBool(t *testing.T) {
 			isError:  true,
 		},
 	}
-	for _, test := range tc {
-		t.Run(test.name, func(t *testing.T) {
-			toBool, err := utils.ParseStringToBool(test.input)
-			assert.Equal(t, test.expected, toBool)
-			if test.isError {
+	for _, test := range tt {
+		tc := test
+		t.Run(tc.name, func(t *testing.T) {
+			toBool, err := utils.ParseStringToBool(tc.input)
+			assert.Equal(t, tc.expected, toBool)
+			if tc.isError {
 				assert.Error(t, err)
 			}
 		})
