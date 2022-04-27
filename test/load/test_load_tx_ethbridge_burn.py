@@ -29,6 +29,7 @@ eth_account_number = 2
 sif_account_number = 1
 transaction_number = 2
 
+# build the transfer matrix 
 def build_transfer_table() -> [[int]]:
     transfer_table = [[int]]
     for i in range(sif_account_number):
@@ -38,7 +39,9 @@ def build_transfer_table() -> [[int]]:
         transfer_table.append(column)
     return transfer_table
 
+# create an erc20 contract for rowan via lock rowan in sifnode
 def burn_rowan_get_erc20_address(ctx: test_utils.EnvCtx):
+    # check contract not created before
     token_address = ctx.get_destination_contract_address(rowan)
     if token_address != NULL_ADDRESS:
         return token_address
@@ -49,6 +52,8 @@ def burn_rowan_get_erc20_address(ctx: test_utils.EnvCtx):
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, rowan_transfer_amount, rowan)
     ctx.advance_blocks()
+
+    # wait for erc20 contract created
     token_address = ctx.wait_for_new_bridge_token_created(rowan)
     return token_address
 
@@ -87,6 +92,7 @@ def test_single_sif_to_multiple_eth_account_burn_eth(ctx: test_utils.EnvCtx):
 
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, eth_sc)
 
+# short test to verify eth burn works
 def test_load_tx_ethbridge_burn_eth_short(ctx: test_utils.EnvCtx):
     transfer_table = [[2, 2], [2, 2]]
     amount_per_tx = 1000100101
@@ -272,8 +278,8 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     start_time = time.time()
     last_change_time = None
     last_change = None
-    last_change_timeout = 180
-    cumulative_timeout = 90  # Equivalent to min rate of 0.1 tps
+    last_change_timeout = 90
+    cumulative_timeout = sum_all * 10  # Equivalent to min rate of 0.1 tps
     while True:
         if token_denom == ctx.ceth_symbol:
             token_balances = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
@@ -307,7 +313,6 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     for sif_acct in sif_accts:
         actual_balance = ctx.get_sifchain_balance(sif_acct)
         assert actual_balance.get(ctx.ceth_symbol, 0) == 0
-        print("========= actual_balance.get(rowan", actual_balance.get(rowan, 0))
         assert actual_balance.get(rowan, 0) == sif_tx_burn_fee_buffer_in_rowan
 
     # Verify final eth balances
