@@ -6,6 +6,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+
+func IsAnyZero(inputs []sdk.Uint) bool {
+	for _, val := range inputs {
+		if val.IsZero() {
+			return true
+		}
+	}
+	return false
+}
+
 func ValidateZero(inputs []sdk.Uint) bool {
 	for _, val := range inputs {
 		if val.IsZero() {
