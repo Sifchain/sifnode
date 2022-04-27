@@ -21,23 +21,18 @@ func SwapOne(from types.Asset,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-	liquidityFee := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
-	priceImpact := calcPriceImpact(X, x)
-	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+	X, Y, toRowan := pool.ExtractValues(to)
+
+	liquidityFee := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y)
+	priceImpact := calcPriceImpact(X, sentAmount)
+	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
 
-  if from == types.GetSettlementAsset() {
-		pool.NativeAssetBalance = X.Add(x)
-		pool.ExternalAssetBalance = Y.Sub(swapResult)
-	} else {
-		pool.ExternalAssetBalance = X.Add(x)
-		pool.NativeAssetBalance = Y.Sub(swapResult)
-	}
+  pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
 
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
@@ -50,9 +45,8 @@ func CalcSwapPrice(from types.Asset,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-
-	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+	X, Y, toRowan := pool.ExtractValues(to)
+	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	return swapResult
 }
@@ -70,32 +64,14 @@ func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	return y.Mul(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
 }
 
-func SetInputs(sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, bool) {
-	var X sdk.Uint
-	var Y sdk.Uint
-	var x sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		X = pool.ExternalAssetBalance
-	} else {
-		X = pool.NativeAssetBalance
-		Y = pool.ExternalAssetBalance
-		toRowan = false
-	}
-	x = sentAmount
-
-	return X, x, Y, toRowan
-}
-
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+	X, Y, toRowan := pool.ExtractValues(to)
+	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()

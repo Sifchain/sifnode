@@ -858,7 +858,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 	}
 }
 
-func TestKeeper_SetInputs(t *testing.T) {
+func TestKeeper_ExtractValuesFromPool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
 	//Parameters for create pool
@@ -872,9 +872,9 @@ func TestKeeper_SetInputs(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	X, x, Y, toRowan := clpkeeper.SetInputs(sdk.NewUint(1), asset, *pool)
+	X, Y, toRowan := pool.ExtractValues(asset)
+
 	assert.Equal(t, X, sdk.NewUint(998))
-	assert.Equal(t, x, sdk.NewUint(1))
 	assert.Equal(t, Y, sdk.NewUint(998))
 	assert.Equal(t, toRowan, false)
 }
