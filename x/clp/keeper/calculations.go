@@ -26,10 +26,12 @@ func SwapOne(from types.Asset,
 	priceImpact := calcPriceImpact(X, x)
 	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 
+	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
-	if from == types.GetSettlementAsset() {
+
+  if from == types.GetSettlementAsset() {
 		pool.NativeAssetBalance = X.Add(x)
 		pool.ExternalAssetBalance = Y.Sub(swapResult)
 	} else {
@@ -321,26 +323,41 @@ func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalT
 func CalcSwapResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
-	X_, x_, Y_ sdk.Uint,
+	X, x, Y sdk.Uint,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 
-	if !ValidateZero([]sdk.Uint{X_, x_, Y_}) {
+	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
 
-	X := X_.BigInt()
-	x := x_.BigInt()
-	Y := Y_.BigInt()
+	tmp := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
+	y := sdk.NewDecFromBigInt(&tmp)
+	pmtpFac := CalcPmtpFactor(pmtpCurrentRunningRate)
 
+	var res sdk.Dec
+	if toRowan {
+		res = y.Quo(pmtpFac) // res = y / pmtpFac
+	} else {
+		res = y.Mul(pmtpFac) // res = y * pmtpFac
+	}
+
+	return sdk.NewUintFromBigInt(res.RoundInt().BigInt())
+}
+
+func calcSwap(x, X, Y *big.Int) big.Int {
 	var s, d, d2, d3, y big.Int
+
 	s.Add(X, x)    // s = X + x
 	d.Mul(&s, &s)  // d = (X + x)**2
 	d2.Mul(X, Y)   // d2 = X * Y
 	d3.Mul(x, &d2) // d3 = x * X * Y
 	y.Quo(&d3, &d) // y = d3 / d = (x * X * Y) / (X + x)**2
 
-	y_ := CalcSwapPmtp(toRowan, sdk.NewDecFromBigInt(&y), pmtpCurrentRunningRate)
-	return sdk.NewUintFromBigInt(y_.RoundInt().BigInt())
+	return y
+}
+
+func CalcPmtpFactor(r sdk.Dec) sdk.Dec {
+	return sdk.NewDec(1).Add(r)
 }
 
 func CalcSwapPriceResult(toRowan bool,
