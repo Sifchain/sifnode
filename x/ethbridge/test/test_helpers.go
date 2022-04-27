@@ -36,6 +36,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -159,6 +160,15 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, valAddrs
 }
 
+func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
+	app := sifapp.Setup(isCheckTx)
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
+	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
+	return app, ctx
+}
+
 // nolint: unparam
 func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	var addresses []sdk.AccAddress
@@ -214,13 +224,22 @@ const (
 )
 
 //// returns context and app with params set on account keeper
-func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
-	sifapp := app.Setup(isCheckTx)
-	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	sifapp.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
-	_ = app.AddTestAddrs(sifapp, ctx, 6, initTokens)
-	return sifapp, ctx
+func CreateSimulatorApp(isCheckTx bool) (sdk.Context, *app.SifchainApp) {
+	sifapp.SetConfig(false)
+	app := sifapp.Setup(isCheckTx)
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	app.TokenRegistryKeeper.SetRegistry(ctx, tokenregistryTypes.Registry{
+		Entries: []*tokenregistryTypes.RegistryEntry{
+			{Denom: "ceth", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "cdash", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "eth", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "dash", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "atom", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+		},
+	})
+	return ctx, app
 }
 
 func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
