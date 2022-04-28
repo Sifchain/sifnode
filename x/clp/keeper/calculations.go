@@ -281,6 +281,11 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		slipAdjustment = r.Mul(A).Sub(R.Mul(a)).Quo(slipAdjDenominator)
 	}
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
+
+	if sdk.OneDec().Sub(slipAdjustment).GT(sdk.NewDecWithPrec(5, 5)) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrInvalid
+	}
+
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
