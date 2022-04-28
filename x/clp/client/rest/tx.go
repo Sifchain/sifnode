@@ -163,6 +163,11 @@ func addLiquidityHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
+		if req.ExternalAssetAmount.IsZero() || req.NativeAssetAmount.IsZero() {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid request")
+			return
+		}
+
 		signer, err := sdk.AccAddressFromBech32(req.Signer)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
