@@ -21,32 +21,18 @@ func SwapOne(from types.Asset,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-	liquidityFee, err := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
-	if err != nil {
-		// this branch will never be reached as err will always be nil
-		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
-	}
-	priceImpact, err := calcPriceImpact(X, x)
-	if err != nil {
-		// this branch will never be reached as err will always be nil
-		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
-	}
-	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
-	if err != nil {
-		// this branch will never be reached as err will always be nil
-		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
-	}
+	X, Y, toRowan := pool.ExtractValues(to)
+
+	liquidityFee := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y)
+	priceImpact := calcPriceImpact(X, sentAmount)
+	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
+
+	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
-	if from == types.GetSettlementAsset() {
-		pool.NativeAssetBalance = X.Add(x)
-		pool.ExternalAssetBalance = Y.Sub(swapResult)
-	} else {
-		pool.ExternalAssetBalance = X.Add(x)
-		pool.NativeAssetBalance = Y.Sub(swapResult)
-	}
+
+	pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
 
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
@@ -59,9 +45,8 @@ func CalcSwapPrice(from types.Asset,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-
-	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+	X, Y, toRowan := pool.ExtractValues(to)
+	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	return swapResult
 }
@@ -79,36 +64,14 @@ func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	return y.Mul(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
 }
 
-func SetInputs(sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, bool) {
-	var X sdk.Uint
-	var Y sdk.Uint
-	var x sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		X = pool.ExternalAssetBalance
-	} else {
-		X = pool.NativeAssetBalance
-		Y = pool.ExternalAssetBalance
-		toRowan = false
-	}
-	x = sentAmount
-
-	return X, x, Y, toRowan
-}
-
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
-	if err != nil {
-		// this branch will never be reached as err will always be nil
-		return sdk.Uint{}
-	}
+	X, Y, toRowan := pool.ExtractValues(to)
+	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()
@@ -292,12 +255,9 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
-func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
-	if X.IsZero() && x.IsZero() {
-		return sdk.ZeroUint(), nil
-	}
-	if !ValidateZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint(), nil
+func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) sdk.Uint {
+	if IsAnyZero([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint()
 	}
 
 	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
@@ -332,31 +292,47 @@ func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalT
 		y = y.Quo(normalizationFactor)
 	}
 
-	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
+	return sdk.NewUintFromBigInt(y.RoundInt().BigInt())
 }
 
 func CalcSwapResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
-	X_, x_, Y_ sdk.Uint,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, error) {
-	if !ValidateZero([]sdk.Uint{X_, x_, Y_}) {
-		return sdk.ZeroUint(), nil
+	X, x, Y sdk.Uint,
+	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+
+	if IsAnyZero([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint()
 	}
 
-	X := X_.BigInt()
-	x := x_.BigInt()
-	Y := Y_.BigInt()
+	tmp := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
+	y := sdk.NewDecFromBigInt(&tmp)
+	pmtpFac := CalcPmtpFactor(pmtpCurrentRunningRate)
 
+	var res sdk.Dec
+	if toRowan {
+		res = y.Quo(pmtpFac) // res = y / pmtpFac
+	} else {
+		res = y.Mul(pmtpFac) // res = y * pmtpFac
+	}
+
+	return sdk.NewUintFromBigInt(res.RoundInt().BigInt())
+}
+
+func calcSwap(x, X, Y *big.Int) big.Int {
 	var s, d, d2, d3, y big.Int
+
 	s.Add(X, x)    // s = X + x
 	d.Mul(&s, &s)  // d = (X + x)**2
 	d2.Mul(X, Y)   // d2 = X * Y
 	d3.Mul(x, &d2) // d3 = x * X * Y
 	y.Quo(&d3, &d) // y = d3 / d = (x * X * Y) / (X + x)**2
 
-	y_ := CalcSwapPmtp(toRowan, sdk.NewDecFromBigInt(&y), pmtpCurrentRunningRate)
-	return sdk.NewUintFromBigInt(y_.RoundInt().BigInt()), nil
+	return y
+}
+
+func CalcPmtpFactor(r sdk.Dec) sdk.Dec {
+	return sdk.NewDec(1).Add(r)
 }
 
 func CalcSwapPriceResult(toRowan bool,
@@ -402,12 +378,13 @@ func CalcSwapPriceResult(toRowan bool,
 	return y
 }
 
-func calcPriceImpact(X, x sdk.Uint) (sdk.Uint, error) {
+func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
 	if x.IsZero() {
-		return sdk.ZeroUint(), nil
+		return sdk.ZeroUint()
 	}
 	d := x.Add(X)
-	return x.Quo(d), nil
+
+	return x.Quo(d)
 }
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
