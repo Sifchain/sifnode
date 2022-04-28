@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 40
+    timeout-minutes: 45
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -15,19 +15,32 @@ jobs:
           repository: Sifchain/sifchain-devops
           path: deploy
           token: "${{ secrets.GIT_PAT }}"
+
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
-      - name: Setup integration test environment
+
+      - name: Clean
+        run: make clean
+
+      - name: Unit test
         run: |
-          source $HOME/.bash_profile
-          bash test/integration/start-integration-env.sh
-      - name: Execute test chain integration tests
+          source ~/.bash_profile
+          make install && make tests
+
+      - name: Start standalone peggy
         run: |
-          source $HOME/.bash_profile
-          . test/integration/vagrantenv.sh
-          export LOG_LEVEL=DEBUG
-          bash test/integration/execute_integration_tests_against_any_chain.sh
+          source ~/.bash_profile
+          export PATH=./test/integration/framework/venv/bin/python3:$PATH
+          ./test/integration/framework/siftool run-env
+
+      # This sleep is needed for the tests to work
+      - name: Run integration tests
+        run: |
+          source ~/.bash_profile
+          sleep 30
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py
+
       - name: Archive logs from test
         uses: actions/upload-artifact@v2
         if: always()
