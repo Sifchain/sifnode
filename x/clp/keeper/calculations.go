@@ -23,7 +23,7 @@ func SwapOne(from types.Asset,
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
-	liquidityFee := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y)
+	liquidityFee := CalcLiquidityFee(X, sentAmount, Y)
 	priceImpact := calcPriceImpact(X, sentAmount)
 	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
 
@@ -255,44 +255,25 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
-func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) sdk.Uint {
-	if IsAnyZero([]sdk.Uint{X, x, Y}) {
+func CalcLiquidityFee(X_, x_, Y_ sdk.Uint) sdk.Uint {
+	if IsAnyZero([]sdk.Uint{X_, x_, Y_}) {
 		return sdk.ZeroUint()
 	}
 
-	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
-	if adjustExternalToken {
-		if toRowan {
-			X = X.Mul(nf)
-			x = x.Mul(nf)
-		} else {
-			Y = Y.Mul(nf)
-		}
-	} else {
-		if toRowan {
-			Y = Y.Mul(nf)
-		} else {
-			X = X.Mul(nf)
-			x = x.Mul(nf)
-		}
-	}
+	X := X_.BigInt()
+	x := x_.BigInt()
+	Y := Y_.BigInt()
 
-	minLen := GetMinLen([]sdk.Uint{X, x, Y})
-	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
-	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
-	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
+	var sq, n, s, d, fee big.Int
 
-	n := xd.Mul(xd).Mul(Yd)
-	s := xd.Add(Xd)
-	d := s.Mul(s)
-	y := n.Quo(d)
+	sq.Mul(x, x)    // sq = x**2
+	n.Mul(&sq, Y)   // n = x**2 * Y
+	s.Add(X, x)     // s = x + X
+	d.Mul(&s, &s)   // d = (x + X)**2
+	fee.Quo(&n, &d) // fee = n / d = (x**2 * Y) / (x + X)**2
 
-	y = IncreasePrecision(y, minLen)
-	if !toRowan {
-		y = y.Quo(normalizationFactor)
-	}
-
-	return sdk.NewUintFromBigInt(y.RoundInt().BigInt())
+	//TODO: can this panic? Does it matter?
+	return sdk.NewUintFromBigInt(&fee)
 }
 
 func CalcSwapResult(toRowan bool,
