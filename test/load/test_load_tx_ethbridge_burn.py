@@ -139,7 +139,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     eth_balances_initial: List[str] = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
     assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
     
-    if token_address is None:
+    if token_address is not None:
         erc20_balances_initial: List[str] = [ctx.get_erc20_token_balance(token_address, eth_acct) for eth_acct in eth_accts]
         assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
 
