@@ -29,7 +29,7 @@ transaction_number = 2
 
 # build the transfer matrix 
 def build_transfer_table() -> [[int]]:
-    transfer_table = [[int]]
+    transfer_table = []
     for i in range(sif_account_number):
         column = []
         for i in range(eth_account_number):
@@ -277,7 +277,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     last_change_time = None
     last_change = None
     last_change_timeout = 90
-    cumulative_timeout = sum_all * 10  # Equivalent to min rate of 0.1 tps
+    cumulative_timeout = 30 + sum_all * 10  # Equivalent to min rate of 0.1 tps
     while True:
         if token_denom == ctx.ceth_symbol:
             token_balances = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
