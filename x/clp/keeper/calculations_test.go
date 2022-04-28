@@ -1121,18 +1121,19 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			poolUnits:            sdk.NewUintFromString("1100094484982"),
 			lpunits:              sdk.NewUintFromString("582857206"),
 		},
-		// {
-		// 	name:                 "successful - very big",
-		// 	oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
-		// 	nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-		// 	externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-		// 	nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
-		// 	externalAssetAmount:  sdk.NewUint(1099511627776),
-		// 	normalizationFactor:  sdk.OneDec(),
-		// 	adjustExternalToken:  false,
-		// 	poolUnits:            sdk.NewUint(2),
-		// 	lpunits:              sdk.NewUint(1),
-		// },
+		{
+			name:                 "successful - very big",
+			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
+			externalAssetAmount:  sdk.NewUint(1099511627776),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.NewUint(2),
+			lpunits:              sdk.NewUint(1),
+			panicErr:             "fail to convert 1606938044258990275541962092341162602522202993782792835301376 to cosmos.Dec: decimal out of range; bitLen: got 260, max 256",
+		},
 	}
 
 	for _, tc := range testcases {
