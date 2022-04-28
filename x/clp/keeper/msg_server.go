@@ -700,6 +700,11 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if msg.NativeAssetAmount.IsZero() || msg.ExternalAssetAmount.IsZero() {
+		return nil, types.ErrInvalid
+	}
+
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
 	if err != nil {
