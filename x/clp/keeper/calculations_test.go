@@ -1085,6 +1085,54 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
 		},
+		{
+			name:                 "successful",
+			oldPoolUnits:         sdk.NewUint(1),
+			nativeAssetBalance:   sdk.NewUint(1),
+			externalAssetBalance: sdk.NewUint(1),
+			nativeAssetAmount:    sdk.NewUint(1),
+			externalAssetAmount:  sdk.NewUint(1),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.NewUint(2),
+			lpunits:              sdk.NewUint(1),
+		},
+		{
+			name:                 "successful no slip",
+			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
+			nativeAssetBalance:   sdk.NewUint(1099511627776),
+			externalAssetBalance: sdk.NewUint(1099511627776),
+			nativeAssetAmount:    sdk.NewUint(1099511627776),
+			externalAssetAmount:  sdk.NewUint(1099511627776),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.NewUint(2199023255552),
+			lpunits:              sdk.NewUint(1099511627776),
+		},
+		{
+			name:                 "successful with slip",
+			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
+			nativeAssetBalance:   sdk.NewUint(1048576),
+			externalAssetBalance: sdk.NewUint(1024123),
+			nativeAssetAmount:    sdk.NewUint(999),
+			externalAssetAmount:  sdk.NewUint(111),
+			normalizationFactor:  sdk.OneDec(),
+			adjustExternalToken:  false,
+			poolUnits:            sdk.NewUintFromString("1100094484982"),
+			lpunits:              sdk.NewUintFromString("582857206"),
+		},
+		// {
+		// 	name:                 "successful - very big",
+		// 	oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+		// 	nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+		// 	externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+		// 	nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
+		// 	externalAssetAmount:  sdk.NewUint(1099511627776),
+		// 	normalizationFactor:  sdk.OneDec(),
+		// 	adjustExternalToken:  false,
+		// 	poolUnits:            sdk.NewUint(2),
+		// 	lpunits:              sdk.NewUint(1),
+		// },
 	}
 
 	for _, tc := range testcases {
@@ -1126,8 +1174,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.Equal(t, poolUnits, tc.poolUnits)
-			require.Equal(t, lpunits, tc.lpunits)
+			require.Equal(t, tc.poolUnits.String(), poolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.lpunits.String(), lpunits.String())
 		})
 	}
 }
