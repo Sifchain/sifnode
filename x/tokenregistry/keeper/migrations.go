@@ -35,8 +35,42 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 	return nil
 }
 
+func (m Migrator) MigrateToVer4(ctx sdk.Context) {
+	denomMigrationsList := GetDenomMigrationList()
+	registry := m.keeper.GetRegistry(ctx)
+	for _, migration := range denomMigrationsList {
+		entry, err := m.keeper.GetEntry(registry, migration.denom)
+		if err != nil {
+			panic(err)
+		}
+		peggyTwoEntry := entry
+		entry.Permissions = []tkrtypes.Permission{
+			tkrtypes.Permission_IBCIMPORT,
+		}
+		m.keeper.SetToken(ctx, entry)
+		peggyTwoEntry.Denom = "sifBridge" + migration.evmChainId + migration.tokenAddress
+		m.keeper.SetToken(ctx, peggyTwoEntry)
+	}
+}
+
 func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	key := tkrtypes.AdminAccountStorePrefix
 	store.Delete(key)
+}
+
+type DenomMigrator struct {
+	denom        string
+	evmChainId   string
+	tokenAddress string
+}
+
+func GetDenomMigrationList() []DenomMigrator {
+	return []DenomMigrator{
+		{
+			denom:        "ceth",
+			evmChainId:   "0001",
+			tokenAddress: "0x0000000000000000000000000000000000000000",
+		},
+	}
 }
