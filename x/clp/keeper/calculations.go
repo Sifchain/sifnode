@@ -32,7 +32,7 @@ func SwapOne(from types.Asset,
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
 
-  pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
+	pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
 
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
@@ -256,7 +256,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 }
 
 func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalToken bool, X, x, Y sdk.Uint) sdk.Uint {
-
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
