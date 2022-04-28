@@ -328,6 +328,4 @@ if __name__ == "__main__":
     test_single_sif_to_multiple_eth_account_burn_eth(ctx)
     test_load_tx_ethbridge_burn_eth_short(ctx)
     test_load_tx_ethbridge_burn_eth(ctx)
-
-
-
+    
