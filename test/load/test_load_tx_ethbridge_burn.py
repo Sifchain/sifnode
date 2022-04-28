@@ -54,12 +54,11 @@ def burn_rowan_get_erc20_address(ctx: test_utils.EnvCtx):
 def test_single_sif_to_multiple_eth_account_lock_rowan(ctx: test_utils.EnvCtx):
     # get rowan contract address
     rowan_token_address = burn_rowan_get_erc20_address(ctx)
-    rowan_sc = ctx.get_generic_erc20_sc(rowan_token_address)
 
     transfer_table = build_transfer_table()
     amount_per_tx = 1000100101
 
-    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, rowan_sc, isRowan=True)
+    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, rowan_token_address, isRowan=True)
 
 # test single sif account burn erc20 to multiple ethereum accounts
 def test_single_sif_to_multiple_eth_account_burn_erc20(ctx: test_utils.EnvCtx):
@@ -75,22 +74,20 @@ def test_single_sif_to_multiple_eth_account_burn_erc20(ctx: test_utils.EnvCtx):
     transfer_table = build_transfer_table()
     amount_per_tx = 1000100101
 
-    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, erc20_sc)
+    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, erc20_sc.address)
 
 # test single sif account burn ceth to multiple ethereum accounts
 def test_single_sif_to_multiple_eth_account_burn_eth(ctx: test_utils.EnvCtx):
     transfer_table = build_transfer_table()
     amount_per_tx = 1000100101
-    eth_sc = ctx.get_generic_erc20_sc(NULL_ADDRESS)
 
-    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, eth_sc)
+    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, NULL_ADDRESS)
 
 # short test to verify eth burn works
 def test_load_tx_ethbridge_burn_eth_short(ctx: test_utils.EnvCtx):
     transfer_table = [[2, 2], [2, 2]]
     amount_per_tx = 1000100101
-    eth_sc = ctx.get_generic_erc20_sc(NULL_ADDRESS)
-    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, eth_sc)
+    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, NULL_ADDRESS)
 
 # test multiple sif accounts burn ceth to multiple ethereum accounts
 def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):   
@@ -104,16 +101,15 @@ def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):
             [10, 20, 30],
         ]
     amount_per_tx = 1000100101
-    eth_sc = ctx.get_generic_erc20_sc(NULL_ADDRESS)
-    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, eth_sc)
+    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, NULL_ADDRESS)
 
 def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, 
-    transfer_table: List[List[int]], token_sc: Contract, isRowan: bool = False, randomize: bool = None):
+    transfer_table: List[List[int]], token_address: str, isRowan: bool = False, randomize: bool = None):
     # rowan is natvie token, denom not from contract in Ethereum
     if isRowan:
         token_denom = rowan
     else:
-        token_denom = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_sc.address)
+        token_denom = sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, token_address)
 
     n_sif: int = len(transfer_table)
     assert n_sif > 0
@@ -142,7 +138,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
     
     if token_denom != ctx.ceth_symbol:
-        erc20_balances_initial: List[str] = [ctx.get_erc20_token_balance(token_sc.address, eth_acct) for eth_acct in eth_accts]
+        erc20_balances_initial: List[str] = [ctx.get_erc20_token_balance(token_address, eth_acct) for eth_acct in eth_accts]
         assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
 
 
@@ -169,6 +165,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
 
     # just for erc20 token
     if str.startswith(token_denom, "sifBridge") and token_denom != ctx.ceth_symbol:
+        token_sc = ctx.get_generic_erc20_sc(token_address)
         ctx.send_from_ethereum_to_sifchain(ctx.operator, dispensation_sif_acct, sum_all * amount_per_tx, token_sc=token_sc, isLock=True)
         _ = ctx.wait_for_sif_balance_change(dispensation_sif_acct, old_balances)
 
@@ -278,7 +275,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
             token_balances = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
             balance_delta = sum([token_balances[i] - eth_balances_initial[i] for i in range(n_eth)])
         else:
-            token_balances = [ctx.get_erc20_token_balance(token_sc.address, eth_acct) for eth_acct in eth_accts]
+            token_balances = [ctx.get_erc20_token_balance(token_address, eth_acct) for eth_acct in eth_accts]
             balance_delta = sum([token_balances[i] - eth_balances_initial[i] for i in range(n_eth)])
 
         now = time.time()
@@ -314,7 +311,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
         if token_denom == ctx.ceth_symbol:
             actual_balance = ctx.eth.get_eth_balance(eth_acct)
         else:
-            actual_balance = ctx.get_erc20_token_balance(token_sc.address, eth_acct)
+            actual_balance = ctx.get_erc20_token_balance(token_address, eth_acct)
         assert expected_balance == actual_balance
 
 
@@ -323,9 +320,8 @@ if __name__ == "__main__":
     basic_logging_setup()
     from siftool import test_utils
     ctx = test_utils.get_env_ctx()
-    test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
+    # test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
     test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
     test_single_sif_to_multiple_eth_account_burn_eth(ctx)
     test_load_tx_ethbridge_burn_eth_short(ctx)
     test_load_tx_ethbridge_burn_eth(ctx)
-    
