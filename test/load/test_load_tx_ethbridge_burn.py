@@ -29,12 +29,7 @@ transaction_number = 2
 
 # build the transfer matrix 
 def build_transfer_table() -> [[int]]:
-    transfer_table = []
-    for i in range(sif_account_number):
-        column = []
-        for i in range(eth_account_number):
-            column.append(transaction_number)
-        transfer_table.append(column)
+    transfer_table = [[transaction_number for y in range(eth_account_number)] for x in range(sif_account_number)]
     return transfer_table
 
 # create an erc20 contract for rowan via lock rowan in sifnode
