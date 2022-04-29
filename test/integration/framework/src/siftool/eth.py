@@ -1,14 +1,19 @@
 import logging
 import time
 import web3
+import eth_typing
+from hexbytes import HexBytes
+from web3.types import TxReceipt
+from typing import NewType, Sequence
 
-from common import *
+from siftool.common import *
 
 
 ETH = 10**18
 GWEI = 10**9
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 MIN_TX_GAS = 21000
+Address = eth_typing.AnyAddress
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +30,34 @@ def web3_connect(url, websocket_timeout=None):
         kwargs["websocket_timeout"] = websocket_timeout
     return web3.Web3(web3.Web3.WebsocketProvider(url, **kwargs))
 
+def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
+    start_time = time.time()
+    w3_conn = web3_connect(url)
+    while True:
+        try:
+            w3_conn.eth.block_number
+            return w3_conn
+        except OSError:
+            pass
+        now = time.time()
+        if now - start_time > timeout:
+            raise Exception(f"Timeout when trying to connect to {url}")
+        time.sleep(polling_time)
+
+def validate_address_and_private_key(addr, private_key):
+    a = web3.Web3().eth.account
+    addr = web3.Web3.toChecksumAddress(addr) if addr else None
+    if private_key:
+        match_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
+        private_key = match_hex[2].lower() if match_hex else _mnemonic_to_private_key(private_key)
+        account = a.from_key(private_key)
+        addr = addr or account.address
+        assert addr == account.address, "Address does not correspond to private key"
+        assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
+    else:
+        private_key = None
+    assert addr
+    return addr, private_key
 
 class EthereumTxWrapper:
     """
@@ -37,7 +70,7 @@ class EthereumTxWrapper:
     """
 
     def __init__(self, w3_conn, is_local_node):
-        self.w3_conn = w3_conn
+        self.w3_conn: web3.Web3 = w3_conn
         self.use_eip_1559 = True
         self.private_keys = {}
         self.default_timeout = 600
@@ -51,20 +84,26 @@ class EthereumTxWrapper:
         self.gas_estimate_fn = None
         self.used_tx_nonces = {}
 
+        # These are only set in get_env_ctx_peggy2(), otherwise they are undefined.
+        # self.cross_chain_fee_base = None
+        # self.cross_chain_lock_fee = None
+        # self.cross_chain_burn_fee = None
+        # self.ethereum_network_descriptor = None
+
     def _get_private_key(self, addr):
-        addr = self.w3_conn.toChecksumAddress(addr)
-        if not addr in self.private_keys:
+        addr = web3.Web3.toChecksumAddress(addr)
+        if addr not in self.private_keys:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
     def set_private_key(self, addr, private_key):
-        addr = self.w3_conn.toChecksumAddress(addr)
+        a = web3.Web3().eth.account
+        addr = web3.Web3.toChecksumAddress(addr)
         if private_key is None:
             self.private_keys.pop(addr)  # Remove
         else:
-            assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
-            check_addr = self.w3_conn.eth.account.from_key(private_key).address
-            assert check_addr == addr, f"Private key does not correspond to given address {addr}"
+            assert re.match("^([0-9a-f]{64})$", private_key)
+            assert addr == a.from_key(private_key).address, f"Private key does not correspond to given address {addr}"
             self.private_keys[addr] = private_key
         if self.is_local_node:
             # existing_accounts = self.w3_conn.geth.personal.list_accounts()
@@ -208,7 +247,16 @@ class EthereumTxWrapper:
         txhash = self.w3_conn.eth.send_raw_transaction(signed_tx.rawTransaction)
         return txhash
 
-    def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None):
+    def wait_for_all_transaction_receipts(self, tx_hashes: Sequence[HexBytes], sleep_time: int = 5,
+        timeout: Union[int, None] = None
+    ) -> Sequence[TxReceipt]:
+        result = []
+        for txhash in tx_hashes:
+            txrcpt = self.wait_for_transaction_receipt(txhash, sleep_time=sleep_time, timeout=timeout)
+            result.append(txrcpt)
+        return result
+
+    def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None) -> TxReceipt:
         return self.w3_conn.eth.wait_for_transaction_receipt(txhash, timeout=timeout, poll_latency=sleep_time)
 
     def transact_sync(self, smart_contract_function, eth_addr, tx_opts=None, timeout=None):
@@ -227,7 +275,7 @@ class EthereumTxWrapper:
             return txhash
         return wrapped_fn
 
-    def send_eth(self, from_addr, to_addr, amount):
+    def send_eth(self, from_addr: str, to_addr: str, amount: int):
         log.info(f"Sending {amount} wei from {from_addr} to {to_addr}...")
         tx = {"to": to_addr, "value": amount}
         txhash = self._send_raw_transaction(None, from_addr, tx)
@@ -357,3 +405,15 @@ class ExponentiallyWeightedAverageFeeEstimator:
     @staticmethod
     def estimate_gas_price():
         return 0
+
+
+__web3_enabled_unaudited_hdwallet_features = False
+
+# https://stackoverflow.com/questions/68050645/how-to-create-a-web3py-account-using-mnemonic-phrase
+def _mnemonic_to_private_key(mnemonic, derivation_path="m/44'/60'/0'/0/0"):
+    a = web3.Web3().eth.account
+    global __web3_enabled_unaudited_hdwallet_features
+    if not __web3_enabled_unaudited_hdwallet_features:
+        a.enable_unaudited_hdwallet_features()
+        __web3_enabled_unaudited_hdwallet_features = True
+    return a.from_mnemonic(mnemonic, account_path=derivation_path).privateKey.hex()[2:]

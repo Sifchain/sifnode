@@ -6,7 +6,7 @@ import string
 import random
 import yaml
 import urllib.request
-
+from typing import Optional, Mapping, Sequence, IO, Union
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ def random_string(length):
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
 def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*3))), *paths))
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*5))), *paths))
 
 def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)
@@ -76,10 +76,13 @@ def mkcmd(args, env=None, cwd=None, stdin=None):
 # stdin will always be redirected to the returned process' stdin.
 # If pipe, the stdout and stderr will be redirected and available as stdout and stderr of the returned object.
 # If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
-def popen(args, cwd=None, env=None, text=None, stdin=None, stdout=None, stderr=None):
+def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[str, str]] = None,
+    text: Optional[bool] = None, stdin: Union[str, int, IO, None] = None, stdout: Optional[IO] = None,
+    stderr: Optional[IO] = None
+) -> subprocess.Popen:
     if env:
         env = dict_merge(os.environ, env)
-    logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+    log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 def dict_merge(*dicts, override=True):
@@ -89,6 +92,9 @@ def dict_merge(*dicts, override=True):
             if override or (k not in result):
                 result[k] = v
     return result
+
+def flatten_list(l):
+    return [item for sublist in l for item in sublist]
 
 def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)
@@ -102,6 +108,7 @@ def basic_logging_setup():
     logging.getLogger("eth").setLevel(logging.WARNING)
     logging.getLogger("websockets").setLevel(logging.WARNING)
     logging.getLogger("web3").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
@@ -117,3 +124,5 @@ def template_transform(s, d):
 
 
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
+
+in_github_ci = (os.environ.get("CI") == "true") and os.environ.get("GITHUB_REPOSITORY") and os.environ.get("GITHUB_RUN_ID")
