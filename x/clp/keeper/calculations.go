@@ -111,14 +111,15 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
 
 	denominator := nominator.Quo(wBasisPointsF)
 	unitsToClaim := lpUnitsF.Quo(denominator)
-	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
-	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
+	claimOverPool := unitsToClaim.Quo(poolUnitsF)
+	withdrawExternalAssetAmount := externalAssetBalanceF.Mul(claimOverPool)
+	withdrawNativeAssetAmount := nativeAssetBalanceF.Mul(claimOverPool)
 
 	var swapAmount sdk.Dec
-	unitsToSwap := unitsToClaim.Quo(nominator.Quo(asymmetryF.Abs()))
 	switch asymmetry.Sign() {
 	case 1:
 		//if asymmetry is positive we need to swap from native to external
+		unitsToSwap := unitsToClaim.Quo(nominator.Quo(asymmetryF.Abs()))
 		swapAmount = nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 
 	case 0:
@@ -127,6 +128,7 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
 
 	case -1:
 		//if asymmetry is negative we need to swap from external to native
+		unitsToSwap := unitsToClaim.Quo(nominator.Quo(asymmetryF.Abs()))
 		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 
