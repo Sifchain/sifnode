@@ -255,20 +255,20 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
-func CalcLiquidityFee(X_, x_, Y_ sdk.Uint) sdk.Uint {
-	if IsAnyZero([]sdk.Uint{X_, x_, Y_}) {
+func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
 
-	X := X_.BigInt()
-	x := x_.BigInt()
-	Y := Y_.BigInt()
+	Xb := X.BigInt()
+	xb := x.BigInt()
+	Yb := Y.BigInt()
 
 	var sq, n, s, d, fee big.Int
 
-	sq.Mul(x, x)    // sq = x**2
-	n.Mul(&sq, Y)   // n = x**2 * Y
-	s.Add(X, x)     // s = x + X
+	sq.Mul(xb, xb)  // sq = x**2
+	n.Mul(&sq, Yb)  // n = x**2 * Y
+	s.Add(Xb, xb)   // s = x + X
 	d.Mul(&s, &s)   // d = (x + X)**2
 	fee.Quo(&n, &d) // fee = n / d = (x**2 * Y) / (x + X)**2
 
