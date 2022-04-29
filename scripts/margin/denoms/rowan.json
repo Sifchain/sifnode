@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "decimals": "18",
+            "denom": "rowan",
+            "base_denom": "rowan",
+            "permissions": [
+                1
+            ]
+        }
+    ]
+}
