@@ -86,7 +86,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 	// asymmetry is positive
 	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
+		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits, wBasis, asymmetry)
 	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
 	assert.NoError(t, err)
 	assert.Equal(t, "18", swapResult.String())
@@ -810,10 +810,10 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				normalizationFactor, adjustExternalToken = app.ClpKeeper.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 				_, _, _, swapAmount = clpkeeper.CalculateWithdrawal(
 					pool.PoolUnits,
-					pool.NativeAssetBalance.String(),
-					pool.ExternalAssetBalance.String(),
-					lp.LiquidityProviderUnits.String(),
-					tc.wBasis.String(),
+					pool.NativeAssetBalance,
+					pool.ExternalAssetBalance,
+					lp.LiquidityProviderUnits,
+					tc.wBasis,
 					tc.asymmetry,
 				)
 			} else {
@@ -1185,70 +1185,70 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 	testcases := []struct {
 		name                 string
 		poolUnits            sdk.Uint
-		nativeAssetBalance   string
-		externalAssetBalance string
-		lpUnits              string
-		wBasisPoints         string
+		nativeAssetBalance   sdk.Uint
+		externalAssetBalance sdk.Uint
+		lpUnits              sdk.Uint
+		wBasisPoints         sdk.Int
 		asymmetry            sdk.Int
 		panicErr             string
 	}{
-		{
-			name:                 "fail to convert nativeAssetBalance to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert externalAssetBalance to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert lpUnits to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert wBasisPoints to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert asymmetry to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.Int(sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000")),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
+		//{
+		//	name:                 "fail to convert nativeAssetBalance to Dec",
+		//	poolUnits:            sdk.NewUint(1),
+		//	nativeAssetBalance:   sdk.NewUint(10000000000000000000000000000000000000000000000000000000000000000000000000),
+		//	externalAssetBalance: "1",
+		//	lpUnits:              "1",
+		//	wBasisPoints:         "1",
+		//	asymmetry:            sdk.NewInt(1),
+		//	panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		//},
+		//{
+		//	name:                 "fail to convert externalAssetBalance to Dec",
+		//	poolUnits:            sdk.NewUint(1),
+		//	nativeAssetBalance:   "1",
+		//	externalAssetBalance: "10000000000000000000000000000000000000000000000000000000000000000000000000",
+		//	lpUnits:              "1",
+		//	wBasisPoints:         "1",
+		//	asymmetry:            sdk.NewInt(1),
+		//	panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		//},
+		//{
+		//	name:                 "fail to convert lpUnits to Dec",
+		//	poolUnits:            sdk.NewUint(1),
+		//	nativeAssetBalance:   "1",
+		//	externalAssetBalance: "1",
+		//	lpUnits:              "10000000000000000000000000000000000000000000000000000000000000000000000000",
+		//	wBasisPoints:         "1",
+		//	asymmetry:            sdk.NewInt(1),
+		//	panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		//},
+		//{
+		//	name:                 "fail to convert wBasisPoints to Dec",
+		//	poolUnits:            sdk.NewUint(1),
+		//	nativeAssetBalance:   "1",
+		//	externalAssetBalance: "1",
+		//	lpUnits:              "1",
+		//	wBasisPoints:         "10000000000000000000000000000000000000000000000000000000000000000000000000",
+		//	asymmetry:            sdk.NewInt(1),
+		//	panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		//},
+		//{
+		//	name:                 "fail to convert asymmetry to Dec",
+		//	poolUnits:            sdk.NewUint(1),
+		//	nativeAssetBalance:   "1",
+		//	externalAssetBalance: "1",
+		//	lpUnits:              "1",
+		//	wBasisPoints:         "1",
+		//	asymmetry:            sdk.Int(sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000")),
+		//	panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+		//},
 		{
 			name:                 "asymmetric value negative",
 			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
+			nativeAssetBalance:   sdk.NewUint(1),
+			externalAssetBalance: sdk.NewUint(1),
+			lpUnits:              sdk.NewUint(1),
+			wBasisPoints:         sdk.NewInt(1),
 			asymmetry:            sdk.NewInt(-1000),
 		},
 	}

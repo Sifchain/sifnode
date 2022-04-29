@@ -471,8 +471,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
-		msg.WBasisPoints.String(), msg.Asymmetry)
+		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits, msg.WBasisPoints, msg.Asymmetry)
 
 	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft))
 	if err != nil {

@@ -79,50 +79,57 @@ func GetSwapFee(sentAmount sdk.Uint,
 	return swapResult
 }
 
+func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+	poolUnits := pool.PoolUnits
+	nativeAssetBalance := pool.NativeAssetBalance
+	externalAssetBalance := pool.ExternalAssetBalance
+
+	return CalculateWithdrawal(
+		poolUnits,
+		nativeAssetBalance,
+		externalAssetBalance,
+		lp.LiquidityProviderUnits,
+		sdk.NewInt(types.MaxWbasis),
+		sdk.ZeroInt(),
+	)
+}
+
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
-	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
-	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
-	}
-	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance)
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
-	}
-	lpUnitsF, err := sdk.NewDecFromStr(lpUnits)
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", lpUnits, err))
-	}
-	wBasisPointsF, err := sdk.NewDecFromStr(wBasisPoints)
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", wBasisPoints, err))
-	}
-	asymmetryF, err := sdk.NewDecFromStr(asymmetry.String())
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", asymmetry.String(), err))
-	}
-	denominator := sdk.NewDec(10000).Quo(wBasisPointsF)
+// TODO: restrict asymmetry to [0, 100], basis points to ???
+func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
+	externalAssetBalance sdk.Uint, lpUnits sdk.Uint, wBasisPoints sdk.Int, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+	var nominator = sdk.NewDec(10_000)
+
+	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
+	nativeAssetBalanceF := sdk.NewDecFromBigInt(nativeAssetBalance.BigInt())
+	externalAssetBalanceF := sdk.NewDecFromBigInt(externalAssetBalance.BigInt())
+	lpUnitsF := sdk.NewDecFromBigInt(lpUnits.BigInt())
+	wBasisPointsF := sdk.NewDecFromBigInt(wBasisPoints.BigInt())
+	asymmetryF := sdk.NewDecFromBigInt(asymmetry.BigInt())
+
+	denominator := nominator.Quo(wBasisPointsF)
 	unitsToClaim := lpUnitsF.Quo(denominator)
 	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
 	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
 
-	swapAmount := sdk.NewDec(0)
-	//if asymmetry is positive we need to swap from native to external
-	if asymmetry.IsPositive() {
-		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
+	var swapAmount sdk.Dec
+	unitsToSwap := unitsToClaim.Quo(nominator.Quo(asymmetryF.Abs()))
+	switch asymmetry.Sign() {
+	case 1:
+		//if asymmetry is positive we need to swap from native to external
 		swapAmount = nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
-	}
-	//if asymmetry is negative we need to swap from external to native
-	if asymmetry.IsNegative() {
-		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
+
+	case 0:
+		//if asymmetry is 0 we don't need to swap
+		swapAmount = sdk.NewDec(0)
+
+	case -1:
+		//if asymmetry is negative we need to swap from external to native
 		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 
-	//if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
 
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
@@ -385,18 +392,4 @@ func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
 	d := x.Add(X)
 
 	return x.Quo(d)
-}
-
-func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
-	poolUnits := pool.PoolUnits
-	nativeAssetBalance := pool.NativeAssetBalance
-	externalAssetBalance := pool.ExternalAssetBalance
-	return CalculateWithdrawal(
-		poolUnits,
-		nativeAssetBalance.String(),
-		externalAssetBalance.String(),
-		lp.LiquidityProviderUnits.String(),
-		sdk.NewInt(types.MaxWbasis).String(),
-		sdk.ZeroInt(),
-	)
 }
