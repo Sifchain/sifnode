@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 )
 
 var (
@@ -21,6 +22,20 @@ var (
 	_ sdk.Msg = &MsgModifyPmtpRates{}
 	_ sdk.Msg = &MsgUpdatePmtpParams{}
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
+	_ sdk.Msg = &MsgSetSymmetryThreshold{}
+
+	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
+	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
+	_ legacytx.LegacyMsg = &MsgCreatePool{}
+	_ legacytx.LegacyMsg = &MsgAddLiquidity{}
+	_ legacytx.LegacyMsg = &MsgSwap{}
+	_ legacytx.LegacyMsg = &MsgDecommissionPool{}
+	_ legacytx.LegacyMsg = &MsgUnlockLiquidityRequest{}
+	_ legacytx.LegacyMsg = &MsgUpdateRewardsParamsRequest{}
+	_ legacytx.LegacyMsg = &MsgAddRewardPeriodRequest{}
+	_ legacytx.LegacyMsg = &MsgModifyPmtpRates{}
+	_ legacytx.LegacyMsg = &MsgUpdatePmtpParams{}
+	_ legacytx.LegacyMsg = &MsgUpdateStakingRewardParams{}
 )
 
 func (m MsgUpdateStakingRewardParams) Route() string {
@@ -443,6 +458,46 @@ func (m MsgUnlockLiquidityRequest) ValidateBasic() error {
 }
 
 func (m MsgUnlockLiquidityRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUnlockLiquidityRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgUnlockLiquidityRequest) Type() string {
+	return "unlock_liquidity"
+}
+
+func (m MsgUnlockLiquidityRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgSetSymmetryThreshold) Route() string {
+	return RouterKey
+}
+
+func (m MsgSetSymmetryThreshold) Type() string {
+	return "set_symmetry_threshold"
+}
+
+func (m MsgSetSymmetryThreshold) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgSetSymmetryThreshold) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

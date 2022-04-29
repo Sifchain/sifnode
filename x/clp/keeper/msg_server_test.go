@@ -545,6 +545,7 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				WBasisPoints:  sdk.NewInt(1),
 				Asymmetry:     sdk.NewInt(1),
 			},
+			err: types.ErrAsymmetricRemove,
 		},
 		{
 			name:                   "received amount below expected",
@@ -566,6 +567,7 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				WBasisPoints:  sdk.NewInt(1),
 				Asymmetry:     sdk.NewInt(1),
 			},
+			err: types.ErrAsymmetricRemove,
 		},
 	}
 

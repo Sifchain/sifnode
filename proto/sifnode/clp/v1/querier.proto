@@ -148,6 +148,10 @@ message ParamsReq {}
 
 message ParamsRes {
   Params params = 1;
+  string symmetry_threshold = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message RewardParamsReq {}
