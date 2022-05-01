@@ -13,27 +13,19 @@ import (
 	bridgeregistry "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol"
 )
 
-// TODO: Update BridgeRegistry contract so that all bridge contract addresses can be queried
-//		in one transaction. Then refactor ContractRegistry to a map and store it under new
-//		Relayer struct.
-
 // ContractRegistry is an enum for the bridge contract types
 type ContractRegistry byte
 
 const (
-	// Valset valset contract
-	Valset ContractRegistry = iota + 1
-	// Oracle oracle contract
-	Oracle
 	// BridgeBank bridgeBank contract
-	BridgeBank
+	BridgeBank ContractRegistry = iota + 1
 	// CosmosBridge cosmosBridge contract
 	CosmosBridge
 )
 
 // String returns the event type as a string
 func (d ContractRegistry) String() string {
-	return [...]string{"valset", "oracle", "bridgebank", "cosmosbridge"}[d-1]
+	return [...]string{"bridgebank", "cosmosbridge"}[d-1]
 }
 
 // GetAddressFromBridgeRegistry queries the requested contract address from the BridgeRegistry contract
@@ -41,14 +33,12 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	sugaredLogger *zap.SugaredLogger) (common.Address, error) {
 	sender, err := LoadSender()
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get sender", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get header", errorMessageKey, err.Error())
 
 		return common.Address{}, err
@@ -65,9 +55,7 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	// Initialize BridgeRegistry instance
 	registryInstance, err := bridgeregistry.NewBridgeRegistry(registry, client)
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get registry contract address", errorMessageKey, err.Error())
-
 		return common.Address{}, err
 	}
 
@@ -82,7 +70,6 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	}
 
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get contract address from registry", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
