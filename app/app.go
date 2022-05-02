@@ -345,6 +345,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
 	// register the staking hooks
@@ -490,6 +491,7 @@ func NewSifApp(
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
+		dispensation.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
@@ -543,6 +545,8 @@ func NewSifApp(
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
+		ethbridge.ModuleName,
+		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

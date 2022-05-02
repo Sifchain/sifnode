@@ -135,6 +135,10 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 				return nil, err
 			}
 
+			if err := n.SetGenesisWhitelisterAdmin(validator.Address, validator.NodeHomeDir); err != nil {
+				return nil, err
+			}
+
 			if err := n.generateTx(validator, validator.NodeHomeDir, gentxDir); err != nil {
 				return nil, err
 			}
@@ -287,6 +291,15 @@ func (n *Network) addGenesis(address, validatorHomeDir string) error {
 
 func (n *Network) setGenesisOracleAdmin(address, validatorHomeDir string) error {
 	_, err := n.CLI.SetGenesisOracleAdmin(address, validatorHomeDir)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *Network) SetGenesisWhitelisterAdmin(address, validatorHomeDir string) error {
+	_, err := n.CLI.SetGenesisWhitelisterAdmin(address, validatorHomeDir)
 	if err != nil {
 		return err
 	}
