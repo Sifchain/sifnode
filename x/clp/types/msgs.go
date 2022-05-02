@@ -137,25 +137,27 @@ func (m *MsgUpdatePmtpParams) ValidateBasic() error {
 	if err != nil {
 		return err
 	}
-	if m.PmtpPeriodEpochLength <= 0 {
-		return fmt.Errorf("pmtp epoch length must be greated than zero: %d", m.PmtpPeriodEpochLength)
-	}
-	if m.PmtpPeriodStartBlock < 0 {
-		return fmt.Errorf("pmtp start block cannot be negative: %d", m.PmtpPeriodStartBlock)
-	}
-	// End block must be at-least 1
-	if m.PmtpPeriodEndBlock <= 0 {
-		return fmt.Errorf("pmtp end block cannot be negative: %d", m.PmtpPeriodStartBlock)
-	}
-	if m.PmtpPeriodEndBlock < m.PmtpPeriodStartBlock {
-		return fmt.Errorf(
-			"end block (%d) must be after begin block (%d)",
-			m.PmtpPeriodEndBlock, m.PmtpPeriodStartBlock,
-		)
-	}
+	for _, policy := range m.PmtpPolicies {
+		if policy.PmtpPeriodEpochLength <= 0 {
+			return fmt.Errorf("pmtp epoch length must be greated than zero: %d", policy.PmtpPeriodEpochLength)
+		}
+		if policy.PmtpPeriodStartBlock < 0 {
+			return fmt.Errorf("pmtp start block cannot be negative: %d", policy.PmtpPeriodStartBlock)
+		}
+		// End block must be at-least 1
+		if policy.PmtpPeriodEndBlock <= 0 {
+			return fmt.Errorf("pmtp end block cannot be negative: %d", policy.PmtpPeriodStartBlock)
+		}
+		if policy.PmtpPeriodEndBlock < policy.PmtpPeriodStartBlock {
+			return fmt.Errorf(
+				"end block (%d) must be after begin block (%d)",
+				policy.PmtpPeriodEndBlock, policy.PmtpPeriodStartBlock,
+			)
+		}
 
-	if (m.PmtpPeriodEndBlock-m.PmtpPeriodStartBlock+1)%m.PmtpPeriodEpochLength != 0 {
-		return fmt.Errorf("all epochs must have equal number of blocks : %d", m.PmtpPeriodEpochLength)
+		if (policy.PmtpPeriodEndBlock-policy.PmtpPeriodStartBlock+1)%policy.PmtpPeriodEpochLength != 0 {
+			return fmt.Errorf("all epochs must have equal number of blocks : %d", policy.PmtpPeriodEpochLength)
+		}
 	}
 
 	return nil

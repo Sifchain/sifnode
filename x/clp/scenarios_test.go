@@ -135,10 +135,10 @@ func TestScenarios(t *testing.T) {
 		for i := 0; i < len(tc.ExpectedStates); i++ {
 			name := fmt.Sprintf(
 				"pmtp_period_governance_rate=%s|pmtp_period_epoch_length=%v|pmtp_period_start_block=%v|pmtp_period_end_block=%v|height=%v",
-				tc.Params.PmtpPeriodGovernanceRate,
-				tc.Params.PmtpPeriodEpochLength,
-				tc.Params.PmtpPeriodStartBlock,
-				tc.Params.PmtpPeriodEndBlock,
+				tc.Params.PmtpPolicies[0].PmtpPeriodGovernanceRate,
+				tc.Params.PmtpPolicies[0].PmtpPeriodEpochLength,
+				tc.Params.PmtpPolicies[0].PmtpPeriodStartBlock,
+				tc.Params.PmtpPolicies[0].PmtpPeriodEndBlock,
 				tc.ExpectedStates[i].Height,
 			)
 			expectedState := tc.ExpectedStates[i]

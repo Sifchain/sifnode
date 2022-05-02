@@ -107,25 +107,28 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
-	// Check to see if a policy is still running
-	if k.IsInsidePmtpWindow(ctx) {
-		return response, types.ErrCannotStartPolicy
-	}
-	// Check to make sure new policy starts in the future so that PolicyStart from begin-block can be triggered
-	if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
-		return response, errors.New("Start block cannot be in the past/current block")
-	}
-	params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
-	params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
-	params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
+	params.PmtpPolicies = msg.PmtpPolicies
+	k.SetPmtpParams(ctx, params)
 
-	if !strings.EqualFold(msg.PmtpPeriodGovernanceRate, "") {
-		rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
-		if err != nil {
-			return response, err
-		}
-		params.PmtpPeriodGovernanceRate = rGov
-	}
+	// // Check to see if a policy is still running
+	// if k.IsInsidePmtpWindow(ctx) {
+	// 	return response, types.ErrCannotStartPolicy
+	// }
+	// // Check to make sure new policy starts in the future so that PolicyStart from begin-block can be triggered
+	// if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
+	// 	return response, errors.New("Start block cannot be in the past/current block")
+	// }
+	// params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
+	// params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
+	// params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
+
+	// if !strings.EqualFold(msg.PmtpPeriodGovernanceRate, "") {
+	// 	rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
+	// 	if err != nil {
+	// 		return response, err
+	// 	}
+	// 	params.PmtpPeriodGovernanceRate = rGov
+	// }
 
 	k.SetPmtpParams(ctx, params)
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -179,8 +182,8 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	events := sdk.EmptyEvents()
 	// End Policy If Needed , returns if not policy is presently
 	if msg.EndPolicy && k.IsInsidePmtpWindow(ctx) {
-		params.PmtpPeriodEndBlock = ctx.BlockHeight()
-		k.SetPmtpParams(ctx, params)
+		// params.PmtpPeriodEndBlock = ctx.BlockHeight()
+		// k.SetPmtpParams(ctx, params)
 		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
 			EpochCounter: 0,
 			BlockCounter: 0,

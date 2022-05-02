@@ -27,6 +27,7 @@ const (
 	FlagPmtpPeriodEpochLength        = "epochLength"
 	FlagPmtpPeriodStartBlock         = "pmtp_start"
 	FlagPmtpPeriodEndBlock           = "pmtp_end"
+	FlagPmtpPolicies                 = "path"
 	FlagNewPolicy                    = "newPolicy"
 	FlagMintParams                   = "mint-params"
 	FlagMinter                       = "minter"
@@ -57,6 +58,7 @@ var (
 	FsPmtpPeriodEpochLength        = flag.NewFlagSet("", flag.ContinueOnError)
 	FsPmtpPeriodStartBlock         = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagPmtpPeriodEndBlock       = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagPmtpPolicies             = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagNewPolicy                = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagMintParams               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagMinter                   = flag.NewFlagSet("", flag.ContinueOnError)
@@ -82,6 +84,7 @@ func init() {
 	FsPmtpPeriodEpochLength.String(FlagPmtpPeriodEpochLength, "", "Modify rGov")
 	FsPmtpPeriodStartBlock.String(FlagPmtpPeriodStartBlock, "", "Modify pmtp start block")
 	FsFlagPmtpPeriodEndBlock.String(FlagPmtpPeriodEndBlock, "", "Modify pmtp end block")
+	FsFlagPmtpPolicies.String(FlagPmtpPolicies, "", "Path to Json File containing pmtp policies")
 	FsFlagNewPolicy.String(FlagNewPolicy, "", "Set a new policy / Modify existing policy")
 	FsLiquidityRemovalLockPeriod.String(FlagLiquidityRemovalLockPeriod, "", "Lock Period")
 	FsLiquidityRemovalCancelPeriod.String(FlagLiquidityRemovalCancelPeriod, "", "Unlock Period")

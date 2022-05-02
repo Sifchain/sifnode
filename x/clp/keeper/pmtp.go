@@ -8,13 +8,22 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) PolicyStart(ctx sdk.Context) {
-	pmtpParams := k.GetPmtpParams(ctx)
-	pmtpPeriodStartBlock := pmtpParams.PmtpPeriodStartBlock
-	pmtpPeriodEndBlock := pmtpParams.PmtpPeriodEndBlock
-	pmtpPeriodEpochLength := pmtpParams.PmtpPeriodEpochLength
+func (k Keeper) GetCurrentPmtpPolicy(ctx sdk.Context, params *types.PmtpParams) *types.PmtpPolicy {
+	height := uint64(ctx.BlockHeight())
+	for _, policy := range params.PmtpPolicies {
+		if height >= uint64(policy.PmtpPeriodStartBlock) && height <= uint64(policy.PmtpPeriodEndBlock) {
+			return policy
+		}
+	}
+	return nil
+}
+
+func (k Keeper) PolicyStart(ctx sdk.Context, policy *types.PmtpPolicy) {
+	pmtpPeriodStartBlock := policy.PmtpPeriodStartBlock
+	pmtpPeriodEndBlock := policy.PmtpPeriodEndBlock
+	pmtpPeriodEpochLength := policy.PmtpPeriodEpochLength
 	// get governance rate
-	pmtpPeriodGovernanceRate := pmtpParams.PmtpPeriodGovernanceRate
+	pmtpPeriodGovernanceRate := policy.PmtpPeriodGovernanceRate
 	// compute length of policy period in blocks
 	numBlocksInPolicyPeriod := pmtpPeriodEndBlock - pmtpPeriodStartBlock + 1
 	// compute number of epochs in policy period
@@ -39,9 +48,9 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	})
 }
 
-func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
+func (k Keeper) PolicyCalculations(ctx sdk.Context, policy *types.PmtpPolicy) sdk.Dec {
 	currentHeight := ctx.BlockHeight()
-	pmtpPeriodStartBlock := k.GetPmtpParams(ctx).PmtpPeriodStartBlock
+	pmtpPeriodStartBlock := policy.PmtpPeriodStartBlock
 	rateParams := k.GetPmtpRateParams(ctx)
 	pmtpPeriodBlockRate := rateParams.PmtpPeriodBlockRate
 	pmtpInterPolicyRate := rateParams.PmtpInterPolicyRate
@@ -78,5 +87,10 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 
 func (k Keeper) IsInsidePmtpWindow(ctx sdk.Context) bool {
 	params := k.GetPmtpParams(ctx)
-	return ctx.BlockHeight() <= params.PmtpPeriodEndBlock && ctx.BlockHeight() >= params.PmtpPeriodStartBlock
+	for _, policy := range params.PmtpPolicies {
+		if ctx.BlockHeight() <= policy.PmtpPeriodEndBlock && ctx.BlockHeight() >= policy.PmtpPeriodStartBlock {
+			return true
+		}
+	}
+	return false
 }

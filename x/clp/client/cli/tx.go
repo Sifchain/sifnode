@@ -461,13 +461,24 @@ func GetCmdUpdatePmtpParams() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			var pmtpPolicies []*types.PmtpPolicy
 			signer := clientCtx.GetFromAddress()
+			filePath := viper.GetString(FlagPmtpPolicies)
+			file, err := filepath.Abs(filePath)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &pmtpPolicies)
+			if err != nil {
+				return err
+			}
 			msg := types.MsgUpdatePmtpParams{
-				Signer:                   signer.String(),
-				PmtpPeriodGovernanceRate: viper.GetString(FlagPeriodGovernanceRate),
-				PmtpPeriodEpochLength:    viper.GetInt64(FlagPmtpPeriodEpochLength),
-				PmtpPeriodStartBlock:     viper.GetInt64(FlagPmtpPeriodStartBlock),
-				PmtpPeriodEndBlock:       viper.GetInt64(FlagPmtpPeriodEndBlock),
+				Signer:       signer.String(),
+				PmtpPolicies: pmtpPolicies,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -475,20 +486,7 @@ func GetCmdUpdatePmtpParams() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().AddFlagSet(FsPeriodGovernanceRate)
-	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
-	cmd.Flags().AddFlagSet(FsPmtpPeriodStartBlock)
-	cmd.Flags().AddFlagSet(FsFlagPmtpPeriodEndBlock)
-	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagPmtpPeriodStartBlock); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEndBlock); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-
+	cmd.Flags().AddFlagSet(FsFlagPmtpPolicies)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
