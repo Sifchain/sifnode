@@ -1073,8 +1073,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
 		},
-		/*{
-			name:                 "successful",
+		{
+			name:                 "fail asymmetric",
 			oldPoolUnits:         sdk.ZeroUint(),
 			nativeAssetBalance:   sdk.NewUint(10000),
 			externalAssetBalance: sdk.NewUint(100),
@@ -1084,7 +1084,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			adjustExternalToken:  false,
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
-		},*/
+			errString:            errors.New("Cannot add liquidity asymmetrically"),
+		},
 	}
 
 	for _, tc := range testcases {
