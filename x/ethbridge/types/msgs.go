@@ -3,7 +3,6 @@ package types
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -233,7 +232,6 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		denom,
 	)
 
-	fmt.Printf("++++++ bytes as {%v} \n", bytes)
 	hashBytes := crypto.Keccak256(bytes)
 	return hashBytes
 }
