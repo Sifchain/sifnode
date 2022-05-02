@@ -12,14 +12,15 @@ var expectedProphecyID = []byte{0xc5, 0xa, 0xd0, 0x6c, 0x42, 0x75, 0x49, 0x55, 0
 func TestComputeProphecyID(t *testing.T) {
 	cosmosSender := "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	sequence := uint64(0)
-	ethereumReceiver := "0x00000000000000000000"
-	tokenAddress := "0x00000000000000000000"
-	amount := sdk.NewInt(0)
-	doublePeggy := false
+	ethereumReceiver := "0x010203040506070809"
+	tokenAddress := "0x090807060504030201"
+	amount := sdk.NewInt(1025)
+	doublePeggy := true
 	globalNonce := uint64(0)
+	denom := "sifBridge0123456789"
 
 	prophecy := ComputeProphecyID(cosmosSender, sequence, ethereumReceiver, tokenAddress, amount,
-		doublePeggy, globalNonce, TestNetworkDescriptor)
+		doublePeggy, globalNonce, TestNetworkDescriptor, denom)
 
 	assert.Equal(t, expectedProphecyID, prophecy)
 }

@@ -137,7 +137,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint256 cosmosSenderSequence,
     address payable ethereumReceiver,
     address tokenAddress,
-    int32 _networkDescriptor
+    uint256 amount,
+    bool bridgeToken,
+    int32 _networkDescriptor,
+    string memory denom
   ) public pure returns (uint256) {
     return
       uint256(
@@ -147,7 +150,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             cosmosSenderSequence,
             ethereumReceiver,
             tokenAddress,
-            _networkDescriptor
+            amount,
+            // double,
+            bridgeToken,
+            _networkDescriptor,
+            denom
           )
         )
       );
@@ -302,7 +309,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       claimData.cosmosSenderSequence,
       claimData.ethereumReceiver,
       claimData.tokenAddress,
-      claimData.networkDescriptor
+      claimData.amount,
+      claimData.bridgeToken,
+      claimData.networkDescriptor,
+      claimData.cosmosDenom
     );
 
     require(uint256(hashDigest) == prophecyID, "INV_DATA");

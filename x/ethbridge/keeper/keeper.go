@@ -121,7 +121,8 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 	senderSequence uint64,
 	msg *types.MsgBurn,
 	tokenMetadata tokenregistrytypes.TokenMetadata,
-	firstDoublePeg bool) ([]byte, error) {
+	firstDoublePeg bool,
+	bridgeToken bool) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -188,7 +189,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
 	}
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
+	prophecyID := msg.GetProphecyID(bridgeToken, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress, msg.DenomHash)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
@@ -199,7 +200,8 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
 	msg *types.MsgLock,
-	tokenMetadata tokenregistrytypes.TokenMetadata) ([]byte, error) {
+	tokenMetadata tokenregistrytypes.TokenMetadata,
+	bridgeToken bool) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -255,7 +257,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
+	prophecyID := msg.GetProphecyID(bridgeToken, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress, msg.DenomHash)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
