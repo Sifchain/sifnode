@@ -297,10 +297,14 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			params: types.PmtpParams{
-				PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
-				PmtpPeriodEpochLength:    1,
-				PmtpPeriodStartBlock:     1,
-				PmtpPeriodEndBlock:       40,
+				PmtpPolicies: []*types.PmtpPolicy{
+					&types.PmtpPolicy{
+						PmtpPeriodGovernanceRate: sdk.MustNewDecFromStr("0.10"),
+						PmtpPeriodEpochLength:    1,
+						PmtpPeriodStartBlock:     1,
+						PmtpPeriodEndBlock:       40,
+					},
+				},
 			},
 			epoch: types.PmtpEpoch{
 				EpochCounter: 0,
