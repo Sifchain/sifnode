@@ -95,13 +95,11 @@ def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):
     # transactions to eth accounts. The numbers are transaction counts, where each transaction is for amount_per_tx.
     # Each sif account uses a dedicated send thread.
     transfer_table = [
-            [100, 100, 100],
-            [100, 100, 100],
-            [100, 100, 100],
-            [10, 20, 30],
-        ]
-    amount_per_tx = 1000100101
-    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, None)
+        [20],
+        # [1, 100, 100],
+        # [100, 100, 100],
+        # [10, 20, 30],
+    ]
 
 def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, transfer_table: List[List[int]],
     token_address: Optional[Address], isRowan: bool = False, randomize: Optional[random.Random] = None):
@@ -272,7 +270,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     last_change_time = None
     last_change = None
     last_change_timeout = 90
-    cumulative_timeout = sum_all * 100  # Equivalent to min rate of 0.1 tps
+    cumulative_timeout = 30 + sum_all * 10  # Equivalent to min rate of 0.1 tps
     while True:
         if token_address == None:
             token_balances = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
@@ -323,8 +321,10 @@ if __name__ == "__main__":
     basic_logging_setup()
     from siftool import test_utils
     ctx = test_utils.get_env_ctx()
-    test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
-    test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
-    test_single_sif_to_multiple_eth_account_burn_eth(ctx)
-    test_load_tx_ethbridge_burn_eth_short(ctx)
-    test_load_tx_ethbridge_burn_eth(ctx)
+    # test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
+    # test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
+    # test_single_sif_to_multiple_eth_account_burn_eth(ctx)
+    # test_load_tx_ethbridge_burn_eth_short(ctx)
+    # test_load_tx_ethbridge_burn_eth(ctx)
+    # test_load_tx_ethbridge_burn_short(ctx)
+    test_load_tx_ethbridge_burn(ctx)

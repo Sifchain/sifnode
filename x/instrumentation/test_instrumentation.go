@@ -24,7 +24,7 @@ const (
 	ProcessSignProphecy            = "ProcessSignProphecy"
 	ProcessSuccessfulClaim         = "ProcessSuccessfulClaim"
 	CoinsSent                      = "coinsSent"
-	Burn                           = "Burn"
+	Burn                           = "CosmosBurnMessage"
 	CreateEthBridgeClaim           = "CreateEthBridgeClaim"
 	Lock                           = "Lock"
 	GetCrossChainFeeConfig         = "GetCrossChainFeeConfig"

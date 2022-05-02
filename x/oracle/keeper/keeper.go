@@ -178,11 +178,14 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 
 // ProcessSignProphecy deal with the signature from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error {
+	logger := k.Logger(ctx)
+	logger.Info("Started process sign prophecy")
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.ErrProphecyNotFound
 	}
 
+	logger.Info("Started get oracle white list")
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
 	power, ok := whiteList.WhiteList[cosmosSender]
 	if !ok {
@@ -194,8 +197,10 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	}
 
 	// verify the signature
+	logger.Info("Compute signature")
 	sigData := PrefixMsg(prophecyID)
 
+	logger.Info("Retrieve public key")
 	publicKey, err := gethCrypto.Ecrecover(sigData, []byte(signature))
 	if err != nil {
 		return err
@@ -206,23 +211,27 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
+	logger.Info("Retrieve pubkey's address")
 	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
 
 	if recoveredAddr.String() != ethereumAddress {
 		return errors.New("incorrect ethereum signature")
 	}
 
+	logger.Info("Retrieve cosmos validator address")
 	valAddr, err := sdk.ValAddressFromBech32(cosmosSender)
 	if err != nil {
 		return err
 	}
 
+	logger.Info("Get detailed Prophecy")
 	prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
 	if !ok {
 		return errors.New("prophecy info not available in keeper")
 	}
 
 	// check the order of witness lock burn sequence
+	logger.Info("Get last lock burn nonce by networkdescriptor&val addr")
 	lastLockBurnNonce := k.GetWitnessLockBurnSequence(ctx, networkDescriptor, valAddr)
 	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalSequence {
 		return errors.New("witness node not send the signature in order")
@@ -230,16 +239,20 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 
 	oldStatus := prophecy.Status
 
+	// TODO: Why isnt append validator and signature same step? wt if this fails?
+	logger.Info("Appending validator to prophecy")
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 	if err != nil {
 		return err
 	}
 
+	logger.Info("Appending signature to prophecy")
 	err = k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
 	if err != nil {
 		return err
 	}
 
+	logger.Info("Update witness lockburn nonce")
 	// update witness's lock burn sequence
 	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
 
