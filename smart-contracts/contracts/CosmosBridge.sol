@@ -151,7 +151,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             ethereumReceiver,
             tokenAddress,
             amount,
-            // double,
             bridgeToken,
             _networkDescriptor,
             denom

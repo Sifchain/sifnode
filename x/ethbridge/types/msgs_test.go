@@ -15,12 +15,12 @@ func TestComputeProphecyID(t *testing.T) {
 	ethereumReceiver := "0x010203040506070809"
 	tokenAddress := "0x090807060504030201"
 	amount := sdk.NewInt(1025)
-	doublePeggy := true
+	bridgeToken := true
 	globalNonce := uint64(0)
 	denom := "sifBridge0123456789"
 
 	prophecy := ComputeProphecyID(cosmosSender, sequence, ethereumReceiver, tokenAddress, amount,
-		doublePeggy, globalNonce, TestNetworkDescriptor, denom)
+		bridgeToken, globalNonce, TestNetworkDescriptor, denom)
 
 	assert.Equal(t, expectedProphecyID, prophecy)
 }
