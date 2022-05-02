@@ -1190,7 +1190,12 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 		lpUnits              sdk.Uint
 		wBasisPoints         sdk.Int
 		asymmetry            sdk.Int
-		panicErr             string
+
+		panicErr               string
+		expectedNativeAmount   sdk.Uint
+		expectedExternalAmount sdk.Uint
+		expectedLpUnitsLeft    sdk.Uint
+		expectedSwapAmount     sdk.Uint
 	}{
 		{
 			name:                 "asymmetric value negative",
@@ -1200,6 +1205,11 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 			lpUnits:              sdk.NewUint(1),
 			wBasisPoints:         sdk.NewInt(1),
 			asymmetry:            sdk.NewInt(-1000),
+
+			expectedNativeAmount:   sdk.NewUint(1),
+			expectedExternalAmount: sdk.NewUint(1),
+			expectedLpUnitsLeft:    sdk.NewUint(1),
+			expectedSwapAmount:     sdk.NewUint(1),
 		},
 	}
 
@@ -1215,10 +1225,10 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 
 			w, x, y, z := clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
 
-			require.NotNil(t, w)
-			require.NotNil(t, x)
-			require.NotNil(t, y)
-			require.NotNil(t, z)
+			require.Equal(t, tc.expectedNativeAmount.String(), w.String())   // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expectedExternalAmount.String(), x.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expectedLpUnitsLeft.String(), y.String())    // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expectedSwapAmount.String(), z.String())     // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
 }
