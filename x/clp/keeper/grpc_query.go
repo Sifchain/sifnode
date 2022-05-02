@@ -236,8 +236,9 @@ func (k Querier) GetPmtpParams(c context.Context, _ *types.PmtpParamsReq) (*type
 func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.ParamsRes, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	params := k.Keeper.GetParams(ctx)
+	threshold := k.Keeper.GetSymmetryThreshold(ctx)
 
-	return &types.ParamsRes{Params: &params}, nil
+	return &types.ParamsRes{Params: &params, SymmetryThreshold: threshold}, nil
 }
 
 func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*types.RewardParamsRes, error) {

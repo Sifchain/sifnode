@@ -566,7 +566,7 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				WBasisPoints:  sdk.NewInt(1),
 				Asymmetry:     sdk.NewInt(1),
 			},
-			errString: errors.New("Cannot remove liquidity asymmetrically"),
+			err: types.ErrAsymmetricRemove,
 		},
 	}
 

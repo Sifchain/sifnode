@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 
@@ -96,4 +97,21 @@ func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Ass
 		return sdk.Dec{}, false
 	}
 	return k.GetNormalizationFactor(registryEntry.Decimals)
+}
+
+func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.SymmetryThresholdPrefix)
+	if bz == nil {
+		return sdk.NewDecWithPrec(5, 5)
+	}
+	var setThreshold types.MsgSetSymmetryThreshold
+	k.cdc.MustUnmarshal(bz, &setThreshold)
+	return setThreshold.Threshold
+}
+
+func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSetSymmetryThreshold) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(setThreshold)
+	store.Set(types.SymmetryThresholdPrefix, bz)
 }
