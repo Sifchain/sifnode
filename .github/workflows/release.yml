@@ -6,48 +6,23 @@ on:
       - published
 
 jobs:
-  release:
-    name: Release
+  dispatch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
+      - name: Get the tag
+        id: release_tag
+        run: echo ::set-output name=name::${GITHUB_REF/refs\/tags\//}
+
+      - uses: actions/github-script@v6
         with:
-          repository: Sifchain/sifchain-devops
-          path: sifchain-devops
-          token: "${{ secrets.GIT_PAT }}"
-
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Get version
-        id: version
-        run: |
-          echo "::set-output name=version::$(cat version)"
-
-      - name: Build docker images
-        run: |
-          make IMAGE_TAG=${{ steps.version.outputs.version }} BINARY=sifnoded build-image
-          make IMAGE_TAG=${{ steps.version.outputs.version }} BINARY=ebrelayer build-image
-
-      - name: Push docker images
-        run: |
-          docker push sifchain/sifnoded:${{ steps.version.outputs.version }}
-          docker push sifchain/ebrelayer:${{ steps.version.outputs.version }}
-
-      - name: Get commit hash
-        id: hash
-        run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
-      - name: Release a new sifnoded binary
-        uses: ./sifchain-devops/release
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: linux
-          goarch: amd64
-          goversion: "1.17"
-          project_path: "./cmd/sifnoded"
-          binary_name: "sifnoded"
-          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${{ steps.hash.outputs.sha_short }}"
-          sha256sum: true
+          github-token: ${{ secrets.GIT_PAT }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              repo: 'sifchain/sifchain-chainops',
+              workflow_id: 'sifnode-release.yml',
+              ref: 'main',
+              inputs: {
+                branch: ${GITHUB_REF##*/},
+                release_tag: ${{ steps.release_tag.outputs.name }}
+              }
+            })
