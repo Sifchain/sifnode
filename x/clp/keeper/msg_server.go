@@ -663,8 +663,8 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	}
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance, normalizationFactor, adjustExternalToken)
+	//	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
+	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -713,15 +713,13 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
+	//normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
 		pool.ExternalAssetBalance,
 		msg.NativeAssetAmount,
-		msg.ExternalAssetAmount,
-		normalizationFactor,
-		adjustExternalToken)
+		msg.ExternalAssetAmount)
 	if err != nil {
 		return nil, err
 	}

@@ -182,24 +182,10 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool) (sdk.Uint, sdk.Uint, error) {
-	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
-
-	if adjustExternalToken {
-		externalAssetAmount = externalAssetAmount.Mul(nf) // Convert token which are not E18 to E18 format
-		externalAssetBalance = externalAssetBalance.Mul(nf)
-	} else {
-		nativeAssetAmount = nativeAssetAmount.Mul(nf)
-		nativeAssetBalance = nativeAssetBalance.Mul(nf)
-	}
-
-	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount, externalAssetAmount}
-
+	externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
-
-	minLen := GetMinLen(inputs)
 
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
@@ -231,12 +217,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
 
-	P = ReducePrecision(P, minLen)
-	R = ReducePrecision(R, minLen)
-	A = ReducePrecision(A, minLen)
-	a = ReducePrecision(a, minLen)
-	r = ReducePrecision(r, minLen)
-
 	slipAdjDenominator := (r.Add(R)).Mul(a.Add(A))
 	var slipAdjustment sdk.Dec
 	if R.Mul(a).GT(r.Mul(A)) {
@@ -249,8 +229,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
-	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
-	stakeUnits = IncreasePrecision(stakeUnits, minLen)
 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
