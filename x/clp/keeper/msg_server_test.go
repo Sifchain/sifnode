@@ -643,7 +643,7 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				Signer:        "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset: &types.Asset{Symbol: "eth"},
 				WBasisPoints:  sdk.NewInt(1),
-				Asymmetry:     sdk.NewInt(1),
+				Asymmetry:     sdk.NewInt(0),
 			},
 		},
 		{
@@ -666,6 +666,7 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				WBasisPoints:  sdk.NewInt(1),
 				Asymmetry:     sdk.NewInt(1),
 			},
+			err: types.ErrAsymmetricRemove,
 		},
 	}
 

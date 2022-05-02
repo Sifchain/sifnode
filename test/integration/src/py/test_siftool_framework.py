@@ -1,10 +1,9 @@
 import logging
 import web3
 
-from integration_framework import main, common, eth, test_utils, inflate_tokens
-import eth
-import test_utils
-from common import *
+import siftool_path
+from siftool import eth
+from siftool.common import *
 
 
 # Note: these tests burn a lot of ether very inefficiently. If you care about that make sure to recover
