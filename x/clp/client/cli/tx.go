@@ -3,9 +3,10 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"io/ioutil"
 	"path/filepath"
+
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	"log"
 
@@ -41,6 +42,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdModifyPmtpRates(),
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
+		GetCmdSetSymmetryThreshold(),
 	)
 
 	return clpTxCmd
@@ -109,6 +111,38 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetSymmetryThreshold() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-symmetry-threshold",
+		Short: "Set symmetry threshold",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			threshold, err := sdk.NewDecFromStr(viper.GetString(FlagSymmetryThreshold))
+			if err != nil {
+				return err
+			}
+			msg := types.MsgSetSymmetryThreshold{
+				Signer:    signer.String(),
+				Threshold: threshold,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().String(FlagSymmetryThreshold, "", "")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

@@ -22,6 +22,7 @@ var (
 	_ sdk.Msg = &MsgModifyPmtpRates{}
 	_ sdk.Msg = &MsgUpdatePmtpParams{}
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
+	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -474,4 +475,32 @@ func (m MsgUnlockLiquidityRequest) Type() string {
 
 func (m MsgUnlockLiquidityRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgSetSymmetryThreshold) Route() string {
+	return RouterKey
+}
+
+func (m MsgSetSymmetryThreshold) Type() string {
+	return "set_symmetry_threshold"
+}
+
+func (m MsgSetSymmetryThreshold) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgSetSymmetryThreshold) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }
