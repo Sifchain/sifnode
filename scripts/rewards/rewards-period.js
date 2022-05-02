@@ -6,9 +6,9 @@ async function createAssetRewardsFile(periodId, startBlock, endBlock) {
   const csv = fs.readFileSync(`./${periodId}.csv`, "utf-8");
   const entries = JSON.parse(fs.readFileSync("./entries.json", "utf-8")).result
     .registry.entries;
-  const lines = csv.split("\r\n").filter((line) => line.split(",")[1] !== "");
+  const lines = csv.split("\r\n").filter((line) => line.split(",")[0] !== "");
 
-  let [, allocation] = lines[1].split('"');
+  let [, allocation] = lines[0].split('"');
   allocation = `${allocation.trim().split(",").join("")}${"0".repeat(18)}`;
 
   const multipliers = lines.slice(1).map((line) => {
@@ -44,6 +44,7 @@ async function createAssetRewardsFile(periodId, startBlock, endBlock) {
 
 async function start() {
   const rewardPeriods = [
+    await createAssetRewardsFile("RP_3", 6687731, 6788530),
     await createAssetRewardsFile("RP_2", 6586931, 6687730),
     await createAssetRewardsFile("RP_1", 6486131, 6586930),
   ];
