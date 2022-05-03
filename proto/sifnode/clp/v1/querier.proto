@@ -156,9 +156,7 @@ message ParamsRes {
 
 message RewardParamsReq {}
 
-message RewardParamsRes {
-  RewardParams params = 1;
-}
+message RewardParamsRes { RewardParams params = 1; }
 message PmtpParamsReq {}
 
 message PmtpParamsRes {
