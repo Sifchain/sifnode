@@ -17,15 +17,13 @@ func SwapOne(from types.Asset,
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	normalizationFactor sdk.Dec,
-	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	liquidityFee := CalcLiquidityFee(X, sentAmount, Y)
 	priceImpact := calcPriceImpact(X, sentAmount)
-	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
+	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
@@ -67,11 +65,9 @@ func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	normalizationFactor sdk.Dec,
-	adjustExternalToken bool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 	X, Y, toRowan := pool.ExtractValues(to)
-	swapResult := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
+	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()
@@ -282,8 +278,6 @@ func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 }
 
 func CalcSwapResult(toRowan bool,
-	normalizationFactor sdk.Dec,
-	adjustExternalToken bool,
 	X, x, Y sdk.Uint,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 
