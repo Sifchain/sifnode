@@ -20,109 +20,16 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-// GetCmdCreateEthBridgeClaim is the CLI command for creating a claim on an ethereum prophecy
-//nolint:lll
-func GetCmdCreateEthBridgeClaim() *cobra.Command {
-	return &cobra.Command{
-		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [name] [decimals] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --network-descriptor [network-descriptor] --token-contract-address [token-contract-address]",
-		Short: "create a claim on an ethereum prophecy",
-		Args:  cobra.ExactArgs(10),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			flags := cmd.Flags()
-
-			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
-			if err != nil {
-				return err
-			}
-
-			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
-			if err != nil {
-				return err
-			}
-
-			tokenContractString, err := flags.GetString(types.FlagTokenContractAddr)
-			if err != nil {
-				return err
-			}
-
-			if !common.IsHexAddress(tokenContractString) {
-				return errors.Errorf("invalid [token-contract-address]: %s", tokenContractString)
-			}
-
-			tokenContract := types.NewEthereumAddress(tokenContractString)
-
-			if !common.IsHexAddress(args[0]) {
-				return errors.Errorf("invalid [bridge-registry-contract]: %s", args[0])
-			}
-			bridgeContract := types.NewEthereumAddress(args[0])
-
-			nonce, err := strconv.ParseUint(args[1], 10, 64)
-			if err != nil {
-				return err
-			}
-
-			symbol := args[2]
-
-			name := args[3]
-
-			decimals, err := strconv.ParseInt(args[4], 10, 32)
-			if err != nil {
-				return err
-			}
-
-			ethereumSender := types.NewEthereumAddress(args[5])
-			if !common.IsHexAddress(args[5]) {
-				return errors.Errorf("invalid [ethereum-sender-address]: %s", args[0])
-			}
-
-			cosmosReceiver, err := sdk.AccAddressFromBech32(args[6])
-			if err != nil {
-				return err
-			}
-
-			validator, err := sdk.ValAddressFromBech32(args[7])
-			if err != nil {
-				return err
-			}
-
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
-			if !digitCheck.MatchString(args[8]) {
-				return types.ErrInvalidAmount
-			}
-
-			bigIntAmount, ok := sdk.NewIntFromString(args[8])
-			if !ok {
-				return types.ErrInvalidAmount
-			}
-
-			if bigIntAmount.LTE(sdk.NewInt(0)) {
-				return types.ErrInvalidAmount
-			}
-
-			claimType, exist := types.ClaimType_value[args[9]]
-			if !exist {
-				return err
-			}
-			ct := types.ClaimType(claimType)
-
-			networkDescriptor := oracletypes.NetworkDescriptor(ethereumChainID)
-
-			ethBridgeClaim := types.NewEthBridgeClaim(networkDescriptor, bridgeContract, nonce, symbol, tokenContract,
-				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct, name, uint8(decimals))
-
-			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, flags, &msg)
-		},
+func parseNetworkDescriptor(networkDescriptorStr string) (oracletypes.NetworkDescriptor, error) {
+	networkDescriptor, err := strconv.Atoi(networkDescriptorStr)
+	if err != nil {
+		return -1, err
+	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
+		return -1, errors.Errorf("Invalid %s. Valid range: [0-9999], received %d", types.FlagEthereumChainID, networkDescriptor)
+	} else if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return -1, errors.Errorf("Invalid %s. Invalid value, received %d", types.FlagEthereumChainID, networkDescriptor)
 	}
+	return oracletypes.NetworkDescriptor(networkDescriptor), nil
 }
 
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
@@ -142,12 +49,12 @@ func GetCmdBurn() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			networkDescriptorStr, err := flags.GetString(types.FlagEthereumChainID)
 			if err != nil {
 				return err
 			}
 
-			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
+			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -182,7 +89,7 @@ func GetCmdBurn() *cobra.Command {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
+			msg := types.NewMsgBurn(networkDescriptor, cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -219,12 +126,12 @@ func GetCmdLock() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			networkDescriptorStr, err := flags.GetString(types.FlagEthereumChainID)
 			if err != nil {
 				return err
 			}
 
-			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
+			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -255,7 +162,7 @@ func GetCmdLock() *cobra.Command {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
+			msg := types.NewMsgLock(networkDescriptor, cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
