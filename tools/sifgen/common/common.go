@@ -23,6 +23,4 @@ var (
 	AllowDuplicateIP    = true
 )
 
-var (
-	MinCLPCreatePoolThreshold = "100"
-)
+var MinCLPCreatePoolThreshold = "100"

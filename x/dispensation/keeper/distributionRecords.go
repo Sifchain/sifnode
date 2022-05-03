@@ -181,7 +181,8 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 	authorizedRunner string,
 	distributionType types.DistributionType,
 	status types.DistributionStatus,
-	distributionCount int64) *types.DistributionRecords {
+	distributionCount int64,
+) *types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, status)
 	count := int64(0)

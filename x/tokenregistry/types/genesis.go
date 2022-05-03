@@ -18,8 +18,8 @@ func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisS
 	}
 	return genesisState
 }
-func DefaultGenesisState() *GenesisState {
 
+func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		AdminAccounts: InitialAdminAccounts(),
 		Registry:      InitialRegistry(),

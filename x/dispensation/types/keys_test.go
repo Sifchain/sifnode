@@ -19,7 +19,6 @@ func TestGetDistributionRecordKey_statusCompleted(t *testing.T) {
 	result := types.GetDistributionRecordKey(status, name, recipient, distributionType)
 	output := append(DistributionRecordPrefixCompleted, key...)
 	assert.Equal(t, result, output)
-
 }
 
 func TestGetDistributionRecordKey_statusPending(t *testing.T) {
@@ -32,7 +31,6 @@ func TestGetDistributionRecordKey_statusPending(t *testing.T) {
 	result := types.GetDistributionRecordKey(status, name, recipient, distributionType)
 	output := append(DistributionRecordPrefixPending, key...)
 	assert.Equal(t, result, output)
-
 }
 
 func TestGetDistributionRecordKey_statusFailed(t *testing.T) {
@@ -79,12 +77,10 @@ func TestGetUserClaimKey(t *testing.T) {
 	output := append(UserClaimPrefix, key...)
 
 	assert.Equal(t, result, output)
-
 }
 
 func TestGetDistributionModuleAddress(t *testing.T) {
 	moduleAddress := authtypes.NewModuleAddress(types.ModuleName)
 	output := types.GetDistributionModuleAddress()
 	assert.Equal(t, moduleAddress, output)
-
 }

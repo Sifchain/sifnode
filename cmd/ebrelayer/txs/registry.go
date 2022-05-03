@@ -38,7 +38,8 @@ func (d ContractRegistry) String() string {
 
 // GetAddressFromBridgeRegistry queries the requested contract address from the BridgeRegistry contract
 func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Address, target ContractRegistry,
-	sugaredLogger *zap.SugaredLogger) (common.Address, error) {
+	sugaredLogger *zap.SugaredLogger,
+) (common.Address, error) {
 	sender, err := LoadSender()
 	if err != nil {
 		// log.Println(err)

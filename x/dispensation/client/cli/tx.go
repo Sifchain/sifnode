@@ -2,13 +2,14 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -94,7 +95,6 @@ func GetCmdClaim() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
-
 }
 
 func GetCmdRun() *cobra.Command {

@@ -46,7 +46,6 @@ func GetSettlementAsset() Asset {
 	return Asset{
 		Symbol: NativeSymbol,
 	}
-
 }
 
 func GetCLPModuleAddress() sdk.AccAddress {

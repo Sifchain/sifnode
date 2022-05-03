@@ -78,7 +78,6 @@ func NewEthereumSub(
 	db *leveldb.DB,
 	sugaredLogger *zap.SugaredLogger,
 ) EthereumSub {
-
 	return EthereumSub{
 		EthProvider:             ethProvider,
 		TmProvider:              nodeURL,
@@ -193,7 +192,6 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 				ToBlock:   endingBlock,
 				Addresses: []common.Address{bridgeBankAddress},
 			})
-
 			if err != nil {
 				sub.SugaredLogger.Errorw("failed to get events from bridgebank.",
 					errorMessageKey, err.Error(),
@@ -370,7 +368,8 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 
 // logToEvent unpacks an Ethereum event
 func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common.Address,
-	contractABI abi.ABI, cLog ctypes.Log) (types.EthereumEvent, bool, error) {
+	contractABI abi.ABI, cLog ctypes.Log,
+) (types.EthereumEvent, bool, error) {
 	// Parse the event's attributes via contract ABI
 	event := types.EthereumEvent{}
 	eventLogLockSignature := contractABI.Events[types.LogLock.String()].ID.Hex()

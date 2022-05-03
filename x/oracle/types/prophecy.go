@@ -22,11 +22,11 @@ const DefaultConsensusNeeded float64 = 0.7
 type Prophecy struct {
 	ID     string `json:"id"`
 	Status Status `json:"status"`
-	//WARNING: Mappings are nondeterministic in Amino,
+	// WARNING: Mappings are nondeterministic in Amino,
 	// an so iterating over them could result in consensus failure. New code should not iterate over the below 2 mappings.
-	//This is a mapping from a claim to the list of validators that made that claim.
+	// This is a mapping from a claim to the list of validators that made that claim.
 	ClaimValidators map[string][]sdk.ValAddress `json:"claim_validators"`
-	//This is a mapping from a validator bech32 address to their claim
+	// This is a mapping from a validator bech32 address to their claim
 	ValidatorClaims map[string]string `json:"validator_claims"`
 }
 
@@ -102,7 +102,7 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 		}
 	}
 	fmt.Printf("sifnode oracle prophecy FindHighestClaim totalPower is %d\n", totalPower)
-	//Index the validators by address for looking when scanning through claims
+	// Index the validators by address for looking when scanning through claims
 	validatorsByAddress := make(map[string]staking.Validator)
 	for _, validator := range validators {
 		validatorsByAddress[validator.OperatorAddress] = validator

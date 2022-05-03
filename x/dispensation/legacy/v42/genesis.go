@@ -8,7 +8,6 @@ import (
 )
 
 func Migrate(state v039dispensation.GenesisState) *types.GenesisState {
-
 	records := make([]*types.DistributionRecord, 0)
 	for _, d := range state.DistributionRecords {
 		records = append(records, &types.DistributionRecord{

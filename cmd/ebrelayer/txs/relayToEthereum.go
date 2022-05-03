@@ -35,7 +35,6 @@ func RelayProphecyClaimToEthereum(
 	auth *bind.TransactOpts,
 	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
 ) error {
-
 	// Send transaction
 	sugaredLogger.Infow(
 		"Sending new ProphecyClaim to CosmosBridge.",

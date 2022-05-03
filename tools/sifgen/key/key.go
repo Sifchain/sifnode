@@ -9,9 +9,7 @@ import (
 	"github.com/Sifchain/sifnode/app"
 )
 
-var (
-	hdpath = *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-)
+var hdpath = *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 
 type Key struct {
 	Name             string

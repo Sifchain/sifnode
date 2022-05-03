@@ -41,7 +41,6 @@ func TestNewLegacyQuerier(t *testing.T) {
 	var dr types.DistributionRecords
 	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.Error(t, err)
-
 }
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
@@ -57,7 +56,6 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		_ = keeper.SetDistributionRecord(ctx, record)
 	}
-
 }
 
 func TestQueryRecordsName(t *testing.T) {

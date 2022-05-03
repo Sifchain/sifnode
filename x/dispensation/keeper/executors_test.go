@@ -30,7 +30,7 @@ func createInput(t *testing.T, filename string) {
 	inputList := []banktypes.Input{banktypes.NewInput(in, coin), banktypes.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = ioutil.WriteFile(filename, file, 0o600)
 }
 
 func removeFile(t *testing.T, filename string) {
@@ -65,7 +65,6 @@ func TestKeeper_DistributeDrops_For_Address_Fail(t *testing.T) {
 	assert.NoError(t, err)
 	_, err1 := keeper.DistributeDrops(ctx, 4657424885079777562, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, 10)
 	assert.NoError(t, err1)
-
 }
 
 func TestKeeper_DistributeDrops_Fail(t *testing.T) {

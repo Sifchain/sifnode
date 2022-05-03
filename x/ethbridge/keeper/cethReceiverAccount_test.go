@@ -16,7 +16,7 @@ const (
 )
 
 func TestSetCethReceiverAccount(t *testing.T) {
-	var ctx, keeper, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
 

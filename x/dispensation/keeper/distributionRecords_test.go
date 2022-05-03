@@ -28,7 +28,6 @@ func TestKeeper_SetDistributionRecord_unableToSetRecord(t *testing.T) {
 	assert.False(t, bool)
 	err := keeper.SetDistributionRecord(ctx, dr)
 	assert.Error(t, err)
-
 }
 
 func TestKeeper_GetDistributionRecord(t *testing.T) {
@@ -47,7 +46,6 @@ func TestKeeper_GetDistributionRecordsIterator_Default(t *testing.T) {
 	status := types.DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED
 	res := keeper.GetDistributionRecordsIterator(ctx, status)
 	assert.Nil(t, res)
-
 }
 
 func TestKeeper_DeleteDistributionRecord_recordNotExist(t *testing.T) {
@@ -108,6 +106,7 @@ func TestKeeper_GetPendingRecordsLimited(t *testing.T) {
 	assert.Len(t, keeper.GetLimitedRecordsForStatus(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 20)
 	assert.Len(t, keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 1000)
 }
+
 func TestKeeper_GetPendingRecordsLimitedMultipleDistributions(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
@@ -179,7 +178,6 @@ func TestKeeper_GetRecordsForRecipient_StatusCompleted(t *testing.T) {
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)
 	assert.Len(t, list.DistributionRecords, 1)
-
 }
 
 func TestKeeper_GetRecordsForRecipient_StatusFailed(t *testing.T) {
@@ -196,7 +194,6 @@ func TestKeeper_GetRecordsForRecipient_StatusFailed(t *testing.T) {
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)
 	assert.Len(t, list.DistributionRecords, 1)
-
 }
 
 func TestKeeper_GetRecords(t *testing.T) {
@@ -213,7 +210,6 @@ func TestKeeper_GetRecords(t *testing.T) {
 	}
 	list := keeper.GetRecords(ctx)
 	assert.Len(t, list.DistributionRecords, 3)
-
 }
 
 func TestKeeper_GetRecords_StatusCompleted(t *testing.T) {
@@ -230,7 +226,6 @@ func TestKeeper_GetRecords_StatusCompleted(t *testing.T) {
 	}
 	list := keeper.GetRecords(ctx)
 	assert.Len(t, list.DistributionRecords, 3)
-
 }
 
 func TestKeeper_GetRecords_StatusFailed(t *testing.T) {
@@ -247,8 +242,8 @@ func TestKeeper_GetRecords_StatusFailed(t *testing.T) {
 	}
 	list := keeper.GetRecords(ctx)
 	assert.Len(t, list.DistributionRecords, 3)
-
 }
+
 func TestKeeper_GetRecords_fromName(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
@@ -280,6 +275,7 @@ func TestKeeper_GetRecords_fromName_StatusCompleted(t *testing.T) {
 	list := keeper.GetRecordsForName(ctx, name)
 	assert.Len(t, list.DistributionRecords, 3)
 }
+
 func TestKeeper_GetRecords_fromName_StatusFailed(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper

@@ -1,9 +1,10 @@
 package txs
 
 import (
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"strings"
 	"testing"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,9 +15,7 @@ import (
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-var (
-	sugaredLogger = NewZapSugaredLogger()
-)
+var sugaredLogger = NewZapSugaredLogger()
 
 func NewZapSugaredLogger() *zap.SugaredLogger {
 	logger, _ := zap.NewProduction()

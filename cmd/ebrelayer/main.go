@@ -103,7 +103,7 @@ func initRelayerCmd() *cobra.Command {
 		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
-	//flags.AddQueryFlagsToCmd(initRelayerCmd)
+	// flags.AddQueryFlagsToCmd(initRelayerCmd)
 	flags.AddTxFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
@@ -181,7 +181,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
 	logger, err := logConfig.Build()
-
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}

@@ -1,9 +1,10 @@
 package ibctransfer_test
 
 import (
+	"testing"
+
 	app2 "github.com/Sifchain/sifnode/app"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 

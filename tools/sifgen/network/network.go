@@ -393,7 +393,7 @@ func (n *Network) copyGenesis(validators []*Validator) error {
 			err = ioutil.WriteFile(
 				fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.GenesisFile),
 				input,
-				0600,
+				0o600,
 			)
 			if err != nil {
 				return err

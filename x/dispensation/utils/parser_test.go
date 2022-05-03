@@ -42,23 +42,25 @@ func createInput(t *testing.T, filename string) {
 	inputList := []types.Input{types.NewInput(in, coin), types.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = ioutil.WriteFile(filename, file, 0o600)
 }
 
 func createOutput(filename string, count int) {
 	outputList := test.CreatOutputList(count, "10000000000000000000")
 	tempInput := utils.TempOutput{Out: outputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = ioutil.WriteFile(filename, file, 0o600)
 }
 
 func removeFile(t *testing.T, filename string) {
 	err := os.Remove(filename)
 	assert.NoError(t, err)
 }
+
 func init() {
 	SetConfig()
 }
+
 func TestParseInput(t *testing.T) {
 	file := "input.json"
 	createInput(t, file)

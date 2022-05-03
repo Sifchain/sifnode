@@ -16,7 +16,7 @@ func TestKeeper_CreatePool_Error(t *testing.T) {
 	// nativeAssetAmount sdk.Uint, externalAssetAmount
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth0123456789012345678901234567890123456789012345678901234567890123456789")
@@ -34,7 +34,7 @@ func TestKeeper_CreatePool_Error(t *testing.T) {
 func TestKeeper_CreatePool_Range(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	nativeAssetAmount2 := sdk.NewUintFromString("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
@@ -54,7 +54,6 @@ func TestKeeper_CreatePool_Range(t *testing.T) {
 	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	assert.Error(t, err, "Unable to parse to Int")
 	assert.Nil(t, pool)
-
 }
 
 func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
@@ -62,7 +61,7 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	signer := test.GenerateAddress(test.AddressKey1)
 	signer2 := test.GenerateAddress("")
 	asset2 := types.NewAsset("xxx")
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	nativeAssetAmount2 := sdk.NewUintFromString("0xffff")
@@ -168,7 +167,7 @@ func TestKeeper_CreateLiquidityProvider(t *testing.T) {
 func TestKeeper_RemoveLiquidityProvider(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")
@@ -207,14 +206,12 @@ func TestKeeper_RemoveLiquidityProvider(t *testing.T) {
 	pool.GetExternalAsset().Symbol = ""
 	_, err = app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.Error(t, err, "Unable to set pool")
-
 }
 
 func TestKeeper_DecommissionPool(t *testing.T) {
-
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")
@@ -237,7 +234,7 @@ func TestKeeper_DecommissionPool(t *testing.T) {
 func TestKeeper_InitiateSwap(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	asset := types.NewAsset("eth")
 	asset1 := types.NewAsset("xxx")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
@@ -250,13 +247,12 @@ func TestKeeper_InitiateSwap(t *testing.T) {
 	assert.True(t, ok, "")
 	err = app.ClpKeeper.InitiateSwap(ctx, externalCoin1, signer)
 	assert.Error(t, err, "user does not have enough balance of the required coin")
-
 }
 
 func TestKeeper_FinalizeSwap(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	assetEth := types.NewAsset("eth")

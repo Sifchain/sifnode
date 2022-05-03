@@ -187,7 +187,6 @@ func GetCmdDeregisterAll() *cobra.Command {
 					return err
 				}
 				err := tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-
 				if err != nil {
 					return err
 				}

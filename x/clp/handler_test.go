@@ -30,7 +30,7 @@ func TestCreatePool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	handler := clp.NewHandler(app.ClpKeeper)
 	signer := test.GenerateAddress("")
-	//Parameters for create pool
+	// Parameters for create pool
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
 	asset := clptypes.NewAsset("eth")
@@ -46,21 +46,21 @@ func TestCreatePool(t *testing.T) {
 	MinThreshold := sdk.NewUint(app.ClpKeeper.GetParams(ctx).MinCreatePoolThreshold)
 	// Will fail if we are below minimum
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, MinThreshold.Sub(sdk.NewUint(1)), sdk.ZeroUint())
-	res, err := handler(ctx, &msgCreatePool) //clp.handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	res, err := handler(ctx, &msgCreatePool) // clp.handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.Error(t, err)
 	require.Nil(t, res)
 	// Will fail if we ask for too much.
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, initialBalance.Add(sdk.NewUint(1)), initialBalance.Add(sdk.NewUint(1)))
-	res, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	res, err = handler(ctx, &msgCreatePool) // handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.Error(t, err)
 	require.Nil(t, res)
 	// Ask for the right amount.
 	msgCreatePool = clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
-	res, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	res, err = handler(ctx, &msgCreatePool) // handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	// Can't create it a second time.
-	res, err = handler(ctx, &msgCreatePool) //handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	res, err = handler(ctx, &msgCreatePool) // handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.Error(t, err)
 	require.Nil(t, res)
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(poolBalance)))
@@ -90,7 +90,7 @@ func TestAddLiquidity(t *testing.T) {
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
 	handler := clp.NewHandler(clpKeeper)
-	//Parameters for add liquidity
+	// Parameters for add liquidity
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
 	addLiquidityAmount := sdk.NewUintFromString("1000000000000000000")
@@ -139,7 +139,7 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
 	handler := clp.NewHandler(clpKeeper)
-	//Parameters for add liquidity
+	// Parameters for add liquidity
 	poolBalanceRowan := sdk.NewUintFromString("162057826929020210025062784")
 	poolBalanceCacoin := sdk.NewUintFromString("1000000000000000000000") // Amount funded to pool , This same amount is used both for native and external asset
 	addLiquidityAmountRowan := sdk.NewUintFromString("1000000000000000000000")
@@ -327,7 +327,7 @@ func TestDecommisionPool(t *testing.T) {
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
 	handler := clp.NewHandler(clpKeeper)
-	//Parameters for Decommission
+	// Parameters for Decommission
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")
 	asset := clptypes.NewAsset("eth")
@@ -503,7 +503,6 @@ func TestUnlockLiquidity(t *testing.T) {
 	lp, err = app.ClpKeeper.GetLiquidityProvider(ctx, externalDenom, signer.String())
 	assert.NoError(t, err)
 	assert.Nil(t, lp.Unlocks)
-
 }
 
 func UnlockAllliquidity(app *sifapp.SifchainApp, ctx sdk.Context, asset clptypes.Asset, lp sdk.AccAddress, t *testing.T) {

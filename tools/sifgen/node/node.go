@@ -295,7 +295,7 @@ func (n *Node) downloadGenesis() (types.Genesis, error) {
 }
 
 func (n *Node) saveGenesis(genesis types.Genesis) error {
-	err := ioutil.WriteFile(n.CLI.GenesisFilePath(), *genesis.Result.Genesis, 0600)
+	err := ioutil.WriteFile(n.CLI.GenesisFilePath(), *genesis.Result.Genesis, 0o600)
 	if err != nil {
 		return err
 	}

@@ -40,8 +40,10 @@ const (
 	TestOtherAddress          = "0x1000000000000000000000000000000000000000"
 )
 
-var testAmount = big.NewInt(5)
-var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
+var (
+	testAmount    = big.NewInt(5)
+	testSDKAmount = sdk.NewIntFromBigInt(testAmount)
+)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
@@ -59,12 +61,14 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testAmount := testAmount
 	testNonce := big.NewInt(int64(TestNonce))
 
-	return types.EthereumEvent{EthereumChainID: testEthereumChainID,
+	return types.EthereumEvent{
+		EthereumChainID:       testEthereumChainID,
 		BridgeContractAddress: testBridgeContractAddress,
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
 		To:                    testCosmosRecipient, Token: testTokenAddress,
-		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.ClaimType_CLAIM_TYPE_LOCK}
+		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.ClaimType_CLAIM_TYPE_LOCK,
+	}
 }
 
 // CreateTestProphecyClaimEvent creates a sample ProphecyClaimEvent for testing purposes

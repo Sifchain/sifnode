@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
-
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )

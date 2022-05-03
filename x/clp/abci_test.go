@@ -27,7 +27,6 @@ func TestEndBlocker(t *testing.T) {
 	poolceth, err := app.ClpKeeper.GetPool(ctx, "ceth")
 	assert.NoError(t, err)
 	assert.True(t, poolceth.NativeAssetBalance.GT(pooldash.NativeAssetBalance))
-
 }
 
 func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
@@ -43,10 +42,11 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 			RewardPeriodStartBlock: 0,
 			RewardPeriodEndBlock:   2,
 			RewardPeriodAllocation: &allocations,
-			RewardPeriodPoolMultipliers: []*types.PoolMultiplier{{
-				PoolMultiplierAsset: "cdash",
-				Multiplier:          &multiplierDec1,
-			},
+			RewardPeriodPoolMultipliers: []*types.PoolMultiplier{
+				{
+					PoolMultiplierAsset: "cdash",
+					Multiplier:          &multiplierDec1,
+				},
 				{
 					PoolMultiplierAsset: "ceth",
 					Multiplier:          &multiplierDec2,

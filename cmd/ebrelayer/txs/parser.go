@@ -2,14 +2,15 @@ package txs
 
 import (
 	"errors"
+	"log"
+	"math/big"
+	"strings"
+
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"go.uber.org/zap"
-	"log"
-	"math/big"
-	"strings"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"

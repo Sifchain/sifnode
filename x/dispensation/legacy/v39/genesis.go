@@ -10,8 +10,10 @@ const ModuleName = "dispensation"
 
 type DistributionStatus int64
 
-const Pending DistributionStatus = 1
-const Completed DistributionStatus = 2
+const (
+	Pending   DistributionStatus = 1
+	Completed DistributionStatus = 2
+)
 
 func (ds DistributionStatus) String() string {
 	switch ds {
@@ -45,10 +47,12 @@ type DistributionRecords []DistributionRecord
 
 type DistributionType int64
 
-const DistributionTypeUnknown DistributionType = 0
-const Airdrop DistributionType = 1
-const LiquidityMining DistributionType = 2
-const ValidatorSubsidy DistributionType = 3
+const (
+	DistributionTypeUnknown DistributionType = 0
+	Airdrop                 DistributionType = 1
+	LiquidityMining         DistributionType = 2
+	ValidatorSubsidy        DistributionType = 3
+)
 
 func (dt DistributionType) String() string {
 	switch dt {

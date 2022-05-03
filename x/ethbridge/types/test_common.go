@@ -26,11 +26,13 @@ const (
 	TestCoinIntAmount         = 10
 )
 
-var testCethAmount = sdk.NewInt(65000000000 * 300000)
-var TestCoinsAmount = sdk.NewInt(10)
-var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
+var (
+	testCethAmount           = sdk.NewInt(65000000000 * 300000)
+	TestCoinsAmount          = sdk.NewInt(10)
+	AltTestCoinsAmountSDKInt = sdk.NewInt(12)
+)
 
-//Ethereum-bridge specific stuff
+// Ethereum-bridge specific stuff
 func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType) MsgCreateEthBridgeClaim {
 	testEthereumAddress := NewEthereumAddress(TestEthereumAddress)
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
@@ -53,7 +55,8 @@ func CreateTestEthClaim(
 }
 
 func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
-	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
+	coinsAmount sdk.Int, coinsSymbol string,
+) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
@@ -61,7 +64,8 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 }
 
 func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
-	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
+	coinsAmount sdk.Int, coinsSymbol string,
+) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)

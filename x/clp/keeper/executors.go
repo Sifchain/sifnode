@@ -59,7 +59,6 @@ func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpu
 }
 
 func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
-
 	// Verify user has coins to add liquidiy
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
@@ -149,7 +148,8 @@ func (k Keeper) DecommissionPool(ctx sdk.Context, pool types.Pool) error {
 }
 
 func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetCoin sdk.Coin,
-	nativeAssetCoin sdk.Coin, lp types.LiquidityProvider, lpUnitsLeft, poolOriginalEB, poolOriginalNB sdk.Uint) error {
+	nativeAssetCoin sdk.Coin, lp types.LiquidityProvider, lpUnitsLeft, poolOriginalEB, poolOriginalNB sdk.Uint,
+) error {
 	lpAddr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	if err != nil {
 		return err
@@ -203,8 +203,8 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 		return err
 	}
 	return nil
-
 }
+
 func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
 	err := k.SetPool(ctx, &finalPool)
 	if err != nil {

@@ -106,7 +106,7 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 	}
 
 	// prune records.
-	//var records []*types.LiquidityUnlock
+	// var records []*types.LiquidityUnlock
 	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
 		/* move to begin blocker
@@ -131,7 +131,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 	currentHeight := ctx.BlockHeight()
 
 	var write bool
-	//var records []*types.LiquidityUnlock
+	// var records []*types.LiquidityUnlock
 	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
 		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) {

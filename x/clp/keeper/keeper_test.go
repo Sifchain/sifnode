@@ -80,40 +80,39 @@ func TestKeeper_GetBankKeeper(t *testing.T) {
 }
 
 func TestKeeper_GetNormalizationFactor(t *testing.T) {
-	testcases :=
-		[]struct {
-			name                string
-			decimals            int64
-			normalizationFactor sdk.Dec
-			adjustExternalToken bool
-			expPanic            bool
-			expPanicMsg         string
-		}{
-			{
-				name:        "big decimals number throws error",
-				decimals:    100000000,
-				expPanic:    true,
-				expPanicMsg: "Int overflow",
-			},
-			{
-				name:                "decimals less than 18",
-				decimals:            10,
-				normalizationFactor: sdk.NewDec(100000000),
-				adjustExternalToken: true,
-			},
-			{
-				name:                "decimals greater than or equal to 18",
-				decimals:            20,
-				normalizationFactor: sdk.NewDec(100),
-				adjustExternalToken: false,
-			},
-			{
-				name:                "with 6 decimals",
-				decimals:            6,
-				normalizationFactor: sdk.NewDec(1000000000000),
-				adjustExternalToken: true,
-			},
-		}
+	testcases := []struct {
+		name                string
+		decimals            int64
+		normalizationFactor sdk.Dec
+		adjustExternalToken bool
+		expPanic            bool
+		expPanicMsg         string
+	}{
+		{
+			name:        "big decimals number throws error",
+			decimals:    100000000,
+			expPanic:    true,
+			expPanicMsg: "Int overflow",
+		},
+		{
+			name:                "decimals less than 18",
+			decimals:            10,
+			normalizationFactor: sdk.NewDec(100000000),
+			adjustExternalToken: true,
+		},
+		{
+			name:                "decimals greater than or equal to 18",
+			decimals:            20,
+			normalizationFactor: sdk.NewDec(100),
+			adjustExternalToken: false,
+		},
+		{
+			name:                "with 6 decimals",
+			decimals:            6,
+			normalizationFactor: sdk.NewDec(1000000000000),
+			adjustExternalToken: true,
+		},
+	}
 
 	for _, tc := range testcases {
 		tc := tc
@@ -137,52 +136,51 @@ func TestKeeper_GetNormalizationFactor(t *testing.T) {
 }
 
 func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
-	testcases :=
-		[]struct {
-			name                string
-			denom               string
-			expPanicMsg         string
-			asset               types.Asset
-			decimals            int64
-			normalizationFactor sdk.Dec
-			createToken         bool
-			adjustExternalToken bool
-			expPanic            bool
-		}{
-			{
-				name:        "big decimals number throws error",
-				asset:       types.Asset{Symbol: "xxx"},
-				createToken: true,
-				denom:       "xxx",
-				decimals:    100000000,
-				expPanic:    true,
-				expPanicMsg: "Int overflow",
-			},
-			{
-				name:                "unknown symbol",
-				createToken:         false,
-				asset:               types.Asset{Symbol: "xxx"},
-				adjustExternalToken: false,
-			},
-			{
-				name:                "decimals less than 18",
-				asset:               types.Asset{Symbol: "xxx"},
-				createToken:         true,
-				denom:               "xxx",
-				decimals:            10,
-				normalizationFactor: sdk.NewDec(100000000),
-				adjustExternalToken: true,
-			},
-			{
-				name:                "decimals greater than or equal to 18",
-				asset:               types.Asset{Symbol: "xxx"},
-				createToken:         true,
-				denom:               "xxx",
-				decimals:            20,
-				normalizationFactor: sdk.NewDec(100),
-				adjustExternalToken: false,
-			},
-		}
+	testcases := []struct {
+		name                string
+		denom               string
+		expPanicMsg         string
+		asset               types.Asset
+		decimals            int64
+		normalizationFactor sdk.Dec
+		createToken         bool
+		adjustExternalToken bool
+		expPanic            bool
+	}{
+		{
+			name:        "big decimals number throws error",
+			asset:       types.Asset{Symbol: "xxx"},
+			createToken: true,
+			denom:       "xxx",
+			decimals:    100000000,
+			expPanic:    true,
+			expPanicMsg: "Int overflow",
+		},
+		{
+			name:                "unknown symbol",
+			createToken:         false,
+			asset:               types.Asset{Symbol: "xxx"},
+			adjustExternalToken: false,
+		},
+		{
+			name:                "decimals less than 18",
+			asset:               types.Asset{Symbol: "xxx"},
+			createToken:         true,
+			denom:               "xxx",
+			decimals:            10,
+			normalizationFactor: sdk.NewDec(100000000),
+			adjustExternalToken: true,
+		},
+		{
+			name:                "decimals greater than or equal to 18",
+			asset:               types.Asset{Symbol: "xxx"},
+			createToken:         true,
+			denom:               "xxx",
+			decimals:            20,
+			normalizationFactor: sdk.NewDec(100),
+			adjustExternalToken: false,
+		},
+	}
 
 	for _, tc := range testcases {
 		tc := tc

@@ -80,7 +80,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 				return err
 			}
 
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
+			digitCheck := regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[6]) {
 				return types.ErrInvalidAmount
 			}
@@ -150,7 +150,7 @@ func GetCmdBurn() *cobra.Command {
 			}
 			ethereumReceiver := types.NewEthereumAddress(args[1])
 
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
+			digitCheck := regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[2]) {
 				return types.ErrInvalidAmount
 			}
@@ -222,7 +222,7 @@ func GetCmdLock() *cobra.Command {
 			}
 			ethereumReceiver := types.NewEthereumAddress(args[1])
 
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
+			digitCheck := regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[2]) {
 				return types.ErrInvalidAmount
 			}

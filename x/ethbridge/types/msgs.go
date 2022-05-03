@@ -20,7 +20,8 @@ const (
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	ethereumChainID int64, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int,
+) MsgLock {
 	return MsgLock{
 		EthereumChainId:  ethereumChainID,
 		CosmosSender:     cosmosSender.String(),
@@ -88,7 +89,8 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	ethereumChainID int64, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int,
+) MsgBurn {
 	return MsgBurn{
 		EthereumChainId:  ethereumChainID,
 		CosmosSender:     cosmosSender.String(),
@@ -233,7 +235,8 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
 func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
-	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
+	cethReceiverAccount sdk.AccAddress,
+) MsgUpdateCethReceiverAccount {
 	return MsgUpdateCethReceiverAccount{
 		CosmosSender:        cosmosSender.String(),
 		CethReceiverAccount: cethReceiverAccount.String(),
@@ -328,7 +331,8 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
 func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
-	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
+	validator sdk.ValAddress, operationType string,
+) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
 		CosmosSender:  cosmosSender.String(),
 		Validator:     validator.String(),
@@ -386,7 +390,6 @@ func MapOracleClaimsToEthBridgeClaims(
 	oracleValidatorClaims map[string]string,
 	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
 ) ([]*EthBridgeClaim, error) {
-
 	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
 	i := 0
 	for validatorBech32, validatorClaim := range oracleValidatorClaims {

@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+
 	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,9 +18,10 @@ import (
 // ConvertCoinsForTransfer Converts the coins requested for transfer into an amount that should be deducted from requested denom,
 // and the Coins that should be minted in the new denom.
 
-//TODO only used in tests , remove this function completely
+// TODO only used in tests , remove this function completely
 func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntry *tokenregistrytypes.RegistryEntry,
-	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
+	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry,
+) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
 	po := uint64(sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals)
 	decAmount := sdk.NewDecFromInt(msg.Token.Amount)

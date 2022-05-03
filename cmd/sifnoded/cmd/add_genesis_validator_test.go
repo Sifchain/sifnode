@@ -15,7 +15,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/app"
-	//sifnodedcmd "github.com/Sifchain/sifnode/cmd/sifnoded/cmd"
+	// sifnodedcmd "github.com/Sifchain/sifnode/cmd/sifnoded/cmd"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 

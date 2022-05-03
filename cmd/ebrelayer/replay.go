@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -19,7 +20,6 @@ import (
 // RunReplayEthereumCmd executes replayEthereumCmd
 func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	cliContext, err := client.GetClientTxContext(cmd)
-
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
 	}
 	validatorMoniker := args[3]
-	//mnemonic := args[4]
+	// mnemonic := args[4]
 
 	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {

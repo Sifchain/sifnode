@@ -14,6 +14,7 @@ func (CreateDispensationTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	createDispensation := dispensationtypes.NewMsgCreateDistribution(args.Sender, dispensationtypes.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, output, args.Sender.String())
 	return &createDispensation, args
 }
+
 func (CreateDispensationTx) GetName() string {
 	return "CREATE-DISPENSATION"
 }
