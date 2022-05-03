@@ -515,9 +515,6 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 		),
 	})
 
-	logger.Info("sifnode emitted sign prophecy event.",
-		"Message", msg)
-
 	return &types.MsgSignProphecyResponse{}, nil
 }
 

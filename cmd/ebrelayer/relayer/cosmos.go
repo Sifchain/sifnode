@@ -191,7 +191,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		}
 
 		for _, txLog := range block.TxsResults {
-			sub.SugaredLogger.Infow("block.TxsResults: ", "txsResults: ", block.TxsResults, "blockHeight", blockNumber)
+			sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 			for _, event := range txLog.Events {
 
 				claimType := getProphecyClaimType(event.GetType())
@@ -222,7 +222,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						"Received message from sifchain: ",
 						"msg", cosmosMsg,
 						"NetworkDescriptor", cosmosMsg.NetworkDescriptor,
-						"LastProcessedGlobalSequence", globalSequence,
+						"GlobalSequence", globalSequence,
 					)
 
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {

@@ -95,14 +95,16 @@ def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):
     # transactions to eth accounts. The numbers are transaction counts, where each transaction is for amount_per_tx.
     # Each sif account uses a dedicated send thread.
     transfer_table = [
-        [20],
-        # [1, 100, 100],
-        # [100, 100, 100],
-        # [10, 20, 30],
+        [100, 100, 100],
+        [100, 100, 100],
+        [100, 100, 100],
+        [10, 20, 30],
     ]
+    amount_per_tx = 1000100101
+    _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, None)
 
-def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, transfer_table: List[List[int]],
-    token_address: Optional[Address], isRowan: bool = False, randomize: Optional[random.Random] = None):
+def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int,
+    transfer_table: List[List[int]], token_address: Optional[Address], isRowan: bool = False, randomize: bool = None):
     # rowan is natvie token, denom not from contract in Ethereum
     if isRowan:
         token_denom = rowan
@@ -321,10 +323,8 @@ if __name__ == "__main__":
     basic_logging_setup()
     from siftool import test_utils
     ctx = test_utils.get_env_ctx()
-    # test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
-    # test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
-    # test_single_sif_to_multiple_eth_account_burn_eth(ctx)
-    # test_load_tx_ethbridge_burn_eth_short(ctx)
-    # test_load_tx_ethbridge_burn_eth(ctx)
-    # test_load_tx_ethbridge_burn_short(ctx)
-    test_load_tx_ethbridge_burn(ctx)
+    test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
+    test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
+    test_single_sif_to_multiple_eth_account_burn_eth(ctx)
+    test_load_tx_ethbridge_burn_eth_short(ctx)
+    test_load_tx_ethbridge_burn_eth(ctx)
