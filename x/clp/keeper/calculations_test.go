@@ -1111,7 +1111,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			lpunits:              sdk.NewUint(1099511627776),
 		},
 		{
-			name:                 "successful with slip",
+			name:                 "no asymmetric",
 			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
 			nativeAssetBalance:   sdk.NewUint(1048576),
 			externalAssetBalance: sdk.NewUint(1024123),
@@ -1121,6 +1121,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			adjustExternalToken:  false,
 			poolUnits:            sdk.NewUintFromString("1100094484982"),
 			lpunits:              sdk.NewUintFromString("582857206"),
+			errString:            errors.New("Cannot add liquidity asymmetrically"),
 		},
 		{
 			name:                 "successful - very big",
