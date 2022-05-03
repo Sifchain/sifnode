@@ -24,14 +24,14 @@ function getDigestNewProphecyClaim(data) {
     "uint256", // cosmosSenderSequence
     "address", // ethereumReceiver
     "address", // tokenAddress
-    // "uint256", // amount
+    "uint256", // amount
     // "string", // tokenName
     // "string", // tokenSymbol
     // "uint8", // tokenDecimals
+    "bool", // bridgetoken
     "int32", // networkDescriptor
-    // "bool", // doublePeg
     // "uint128", // nonce
-    // "string", // cosmosDenom
+    "string", // cosmosDenom
   ];
 
   if (types.length !== data.length) {
@@ -372,14 +372,14 @@ async function getValidClaim({
     senderSequence,
     recipientAddress,
     tokenAddress,
-    // amount,
+    amount,
     // tokenName,
     // tokenSymbol,
     // tokenDecimals,
+    bridgeToken,
     networkDescriptor,
-    // doublePeg,
     // nonce,
-    // cosmosDenom,
+    cosmosDenom,
   ]);
 
   const signatures = await signHash(validators, digest);
