@@ -189,7 +189,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
 	}
 
-	prophecyID := msg.GetProphecyID(bridgeToken, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress, msg.DenomHash)
+	prophecyID := msg.GetProphecyID(senderSequence, tokenMetadata.TokenAddress, tokenMetadata.Name, tokenMetadata.Symbol, uint8(tokenMetadata.Decimals), bridgeToken, k.GetGlobalSequence(ctx, msg.NetworkDescriptor))
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
@@ -257,7 +257,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	prophecyID := msg.GetProphecyID(bridgeToken, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress, msg.DenomHash)
+	prophecyID := msg.GetProphecyID(senderSequence, tokenMetadata.TokenAddress, tokenMetadata.Name, tokenMetadata.Symbol, uint8(tokenMetadata.Decimals), bridgeToken, k.GetGlobalSequence(ctx, msg.NetworkDescriptor))
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil

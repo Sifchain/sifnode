@@ -79,17 +79,28 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 }
 
 // GetProphecyID get prophecy ID for lock message
-func (msg MsgLock) GetProphecyID(bridgeToken bool, sequence, globalNonce uint64, tokenAddress string, denom string) []byte {
+func (msg MsgLock) GetProphecyID(
+	sequence uint64,
+	tokenAddress string,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	bridgeToken bool,
+	globalNonce uint64,
+) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
 		tokenAddress,
 		msg.Amount,
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
+		msg.NetworkDescriptor,
 		bridgeToken,
 		globalNonce,
-		msg.NetworkDescriptor,
-		denom,
+		msg.DenomHash,
 	)
 }
 
@@ -168,28 +179,53 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// GetProphecyID get prophecy ID for lock message
-func (msg MsgBurn) GetProphecyID(bridgeToken bool, sequence, globalNonce uint64, tokenAddress string, denom string) []byte {
-
+// GetProphecyID get prophecy ID for burn message
+func (msg MsgBurn) GetProphecyID(
+	sequence uint64,
+	tokenAddress string,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	bridgeToken bool,
+	globalNonce uint64,
+) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
 		tokenAddress,
 		msg.Amount,
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
+		msg.NetworkDescriptor,
 		bridgeToken,
 		globalNonce,
-		msg.NetworkDescriptor,
-		denom,
+		msg.DenomHash,
 	)
 }
 
 // ComputeProphecyID compute the prophecy id
-func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
-	bridgeToken bool, globalNonce uint64, networkDescriptor oracletypes.NetworkDescriptor, denom string) []byte {
+func ComputeProphecyID(
+	cosmosSender string,
+	sequence uint64,
+	ethereumReceiver string,
+	tokenAddress string,
+	amount sdk.Int,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	networkDescriptor oracletypes.NetworkDescriptor,
+	bridgeToken bool,
+	globalNonce uint64,
+	cosmosDenom string,
+) []byte {
 
 	bytesTy, _ := abi.NewType("bytes", "bytes", nil)
 	boolTy, _ := abi.NewType("bool", "bool", nil)
+	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
+	int32Ty, _ := abi.NewType("int32", "int32", nil)
+	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	addressTy, _ := abi.NewType("address", "address", nil)
 	stringTy, _ := abi.NewType("string", "string", nil)
@@ -214,7 +250,22 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 			Type: boolTy,
 		},
 		{
-			Type: uint256Ty,
+			Type: stringTy,
+		},
+		{
+			Type: stringTy,
+		},
+		{
+			Type: uint8Ty,
+		},
+		{
+			Type: int32Ty,
+		},
+		{
+			Type: boolTy,
+		},
+		{
+			Type: uint128Ty,
 		},
 		{
 			Type: stringTy,
@@ -227,9 +278,13 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		gethCommon.HexToAddress(ethereumReceiver),
 		gethCommon.HexToAddress(tokenAddress),
 		big.NewInt(amount.Int64()),
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
+		networkDescriptor,
 		bridgeToken,
-		big.NewInt(int64(networkDescriptor)),
-		denom,
+		globalNonce,
+		cosmosDenom,
 	)
 
 	hashBytes := crypto.Keccak256(bytes)
