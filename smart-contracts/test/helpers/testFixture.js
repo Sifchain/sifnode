@@ -25,12 +25,12 @@ function getDigestNewProphecyClaim(data) {
     "address", // ethereumReceiver
     "address", // tokenAddress
     "uint256", // amount
-    // "string", // tokenName
-    // "string", // tokenSymbol
-    // "uint8", // tokenDecimals
-    "bool", // bridgetoken
+    "string", // tokenName
+    "string", // tokenSymbol
+    "uint8", // tokenDecimals
     "int32", // networkDescriptor
-    // "uint128", // nonce
+    "bool", // bridgetoken
+    "uint256", // nonce
     "string", // cosmosDenom
   ];
 
@@ -373,12 +373,12 @@ async function getValidClaim({
     recipientAddress,
     tokenAddress,
     amount,
-    // tokenName,
-    // tokenSymbol,
-    // tokenDecimals,
-    bridgeToken,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
     networkDescriptor,
-    // nonce,
+    bridgeToken,
+    nonce,
     cosmosDenom,
   ]);
 

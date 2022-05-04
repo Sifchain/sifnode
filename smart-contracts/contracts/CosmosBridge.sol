@@ -132,14 +132,19 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    * @param _networkDescriptor Unique identifier of the network
    * @return A hash that uniquely identifies this Prophecy
    */
+
   function getProphecyID(
     bytes memory cosmosSender,
     uint256 cosmosSenderSequence,
     address payable ethereumReceiver,
     address tokenAddress,
     uint256 amount,
-    bool bridgeToken,
+    string memory tokenName,
+    string memory tokenSymbol,
+    uint8 tokenDecimals,
     int32 _networkDescriptor,
+    bool bridgeToken,
+    uint256 nonce,
     string memory denom
   ) public pure returns (uint256) {
     return
@@ -151,8 +156,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             ethereumReceiver,
             tokenAddress,
             amount,
-            bridgeToken,
+            tokenName,
+            tokenSymbol,
+            tokenDecimals,
             _networkDescriptor,
+            bridgeToken,
+            nonce,
             denom
           )
         )
@@ -309,8 +318,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       claimData.ethereumReceiver,
       claimData.tokenAddress,
       claimData.amount,
-      claimData.bridgeToken,
+      claimData.tokenName,
+      claimData.tokenSymbol,
+      claimData.tokenDecimals,
       claimData.networkDescriptor,
+      claimData.bridgeToken,
+      claimData.nonce,
       claimData.cosmosDenom
     );
 

@@ -350,8 +350,12 @@ describe("Test Cosmos Bridge", function () {
         state.recipient.address, // ethereumReceiver
         state.constants.zeroAddress, // tokenAddress
         state.amount, // amount
-        false, // bridge token
+        "Ether", // tokenName
+        "ETH", // tokenSymbol
+        state.decimals, // tokenDecimals
         state.networkDescriptor, // networkDescriptor
+        false, // bridge token
+        state.nonce, // nonce
         state.constants.denom.ether, // cosmos denom
       );
 
@@ -453,8 +457,12 @@ describe("Test Cosmos Bridge", function () {
         state.recipient.address, // ethereumReceiver
         state.token.address, // tokenAddress
         state.amount, // amount
-        true, // bridge token
+        state.name, // tokenName
+        state.symbol, // tokenSymbol
+        state.decimals, // tokenDecimals
         state.networkDescriptor, // networkDescriptor
+        true, // bridge token
+        state.nonce, // nonce
         state.constants.denom.one, // cosmos denom
       );
 
