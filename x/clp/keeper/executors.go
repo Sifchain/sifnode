@@ -200,7 +200,6 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool typ
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	sentAmountInt := k.UintToInt(sentAmount)
 	// Adding balance to users account ,Received Asset is the asset the user wants to receive
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
 	// Case 2 , Adding his XCT and deducting from  RWN:XCT pool
@@ -209,7 +208,7 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool typ
 	if err != nil {
 		return err
 	}
-	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sentAmountInt)
+	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, k.UintToInt(sentAmount))
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(sentCoin))
 	if err != nil {
 		return err
