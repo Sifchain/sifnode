@@ -225,7 +225,6 @@ func ComputeProphecyID(
 	boolTy, _ := abi.NewType("bool", "bool", nil)
 	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
 	int32Ty, _ := abi.NewType("int32", "int32", nil)
-	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	addressTy, _ := abi.NewType("address", "address", nil)
 	stringTy, _ := abi.NewType("string", "string", nil)
@@ -247,9 +246,6 @@ func ComputeProphecyID(
 			Type: uint256Ty,
 		},
 		{
-			Type: boolTy,
-		},
-		{
 			Type: stringTy,
 		},
 		{
@@ -265,7 +261,7 @@ func ComputeProphecyID(
 			Type: boolTy,
 		},
 		{
-			Type: uint128Ty,
+			Type: uint256Ty,
 		},
 		{
 			Type: stringTy,
@@ -283,7 +279,7 @@ func ComputeProphecyID(
 		tokenDecimals,
 		networkDescriptor,
 		bridgeToken,
-		globalNonce,
+		big.NewInt(int64(globalNonce)),
 		cosmosDenom,
 	)
 
