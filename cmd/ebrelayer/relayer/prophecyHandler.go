@@ -89,13 +89,8 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 		return
 	}
 
-<<<<<<< Updated upstream
 	prophecyInfoArray := GetAllPropheciesCompleted(sub.SifnodeGrpc, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
-=======
 	sub.SugaredLogger.Infow("Last submitted nonce", "LastSubmittedNonce", lastSubmittedNonce)
-
-	prophecyInfoArray := GetAllProphciesCompleted(sub.TmProvider, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
->>>>>>> Stashed changes
 
 	// send the prophecy by batch, maximum is 5 prophecies in each batch
 	// compute how many batches needed, last batch may less than 5
