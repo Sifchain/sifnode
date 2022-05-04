@@ -15,17 +15,8 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	if msg == nil {
 		return nil, errors.New("MsgCreatePool can not be nil")
 	}
-	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
-
-	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
+	extInt := k.UintToInt(msg.ExternalAssetAmount)
+	nativeInt := k.UintToInt(msg.NativeAssetAmount)
 
 	addr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
@@ -61,17 +52,8 @@ func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpu
 func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
 	// Verify user has coins to add liquidiy
-	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
-
-	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
+	extInt := k.UintToInt(msg.ExternalAssetAmount)
+	nativeInt := k.UintToInt(msg.NativeAssetAmount)
 
 	var coins sdk.Coins
 	if extInt != sdk.ZeroInt() {
@@ -205,15 +187,12 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	return nil
 
 }
-func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
+func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool types.Pool, msg types.MsgSwap) error {
 	err := k.SetPool(ctx, &finalPool)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	sentAmountInt, ok := k.ParseToInt(sentAmount)
-	if !ok {
-		return types.ErrUnableToParseInt
-	}
+	sentAmountInt := k.UintToInt(sentAmount)
 	// Adding balance to users account ,Received Asset is the asset the user wants to receive
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
 	// Case 2 , Adding his XCT and deducting from  RWN:XCT pool
@@ -230,7 +209,6 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types
 	return nil
 }
 
-// Use strings instead of Unit/Int in between conventions
-func (k Keeper) ParseToInt(nu string) (sdk.Int, bool) {
-	return sdk.NewIntFromString(nu)
+func (k Keeper) UintToInt(n sdk.Uint) sdk.Int {
+	return sdk.NewIntFromBigInt(n.BigInt())
 }
