@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"strconv"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -15,16 +16,14 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	if msg == nil {
 		return nil, errors.New("MsgCreatePool can not be nil")
 	}
-	extInt := k.UintToInt(msg.ExternalAssetAmount)
-	nativeInt := k.UintToInt(msg.NativeAssetAmount)
 
 	addr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, err
 	}
 
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, k.UintToInt(msg.ExternalAssetAmount))
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, k.UintToInt(msg.NativeAssetAmount))
 	if !k.bankKeeper.HasBalance(ctx, addr, externalAssetCoin) && !k.bankKeeper.HasBalance(ctx, addr, nativeAssetCoin) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -52,26 +51,35 @@ func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpu
 func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
 	// Verify user has coins to add liquidiy
-	extInt := k.UintToInt(msg.ExternalAssetAmount)
-	nativeInt := k.UintToInt(msg.NativeAssetAmount)
+	if msg.ExternalAssetAmount.IsZero() ||
+		msg.NativeAssetAmount.IsZero() {
+		var sb strings.Builder
+
+		sb.WriteString("Not enough tokens to add liquidty: ")
+		sb.WriteString(msg.ExternalAsset.String())
+		sb.WriteString(": ")
+		sb.WriteString(msg.ExternalAssetAmount.String())
+		sb.WriteString(", ")
+		sb.WriteString(types.GetSettlementAsset().Symbol)
+		sb.WriteString(": ")
+		sb.WriteString(msg.NativeAssetAmount.String())
+
+		return nil, sdkerrors.Wrap(types.ErrUnableToAddLiquidity, sb.String())
+	}
+
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, k.UintToInt(msg.ExternalAssetAmount))
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, k.UintToInt(msg.NativeAssetAmount))
 
 	var coins sdk.Coins
-	if extInt != sdk.ZeroInt() {
-		externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
-		coins = coins.Add(externalAssetCoin)
-	}
-
-	if nativeInt != sdk.ZeroInt() {
-		nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
-		coins = coins.Add(nativeAssetCoin)
-	}
+	coins = coins.Add(externalAssetCoin)
+	coins = coins.Add(nativeAssetCoin)
 
 	addr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, err
 	}
 
-	if !k.bankKeeper.HasBalance(ctx, addr, coins[0]) && !k.bankKeeper.HasBalance(ctx, addr, coins[1]) {
+	if !k.bankKeeper.HasBalance(ctx, addr, externalAssetCoin) && !k.bankKeeper.HasBalance(ctx, addr, nativeAssetCoin) {
 		return nil, types.ErrBalanceNotAvailable
 	}
 	// Send from user to pool
