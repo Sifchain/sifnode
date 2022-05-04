@@ -1330,9 +1330,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 	testcases := []struct {
 		name                   string
 		toRowan                bool
-		adjustExternalToken    bool
 		X, x, Y, y             sdk.Uint
-		normalizationFactor    sdk.Dec
 		pmtpCurrentRunningRate sdk.Dec
 		err                    error
 		errString              error
@@ -1340,8 +1338,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "adjust external token with rowan",
 			toRowan:                true,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    true,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
@@ -1351,8 +1347,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "adjust external token without rowan",
 			toRowan:                false,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    true,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
@@ -1362,8 +1356,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "x=0, X=0, Y=0",
 			toRowan:                true,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    false,
 			X:                      sdk.NewUint(0),
 			x:                      sdk.NewUint(0),
 			Y:                      sdk.NewUint(0),
@@ -1373,8 +1365,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "x=1, X=1, Y=1",
 			toRowan:                true,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    false,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
@@ -1384,8 +1374,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "x=1, X=1, Y=4",
 			toRowan:                true,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    false,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(4),
@@ -1395,8 +1383,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "x=1, X=1, Y=4, nf=10",
 			toRowan:                true,
-			normalizationFactor:    sdk.NewDec(10),
-			adjustExternalToken:    false,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(4),
