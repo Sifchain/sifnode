@@ -26,7 +26,6 @@ type Keeper struct {
 	cdc         codec.BinaryCodec // The wire codec for binary encoding/decoding.
 	storeKey    sdk.StoreKey      // Unexposed key to access store from sdk.Context
 	stakeKeeper types.StakingKeeper
-	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
 	currentHeight   int64
 }
