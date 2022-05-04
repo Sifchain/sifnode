@@ -1113,7 +1113,7 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			errString: errors.New("0: insufficient funds"),
 		},
 		{
-			name:                 "external asset is 0",
+			name:                 "external and native asset is 0",
 			createBalance:        true,
 			createPool:           true,
 			createLPs:            true,
