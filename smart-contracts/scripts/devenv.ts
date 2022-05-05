@@ -6,7 +6,7 @@ import {
   ValidatorValues,
   EbRelayerAccount,
 } from "../src/devenv/sifnoded"
-import { DeployedContractAddresses } from "../scripts/deploy_contracts"
+import { DeployedContractAddresses } from "./deploy_contracts_dev"
 import {
   SmartContractDeployer,
   SmartContractDeployResult,
