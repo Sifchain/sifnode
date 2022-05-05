@@ -99,12 +99,12 @@ class Geth:
     # when creating address/pubkey in Hardhat.
     #
     # This uses "geth account import", the keys are stored in datadir/keys. The alternative is to use "geth console"
-    # personal.createAccount().
+    # personal.createAccount(). This account will be visible in eth.accounts.
     #
     # Private key has is a hex string without "0x" prefix
     # Datadir cannot be the same datadir that a running geth uses
     # See "Creating an account by importing a private key": https://geth.ethereum.org/docs/interface/managing-your-accounts
-    def create_account(self, private_key: eth.PrivateKey, password: Optional[str] = None):
+    def create_account(self, private_key: eth.PrivateKey, password: Optional[str] = None) -> eth.Address:
         assert (not private_key.startswith("0x")) and (len(private_key) == 64)
         addr, key = eth.validate_address_and_private_key(None, private_key)
         passfile = self.cmd.mktempfile()
@@ -189,6 +189,9 @@ class Geth:
                 "byzantiumBlock": 0,
                 "constantinopleBlock": 0,
                 "petersburgBlock": 0,
+                "istanbulBlock": 0,
+                "berlinBlock": 0,
+                "londonBlock": 0,
                 "clique": {
                     "period": 5,
                     "epoch": 30000
@@ -199,26 +202,6 @@ class Geth:
             "extradata": extradata,
             "alloc": {k: {"balance": str(v)} for k, v in alloc.items()}
         }
-
-    def run_env(self, path):
-        signer_addr, signer_private_key = eth.web3_create_account()
-        signers = [eth.web3_create_account() for _ in range(10)]
-        ethereum_chain_id = 9999
-        if self.cmd.exists(path):
-            self.cmd.rmdir(path)
-        if not self.cmd.exists(path):
-            datadir = path
-            self.cmd.mkdir(datadir)
-            tmp_genesis_file = self.cmd.mktempfile()
-            try:
-                genesis = self.create_genesis_config_clique(ethereum_chain_id, [x[0] for x in signers], {signer_addr: 10**20})
-                self.cmd.write_text_file(tmp_genesis_file, json.dumps(genesis))
-                args = [self.program, "init", tmp_genesis_file] + \
-                    (["--datadir", datadir] if datadir else [])
-                # cmd = command.buildcmd(args=args)
-                return self.cmd.execst(args)
-            finally:
-                self.cmd.rm(tmp_genesis_file)
 
     def init(self, ethereum_chain_id: int, signers: Iterable[eth.Address],
         funds_alloc: Optional[Mapping[eth.Address, int]] = None
@@ -236,8 +219,9 @@ class Geth:
         finally:
             self.cmd.rm(tmp_genesis_file)
 
-    def buid_run_args(self, network_id: int, http_port: Optional[int] = None, dev: bool = False, mine: bool = False,
-        unlock: Optional[str] = None, password: Optional[str] = None, allow_insecure_unlock: bool = False,
+    def buid_run_args(self, network_id: int, http_port: Optional[int] = None, ws_port: Optional[int] = None,
+        dev: bool = False, mine: bool = False, unlock: Optional[str] = None, password: Optional[str] = None,
+        allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False
     ):
         args = [self.program, "--networkid", str(network_id), "--nodiscover"] + \
             (["--dev"] if dev else []) + \
@@ -246,7 +230,9 @@ class Geth:
             (["--password", password] if password else []) + \
             (["--allow-insecure-unlock"] if allow_insecure_unlock else []) + \
             (["--datadir", self.datadir] if self.datadir else []) + \
-            (["--http", "--http.addr", "0.0.0.0", "--http.port", str(http_port)])
+            (["--ws", "--ws.addr", "0.0.0.0", "--ws.port", str(ws_port), "--ws.api", "personal,eth,net,web3"] if ws_port is not None else []) + \
+            (["--http", "--http.addr", "0.0.0.0", "--http.port", str(http_port), "--http.api", "personal,eth,net,web3"] if http_port is not None else []) + \
+            (["--rpc.allow-unprotected-txs"] if rpc_allow_unprotected_txs else [])
         return command.buildcmd(args)
 
 

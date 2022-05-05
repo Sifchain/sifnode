@@ -780,6 +780,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
     # Destuctures a linear array of EVM accounts into:
     # [operator, owner, pauser, [validator-0, validator-1, ...], [...available...]]
     # proxy_admin is the same as operator.
+    # Keep this synched with deploy_contracts_dev.ts
     def signer_array_to_ethereum_accounts(self, accounts, n_validators):
         assert len(accounts) >= n_validators + 3
         operator, owner, pauser, *rest = accounts  # Take 3 and store remaining in rest
@@ -828,43 +829,83 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # See https://hardhat.org/advanced/hardhat-runtime-environment.html
         # The value is not used; instead a hardcoded constant 9999 is passed to ebrelayerWitnessBuilder.
         # Ask juniuszhou for details.
-        hardhat_chain_id = 9999
+        hardhat_chain_id = 9999  # Still hardcoded in hardhat.config.ts if we're using hardhat node
+        hardhat_port = 8545  # The port on which to listen for new connections (default: 8545)
 
-        hardhat_accounts = self.signer_array_to_ethereum_accounts(hardhat_default_accounts(), hardhat_validator_count)
+        # We need at least 4 accounts for operator, owner, pauser, validator1. They can be any accounts, but if we're
+        # running hardhat node (not use_geth_instead_of_hardhat), hardhat supplies its own hardcoded accounts and in
+        # that case we need to use the same ones here. If we're running more validators we need more than 4. The first
+        # account is also used for geth (if use_geth_instead_of_hardhat). They are used like this:
+        # [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts].
+        sample_eth_accounts = hardhat_default_accounts()
+        assert len(sample_eth_accounts) >= 4
+
+        hardhat_accounts = self.signer_array_to_ethereum_accounts(sample_eth_accounts, hardhat_validator_count)
 
         # Initialization of smart contracts (technically this is part of deployment)
-        operator_acct = hardhat_accounts["operator"]
+        operator_addr, operator_private_key = hardhat_accounts["operator"]
 
         if self.use_geth_instead_of_hardhat:
             # Note: if the contracts were compiled previously for hardhat, or if previous deployment failed, you might
-            # have to remove smart-contracts/{build,cache,artifacts}
-            operator_addr, operator_private_key = operator_acct
-            # geth_datadir = self.cmd.mktempdir()
-            geth_datadir = "/tmp/geth"
+            # have to remove smart-contracts/{build,cache,artifacts,.openzeppelin}
+            funds_alloc = {
+                # EnvCtx takes environment "ETH_ACCOUNT_OWNER_ADDRESS" for funding ETH accounts which is set from
+                # hardhat_accounts["owner"] Smart contract delpoyment however needs funds on 0'th account which is the
+                # operator. For now we fund both. TODO cleanup, allocate all ether to make EnvCtx fund accounts from ETH_ACCOUNT_OPERATOR_ADDRESS
+                hardhat_accounts["owner"][0]: 1000 * eth.ETH,
+                hardhat_accounts["operator"][0]: 1000 * eth.ETH,
+            }
+            geth_runner_acct = ten_sample_accounts[6]  # geth needs at least one account to run, and it has to be unlocked.
+            geth_http_port = 8546
+            geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
+            geth_datadir = "/tmp/geth"  # TODO self.cmd.mktempdir()
+            w3_url = eth.web3_host_port_url("localhost", geth_ws_port)
             self.cmd.rmdir(geth_datadir)
             self.cmd.mkdir(geth_datadir)
-            password_file = "/tmp/geth_password"
-            self.cmd.write_text_file(password_file, "")
             geth = Geth(self.cmd, datadir=geth_datadir)
-            for _, private_key in hardhat_default_accounts():
-                geth.create_account(private_key)
-            geth.init(ethereum_chain_id, [operator_addr], funds_alloc={operator_addr: 1000 * 10**18})
-            geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=8545, mine=True, unlock=operator_addr,
-                password=password_file, allow_insecure_unlock=True)
-            # geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=8545, dev=True)
-            geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
+            geth.create_account(geth_runner_acct[1])
+            geth.init(ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc)
+            tmp_password_file = self.cmd.mktempfile()
+            try:
+                self.cmd.write_text_file(tmp_password_file, "")
+                # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
+                #      transactions allowed over RPC" when sending transactions
+                geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
+                    mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
+                    rpc_allow_unprotected_txs=True)
+                geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
+                # Wait for geth to start before removing the password file
+                eth.web3_wait_for_connection_up(w3_url)
+            finally:
+                self.cmd.rm(tmp_password_file)
             hardhat_proc = geth_proc
+            hardhat_config_for_deploying_smart_contracts = "geth"
+            hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
+            hardhat_deploy_url = "http://localhost:{}/".format(geth_http_port)
+            # Accounts for deployments of smart contracts
+            # smart-contracts/scripts/deploy_contracts_dev.ts needs at least 4 accounts, they are used like this:
+            # const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts]
+            smart_contract_accounts = [private_key for _, private_key in sample_eth_accounts]
         else:
             hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
-            hardhat_port = 8545  # The port on which to listen for new connections (default: 8545)
             hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=hardhat_port)
             hardhat_proc = self.cmd.spawn_asynchronous_process(hardhat_exec_args, log_file=hardhat_log_file)
+            hardhat_config_for_deploying_smart_contracts = "localhost"
+            hardhat_deploy_url = None
+            # hardhat has a blockchain node that will support web socket communication but the node it communicates with
+            # internally must be HTTP
+            w3_url = "ws://localhost:{}".format(8545)
+            smart_contract_accounts = None  # Provided by hardhat (hardcoded)
+
+        w3_conn = eth.web3_connect(w3_url)
+        balances_check = {a[0]: w3_conn.eth.get_balance(a[0]) for a in sample_eth_accounts}
+        assert balances_check[hardhat_accounts["owner"][0]] >= 1 * eth.ETH
+        assert balances_check[hardhat_accounts["operator"][0]] >= 1 * eth.ETH
 
         hardhat.compile_smart_contracts()
-        peggy_sc_addrs = hardhat.deploy_smart_contracts(network="localhost")
 
-        w3_websocket_address = eth.web3_host_port_url("localhost", hardhat_port)
-        self.init_smart_contracts(w3_websocket_address, operator_acct, peggy_sc_addrs)
+        peggy_sc_addrs = hardhat.deploy_smart_contracts(url=hardhat_deploy_url,
+            network=hardhat_config_for_deploying_smart_contracts, accounts=smart_contract_accounts)
 
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"
@@ -898,13 +939,14 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     validator_mint_amounts, validator_power, seed_ip_address, tendermint_port, denom_whitelist_file,
                     admin_account_mint_amounts, registry_json, admin_account_name, ceth_symbol)
 
-        log.debug("ceth symbol is: {}".format(ceth_symbol))
+        log.debug("Smart contracts operator: {}".format(operator_addr))
+        log.debug("ceth symbol: {}".format(ceth_symbol))
         log.debug("Admin account address: {}".format(admin_account_address))  # tokens
         log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
 
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
         [relayer0_exec_args], [witness0_exec_args] = \
-        self.start_witnesses_and_relayers(w3_websocket_address, ethereum_chain_id, tcp_url,
+        self.start_witnesses_and_relayers(w3_url, ethereum_chain_id, tcp_url,
             chain_id, peggy_sc_addrs, hardhat_accounts["validators"], sifnode_validators, sifnode_relayers,
             sifnode_witnesses, symbol_translator_file)
 
@@ -921,7 +963,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 "home": sifnode_validator0_home,
             },
             "symbol_translator_file": symbol_translator_file,
-            "w3_websocket_address": w3_websocket_address,
+            "w3_url": w3_url,
             "evm_chain_id": ethereum_chain_id,
             "chain_id": chain_id,
             "validators": sifnode_validators,  # From yaml file generated by sifgen
@@ -936,22 +978,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         )
 
         return hardhat_proc, sifnoded_proc, relayer0_proc, witness0_proc
-
-    def init_smart_contracts(self, w3_url, operator_account, deployed_contract_addresses):
-        # TODO Looks like this is already done somewhere else...
-        # operator_addr, operator_private_key = operator_account
-        # w3_conn = eth.web3_wait_for_connection_up(w3_url)
-        # eth_tx = eth.EthereumTxWrapper(w3_conn, True)
-        # eth_tx.set_private_key(operator_addr, operator_private_key)
-        #
-        # # CosmosBridge doesn't have BridgeBank in its init and expects a separate setBridgeBank call. CosmosBridge
-        # # doesn't really work without BridgeBank.
-        # abi_provider = hardhat.HardhatAbiProvider(self.cmd, deployed_contract_addresses)
-        # abi, _, deployed_address = abi_provider.get_descriptor("CosmosBridge")
-        # cosmos_bridge = w3_conn.eth.contract(abi=abi, address=deployed_address)
-        # bridge_bank_addr = deployed_contract_addresses["BridgeBank"]
-        # txrcpt = eth_tx.transact_sync(cosmos_bridge.functions.setBridgeBank, operator_addr)(bridge_bank_addr)
-        return
 
     def init_sifchain(self, sifnoded_network_dir: str, sifnoded_log_file: TextIO, chain_id: str, hardhat_chain_id: int,
         validator_mint_amounts: cosmos.LegacyBalance, validator_power: int, seed_ip_address: str, tendermint_port: int,
@@ -1164,6 +1190,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     "bridgeBank": evm_smart_contract_addrs["BridgeBank"],
                     "bridgeRegistry": evm_smart_contract_addrs["BridgeRegistry"],
                     "rowanContract": evm_smart_contract_addrs["Rowan"],
+                    "blocklist": evm_smart_contract_addrs["Blocklist"],
                 }
             },
             "ethResults": {

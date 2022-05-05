@@ -29,11 +29,13 @@ def web3_create_account():
     account = web3.Web3().eth.account.create()
     return account.address, account.key.hex()[2:]
 
-def web3_connect(url, websocket_timeout=None):
-    kwargs = {}
-    if websocket_timeout is not None:
-        kwargs["websocket_timeout"] = websocket_timeout
-    return web3.Web3(web3.Web3.WebsocketProvider(url, **kwargs))
+def web3_connect(url):
+    if url.startswith("ws://"):
+        return web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
+    elif url.startswith("http://"):
+        return web3.Web3(web3.Web3.HTTPProvider(url))
+    else:
+        raise Exception("Invalid web3 URL '{}', at the moment only http:// and ws:// are supported.".format(url))
 
 def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
     start_time = time.time()

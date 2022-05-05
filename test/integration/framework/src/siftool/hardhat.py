@@ -33,12 +33,22 @@ class Hardhat:
     # - None:
     # - "localhost": connect to "http://127.0.0.1:8545" where "npx hardhat node" is running
     # - anything else: use the corresponding section from smart-contracts/hardhat.config.ts, element "networks"
-    def deploy_smart_contracts(self, network: Optional[str] = None) -> Mapping[str, eth.Address]:
+    def deploy_smart_contracts(self, url=None, network: Optional[str] = None,
+        ethereum_private_key: Optional[eth.PrivateKey] = None, accounts: Optional[Sequence[eth.PrivateKey]] = None
+    ) -> Mapping[str, eth.Address]:
+        assert on_peggy2_branch
         # If this fails with tsyringe complaining about missing "../../build" directory, do this:
         # rm -rf smart-contracts/artifacts.
-        args = ["hardhat", "run", "scripts/deploy_contracts.ts"] + \
+        args = ["hardhat", "run", "scripts/deploy_contracts_dev.ts"] + \
             (["--network", network] if network else [])
-        res = self.project.npx(args, cwd=project_dir("smart-contracts"))
+        env = {}
+        if url:
+            env["NETWORK_URL"] = url
+        if accounts:
+            env["ETH_ACCOUNTS"] = ",".join(accounts)
+        if ethereum_private_key:
+            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key
+        res = self.project.npx(args, cwd=project_dir("smart-contracts"), env=env or None)
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
         # been compiled, otherwise the output starts with 4 lines:
         #     Compiling 35 files with 0.5.16
@@ -50,14 +60,15 @@ class Hardhat:
         # not happen.
         # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
         stdout_lines = stdout(res).splitlines()
-        assert len(stdout_lines) == 2
-        assert stdout_lines[0] == "No need to generate any newer typings."
-        tmp = json.loads(stdout_lines[1])
+        assert len(stdout_lines) >= 2
+        assert stdout_lines[0] == "No need to generate any newer typings."  # This is printed by hardhat, the rest is from the script
+        tmp = json.loads(stdout_lines[-1])
         return {
             "BridgeBank": tmp["bridgeBank"],
             "BridgeRegistry": tmp["bridgeRegistry"],
             "CosmosBridge": tmp["cosmosBridge"],
             "Rowan": tmp["rowanContract"],
+            "Blocklist": tmp["blocklist"],
         }
 
 

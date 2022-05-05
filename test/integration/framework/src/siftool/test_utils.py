@@ -69,6 +69,7 @@ def get_env_ctx_peggy2():
         "CosmosBridge": tmp["cosmosBridge"],
         "BridgeRegistry": tmp["bridgeRegistry"],
         "Rowan": tmp["rowanContract"],
+        "Blocklist": tmp["blocklist"],
     }, deployed_contract_address_overrides)
     abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
 
@@ -85,7 +86,7 @@ def get_env_ctx_peggy2():
     rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
     w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
-    w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
+    w3_conn = eth.web3_connect(w3_url)
 
     sifnode_url = dot_env_vars["TCP_URL"]
     sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
@@ -112,7 +113,7 @@ def get_env_ctx_peggy2():
         "gasPrice": ctx.eth.w3_conn.eth.gas_price,
     }
     # Hardhat uses base fee of 7 + 1 GWEI
-    assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
+    # assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
 
     # Monkeypatching for peggy2 extras
     # TODO These are set in run_env.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
@@ -775,8 +776,8 @@ class EnvCtx:
         if fund_amount is not None:
             fund_from = fund_from or self.operator
             funder_balance_before = self.eth.get_eth_balance(fund_from)
-            assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: need {}, have {}" \
-                .format(fund_amount, funder_balance_before)
+            assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: {} needs {}, but has {}" \
+                .format(fund_from, fund_amount, funder_balance_before)
             target_balance_before = self.eth.get_eth_balance(address)
             difference = fund_amount - target_balance_before
             if difference > 0:
