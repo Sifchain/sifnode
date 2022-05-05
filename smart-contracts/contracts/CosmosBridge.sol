@@ -129,7 +129,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    * @param cosmosSenderSequence Nonce of the Cosmos account sending this prophecy
    * @param ethereumReceiver Destination address
    * @param tokenAddress Original address
+   * @param amount token transferred in this prophecy
+   * @param tokenName token name in bridge token contract
+   * @param tokenSymbol token symbol in bridge token contract
+   * @param tokenDecimals token decimal in bridge token contract
    * @param _networkDescriptor Unique identifier of the network
+   * @param bridgeToken if the token created by cosmos bridge
+   * @param nonce lock burn sequence recorded in sifnode side
+   * @param denom token identity in sifnode bank system
    * @return A hash that uniquely identifies this Prophecy
    */
 
