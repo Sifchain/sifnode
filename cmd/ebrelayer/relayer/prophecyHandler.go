@@ -90,7 +90,7 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 	}
 
 	prophecyInfoArray := GetAllPropheciesCompleted(sub.SifnodeGrpc, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
-	sub.SugaredLogger.Infow("Last submitted nonce", "LastSubmittedNonce", lastSubmittedNonce)
+	sub.SugaredLogger.Infow("Last submitted nonce", "LastSubmittedNonce", lastSubmittedNonce, "ProphecyInfoArraySize", len(prophecyInfoArray))
 
 	// send the prophecy by batch, maximum is 5 prophecies in each batch
 	// compute how many batches needed, last batch may less than 5

@@ -196,7 +196,9 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 
 				claimType := getProphecyClaimType(event.GetType())
 
-				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
+				sub.SugaredLogger.Infow("claimtype cosmos.go: ",
+					"blockHeight", tmpBlockNumber,
+					"claimType: ", claimType)
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
@@ -269,6 +271,8 @@ func getProphecyClaimType(eventType string) types.Event {
 		claimType = types.ProphecyCompleted
 	default:
 		claimType = types.Unsupported
+		logger := new(zap.SugaredLogger)
+		logger.Debugw("Received unsupported claimType", "eventTypeInput", eventType)
 	}
 	return claimType
 }
