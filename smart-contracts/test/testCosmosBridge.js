@@ -223,7 +223,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -264,7 +264,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -299,7 +299,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: "Ether",
@@ -333,7 +333,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: "Ether",
@@ -349,7 +349,14 @@ describe("Test Cosmos Bridge", function () {
         state.senderSequence, // cosmosSenderSequence
         state.recipient.address, // ethereumReceiver
         state.constants.zeroAddress, // tokenAddress
+        state.amount, // amount
+        "Ether", // tokenName
+        "ETH", // tokenSymbol
+        state.decimals, // tokenDecimals
         state.networkDescriptor, // networkDescriptor
+        false, // bridge token
+        state.nonce, // nonce
+        state.constants.denom.ether, // cosmos denom
       );
 
       // Doesn't revert, but user doesn't get the funds either
@@ -449,7 +456,14 @@ describe("Test Cosmos Bridge", function () {
         state.senderSequence, // cosmosSenderSequence
         state.recipient.address, // ethereumReceiver
         state.token.address, // tokenAddress
+        state.amount, // amount
+        state.name, // tokenName
+        state.symbol, // tokenSymbol
+        state.decimals, // tokenDecimals
         state.networkDescriptor, // networkDescriptor
+        true, // bridge token
+        state.nonce, // nonce
+        state.constants.denom.one, // cosmos denom
       );
 
       const expectedAddress = ethers.utils.getContractAddress({
@@ -490,7 +504,7 @@ describe("Test Cosmos Bridge", function () {
         recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
