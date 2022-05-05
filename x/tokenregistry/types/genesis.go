@@ -58,11 +58,11 @@ func ProdAdminAccounts() *AdminAccounts {
 			},
 			{
 				AdminType:    AdminType_TOKENREGISTRY,
-				AdminAddress: "sif1tpypxpppcf5lea47vcvgy09675nllmcucxydvu",
+				AdminAddress: "sif1npzemsc4s5gxpv2qt3na97tna03cj2h5xxe3cw",
 			},
 			{
 				AdminType:    AdminType_ETHBRIDGE,
-				AdminAddress: "sif1tpypxpppcf5lea47vcvgy09675nllmcucxydvu",
+				AdminAddress: "sif10wgwh7g3jktemd4d8jnswnf0zyk3hsq3uk3tff",
 			},
 		},
 	}

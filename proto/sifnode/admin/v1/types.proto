@@ -1,0 +1,24 @@
+syntax = "proto3";
+package sifnode.tokenregistry.v1;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/admin/types";
+
+message GenesisState {
+  AdminAccounts admin_accounts = 1;
+}
+
+enum AdminType {
+  CLPDEX = 0;
+  PMTPREWARDS = 1;
+  TOKENREGISTRY = 2;
+  ETHBRIDGE = 3;
+  ADMIN = 4;
+}
+
+message AdminAccount {
+  AdminType admin_type = 1;
+  string admin_address = 2;
+}
+
+message AdminAccounts { repeated AdminAccount admin_accounts = 1; }

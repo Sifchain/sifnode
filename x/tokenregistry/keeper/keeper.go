@@ -22,68 +22,6 @@ func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
 	}
 }
 
-func (k keeper) SetAdminAccount(ctx sdk.Context, account *types.AdminAccount) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetAdminAccountKey(*account)
-	store.Set(key, k.cdc.MustMarshal(account))
-}
-
-func (k keeper) IsAdminAccount(ctx sdk.Context, adminType types.AdminType, adminAccount sdk.AccAddress) bool {
-	accounts := k.GetAdminAccountsForType(ctx, adminType)
-	if len(accounts.AdminAccounts) == 0 {
-		return false
-	}
-	for _, account := range accounts.AdminAccounts {
-		if strings.EqualFold(account.AdminAddress, adminAccount.String()) {
-			return true
-		}
-	}
-	return false
-}
-
-func (k keeper) GetAdminAccountIterator(ctx sdk.Context) sdk.Iterator {
-	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.AdminAccountStorePrefix)
-}
-
-func (k keeper) GetAdminAccountsForType(ctx sdk.Context, adminType types.AdminType) *types.AdminAccounts {
-	var res types.AdminAccounts
-	iterator := k.GetAdminAccountIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(iterator)
-	for ; iterator.Valid(); iterator.Next() {
-		var al types.AdminAccount
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &al)
-		if al.AdminType == adminType {
-			res.AdminAccounts = append(res.AdminAccounts, &al)
-		}
-	}
-	return &res
-}
-
-func (k keeper) GetAdminAccounts(ctx sdk.Context) *types.AdminAccounts {
-	var res types.AdminAccounts
-	iterator := k.GetAdminAccountIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(iterator)
-	for ; iterator.Valid(); iterator.Next() {
-		var al types.AdminAccount
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &al)
-		res.AdminAccounts = append(res.AdminAccounts, &al)
-	}
-	return &res
-}
-
 func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
 	for _, requiredPermission := range requiredPermissions {
 		var has bool
