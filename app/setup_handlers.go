@@ -23,8 +23,7 @@ func SetupHandlers(app *SifchainApp) {
 		if err != nil {
 			panic(err)
 		}
-		// TODO: get destination address
-		address, err := sdk.AccAddressFromBech32("")
+		address, err := sdk.AccAddressFromBech32("sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3")
 		if err != nil {
 			panic(err)
 		}
