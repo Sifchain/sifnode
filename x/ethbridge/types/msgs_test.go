@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"math/big"
 	"reflect"
 	"testing"
@@ -15,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO: Update this value with the expected hash after fixing TestComputeTest
 var expectedProphecyID = []byte{0x11, 0x96, 0x5a, 0xd2, 0x8e, 0xe1, 0xf5, 0xdd, 0x50, 0xb5, 0xef, 0xcb, 0x6c, 0xb2, 0xa4, 0x7d, 0xf5, 0x55, 0x8b, 0x5b, 0xc5, 0x9b, 0x48, 0x51, 0x76, 0xf7, 0x67, 0x5c, 0xf, 0x85, 0xf3, 0xce}
 
 // Test that verifies compute prophecy works as expected AND that every field of claim data is correctly hashed in the prophecy ID
@@ -90,7 +88,6 @@ func TestComputeProphecyID(t *testing.T) {
 	res := reflect.ValueOf(claimData)
 	packedSlice := make([]interface{}, res.NumField())
 	for i := 0; i < res.NumField(); i++ {
-		fmt.Println(res.Field(i))
 		packedSlice[i] = res.Field(i).Interface()
 	}
 	packedData, err := arguments.Pack(packedSlice...)
