@@ -144,7 +144,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint8 tokenDecimals,
     int32 _networkDescriptor,
     bool bridgeToken,
-    uint256 nonce,
+    uint128 nonce,
     string memory denom
   ) public pure returns (uint256) {
     return

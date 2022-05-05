@@ -228,6 +228,7 @@ func ComputeProphecyID(
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	addressTy, _ := abi.NewType("address", "address", nil)
 	stringTy, _ := abi.NewType("string", "string", nil)
+	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
 
 	arguments := abi.Arguments{
 		{
@@ -261,7 +262,7 @@ func ComputeProphecyID(
 			Type: boolTy,
 		},
 		{
-			Type: uint256Ty,
+			Type: uint128Ty,
 		},
 		{
 			Type: stringTy,
