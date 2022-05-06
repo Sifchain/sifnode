@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// ProphecyLiftTime is used to clean outdated prophecy info from keeper
-	ProphecyLiftTime = 520000
+	// ProphecyLifeTime is used to clean outdated prophecy info from keeper
+	ProphecyLifeTime = 520000
 	// Max prophecy returned in one query
 	MaxProphecyQueryResult = 10
 )
@@ -52,9 +52,9 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
-
 	store.Set(storePrefix, k.cdc.MustMarshal(&prophecy))
+
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix), "Status", prophecy.Status)
 }
 
 // GetProphecyInfo return a prophecy's signatures
@@ -147,7 +147,7 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
 		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
-		if prophecyInfo.BlockNumber-currentHeight > ProphecyLiftTime {
+		if prophecyInfo.BlockNumber-currentHeight > ProphecyLifeTime {
 			storePrefix := append(types.SignaturePrefix, prophecyInfo.ProphecyId[:]...)
 			store.Delete(storePrefix)
 			storePrefix = k.getKeyViaNetworkDescriptorGlobalNonce(prophecyInfo.NetworkDescriptor, prophecyInfo.GlobalSequence)
@@ -165,6 +165,7 @@ func (k Keeper) GetProphecyIDByNetworkDescriptorGlobalNonce(ctx sdk.Context,
 
 	bz := store.Get(storeKey)
 	if bz == nil {
+		// This did not return results
 		return bz, false
 	}
 	return bz, true
