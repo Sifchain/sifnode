@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -285,34 +286,46 @@ func CalcSwapResult(toRowan bool,
 		return sdk.ZeroUint()
 	}
 
-	tmp := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
-	y := sdk.NewDecFromBigInt(&tmp)
-	pmtpFac := CalcPmtpFactor(pmtpCurrentRunningRate)
+	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
 
-	var res sdk.Dec
+	var res big.Rat
 	if toRowan {
-		res = y.Quo(pmtpFac) // res = y / pmtpFac
+		res.Quo(&y, &pmtpFac) // res = y / pmtpFac
 	} else {
-		res = y.Mul(pmtpFac) // res = y * pmtpFac
+		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
 	}
 
-	return sdk.NewUintFromBigInt(res.RoundInt().BigInt())
+	num := res.Num()
+	denom := res.Denom()
+	num.Quo(num, denom)
+
+	return sdk.NewUintFromBigInt(num)
 }
 
-func calcSwap(x, X, Y *big.Int) big.Int {
-	var s, d, d2, d3, y big.Int
+func calcSwap(x, X, Y *big.Int) big.Rat {
+	var s, d, d2, d3 big.Int
+	var numerator, denominator, y big.Rat
 
 	s.Add(X, x)    // s = X + x
 	d.Mul(&s, &s)  // d = (X + x)**2
 	d2.Mul(X, Y)   // d2 = X * Y
 	d3.Mul(x, &d2) // d3 = x * X * Y
-	y.Quo(&d3, &d) // y = d3 / d = (x * X * Y) / (X + x)**2
+
+	denominator.SetInt(&d)
+	numerator.SetInt(&d3)
+	y.Quo(&numerator, &denominator) // y = d3 / d = (x * X * Y) / (X + x)**2
 
 	return y
 }
 
-func CalcPmtpFactor(r sdk.Dec) sdk.Dec {
-	return sdk.NewDec(1).Add(r)
+func calcPmtpFactor(r sdk.Dec) big.Rat {
+	rRat := decToRat((&r))
+	one := big.NewRat(1, 1)
+
+	one.Add(one, &rRat)
+
+	return *one
 }
 
 func CalcSwapPriceResult(toRowan bool,
@@ -379,4 +392,15 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 		sdk.NewInt(types.MaxWbasis).String(),
 		sdk.ZeroInt(),
 	)
+}
+
+func decToRat(d *sdk.Dec) big.Rat {
+	var rat big.Rat
+
+	rat.SetInt(d.BigInt())
+	decimals := int64(math.Pow10(sdk.Precision)) // 10**18
+	denom := big.NewRat(decimals, 1)
+	rat.Quo(&rat, denom)
+
+	return rat
 }
