@@ -271,8 +271,13 @@ func getProphecyClaimType(eventType string) types.Event {
 		claimType = types.ProphecyCompleted
 	default:
 		claimType = types.Unsupported
-		logger := new(zap.SugaredLogger)
-		logger.Debugw("Received unsupported claimType", "eventTypeInput", eventType)
+		logConfig := zap.NewDevelopmentConfig()
+		logConfig.Sampling = nil
+		logConfig.Encoding = "json"
+		logger, _ := logConfig.Build()
+		sugaredLogger := logger.Sugar()
+		zap.RedirectStdLog(sugaredLogger.Desugar())
+		sugaredLogger.Debugw("Received unsupported claimType", "eventTypeInput", eventType)
 	}
 	return claimType
 }
