@@ -22,6 +22,60 @@ type msgServer struct {
 	Keeper
 }
 
+func (k msgServer) SetSymmetryThreshold(goCtx context.Context, threshold *types.MsgSetSymmetryThreshold) (*types.MsgSetSymmetryThresholdResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(threshold.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", threshold.Signer))
+	}
+
+	k.Keeper.SetSymmetryThreshold(sdk.UnwrapSDKContext(goCtx), threshold)
+
+	return &types.MsgSetSymmetryThresholdResponse{}, nil
+}
+
+// NewMsgServerImpl returns an implementation of the clp MsgServer interface
+// for the provided Keeper.
+func NewMsgServerImpl(keeper Keeper) types.MsgServer {
+	return &msgServer{Keeper: keeper}
+}
+
+var _ types.MsgServer = msgServer{}
+
+func (k msgServer) CancelUnlockLiquidity(goCtx context.Context, request *types.MsgCancelUnlock) (*types.MsgCancelUnlockResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	lp, err := k.Keeper.GetLiquidityProvider(ctx, request.ExternalAsset.Symbol, request.Signer)
+	if err != nil {
+		return nil, types.ErrLiquidityProviderDoesNotExist
+	}
+	// Prune unlocks
+	params := k.GetRewardsParams(ctx)
+	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+
+	err = k.UseUnlockedLiquidity(ctx, lp, request.Units, true)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCancelUnlock,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
+			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, request.Signer),
+		),
+	})
+	return &types.MsgCancelUnlockResponse{}, nil
+}
+
 func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.MsgUpdateStakingRewardParams) (*types.MsgUpdateStakingRewardParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -72,14 +126,6 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 	k.SetRewardParams(ctx, params)
 	return response, nil
 }
-
-// NewMsgServerImpl returns an implementation of the clp MsgServer interface
-// for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
-}
-
-var _ types.MsgServer = msgServer{}
 
 func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -469,12 +515,16 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 
+	if !msg.Asymmetry.IsZero() {
+		return nil, types.ErrAsymmetricRemove
+	}
+
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
-	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft))
+	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
 	if err != nil {
 		return nil, err
 	}
@@ -551,6 +601,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		sdk.NewEvent(
 			types.EventTypeRemoveLiquidity,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
 			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
 			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
@@ -600,7 +651,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WithdrawUnits)
 
-	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft))
+	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
 	if err != nil {
 		return nil, err
 	}
@@ -629,6 +680,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		sdk.NewEvent(
 			types.EventTypeRemoveLiquidity,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
 			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
 			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
@@ -664,7 +716,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance, normalizationFactor, adjustExternalToken)
+	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
+		nativeBalance, externalBalance, normalizationFactor, adjustExternalToken, symmetryThreshold)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -714,6 +768,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		return nil, types.ErrPoolDoesNotExist
 	}
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
+	symmetryThreshold := k.GetSymmetryThreshold(ctx)
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
@@ -721,7 +776,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		msg.NativeAssetAmount,
 		msg.ExternalAssetAmount,
 		normalizationFactor,
-		adjustExternalToken)
+		adjustExternalToken,
+		symmetryThreshold)
 	if err != nil {
 		return nil, err
 	}
@@ -734,6 +790,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		sdk.NewEvent(
 			types.EventTypeAddLiquidity,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyUnits, lpUnits.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(

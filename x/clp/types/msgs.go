@@ -22,6 +22,8 @@ var (
 	_ sdk.Msg = &MsgModifyPmtpRates{}
 	_ sdk.Msg = &MsgUpdatePmtpParams{}
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
+	_ sdk.Msg = &MsgSetSymmetryThreshold{}
+	_ sdk.Msg = &MsgCancelUnlock{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -35,7 +37,39 @@ var (
 	_ legacytx.LegacyMsg = &MsgModifyPmtpRates{}
 	_ legacytx.LegacyMsg = &MsgUpdatePmtpParams{}
 	_ legacytx.LegacyMsg = &MsgUpdateStakingRewardParams{}
+	_ legacytx.LegacyMsg = &MsgSetSymmetryThreshold{}
+	_ legacytx.LegacyMsg = &MsgCancelUnlock{}
 )
+
+func (m MsgCancelUnlock) Route() string {
+	return RouterKey
+}
+
+func (m MsgCancelUnlock) Type() string {
+	return "cancel_unlock"
+}
+
+func (m MsgCancelUnlock) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	if !m.ExternalAsset.Validate() {
+		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
+	}
+	return nil
+}
+
+func (m MsgCancelUnlock) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgCancelUnlock) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
 
 func (m MsgUpdateStakingRewardParams) Route() string {
 	return RouterKey
@@ -474,4 +508,32 @@ func (m MsgUnlockLiquidityRequest) Type() string {
 
 func (m MsgUnlockLiquidityRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgSetSymmetryThreshold) Route() string {
+	return RouterKey
+}
+
+func (m MsgSetSymmetryThreshold) Type() string {
+	return "set_symmetry_threshold"
+}
+
+func (m MsgSetSymmetryThreshold) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgSetSymmetryThreshold) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }

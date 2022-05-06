@@ -34,6 +34,7 @@ var (
 	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
 	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
 	RewardParamPrefix        = []byte{0x06}
+	SymmetryThresholdPrefix  = []byte{0x07}
 )
 
 // Generates a key for storing a specific pool
