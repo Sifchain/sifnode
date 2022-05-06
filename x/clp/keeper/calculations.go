@@ -287,14 +287,13 @@ func CalcSwapResult(toRowan bool,
 	}
 
 	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
-	pmtpFac := CalcPmtpFactor(pmtpCurrentRunningRate)
-	pmtpFacRat := decToRat((&pmtpFac))
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
 
 	var res big.Rat
 	if toRowan {
-		res.Quo(&y, &pmtpFacRat) // res = y / pmtpFac
+		res.Quo(&y, &pmtpFac) // res = y / pmtpFac
 	} else {
-		res.Mul(&y, &pmtpFacRat) // res = y * pmtpFac
+		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
 	}
 
 	num := res.Num()
@@ -320,8 +319,13 @@ func calcSwap(x, X, Y *big.Int) big.Rat {
 	return y
 }
 
-func CalcPmtpFactor(r sdk.Dec) sdk.Dec {
-	return sdk.NewDec(1).Add(r)
+func calcPmtpFactor(r sdk.Dec) big.Rat {
+	rRat := decToRat((&r))
+	one := big.NewRat(1, 1)
+
+	one.Add(one, &rRat)
+
+	return *one
 }
 
 func CalcSwapPriceResult(toRowan bool,
