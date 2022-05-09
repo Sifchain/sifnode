@@ -302,10 +302,7 @@ func CalcSwapResult(toRowan bool,
 		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
 	}
 
-	num := res.Num()
-	denom := res.Denom()
-	num.Quo(num, denom)
-
+	num := ratIntDiv(&res)
 	return sdk.NewUintFromBigInt(num)
 }
 
@@ -326,7 +323,7 @@ func calcSwap(x, X, Y *big.Int) big.Rat {
 }
 
 func calcPmtpFactor(r sdk.Dec) big.Rat {
-	rRat := decToRat((&r))
+	rRat := decToRat(&r)
 	one := big.NewRat(1, 1)
 
 	one.Add(one, &rRat)
@@ -409,4 +406,12 @@ func decToRat(d *sdk.Dec) big.Rat {
 	rat.Quo(&rat, denom)
 
 	return rat
+}
+
+func ratIntDiv(r *big.Rat) *big.Int {
+	var i big.Int
+
+	num := r.Num()
+	denom := r.Denom()
+	return i.Quo(num, denom)
 }
