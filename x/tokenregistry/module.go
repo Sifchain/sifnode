@@ -108,10 +108,6 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	if err != nil {
 		panic(err)
 	}
-	err = cfg.RegisterMigration(types.ModuleName, 2, m.MigrateToVer3)
-	if err != nil {
-		panic(err)
-	}
 }
 
 // NewAppModule creates a new AppModule object

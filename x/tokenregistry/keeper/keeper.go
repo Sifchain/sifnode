@@ -3,6 +3,7 @@ package keeper
 import (
 	"strings"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -11,15 +12,21 @@ import (
 )
 
 type keeper struct {
-	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	cdc         codec.BinaryCodec
+	storeKey    sdk.StoreKey
+	adminKeeper adminkeeper.Keeper
 }
 
-func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
+func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, adminKeeper adminkeeper.Keeper) types.Keeper {
 	return keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
+		cdc:         cdc,
+		storeKey:    storeKey,
+		adminKeeper: adminKeeper,
 	}
+}
+
+func (k keeper) GetAdminKeeper() adminkeeper.Keeper {
+	return k.adminKeeper
 }
 
 func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
