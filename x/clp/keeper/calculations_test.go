@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"errors"
+	"math/big"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -1398,6 +1399,114 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+func TestKeeper_RatToDec(t *testing.T) {
+	testcases := []struct {
+		name     string
+		num      *big.Int
+		denom    *big.Int
+		expected sdk.Dec
+	}{
+		{
+			name:     "small values",
+			num:      big.NewInt(1),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("0.333333333333333333"),
+		},
+		{
+			name:     "small values",
+			num:      big.NewInt(7),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("2.333333333333333333"),
+		},
+		{
+			name:     "negative numerator",
+			num:      big.NewInt(-7),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("-2.333333333333333333"),
+		},
+		{
+			name:     "big numbers",
+			num:      big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125.333333333333333333"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			var rat big.Rat
+			rat.SetFrac(tc.num, tc.denom)
+			y := clpkeeper.RatToDec(&rat)
+
+			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
+	testcases := []struct {
+		name      string
+		decimalsX uint8
+		decimalsY uint8
+		expected  big.Rat
+	}{
+		{
+			name:      "zero values",
+			decimalsX: 0,
+			decimalsY: 0,
+			expected:  *big.NewRat(1, 1),
+		},
+		{
+			name:      "zero X",
+			decimalsX: 0,
+			decimalsY: 2,
+			expected:  *big.NewRat(1, 100),
+		},
+		{
+			name:      "zero Y",
+			decimalsX: 2,
+			decimalsY: 0,
+			expected:  *big.NewRat(100, 1),
+		},
+		{
+			name:      "small numbers",
+			decimalsX: 18,
+			decimalsY: 14,
+			expected:  *big.NewRat(10000, 1),
+		},
+		{
+			name:      "small numbers",
+			decimalsX: 14,
+			decimalsY: 18,
+			expected:  *big.NewRat(1, 10000),
+		},
+		{
+			name:      "big X, small Y",
+			decimalsX: 255,
+			decimalsY: 0,
+			expected:  *big.NewRat(1, 1).SetInt(big.NewInt(1).Exp(big.NewInt(10), big.NewInt(255), nil)),
+		},
+		{
+			name:      "small X, big Y",
+			decimalsX: 0,
+			decimalsY: 255,
+			expected:  *big.NewRat(1, 1).SetFrac(big.NewInt(1), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(255), nil)),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			y := clpkeeper.CalcDenomChangeMultiplier(tc.decimalsX, tc.decimalsY)
+
+			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
 }

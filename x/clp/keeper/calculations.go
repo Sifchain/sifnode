@@ -328,6 +328,45 @@ func calcPmtpFactor(r sdk.Dec) big.Rat {
 	return *one
 }
 
+// Calculates the spot price in the preferred denominations accounting for PMTP
+func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, toRowan bool) (sdk.Dec, error) {
+	if Y.Equal(sdk.ZeroUint()) {
+		return sdk.ZeroDec(), types.ErrInValidAmount
+	}
+
+	var price big.Rat
+	price.SetFrac(Y.BigInt(), X.BigInt())
+
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
+	var pmtpPrice big.Rat
+	if toRowan {
+		pmtpPrice.Quo(&price, &pmtpFac) // pmtpPrice = price / pmtpFac
+	} else {
+		pmtpPrice.Mul(&price, &pmtpFac) // pmtpPrice = price * pmtpFac
+	}
+
+	dcm := CalcDenomChangeMultiplier(decimalsX, decimalsY)
+	pmtpPrice.Mul(&pmtpPrice, &dcm)
+
+	res := RatToDec(&pmtpPrice)
+	return res, nil
+}
+
+// Denom change multiplier = 10**decimalsX / 10**decimalsY
+func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
+	var res big.Rat
+	if decimalsX > decimalsY {
+		diff := decimalsX - decimalsY
+		multiplier := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**(decimalsX - decimalsY)
+		res.SetInt(multiplier)
+	} else {
+		diff := decimalsY - decimalsX
+		quot := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**(decimalsY - decimalsX)
+		res.SetFrac(big.NewInt(1), quot)
+	}
+	return res
+}
+
 func CalcSwapPriceResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
@@ -403,4 +442,19 @@ func decToRat(d *sdk.Dec) big.Rat {
 	rat.Quo(&rat, denom)
 
 	return rat
+}
+
+// The sdk.Dec returned by this method can exceed the sdk.Decimal maxDecBitLen
+func RatToDec(r *big.Rat) sdk.Dec {
+
+	num := r.Num()
+	denom := r.Denom() // big.Rat guarantees that denom is always > 0
+
+	multiplier := new(big.Int).Exp(big.NewInt(10), big.NewInt(sdk.Precision), nil) // 10**18
+
+	var d big.Int
+	d.Mul(num, multiplier)
+	d.Quo(&d, denom)
+
+	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision)
 }
