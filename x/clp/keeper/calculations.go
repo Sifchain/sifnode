@@ -296,10 +296,7 @@ func CalcSwapResult(toRowan bool,
 		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
 	}
 
-	num := res.Num()
-	denom := res.Denom()
-	num.Quo(num, denom)
-
+	num := ratIntDiv(&res)
 	return sdk.NewUintFromBigInt(num)
 }
 
@@ -320,7 +317,7 @@ func calcSwap(x, X, Y *big.Int) big.Rat {
 }
 
 func calcPmtpFactor(r sdk.Dec) big.Rat {
-	rRat := decToRat((&r))
+	rRat := decToRat(&r)
 	one := big.NewRat(1, 1)
 
 	one.Add(one, &rRat)
@@ -452,7 +449,6 @@ func decToRat(d *sdk.Dec) big.Rat {
 
 // The sdk.Dec returned by this method can exceed the sdk.Decimal maxDecBitLen
 func RatToDec(r *big.Rat) sdk.Dec {
-
 	num := r.Num()
 	denom := r.Denom() // big.Rat guarantees that denom is always > 0
 
@@ -463,4 +459,12 @@ func RatToDec(r *big.Rat) sdk.Dec {
 	d.Quo(&d, denom)
 
 	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision)
+}
+
+func ratIntDiv(r *big.Rat) *big.Int {
+	var i big.Int
+
+	num := r.Num()
+	denom := r.Denom()
+	return i.Quo(num, denom)
 }
