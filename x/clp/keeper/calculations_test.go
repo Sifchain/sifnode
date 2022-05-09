@@ -1432,7 +1432,7 @@ func TestKeeper_RatToDec(t *testing.T) {
 			name:     "big numbers",
 			num:      big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
 			denom:    big.NewInt(3),
-			expected: sdk.MustNewDecFromStr("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125.333333333333333333"),
+			expected: sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
 		},
 	}
 
@@ -1447,6 +1447,10 @@ func TestKeeper_RatToDec(t *testing.T) {
 			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
+}
+
+func getFirstArg(a *big.Int, b bool) *big.Int {
+	return a
 }
 
 func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
