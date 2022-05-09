@@ -2,7 +2,7 @@ package test
 
 import (
 	sifapp "github.com/Sifchain/sifnode/app"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -16,18 +16,14 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context, string) {
 	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	admin := sdk.AccAddress("addr1_______________")
-	state := tokenregistrytypes.GenesisState{
-		AdminAccounts: GetAdmins(admin.String()),
-		Registry:      nil,
-	}
-	app.TokenRegistryKeeper.InitGenesis(ctx, state)
+	app.AdminKeeper.InitGenesis(ctx, admintypes.GenesisState{AdminAccounts: GetAdmins(admin.String())})
 	return app, ctx, admin.String()
 }
 
-func GetAdmins(address string) *tokenregistrytypes.AdminAccounts {
-	return &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
+func GetAdmins(address string) *admintypes.AdminAccounts {
+	return &admintypes.AdminAccounts{AdminAccounts: []*admintypes.AdminAccount{
 		{
-			AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
+			AdminType:    admintypes.AdminType_TOKENREGISTRY,
 			AdminAddress: address,
 		},
 	}}
