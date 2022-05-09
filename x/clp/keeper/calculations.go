@@ -354,17 +354,23 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 // Denom change multiplier = 10**decimalsX / 10**decimalsY
 func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
+	diff := abs(int16(decimalsX) - int16(decimalsY))                       // |decimalsX - decimalsY|
+	dec := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**|decimalsX - decimalsY|
+
 	var res big.Rat
 	if decimalsX > decimalsY {
-		diff := decimalsX - decimalsY
-		multiplier := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**(decimalsX - decimalsY)
-		res.SetInt(multiplier)
+		return *res.SetInt(dec)
 	} else {
-		diff := decimalsY - decimalsX
-		quot := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**(decimalsY - decimalsX)
-		res.SetFrac(big.NewInt(1), quot)
+		return *res.SetFrac(big.NewInt(1), dec)
 	}
-	return res
+}
+
+func abs(a int16) uint16 {
+	if a < 0 {
+		return uint16(-a)
+	} else {
+		return uint16(a)
+	}
 }
 
 func CalcSwapPriceResult(toRowan bool,
