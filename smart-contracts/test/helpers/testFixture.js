@@ -72,6 +72,7 @@ async function setup({
   user,
   recipient,
   pauser,
+  unpauser,
   networkDescriptor,
   networkDescriptorMismatch = false,
   lockTokensOnBridgeBank = false,
@@ -85,6 +86,7 @@ async function setup({
     user,
     recipient,
     pauser,
+    unpauser,
     networkDescriptor,
     networkDescriptorMismatch,
   });
@@ -119,6 +121,7 @@ function initState({
   user,
   recipient,
   pauser,
+  unpauser,
   networkDescriptor,
   networkDescriptorMismatch,
 }) {
@@ -149,6 +152,7 @@ function initState({
     user,
     recipient,
     pauser,
+    unpauser,
     networkDescriptor,
     networkDescriptorMismatch,
     sender,
@@ -194,10 +198,11 @@ async function deployBaseContracts(state) {
       state.cosmosBridge.address,
       state.owner.address,
       state.pauser.address,
+      state.unpauser.address,
       state.networkDescriptorMismatch ? state.networkDescriptor + 2 : state.networkDescriptor,
     ],
     {
-      initializer: "initialize(address,address,address,address,int32)",
+      initializer: "initialize(address,address,address,address,address,int32)",
       unsafeAllow: ["delegatecall"],
     }
   );

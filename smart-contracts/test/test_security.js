@@ -22,6 +22,8 @@ describe("Security Test", function () {
   let signerAccounts;
   let operator;
   let owner;
+  let pauser;
+  let unpauser;
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
@@ -48,6 +50,7 @@ describe("Security Test", function () {
 
     owner = accounts[5];
     pauser = accounts[6];
+    unpauser = accounts[8];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = [
@@ -71,6 +74,7 @@ describe("Security Test", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
     });
@@ -83,6 +87,7 @@ describe("Security Test", function () {
           accounts[4].address, // was state.cosmosBridge.address
           accounts[5].address, // was owner.address
           accounts[6].address, // was pauser.address
+          accounts[8].address, // unpauser.address
           state.networkDescriptor + 1 // was state.networkDescriptor
         )
       ).to.be.fulfilled;
@@ -91,10 +96,12 @@ describe("Security Test", function () {
       expect(await state.bridgeBank.cosmosBridge()).to.equal(accounts[4].address);
       expect(await state.bridgeBank.owner()).to.equal(accounts[5].address);
       expect(await state.bridgeBank.pausers(accounts[6].address)).to.equal(true);
+      expect(await state.bridgeBank.unpausers(accounts[8].address)).to.equal(true);
       expect(await state.bridgeBank.networkDescriptor()).to.equal(state.networkDescriptor + 1);
 
       // Expect to keep the previous pauser too
       expect(await state.bridgeBank.pausers(pauser.address)).to.equal(true);
+      expect(await state.bridgeBank.unpausers(unpauser.address)).to.equal(true);
     });
 
     it("should not allow operator to call reinitialize a second time", async function () {
@@ -106,6 +113,7 @@ describe("Security Test", function () {
             state.cosmosBridge.address,
             owner.address,
             pauser.address,
+            unpauser.address,
             state.networkDescriptor
           )
       ).to.be.fulfilled;
@@ -118,6 +126,7 @@ describe("Security Test", function () {
             state.cosmosBridge.address,
             owner.address,
             pauser.address,
+            unpauser.address,
             state.networkDescriptor
           )
       ).to.be.rejectedWith("Already reinitialized");
@@ -132,6 +141,7 @@ describe("Security Test", function () {
             state.cosmosBridge.address,
             owner.address,
             pauser.address,
+            unpauser.address,
             state.networkDescriptor
           )
       ).to.be.revertedWith("!operator");
@@ -186,7 +196,7 @@ describe("Security Test", function () {
 
     it("should not be able to pause the contract if you are not the owner", async function () {
       await expect(state.bridgeBank.connect(userOne).pause()).to.be.revertedWith(
-        "PauserRole: caller does not have the Pauser role"
+        "PauserRole: caller does not have the pauser role"
       );
 
       expect(await state.bridgeBank.paused()).to.be.false;
@@ -214,9 +224,31 @@ describe("Security Test", function () {
       expect(await state.bridgeBank.pausers(userOne.address)).to.be.false;
     });
 
+    it("should be able to add a new unpauser if you are an unpauser", async function () {
+      expect(await state.bridgeBank.unpausers(unpauser.address)).to.be.true;
+      expect(await state.bridgeBank.unpausers(userOne.address)).to.be.false;
+
+      await state.bridgeBank.connect(unpauser).addUnpauser(userOne.address);
+
+      expect(await state.bridgeBank.unpausers(unpauser.address)).to.be.true;
+      expect(await state.bridgeBank.unpausers(userOne.address)).to.be.true;
+    });
+
+    it("should be able to renounce yourself as unpauser", async function () {
+      expect(await state.bridgeBank.unpausers(unpauser.address)).to.be.true;
+      expect(await state.bridgeBank.unpausers(userOne.address)).to.be.false;
+
+      await state.bridgeBank.connect(unpauser).addUnpauser(userOne.address);
+      expect(await state.bridgeBank.unpausers(unpauser.address)).to.be.true;
+      expect(await state.bridgeBank.unpausers(userOne.address)).to.be.true;
+
+      await state.bridgeBank.connect(userOne).renounceUnpauser();
+      expect(await state.bridgeBank.unpausers(userOne.address)).to.be.false;
+    });
+
     it("should be able to pause and then unpause the contract", async function () {
       // CosmosBank initial values
-      await expect(state.bridgeBank.connect(pauser).unpause()).to.be.revertedWith(
+      await expect(state.bridgeBank.connect(unpauser).unpause()).to.be.revertedWith(
         "Pausable: not paused"
       );
 
@@ -224,7 +256,7 @@ describe("Security Test", function () {
       await expect(state.bridgeBank.connect(pauser).pause()).to.be.revertedWith("Pausable: paused");
 
       expect(await state.bridgeBank.paused()).to.be.true;
-      await state.bridgeBank.connect(pauser).unpause();
+      await state.bridgeBank.connect(unpauser).unpause();
 
       expect(await state.bridgeBank.paused()).to.be.false;
     });
@@ -270,6 +302,7 @@ describe("Security Test", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
     });
@@ -312,6 +345,7 @@ describe("Security Test", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
     });
@@ -366,6 +400,7 @@ describe("Security Test", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
         networkDescriptorMismatch: true,
       });
@@ -439,6 +474,7 @@ describe("Security Test", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
 

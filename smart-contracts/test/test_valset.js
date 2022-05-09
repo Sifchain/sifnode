@@ -18,6 +18,8 @@ describe("Test Valset", function () {
   let signerAccounts;
   let operator;
   let owner;
+  let pauser;
+  let unpauser;
   const consensusThreshold = 80;
   let initialPowers;
   let initialValidators;
@@ -41,6 +43,7 @@ describe("Test Valset", function () {
 
       owner = accounts[5];
       pauser = accounts[6];
+      unpauser = accounts[8];
 
       initialPowers = [25, 25, 25, 25];
       initialValidators = signerAccounts.slice(0, 4);
@@ -58,6 +61,7 @@ describe("Test Valset", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
     });
@@ -115,6 +119,7 @@ describe("Test Valset", function () {
           user: userOne,
           recipient: userThree,
           pauser,
+          unpauser,
           networkDescriptor,
         });
 
@@ -208,6 +213,7 @@ describe("Test Valset", function () {
           user: userOne,
           recipient: userThree,
           pauser,
+          unpauser,
           networkDescriptor,
         });
 
@@ -270,6 +276,7 @@ describe("Test Valset", function () {
           user: userOne,
           recipient: userThree,
           pauser,
+          unpauser,
           networkDescriptor,
         });
       });
@@ -334,6 +341,7 @@ describe("Test Valset", function () {
           user: userOne,
           recipient: userThree,
           pauser,
+          unpauser,
           networkDescriptor,
         });
 
@@ -453,6 +461,7 @@ describe("Test Valset", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
 

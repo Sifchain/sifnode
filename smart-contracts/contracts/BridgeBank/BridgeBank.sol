@@ -73,6 +73,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _cosmosBridgeAddress The CosmosBridge contract's address
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
+   * @param _unpauser Can unpause the system
    * @param _networkDescriptor Indentifies the connected network
    */
   function initialize(
@@ -80,6 +81,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
+    address _unpauser,
     int32 _networkDescriptor
   ) public {
     require(!_initialized, "Init");
@@ -92,7 +94,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
 
     _initialized = true;
 
-    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor);
+    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _unpauser, _networkDescriptor);
   }
 
   /**
@@ -101,6 +103,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _cosmosBridgeAddress The CosmosBridge contract's address
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
+   * @param _unpauser Can unpause the system
    * @param _networkDescriptor Indentifies the connected network
    */
   function reinitialize(
@@ -108,13 +111,14 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
+    address _unpauser,
     int32 _networkDescriptor
   ) public onlyOperator {
     require(!_reinitialized, "Already reinitialized");
 
     _reinitialized = true;
 
-    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor);
+    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _unpauser, _networkDescriptor);
   }
 
   /**
@@ -123,6 +127,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _cosmosBridgeAddress The CosmosBridge contract's address
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
+   * @param _unpauser Can unpause the system
    * @param _networkDescriptor Indentifies the connected network
    */
   function _initialize(
@@ -130,9 +135,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
+    address _unpauser,
     int32 _networkDescriptor
   ) private {
-    Pausable._pausableInitialize(_pauser);
+    Pausable._pausableInitialize(_pauser, _unpauser);
 
     operator = _operator;
     cosmosBridge = _cosmosBridgeAddress;

@@ -21,6 +21,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
   let operator;
   let owner;
   let pauser;
+  let unpauser;
 
   // Consensus threshold of 70%
   const consensusThreshold = 70;
@@ -40,6 +41,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
 
     owner = accounts[5];
     pauser = accounts[6];
+    unpauser = accounts[8];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = [userOne.address, userTwo.address, userThree.address, userFour.address];
@@ -58,6 +60,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       user: userOne,
       recipient: userThree,
       pauser,
+      unpauser,
       networkDescriptor,
     });
 

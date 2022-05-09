@@ -39,6 +39,7 @@ describe("Fail Hard Token", function () {
       user: userOne,
       recipient: userTwo,
       pauser: accounts[8],
+      unpauser: accounts[9],
       networkDescriptor: 1,
     });
     state.amount = 1000;

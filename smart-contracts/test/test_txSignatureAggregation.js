@@ -28,6 +28,7 @@ describe("Gas Cost Tests", function () {
   let operator;
   let owner;
   let pauser;
+  let unpauser;
 
   // Consensus threshold of 70%
   const consensusThreshold = 70;
@@ -47,6 +48,7 @@ describe("Gas Cost Tests", function () {
 
     owner = accounts[5];
     pauser = accounts[6];
+    unpauser = accounts[8];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = [userOne.address, userTwo.address, userThree.address, userFour.address];
@@ -65,6 +67,7 @@ describe("Gas Cost Tests", function () {
       user: userOne,
       recipient: userThree,
       pauser,
+      unpauser,
       networkDescriptor,
     });
 

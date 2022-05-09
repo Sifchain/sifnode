@@ -22,6 +22,7 @@ describe("CosmosBridge Upgrade", function () {
   let networkDescriptor;
   let state;
   let pauser;
+  let unpauser;
   let MockCosmosBridgeUpgrade;
 
   before(async function () {
@@ -39,6 +40,7 @@ describe("CosmosBridge Upgrade", function () {
 
     owner = accounts[5];
     pauser = accounts[6];
+    unpauser = accounts[8];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
@@ -58,6 +60,7 @@ describe("CosmosBridge Upgrade", function () {
         user: userOne,
         recipient: userThree,
         pauser,
+        unpauser,
         networkDescriptor,
       });
 

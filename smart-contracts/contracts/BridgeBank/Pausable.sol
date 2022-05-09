@@ -29,8 +29,9 @@ contract Pausable is PauserRole {
   /**
    * @dev Initializes adding a new Pauser
    */
-  function _pausableInitialize(address _user) internal {
-    _addPauser(_user);
+  function _pausableInitialize(address _pauser, address _unpauser) internal {
+    _addPauser(_pauser);
+    _addUnpauser(_unpauser);
     _paused = false;
   }
 
@@ -78,7 +79,7 @@ contract Pausable is PauserRole {
    * @notice Unpauses the contract
    * @dev Called by a pauser to unpause contract
    */
-  function unpause() external onlyPauser whenPaused {
+  function unpause() external onlyUnpauser whenPaused {
     togglePause();
     emit Unpaused(msg.sender);
   }
