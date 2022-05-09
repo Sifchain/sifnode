@@ -231,11 +231,7 @@ func calculateStakeUnits(P, R, A, r, RTimesa, rTimesA *big.Int, slipAdslipAdjust
 	stakeUnits.Quo(&n, &d)
 	stakeUnits.Mul(&stakeUnits, slipAdslipAdjustment)
 
-	num := stakeUnits.Num()
-	denom := stakeUnits.Denom()
-	num.Quo(num, denom)
-
-	return *num
+	return *ratIntDiv(&stakeUnits)
 }
 
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
