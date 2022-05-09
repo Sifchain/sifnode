@@ -1,5 +1,5 @@
 syntax = "proto3";
-package sifnode.tokenregistry.v1;
+package sifnode.admin.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/admin/v1/types.proto";
