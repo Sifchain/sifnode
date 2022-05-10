@@ -22,7 +22,6 @@ jobs:
               workflow_id: 'sifnode-release.yml',
               ref: 'main',
               inputs: {
-                branch: ${GITHUB_REF##*/},
                 release_tag: ${{ steps.release_tag.outputs.name }}
               }
             })
