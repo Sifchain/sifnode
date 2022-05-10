@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -33,12 +35,13 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) {
 			panic(err)
 		}
 		peggyTwoEntry := entry
+		peggy2denom := types.GetDenom(migration.networkDescriptor, migration.tokenContractAddress)
 		entry.Permissions = []tkrtypes.Permission{
 			tkrtypes.Permission_IBCIMPORT,
 		}
+		entry.Peggy_2Denom = peggy2denom
 		m.keeper.SetToken(ctx, entry)
-		peggyTwoEntry.Denom = "sifBridge" + migration.evmChainID + migration.tokenAddress
-		peggyTwoEntry.Peggy_1Denom = entry.Denom
+		peggyTwoEntry.Denom = peggy2denom
 		m.keeper.SetToken(ctx, peggyTwoEntry)
 	}
 }
@@ -50,17 +53,17 @@ func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
 }
 
 type DenomMigrator struct {
-	denom        string
-	evmChainID   string
-	tokenAddress string
+	denom                string
+	networkDescriptor    oracleTypes.NetworkDescriptor
+	tokenContractAddress types.EthereumAddress
 }
 
 func GetDenomMigrationList() []DenomMigrator {
 	return []DenomMigrator{
 		{
-			denom:        "ceth",
-			evmChainID:   "0001",
-			tokenAddress: "0x0000000000000000000000000000000000000000",
+			denom:                "ceth",
+			networkDescriptor:    oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+			tokenContractAddress: types.NewEthereumAddress("0x0000000000000000000000000000000000000000"),
 		},
 	}
 }
