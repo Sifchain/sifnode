@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"math"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -296,7 +295,7 @@ func CalcSwapResult(toRowan bool,
 		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
 	}
 
-	num := ratIntDiv(&res)
+	num := RatIntDiv(&res)
 	return sdk.NewUintFromBigInt(num)
 }
 
@@ -317,7 +316,7 @@ func calcSwap(x, X, Y *big.Int) big.Rat {
 }
 
 func calcPmtpFactor(r sdk.Dec) big.Rat {
-	rRat := decToRat(&r)
+	rRat := DecToRat(&r)
 	one := big.NewRat(1, 1)
 
 	one.Add(one, &rRat)
@@ -389,23 +388,4 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 		sdk.NewInt(types.MaxWbasis).String(),
 		sdk.ZeroInt(),
 	)
-}
-
-func decToRat(d *sdk.Dec) big.Rat {
-	var rat big.Rat
-
-	rat.SetInt(d.BigInt())
-	decimals := int64(math.Pow10(sdk.Precision)) // 10**18
-	denom := big.NewRat(decimals, 1)
-	rat.Quo(&rat, denom)
-
-	return rat
-}
-
-func ratIntDiv(r *big.Rat) *big.Int {
-	var i big.Int
-
-	num := r.Num()
-	denom := r.Denom()
-	return i.Quo(num, denom)
 }
