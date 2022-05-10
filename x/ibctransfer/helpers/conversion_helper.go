@@ -174,7 +174,7 @@ func ReducePrecision(dec sdk.Dec, po uint64) sdk.Dec {
 }
 
 func IsPeggy1Denom(entry *tokenregistrytypes.RegistryEntry) bool {
-	if entry.Peggy_2Denom != "" && entry.Peggy_2Denom != entry.Denom {
+	if entry.Peggy_2Denom != entry.Denom {
 		return true
 	}
 	return false
@@ -185,6 +185,7 @@ func MigrateToPeggy2Denom(ctx sdk.Context,
 	bankKeeper sdktransfertypes.BankKeeper,
 	receiver sdk.AccAddress,
 	amount sdk.Int) error {
+	// Burn peggy 1 coins
 	peggy1coins := sdk.NewCoins(sdk.NewCoin(entry.Denom, amount))
 	err := bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, peggy1coins)
 	if err != nil {
@@ -194,7 +195,7 @@ func MigrateToPeggy2Denom(ctx sdk.Context,
 	if err != nil {
 		return err
 	}
-
+	// Mint Equivalent amount of peggy 2 coins
 	peggy2coins := sdk.NewCoins(sdk.NewCoin(entry.Peggy_2Denom, amount))
 	err = bankKeeper.MintCoins(ctx, tokenregistrytypes.ModuleName, peggy2coins)
 	if err != nil {
