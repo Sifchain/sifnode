@@ -107,26 +107,27 @@ func ExecConvForIncomingCoins(
 	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
 	data sdktransfertypes.FungibleTokenPacketData,
-) error {
+) (sdk.Int, error) {
+
 	// decode the receiver address
 	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
 	if err != nil {
-		return err
+		return sdk.ZeroInt(), err
 	}
 	amount, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
-		return errors.New("Unable to get string amount")
+		return sdk.ZeroInt(), errors.New("Unable to get string amount")
 	}
 	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
-		return err
+		return sdk.ZeroInt(), err
 	}
 	// burn ibcdenom coins
 	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
-		return err
+		return sdk.ZeroInt(), err
 	}
 	convAmount := amount
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
@@ -135,7 +136,7 @@ func ExecConvForIncomingCoins(
 		// This is the reduced precision xToken coming in , so we know for sure conversion to uint64 will not cause problems
 		convAmount, err = ConvertIncomingCoins(data.Amount, diff)
 		if err != nil {
-			return err
+			return sdk.ZeroInt(), err
 		}
 		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	}
@@ -147,7 +148,7 @@ func ExecConvForIncomingCoins(
 		// counterparty module. The bug may occur in bank or any part of the code that allows
 		// the escrow address to be drained. A malicious counterparty module could drain the
 		// escrow address by allowing more tokens to be sent back then were escrowed.
-		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
+		return sdk.ZeroInt(), sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -159,7 +160,7 @@ func ExecConvForIncomingCoins(
 			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convertToDenomEntry.Denom),
 		),
 	)
-	return nil
+	return convAmount, nil
 }
 
 func IncreasePrecision(dec sdk.Dec, po uint64) sdk.Dec {
@@ -170,4 +171,38 @@ func IncreasePrecision(dec sdk.Dec, po uint64) sdk.Dec {
 func ReducePrecision(dec sdk.Dec, po uint64) sdk.Dec {
 	p := sdk.NewDec(10).Power(po)
 	return dec.QuoTruncate(p)
+}
+
+func IsPeggy1Denom(entry *tokenregistrytypes.RegistryEntry) bool {
+	if entry.Peggy_2Denom != "" && entry.Peggy_2Denom != entry.Denom {
+		return true
+	}
+	return false
+}
+
+func MigrateToPeggy2Denom(ctx sdk.Context,
+	entry *tokenregistrytypes.RegistryEntry,
+	bankKeeper sdktransfertypes.BankKeeper,
+	receiver sdk.AccAddress,
+	amount sdk.Int) error {
+	peggy1coins := sdk.NewCoins(sdk.NewCoin(entry.Denom, amount))
+	err := bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, peggy1coins)
+	if err != nil {
+		return err
+	}
+	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, peggy1coins)
+	if err != nil {
+		return err
+	}
+
+	peggy2coins := sdk.NewCoins(sdk.NewCoin(entry.Peggy_2Denom, amount))
+	err = bankKeeper.MintCoins(ctx, tokenregistrytypes.ModuleName, peggy2coins)
+	if err != nil {
+		return err
+	}
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, tokenregistrytypes.ModuleName, receiver, peggy2coins)
+	if err != nil {
+		return err
+	}
+	return nil
 }
