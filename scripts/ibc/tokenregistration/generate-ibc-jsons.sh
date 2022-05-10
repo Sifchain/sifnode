@@ -404,3 +404,39 @@ sifnoded q tokenregistry generate -o json \
 echo "\n\ngenerated entry for $BITCANNA_CHAIN_ID"
 
 cat $SIFCHAIN_ID/ubcna.json | jq
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom=uiov \
+	--token_ibc_counterparty_chain_id=$STARNAME_CHAIN_ID \
+  --token_ibc_channel_id=$STARNAME_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$STARNAME_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Starname" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/uiov.json
+
+echo "\n\ngenerated entry for $STARNAME_CHAIN_ID"
+
+cat $SIFCHAIN_ID/uiov.json | jq
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom=aevmos \
+	--token_ibc_counterparty_chain_id=$EVMOS_CHAIN_ID \
+  --token_ibc_channel_id=$EVMOS_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$EVMOS_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Evmos" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/aevmos.json
+
+echo "\n\ngenerated entry for $EVMOS_CHAIN_ID"
+
+cat $SIFCHAIN_ID/aevmos.json | jq
