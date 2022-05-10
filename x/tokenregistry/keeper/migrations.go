@@ -38,6 +38,7 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) {
 		}
 		m.keeper.SetToken(ctx, entry)
 		peggyTwoEntry.Denom = "sifBridge" + migration.evmChainID + migration.tokenAddress
+		peggyTwoEntry.Peggy_1Denom = entry.Denom
 		m.keeper.SetToken(ctx, peggyTwoEntry)
 	}
 }
