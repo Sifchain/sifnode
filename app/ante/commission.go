@@ -76,16 +76,6 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 				sdkerrors.ErrInvalidRequest,
 				"cannot delegate to validator with commission less than minimum of %s", minCommission)
 		}
-	case *disttypes.MsgWithdrawDelegatorReward:
-		val, err := vcd.getValidator(ctx, msg.ValidatorAddress)
-		if err != nil {
-			return err
-		}
-		if val.GetCommission().LT(minCommission) {
-			return sdkerrors.Wrapf(
-				sdkerrors.ErrInvalidRequest,
-				"cannot withdraw rewards from validator with commission less than minimum of %s, undelegate or redelegate to another validator", minCommission)
-		}
 	}
 	return nil
 }
