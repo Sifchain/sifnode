@@ -515,9 +515,10 @@ func NewSifApp(
 	app.MountTransientStores(tkeys)
 	app.MountMemoryStores(memKeys)
 	anteHandler, err := sifchainAnte.NewAnteHandler(
-		ante.HandlerOptions{
+		sifchainAnte.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
+			StakingKeeper:   app.StakingKeeper,
 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeegrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
