@@ -215,33 +215,27 @@ async function connectToContracts() : Promise<StateContracts> {
   print("yellow", `🕑 Connecting to contracts...`);
   
   // Create an instance of BridgeBank from the deployed code
-  const { contract: bridgeBank } = await support.getDeployedContract<BridgeBank>(
-    DEPLOYMENT_NAME,
+  const { instance: bridgeBank } = await support.getDeployedContract<BridgeBank>(
     "BridgeBank",
-    CHAIN_ID
+    BRIDGEBANK_ADDRESS
   );
 
   // Get the cosmosBridgeAddress and Blocklist Address
   const cosmosBridgeAddress = await bridgeBank.cosmosBridge();
   
   // Create an instance of CosmosBridge
-  const { contract: cosmosBridge } = await support.getDeployedContract<CosmosBridge>(
-    DEPLOYMENT_NAME,
+  const { instance: cosmosBridge } = await support.getDeployedContract<CosmosBridge>(
     "CosmosBridge",
-    CHAIN_ID
+    cosmosBridgeAddress
   );
   
-  // Create an instance of the Blocklist
-  const blocklistFactory = await ethers.getContractFactory("Blocklist");
-  
-  let blocklist: Blocklist;
-  
-  if (BLOCKLIST_ADDRESS !== "") {
-    blocklist = await blocklistFactory.attach(BLOCKLIST_ADDRESS);
-  } else {
-    const blocklistAddress = await bridgeBank.blocklist();
-    blocklist = await blocklistFactory.attach(blocklistAddress);
-  }
+  const blocklistAddress = BLOCKLIST_ADDRESS !== "" ? BLOCKLIST_ADDRESS : await bridgeBank.blocklist();
+
+  const { instance: blocklist } = await support.getDeployedContract<Blocklist>(
+    "Blocklist",
+    blocklistAddress
+  );
+
   print("green", `✅ Contracts connected`);
   
   return {

@@ -38,7 +38,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: false,
       initialBaseFeePerGas: runCoverage ? 0 : 875000000,
-      chainId: 9999,
+      chainId: 1,
       mining: {
         auto: true,
         interval: 200,
