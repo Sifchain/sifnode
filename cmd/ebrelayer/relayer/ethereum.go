@@ -56,6 +56,7 @@ type EthereumSub struct {
 	CliCtx                  client.Context
 	PrivateKey              *ecdsa.PrivateKey
 	SugaredLogger           *zap.SugaredLogger
+	SifnodeGrpc             string
 }
 
 // NewKeybase create a new keybase instance
@@ -79,6 +80,7 @@ func NewEthereumSub(
 	ethProvider string,
 	registryContractAddress common.Address,
 	sugaredLogger *zap.SugaredLogger,
+	sifnodeGrpc string,
 ) EthereumSub {
 
 	return EthereumSub{
@@ -90,6 +92,7 @@ func NewEthereumSub(
 		ValidatorAddress:        nil,
 		CliCtx:                  cliCtx,
 		SugaredLogger:           sugaredLogger,
+		SifnodeGrpc:             sifnodeGrpc,
 	}
 }
 
@@ -224,10 +227,13 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	fromBlockNumber := uint64(0)
 	lenEthLogs := len(ethLogs)
-	if lenEthLogs != 1 {
+	// we query the log with specific lockBurnNonce, it should be less than 2
+	if lenEthLogs == 0 {
 		sub.SugaredLogger.Debugw("no results from filter", "lenEthLogs", lenEthLogs)
+		return
+	} else if lenEthLogs > 1 {
+		sub.SugaredLogger.Debugw("length of results from filter more than one", "lenEthLogs", lenEthLogs)
 		return
 	}
 
@@ -259,7 +265,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	}
 
 	// get the block height for the specific lock burn nonce
-	fromBlockNumber = ethLogs[0].BlockNumber
+	fromBlockNumber := ethLogs[0].BlockNumber
 
 	events := []types.EthereumEvent{}
 	// get a new topics, exclude the lock burn nonce since we already get block number
@@ -408,8 +414,6 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		"txhash", cLog.TxHash.Hex(),
 	)
 
-	// Add the event to the record
-	types.NewEventWrite(cLog.TxHash.Hex(), event)
 	return event, true, nil
 }
 
@@ -429,7 +433,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
-				errorMessageKey, err.Error())
+				"fail to get the eth bridge claim from Ethereum event", err.Error())
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
@@ -461,8 +465,7 @@ func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
 
-	// TODO cannot use this ip address
-	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+	conn, err := grpc.Dial(sub.SifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return 0, err
 	}

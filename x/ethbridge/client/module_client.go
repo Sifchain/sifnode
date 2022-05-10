@@ -49,7 +49,6 @@ func GetTxCmd() *cobra.Command {
 	flags.AddTxFlagsToCmd(ethBridgeTxCmd)
 
 	ethBridgeTxCmd.AddCommand(
-		cli.GetCmdCreateEthBridgeClaim(),
 		cli.GetCmdBurn(),
 		cli.GetCmdLock(),
 		cli.GetCmdUpdateWhiteListValidator(),

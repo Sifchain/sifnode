@@ -89,8 +89,10 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 		return
 	}
 
-	prophecyInfoArray := GetAllProphciesCompleted(sub.TmProvider, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
+	prophecyInfoArray := GetAllPropheciesCompleted(sub.SifnodeGrpc, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
 
+	// send the prophecy by batch, maximum is 5 prophecies in each batch
+	// compute how many batches needed, last batch may less than 5
 	batches := (len(prophecyInfoArray) + 4) / 5
 
 	for batch := 0; batch < batches; batch++ {
@@ -159,9 +161,8 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 // 1. Call ethereum and get lastNonceSubmitted
 // 2. Call this function with the lastNonceSubmitted on ethereum side
 // 3. This function returns all of the prophecies that need to be relayed from sifchain to that EVM chain
-// TODO add a limit of maximum of n prophecies to query for
-func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
-	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
+	conn, err := grpc.Dial(sifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
 	}
@@ -170,11 +171,11 @@ func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.Ne
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
-	request := ethbridgetypes.QueryProphciesCompletedRequest{
+	request := ethbridgetypes.QueryPropheciesCompletedRequest{
 		NetworkDescriptor: networkDescriptor,
 		GlobalSequence:    startGlobalSequence,
 	}
-	response, err := client.ProphciesCompleted(ctx, &request)
+	response, err := client.PropheciesCompleted(ctx, &request)
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
 	}

@@ -1273,7 +1273,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "--keyring-backend", "test",
                         "--from", relayer["address"],
                         "--symbol-translator-file", "${workspaceFolder}/test/integration/config/symbol_translator.json",
-                        "--home", relayer["home"]
+                        "--keyring-dir", relayer["home"],
                     ]
                 } for i, relayer in enumerate(sifnode_relayers)], *[{
                     "name": f"Debug Witness-{i}",
