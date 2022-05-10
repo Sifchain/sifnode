@@ -74,7 +74,17 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		if val.GetCommission().LT(minCommission) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"cannot delegate to validator with commission less than minimum of %s", minCommission)
+				"cannot delegate to validator with commission lower than minimum of %s", minCommission)
+		}
+	case *stakingtypes.MsgBeginRedelegate:
+		val, err := vcd.getValidator(ctx, msg.ValidatorDstAddress)
+		if err != nil {
+			return err
+		}
+		if val.GetCommission().LT(minCommission) {
+			return sdkerrors.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"cannot redelegate to validator with commission lower than minimum of %s", minCommission)
 		}
 	}
 	return nil
