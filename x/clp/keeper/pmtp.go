@@ -64,11 +64,11 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 			continue
 		}
 
-		spotPriceNative, err := CalcSpotPriceX(pool.NativeAssetBalance, pool.ExternalAssetBalance, 18, decimalsExternal, pmtpCurrentRunningRate, true)
+		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
 			continue
 		}
-		spotPriceExternal, err := CalcSpotPriceX(pool.ExternalAssetBalance, pool.NativeAssetBalance, decimalsExternal, 18, pmtpCurrentRunningRate, false)
+		spotPriceExternal, err := CalculateSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
 			continue
 		}
