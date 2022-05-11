@@ -4,7 +4,7 @@ import web3
 import eth_typing
 from hexbytes import HexBytes
 from web3.types import TxReceipt
-from typing import NewType, Sequence
+from typing import NewType, Sequence, Tuple
 
 from siftool.common import *
 
@@ -14,6 +14,7 @@ GWEI = 10**9
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 MIN_TX_GAS = 21000
 Address = eth_typing.AnyAddress
+PrivateKey = eth_typing.HexStr
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +24,10 @@ def web3_ropsten_alchemy_url(alchemy_id):
 
 def web3_host_port_url(host, port):
     return "ws://{}:{}".format(host, port)
+
+def web3_create_account():
+    account = web3.Web3().eth.account.create()
+    return account.address, account.key.hex()[2:]
 
 def web3_connect(url, websocket_timeout=None):
     kwargs = {}
@@ -44,7 +49,8 @@ def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
             raise Exception(f"Timeout when trying to connect to {url}")
         time.sleep(polling_time)
 
-def validate_address_and_private_key(addr, private_key):
+def validate_address_and_private_key(addr: Optional[Address], private_key: PrivateKey
+) -> Tuple[Address, Optional[PrivateKey]]:
     a = web3.Web3().eth.account
     addr = web3.Web3.toChecksumAddress(addr) if addr else None
     if private_key:
@@ -113,9 +119,9 @@ class EthereumTxWrapper:
             # self.w3_conn.geth.personal.import_raw_key(private_key, "")
             pass
 
+    # Obsolete
     def create_new_eth_account(self):
-        account = self.w3_conn.eth.account.create()
-        return account.address, account.key.hex()[2:]
+        return web3_create_account()
 
     # TODO This only works for local nodes (i.e. geth, ganache).
     # It does not work with hosted nodes such as Alchemy, because they don't hold users' private keys.

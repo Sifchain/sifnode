@@ -1,3 +1,4 @@
+import argparse
 import sys
 import time
 
@@ -19,6 +20,7 @@ def main(argv):
     what = argv[0] if argv else None
     cmd = Integrator()
     project = cmd.project
+    argparser = argparse.ArgumentParser()
     if what == "project-init":
         project.init()
     elif what == "clean":
@@ -35,9 +37,12 @@ def main(argv):
         e.stack_push()
     elif what == "run-env":
         if on_peggy2_branch:
+            argparser.add_argument("--geth", action="store_true", default=False)
+            args = argparser.parse_args(argv[1:])
             # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
             # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             env = Peggy2Environment(cmd)
+            env.use_geth_instead_of_hardhat = args.geth
             processes = env.run()
         else:
             env = IntegrationTestsEnvironment(cmd)
@@ -128,6 +133,14 @@ def main(argv):
     elif what == "download-ibc-binaries":
         import localnet
         localnet.download_ibc_binaries(cmd, *argv[1:])
+    elif what == "geth":
+        import siftool.geth, siftool.eth
+        geth = siftool.geth.Geth(cmd)
+        datadir = os.path.join(os.environ["HOME"], ".siftool-geth")
+        datadir = None
+        signer_addr, signer_private_key = siftool.eth.web3_create_account()
+        ethereum_chain_id = 9999
+        geth.init(ethereum_chain_id, [signer_addr], datadir)
     else:
         raise Exception("Missing/unknown command")
 

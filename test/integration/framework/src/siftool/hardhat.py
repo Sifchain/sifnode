@@ -1,5 +1,6 @@
 import json
 import web3
+from siftool import eth
 from siftool.common import *
 from siftool.command import buildcmd
 
@@ -27,11 +28,17 @@ class Hardhat:
         # smart-contracts/cache
         self.project.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
 
-    def deploy_smart_contracts(self):
+    # Values for 'network' parameter:
+    # (see https://hardhat.org/getting-started/#connecting-a-wallet-or-dapp-to-hardhat-network):
+    # - None:
+    # - "localhost": connect to "http://127.0.0.1:8545" where "npx hardhat node" is running
+    # - anything else: use the corresponding section from smart-contracts/hardhat.config.ts, element "networks"
+    def deploy_smart_contracts(self, network: Optional[str] = None) -> Mapping[str, eth.Address]:
         # If this fails with tsyringe complaining about missing "../../build" directory, do this:
         # rm -rf smart-contracts/artifacts.
-        res = self.project.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
-            cwd=project_dir("smart-contracts"))
+        args = ["hardhat", "run", "scripts/deploy_contracts.ts"] + \
+            (["--network", network] if network else [])
+        res = self.project.npx(args, cwd=project_dir("smart-contracts"))
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
         # been compiled, otherwise the output starts with 4 lines:
         #     Compiling 35 files with 0.5.16

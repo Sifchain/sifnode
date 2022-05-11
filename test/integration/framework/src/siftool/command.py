@@ -6,7 +6,7 @@ from siftool.common import *
 ExecArgs = Mapping[str, Union[List[str], str, Mapping[str, str]]]
 
 
-def buildcmd(args: Optional[str] = None, cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
+def buildcmd(args: List[str], cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
 ) -> ExecArgs:
     return dict((("args", args),) +
         ((("cwd", cwd),) if cwd is not None else ()) +
