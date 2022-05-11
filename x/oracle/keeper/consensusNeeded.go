@@ -14,7 +14,7 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
 	consensusNeeded uint32) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetConsensusNeededPrefix()
+	key := networkIdentity.GetConsensusNeededPrefix(k.cdc)
 
 	bs := make([]byte, 4)
 	binary.BigEndian.PutUint32(bs, consensusNeeded)
@@ -25,7 +25,7 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 // GetConsensusNeeded for a network
 func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.NetworkIdentity) (uint32, error) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetConsensusNeededPrefix()
+	key := networkIdentity.GetConsensusNeededPrefix(k.cdc)
 
 	if !store.Has(key) {
 		return 0.0, fmt.Errorf("%s%s", "ConsensusNeeded not set for ", networkIdentity.NetworkDescriptor.String())

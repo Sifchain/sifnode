@@ -1,15 +1,10 @@
 package types
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
-)
 
-// NetworkIdentity define the different network like Ethereum, Binance
-type NetworkIdentity struct {
-	NetworkDescriptor NetworkDescriptor `json:"network_descriptor"`
-}
+	"github.com/cosmos/cosmos-sdk/codec"
+)
 
 // NewNetworkIdentity get a new NetworkIdentity instance
 func NewNetworkIdentity(networkDescriptor NetworkDescriptor) NetworkIdentity {
@@ -19,34 +14,31 @@ func NewNetworkIdentity(networkDescriptor NetworkDescriptor) NetworkIdentity {
 }
 
 // GetPrefix return storage prefix
-func (n NetworkIdentity) GetPrefix() []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(WhiteListValidatorPrefix, bytebuf.Bytes()...)
+func (n NetworkIdentity) GetPrefix(cdc codec.BinaryCodec) []byte {
+	bytebuf := cdc.MustMarshal(&n)
+	return append(WhiteListValidatorPrefix, bytebuf...)
 }
 
 // GetCrossChainFeePrefix return storage prefix
-func (n NetworkIdentity) GetCrossChainFeePrefix() []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(CrossChainFeePrefix, bytebuf.Bytes()...)
+func (n NetworkIdentity) GetCrossChainFeePrefix(cdc codec.BinaryCodec) []byte {
+	bytebuf := cdc.MustMarshal(&n)
+	return append(CrossChainFeePrefix, bytebuf...)
 }
 
 // GetConsensusNeededPrefix return storage prefix
-func (n NetworkIdentity) GetConsensusNeededPrefix() []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(ConsensusNeededPrefix, bytebuf.Bytes()...)
+func (n NetworkIdentity) GetConsensusNeededPrefix(cdc codec.BinaryCodec) []byte {
+	bytebuf := cdc.MustMarshal(&n)
+	return append(ConsensusNeededPrefix, bytebuf...)
 }
 
 // GetFromPrefix return a NetworkIdentity from prefix
-func GetFromPrefix(key []byte) (NetworkIdentity, error) {
-	if len(key) == 5 {
-		var data NetworkDescriptor
-		bytebuff := bytes.NewBuffer(key[1:])
-		err := binary.Read(bytebuff, binary.BigEndian, &data)
+func GetFromPrefix(cdc codec.BinaryCodec, prefix []byte, key []byte) (NetworkIdentity, error) {
+	if len(prefix) == 1 && len(key) == 5 && prefix[0] == key[0] {
+		var networkIdentity NetworkIdentity
+		err := cdc.Unmarshal(key[1:], &networkIdentity)
+
 		if err == nil {
-			return NewNetworkIdentity(data), nil
+			return networkIdentity, nil
 		}
 		return NetworkIdentity{}, err
 	}
