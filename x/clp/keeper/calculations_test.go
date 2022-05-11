@@ -887,7 +887,7 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec())
-	assert.Equal(t, "2", swapResult.String())
+	assert.Equal(t, "1", swapResult.String())
 }
 
 func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
