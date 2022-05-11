@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/binary"
+
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -14,7 +15,7 @@ func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes
 	prefix := k.getGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
-	if !k.existsGlobalNonce(ctx, prefix) {
+	if !k.Exists(ctx, prefix) {
 		// global nonce start from 1
 		return uint64(1)
 	}
@@ -40,15 +41,6 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonce, blockNumber)
 }
 
-// existsGlobalNonce check if the global nonce exists
-func (k Keeper) existsGlobalNonce(ctx sdk.Context, prefix []byte) bool {
-	if !k.Exists(ctx, prefix) {
-		// The store doesnt exist.
-		return false
-	}
-	return true
-}
-
 // getGlobalSequencePrefix compute the prefix
 // TODO: oracletypes.NetworkDescriptor is int32 (default type for enums), we are converting it to uint32 here.
 func (k Keeper) getGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
@@ -67,7 +59,7 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 	store := ctx.KVStore(k.storeKey)
 	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalSequence)
 
-	if !k.existsGlobalNonce(ctx, prefix) {
+	if !k.Exists(ctx, prefix) {
 		return uint64(0)
 	}
 
