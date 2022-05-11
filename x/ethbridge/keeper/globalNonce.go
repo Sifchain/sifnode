@@ -42,11 +42,9 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 }
 
 // getGlobalSequencePrefix compute the prefix
-// TODO: oracletypes.NetworkDescriptor is int32 (default type for enums), we are converting it to uint32 here.
 func (k Keeper) getGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
-	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
-
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	bs := k.cdc.MustMarshal(&networkIdentity)
 	return append(types.GlobalNoncePrefix, bs[:]...)
 }
 
@@ -87,8 +85,8 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 
 // getGlobalSequenceToBlockNumberPrefix
 func (k Keeper) getGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
-	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	bs := k.cdc.MustMarshal(&networkIdentity)
 	tmpKey := append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
 
 	bs = make([]byte, 8)

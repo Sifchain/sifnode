@@ -190,8 +190,8 @@ func (k Keeper) SetGlobalNonceProphecyID(ctx sdk.Context,
 
 func (k Keeper) getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor types.NetworkDescriptor,
 	globalSequence uint64) []byte {
-	bs1 := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs1, uint32(networkDescriptor))
+	networkIdentity := types.NewNetworkIdentity(networkDescriptor)
+	bs1 := k.cdc.MustMarshal(&networkIdentity)
 
 	bs2 := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs2, globalSequence)
