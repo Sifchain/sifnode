@@ -16,6 +16,9 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgAddAccount:
 			res, err := msgServer.AddAccount(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgRemoveAccount:
+			res, err := msgServer.RemoveAccount(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized message type: %v", sdk.MsgTypeURL(msg))
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

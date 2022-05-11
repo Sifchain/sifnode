@@ -21,6 +21,10 @@ func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisS
 func ProdAdminAccounts() []*AdminAccount {
 	return []*AdminAccount{
 		{
+			AdminType:    AdminType_ADMIN,
+			AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
+		},
+		{
 			AdminType:    AdminType_PMTPREWARDS,
 			AdminAddress: "sif144w8cpva2xkly74xrms8djg69y3mljzplx3fjt",
 		},
@@ -49,6 +53,10 @@ func ProdAdminAccounts() []*AdminAccount {
 
 func InitialAdminAccounts() []*AdminAccount {
 	return []*AdminAccount{
+		{
+			AdminType:    AdminType_ADMIN,
+			AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		},
 		{
 			AdminType:    AdminType_CLPDEX,
 			AdminAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
