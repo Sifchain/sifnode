@@ -214,6 +214,7 @@ func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
 	}
 }
 
+//nolint
 func TestKeeper_GetAssetDecimals(t *testing.T) {
 	testcases :=
 		[]struct {

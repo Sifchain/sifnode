@@ -57,7 +57,7 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 	pools := k.GetPools(ctx)
 
 	// NOTE: the code in this loop must not panic otherwise the remaining pools will not be updated
-	// similarly if an error occurs we must continue to update the remianing pools
+	// similarly if an error occurs we must continue to update the remaining pools
 	for _, pool := range pools {
 		decimalsExternal, err := k.GetAssetDecimals(ctx, *pool.ExternalAsset)
 		if err != nil {

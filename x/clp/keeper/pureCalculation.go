@@ -73,7 +73,6 @@ func Int64ToUint8Safe(x int64) (uint8, error) {
 func Abs(a int16) uint16 {
 	if a < 0 {
 		return uint16(-a)
-	} else {
-		return uint16(a)
 	}
+	return uint16(a)
 }

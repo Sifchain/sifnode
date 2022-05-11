@@ -358,9 +358,8 @@ func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
 	var res big.Rat
 	if decimalsX > decimalsY {
 		return *res.SetInt(dec)
-	} else {
-		return *res.SetFrac(big.NewInt(1), dec)
 	}
+	return *res.SetFrac(big.NewInt(1), dec)
 }
 
 func CalcSwapPriceResult(toRowan bool,
