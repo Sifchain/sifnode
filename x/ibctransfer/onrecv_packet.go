@@ -81,12 +81,16 @@ func OnRecvPacketWhitelistConvert(
 		mintedDenom = convertToDenomEntry.Denom
 		amount = convAmount
 	}
+
 	finalDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenom)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err.Error())
 	}
-	if helpers.IsPeggy1Denom(ctx, finalDenomEntry) {
-		helpers.MigrateToPeggy2Denom(ctx, finalDenomEntry, bankKeeper, receiver, amount)
+	if helpers.IsPeggy1Denom(finalDenomEntry) {
+		err := helpers.MigrateToPeggy2Denom(ctx, finalDenomEntry, bankKeeper, receiver, amount)
+		if err != nil {
+			return channeltypes.NewErrorAcknowledgement(err.Error())
+		}
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
