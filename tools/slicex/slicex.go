@@ -1,9 +1,11 @@
 package slicex
 
-// ContainsString returns true if the given "sl" slice contains the given value "val".
-func ContainsString(sl []string, val string) bool {
+import "strings"
+
+// StringsContain returns true if the given value contains at least one value from the given slice
+func StringsContain(val string, sl []string) bool {
 	for _, sv := range sl {
-		if sv == val {
+		if strings.Contains(val, sv) {
 			return true
 		}
 	}
