@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	fmt "fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -33,7 +34,9 @@ func (n NetworkIdentity) GetConsensusNeededPrefix(cdc codec.BinaryCodec) []byte 
 
 // GetFromPrefix return a NetworkIdentity from prefix
 func GetFromPrefix(cdc codec.BinaryCodec, prefix []byte, key []byte) (NetworkIdentity, error) {
-	if len(prefix) == 1 && len(key) == 5 && prefix[0] == key[0] {
+	fmt.Printf("+++++++  GetFromPrefix %v, %v\n", prefix, key)
+
+	if len(prefix) == 1 && len(key) >= 1 && prefix[0] == key[0] {
 		var networkIdentity NetworkIdentity
 		err := cdc.Unmarshal(key[1:], &networkIdentity)
 

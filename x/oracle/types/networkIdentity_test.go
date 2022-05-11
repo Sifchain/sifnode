@@ -15,13 +15,6 @@ func TestNewNetworkIdentity(t *testing.T) {
 	assert.Equal(t, networkDescriptor, networkIdentity.NetworkDescriptor)
 }
 
-func TestGetPrefix(t *testing.T) {
-	prefixOfNetwork100 := []byte{0x0, 0x0, 0x0, 0x0, 0x01}
-	networkIdentity := NewNetworkIdentity(networkDescriptor)
-	assert.Equal(t, networkDescriptor, networkIdentity.NetworkDescriptor)
-	assert.Equal(t, networkIdentity.GetPrefix(), prefixOfNetwork100)
-}
-
 func TestNetworkDescriptorValid(t *testing.T) {
 	networkDescriptor := NetworkDescriptor(0)
 	assert.Equal(t, networkDescriptor.IsSifchain(), true)

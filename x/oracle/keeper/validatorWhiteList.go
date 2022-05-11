@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -27,6 +29,7 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[types.NetworkDescriptor]typ
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkIdentity, validatorList types.ValidatorWhiteList) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkDescriptor.GetPrefix(k.cdc)
+	fmt.Printf("++++++ SetOracleWhiteList key is %v\n", key)
 	store.Set(key, k.cdc.MustMarshal(&validatorList))
 }
 
