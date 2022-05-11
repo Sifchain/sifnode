@@ -37,11 +37,6 @@ var (
 		"removeliquidityunits",
 		"addliquidity",
 	}
-
-	minGasPrice = sdk.DecCoin{
-		Denom:  "rowan",
-		Amount: sdk.MustNewDecFromStr("0.00000005"),
-	}
 )
 
 // NewAnteHandler is the constructor of sdk.AnteHandler.
@@ -94,6 +89,11 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
 	if len(msgs) == 1 && slicex.StringsContain(strings.ToLower(sdk.MsgTypeURL(msgs[0])), distributionMessageTypes) {
+		minGasPrice := sdk.DecCoin{
+			Denom:  "rowan",
+			Amount: sdk.MustNewDecFromStr("0.00000005"),
+		}
+
 		if !minGasPrice.IsValid() {
 			return ctx, ErrInvalidGasPrice
 		}
