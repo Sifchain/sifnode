@@ -89,8 +89,10 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 		return
 	}
 
+	start := time.Now()
 	prophecyInfoArray := GetAllPropheciesCompleted(sub.SifnodeGrpc, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
-	sub.SugaredLogger.Infow("Last submitted nonce", "LastSubmittedNonce", lastSubmittedNonce, "ProphecyInfoArraySize", len(prophecyInfoArray))
+	queryTimeTook := time.Since(start)
+	sub.SugaredLogger.Infow("Last submitted nonce", "LastSubmittedNonce", lastSubmittedNonce, "ProphecyInfoArraySize", len(prophecyInfoArray), "TimeTaken", queryTimeTook)
 
 	// send the prophecy by batch, maximum is 5 prophecies in each batch
 	// compute how many batches needed, last batch may less than 5
@@ -163,6 +165,7 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 // 2. Call this function with the lastNonceSubmitted on ethereum side
 // 3. This function returns all of the prophecies that need to be relayed from sifchain to that EVM chain
 func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
+	// timeStart := time.Now()
 	conn, err := grpc.Dial(sifnodeGrpc, grpc.WithInsecure())
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
@@ -181,4 +184,9 @@ func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes
 		return []*oracletypes.ProphecyInfo{}
 	}
 	return response.ProphecyInfo
+}
+
+func duration(start time.Time) time.Duration {
+
+	return time.Since(start)
 }

@@ -76,7 +76,7 @@ func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProp
 
 	messages = append(messages, &signProphecy)
 
-	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting SignProphecy", "messages", messages)
 	// TODO this WithGas isn't correct
 	// TODO we need to investigate retries
 	// TODO we need to investigate what happens when the transaction has already been completed
