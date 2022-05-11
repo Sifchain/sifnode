@@ -63,8 +63,8 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, config sdkcli
 	return ValidateGenesis(data)
 }
 
+// gRPC Gateway not needed for the ethbridge module.
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c sdkclient.Context, serveMux *runtime.ServeMux) {
-	// TODO: Register grpc gateway
 }
 
 // RegisterRESTRoutes registers the REST routes for the ethbridge module.

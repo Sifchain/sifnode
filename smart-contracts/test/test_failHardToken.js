@@ -93,7 +93,7 @@ describe("Fail Hard Token", function () {
         recipientAddress: userOne.address,
         tokenAddress: failHardToken.address,
         amount: state.amount,
-        doublePeg: false,
+        bridgeToken: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: "Fail Hard Token",
