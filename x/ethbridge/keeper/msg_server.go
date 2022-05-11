@@ -475,7 +475,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, instrumentation.SignProphecy, "Msg Server msg", msg)
+	instrumentation.PeggyCheckpoint(logger, instrumentation.SignProphecyMessage, "Msg Server msg", msg)
 
 	cosmosSender, err := sdk.ValAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -500,6 +500,8 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	logger.Info("sifnode received the sign prophecy message.",
 		"Message", msg)
 
+	instrumentation.PeggyCheckpoint(logger, instrumentation.CompletedSignProphecy, "Message", msg)
+
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -514,6 +516,8 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 			sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
 		),
 	})
+
+	instrumentation.PeggyCheckpoint(logger, instrumentation.EmitProphecySignEvent, "Message", msg)
 
 	return &types.MsgSignProphecyResponse{}, nil
 }

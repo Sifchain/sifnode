@@ -54,7 +54,8 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	store.Set(storePrefix, k.cdc.MustMarshal(&prophecy))
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix), "Status", prophecy.Status)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix), "StatusText", prophecy.Status)
+
 }
 
 // GetProphecyInfo return a prophecy's signatures
@@ -165,6 +166,7 @@ func (k Keeper) GetProphecyIDByNetworkDescriptorGlobalNonce(ctx sdk.Context,
 
 	bz := store.Get(storeKey)
 	if bz == nil {
+		ctx.Logger().Info("Not found", "NetworkDescriptor", networkDescriptor, "GlobalSequence", globalSequence)
 		// This did not return results
 		return bz, false
 	}
@@ -206,7 +208,7 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 	networkDescriptor types.NetworkDescriptor,
 	startGlobalSequence uint64) []*types.ProphecyInfo {
 	result := []*types.ProphecyInfo{}
-
+	ctx.Logger().Info("Paging Prophecy by networkDescriptor and global sequence", "Netwrokdescriptor", networkDescriptor, "StartingGlobalSequence", startGlobalSequence)
 	globalSequence := startGlobalSequence
 	for i := 0; i < MaxProphecyQueryResult; i++ {
 		prophecyID, ok := k.GetProphecyIDByNetworkDescriptorGlobalNonce(ctx, networkDescriptor, globalSequence)
@@ -216,19 +218,23 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 
 		prophecy, ok := k.GetProphecy(ctx, prophecyID)
 		if !ok {
+			ctx.Logger().Error("GetProphecy failed", "globalSequence", globalSequence)
 			return result
 		}
 
 		if prophecy.Status != types.StatusText_STATUS_TEXT_SUCCESS {
+			ctx.Logger().Info("GetProphecy failed. ProphecyStatus is not succecss", "globalSequence", globalSequence)
 			return result
 		}
 
 		prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
 		if !ok {
+			ctx.Logger().Info("GetProphecy failed. GetProphecyInfo is not succecss", "globalSequence", globalSequence)
 			return result
 		}
 		globalSequence++
 		result = append(result, &prophecyInfo)
 	}
+	ctx.Logger().Info("Completed getting newly ok prophecies", "ResultLength", len(result))
 	return result
 }
