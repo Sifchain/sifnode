@@ -93,8 +93,7 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	msgURL := strings.ToLower(sdk.MsgTypeURL(msgs[0]))
-	if len(msgs) == 1 && slicex.ContainsString(distributionMessageTypes, msgURL) {
+	if len(msgs) == 1 && slicex.ContainsString(distributionMessageTypes, strings.ToLower(sdk.MsgTypeURL(msgs[0]))) {
 		if !minGasPrice.IsValid() {
 			return ctx, ErrInvalidGasPrice
 		}
