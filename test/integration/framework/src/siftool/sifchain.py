@@ -98,17 +98,17 @@ class Sifnoded:
     def keys_delete(self, name):
         self.cmd.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", self.keyring_backend], stdin=["y"], check_exit=False)
 
-    def add_genesis_account(self, sifnodeadmin_addr, tokens):
-        tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
+    def add_genesis_account(self, sifnodeadmin_addr: cosmos.Address, tokens: cosmos.Balance):
+        tokens_str = cosmos.balance_format(tokens)
         self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str], sifnoded_home=self.home)
 
-    def add_genesis_validators(self, address):
+    def add_genesis_validators(self, address: cosmos.Address):
         args = ["sifnoded", "add-genesis-validators", address]
         res = self.cmd.execst(args)
         return res
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
-    def add_genesis_validators_peggy(self, evm_network_descriptor, valoper, validator_power):
+    def add_genesis_validators_peggy(self, evm_network_descriptor: int, valoper: str, validator_power: int):
         self.sifnoded_exec(["add-genesis-validators", str(evm_network_descriptor), valoper, str(validator_power)],
             sifnoded_home=self.home)
 
@@ -126,7 +126,7 @@ class Sifnoded:
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
     # This was split from init_common
-    def peggy2_add_account(self, name, tokens, is_admin=False):
+    def peggy2_add_account(self, name: str, tokens: cosmos.Balance, is_admin: bool = False):
         # TODO Peggy2 devenv feed "yes\nyes" into standard input, we only have "y\n"
         account = self.keys_add_1(name)
         account_address = account["address"]
@@ -137,7 +137,9 @@ class Sifnoded:
             self.set_genesis_whitelister_admin(account_address)
         return account_address
 
-    def peggy2_add_relayer_witness_account(self, name, tokens, evm_network_descriptor, validator_power, denom_whitelist_file):
+    def peggy2_add_relayer_witness_account(self, name: str, tokens: cosmos.Balance, evm_network_descriptor: int,
+        validator_power: int, denom_whitelist_file: str
+    ):
         account_address = self.peggy2_add_account(name, tokens)  # Note: is_admin=False
         # Whitelist relayer/witness account
         valoper = self.get_val_address(name)

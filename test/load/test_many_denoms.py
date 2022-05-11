@@ -101,16 +101,20 @@ def timed_tx_burn_loop(ctx: test_utils.EnvCtx, src_sif_address: cosmos.Address, 
     return time.time() - time_before
 
 
+def timed_query_bank_balances_loo(ctx: test_utils.EnvCtx, sif_address: cosmos.Address, paginate=None):
+    ctx.get_sifchain_balance(sif_address)
+
+
 def report(report_lines: List[str], message: str):
     log.info(message)
     report_lines.append(message)
 
 
 def test(ctx: test_utils.EnvCtx):
-    _test(ctx, 2)
+    _parametric_test(ctx, 2)
 
 
-def _test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report_lines: Union[List[str], None] = None):
+def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report_lines: Union[List[str], None] = None):
     report_lines = [] if report_lines is None else report_lines
     assert number_of_erc20_tokens > 1
 
@@ -224,7 +228,7 @@ if __name__ == "__main__":
     parser.add_argument("--report")
     args = parser.parse_args(sys.argv[1:])
     report_lines = []
-    _test(ctx, args.count, report_lines=report_lines)
+    _parametric_test(ctx, args.count, report_lines=report_lines)
     if args.report:
         command.Command().write_text_file(args.report, joinlines(report_lines))
     log.info("Finished successfully")

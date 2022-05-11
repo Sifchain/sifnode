@@ -4,7 +4,7 @@ import web3
 import eth_typing
 from hexbytes import HexBytes
 from web3.types import TxReceipt
-from typing import NewType, Sequence, Tuple
+from typing import Sequence, Tuple
 
 from siftool.common import *
 
@@ -19,17 +19,17 @@ PrivateKey = eth_typing.HexStr
 log = logging.getLogger(__name__)
 
 
-def web3_ropsten_alchemy_url(alchemy_id):
+def web3_ropsten_alchemy_url(alchemy_id: str) -> str:
     return "wss://eth-ropsten.alchemyapi.io/v2/{}".format(alchemy_id)
 
-def web3_host_port_url(host, port):
+def web3_host_port_url(host: str, port: int) -> str:
     return "ws://{}:{}".format(host, port)
 
 def web3_create_account():
     account = web3.Web3().eth.account.create()
     return account.address, account.key.hex()[2:]
 
-def web3_connect(url):
+def web3_connect(url: str) -> web3.Web3:
     if url.startswith("ws://"):
         return web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
     elif url.startswith("http://"):
@@ -37,7 +37,7 @@ def web3_connect(url):
     else:
         raise Exception("Invalid web3 URL '{}', at the moment only http:// and ws:// are supported.".format(url))
 
-def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
+def web3_wait_for_connection_up(url: str, polling_time: int = 1, timeout: int = 90):
     start_time = time.time()
     w3_conn = web3_connect(url)
     while True:
@@ -104,7 +104,7 @@ class EthereumTxWrapper:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
-    def set_private_key(self, addr, private_key):
+    def set_private_key(self, addr: Address, private_key: PrivateKey):
         a = web3.Web3().eth.account
         addr = web3.Web3.toChecksumAddress(addr)
         if private_key is None:
@@ -256,7 +256,7 @@ class EthereumTxWrapper:
         return txhash
 
     def wait_for_all_transaction_receipts(self, tx_hashes: Sequence[HexBytes], sleep_time: int = 5,
-        timeout: Union[int, None] = None
+        timeout: Optional[int] = None
     ) -> Sequence[TxReceipt]:
         result = []
         for txhash in tx_hashes:
@@ -264,7 +264,8 @@ class EthereumTxWrapper:
             result.append(txrcpt)
         return result
 
-    def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None) -> TxReceipt:
+    def wait_for_transaction_receipt(self, txhash: HexBytes, sleep_time: int = 5, timeout: Optional[int] = None
+    ) -> TxReceipt:
         return self.w3_conn.eth.wait_for_transaction_receipt(txhash, timeout=timeout, poll_latency=sleep_time)
 
     def transact_sync(self, smart_contract_function, eth_addr, tx_opts=None, timeout=None):
@@ -283,7 +284,7 @@ class EthereumTxWrapper:
             return txhash
         return wrapped_fn
 
-    def send_eth(self, from_addr: str, to_addr: str, amount: int):
+    def send_eth(self, from_addr: Address, to_addr: Address, amount: int) -> TxReceipt:
         log.info(f"Sending {amount} wei from {from_addr} to {to_addr}...")
         tx = {"to": to_addr, "value": amount}
         txhash = self._send_raw_transaction(None, from_addr, tx)

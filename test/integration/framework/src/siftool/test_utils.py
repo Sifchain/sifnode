@@ -598,12 +598,18 @@ class EnvCtx:
                 raise Exception(raw_log)
         return retval
 
-    def get_sifchain_balance(self, sif_addr: cosmos.Address) -> cosmos.Balance:
-        args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
+    def get_sifchain_balance(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
+        offset: Optional[int] = None
+    ) -> cosmos.Balance:
+        args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
+            (["--limit", str(limit)] if limit is not None else []) + \
+            (["--offset", str(offset)] if offset is not None else []) + \
             self._sifnoded_chain_id_and_node_arg()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
-        res = json.loads(stdout(res))["balances"]
-        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res) if amount != 0}
+        res = json.loads(stdout(res))
+        if res["pagination"]["next_key"] is not None:
+            raise Exception("More than {} results in balances".format(limit))
+        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
 
     # Unless timed out, this function will exit:
     # - if min_changes are given: when changes are greater.

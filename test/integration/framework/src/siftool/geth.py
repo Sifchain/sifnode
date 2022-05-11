@@ -22,15 +22,15 @@ class Geth:
         self.program = "geth"
         self.datadir = datadir
 
-    def geth_cmd(self, command: str, network_id: Optional[int] = None, datadir: Optional[str] = None,
-        ipcpath: Optional[str] = None, ws: Optional[bool] = False, ws_addr: Optional[str] = None,
-        ws_port: Optional[int] = None, ws_api: Iterable[str] = None, http: Optional[bool] = False,
-        http_addr: Optional[str] = None, http_port: Optional[int] = None, http_api: Iterable[str] = None,
-        rpc_allow_unprotected_txs: Optional[bool] = False, dev: Optional[bool] = False,
-        dev_period: Optional[int] = None, rpcvhosts: Optional[str] = None, mine: Optional[bool] = False,
-        miner_threads: Optional[int] = None
+    def geth_cmd(self, command: Optional[str] = None, network_id: Optional[int] = None, datadir: Optional[str] = None,
+        ipcpath: Optional[str] = None, ws: bool = False, ws_addr: Optional[str] = None, ws_port: Optional[int] = None,
+        ws_api: Iterable[str] = None, http: bool = False, http_addr: Optional[str] = None,
+        http_port: Optional[int] = None, http_api: Iterable[str] = None, rpc_allow_unprotected_txs: bool = False,
+        dev: bool = False, dev_period: Optional[int] = None, rpcvhosts: Optional[str] = None, mine: bool = False,
+        miner_threads: Optional[int] = None, no_discover: bool = False,
      ):
-        args = [self.program, command] + \
+        args = [self.program] + \
+            ([command] if command else []) + \
             (["--networkid", str(network_id)] if network_id else []) + \
             (["--datadir", datadir] if datadir else []) + \
             (["--ipcpath", ipcpath] if ipcpath else []) + \
@@ -47,7 +47,8 @@ class Geth:
             (["--dev.period", str(dev_period)] if dev_period is not None else []) + \
             (["--rpcvhosts", rpcvhosts] if rpcvhosts else []) + \
             (["--mine"] if mine else []) + \
-            (["--miner.threads", str(miner_threads)] if miner_threads is not None else [])
+            (["--miner.threads", str(miner_threads)] if miner_threads is not None else []) + \
+            (["--nodiscover"] if no_discover else [])
         return args
 
     def geth_exec(self, geth_cmd_string, ipcpath):

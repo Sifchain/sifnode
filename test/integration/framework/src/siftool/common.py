@@ -78,11 +78,12 @@ def mkcmd(args, env=None, cwd=None, stdin=None):
 # If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
 def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[str, str]] = None,
     text: Optional[bool] = None, stdin: Union[str, int, IO, None] = None, stdout: Optional[IO] = None,
-    stderr: Optional[IO] = None
+    stderr: Optional[IO] = None, disable_log = False
 ) -> subprocess.Popen:
     if env:
         env = dict_merge(os.environ, env)
-    log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+    if not disable_log:
+        log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 def dict_merge(*dicts, override=True):

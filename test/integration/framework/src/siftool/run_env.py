@@ -186,7 +186,7 @@ class Integrator(Ganache, Command):
         # TODO Most likely, this should be "--keyring-backend file"
         args = ["sifgen", "network", "create", chain_id, str(validator_count), networks_dir, seed_ip_address,
             network_definition_file, "--keyring-backend", "test"] + \
-            (["--mint-amount", ",".join([sif_format_amount(*x) for x in mint_amount])] if mint_amount else [])
+            (["--mint-amount", cosmos.balance_format(mint_amount)] if mint_amount else [])
         self.execst(args)
 
     def wait_for_sif_account(self, netdef_json, validator1_address):
@@ -194,7 +194,7 @@ class Integrator(Ganache, Command):
         return self.execst(["python3", os.path.join(self.project.test_integration_dir, "src/py/wait_for_sif_account.py"),
             netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
 
-    def wait_for_sif_account_up(self, address, tcp_url=None):
+    def wait_for_sif_account_up(self, address: cosmos.Address, tcp_url: str = None):
         # TODO Deduplicate: this is also in run_ebrelayer()
         # netdef_json is path to file containing json_dump(netdef)
         # while not self.cmd.tcp_probe_connect("localhost", tendermint_port):
@@ -776,6 +776,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
     def __init__(self, cmd: Command):
         super().__init__(cmd)
         self.use_geth_instead_of_hardhat = False
+        self.extra_balances_for_admin_account = None
 
     # Destuctures a linear array of EVM accounts into:
     # [operator, owner, pauser, [validator-0, validator-1, ...], [...available...]]
@@ -912,23 +913,23 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         ceth_symbol = sifchain_denom_hash(ethereum_chain_id, eth.NULL_ADDRESS)
         assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
         # This goes to validator0, i.e. sifnode_validators[0]["address"]
-        validator_mint_amounts: cosmos.LegacyBalance = [
-            [999999 * 10**27, "rowan"],
-            [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
-            [999999 * 10**21, ceth_symbol],
-            [137 * 10**16, "sifBridge00030x1111111111111111111111111111111111111111"],
-        ]
+        validator_mint_amounts: cosmos.Balance = {
+            "rowan": 999999 * 10**27,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16,
+            ceth_symbol: 999999 * 10**21,
+            "sifBridge00030x1111111111111111111111111111111111111111": 137 * 10**16,
+        }
         validator_power = 100
         seed_ip_address = "10.10.1.1"
         tendermint_port = 26657
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
         # These go to admin account, relayers and witnesses
-        admin_account_mint_amounts: cosmos.LegacyBalance = [
-            [10**27, "rowan"],
-            [2 * 10**22, ceth_symbol],
-            [10 ** 16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"],
-            [10 ** 16, "sifBridge00030x1111111111111111111111111111111111111111"],
-        ]
+        admin_account_mint_amounts: cosmos.Balance = {
+            "rowan": 10**27,
+            ceth_symbol: 2 * 10**22,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 10 ** 16,
+            "sifBridge00030x1111111111111111111111111111111111111111": 10 ** 16,
+        }
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
         self.cmd.rmdir(sifnoded_network_dir)
@@ -980,8 +981,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         return hardhat_proc, sifnoded_proc, relayer0_proc, witness0_proc
 
     def init_sifchain(self, sifnoded_network_dir: str, sifnoded_log_file: TextIO, chain_id: str, hardhat_chain_id: int,
-        validator_mint_amounts: cosmos.LegacyBalance, validator_power: int, seed_ip_address: str, tendermint_port: int,
-        denom_whitelist_file: str, admin_account_mint_amounts: cosmos.LegacyBalance, registry_json: str,
+        validator_mint_amounts: cosmos.Balance, validator_power: int, seed_ip_address: str, tendermint_port: int,
+        denom_whitelist_file: str, admin_account_mint_amounts: cosmos.Balance, registry_json: str,
         admin_account_name: str, ceth_symbol: str
     ) -> Tuple[str, command.ExecArgs, subprocess.Popen, str, cosmos.Address, List, List, List, str, str]:
         validator_count = 1
@@ -1039,6 +1040,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Create an ADMIN account on sifnode with name admin_account_name (e.g. "sifnodeadmin")
         admin_account_address = sifnode.peggy2_add_account(admin_account_name, admin_account_mint_amounts, is_admin=True)
 
+        if self.extra_balances_for_admin_account:
+            genesis_json_path = os.path.join(validator0_home, "config", "genesis.json")
+            self.add_genesis_account_directly_to_existing_genesis_json(genesis_json_path, {admin_account_address: self.extra_balances_for_admin_account})
+
         # TODO Check if sifnoded_peggy2_add_relayer_witness_account can be executed offline (without sifnoded running)
         # TODO Check if sifnoded_peggy2_set_cross_chain_fee can be executed offline (without sifnoded running)
 
@@ -1066,7 +1071,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             log_format_json=True)
         sifnoded_proc = self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=sifnoded_log_file)
 
+        time_before = time.time()
         self.cmd.wait_for_sif_account_up(validator0_address, tcp_url)
+        log.debug("Time for sifnoded to come up: {:.2f}s".format(time.time() - time_before))
 
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
@@ -1098,6 +1105,25 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
+
+    def add_genesis_account_directly_to_existing_genesis_json(self, genesis_json_path: str,
+        extra_balances: Mapping[cosmos.Address, cosmos.Balance]
+    ):
+        genesis = json.loads(self.cmd.read_text_file(genesis_json_path))
+        bank = genesis["app_state"]["bank"]
+        # genesis.json uses a bit different structure for balances so we need to conevrt to and from our balances.
+        # Whatever is in extra_balances will be added to the existing amounts.
+        # We must also update supply which must be the sum of all balances. We assume that it initially already is.
+        # Cosmos SDK wants coins to be sorted or it will panic during chain initialization.
+        balances = {b["address"]: {c["denom"]: int(c["amount"]) for c in b["coins"]} for b in bank["balances"]}
+        supply = {b["denom"]: int(b["amount"]) for b in bank["supply"]}
+        for addr, bal in extra_balances.items():
+            b = cosmos.balance_add(balances.get(addr, {}), bal)
+            balances[addr] = b
+            supply = cosmos.balance_add(supply, bal)
+        bank["balances"] = [{"address": a, "coins": [{"denom": d, "amount": str(c[d])} for d in sorted(c)]} for a, c in balances.items()]
+        bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
+        self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
 
     def start_witnesses_and_relayers(self, web3_websocket_address, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs,
         evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file

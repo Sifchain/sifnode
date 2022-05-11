@@ -37,11 +37,14 @@ def main(argv):
         e.stack_push()
     elif what == "run-env":
         if on_peggy2_branch:
+            argparser.add_argument("--test-denom-count", type=int)
             argparser.add_argument("--geth", action="store_true", default=False)
             args = argparser.parse_args(argv[1:])
             # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
             # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             env = Peggy2Environment(cmd)
+            if args.test_denom_count is not None:
+                env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
             env.use_geth_instead_of_hardhat = args.geth
             processes = env.run()
         else:
