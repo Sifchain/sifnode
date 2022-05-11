@@ -28,6 +28,13 @@ func GetCmdAdd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add-account [address] [type]",
 		Short: "Add an account",
+		Long: `Add an account. Valid types are:
+	CLPDEX
+	PMTPREWARDS
+	TOKENREGISTRY
+	ETHBRIDGE
+	ADMIN
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -69,6 +76,13 @@ func GetCmdRemove() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove-account [address] [type]",
 		Short: "Remove an account",
+		Long: `Remove an account. Valid types are:
+	CLPDEX
+	PMTPREWARDS
+	TOKENREGISTRY
+	ETHBRIDGE
+	ADMIN
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
