@@ -325,9 +325,10 @@ func calcPmtpFactor(r sdk.Dec) big.Rat {
 	return *one
 }
 
-// Calculates the spot price in the preferred denominations accounting for PMTP
-func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, toRowan bool) (sdk.Dec, error) {
-	if Y.Equal(sdk.ZeroUint()) {
+// Calculates the spot price of asset X in the preferred denominations accounting for PMTP.
+// Since this method applies PMTP adjustment, one of X, Y must be the native asset.
+func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) {
+	if X.Equal(sdk.ZeroUint()) {
 		return sdk.ZeroDec(), types.ErrInValidAmount
 	}
 
@@ -336,10 +337,10 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
 	var pmtpPrice big.Rat
-	if toRowan {
-		pmtpPrice.Quo(&price, &pmtpFac) // pmtpPrice = price / pmtpFac
-	} else {
+	if isXNative {
 		pmtpPrice.Mul(&price, &pmtpFac) // pmtpPrice = price * pmtpFac
+	} else {
+		pmtpPrice.Quo(&price, &pmtpFac) // pmtpPrice = price / pmtpFac
 	}
 
 	dcm := CalcDenomChangeMultiplier(decimalsX, decimalsY)
@@ -351,7 +352,7 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 // Denom change multiplier = 10**decimalsX / 10**decimalsY
 func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
-	diff := abs(int16(decimalsX) - int16(decimalsY))                       // |decimalsX - decimalsY|
+	diff := Abs(int16(decimalsX) - int16(decimalsY))                       // |decimalsX - decimalsY|
 	dec := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**|decimalsX - decimalsY|
 
 	var res big.Rat
@@ -359,14 +360,6 @@ func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
 		return *res.SetInt(dec)
 	} else {
 		return *res.SetFrac(big.NewInt(1), dec)
-	}
-}
-
-func abs(a int16) uint16 {
-	if a < 0 {
-		return uint16(-a)
-	} else {
-		return uint16(a)
 	}
 }
 

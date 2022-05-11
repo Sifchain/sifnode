@@ -3,9 +3,9 @@ package keeper
 import (
 	"math"
 
+	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
 
 func IsAnyZero(inputs []sdk.Uint) bool {
 	for _, val := range inputs {
@@ -60,4 +60,20 @@ func GetMinLen(inputs []sdk.Uint) int64 {
 		}
 	}
 	return int64(minLen - 1)
+}
+
+func Int64ToUint8Safe(x int64) (uint8, error) {
+	trial := uint8(x)
+	if int64(trial) != x {
+		return 0, types.ErrTypeCast
+	}
+	return trial, nil
+}
+
+func Abs(a int16) uint16 {
+	if a < 0 {
+		return uint16(-a)
+	} else {
+		return uint16(a)
+	}
 }

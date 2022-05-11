@@ -55,22 +55,30 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 
 func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error {
 	pools := k.GetPools(ctx)
-	// compute swap prices for each pool
-	for _, pool := range pools {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
-		// compute swap_price_native
-		swapPriceNative := CalcSwapPrice(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-		// compute swap_price_external
-		swapPriceExternal := CalcSwapPrice(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 
-		pn := sdk.MustNewDecFromStr(swapPriceNative.String())
-		pe := sdk.MustNewDecFromStr(swapPriceExternal.String())
-		pool.SwapPriceNative = &pn
-		pool.SwapPriceExternal = &pe
-		// set pool
-		err := k.SetPool(ctx, pool)
+	// NOTE: the code in this loop must not panic otherwise the remaining pools will not be updated
+	// similarly if an error occurs we must continue to update the remianing pools
+	for _, pool := range pools {
+		decimalsExternal, err := k.GetAssetDecimals(ctx, *pool.ExternalAsset)
 		if err != nil {
-			return err
+			continue
+		}
+
+		spotPriceNative, err := CalcSpotPriceX(pool.NativeAssetBalance, pool.ExternalAssetBalance, 18, decimalsExternal, pmtpCurrentRunningRate, true)
+		if err != nil {
+			continue
+		}
+		spotPriceExternal, err := CalcSpotPriceX(pool.ExternalAssetBalance, pool.NativeAssetBalance, decimalsExternal, 18, pmtpCurrentRunningRate, false)
+		if err != nil {
+			continue
+		}
+
+		pool.SwapPriceNative = &spotPriceNative
+		pool.SwapPriceExternal = &spotPriceExternal
+
+		err = k.SetPool(ctx, pool)
+		if err != nil {
+			continue
 		}
 	}
 	return nil

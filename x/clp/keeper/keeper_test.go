@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"errors"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -209,6 +210,73 @@ func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
 				require.Equal(t, tc.normalizationFactor, normalizationFactor)
 				require.Equal(t, tc.adjustExternalToken, adjustExternalToken)
 			}
+		})
+	}
+}
+
+func TestKeeper_GetAssetDecimals(t *testing.T) {
+	testcases :=
+		[]struct {
+			name        string
+			denom       string
+			asset       types.Asset
+			decimals    int64
+			createToken bool
+			errString   error
+			expected    uint8
+		}{
+			{
+				name:        "big decimals number throws error",
+				asset:       types.Asset{Symbol: "xxx"},
+				createToken: true,
+				denom:       "xxx",
+				decimals:    256,
+				errString:   errors.New("Could not perform type cast"),
+			},
+			{
+				name:        "negative decimals number throws error",
+				asset:       types.Asset{Symbol: "xxx"},
+				createToken: true,
+				denom:       "xxx",
+				decimals:    -200,
+				errString:   errors.New("Could not perform type cast"),
+			},
+			{
+				name:        "unknown symbol",
+				createToken: false,
+				asset:       types.Asset{Symbol: "xxx"},
+				errString:   errors.New("registry entry not found: key not found"),
+			},
+			{
+				name:        "success",
+				asset:       types.Asset{Symbol: "xxx"},
+				createToken: true,
+				denom:       "xxx",
+				decimals:    73,
+				expected:    73,
+			},
+		}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, app := test.CreateTestAppClp(false)
+			clpKeeper := app.ClpKeeper
+
+			if tc.createToken {
+				app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+					Denom:       tc.denom,
+					Decimals:    tc.decimals,
+					Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+				})
+			}
+			decimals, err := clpKeeper.GetAssetDecimals(ctx, tc.asset)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+			require.Equal(t, tc.expected, decimals)
 		})
 	}
 }

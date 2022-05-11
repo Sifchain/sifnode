@@ -1444,7 +1444,7 @@ func TestKeeper_RatToDec(t *testing.T) {
 			rat.SetFrac(tc.num, tc.denom)
 			y := clpkeeper.RatToDec(&rat)
 
-			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expected, y)
 		})
 	}
 }
@@ -1511,6 +1511,128 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 			y := clpkeeper.CalcDenomChangeMultiplier(tc.decimalsX, tc.decimalsY)
 
 			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceX(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		X                      sdk.Uint
+		Y                      sdk.Uint
+		decimalsX              uint8
+		decimalsY              uint8
+		pmtpCurrentRunningRate sdk.Dec
+		isXNative              bool
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "fail when X = 0",
+			X:                      sdk.ZeroUint(),
+			Y:                      sdk.OneUint(),
+			decimalsX:              10,
+			decimalsY:              80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success when Y = 0",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.ZeroUint(),
+			decimalsX:              10,
+			decimalsY:              80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "success small values",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.OneUint(),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("5.499100413926233941"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("10.998200827852467883"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              16,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("0.109982008278524678"),
+		},
+		{
+			name:                   "success big numbers",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			X:                      sdk.NewUint(100),
+			Y:                      sdk.NewUint(100),
+			decimalsX:              255,
+			decimalsY:              0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals, small answer",
+			X:                      sdk.NewUint(100),
+			Y:                      sdk.NewUint(100),
+			decimalsX:              0,
+			decimalsY:              255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
 		})
 	}
 }
