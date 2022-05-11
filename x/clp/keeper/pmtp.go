@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) PolicyStart(ctx sdk.Context) {
@@ -61,25 +62,30 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 	for _, pool := range pools {
 		decimalsExternal, err := k.GetAssetDecimals(ctx, *pool.ExternalAsset)
 		if err != nil {
+			// Conditions for an error:
+			// 1. Asset has decimals value outside of 0-255 range
+			// 2. Asset cannot be found in the token registry
+			// In either case we should log the error then continue updating the remaining pools
+			ctx.Logger().Error(errors.Wrap(err, "error calculating pool spot price").Error())
 			continue
 		}
 
 		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
-			continue
+			// Error occurs if native asset pool depth is zero
+			spotPriceNative = sdk.ZeroDec()
 		}
 		spotPriceExternal, err := CalculateSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
-			continue
+			// Error occurs if external asset pool depth is zero
+			spotPriceNative = sdk.ZeroDec()
 		}
 
+		// Note: the pool field should be named SpotPrice*
 		pool.SwapPriceNative = &spotPriceNative
 		pool.SwapPriceExternal = &spotPriceExternal
 
-		err = k.SetPool(ctx, pool)
-		if err != nil {
-			continue
-		}
+		k.SetPool(ctx, pool) // ignore error since it will always be nil
 	}
 	return nil
 }
