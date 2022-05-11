@@ -31,7 +31,7 @@ export interface SifchainAccounts {
 
 async function hreToSifchainAccountsAsync(): Promise<SifchainAccounts> {
   const accounts = await hardhat.ethers.getSigners()
-  // console.log(JSON.stringify(hardhat.ethers))
+  // Keep this synched with run_env.py
   const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts] =
     accounts
   return {
@@ -43,14 +43,15 @@ async function hreToSifchainAccountsAsync(): Promise<SifchainAccounts> {
   }
 }
 
+const NETWORK_DESCRIPTOR = Number(process.env.NETWORK_DESCRIPTOR) || 9999;
+
 // Delete temporary files (the copied manifest)
 function cleanup() {
   print("cyan", `🧹 Cleaning up temporary files`);
 
-  fs.removeSync(`./.openzeppelin/unknown-9999.json`);
+  fs.removeSync(`./.openzeppelin/unknown-${NETWORK_DESCRIPTOR}.json`);
 }
 
-const NETWORK_DESCRIPTOR = Number(process.env.NETWORK_DESCRIPTOR) || 9999;
 
 async function main() : Promise<DeployedContractAddresses> {
   print("warn", "THIS IS A DEVELOPMENT ONLY SCRIPT NEVER USE IN PRODUCTION");
