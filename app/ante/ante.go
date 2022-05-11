@@ -3,28 +3,66 @@ package ante
 import (
 	"strings"
 
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
+	"github.com/Sifchain/sifnode/tools/slicex"
 )
 
+// Predefined errors
+var (
+	ErrAccountMissing         = sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for ante builder")
+	ErrBankKeeperMissing      = sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
+	ErrSignModeHandlerMissing = sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
+	ErrInvalidGasPrice        = sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
+	ErrUnsupportedAsset       = sdkerrors.Wrap(sdkerrors.ErrLogic, "unsupported fee asset")
+	ErrLowFee                 = sdkerrors.Wrap(sdkerrors.ErrLogic, "tx fee is too low")
+)
+
+var (
+	distributionMessageTypes = []string{
+		strings.ToLower(disptypes.MsgTypeCreateDistribution),
+		strings.ToLower(disptypes.MsgTypeRunDistribution),
+	}
+
+	regularMessageTypes = []string{
+		strings.ToLower(banktypes.TypeMsgSend),
+		strings.ToLower(banktypes.TypeMsgMultiSend),
+		"createuserclaim",
+		"swap",
+		"removeliquidity",
+		"removeliquidityunits",
+		"addliquidity",
+	}
+
+	minGasPrice = sdk.DecCoin{
+		Denom:  "rowan",
+		Amount: sdk.MustNewDecFromStr("0.00000005"),
+	}
+)
+
+// NewAnteHandler is the constructor of sdk.AnteHandler.
 func NewAnteHandler(options ante.HandlerOptions) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for ante builder")
+		return nil, ErrAccountMissing
 	}
+
 	if options.BankKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
+		return nil, ErrBankKeeperMissing
 	}
+
 	if options.SignModeHandler == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
+		return nil, ErrSignModeHandlerMissing
 	}
-	var sigGasConsumer = options.SigGasConsumer
+
+	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
+
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		NewAdjustGasPriceDecorator(),    // Custom decorator to adjust gas price for specific msg types
@@ -41,7 +79,6 @@ func NewAnteHandler(options ante.HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 	), nil
-
 }
 
 // AdjustGasPriceDecorator is a custom decorator to reduce fee prices .
@@ -56,40 +93,35 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
-		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
-		minGasPrice := sdk.DecCoin{
-			Denom:  "rowan",
-			Amount: sdk.MustNewDecFromStr("0.00000005"),
-		}
+	msgURL := strings.ToLower(sdk.MsgTypeURL(msgs[0]))
+	if len(msgs) == 1 && slicex.ContainsString(distributionMessageTypes, msgURL) {
 		if !minGasPrice.IsValid() {
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
+			return ctx, ErrInvalidGasPrice
 		}
+
 		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
 		return next(ctx, tx, simulate)
 	}
+
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
 		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
-		if strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgSend)) ||
-			strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgMultiSend)) ||
-			strings.Contains(msgTypeURLLower, "createuserclaim") ||
-			strings.Contains(msgTypeURLLower, "swap") ||
-			strings.Contains(msgTypeURLLower, "removeliquidity") ||
-			strings.Contains(msgTypeURLLower, "removeliquidityunits") ||
-			strings.Contains(msgTypeURLLower, "addliquidity") {
+		if slicex.ContainsString(regularMessageTypes, msgTypeURLLower) {
 			minFee = sdk.NewInt(100000000000000000) // 0.1
 		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
 		}
 	}
+
 	if minFee.Equal(sdk.ZeroInt()) {
 		return next(ctx, tx, simulate)
 	}
+
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "tx must be a FeeTx")
+		return ctx, sdkerrors.Wrapf(sdkerrors.ErrTxDecode, "tx must be a FeeTx, not %T", tx)
 	}
+
 	fees := feeTx.GetFee()
 	rowanFee := sdk.ZeroInt()
 	for j := range fees {
@@ -97,11 +129,14 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 			rowanFee = fees[j].Amount
 		}
 	}
+
 	if rowanFee.LTE(sdk.ZeroInt()) {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "unsupported fee asset")
+		return ctx, ErrUnsupportedAsset
 	}
+
 	if rowanFee.LT(minFee) {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx fee is too low")
+		return ctx, ErrLowFee
 	}
+
 	return next(ctx, tx, simulate)
 }
