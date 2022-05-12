@@ -291,6 +291,18 @@ class EthereumTxWrapper:
         txrcpt = self.wait_for_transaction_receipt(txhash)
         return txrcpt
 
+    def advance_block_w3(self, number):
+        for _ in range(number):
+            # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
+            self.w3_conn.provider.make_request("evm_mine", [])
+
+    def advance_blocks(self, number=50):
+        if self.is_local_node:
+            previous_block = self.w3_conn.eth.block_number
+            self.advance_block_w3(number)
+            assert self.w3_conn.eth.block_number - previous_block >= number
+        # Otherwise do nothing (e.g. wait for balance change takes longer)
+
     def is_contract_logic_error(self, exception, expected_message):
         if on_peggy2_branch:
             # Hardhat

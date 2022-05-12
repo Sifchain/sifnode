@@ -621,21 +621,12 @@ class IntegrationTestsEnvironment:
             "OWNER": self.owner,
             "PAUSER": self.pauser,
             "BASEDIR": project_dir(),
-            # export SIFCHAIN_BIN="/home/jurez/work/projects/sif/sifnode/local/cmd"
             "envexportfile": vagrantenv_path,
-            # export TEST_INTEGRATION_DIR="/home/jurez/work/projects/sif/sifnode/local/test/integration"
-            # export TEST_INTEGRATION_PY_DIR="/home/jurez/work/projects/sif/sifnode/local/test/integration/src/py"
             "SMART_CONTRACTS_DIR": self.project.smart_contracts_dir,
-            # export datadir="/home/jurez/work/projects/sif/sifnode/local/test/integration/vagrant/data"
-            # export CONTAINER_NAME="integration_sifnode1_1"
             "NETWORKDIR": networks_dir,
-            # export ETHEREUM_WEBSOCKET_ADDRESS="ws://localhost:7545/"
-            # export CHAINNET="localnet"
             "GANACHE_DB_DIR": ganache_db_path,
-            # export GANACHE_KEYS_JSON="/home/jurez/work/projects/sif/sifnode/local/test/integration/vagrant/data/ganachekeys.json"
             "EBRELAYER_ETHEREUM_ADDR": ebrelayer_ethereum_addr,
             "EBRELAYER_ETHEREUM_PRIVATE_KEY": ebrelayer_ethereum_private_key,  # Needed by sifchain_run_ebrelayer.sh
-            # # BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms
             "BRIDGE_REGISTRY_ADDRESS": bridge_registry_sc_addr,
             "BRIDGE_TOKEN_ADDRESS": bridge_token_sc_addr,
             "BRIDGE_BANK_ADDRESS": bridge_bank_sc_addr,
@@ -821,6 +812,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         ethereum_chain_id = 9999
 
         hardhat = Hardhat(self.cmd)
+
+        hardhat.compile_smart_contracts()
+
         # This determines how many EVM accounts we want to allocate for validators.
         # Since every validator needs on EVM account, this should be equal to the number of validators (possibly more).
         hardhat_validator_count = 1
@@ -844,69 +838,78 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         hardhat_accounts = self.signer_array_to_ethereum_accounts(sample_eth_accounts, hardhat_validator_count)
 
         # Initialization of smart contracts (technically this is part of deployment)
-        operator_addr, operator_private_key = hardhat_accounts["operator"]
+        operator_acct = hardhat_accounts["operator"]
+        operator_addr, operator_private_key = operator_acct
 
-        if self.use_geth_instead_of_hardhat:
-            # Note: if the contracts were compiled previously for hardhat, or if previous deployment failed, you might
-            # have to remove smart-contracts/{build,cache,artifacts,.openzeppelin}
-            funds_alloc = {
+        files_to_delete = []
+        try:
+            if self.use_geth_instead_of_hardhat:
                 # EnvCtx takes environment "ETH_ACCOUNT_OWNER_ADDRESS" for funding ETH accounts which is set from
                 # hardhat_accounts["owner"] Smart contract delpoyment however needs funds on 0'th account which is the
                 # operator. For now we fund both. TODO cleanup, allocate all ether to make EnvCtx fund accounts from ETH_ACCOUNT_OPERATOR_ADDRESS
-                hardhat_accounts["owner"][0]: 1000 * eth.ETH,
-                hardhat_accounts["operator"][0]: 1000 * eth.ETH,
-            }
-            geth_runner_acct = ten_sample_accounts[6]  # geth needs at least one account to run, and it has to be unlocked.
-            geth_http_port = 8546
-            geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
-            geth_datadir = "/tmp/geth"  # TODO self.cmd.mktempdir()
-            w3_url = eth.web3_host_port_url("localhost", geth_ws_port)
-            self.cmd.rmdir(geth_datadir)
-            self.cmd.mkdir(geth_datadir)
-            geth = Geth(self.cmd, datadir=geth_datadir)
-            geth.create_account(geth_runner_acct[1])
-            geth.init(ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc)
-            tmp_password_file = self.cmd.mktempfile()
-            try:
-                self.cmd.write_text_file(tmp_password_file, "")
+                # validators need funds to run, too.
+                accounts_to_fund = \
+                    [hardhat_accounts[who][0] for who in ["owner", "operator"]] + \
+                    [acct[0] for acct in hardhat_accounts["validators"]]
+                funds_alloc = {addr: 1000 * eth.ETH for addr in accounts_to_fund}
+                funds_alloc = {acct[0]: 1000 * eth.ETH for acct in sample_eth_accounts}
+                # geth needs at least one account to run, it has to be unlocked, but doesn't have to be funded.
+                geth_runner_acct = operator_acct
+                geth_runner_password = ""
+                geth_http_port = 8546
+                geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
+                geth_datadir = "/tmp/geth"  # TODO self.cmd.mktempdir()
+                w3_url = eth.web3_host_port_url("localhost", geth_ws_port)
+                self.cmd.rmdir(geth_datadir)
+                self.cmd.mkdir(geth_datadir)
+                geth = Geth(self.cmd, datadir=geth_datadir)
+                geth.create_account(geth_runner_acct[1], password=geth_runner_password)
+                geth.init(ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc, block_mining_period=1)
+                tmp_password_file = self.cmd.mktempfile()
+
+                self.cmd.write_text_file(tmp_password_file, geth_runner_password)
                 # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
                 #      transactions allowed over RPC" when sending transactions
                 geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
                     mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
-                    rpc_allow_unprotected_txs=True)
+                    rpc_allow_unprotected_txs=True, gas_price=1000000000)
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
-                # Wait for geth to start before removing the password file
-                eth.web3_wait_for_connection_up(w3_url)
-            finally:
-                self.cmd.rm(tmp_password_file)
-            hardhat_proc = geth_proc
-            hardhat_config_for_deploying_smart_contracts = "geth"
-            hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
-            hardhat_deploy_url = "http://localhost:{}/".format(geth_http_port)
-            # Accounts for deployments of smart contracts
-            # smart-contracts/scripts/deploy_contracts_dev.ts needs at least 4 accounts, they are used like this:
-            # const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts]
-            smart_contract_accounts = [private_key for _, private_key in sample_eth_accounts]
-        else:
-            hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
-            hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=hardhat_port)
-            hardhat_proc = self.cmd.spawn_asynchronous_process(hardhat_exec_args, log_file=hardhat_log_file)
-            hardhat_config_for_deploying_smart_contracts = "localhost"
-            hardhat_deploy_url = None
-            # hardhat has a blockchain node that will support web socket communication but the node it communicates with
-            # internally must be HTTP
-            w3_url = "ws://localhost:{}".format(8545)
-            smart_contract_accounts = None  # Provided by hardhat (hardcoded)
 
-        w3_conn = eth.web3_connect(w3_url)
-        balances_check = {a[0]: w3_conn.eth.get_balance(a[0]) for a in sample_eth_accounts}
-        assert balances_check[hardhat_accounts["owner"][0]] >= 1 * eth.ETH
-        assert balances_check[hardhat_accounts["operator"][0]] >= 1 * eth.ETH
+                hardhat_proc = geth_proc
+                hardhat_config_section = "geth"
+                hardhat_bind_hostname = "localhost"
+                hardhat_deploy_url = "http://localhost:{}/".format(geth_http_port)
+                # Accounts for deployments of smart contracts
+                # smart-contracts/scripts/deploy_contracts_dev.ts needs at least 4 accounts, they are used like this:
+                # const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts]
+                smart_contract_accounts = [private_key for _, private_key in sample_eth_accounts]
+            else:
+                hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
+                hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=hardhat_port)
+                hardhat_proc = self.cmd.spawn_asynchronous_process(hardhat_exec_args, log_file=hardhat_log_file)
+                hardhat_config_section = "localhost"
+                hardhat_deploy_url = None
+                # hardhat has a blockchain node that will support web socket communication but the node it communicates with
+                # internally must be HTTP
+                w3_url = "ws://localhost:{}".format(8545)
+                smart_contract_accounts = None  # Provided by hardhat (hardcoded)
 
-        hardhat.compile_smart_contracts()
+            w3_conn = eth.web3_wait_for_connection_up(w3_url)
+            balances_check = {a[0]: w3_conn.eth.get_balance(a[0]) for a in sample_eth_accounts}
+            assert balances_check[hardhat_accounts["owner"][0]] >= 1 * eth.ETH
+            assert balances_check[hardhat_accounts["operator"][0]] >= 1 * eth.ETH
 
-        peggy_sc_addrs = hardhat.deploy_smart_contracts(url=hardhat_deploy_url,
-            network=hardhat_config_for_deploying_smart_contracts, accounts=smart_contract_accounts)
+            gas_price = w3_conn.eth.gas_price
+            log.debug("Gas price: {}".format(gas_price))
+        finally:
+            for f in files_to_delete:
+                self.cmd.rm(f)
+
+        # Deploy smart ocntracts using hardhat.
+        # Note: if the contracts were compiled previously for hardhat, or if previous deployment failed, you might
+        # have to remove smart-contracts/{build,cache,artifacts,.openzeppelin}
+        peggy_sc_addrs = hardhat.deploy_smart_contracts(url=hardhat_deploy_url, network=hardhat_config_section,
+            accounts=smart_contract_accounts)
 
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"

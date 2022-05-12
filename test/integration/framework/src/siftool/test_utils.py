@@ -204,7 +204,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     sifnoded_home = None  # Implies default ~/.sifnoded
     deployed_smart_contract_address_overrides = get_overrides_for_smart_contract_addresses(env_vars)
 
-    w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
+    w3_conn = eth.web3_connect(w3_url)
 
     # This variable enables behaviour that is specific to running local Ethereum node (ganache, hardhat):
     # - low-level "advance blocks" command that forces mining of 50 blocks
@@ -288,18 +288,9 @@ class EnvCtx:
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
 
-    def advance_block_w3(self, number):
-        for _ in range(number):
-            # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
-            self.w3_conn.provider.make_request("evm_mine", [])
-
+    # TODO Redirect callers and remove
     def advance_blocks(self, number=50):
-        # TODO Move to eth (it should be per-w3_conn)
-        if self.eth.is_local_node:
-            previous_block = self.eth.w3_conn.eth.block_number
-            self.advance_block_w3(number)
-            assert self.eth.w3_conn.eth.block_number - previous_block >= number
-        # Otherwise do nothing (e.g. wait for balance change takes longer)
+        return self.eth.advance_block_w3(number)
 
     def get_blocklist_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("Blocklist")

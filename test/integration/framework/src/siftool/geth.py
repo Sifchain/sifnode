@@ -170,7 +170,7 @@ class Geth:
     # </editor-fold>
 
     def create_genesis_config_clique(self, chain_id: int, signer_addresses: Iterable[eth.Address],
-        alloc: Mapping[eth.Address, int], gas_limit: int = 8000000, difficulty: int = 1
+        alloc: Mapping[eth.Address, int], gas_limit: int = 8000000, difficulty: int = 1, block_mining_period: int = 5,
     ) -> Mapping[str, Any]:
         # See https://geth.ethereum.org/docs/interface/private-network
         # signer_address = "7df9a875a174b3bc565e6424a0050ebc1b2d1d82"
@@ -194,7 +194,7 @@ class Geth:
                 "berlinBlock": 0,
                 "londonBlock": 0,
                 "clique": {
-                    "period": 5,
+                    "period": block_mining_period,
                     "epoch": 30000
                 }
             },
@@ -205,28 +205,31 @@ class Geth:
         }
 
     def init(self, ethereum_chain_id: int, signers: Iterable[eth.Address],
-        funds_alloc: Optional[Mapping[eth.Address, int]] = None
+        funds_alloc: Optional[Mapping[eth.Address, int]] = None, block_mining_period: Optional[int] = None
     ):
         funds_alloc = funds_alloc or {}
+        kwargs = {}
+        if block_mining_period is not None:
+            kwargs["block_mining_period"] = block_mining_period
         tmp_genesis_file = self.cmd.mktempfile()
         try:
-            genesis = self.create_genesis_config_clique(ethereum_chain_id, signers, funds_alloc)
+            genesis = self.create_genesis_config_clique(ethereum_chain_id, signers, funds_alloc, **kwargs)
             self.cmd.write_text_file(tmp_genesis_file, json.dumps(genesis))
             args = [self.program, "init", tmp_genesis_file] + \
                 (["--datadir", self.datadir] if self.datadir else [])
             # cmd = command.buildcmd(args=args)
             res = self.cmd.execst(args)
-            print(repr(res))
         finally:
             self.cmd.rm(tmp_genesis_file)
 
     def buid_run_args(self, network_id: int, http_port: Optional[int] = None, ws_port: Optional[int] = None,
         dev: bool = False, mine: bool = False, unlock: Optional[str] = None, password: Optional[str] = None,
-        allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False
+        allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False, gas_price: Optional[int] = None
     ):
         args = [self.program, "--networkid", str(network_id), "--nodiscover"] + \
             (["--dev"] if dev else []) + \
             (["--mine"] if mine else []) + \
+            (["--miner.gasprice", str(gas_price)] if gas_price is not None else []) + \
             (["--unlock", unlock] if unlock else []) + \
             (["--password", password] if password else []) + \
             (["--allow-insecure-unlock"] if allow_insecure_unlock else []) + \

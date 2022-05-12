@@ -160,37 +160,6 @@ class Project:
         self.npm_install(self.smart_contracts_dir)
 
     def write_vagrantenv_sh(self, state_vars, data_dir, ethereum_websocket_address, chainnet):
-        # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
-        #
-        # BASEDIR (required), value=/home/jurez/work/projects/sif/sifnode/local
-        # BRIDGE_BANK_ADDRESS (optional), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-        # BRIDGE_BANK_ADDRESS (required), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-        # BRIDGE_REGISTRY_ADDRESS (required), value=0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
-        # BRIDGE_TOKEN_ADDRESS (optional), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-        # BRIDGE_TOKEN_ADDRESS (required), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-        # CHAINDIR (required), 3x value
-        # CHAINNET (required), value=localnet
-        # DEPLOYMENT_NAME (optional), value=None
-        # ETHEREUM_ADDRESS (optional), value=None
-        # ETHEREUM_NETWORK (optional), value=None
-        # ETHEREUM_NETWORK_ID (optional), value=None
-        # GANACHE_KEYS_FILE (optional), value=None
-        # HOME (required), value=/home/jurez
-        # MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
-        # MONIKER (required), value=wandering-flower
-        # OPERATOR_ADDRESS (optional), value=None
-        # OPERATOR_PRIVATE_KEY (optional), value=None
-        # OPERATOR_PRIVATE_KEY (optional), value=c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
-        # ROWAN_SOURCE (optional), value=None
-        # ROWAN_SOURCE_KEY (optional), value=None
-        # SIFCHAIN_ADMIN_ACCOUNT (required), value=sif1896ner48vrg8m05k48ykc6yydlxc4yvm23hp5m
-        # SIFNODE (optional), value=None
-        # SMART_CONTRACTS_DIR (required), 2x value
-        # SMART_CONTRACT_ARTIFACT_DIR (optional), value=None
-        # SOLIDITY_JSON_PATH (optional), value=None
-        # TEST_INTEGRATION_DIR (required), value=/home/jurez/work/projects/sif/sifnode/local/test/integration
-        # VALIDATOR1_ADDR (optional), 3x value
-        # VALIDATOR1_PASSWORD (optional), 3x value
         env = dict_merge(state_vars, {
             # For running test/integration/execute_integration_tests_against_*.sh
             "TEST_INTEGRATION_DIR": project_dir("test/integration"),
