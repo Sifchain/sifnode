@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -88,7 +89,7 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && slicex.StringsContain(strings.ToLower(sdk.MsgTypeURL(msgs[0])), distributionMessageTypes) {
+	if len(msgs) == 1 && isDistributedMsg(msgs[0]) {
 		minGasPrice := sdk.DecCoin{
 			Denom:  "rowan",
 			Amount: sdk.MustNewDecFromStr("0.00000005"),
@@ -104,10 +105,9 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
-		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
-		if slicex.StringsContain(msgTypeURLLower, regularMessageTypes) {
+		if isRegularMessage(msgs[i]) {
 			minFee = sdk.NewInt(100000000000000000) // 0.1
-		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
+		} else if isTransferMessage(msgs[i]) && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
 		}
 	}
@@ -138,4 +138,16 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	}
 
 	return next(ctx, tx, simulate)
+}
+
+func isDistributedMsg(msg types.Msg) bool {
+	return slicex.StringsContain(strings.ToLower(sdk.MsgTypeURL(msg)), distributionMessageTypes)
+}
+
+func isRegularMessage(msg types.Msg) bool {
+	return slicex.StringsContain(strings.ToLower(sdk.MsgTypeURL(msg)), regularMessageTypes)
+}
+
+func isTransferMessage(msg types.Msg) bool {
+	return strings.Contains(strings.ToLower(sdk.MsgTypeURL(msg)), "transfer")
 }
