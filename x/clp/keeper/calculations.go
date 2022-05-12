@@ -360,7 +360,7 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 // Denom change multiplier = 10**decimalsX / 10**decimalsY
 func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
-	diff := Abs(int16(decimalsX) - int16(decimalsY))                       // |decimalsX - decimalsY|
+	diff := Abs(int16(decimalsX) - int16(decimalsY))
 	dec := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**|decimalsX - decimalsY|
 
 	var res big.Rat

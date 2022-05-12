@@ -85,7 +85,8 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 		pool.SwapPriceNative = &spotPriceNative
 		pool.SwapPriceExternal = &spotPriceExternal
 
-		k.SetPool(ctx, pool) // ignore error since it will always be nil
+		// ignore error since it will always be nil
+		_ = k.SetPool(ctx, pool)
 	}
 	return nil
 }
