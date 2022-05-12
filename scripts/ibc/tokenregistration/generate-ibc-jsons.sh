@@ -404,3 +404,62 @@ sifnoded q tokenregistry generate -o json \
 echo "\n\ngenerated entry for $BITCANNA_CHAIN_ID"
 
 cat $SIFCHAIN_ID/ubcna.json | jq
+
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom= \
+	--token_ibc_counterparty_chain_id=$KICHAIN_CHAIN_ID \
+  --token_ibc_channel_id=$KICHAIN_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$KICHAIN_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Kichain" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/kichain.json
+
+echo "\n\ngenerated entry for $KICHAIN_CHAIN_ID"
+
+cat $SIFCHAIN_ID/kichain.json | jq
+
+
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom= \
+	--token_ibc_counterparty_chain_id=$LIKECOIN_CHAIN_ID \
+  --token_ibc_channel_id=$LIKECOIN_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$LIKECOIN_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Likecoin" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/likecoin.json
+
+echo "\n\ngenerated entry for $LIKECOIN_CHAIN_ID"
+
+cat $SIFCHAIN_ID/likecoin.json | jq
+
+
+
+sifnoded q tokenregistry generate -o json \
+	--token_base_denom= \
+	--token_ibc_counterparty_chain_id=$CERBERUS_CHAIN_ID \
+  --token_ibc_channel_id=$CERBERUS_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$CERBERUS_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Cerberus" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/cerberus.json
+
+echo "\n\ngenerated entry for $CERBERUS_CHAIN_ID"
+
+cat $SIFCHAIN_ID/cerberus.json | jq
