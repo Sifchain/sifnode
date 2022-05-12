@@ -1467,6 +1467,12 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 			expected:  *big.NewRat(1, 1),
 		},
 		{
+			name:      "equal values",
+			decimalsX: 5,
+			decimalsY: 5,
+			expected:  *big.NewRat(1, 1),
+		},
+		{
 			name:      "zero X",
 			decimalsX: 0,
 			decimalsY: 2,
@@ -1626,6 +1632,218 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 
 			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceNative(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		nativeAssetBalance     sdk.Uint
+		externalAssetBalance   sdk.Uint
+		decimalsExternal       uint8
+		pmtpCurrentRunningRate sdk.Dec
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "fail when native balance = 0",
+			nativeAssetBalance:     sdk.ZeroUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success when external balance = 0",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.ZeroUint(),
+			decimalsExternal:       10,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "success small values",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("5.499100413926233941"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("10.998200827852467883"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       16,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("1099.820082785246788390"),
+		},
+		{
+			name:                   "success big numbers",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+		{
+			name:                   "success small decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("1000000000000000000.000000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.nativeAssetBalance,
+				ExternalAssetBalance: tc.externalAssetBalance,
+			}
+
+			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		nativeAssetBalance     sdk.Uint
+		externalAssetBalance   sdk.Uint
+		decimalsExternal       uint8
+		pmtpCurrentRunningRate sdk.Dec
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "success when native balance = 0",
+			nativeAssetBalance:     sdk.ZeroUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "fail when external balance = 0",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.ZeroUint(),
+			decimalsExternal:       10,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success small values",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.181847925065624052"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("0.090923962532812026"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       16,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("0.000909239625328120"),
+		},
+		{
+			name:                   "success big numbers",
+			nativeAssetBalance:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success small decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.000000000000000001"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.nativeAssetBalance,
+				ExternalAssetBalance: tc.externalAssetBalance,
+			}
+
+			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())

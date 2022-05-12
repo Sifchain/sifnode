@@ -75,10 +75,10 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 			// Error occurs if native asset pool depth is zero
 			spotPriceNative = sdk.ZeroDec()
 		}
-		spotPriceExternal, err := CalculateSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
+		spotPriceExternal, err := CalcSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
 			// Error occurs if external asset pool depth is zero
-			spotPriceNative = sdk.ZeroDec()
+			spotPriceExternal = sdk.ZeroDec()
 		}
 
 		// Note: the pool field should be named SpotPrice*
