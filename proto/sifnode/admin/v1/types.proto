@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/Sifchain/sifnode/x/admin/types";
 
 message GenesisState {
-  AdminAccounts admin_accounts = 1;
+  repeated AdminAccount admin_accounts = 1;
 }
 
 enum AdminType {
@@ -20,5 +20,3 @@ message AdminAccount {
   AdminType admin_type = 1;
   string admin_address = 2;
 }
-
-message AdminAccounts { repeated AdminAccount admin_accounts = 1; }

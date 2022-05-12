@@ -22,11 +22,10 @@ func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) Keeper {
 }
 
 func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.ValidatorUpdate {
-	if state.AdminAccounts != nil {
-		for _, adminAccount := range state.AdminAccounts.AdminAccounts {
-			k.SetAdminAccount(ctx, adminAccount)
-		}
+	for _, adminAccount := range state.AdminAccounts {
+		k.SetAdminAccount(ctx, adminAccount)
 	}
+
 	return []abci.ValidatorUpdate{}
 }
 
@@ -50,10 +49,10 @@ func (k Keeper) RemoveAdminAccount(ctx sdk.Context, account *types.AdminAccount)
 
 func (k Keeper) IsAdminAccount(ctx sdk.Context, adminType types.AdminType, adminAccount sdk.AccAddress) bool {
 	accounts := k.GetAdminAccountsForType(ctx, adminType)
-	if len(accounts.AdminAccounts) == 0 {
+	if len(accounts) == 0 {
 		return false
 	}
-	for _, account := range accounts.AdminAccounts {
+	for _, account := range accounts {
 		if strings.EqualFold(account.AdminAddress, adminAccount.String()) {
 			return true
 		}
@@ -66,8 +65,8 @@ func (k Keeper) GetAdminAccountIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.AdminAccountStorePrefix)
 }
 
-func (k Keeper) GetAdminAccountsForType(ctx sdk.Context, adminType types.AdminType) *types.AdminAccounts {
-	var res types.AdminAccounts
+func (k Keeper) GetAdminAccountsForType(ctx sdk.Context, adminType types.AdminType) []*types.AdminAccount {
+	var res []*types.AdminAccount
 	iterator := k.GetAdminAccountIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -80,14 +79,14 @@ func (k Keeper) GetAdminAccountsForType(ctx sdk.Context, adminType types.AdminTy
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &al)
 		if al.AdminType == adminType {
-			res.AdminAccounts = append(res.AdminAccounts, &al)
+			res = append(res, &al)
 		}
 	}
-	return &res
+	return res
 }
 
-func (k Keeper) GetAdminAccounts(ctx sdk.Context) *types.AdminAccounts {
-	var res types.AdminAccounts
+func (k Keeper) GetAdminAccounts(ctx sdk.Context) []*types.AdminAccount {
+	var accounts []*types.AdminAccount
 	iterator := k.GetAdminAccountIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -99,7 +98,7 @@ func (k Keeper) GetAdminAccounts(ctx sdk.Context) *types.AdminAccounts {
 		var al types.AdminAccount
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &al)
-		res.AdminAccounts = append(res.AdminAccounts, &al)
+		accounts = append(accounts, &al)
 	}
-	return &res
+	return accounts
 }

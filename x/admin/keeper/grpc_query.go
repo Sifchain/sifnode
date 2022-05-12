@@ -14,7 +14,7 @@ type Querier struct {
 func (q Querier) ListAccounts(ctx context.Context, _ *types.ListAccountsRequest) (*types.ListAccountsResponse, error) {
 	al := q.GetAdminAccounts(sdk.UnwrapSDKContext(ctx))
 	return &types.ListAccountsResponse{
-		Keys: al.AdminAccounts,
+		Keys: al,
 	}, nil
 }
 
