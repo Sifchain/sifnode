@@ -25,6 +25,10 @@ func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, adminKeeper adminkeeper.K
 	}
 }
 
+func (k keeper) StoreKey() sdk.StoreKey {
+	return k.storeKey
+}
+
 func (k keeper) GetAdminKeeper() adminkeeper.Keeper {
 	return k.adminKeeper
 }

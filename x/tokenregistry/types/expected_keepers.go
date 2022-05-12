@@ -7,6 +7,7 @@ import (
 )
 
 type Keeper interface {
+	StoreKey() sdk.StoreKey
 	GetAdminKeeper() adminkeeper.Keeper
 	CheckEntryPermissions(entry *RegistryEntry, permissions []Permission) bool
 	GetEntry(registry Registry, denom string) (*RegistryEntry, error)
