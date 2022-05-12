@@ -69,18 +69,14 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 		entry = &types.RegistryEntry{}
 	}
 
-	// TODO disable the white list for integration, will remove it later
-	// if !entry.IsWhitelisted {
 	entry.Decimals = metadata.Decimals
 	entry.DisplayName = metadata.Name
 	entry.DisplaySymbol = metadata.Symbol
 	entry.Address = metadata.TokenAddress
 	entry.Network = metadata.NetworkDescriptor
 	entry.Denom = denomHash
-	entry.IsWhitelisted = true
 
 	k.SetToken(ctx, entry)
-	// }
 
 	instrumentation.PeggyCheckpoint(k.Logger(ctx), instrumentation.AddTokenMetadata, "entry", entry)
 

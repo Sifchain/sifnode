@@ -21,20 +21,19 @@ enum Permission {
 }
 
 message RegistryEntry {
-  bool is_whitelisted = 1;
-  int64 decimals = 2;
-  string denom = 3;
-  string base_denom = 4;
-  string path = 5;
-  string ibc_channel_id = 6;
-  string ibc_counterparty_channel_id = 7;
-  string display_name = 8;
-  string display_symbol = 9;
-  sifnode.oracle.v1.NetworkDescriptor network = 10;
-  string address = 11;
-  string external_symbol = 12;
-  string transfer_limit = 13;
-  repeated Permission permissions = 15;
+  int64 decimals = 1;
+  string denom = 2;
+  string base_denom = 3;
+  string path = 4;
+  string ibc_channel_id = 5;
+  string ibc_counterparty_channel_id = 6;
+  string display_name = 7;
+  string display_symbol = 8;
+  sifnode.oracle.v1.NetworkDescriptor network = 9;
+  string address = 10;
+  string external_symbol = 11;
+  string transfer_limit = 12;
+  repeated Permission permissions = 13;
   // The name of denomination unit of this token that is the smallest unit
   // stored. IBC imports of this RegistryEntry convert and store funds as
   // unit_denom. Several different denom units of a token may be imported into
@@ -45,15 +44,15 @@ message RegistryEntry {
   // other chains to overcome the uint64 limit on the packet level and import
   // large amounts of high precision tokens easily. ie. microrowan -> rowan i.e
   // rowan -> rowan
-  string unit_denom = 16;
+  string unit_denom = 14;
   // The name of denomination unit of this token that should appear on
   // counterparty chain when this unit is exported. If empty, the denom is
   // exported as is. Generally this will only be used to map a high precision
   // (unit_denom) to a lower precision, to overcome the current uint64 limit on
   // the packet level. i.e rowan -> microrowan i.e microrowan -> microrowan
-  string ibc_counterparty_denom = 17;
-  string ibc_counterparty_chain_id = 18;
-  map<uint32, bool> double_pegged_network_map = 19;
+  string ibc_counterparty_denom = 15;
+  string ibc_counterparty_chain_id = 16;
+  map<uint32, bool> double_pegged_network_map = 17;
 }
 
 // Coin Metadata Modlue structure for storing
