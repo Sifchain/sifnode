@@ -56,7 +56,7 @@ the address will be looked up in the local Keybase.
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 			state := admintypes.UnmarshalGenesis(cdc, appState[admintypes.ModuleName])
-			account := admintypes.AdminAccounts{AdminAccounts: []*admintypes.AdminAccount{
+			state.AdminAccounts = []*admintypes.AdminAccount{
 				{
 					AdminAddress: addr.String(),
 					AdminType:    admintypes.AdminType_ADMIN,
@@ -77,8 +77,7 @@ the address will be looked up in the local Keybase.
 					AdminAddress: addr.String(),
 					AdminType:    admintypes.AdminType_ETHBRIDGE,
 				},
-			}}
-			state.AdminAccounts = &account
+			}
 			stateBz, err := json.Marshal(state)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
