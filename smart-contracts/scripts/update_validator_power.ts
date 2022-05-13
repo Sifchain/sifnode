@@ -7,6 +7,8 @@ import {SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
 // Usage
 //
 // COSMOSBRIDGE=0x890 VALIDATORS=0x123,0x456 POWERS=20,20 npx hardhat run scripts/update_validator_power.ts
+//
+// Normally this is only used by siftool
 
 async function main() {
   container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
