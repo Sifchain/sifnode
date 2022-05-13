@@ -42,6 +42,7 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) {
 		entry.Peggy_2Denom = peggy2denom
 		m.keeper.SetToken(ctx, entry)
 		peggyTwoEntry.Denom = peggy2denom
+		peggyTwoEntry.Peggy_2Denom = peggy2denom
 		m.keeper.SetToken(ctx, peggyTwoEntry)
 	}
 }

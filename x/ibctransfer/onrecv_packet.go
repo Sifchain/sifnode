@@ -2,6 +2,7 @@ package ibctransfer
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,6 +39,18 @@ func OnRecvPacketWhitelistConvert(
 	// which will be on the whitelist.
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
 	mintedDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenom)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err.Error())
+	}
+	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err.Error())
+	}
+	amount, ok := sdk.NewIntFromString(data.Amount)
+	if !ok {
+		return channeltypes.NewErrorAcknowledgement(errors.New("Unable to get string amount").Error())
+	}
+
 	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
@@ -57,7 +70,7 @@ func OnRecvPacketWhitelistConvert(
 	// TODO Add entries fpr Non-X versions of tokens to tokenRegistry
 	convertToDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenomEntry.UnitDenom)
 	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
+		convAmount, err := helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
 			acknowledgement := channeltypes.NewErrorAcknowledgement(
@@ -65,8 +78,20 @@ func OnRecvPacketWhitelistConvert(
 			)
 			return acknowledgement
 		}
+		mintedDenom = convertToDenomEntry.Denom
+		amount = convAmount
 	}
 
+	finalDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenom)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err.Error())
+	}
+	if helpers.IsPeggy1Denom(finalDenomEntry) {
+		err := helpers.MigrateToPeggy2Denom(ctx, finalDenomEntry, bankKeeper, receiver, amount)
+		if err != nil {
+			return channeltypes.NewErrorAcknowledgement(err.Error())
+		}
+	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypePacket,
