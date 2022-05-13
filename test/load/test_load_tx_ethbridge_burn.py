@@ -85,7 +85,7 @@ def test_single_sif_to_multiple_eth_account_burn_eth(ctx: test_utils.EnvCtx):
 
 # short test to verify eth burn works
 def test_load_tx_ethbridge_burn_eth_short(ctx: test_utils.EnvCtx):
-    transfer_table = [[20, 20]]
+    transfer_table = [[5, 5]]
     amount_per_tx = 1000100101
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, None)
 
