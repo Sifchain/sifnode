@@ -173,12 +173,6 @@ class Geth:
         alloc: Mapping[eth.Address, int], gas_limit: int = 8000000, difficulty: int = 1, block_mining_period: int = 5,
     ) -> Mapping[str, Any]:
         # See https://geth.ethereum.org/docs/interface/private-network
-        # signer_address = "7df9a875a174b3bc565e6424a0050ebc1b2d1d82"
-        # alloc = {
-        #     signer_address.lower()[2:]: 300000,
-        #     "f41c74c9ae680c1aa78f42e5647a62f353b7bdde": 400000,
-        # }
-        # chain_id = 15
         extradata = "0x" + "00"*32 + ''.join([addr.lower()[2:] for addr in signer_addresses]) + "00"*65
         return {
             "config": {
@@ -224,7 +218,8 @@ class Geth:
 
     def buid_run_args(self, network_id: int, http_port: Optional[int] = None, ws_port: Optional[int] = None,
         dev: bool = False, mine: bool = False, unlock: Optional[str] = None, password: Optional[str] = None,
-        allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False, gas_price: Optional[int] = None
+        allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False, gas_price: Optional[int] = None,
+        verbosity: Optional[int] = None
     ):
         args = [self.program, "--networkid", str(network_id), "--nodiscover"] + \
             (["--dev"] if dev else []) + \
@@ -236,7 +231,8 @@ class Geth:
             (["--datadir", self.datadir] if self.datadir else []) + \
             (["--ws", "--ws.addr", "0.0.0.0", "--ws.port", str(ws_port), "--ws.api", "personal,eth,net,web3"] if ws_port is not None else []) + \
             (["--http", "--http.addr", "0.0.0.0", "--http.port", str(http_port), "--http.api", "personal,eth,net,web3"] if http_port is not None else []) + \
-            (["--rpc.allow-unprotected-txs"] if rpc_allow_unprotected_txs else [])
+            (["--rpc.allow-unprotected-txs"] if rpc_allow_unprotected_txs else []) + \
+            (["--verbosity", str(verbosity)] if verbosity is not None else [])
         return command.buildcmd(args)
 
 

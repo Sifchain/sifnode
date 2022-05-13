@@ -872,17 +872,20 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 #      transactions allowed over RPC" when sending transactions
                 geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
                     mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
-                    rpc_allow_unprotected_txs=True, gas_price=1000000000)
+                    rpc_allow_unprotected_txs=True)
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
 
                 hardhat_proc = geth_proc
                 hardhat_config_section = "geth"
                 hardhat_bind_hostname = "localhost"
                 hardhat_deploy_url = "http://localhost:{}/".format(geth_http_port)
-                # Accounts for deployments of smart contracts
-                # smart-contracts/scripts/deploy_contracts_dev.ts needs at least 4 accounts, they are used like this:
+                # Accounts for deployments of smart contracts that are passed to smart-contracts/hardhat.config.ts for
+                # deployment of smart contracts. The actual script, smart-contracts/scripts/deploy_contracts_dev.ts,
+                # needs at least 4 accounts, they are destructured like this:
                 # const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts]
                 smart_contract_accounts = [private_key for _, private_key in sample_eth_accounts]
+                relayer_extra_args = {"max_fee_per_gas": 300000000000, "max_priority_fee_per_gas": 100000000000}
+
             else:
                 hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
                 hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=hardhat_port)
@@ -893,6 +896,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 # internally must be HTTP
                 w3_url = "ws://localhost:{}".format(8545)
                 smart_contract_accounts = None  # Provided by hardhat (hardcoded)
+                relayer_extra_args = None
 
             w3_conn = eth.web3_wait_for_connection_up(w3_url)
             balances_check = {a[0]: w3_conn.eth.get_balance(a[0]) for a in sample_eth_accounts}
@@ -952,7 +956,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         [relayer0_exec_args], [witness0_exec_args] = \
         self.start_witnesses_and_relayers(w3_url, ethereum_chain_id, tcp_url,
             chain_id, peggy_sc_addrs, hardhat_accounts["validators"], sifnode_validators, sifnode_relayers,
-            sifnode_witnesses, symbol_translator_file)
+            sifnode_witnesses, symbol_translator_file, relayer_extra_args)
 
         relayer0_proc = self.cmd.spawn_asynchronous_process(relayer0_exec_args, log_file=relayer_log_file)
         witness0_proc = self.cmd.spawn_asynchronous_process(witness0_exec_args, log_file=witness_log_file)
@@ -1129,7 +1133,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
 
     def start_witnesses_and_relayers(self, web3_websocket_address, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs,
-        evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file
+        evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file,
+        relayer_extra_args
     ):
         # For now we assume a single validator
         evm_validator0_addr, evm_validator0_key = exactly_one(evm_validator_accounts)
@@ -1169,6 +1174,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             keyring_backend="test",
             keyring_dir=sifnode_relayer0_home,
             home=sifnode_relayer0_home,
+            **relayer_extra_args,
         )
 
         witness0_exec_args = ebrelayer.peggy2_build_ebrelayer_cmd(

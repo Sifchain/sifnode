@@ -364,9 +364,11 @@ class Ebrelayer:
         self.cmd = cmd
         self.binary = "ebrelayer"
 
-    def peggy2_build_ebrelayer_cmd(self, init_what, network_descriptor, tendermint_node, web3_provider,
-        bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,
-        keyring_dir=None, sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None,
+    def peggy2_build_ebrelayer_cmd(self, init_what: str, network_descriptor: int, tendermint_node: str,
+        web3_provider: str, bridge_registry_contract_address: eth.Address, validator_mnemonic: str, chain_id: str,
+        node: Optional[str] = None, keyring_backend: Optional[str] = None, keyring_dir: Optional[str] = None,
+        sign_with: Optional[str] = None, symbol_translator_file: Optional[str] = None, log_format: Optional[str] = None,
+        max_fee_per_gas: Optional[int] = None, max_priority_fee_per_gas: Optional[str] = None, extra_args=None,
         ethereum_private_key=None, ethereum_address=None, home=None, cwd=None
     ):
         env = _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key)
@@ -387,7 +389,10 @@ class Ebrelayer:
             (["--home", home] if home else []) + \
             (["--keyring-dir", keyring_dir] if keyring_dir else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
-            (["--log_format", log_format] if log_format else [])
+            (["--log_format", log_format] if log_format else []) + \
+            (["--maxFeePerGasFlag", str(max_fee_per_gas)] if max_fee_per_gas is not None else []) + \
+            (["--maxPriorityFeePerGasFlag", str(max_priority_fee_per_gas)] if max_priority_fee_per_gas is not None else [])
+
         return command.buildcmd(args, env=env, cwd=cwd)
 
     # Legacy stuff - pre-peggy2
