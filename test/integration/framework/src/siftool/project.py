@@ -61,12 +61,8 @@ class Project:
             # Peggy/devenv/hardhat cleanup
             # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
             # TODO Difference between yarn vs. npm install?
-            # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
             # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-            self.__rm(self.project_dir("smart-contracts", "build"))             # (1)
-            self.__rm(self.project_dir("smart-contracts", "artifacts"))         # (1)
-            self.__rm(self.project_dir("smart-contracts", "cache"))             # (1)
-            self.__rm(self.project_dir("smart-contracts", ".openzeppelin"))     # (1)
+            self.__rm_hardhat_compiled_files()
             self.__rm(self.project_dir("smart-contracts", "relayerdb"))         # (2)
             self.__rm(self.project_dir("smart-contracts", "environment.json"))  # (2)
             self.__rm(self.project_dir("smart-contracts", "env.json"))          # (2)
@@ -101,8 +97,7 @@ class Project:
             self.__rm(self.cmd.get_user_home(".sifnode-integration"))
 
             # Peggy2
-            # Generated Go stubs (by smart-contracts/Makefile)
-            self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+            self.__rm_peggy2_compiled_go_stubs()
             self.__rm(self.project_dir("smart-contracts", ".hardhat-compile"))
 
             # Remove go dependencies and re-download them (GOPATH=~/go)
@@ -194,6 +189,20 @@ class Project:
         self.make_go_binaries_2()
         self.install_smart_contracts_dependencies()
 
+    def __rm_sifnode_binaries(self):
+        for filename in ["sifnoded", "ebrelayer", "sifgen"]:
+            self.__rm(os.path.join(self.go_bin_dir, filename))
+
+    # Removes hardhat-compiled smart contract files that are result of running
+    # cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
+    def __rm_hardhat_compiled_files(self):
+        for path in ["build", "artifacts", "cache", ".openzeppelin", ".hardhat-compile"]:
+            self.__rm(os.path.join(self.smart_contracts_dir, path))
+
+    def __rm_peggy2_compiled_go_stubs(self):
+        # Peggy2: generated Go stubs (by smart-contracts/Makefile)
+        self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+
     def clean(self):
         self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
         self.cmd.rmf(os.path.join(self.siftool_dir, "build"))
@@ -207,8 +216,7 @@ class Project:
             self.cmd.rmf(self.project_dir("smart-contracts", "cache"))
             self.cmd.rmf(self.project_dir("smart-contracts", "artifacts"))
 
-            for filename in ["sifnoded", "ebrelayer", "sifgen"]:
-                self.cmd.rmf(os.path.join(self.go_bin_dir, filename))
+            self.__rm_sifnode_binaries()
 
     # Use this between run-env.
     def old_clean(self, level=None):
@@ -237,7 +245,7 @@ class Project:
         self.install_smart_contracts_dependencies()
         self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
 
-    def npm_install(self, path):
+    def npm_install(self, path: str, disable_cache: bool = False):
         # TODO Add package-lock.json also on future/peggy2 branch?
         package_lock_json = os.path.join(path, "package.json" if on_peggy2_branch else "package-lock.json")
         sha1 = self.cmd.sha1_of_file(package_lock_json)
@@ -374,3 +382,20 @@ class Project:
         self.cmd.execst(["git", "clone", "-q"] + (["--depth", "1"] if shallow else []) + [url, path])
         if checkout_commit:
             self.cmd.execst(["git", "checkout", checkout_commit], cwd=path)
+
+    def reset(self):
+        self.__rm(os.path.join(self.smart_contracts_dir, "node_modules"))
+        self.__rm_hardhat_compiled_files()
+        self.__rm_sifnode_binaries()
+        self.__rm(os.path.join(self.cmd.get_user_home(), ".sifnoded"))
+        self.__rm_peggy2_compiled_go_stubs()
+        self.npm_install(self.smart_contracts_dir)
+        self.make_go_binaries_2()
+
+    # Convenience wrapper
+    def test(self, path: str, function: Optional[str] = None):
+        test_arg = os.path.realpath(path)
+        if function:
+            test_arg += "::" + function
+        args = [self.project_python(), "-m", "pytest", "-olog_cli=true", "-olog_cli_level=DEBUG", test_arg]
+        self.cmd.execst(args, pipe=False)
