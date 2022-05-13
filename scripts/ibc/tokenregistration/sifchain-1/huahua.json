@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/B75D134EA563A1D0AEB6C8F60180453DC8FB3787C6D7598F4158B37454FDAF33",
+      "denom": "ibc/7B1E1EFA6808065DA759354B6F21433156F4BF5DF2CF96DCBBC91738683748AF",
       "base_denom": "uhuahua",
-      "path": "transfer/channel-35",
-      "ibc_channel_id": "channel-35",
-      "ibc_counterparty_channel_id": "channel-8",
+      "path": "transfer/channel-58",
+      "ibc_channel_id": "channel-58",
+      "ibc_counterparty_channel_id": "channel-20",
       "display_name": "Chihuahua",
       "display_symbol": "",
       "network": "",

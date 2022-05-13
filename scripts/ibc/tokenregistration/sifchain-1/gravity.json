@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/84506C652F91EA3742B9E00C4240BB039466DBAC48BD12872D2C1BA3FCFCA31E",
+      "base_denom": "ugraviton",
+      "path": "transfer/channel-60",
+      "ibc_channel_id": "channel-60",
+      "ibc_counterparty_channel_id": "channel-66",
+      "display_name": "Gravity Bridge",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "gravity-bridge-3"
+    }
+  ]
+}

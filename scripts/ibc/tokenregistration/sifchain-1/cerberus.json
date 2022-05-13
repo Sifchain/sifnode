@@ -2,12 +2,12 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/EA536E5F63A259E4D80719728CB386D03CD66AFE4E1D6A39EE88198CF964485E",
-      "base_denom": "ustars",
-      "path": "transfer/channel-57",
-      "ibc_channel_id": "channel-57",
-      "ibc_counterparty_channel_id": "channel-41",
-      "display_name": "Stargaze",
+      "denom": "ibc/B650115F83DF4CA83E406A0ABDCE0BC284DC0B382DEFF634321D256FA8AFE2B9",
+      "base_denom": "ucrbrus",
+      "path": "transfer/channel-63",
+      "ibc_channel_id": "channel-63",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "Cerberus",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "stargaze-1"
+      "ibc_counterparty_chain_id": "cerberus-chain-1"
     }
   ]
 }
