@@ -3,14 +3,13 @@ package ante
 import (
 	"strings"
 
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/Sifchain/sifnode/tools/slicex"
+	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 )
 
 // Predefined errors
@@ -140,14 +139,14 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	return next(ctx, tx, simulate)
 }
 
-func isDistributedMsg(msg types.Msg) bool {
+func isDistributedMsg(msg sdk.Msg) bool {
 	return slicex.StringsContain(strings.ToLower(sdk.MsgTypeURL(msg)), distributionMessageTypes)
 }
 
-func isRegularMessage(msg types.Msg) bool {
+func isRegularMessage(msg sdk.Msg) bool {
 	return slicex.StringsContain(strings.ToLower(sdk.MsgTypeURL(msg)), regularMessageTypes)
 }
 
-func isTransferMessage(msg types.Msg) bool {
+func isTransferMessage(msg sdk.Msg) bool {
 	return strings.Contains(strings.ToLower(sdk.MsgTypeURL(msg)), "transfer")
 }
