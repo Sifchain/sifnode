@@ -36,6 +36,7 @@ def main(argv):
         e.stack_save_snapshot()
         e.stack_push()
     elif what == "run-env":
+        project.clean_run_env_state()
         if on_peggy2_branch:
             argparser.add_argument("--test-denom-count", type=int)
             argparser.add_argument("--geth", action="store_true", default=False)

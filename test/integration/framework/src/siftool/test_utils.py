@@ -900,3 +900,17 @@ def sifnoded_parse_output_lines(stdout):
         m = pat.match(line)
         result[m[1]] = m[2]
     return result
+
+def pytest_ctx_fixture(request):
+    # To pass the "snapshot_name" as a parameter with value "foo" from test, annotate the test function like this:
+    # @pytest.mark.snapshot_name("foo")
+    snapshot_name = request.node.get_closest_marker("snapshot_name")
+    if snapshot_name is not None:
+        snapshot_name = snapshot_name.args[0]
+        logging.debug("Context setup: snapshot_name={}".format(repr(snapshot_name)))
+    with get_test_env_ctx() as ctx:
+        yield ctx
+        logging.debug("Test context cleanup")
+
+def pytest_test_wrapper_fixture():
+    disable_noisy_loggers()

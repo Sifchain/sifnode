@@ -101,15 +101,18 @@ def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)
     return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
 
+def disable_noisy_loggers():
+    logging.getLogger("eth").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+    logging.getLogger("web3").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+
 def basic_logging_setup():
     import sys
     # logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="%(name)s: %(message)s")
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s")
     # logging.getLogger(__name__).setLevel(logging.DEBUG)
-    logging.getLogger("eth").setLevel(logging.WARNING)
-    logging.getLogger("websockets").setLevel(logging.WARNING)
-    logging.getLogger("web3").setLevel(logging.WARNING)
-    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    disable_noisy_loggers()
 
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})

@@ -896,7 +896,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 # internally must be HTTP
                 w3_url = "ws://localhost:{}".format(8545)
                 smart_contract_accounts = None  # Provided by hardhat (hardcoded)
-                relayer_extra_args = None
+                relayer_extra_args = {}
 
             w3_conn = eth.web3_wait_for_connection_up(w3_url)
             balances_check = {a[0]: w3_conn.eth.get_balance(a[0]) for a in sample_eth_accounts}

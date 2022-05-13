@@ -43,13 +43,8 @@ class Project:
         else:
             log.debug("Nothing to delete for '{}'".format(path))
 
-    def __rm_files_develop(self):
-        self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
-
     def __rm_files(self, level):
         if level >= 0:
-            # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-            self.__rm_files_develop()
             self.__rm(self.project_dir("smart-contracts", "build"))  # truffle deploy
             self.__rm(self.project_dir("test", "integration", "vagrant", "data"))
             self.__rm(self.project_dir("test", "integration", "src", ".pytest_cache"))
@@ -61,13 +56,8 @@ class Project:
             # Peggy/devenv/hardhat cleanup
             # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
             # TODO Difference between yarn vs. npm install?
-            # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             self.__rm_hardhat_compiled_files()
-            self.__rm(self.project_dir("smart-contracts", "relayerdb"))         # (2)
-            self.__rm(self.project_dir("smart-contracts", "environment.json"))  # (2)
-            self.__rm(self.project_dir("smart-contracts", "env.json"))          # (2)
-            self.__rm(self.project_dir("smart-contracts", ".env"))              # (2)
-            self.__rm(self.project_dir("smart-contracts", "venv"))
+            self.__rm_run_env_files()
 
             # Additional cleanup (not neccessary to make it work)
             # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
@@ -93,7 +83,7 @@ class Project:
             self.__rm(self.cmd.get_user_home(".npm"))
             self.__rm(self.cmd.get_user_home(".npm-global"))
             self.__rm(self.cmd.get_user_home(".cache/yarn"))
-            self.__rm(self.cmd.get_user_home(".sifnoded"))
+            self.__rm_run_env_files()
             self.__rm(self.cmd.get_user_home(".sifnode-integration"))
 
             # Peggy2
@@ -202,6 +192,17 @@ class Project:
     def __rm_peggy2_compiled_go_stubs(self):
         # Peggy2: generated Go stubs (by smart-contracts/Makefile)
         self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+
+    def __rm_run_env_files(self):
+        self.__rm(self.cmd.get_user_home(".sifnoded"))
+
+        # Created by npx hardhat run scripts/devenv.ts and/or siftool run-env
+        self.__rm(self.project_dir("smart-contracts", "relayerdb"))  # peggy1 only
+        self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # Probably obsolete on peggy2 TODO move to /tmp
+        self.__rm(self.project_dir("smart-contracts", "environment.json"))
+        self.__rm(self.project_dir("smart-contracts", "env.json"))
+        self.__rm(self.project_dir("smart-contracts", ".env"))
+        self.__rm(self.project_dir("smart-contracts", "venv"))
 
     def clean(self):
         self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
@@ -399,3 +400,10 @@ class Project:
             test_arg += "::" + function
         args = [self.project_python(), "-m", "pytest", "-olog_cli=true", "-olog_cli_level=DEBUG", test_arg]
         self.cmd.execst(args, pipe=False)
+
+    def pkill(self):
+        for proc_name in ["node", "ebrelayer", "sifnoded", "geth"]:
+            self.cmd.execst(["pkill", proc_name], check_exit=False)
+
+    def clean_run_env_state(self):
+        self.__rm_run_env_files()
