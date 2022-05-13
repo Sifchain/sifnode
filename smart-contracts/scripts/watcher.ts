@@ -13,7 +13,7 @@ async function main() {
 
     await setupDeployment(container)
 
-    const devenv = await readDevEnvObj("/home/james/workspace/sifnode/smart-contracts/environment.json")
+    const devenv = await readDevEnvObj("./environment.json")
 
     const bridgeBank = await BridgeBank__factory.connect(devenv.contractResults!!.contractAddresses.bridgeBank, hardhat.ethers.provider)
 
