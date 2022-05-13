@@ -43,7 +43,7 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, amount_to_send, ctx.ceth_symbol)
 
     # Verify final balance
-    ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before)
+    ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before, timeout=600)
 
 
 def test_erc20_to_sifnode_and_back_first_time(ctx):
