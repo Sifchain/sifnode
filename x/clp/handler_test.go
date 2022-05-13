@@ -109,8 +109,8 @@ func TestAddLiquidity(t *testing.T) {
 	require.NotNil(t, res)
 	msg = clptypes.NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), addLiquidityAmount)
 	res, err = handler(ctx, &msg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+	require.EqualError(t, err, "Cannot add liquidity asymmetrically")
+	require.Nil(t, res)
 	// Subtracted twice , during create and add
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
 	nativeCoin = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(sdk.ZeroUint())))
@@ -155,8 +155,8 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	require.NotNil(t, res)
 	msg := clptypes.NewMsgAddLiquidity(signer, asset, addLiquidityAmountRowan, addLiquidityAmountCaCoin)
 	res, err = handler(ctx, &msg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+	require.EqualError(t, err, "Cannot add liquidity asymmetrically")
+	require.Nil(t, res)
 }
 
 func TestRemoveLiquidity(t *testing.T) {
@@ -194,8 +194,8 @@ func TestRemoveLiquidity(t *testing.T) {
 	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+	require.EqualError(t, err, "Cannot remove liquidity asymmetrically")
+	require.Nil(t, res)
 	for _, coin := range coins {
 		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
@@ -205,8 +205,8 @@ func TestRemoveLiquidity(t *testing.T) {
 	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+	require.EqualError(t, err, "Cannot remove liquidity asymmetrically")
+	require.Nil(t, res)
 	for _, coin := range coins {
 		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
@@ -227,8 +227,8 @@ func TestRemoveLiquidity(t *testing.T) {
 	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+	require.EqualError(t, err, "Cannot remove liquidity asymmetrically")
+	require.Nil(t, res)
 	for _, coin := range coins {
 		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
@@ -256,8 +256,8 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	msg = clptypes.NewMsgRemoveLiquidity(newLP, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
-	require.NoError(t, err)
-	require.NotNil(t, res, "Can withdraw now as new LP has added liquidity")
+	require.EqualError(t, err, "Cannot remove liquidity asymmetrically")
+	require.Nil(t, res, "Cannot withdraw now as new LP hasnt added liquidity")
 }
 
 func TestSwap(t *testing.T) {
@@ -351,6 +351,11 @@ func TestDecommisionPool(t *testing.T) {
 	UnlockAllliquidity(app, ctx, asset, signer, t)
 
 	msgrm := clptypes.NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(5001), sdk.NewInt(1))
+	res, err = handler(ctx, &msgrm)
+	require.EqualError(t, err, "Cannot remove liquidity asymmetrically")
+	require.Nil(t, res)
+
+	msgrm = clptypes.NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(5001), sdk.NewInt(0))
 	res, err = handler(ctx, &msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -468,8 +473,14 @@ func TestUnlockLiquidity(t *testing.T) {
 
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
+	require.EqualError(t, err, "Cannot remove liquidity asymmetrically")
+	require.Nil(t, res)
+
+	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(5001), sdk.NewInt(0))
+	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
 	for _, coin := range coins {
 		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")

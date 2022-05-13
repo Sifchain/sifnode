@@ -2,12 +2,12 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/345D30E8ED06B47FC538ED131D99D16126F07CD6F8B35DE96AAF4C1E445AF466",
-      "base_denom": "uscrt",
-      "path": "transfer/channel-65",
-      "ibc_channel_id": "channel-65",
-      "ibc_counterparty_channel_id": "channel-15",
-      "display_name": "Secret",
+      "denom": "ibc/57BB0CFF9782730595988FD330AA41605B0628E11507BABC1207B830A23493B9",
+      "base_denom": "aevmos",
+      "path": "transfer/channel-55",
+      "ibc_channel_id": "channel-55",
+      "ibc_counterparty_channel_id": "channel-7",
+      "display_name": "Evmos",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "secret-4"
+      "ibc_counterparty_chain_id": "evmos_9001-2"
     }
   ]
 }

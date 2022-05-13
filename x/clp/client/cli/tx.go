@@ -3,9 +3,10 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"io/ioutil"
 	"path/filepath"
+
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	"log"
 
@@ -36,11 +37,13 @@ func GetTxCmd() *cobra.Command {
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
 		GetCmdUnlockLiquidity(),
+		GetCmdCancelUnlockLiquidity(),
 		GetCmdUpdateRewardParams(),
 		GetCmdAddRewardPeriod(),
 		GetCmdModifyPmtpRates(),
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
+		GetCmdSetSymmetryThreshold(),
 	)
 
 	return clpTxCmd
@@ -109,6 +112,38 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalCancelPeriod)
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetSymmetryThreshold() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-symmetry-threshold",
+		Short: "Set symmetry threshold",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			threshold, err := sdk.NewDecFromStr(viper.GetString(FlagSymmetryThreshold))
+			if err != nil {
+				return err
+			}
+			msg := types.MsgSetSymmetryThreshold{
+				Signer:    signer.String(),
+				Threshold: threshold,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().String(FlagSymmetryThreshold, "", "")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -524,6 +559,46 @@ func GetCmdUnlockLiquidity() *cobra.Command {
 			units := viper.GetUint64(FlagUnits)
 			unitsInt := sdk.NewUint(units)
 			msg := types.MsgUnlockLiquidityRequest{
+				Signer:        signer.String(),
+				ExternalAsset: &externalAsset,
+				Units:         unitsInt,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsAssetSymbol)
+	cmd.Flags().AddFlagSet(FsUnits)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagUnits); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdCancelUnlockLiquidity() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cancel-unbond",
+		Short: "Cancel unbonding of liquidity from a pool",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
+			signer := clientCtx.GetFromAddress()
+			units := viper.GetUint64(FlagUnits)
+			unitsInt := sdk.NewUint(units)
+			msg := types.MsgCancelUnlock{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,
 				Units:         unitsInt,

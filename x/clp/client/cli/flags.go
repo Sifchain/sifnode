@@ -30,6 +30,7 @@ const (
 	FlagNewPolicy                    = "newPolicy"
 	FlagMintParams                   = "mint-params"
 	FlagMinter                       = "minter"
+	FlagSymmetryThreshold            = "threshold"
 )
 
 // common flagsets to add to various functions

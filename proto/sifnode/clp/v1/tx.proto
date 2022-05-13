@@ -21,6 +21,8 @@ service Msg {
   rpc ModifyPmtpRates(MsgModifyPmtpRates) returns (MsgModifyPmtpRatesResponse);
   rpc UpdatePmtpParams(MsgUpdatePmtpParams) returns (MsgUpdatePmtpParamsResponse);
   rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams) returns (MsgUpdateStakingRewardParamsResponse);
+  rpc SetSymmetryThreshold(MsgSetSymmetryThreshold) returns (MsgSetSymmetryThresholdResponse);
+  rpc CancelUnlockLiquidity(MsgCancelUnlock) returns (MsgCancelUnlockResponse);
 }
 
 //message MsgUpdateStakingRewardParams{
@@ -199,3 +201,25 @@ message MsgAddRewardPeriodRequest {
 }
 
 message MsgAddRewardPeriodResponse {}
+
+message MsgSetSymmetryThreshold {
+  string signer = 1;
+  string threshold = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgSetSymmetryThresholdResponse {}
+
+message MsgCancelUnlock {
+  string signer = 1;
+  sifnode.clp.v1.Asset external_asset = 2
+  [ (gogoproto.moretags) = "yaml:\"external_asset\"" ];
+  string units = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgCancelUnlockResponse {}
