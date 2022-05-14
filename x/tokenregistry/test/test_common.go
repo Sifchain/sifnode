@@ -20,11 +20,11 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context, string) {
 	return app, ctx, admin.String()
 }
 
-func GetAdmins(address string) *admintypes.AdminAccounts {
-	return &admintypes.AdminAccounts{AdminAccounts: []*admintypes.AdminAccount{
+func GetAdmins(address string) []*admintypes.AdminAccount {
+	return []*admintypes.AdminAccount{
 		{
 			AdminType:    admintypes.AdminType_TOKENREGISTRY,
 			AdminAddress: address,
 		},
-	}}
+	}
 }
