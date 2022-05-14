@@ -1,8 +1,9 @@
 import pytest
 
-from integration_framework import main, common, eth, test_utils, inflate_tokens
-from inflate_tokens import InflateTokens
-from common import *
+import siftool_path
+from siftool import eth, sifchain
+from siftool.inflate_tokens import InflateTokens
+from siftool.common import *
 
 
 # Sifchain wallets to which we want to distribute
@@ -74,21 +75,38 @@ assets = [
 
 @pytest.mark.skipif("on_peggy2_branch")
 def test_inflate_tokens_short(ctx):
-    amount =  12 * 10**10
+    _test_inflate_tokens_parametrized(ctx, 3)
+
+
+# This test takes >1h, times out in GitHub CI
+@pytest.mark.skipif("on_peggy2_branch")
+@pytest.mark.skipif("in_github_ci")
+def test_inflate_tokens_long(ctx):
+    _test_inflate_tokens_parametrized(ctx, 300)
+
+
+def _test_inflate_tokens_parametrized(ctx, number_of_tokens):
+    amount_in_tokens =  123
+    amount_gwei = 456
     wallets = test_wallets[:2]
 
     # TODO Read tokens from file
     requested_tokens = [{
-        "symbol": ctx.eth_symbol_to_sif_symbol(t.symbol),
+        "symbol": t.symbol,
         "name": t.name,
         "decimals": t.decimals,
-        # Those are ignored
-        # "imageUrl": None,
-        # "network": None,
-    } for t in [ctx.generate_random_erc20_token_data() for _ in range(3)]]
+    } for t in [ctx.generate_random_erc20_token_data() for _ in range(number_of_tokens)]]
 
     script = InflateTokens(ctx)
-    script.transfer(requested_tokens, amount, wallets)
+
+    balances_before = [ctx.get_sifchain_balance(w) for w in wallets]
+    script.transfer(requested_tokens, amount_in_tokens, wallets, amount_gwei)
+    balances_delta = [sifchain.balance_delta(balances_before[i], ctx.get_sifchain_balance(w)) for i, w in enumerate(wallets)]
+
+    for balances_delta in balances_delta:
+        for t in requested_tokens:
+            assert balances_delta[ctx.eth_symbol_to_sif_symbol(t["symbol"])] == amount_in_tokens * 10**t["decimals"]
+        assert balances_delta.get(ctx.ceth_symbol, 0) == amount_gwei * eth.GWEI
 
 
 @pytest.mark.skipif("on_peggy2_branch")

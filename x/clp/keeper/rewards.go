@@ -77,7 +77,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	return nil
 }
 
-func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint) error {
+func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint, any bool) error {
 	// Ensure there is enough liquidity requested for unlock, and also passed lock period.
 	// Reduce liquidity in one or more unlock records.
 	// Remove unlock records with zero units remaining.
@@ -87,7 +87,7 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 
 	unitsLeftToUse := units
 	for _, record := range lp.Unlocks {
-		if record.RequestHeight+int64(lockPeriod) <= currentHeight {
+		if any || record.RequestHeight+int64(lockPeriod) <= currentHeight {
 			if unitsLeftToUse.GT(record.Units) {
 				// use all this record's unit's and continue with remaining
 				unitsLeftToUse = unitsLeftToUse.Sub(record.Units)
