@@ -28,14 +28,14 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer4(ctx sdk.Context) {
-	denomMigrationsList := GetDenomMigrationList()
-	for _, migration := range denomMigrationsList {
-		entry, err := m.keeper.GetRegistryEntry(ctx, migration.denom)
+	denomMigrationsList := GetDenomMigrationMap()
+	for denom, migration := range denomMigrationsList {
+		entry, err := m.keeper.GetRegistryEntry(ctx, denom)
 		if err != nil {
 			panic(err)
 		}
 		peggyTwoEntry := entry
-		peggy2denom := types.GetDenom(migration.networkDescriptor, migration.tokenContractAddress)
+		peggy2denom := types.GetDenom(migration.NetworkDescriptor, migration.TokenContractAddress)
 		entry.Permissions = []tkrtypes.Permission{
 			tkrtypes.Permission_IBCIMPORT,
 		}
@@ -54,17 +54,15 @@ func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
 }
 
 type DenomMigrator struct {
-	denom                string
-	networkDescriptor    oracleTypes.NetworkDescriptor
-	tokenContractAddress types.EthereumAddress
+	NetworkDescriptor    oracleTypes.NetworkDescriptor
+	TokenContractAddress types.EthereumAddress
 }
 
-func GetDenomMigrationList() []DenomMigrator {
-	return []DenomMigrator{
-		{
-			denom:                "ceth",
-			networkDescriptor:    oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-			tokenContractAddress: types.NewEthereumAddress("0x0000000000000000000000000000000000000000"),
-		},
+func GetDenomMigrationMap() map[string]DenomMigrator {
+	migrationMap := make(map[string]DenomMigrator)
+	migrationMap["ceth"] = DenomMigrator{
+		NetworkDescriptor:    oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+		TokenContractAddress: types.NewEthereumAddress("0x0000000000000000000000000000000000000000"),
 	}
+	return migrationMap
 }
