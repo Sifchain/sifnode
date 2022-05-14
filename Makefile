@@ -56,7 +56,7 @@ install-sifnode: go.sum
 	go install ${BUILD_FLAGS} ./cmd/sifnoded
 
 install-sifnode-rocks: go.sum
-	VERSION="$(VERSION)-rocksdb" go install ${BUILD_FLAGS} -tags rocksdb ./cmd/sifnoded
+	go install ${BUILD_FLAGS} -tags rocksdb ./cmd/sifnoded
 
 build-sifd: go.sum
 	go build  ${BUILD_FLAGS} ./cmd/sifnoded
