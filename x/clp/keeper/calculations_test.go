@@ -1031,9 +1031,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
 			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
 			externalAssetAmount:  sdk.NewUint(1099511627776),
-			poolUnits:            sdk.NewUint(2),
-			lpunits:              sdk.NewUint(1),
-			panicErr:             "fail to convert 1606938044258990275541962092341162602522202993782792835301376 to cosmos.Dec: decimal out of range; bitLen: got 260, max 256",
+			poolUnits:            sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
+			lpunits:              sdk.NewUint(1099511627776),
 		},
 	}
 
