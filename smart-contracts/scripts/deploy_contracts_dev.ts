@@ -129,19 +129,14 @@ async function main() : Promise<DeployedContractAddresses> {
   print("white", "Attempting to grant BridgeBank Admin and Minting roles to Rowan");
   const rowanAdminRole = await rowan.DEFAULT_ADMIN_ROLE();
   const rowanMinterRole = await rowan.MINTER_ROLE();
-  const grantRoles = [
-    rowan.grantRole(rowanAdminRole, bridgeBank.address),
-    rowan.grantRole(rowanMinterRole, bridgeBank.address)
-  ];
-  await Promise.all(grantRoles);
+  // We do these sequentially so that the nonces increment properly
+  await rowan.grantRole(rowanAdminRole, bridgeBank.address),
+  await rowan.grantRole(rowanMinterRole, bridgeBank.address)
   print("success", "Bridgebank now has Admin and Minting roles over Rowan");
   print("white", "Attempting to revoke deployer addresses Admin and Minting Roles");
   const rowanDeployer = await rowan.signer.getAddress();
-  const revokeRoles = [
-    rowan.renounceRole(rowanAdminRole, rowanDeployer),
-    rowan.renounceRole(rowanMinterRole, rowanDeployer)
-  ];
-  await Promise.all(revokeRoles);
+  await rowan.renounceRole(rowanAdminRole, rowanDeployer),
+  await rowan.renounceRole(rowanMinterRole, rowanDeployer)
   print("success", "Admin and Minter roles have been revoked from deployer");
 
 
