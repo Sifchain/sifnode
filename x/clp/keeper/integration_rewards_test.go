@@ -93,13 +93,13 @@ func TestRewardDistributionInvalidPeriod(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	generateRewardDistribution(app.ClpKeeper, ctx)
 	createPool(app.ClpKeeper, ctx, t)
-	for block := 11; block <= 15; block++ {
-		require.Panics(t, func() {
+	require.Panics(t, func() {
+		for block := 11; block <= 15; block++ {
 			app.BeginBlock(abci.RequestBeginBlock{Header: tenderminttypes.Header{Height: int64(block)}})
 			app.EndBlock(abci.RequestEndBlock{Height: int64(block)})
 			app.Commit()
-		})
-	}
+		}
+	})
 }
 
 //TESTCASE#3:Test Function that calls rewards distribution function and validate the distribution against expected rewards values for a mix of valid reward period and invalid rewards period
