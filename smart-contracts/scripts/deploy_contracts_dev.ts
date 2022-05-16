@@ -125,6 +125,26 @@ async function main() : Promise<DeployedContractAddresses> {
   );
   print("success", `ERowan BridgeToken setup at address ${rowan.address}`);
 
+  // We must give bridgebank authority over rowan and revoke are admin rights over it
+  print("white", "Attempting to grant BridgeBank Admin and Minting roles to Rowan");
+  const rowanAdminRole = await rowan.DEFAULT_ADMIN_ROLE();
+  const rowanMinterRole = await rowan.MINTER_ROLE();
+  const grantRoles = [
+    rowan.grantRole(rowanAdminRole, bridgeBank.address),
+    rowan.grantRole(rowanMinterRole, bridgeBank.address)
+  ];
+  await Promise.all(grantRoles);
+  print("success", "Bridgebank now has Admin and Minting roles over Rowan");
+  print("white", "Attempting to revoke deployer addresses Admin and Minting Roles");
+  const rowanDeployer = await rowan.signer.getAddress();
+  const revokeRoles = [
+    rowan.renounceRole(rowanAdminRole, rowanDeployer),
+    rowan.renounceRole(rowanMinterRole, rowanDeployer)
+  ];
+  await Promise.all(revokeRoles);
+  print("success", "Admin and Minter roles have been revoked from deployer");
+
+
   return {
     blocklist: blocklist.address,
     cosmosBridge: cosmosBridge.address,
