@@ -195,19 +195,21 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		return nativeAssetAmount, nativeAssetAmount, nil
 	}
 
-	slipAdjustment, RTimesa, rTimesA := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
+	slipAdjustmentValues := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
 		nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
+	//slipAdjustment, RTimesa, rTimesA := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
+	//	nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
 
 	one := big.NewRat(1, 1)
-	one.Sub(one, &slipAdjustment)
+	one.Sub(one, &slipAdjustmentValues.slipAdjustment)
 
 	symmetryThresholdRat := decToRat(&symmetryThreshold)
-	if one.Cmp(&symmetryThresholdRat) == 1 { // this is: if a > b
+	if one.Cmp(&symmetryThresholdRat) == 1 { // this is: if one > symmetryThresholdRat
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
 	}
 
 	stakeUnits := calculateStakeUnits(oldPoolUnits.BigInt(), nativeAssetBalance.BigInt(),
-		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), &RTimesa, &rTimesA, &slipAdjustment)
+		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), &slipAdjustmentValues)
 
 	var newPoolUnit big.Int
 	newPoolUnit.Add(oldPoolUnits.BigInt(), &stakeUnits)
@@ -216,9 +218,9 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 }
 
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
-func calculateStakeUnits(P, R, A, r, RTimesa, rTimesA *big.Int, slipAdslipAdjustment *big.Rat) big.Int {
+func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) big.Int {
 	var add, numerator big.Int
-	add.Add(RTimesa, rTimesA)
+	add.Add(&slipAdjustmentValues.RTimesa, &slipAdjustmentValues.rTimesA)
 	numerator.Mul(P, &add)
 
 	var denominator big.Int
@@ -229,13 +231,19 @@ func calculateStakeUnits(P, R, A, r, RTimesa, rTimesA *big.Int, slipAdslipAdjust
 	n.SetInt(&numerator)
 	d.SetInt(&denominator)
 	stakeUnits.Quo(&n, &d)
-	stakeUnits.Mul(&stakeUnits, slipAdslipAdjustment)
+	stakeUnits.Mul(&stakeUnits, &slipAdjustmentValues.slipAdjustment)
 
 	return *ratIntDiv(&stakeUnits)
 }
 
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
-func calculateSlipAdjustment(R, A, r, a *big.Int) (big.Rat, big.Int, big.Int) {
+type slipAdjustmentValues struct {
+	slipAdjustment big.Rat
+	RTimesa        big.Int
+	rTimesA        big.Int
+}
+
+func calculateSlipAdjustment(R, A, r, a *big.Int) slipAdjustmentValues {
 	var denominator, rPlusR, aPlusA big.Int
 	rPlusR.Add(r, R)
 	aPlusA.Add(a, A)
@@ -256,7 +264,8 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) (big.Rat, big.Int, big.Int) {
 	slipAdjustment.Abs(&slipAdjustment)
 	slipAdjustment.Sub(&one, &slipAdjustment)
 
-	return slipAdjustment, RTimesa, rTimesA
+	s := slipAdjustmentValues{slipAdjustment: slipAdjustment, RTimesa: RTimesa, rTimesA: rTimesA}
+	return s
 }
 
 func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
