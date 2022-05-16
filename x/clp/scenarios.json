@@ -40,8 +40,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "1.097803295605500089",
-                "swap_price_external": "0.907275450913636290",
+                "swap_price_native": "1.100000000000000089",
+                "swap_price_external": "0.909090909090909017",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "0.100000000000000089",
@@ -59,8 +59,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "1.207583625166050196",
-                "swap_price_external": "0.824795864466942015",
+                "swap_price_native": "1.210000000000000196",
+                "swap_price_external": "0.826446280991735403",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "0.210000000000000196",
@@ -78,8 +78,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "2.588562746045181268",
-                "swap_price_external": "0.384773357940295220",
+                "swap_price_native": "2.593742460100002100",
+                "swap_price_external": "0.385543289429531435",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "1.593742460100002100",
@@ -97,8 +97,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "6.714065105050445440",
-                "swap_price_external": "0.148346786105147937",
+                "swap_price_native": "6.727499949325610983",
+                "swap_price_external": "0.148643628024143445",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "5.727499949325610983",
@@ -116,8 +116,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "45.168872653995724681",
-                "swap_price_external": "0.022050804492390781",
+                "swap_price_native": "45.259255568176098344",
+                "swap_price_external": "0.022094928152179922",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "44.259255568176098344",
@@ -135,8 +135,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "45.168872653995724681",
-                "swap_price_external": "0.022050804492390781",
+                "swap_price_native": "45.259255568176098344",
+                "swap_price_external": "0.022094928152179922",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "44.259255568176098344",
@@ -154,8 +154,8 @@
                     "pool_units": "1000",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "45.168872653995724681",
-                "swap_price_external": "0.022050804492390781",
+                "swap_price_native": "45.259255568176098344",
+                "swap_price_external": "0.022094928152179922",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.100000000000000089",
                     "pmtp_current_running_rate": "44.259255568176098344",
@@ -205,8 +205,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000031941094000000",
-                "swap_price_external": "31307.631790289925000000",
+                "swap_price_native": "0.000031941093682791",
+                "swap_price_external": "31307.631790289924870327",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000000000000000000",
                     "pmtp_current_running_rate": "0.000000000000000000",
@@ -224,8 +224,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000031941094000000",
-                "swap_price_external": "31307.631790289925000000",
+                "swap_price_native": "0.000031941093682791",
+                "swap_price_external": "31307.631790289924870327",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000000000000000000",
                     "pmtp_current_running_rate": "0.000000000000000000",
@@ -243,8 +243,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000031941137924862",
-                "swap_price_external": "31307.588736613703321215",
+                "swap_price_native": "0.000031941137607653",
+                "swap_price_external": "31307.588736613703191542",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.000001375183396712",
@@ -262,8 +262,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000031941181849785",
-                "swap_price_external": "31307.545682996688273445",
+                "swap_price_native": "0.000031941181532575",
+                "swap_price_external": "31307.545682996688143772",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.000002750368684553",
@@ -281,8 +281,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000031945047479523",
-                "swap_price_external": "31303.757196542919635968",
+                "swap_price_native": "0.000031945047162275",
+                "swap_price_external": "31303.757196542919506312",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.000123774079982746",
@@ -300,8 +300,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000031975813473333",
-                "swap_price_external": "31273.637831450397791530",
+                "swap_price_native": "0.000031975813155780",
+                "swap_price_external": "31273.637831450397661999",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.001086984476278008",
@@ -319,8 +319,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000032396293604913",
-                "swap_price_external": "30867.728948455950807667",
+                "swap_price_native": "0.000032396293283183",
+                "swap_price_external": "30867.728948455950679816",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.014251221480159420",
@@ -338,8 +338,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000032570508539440",
-                "swap_price_external": "30702.621935427036725478",
+                "swap_price_native": "0.000032570508215981",
+                "swap_price_external": "30702.621935427036598312",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.019705478448561475",
@@ -357,8 +357,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000032570553329863",
-                "swap_price_external": "30702.579713749178142746",
+                "swap_price_native": "0.000032570553006403",
+                "swap_price_external": "30702.579713749178015579",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.019706880730604974",
@@ -376,8 +376,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000033221918710241",
-                "swap_price_external": "30100.609740604138791084",
+                "swap_price_native": "0.000033221918380312",
+                "swap_price_external": "30100.609740604138666411",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.040099588017899085",
@@ -395,8 +395,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000033886357084458",
-                "swap_price_external": "29510.401706464250675542",
+                "swap_price_native": "0.000033886356747931",
+                "swap_price_external": "29510.401706464250553313",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.060901579778630775",
@@ -414,8 +414,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000035265548718669",
-                "swap_price_external": "28356.286695226170141086",
+                "swap_price_native": "0.000035265548368445",
+                "swap_price_external": "28356.286695226170023638",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.104080803201944594",
@@ -433,8 +433,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000035265548718669",
-                "swap_price_external": "28356.286695226170141086",
+                "swap_price_native": "0.000035265548368445",
+                "swap_price_external": "28356.286695226170023638",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.104080803201944594",
@@ -452,8 +452,8 @@
                     "pool_units": "49352380611368792060339203",
                     "reward_period_native_distributed": "0"
                 },
-                "swap_price_native": "0.000035265548718669",
-                "swap_price_external": "28356.286695226170141086",
+                "swap_price_native": "0.000035265548368445",
+                "swap_price_external": "28356.286695226170023638",
                 "pmtp_rate_params": {
                     "pmtp_period_block_rate": "0.000001375183396712",
                     "pmtp_current_running_rate": "0.104080803201944594",

@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"errors"
+	"math/big"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -886,7 +887,7 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec())
-	assert.Equal(t, "2", swapResult.String())
+	assert.Equal(t, "1", swapResult.String())
 }
 
 func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
@@ -1306,6 +1307,459 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+func TestKeeper_RatToDec(t *testing.T) {
+	testcases := []struct {
+		name     string
+		num      *big.Int
+		denom    *big.Int
+		expected sdk.Dec
+	}{
+		{
+			name:     "small values",
+			num:      big.NewInt(1),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("0.333333333333333333"),
+		},
+		{
+			name:     "small values",
+			num:      big.NewInt(7),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("2.333333333333333333"),
+		},
+		{
+			name:     "negative numerator",
+			num:      big.NewInt(-7),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("-2.333333333333333333"),
+		},
+		{
+			name:     "big numbers",
+			num:      big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
+			denom:    big.NewInt(3),
+			expected: sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			var rat big.Rat
+			rat.SetFrac(tc.num, tc.denom)
+			y := clpkeeper.RatToDec(&rat)
+
+			require.Equal(t, tc.expected, y)
+		})
+	}
+}
+
+func getFirstArg(a *big.Int, b bool) *big.Int {
+	return a
+}
+
+func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
+	testcases := []struct {
+		name      string
+		decimalsX uint8
+		decimalsY uint8
+		expected  big.Rat
+	}{
+		{
+			name:      "zero values",
+			decimalsX: 0,
+			decimalsY: 0,
+			expected:  *big.NewRat(1, 1),
+		},
+		{
+			name:      "equal values",
+			decimalsX: 5,
+			decimalsY: 5,
+			expected:  *big.NewRat(1, 1),
+		},
+		{
+			name:      "zero X",
+			decimalsX: 0,
+			decimalsY: 2,
+			expected:  *big.NewRat(1, 100),
+		},
+		{
+			name:      "zero Y",
+			decimalsX: 2,
+			decimalsY: 0,
+			expected:  *big.NewRat(100, 1),
+		},
+		{
+			name:      "small numbers",
+			decimalsX: 18,
+			decimalsY: 14,
+			expected:  *big.NewRat(10000, 1),
+		},
+		{
+			name:      "small numbers",
+			decimalsX: 14,
+			decimalsY: 18,
+			expected:  *big.NewRat(1, 10000),
+		},
+		{
+			name:      "big X, small Y",
+			decimalsX: 255,
+			decimalsY: 0,
+			expected:  *big.NewRat(1, 1).SetInt(big.NewInt(1).Exp(big.NewInt(10), big.NewInt(255), nil)),
+		},
+		{
+			name:      "small X, big Y",
+			decimalsX: 0,
+			decimalsY: 255,
+			expected:  *big.NewRat(1, 1).SetFrac(big.NewInt(1), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(255), nil)),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			y := clpkeeper.CalcDenomChangeMultiplier(tc.decimalsX, tc.decimalsY)
+
+			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+//nolint
+func TestKeeper_CalcSpotPriceX(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		X                      sdk.Uint
+		Y                      sdk.Uint
+		decimalsX              uint8
+		decimalsY              uint8
+		pmtpCurrentRunningRate sdk.Dec
+		isXNative              bool
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "fail when X = 0",
+			X:                      sdk.ZeroUint(),
+			Y:                      sdk.OneUint(),
+			decimalsX:              10,
+			decimalsY:              80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success when Y = 0",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.ZeroUint(),
+			decimalsX:              10,
+			decimalsY:              80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "success small values",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.OneUint(),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("5.499100413926233941"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("10.998200827852467883"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              16,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("0.109982008278524678"),
+		},
+		{
+			name:                   "success big numbers",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			X:                      sdk.NewUint(100),
+			Y:                      sdk.NewUint(100),
+			decimalsX:              255,
+			decimalsY:              0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals, small answer",
+			X:                      sdk.NewUint(100),
+			Y:                      sdk.NewUint(100),
+			decimalsX:              0,
+			decimalsY:              255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceNative(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		nativeAssetBalance     sdk.Uint
+		externalAssetBalance   sdk.Uint
+		decimalsExternal       uint8
+		pmtpCurrentRunningRate sdk.Dec
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "fail when native balance = 0",
+			nativeAssetBalance:     sdk.ZeroUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success when external balance = 0",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.ZeroUint(),
+			decimalsExternal:       10,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "success small values",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("5.499100413926233941"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("10.998200827852467883"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       16,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("1099.820082785246788390"),
+		},
+		{
+			name:                   "success big numbers",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+		{
+			name:                   "success small decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("1000000000000000000.000000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.nativeAssetBalance,
+				ExternalAssetBalance: tc.externalAssetBalance,
+			}
+
+			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		nativeAssetBalance     sdk.Uint
+		externalAssetBalance   sdk.Uint
+		decimalsExternal       uint8
+		pmtpCurrentRunningRate sdk.Dec
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "success when native balance = 0",
+			nativeAssetBalance:     sdk.ZeroUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "fail when external balance = 0",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.ZeroUint(),
+			decimalsExternal:       10,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success small values",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.181847925065624052"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("0.090923962532812026"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       16,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("0.000909239625328120"),
+		},
+		{
+			name:                   "success big numbers",
+			nativeAssetBalance:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success small decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.000000000000000001"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.nativeAssetBalance,
+				ExternalAssetBalance: tc.externalAssetBalance,
+			}
+
+			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
 		})
 	}
 }
