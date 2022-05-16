@@ -101,7 +101,7 @@ def timed_tx_burn_loop(ctx: test_utils.EnvCtx, src_sif_address: cosmos.Address, 
     return time.time() - time_before
 
 
-def timed_query_bank_balances_loo(ctx: test_utils.EnvCtx, sif_address: cosmos.Address, paginate=None):
+def timed_query_bank_balances_loop(ctx: test_utils.EnvCtx, sif_address: cosmos.Address, paginate=None):
     ctx.get_sifchain_balance(sif_address)
 
 
