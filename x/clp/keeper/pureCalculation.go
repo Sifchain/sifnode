@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/big"
 
+	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -93,4 +94,19 @@ func GetMinLen(inputs []sdk.Uint) int64 {
 		}
 	}
 	return int64(minLen - 1)
+}
+
+func Int64ToUint8Safe(x int64) (uint8, error) {
+	trial := uint8(x)
+	if int64(trial) != x {
+		return 0, types.ErrTypeCast
+	}
+	return trial, nil
+}
+
+func Abs(a int16) uint16 {
+	if a < 0 {
+		return uint16(-a)
+	}
+	return uint16(a)
 }

@@ -324,6 +324,51 @@ func calcPmtpFactor(r sdk.Dec) big.Rat {
 	return *one
 }
 
+func CalcSpotPriceNative(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+	return CalcSpotPriceX(pool.NativeAssetBalance, pool.ExternalAssetBalance, types.NativeAssetDecimals, decimalsExternal, pmtpCurrentRunningRate, true)
+}
+
+func CalcSpotPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+	return CalcSpotPriceX(pool.ExternalAssetBalance, pool.NativeAssetBalance, decimalsExternal, types.NativeAssetDecimals, pmtpCurrentRunningRate, false)
+}
+
+// Calculates the spot price of asset X in the preferred denominations accounting for PMTP.
+// Since this method applies PMTP adjustment, one of X, Y must be the native asset.
+func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) {
+	if X.Equal(sdk.ZeroUint()) {
+		return sdk.ZeroDec(), types.ErrInValidAmount
+	}
+
+	var price big.Rat
+	price.SetFrac(Y.BigInt(), X.BigInt())
+
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
+	var pmtpPrice big.Rat
+	if isXNative {
+		pmtpPrice.Mul(&price, &pmtpFac) // pmtpPrice = price * pmtpFac
+	} else {
+		pmtpPrice.Quo(&price, &pmtpFac) // pmtpPrice = price / pmtpFac
+	}
+
+	dcm := CalcDenomChangeMultiplier(decimalsX, decimalsY)
+	pmtpPrice.Mul(&pmtpPrice, &dcm)
+
+	res := RatToDec(&pmtpPrice)
+	return res, nil
+}
+
+// Denom change multiplier = 10**decimalsX / 10**decimalsY
+func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
+	diff := Abs(int16(decimalsX) - int16(decimalsY))
+	dec := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(diff)), nil) // 10**|decimalsX - decimalsY|
+
+	var res big.Rat
+	if decimalsX > decimalsY {
+		return *res.SetInt(dec)
+	}
+	return *res.SetFrac(big.NewInt(1), dec)
+}
+
 func CalcSwapPriceResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,

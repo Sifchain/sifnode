@@ -153,6 +153,10 @@ func TestScenarios(t *testing.T) {
 						expectedState.Pool.SwapPriceNative = &expectedState.SwapPriceNative
 						expectedState.Pool.SwapPriceExternal = &expectedState.SwapPriceExternal
 
+						// explicitly test swap prices before testing pool - makes debugging easier
+						require.Equal(t, &expectedState.SwapPriceNative, got.SwapPriceNative)
+						require.Equal(t, &expectedState.SwapPriceExternal, got.SwapPriceExternal)
+
 						require.Equal(t, expectedState.Height, ctx.BlockHeight())
 						require.Equal(t, expectedState.Pool, got)
 						require.Equal(t, expectedState.PmtpRateParams, app.ClpKeeper.GetPmtpRateParams(ctx))
