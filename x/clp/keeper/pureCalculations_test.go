@@ -1,11 +1,13 @@
 package keeper_test
 
 import (
+	"math/big"
 	"testing"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"pgregory.net/rapid"
 )
 
@@ -58,4 +60,50 @@ func genDec(t *rapid.T) sdk.Dec {
 }
 func genInt64ButZero() *rapid.Generator {
 	return rapid.OneOf(rapid.Int64Max(-1), rapid.Int64Min(1))
+}
+
+func TestKeeper_RatToDec(t *testing.T) {
+	testcases := []struct {
+		name     string
+		num      *big.Int
+		denom    *big.Int
+		expected sdk.Dec
+	}{
+		{
+			name:     "small values",
+			num:      big.NewInt(1),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("0.333333333333333333"),
+		},
+		{
+			name:     "small values",
+			num:      big.NewInt(7),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("2.333333333333333333"),
+		},
+		{
+			name:     "negative numerator",
+			num:      big.NewInt(-7),
+			denom:    big.NewInt(3),
+			expected: sdk.MustNewDecFromStr("-2.333333333333333333"),
+		},
+		{
+			name:     "big numbers",
+			num:      big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
+			denom:    big.NewInt(3),
+			expected: sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			var rat big.Rat
+			rat.SetFrac(tc.num, tc.denom)
+			y := clpkeeper.RatToDec(&rat)
+
+			require.Equal(t, tc.expected, y)
+		})
+	}
 }
