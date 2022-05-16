@@ -9,7 +9,7 @@
 import * as dotenv from "dotenv"
 import hardhat, { ethers, upgrades } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { BridgeBank } from "../build";
+import { BridgeBank, CosmosBridge } from "../build";
 import {print} from "./helpers/utils"
 import fs from "fs-extra";
 
@@ -64,13 +64,13 @@ async function main() : Promise<DeployedContractAddresses> {
   const validatorAccounts = accounts.validatorAccounts.map(acc => acc.address);
   const threshold = validatorPowers.reduce((acc, x) => acc + x);
   print("white", "Deploying Cosmos Bridge contract");
-  const cosmosBridge = await upgrades.deployProxy(cosmosBridgeFactory, [
+  const cosmosBridge = (await upgrades.deployProxy(cosmosBridgeFactory, [
     accounts.operatorAccount.address, // _operator
     threshold, // _consensusThreshold
     validatorAccounts, // _initValidators
     validatorPowers, // _initPowers
     NETWORK_DESCRIPTOR
-  ]);
+  ]) as CosmosBridge);
   print("success",`cosmosBridge deployed at address ${cosmosBridge.address}`);
 
   print("white", "deploying blocklist contract");
@@ -106,6 +106,12 @@ async function main() : Promise<DeployedContractAddresses> {
 
   await bridgeBank.connect(accounts.operatorAccount).setBlocklist(blocklist.address);
   print("success", "Bridgebank setup successfully");
+
+  print("white", "Setting the bridgebank address on CosmosBridge");
+  await cosmosBridge.connect(accounts.operatorAccount).setBridgeBank(
+    bridgeBank.address
+  );
+  print("success", "Successfully set BridgeBank address in Cosmos Bridge");
 
   print("white", "Setting up bridge registry");
   const bridgeRegistryFactory = await ethers.getContractFactory("BridgeRegistry");
