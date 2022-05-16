@@ -7,7 +7,6 @@ import (
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/suite"
 )
@@ -66,25 +65,25 @@ func (s *IntegrationTestSuite) TearDownSuite() {
 	s.network.Cleanup()
 }
 
-func (s *IntegrationTestSuite) TestRowanBalanceExists() {
-	val := s.network.Validators[0]
-	clientCtx := val.ClientCtx
+// func (s *IntegrationTestSuite) TestRowanBalanceExists() {
+// 	val := s.network.Validators[0]
+// 	clientCtx := val.ClientCtx
 
-	amount, _ := sdk.NewIntFromString("999000000000000000000000000000000")
+// 	amount, _ := sdk.NewIntFromString("999000000000000000000000000000000")
 
-	var genesisState banktypes.GenesisState
-	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(s.cfg.GenesisState["bank"], &genesisState))
-	s.Require().Equal(genesisState.Balances[0].Address, s.address)
-	s.Require().Contains(genesisState.Balances[0].Coins, sdk.NewCoin("rowan", amount))
+// 	var genesisState banktypes.GenesisState
+// 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(s.cfg.GenesisState["bank"], &genesisState))
+// 	s.Require().Equal(genesisState.Balances[0].Address, s.address)
+// 	s.Require().Contains(genesisState.Balances[0].Coins, sdk.NewCoin("rowan", amount))
 
-	out, err := QueryBalancesExec(clientCtx, val.Address)
-	s.Require().NoError(err)
+// 	out, err := QueryBalancesExec(clientCtx, val.Address)
+// 	s.Require().NoError(err)
 
-	var balancesRes banktypes.QueryAllBalancesResponse
-	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &balancesRes), out.String())
+// 	var balancesRes banktypes.QueryAllBalancesResponse
+// 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &balancesRes), out.String())
 
-	s.Require().Contains(balancesRes.Balances, sdk.NewCoin("rowan", amount))
-}
+// 	s.Require().Contains(balancesRes.Balances, sdk.NewCoin("rowan", amount))
+// }
 
 func (s *IntegrationTestSuite) TestCLPsExists() {
 	val := s.network.Validators[0]
@@ -200,6 +199,90 @@ func (s *IntegrationTestSuite) TestPMTPDefaultParams() {
 	})
 }
 
+func (s *IntegrationTestSuite) TestModifyPMTPRates() {
+	s.T().Log("#################################")
+	s.T().Log("TestModifyPMTPRates")
+	s.T().Log("#################################")
+
+	val := s.network.Validators[0]
+	clientCtx := val.ClientCtx
+
+	from := val.Address
+
+	blockRate := sdk.MustNewDecFromStr("0.000000458623032662")
+	runningRate := sdk.MustNewDecFromStr("1.308075140599690284")
+
+	out, err := MsgClpModifyPmtpRatesExec(
+		clientCtx,
+		from,
+		blockRate,
+		runningRate,
+	)
+	s.Require().NoError(err)
+
+	var respType proto.Message = &sdk.TxResponse{}
+	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
+	txResp := respType.(*sdk.TxResponse)
+	s.Require().Equal(uint32(0), txResp.Code)
+
+	err = s.network.WaitForNextBlock()
+	s.Require().NoError(err)
+
+	out, err = QueryClpPmtpParamsExec(clientCtx)
+	s.Require().NoError(err)
+
+	var pmtpParamsRes clptypes.PmtpParamsRes
+	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &pmtpParamsRes), out.String())
+
+	s.Require().Equal(pmtpParamsRes.Params, &clptypes.PmtpParams{
+		PmtpPeriodGovernanceRate: sdk.ZeroDec(),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     0,
+		PmtpPeriodEndBlock:       0,
+	})
+	s.Require().Equal(pmtpParamsRes.PmtpRateParams, &clptypes.PmtpRateParams{
+		PmtpCurrentRunningRate: runningRate,
+		PmtpPeriodBlockRate:    blockRate,
+		PmtpInterPolicyRate:    runningRate,
+	})
+}
+
+func (s *IntegrationTestSuite) TestEndPMTPPolicy() {
+	val := s.network.Validators[0]
+	clientCtx := val.ClientCtx
+
+	from := val.Address
+
+	out, err := MsgClpEndPolicyExec(
+		clientCtx,
+		from,
+	)
+	s.Require().NoError(err)
+
+	var respType proto.Message = &sdk.TxResponse{}
+	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
+	txResp := respType.(*sdk.TxResponse)
+	s.Require().Equal(uint32(0), txResp.Code)
+
+	out, err = QueryClpPmtpParamsExec(clientCtx)
+	s.Require().NoError(err)
+
+	var pmtpParamsRes clptypes.PmtpParamsRes
+	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &pmtpParamsRes), out.String())
+
+	s.Require().Equal(pmtpParamsRes.Params, &clptypes.PmtpParams{
+		PmtpPeriodGovernanceRate: sdk.ZeroDec(),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     0,
+		PmtpPeriodEndBlock:       0,
+	})
+	s.Require().Equal(pmtpParamsRes.PmtpRateParams, &clptypes.PmtpRateParams{
+		PmtpCurrentRunningRate: sdk.ZeroDec(),
+		PmtpPeriodBlockRate:    sdk.ZeroDec(),
+		PmtpInterPolicyRate:    sdk.ZeroDec(),
+	})
+}
+
 func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
@@ -236,6 +319,11 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 		PmtpPeriodEpochLength:    epochLength.Int64(),
 		PmtpPeriodStartBlock:     startBlock.Int64(),
 		PmtpPeriodEndBlock:       endBlock.Int64(),
+	})
+	s.Require().Equal(pmtpParamsRes.PmtpRateParams, &clptypes.PmtpRateParams{
+		PmtpCurrentRunningRate: sdk.ZeroDec(),
+		PmtpPeriodBlockRate:    sdk.ZeroDec(),
+		PmtpInterPolicyRate:    sdk.ZeroDec(),
 	})
 
 	testCases := []struct {
@@ -295,11 +383,21 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 			var poolsRes clptypes.PoolsRes
 			s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &poolsRes), out.String())
 
+			s.T().Log("######################################")
+			s.T().Log(poolsRes.Pools[1])
+			s.T().Log("######################################")
+
 			tc.expectedPool.SwapPriceNative = &tc.expectedSwapPriceNative
 			tc.expectedPool.SwapPriceExternal = &tc.expectedSwapPriceExternal
-			s.T().Log(poolsRes.Pools[1])
 			s.Require().Contains(poolsRes.Pools, &tc.expectedPool)
-
 		})
 	}
 }
+
+// func (s *IntegrationTestSuite) TestResetPMTPParams() {
+
+// }
+
+// func (s *IntegrationTestSuite) TestEndPolicy() {
+
+// }

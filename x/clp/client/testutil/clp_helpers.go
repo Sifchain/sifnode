@@ -50,16 +50,44 @@ func MsgClpUpdatePmtpParamsExec(clientCtx client.Context, from, pmtpStart, pmtpE
 	viper.Set(clpcli.FlagPeriodGovernanceRate, rGov.String())
 
 	args := []string{
-		fmt.Sprintf("--%s=%s", flags.FlagFrom, from.String()),
-		fmt.Sprintf("--%s=%s", clpcli.FlagPmtpPeriodStartBlock, pmtpStart.String()),
-		fmt.Sprintf("--%s=%s", clpcli.FlagPmtpPeriodEndBlock, pmtpEnd.String()),
-		fmt.Sprintf("--%s=%s", clpcli.FlagPmtpPeriodEpochLength, epochLength.String()),
-		fmt.Sprintf("--%s=%s", clpcli.FlagPeriodGovernanceRate, rGov.String()),
+		fmt.Sprintf("--%s=%s", flags.FlagFrom, viper.Get(flags.FlagFrom)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagPmtpPeriodStartBlock, viper.Get(clpcli.FlagPmtpPeriodStartBlock)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagPmtpPeriodEndBlock, viper.Get(clpcli.FlagPmtpPeriodEndBlock)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagPmtpPeriodEpochLength, viper.Get(clpcli.FlagPmtpPeriodEpochLength)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagPeriodGovernanceRate, viper.Get(clpcli.FlagPeriodGovernanceRate)),
 	}
 	args = append(args, extraArgs...)
 	args = append(args, commonArgs...)
 
-	fmt.Print("args", args)
-
 	return clitestutil.ExecTestCLICmd(clientCtx, clpcli.GetCmdUpdatePmtpParams(), args)
+}
+
+func MsgClpEndPolicyExec(clientCtx client.Context, from fmt.Stringer, extraArgs ...string) (testutil.BufferWriter, error) {
+	viper.Set(flags.FlagFrom, from.String())
+	viper.Set(clpcli.FlagEndCurrentPolicy, "true")
+
+	args := []string{
+		fmt.Sprintf("--%s=%s", flags.FlagFrom, viper.Get(flags.FlagFrom)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagEndCurrentPolicy, viper.Get(clpcli.FlagEndCurrentPolicy)),
+	}
+	args = append(args, extraArgs...)
+	args = append(args, commonArgs...)
+
+	return clitestutil.ExecTestCLICmd(clientCtx, clpcli.GetCmdModifyPmtpRates(), args)
+}
+
+func MsgClpModifyPmtpRatesExec(clientCtx client.Context, from, blockRate, runningRate fmt.Stringer, extraArgs ...string) (testutil.BufferWriter, error) {
+	viper.Set(flags.FlagFrom, from.String())
+	viper.Set(clpcli.FlagBlockRate, blockRate.String())
+	viper.Set(clpcli.FlagRunningRate, runningRate.String())
+
+	args := []string{
+		fmt.Sprintf("--%s=%s", flags.FlagFrom, viper.Get(flags.FlagFrom)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagBlockRate, viper.Get(clpcli.FlagBlockRate)),
+		fmt.Sprintf("--%s=%s", clpcli.FlagRunningRate, viper.Get(clpcli.FlagRunningRate)),
+	}
+	args = append(args, extraArgs...)
+	args = append(args, commonArgs...)
+
+	return clitestutil.ExecTestCLICmd(clientCtx, clpcli.GetCmdModifyPmtpRates(), args)
 }
