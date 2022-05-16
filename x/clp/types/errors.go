@@ -36,4 +36,5 @@ var (
 	ErrCannotStartPolicy               = sdkerrors.Register(ModuleName, 34, "A new policy can be started only after the current policy has ended")
 	ErrAsymmetricAdd                   = sdkerrors.Register(ModuleName, 35, "Cannot add liquidity asymmetrically")
 	ErrAsymmetricRemove                = sdkerrors.Register(ModuleName, 36, "Cannot remove liquidity asymmetrically")
+	ErrTypeCast                        = sdkerrors.Register(ModuleName, 37, "Could not perform type cast")
 )
