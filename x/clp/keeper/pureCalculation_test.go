@@ -31,18 +31,12 @@ func TestKeeper_DecRatIdentity(t *testing.T) {
 	rapid.Check(t, testIdentity)
 }
 
-func TestKeeper_CanConvertDecBoundaries(t *testing.T) {
+func TestKeeper_CanConvertMinDec(t *testing.T) {
 	min := sdk.SmallestDec()
 	minRat := clpkeeper.DecToRat(&min)
 
 	// 18 zeros
 	assert.Equal(t, "1/1000000000000000000", minRat.String())
-
-	// https://github.com/cosmos/cosmos-sdk/blob/main/types/decimal.go#L34
-	max := sdk.MustNewDecFromStr("43556142965880123323311949751266331066368") // 2**315
-	maxRat := clpkeeper.DecToRat(&max)
-
-	assert.Equal(t, "43556142965880123323311949751266331066368/1", maxRat.String())
 }
 
 func genDec(t *rapid.T) sdk.Dec {
@@ -195,5 +189,46 @@ func TestKeeper_Abs(t *testing.T) {
 			require.Equal(t, tc.expected, y)
 		})
 	}
+}
 
+func TestKeeper_DecToRat(t *testing.T) {
+	testcases := []struct {
+		name     string
+		dec      sdk.Dec
+		expected big.Rat
+	}{
+		{
+			name:     "small values",
+			dec:      sdk.MustNewDecFromStr("0.333333333333333333"),
+			expected: *big.NewRat(333333333333333333, 1000000000000000000),
+		},
+		{
+			name:     "small values",
+			dec:      sdk.MustNewDecFromStr("2.333333333333333333"),
+			expected: *big.NewRat(2333333333333333333, 1000000000000000000),
+		},
+		{
+			name:     "negative numerator",
+			dec:      sdk.MustNewDecFromStr("-2.333333333333333333"),
+			expected: *big.NewRat(-2333333333333333333, 1000000000000000000),
+		},
+		{
+			name:     "big numbers",
+			dec:      sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
+			expected: getFirstArgRat(new(big.Rat).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333/1000000000000000000")),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			y := clpkeeper.DecToRat(&tc.dec)
+
+			require.Equal(t, tc.expected.String(), y.String())
+		})
+	}
+}
+
+func getFirstArgRat(r *big.Rat, ignore bool) big.Rat {
+	return *r
 }
