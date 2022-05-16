@@ -145,6 +145,10 @@ async function main() : Promise<DeployedContractAddresses> {
   await rowan.renounceRole(rowanMinterRole, rowanDeployer)
   print("success", "Admin and Minter roles have been revoked from deployer");
 
+  print("white", "Add Rowan to the CosmosWhiteList on BridgeBank");
+  await bridgeBank.connect(accounts.ownerAccount).addExistingBridgeToken(rowan.address);
+  print("success", "Rowan successfully added to CosmosWhiteList on BridgeBank");
+
 
   return {
     blocklist: blocklist.address,
