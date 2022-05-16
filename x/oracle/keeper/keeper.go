@@ -151,7 +151,12 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion, "prophecy", zap.Reflect("prophecy", prophecy))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion,
+		"prophecy", zap.Reflect("prophecy", prophecy),
+		"whitelist", zap.Reflect("whiteList", whiteList),
+		"consensusNeededUint", consensusNeededUint,
+		"voteRate", voteRate,
+	)
 
 	return prophecy
 }
@@ -278,6 +283,13 @@ func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.A
 		logger.Error("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
+
+	//instrumentation.PeggyCheckpoint(
+	//	ctx.Logger(),
+	//	"SetConsensusNeeded",
+	//	"NetworkDescriptor", networkDescriptor,
+	//	"consensusNeeded", consensusNeeded,
+	//)
 
 	k.SetConsensusNeeded(ctx, types.NewNetworkIdentity(networkDescriptor), consensusNeeded)
 	return nil

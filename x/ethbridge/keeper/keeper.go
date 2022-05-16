@@ -332,7 +332,7 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 
 // ProcessSignProphecy processes the set sign prophecy from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SignProphecy, "SignProphecy", zap.Reflect("msgProphecy", msg))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessSignProphecy, "SignProphecy", zap.Reflect("MsgSignProphecy", msg))
 
 	prophecyInfo, ok := k.oracleKeeper.GetProphecyInfo(ctx, msg.ProphecyId)
 	if !ok {
