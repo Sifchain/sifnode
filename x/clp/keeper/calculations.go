@@ -197,8 +197,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 
 	slipAdjustmentValues := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
 		nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
-	//slipAdjustment, RTimesa, rTimesA := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
-	//	nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
 
 	one := big.NewRat(1, 1)
 	one.Sub(one, &slipAdjustmentValues.slipAdjustment)
