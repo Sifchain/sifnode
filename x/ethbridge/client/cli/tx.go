@@ -304,9 +304,8 @@ func GetCmdRescueCrossChainFee() *cobra.Command {
 // GetCmdSetCrossChainFee is the CLI command to send the message to set crosschain fee for network
 func GetCmdSetCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
-		// TODO: cross-chain-fee should be renamed to feeCurrency
 		// TODO: Rename variable network-id to network descriptor
-		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]",
+		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [fee-currency] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]",
 		Short: "This should be used to set crosschain fee for a network.",
 		Args:  cobra.ExactArgs(6),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -326,8 +325,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 				return errors.New("Error parsing network descriptor")
 			}
 
-			// TODO: This should be renamed to feeCurrency
-			crossChainFee := args[2]
+			feeCurrency := args[2]
 
 			feeCurrencyGas, ok := sdk.NewIntFromString(args[3])
 			if !ok {
@@ -346,7 +344,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 
 			msg := types.NewMsgSetFeeInfo(cosmosSender,
 				oracletypes.NetworkDescriptor(networkDescriptor),
-				crossChainFee,
+				feeCurrency,
 				feeCurrencyGas,
 				minimumLockCost,
 				minimumBurnCost)
