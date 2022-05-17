@@ -232,3 +232,36 @@ func TestKeeper_DecToRat(t *testing.T) {
 func getFirstArgRat(r *big.Rat, ignore bool) big.Rat {
 	return *r
 }
+
+func TestKeeper_RatIntQuo(t *testing.T) {
+	testcases := []struct {
+		name     string
+		rat      big.Rat
+		expected big.Int
+	}{
+		{
+			name:     "small values",
+			rat:      *big.NewRat(6, 3),
+			expected: *big.NewInt(2),
+		},
+		{
+			name:     "small values",
+			rat:      *big.NewRat(7, 3),
+			expected: *big.NewInt(2),
+		},
+		{
+			name:     "negative numerator",
+			rat:      *big.NewRat(-7, 3),
+			expected: *big.NewInt(-2),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			y := clpkeeper.RatIntQuo(&tc.rat)
+
+			require.Equal(t, tc.expected.String(), y.String())
+		})
+	}
+}
