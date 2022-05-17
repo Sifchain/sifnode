@@ -124,10 +124,6 @@ class Project:
 
     def npx(self, args, env=None, cwd=None, pipe=True):
         # Typically we want any npx commands to inherit stdout and strerr
-        # argsstring = " ".join(args)
-        # envelements = [f"{x}={env[x]}" for x in env.keys()] if env else []
-        # envstring = " ".join(envelements)
-        # log.debug(f"npx cmd:\n{envstring} npx {argsstring}")
         return self.cmd.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
 
     def run_peggy2_js_tests(self):

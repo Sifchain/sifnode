@@ -5,7 +5,6 @@ import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-//import "hardhat/console.sol";
 
 error InvalidSigner(uint256 index);
 
@@ -281,9 +280,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     ClaimData[] calldata claims,
     SignatureData[][] calldata signatureData
   ) external {
-//    console.log("sigsLength ", sigs.length);
-//    console.log("claimLength ", claims.length);
-//    console.log("sigsLength ", signatureData.length);
     uint256 sigsLength = sigs.length;
     uint256 claimLength = claims.length;
     require(sigsLength == claimLength, "INV_CLM_LEN");
