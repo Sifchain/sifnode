@@ -199,7 +199,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
 
 	one := big.NewRat(1, 1)
-	one.Sub(one, &slipAdjustmentValues.slipAdjustment)
+	one.Sub(one, slipAdjustmentValues.slipAdjustment)
 
 	symmetryThresholdRat := decToRat(&symmetryThreshold)
 	if one.Cmp(&symmetryThresholdRat) == 1 { // this is: if one > symmetryThresholdRat
@@ -218,7 +218,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) big.Int {
 	var add, numerator big.Int
-	add.Add(&slipAdjustmentValues.RTimesa, &slipAdjustmentValues.rTimesA)
+	add.Add(slipAdjustmentValues.RTimesa, slipAdjustmentValues.rTimesA)
 	numerator.Mul(P, &add)
 
 	var denominator big.Int
@@ -229,16 +229,16 @@ func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustme
 	n.SetInt(&numerator)
 	d.SetInt(&denominator)
 	stakeUnits.Quo(&n, &d)
-	stakeUnits.Mul(&stakeUnits, &slipAdjustmentValues.slipAdjustment)
+	stakeUnits.Mul(&stakeUnits, slipAdjustmentValues.slipAdjustment)
 
 	return *ratIntDiv(&stakeUnits)
 }
 
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 type slipAdjustmentValues struct {
-	slipAdjustment big.Rat
-	RTimesa        big.Int
-	rTimesA        big.Int
+	slipAdjustment *big.Rat
+	RTimesa        *big.Int
+	rTimesA        *big.Int
 }
 
 func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
@@ -262,7 +262,7 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	slipAdjustment.Abs(&slipAdjustment)
 	slipAdjustment.Sub(&one, &slipAdjustment)
 
-	return &slipAdjustmentValues{slipAdjustment: slipAdjustment, RTimesa: RTimesa, rTimesA: rTimesA}
+	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
 func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
