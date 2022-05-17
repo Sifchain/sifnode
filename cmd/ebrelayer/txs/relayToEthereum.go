@@ -61,7 +61,6 @@ func InitRelayConfig(
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 
-	// TODO now, the transaction only works with the gasPrice set.
 	//GasFeeCap is maxFeePerGas; GasTipCap is maxPriorityFeePerGas
 	transactOptsAuth.GasFeeCap = maxFeePerGas
 	transactOptsAuth.GasTipCap = maxPriorityFeePerGas

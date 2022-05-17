@@ -131,15 +131,30 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
    * @param cosmosSenderSequence Nonce of the Cosmos account sending this prophecy
    * @param ethereumReceiver Destination address
    * @param tokenAddress Original address
+   * @param amount token transferred in this prophecy
+   * @param tokenName token name in bridge token contract
+   * @param tokenSymbol token symbol in bridge token contract
+   * @param tokenDecimals token decimal in bridge token contract
    * @param _networkDescriptor Unique identifier of the network
+   * @param bridgeToken if the token created by cosmos bridge
+   * @param nonce lock burn sequence recorded in sifnode side
+   * @param denom token identity in sifnode bank system
    * @return A hash that uniquely identifies this Prophecy
    */
+
   function getProphecyID(
     bytes memory cosmosSender,
     uint256 cosmosSenderSequence,
     address payable ethereumReceiver,
     address tokenAddress,
-    int32 _networkDescriptor
+    uint256 amount,
+    string memory tokenName,
+    string memory tokenSymbol,
+    uint8 tokenDecimals,
+    int32 _networkDescriptor,
+    bool bridgeToken,
+    uint128 nonce,
+    string memory denom
   ) public pure returns (uint256) {
     return
       uint256(
@@ -149,7 +164,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             cosmosSenderSequence,
             ethereumReceiver,
             tokenAddress,
-            _networkDescriptor
+            amount,
+            tokenName,
+            tokenSymbol,
+            tokenDecimals,
+            _networkDescriptor,
+            bridgeToken,
+            nonce,
+            denom
           )
         )
       );
@@ -313,7 +335,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       claimData.cosmosSenderSequence,
       claimData.ethereumReceiver,
       claimData.tokenAddress,
-      claimData.networkDescriptor
+      claimData.amount,
+      claimData.tokenName,
+      claimData.tokenSymbol,
+      claimData.tokenDecimals,
+      claimData.networkDescriptor,
+      claimData.bridgeToken,
+      claimData.nonce,
+      claimData.cosmosDenom
     );
 
     require(uint256(hashDigest) == prophecyID, "INV_DATA");

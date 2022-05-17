@@ -79,16 +79,28 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 }
 
 // GetProphecyID get prophecy ID for lock message
-func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64, tokenAddress string) []byte {
+func (msg MsgLock) GetProphecyID(
+	sequence uint64,
+	tokenAddress string,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	bridgeToken bool,
+	globalNonce uint64,
+) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
 		tokenAddress,
 		msg.Amount,
-		doublePeggy,
-		globalNonce,
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
 		msg.NetworkDescriptor,
+		bridgeToken,
+		globalNonce,
+		msg.DenomHash,
 	)
 }
 
@@ -167,32 +179,56 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// GetProphecyID get prophecy ID for lock message
-func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64, tokenAddress string) []byte {
-
+// GetProphecyID get prophecy ID for burn message
+func (msg MsgBurn) GetProphecyID(
+	sequence uint64,
+	tokenAddress string,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	bridgeToken bool,
+	globalNonce uint64,
+) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
 		tokenAddress,
 		msg.Amount,
-		doublePeggy,
-		globalNonce,
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
 		msg.NetworkDescriptor,
+		bridgeToken,
+		globalNonce,
+		msg.DenomHash,
 	)
 }
 
 // ComputeProphecyID compute the prophecy id
-func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
-	doublePeggy bool, globalNonce uint64, networkDescriptor oracletypes.NetworkDescriptor) []byte {
+func ComputeProphecyID(
+	cosmosSender string,
+	sequence uint64,
+	ethereumReceiver string,
+	tokenAddress string,
+	amount sdk.Int,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	networkDescriptor oracletypes.NetworkDescriptor,
+	bridgeToken bool,
+	globalNonce uint64,
+	cosmosDenom string,
+) []byte {
 
-	// TODO to make sure the prophecy id is the same with smart contract side
-	// just use cosmos sender and sequence, need include more itmes
 	bytesTy, _ := abi.NewType("bytes", "bytes", nil)
-	// boolTy, _ := abi.NewType("bool", "bool", nil)
-	// uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
+	boolTy, _ := abi.NewType("bool", "bool", nil)
+	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
+	int32Ty, _ := abi.NewType("int32", "int32", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	addressTy, _ := abi.NewType("address", "address", nil)
+	stringTy, _ := abi.NewType("string", "string", nil)
+	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
 
 	arguments := abi.Arguments{
 		{
@@ -207,17 +243,29 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		{
 			Type: addressTy,
 		},
-		// {
-		// 	Type: uint256Ty,
-		// },
-		// {
-		// 	Type: boolTy,
-		// },
-		// {
-		// 	Type: uint128Ty,
-		// },
 		{
 			Type: uint256Ty,
+		},
+		{
+			Type: stringTy,
+		},
+		{
+			Type: stringTy,
+		},
+		{
+			Type: uint8Ty,
+		},
+		{
+			Type: int32Ty,
+		},
+		{
+			Type: boolTy,
+		},
+		{
+			Type: uint128Ty,
+		},
+		{
+			Type: stringTy,
 		},
 	}
 
@@ -226,10 +274,14 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		big.NewInt(int64(sequence)),
 		gethCommon.HexToAddress(ethereumReceiver),
 		gethCommon.HexToAddress(tokenAddress),
-		// big.NewInt(amount.Int64()),
-		// doublePeggy,
-		// big.NewInt(int64(globalNonce)),
-		big.NewInt(int64(networkDescriptor)),
+		big.NewInt(amount.Int64()),
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
+		networkDescriptor,
+		bridgeToken,
+		big.NewInt(int64(globalNonce)),
+		cosmosDenom,
 	)
 
 	hashBytes := crypto.Keccak256(bytes)

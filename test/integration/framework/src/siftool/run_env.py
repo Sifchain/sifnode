@@ -135,7 +135,7 @@ class Integrator(Ganache, Command):
 
         # This was deleted in commit f00242302dd226bc9c3060fb78b3de771e3ff429 from sifchain_start_daemon.sh because
         # it was not working. But we assume that we want to keep it.
-        sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnoded_home)
+        sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnode.home)
 
         adminuser_addr = self.sifchain_init_common(sifnode, denom_whitelist_file)
         return adminuser_addr

@@ -1,8 +1,8 @@
 import * as hardhat from "hardhat"
-import {container} from "tsyringe"
-import {HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens"
-import {Valset, Valset__factory} from "../build";
-import {SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
+import { container } from "tsyringe"
+import { HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens"
+import { Valset, Valset__factory } from "../build"
+import { SifchainAccountsPromise } from "../src/tsyringe/sifchainAccounts"
 
 // Usage
 //
@@ -12,10 +12,11 @@ import {SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
 
 async function main() {
   container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
-  const ownerAccount = (await (await container.resolve(SifchainAccountsPromise)).accounts).operatorAccount
+  const ownerAccount = (await (await container.resolve(SifchainAccountsPromise)).accounts)
+    .operatorAccount
   const cosmosBridge = Valset__factory.connect(process.env["COSMOSBRIDGE"]!!, ownerAccount)
-  let validators = process.env["VALIDATORS"]!!.split(",");
-  let powers = process.env["POWERS"]!!.split(",");
+  let validators = process.env["VALIDATORS"]!!.split(",")
+  let powers = process.env["POWERS"]!!.split(",")
   await (cosmosBridge as Valset).updateValset(validators, powers)
 }
 
