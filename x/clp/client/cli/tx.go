@@ -148,7 +148,8 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().String(FlagSymmetryThreshold, "", "")
+	cmd.Flags().AddFlagSet(FsSymmetryThreshold)
+	cmd.Flags().AddFlagSet(FsSymmetryRatioThreshold)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
