@@ -23,9 +23,9 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc         codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	storeKey    sdk.StoreKey      // Unexposed key to access store from sdk.Context
-	stakeKeeper types.StakingKeeper
+	cdc             codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	storeKey        sdk.StoreKey      // Unexposed key to access store from sdk.Context
+	stakeKeeper     types.StakingKeeper
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
 	currentHeight   int64
 }
@@ -48,6 +48,10 @@ func NewKeeper(
 func (k *Keeper) UpdateCurrentHeight(height int64) {
 	k.currentHeight = height
 }
+
+// func (k *Keeper) GetCurrentHeight() int64 {
+// 	return k.currentHeight
+// }
 
 // GetCdc return keeper's cdc
 func (k Keeper) GetCdc() codec.BinaryCodec {

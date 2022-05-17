@@ -15,6 +15,8 @@ const (
 	ProphecyLiftTime = 520000
 	// Max prophecy returned in one query
 	MaxProphecyQueryResult = 10
+	// Clean up outdated prophecies every 1024 blocks
+	CleanUpFrequency = 1000
 )
 
 // GetProphecies returns all prophecies
@@ -140,6 +142,10 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 
 // CleanUpProphecy clean up outdated prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
+	// it is low efficient to check outdated prophecy each block
+	if k.currentHeight%CleanUpFrequency != 0 {
+		return
+	}
 	var prophecyInfo types.ProphecyInfo
 	currentHeight := uint64(k.currentHeight)
 
@@ -147,7 +153,7 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
 		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
-		if prophecyInfo.BlockNumber-currentHeight > ProphecyLiftTime {
+		if currentHeight > prophecyInfo.BlockNumber+ProphecyLiftTime {
 			storePrefix := append(types.SignaturePrefix, prophecyInfo.ProphecyId[:]...)
 			store.Delete(storePrefix)
 			storePrefix = k.getKeyViaNetworkDescriptorGlobalNonce(prophecyInfo.NetworkDescriptor, prophecyInfo.GlobalSequence)
