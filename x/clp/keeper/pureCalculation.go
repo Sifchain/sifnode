@@ -33,7 +33,7 @@ func RatToDec(r *big.Rat) sdk.Dec {
 	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision)
 }
 
-func RatIntDiv(r *big.Rat) *big.Int {
+func RatIntQuo(r *big.Rat) *big.Int {
 	var i big.Int
 
 	num := r.Num()

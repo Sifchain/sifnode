@@ -295,7 +295,7 @@ func CalcSwapResult(toRowan bool,
 		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
 	}
 
-	num := RatIntDiv(&res)
+	num := RatIntQuo(&res)
 	return sdk.NewUintFromBigInt(num)
 }
 
