@@ -37,8 +37,8 @@ export const jsonParseSimple = (x: string) => {
   try {
     return JSON.parse(x)
   } catch (err) {
-    console.error("Error parsing json", x)
-    return undefined
+    console.error("Error parsing json:", x)
+    return {}
   }
 }
 export const jsonStringifySimple = (x: any) => JSON.stringify(x)
