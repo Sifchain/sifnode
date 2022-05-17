@@ -57,7 +57,7 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 	return metadata, true
 }
 
-// AddTokenMetadata adds new token metadata information if the token does not exist in the keeper, or it does exist and IsWhitelisted is false.
+// AddTokenMetadata adds new token metadata information if the token does not exist in the keeper.
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
 	denomHash := ethbridgetypes.GetDenom(
 		metadata.NetworkDescriptor,
