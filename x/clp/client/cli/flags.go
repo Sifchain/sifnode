@@ -31,6 +31,7 @@ const (
 	FlagMintParams                   = "mint-params"
 	FlagMinter                       = "minter"
 	FlagSymmetryThreshold            = "threshold"
+	FlagSymmetryRatioThreshold       = "ratio"
 )
 
 // common flagsets to add to various functions
