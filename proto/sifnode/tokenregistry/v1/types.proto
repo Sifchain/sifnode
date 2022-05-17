@@ -34,7 +34,7 @@ message RegistryEntry {
   string address = 11;
   string external_symbol = 12;
   string transfer_limit = 13;
-  repeated Permission permissions = 14;
+  repeated Permission permissions = 15;
   // The name of denomination unit of this token that is the smallest unit
   // stored. IBC imports of this RegistryEntry convert and store funds as
   // unit_denom. Several different denom units of a token may be imported into
@@ -45,15 +45,15 @@ message RegistryEntry {
   // other chains to overcome the uint64 limit on the packet level and import
   // large amounts of high precision tokens easily. ie. microrowan -> rowan i.e
   // rowan -> rowan
-  string unit_denom = 15;
+  string unit_denom = 16;
   // The name of denomination unit of this token that should appear on
   // counterparty chain when this unit is exported. If empty, the denom is
   // exported as is. Generally this will only be used to map a high precision
   // (unit_denom) to a lower precision, to overcome the current uint64 limit on
   // the packet level. i.e rowan -> microrowan i.e microrowan -> microrowan
-  string ibc_counterparty_denom = 16;
-  string ibc_counterparty_chain_id = 17;
-  map<uint32, bool> double_pegged_network_map = 18;
+  string ibc_counterparty_denom = 17;
+  string ibc_counterparty_chain_id = 18;
+  map<uint32, bool> double_pegged_network_map = 19;
 }
 
 // Coin Metadata Modlue structure for storing
