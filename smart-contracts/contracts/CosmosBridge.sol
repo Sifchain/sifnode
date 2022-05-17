@@ -6,6 +6,7 @@ import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
+error InvalidSigner(uint256 index);
 
 /**
  * @title Cosmos Bridge
@@ -222,13 +223,19 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       );
 
       unchecked {
-        pow += getValidatorPower(validator.signer); 
+        pow += getValidatorPower(validator.signer);
       }
 
-      for (uint256 j = i + 1; j < validatorLength;) {
-        require(validator.signer != _validators[j].signer, "DUP_SIGNER");
-        unchecked { ++j; }
+      // Signatures must be sorted on the sifchain side, so we just
+      // need to make sure that the next validator in the array
+      // (if we're not at the end) isn't a duplicate and is
+      // sorted correctly
+      if (i + 1 <= validatorLength - 1) {
+        if (validator.signer >= _validators[i + 1].signer) {
+          revert InvalidSigner(i);
+        }
       }
+
       unchecked { ++i; }
     }
   }
