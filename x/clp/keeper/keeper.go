@@ -110,6 +110,17 @@ func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {
 	return setThreshold.Threshold
 }
 
+func (k Keeper) GetSymmetryRatio(ctx sdk.Context) sdk.Dec {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.SymmetryThresholdPrefix)
+	if bz == nil {
+		return sdk.NewDecWithPrec(5, 5)
+	}
+	var setThreshold types.MsgSetSymmetryThreshold
+	k.cdc.MustUnmarshal(bz, &setThreshold)
+	return setThreshold.Ratio
+}
+
 func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSetSymmetryThreshold) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(setThreshold)

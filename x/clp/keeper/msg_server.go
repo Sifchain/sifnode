@@ -717,8 +717,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	externalBalance := msg.ExternalAssetAmount
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+	ratioThreshold := k.GetSymmetryRatio(ctx)
 	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
-		nativeBalance, externalBalance, normalizationFactor, adjustExternalToken, symmetryThreshold)
+		nativeBalance, externalBalance, normalizationFactor, adjustExternalToken, symmetryThreshold, ratioThreshold)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -769,6 +770,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	}
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+	ratioThreshold := k.GetSymmetryRatio(ctx)
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
@@ -777,7 +779,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		msg.ExternalAssetAmount,
 		normalizationFactor,
 		adjustExternalToken,
-		symmetryThreshold)
+		symmetryThreshold,
+		ratioThreshold)
 	if err != nil {
 		return nil, err
 	}
