@@ -290,7 +290,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	ratioDiff := A.Quo(R).Sub(a.Quo(r)).Abs()
 
 	if ratioDiff.GT(ratioThreshold) {
-		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
