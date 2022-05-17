@@ -49,10 +49,6 @@ func (k *Keeper) UpdateCurrentHeight(height int64) {
 	k.currentHeight = height
 }
 
-// func (k *Keeper) GetCurrentHeight() int64 {
-// 	return k.currentHeight
-// }
-
 // GetCdc return keeper's cdc
 func (k Keeper) GetCdc() codec.BinaryCodec {
 	return k.cdc
