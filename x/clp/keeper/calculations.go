@@ -210,13 +210,13 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), slipAdjustmentValues)
 
 	var newPoolUnit big.Int
-	newPoolUnit.Add(oldPoolUnits.BigInt(), &stakeUnits)
+	newPoolUnit.Add(oldPoolUnits.BigInt(), stakeUnits)
 
-	return sdk.NewUintFromBigInt(&newPoolUnit), sdk.NewUintFromBigInt(&stakeUnits), nil
+	return sdk.NewUintFromBigInt(&newPoolUnit), sdk.NewUintFromBigInt(stakeUnits), nil
 }
 
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
-func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) big.Int {
+func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int {
 	var add, numerator big.Int
 	add.Add(slipAdjustmentValues.RTimesa, slipAdjustmentValues.rTimesA)
 	numerator.Mul(P, &add)
@@ -231,7 +231,7 @@ func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustme
 	stakeUnits.Quo(&n, &d)
 	stakeUnits.Mul(&stakeUnits, slipAdjustmentValues.slipAdjustment)
 
-	return *ratIntDiv(&stakeUnits)
+	return ratIntDiv(&stakeUnits)
 }
 
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
