@@ -80,7 +80,7 @@ func InitRelayConfig(
 	return client, transactOptsAuth, target, nil
 }
 
-type BatchUnit struct {
+type BatchSignatureUnit struct {
 	prophecyId         [][32]byte
 	batchClaimData     []cosmosbridge.CosmosBridgeClaimData
 	batchSignatureData [][]cosmosbridge.CosmosBridgeSignatureData
@@ -139,7 +139,7 @@ func prophecyInfoToSignatureUnit(prophecyInfo *oracletypes.ProphecyInfo) Signatu
 	}
 }
 
-func buildBatchClaim(batchProphecyInfo []*oracletypes.ProphecyInfo) BatchUnit {
+func buildBatchClaim(batchProphecyInfo []*oracletypes.ProphecyInfo) BatchSignatureUnit {
 	batchLen := len(batchProphecyInfo)
 	batchClaimData := make([]cosmosbridge.CosmosBridgeClaimData, batchLen)
 	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
@@ -152,7 +152,7 @@ func buildBatchClaim(batchProphecyInfo []*oracletypes.ProphecyInfo) BatchUnit {
 		prophecyID[index] = sUnit.prophecyId
 	}
 
-	return BatchUnit{
+	return BatchSignatureUnit{
 		batchClaimData:     batchClaimData,
 		batchSignatureData: batchSignatureData,
 		prophecyId:         prophecyID,
