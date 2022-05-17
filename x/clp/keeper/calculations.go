@@ -207,7 +207,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	}
 
 	stakeUnits := calculateStakeUnits(oldPoolUnits.BigInt(), nativeAssetBalance.BigInt(),
-		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), &slipAdjustmentValues)
+		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), slipAdjustmentValues)
 
 	var newPoolUnit big.Int
 	newPoolUnit.Add(oldPoolUnits.BigInt(), &stakeUnits)
@@ -241,7 +241,7 @@ type slipAdjustmentValues struct {
 	rTimesA        big.Int
 }
 
-func calculateSlipAdjustment(R, A, r, a *big.Int) slipAdjustmentValues {
+func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	var denominator, rPlusR, aPlusA big.Int
 	rPlusR.Add(r, R)
 	aPlusA.Add(a, A)
@@ -262,8 +262,7 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) slipAdjustmentValues {
 	slipAdjustment.Abs(&slipAdjustment)
 	slipAdjustment.Sub(&one, &slipAdjustment)
 
-	s := slipAdjustmentValues{slipAdjustment: slipAdjustment, RTimesa: RTimesa, rTimesA: rTimesA}
-	return s
+	return &slipAdjustmentValues{slipAdjustment: slipAdjustment, RTimesa: RTimesa, rTimesA: rTimesA}
 }
 
 func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
