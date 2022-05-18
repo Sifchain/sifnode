@@ -273,7 +273,6 @@ func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 	d.Mul(&s, &s)   // d = (x + X)**2
 	fee.Quo(&n, &d) // fee = n / d = (x**2 * Y) / (x + X)**2
 
-	//TODO: can this panic? Does it matter?
 	return sdk.NewUintFromBigInt(&fee)
 }
 
@@ -416,9 +415,15 @@ func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
 	if x.IsZero() {
 		return sdk.ZeroUint()
 	}
-	d := x.Add(X)
 
-	return x.Quo(d)
+	Xb := X.BigInt()
+	xb := x.BigInt()
+
+	var d, q big.Int
+	d.Add(xb, Xb)
+	q.Quo(xb, &d) // q = x / (x + X)
+
+	return sdk.NewUintFromBigInt(&q)
 }
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
