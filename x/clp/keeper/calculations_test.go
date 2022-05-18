@@ -1274,13 +1274,15 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 		X, x, Y, fee        sdk.Uint
 		err                 error
 		errString           error
+		panicErr            string
 	}{
 		{
-			name: "success",
-			X:    sdk.NewUint(0),
-			x:    sdk.NewUint(0),
-			Y:    sdk.NewUint(1),
-			fee:  sdk.NewUint(0),
+			name:     "success",
+			X:        sdk.NewUint(0),
+			x:        sdk.NewUint(0),
+			Y:        sdk.NewUint(1),
+			fee:      sdk.NewUint(0),
+			panicErr: "NewMustNat: Uint was 0",
 		},
 		{
 			name: "success",
@@ -1321,8 +1323,18 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 
 	for _, tc := range testcases {
 		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
-			fee := clpkeeper.CalcLiquidityFee(tc.X, tc.x, tc.Y)
+			if tc.panicErr != "" {
+				// nolint:errcheck
+				require.PanicsWithError(t, tc.panicErr, func() {
+					clpkeeper.CalcLiquidityFee(clpkeeper.NewMustNat(&tc.X), clpkeeper.NewMustNat(&tc.x), clpkeeper.NewMustNat(&tc.Y))
+				})
+
+				return
+			}
+
+			fee := clpkeeper.CalcLiquidityFee(clpkeeper.NewMustNat(&tc.X), clpkeeper.NewMustNat(&tc.x), clpkeeper.NewMustNat(&tc.Y))
 			require.Equal(t, tc.fee.String(), fee.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}

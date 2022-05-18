@@ -21,9 +21,18 @@ func SwapOne(from types.Asset,
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
-	liquidityFee := CalcLiquidityFee(X, sentAmount, Y)
-	priceImpact := calcPriceImpact(X, sentAmount)
-	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
+	if IsAnyZero([]sdk.Uint{X, sentAmount, Y}) {
+		// TODO: log
+		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrInputIsZero
+	}
+
+	XNat := NewMustNat(&X)
+	YNat := NewMustNat(&Y)
+	sentAmountNat := NewMustNat(&sentAmount)
+
+	liquidityFee := CalcLiquidityFee(XNat, sentAmountNat, YNat)
+	priceImpact := calcPriceImpact(XNat, sentAmountNat)
+	swapResult := CalcSwapResult(toRowan, XNat, sentAmountNat, YNat, pmtpCurrentRunningRate)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
@@ -67,7 +76,12 @@ func GetSwapFee(sentAmount sdk.Uint,
 	pool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 	X, Y, toRowan := pool.ExtractValues(to)
-	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
+	if IsAnyZero([]sdk.Uint{X, sentAmount, Y}) {
+		// TODO: log
+		return sdk.ZeroUint()
+	}
+
+	swapResult := CalcSwapResult(toRowan, NewMustNat(&X), NewMustNat(&sentAmount), NewMustNat(&Y), pmtpCurrentRunningRate)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()
@@ -256,11 +270,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
-func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
-	if IsAnyZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
-	}
-
+func CalcLiquidityFee(X, x, Y *nat) sdk.Uint {
 	Xb := X.BigInt()
 	xb := x.BigInt()
 	Yb := Y.BigInt()
@@ -277,12 +287,12 @@ func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 }
 
 func CalcSwapResult(toRowan bool,
-	X, x, Y sdk.Uint,
+	X, x, Y *nat,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 
-	if IsAnyZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
-	}
+	//if IsAnyZero([]sdk.Uint{X, x, Y}) {
+	//	return sdk.ZeroUint()
+	//}
 
 	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
 	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
@@ -411,11 +421,7 @@ func CalcSwapPriceResult(toRowan bool,
 	return y
 }
 
-func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
-	if x.IsZero() {
-		return sdk.ZeroUint()
-	}
-
+func calcPriceImpact(X, x *nat) sdk.Uint {
 	Xb := X.BigInt()
 	xb := x.BigInt()
 
