@@ -150,7 +150,12 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion, "prophecy", zap.Reflect("prophecy", prophecy))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion,
+		"prophecy", zap.Reflect("prophecy", prophecy),
+		"whitelist", zap.Reflect("whiteList", whiteList),
+		"consensusNeededUint", consensusNeededUint,
+		"voteRate", voteRate,
+	)
 
 	return prophecy
 }

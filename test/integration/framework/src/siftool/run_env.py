@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import time
 from typing import List, Tuple, TextIO, Any
@@ -144,6 +145,7 @@ class Integrator(Ganache, Command):
         # This effectively copies key for validator_moniker from what sifgen creates in /tmp/sifnodedNetwork/validators
         # to ~/.sifnoded (note absence of explicit sifnoded_home, therefore it's ~/.sifnoded)
         sifnode0 = Sifnoded(self)
+        # TODO don't add keys to the default ~/ keyring
         sifnode0.keys_add(validator_moniker, validator_mnemonic)
 
         # Read valoper key
@@ -774,6 +776,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
     def __init__(self, cmd: Command):
         super().__init__(cmd)
         self.hardhat = hardhat.Hardhat(cmd)
+        self.witness_count = int(os.getenv("WITNESS_COUNT", 2))
+        self.consensus_threshold = int(os.getenv("CONSENSUS_THRESHOLD", 49))
+        self.witness_power = 100
 
     # Destuctures a linear array of EVM accounts into:
     # [operator, owner, pauser, [validator-0, validator-1, ...], [...available...]]
@@ -810,7 +815,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         hardhat_log_file = open(os.path.join(log_dir, "hardhat.log"), "w")  # TODO close + use a different name
         sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
         relayer_log_file = open(os.path.join(log_dir, "relayer.log"), "w")  # TODO close
-        witness_log_file = open(os.path.join(log_dir, "witness.log"), "w")  # TODO close; will be empty on non-peggy2 branch
 
         self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Purge test keyring backend
 
@@ -821,7 +825,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         # This determines how many EVM accounts we want to allocate for validators.
         # Since every validator needs on EVM account, this should be equal to the number of validators (possibly more).
-        hardhat_validator_count = 1
+        hardhat_validator_count = self.witness_count
         hardhat_network_id = 1  # Not used in smart-contracts/src/devenv/hardhatNode.ts
         # This value is actually returned from HardhatNodeRunner. It comes from smart-contracts/hardhat.config.ts.
         # In Typescript, its value is obtained by 'require("hardhat").hre.network.config.chainId'.
@@ -850,7 +854,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             [999999 * 10**21, ceth_symbol],
             [137 * 10**16, "sifBridge00030x1111111111111111111111111111111111111111"],
         ]
-        validator_power = 100
+        validator_power = self.witness_power
         seed_ip_address = "10.10.1.1"
         tendermint_port = 26657
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
@@ -876,15 +880,20 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
 
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
-        [relayer0_exec_args], [witness0_exec_args] = \
+        [relayer0_exec_args], [witness_exec_args] = \
         self.start_witnesses_and_relayers(w3_websocket_address, hardhat_chain_id, tcp_url,
             chain_id, peggy_sc_addrs, hardhat_accounts["validators"], sifnode_validators, sifnode_relayers,
             sifnode_witnesses, symbol_translator_file)
 
         relayer0_proc = self.cmd.spawn_asynchronous_process(relayer0_exec_args, log_file=relayer_log_file)
-        witness0_proc = self.cmd.spawn_asynchronous_process(witness0_exec_args, log_file=witness_log_file)
+        witness_procs = []
+        for i, w in enumerate(witness_exec_args):
+            witness_log_file = open(os.path.join(log_dir, f"witness{i}.log"), "w")  # TODO close; will be empty on non-peggy2 branch
+            witness_proc = self.cmd.spawn_asynchronous_process(w, log_file=witness_log_file)
+            witness_procs.append(witness_proc)
 
-        # In the future, we want to have one descriptor for entire environment.
+
+    # In the future, we want to have one descriptor for entire environment.
         # It should be able to support multiple EVM and multiple Cosmos chains, including all neccessary bridges and
         # relayers. For now this is just a prototype which is not used yet.
         _unused_peggy2_environment = {
@@ -905,10 +914,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         self.write_env_files(self.project.project_dir(), self.project.go_bin_dir, peggy_sc_addrs, hardhat_accounts,
             admin_account_name, admin_account_address, sifnode_validator0_home, sifnode_validators, sifnode_relayers,
             sifnode_witnesses, tcp_url, hardhat_bind_hostname, hardhat_port, hardhat_chain_id, chain_dir,
-            sifnoded_exec_args, relayer0_exec_args, witness0_exec_args
+            sifnoded_exec_args, relayer0_exec_args, witness_exec_args
         )
 
-        return hardhat_proc, sifnoded_proc, relayer0_proc, witness0_proc
+        return hardhat_proc, sifnoded_proc, relayer0_proc, witness_proc
 
     def init_smart_contracts(self, w3_url, operator_account, deployed_contract_addresses):
         # TODO Looks like this is already done somewhere else...
@@ -933,7 +942,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
     ) -> Tuple[str, command.ExecArgs, subprocess.Popen, str, cosmos.Address, List, List, List, str, str]:
         validator_count = 1
         relayer_count = 1
-        witness_count = 1
+        witness_count = self.witness_count
         # TODO Not used
         # rpc_port = 9000
 
@@ -1005,6 +1014,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts, hardhat_chain_id,
                 validator_power, denom_whitelist_file),
             "home": validator0_home,
+            "power": validator_power
         } for name in [f"witness-{i}" for i in range(witness_count)]]
 
         tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
@@ -1041,7 +1051,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
         # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
         sifnode.wait_for_last_transaction_to_be_mined()
-        sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id)
+        sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id, self.consensus_threshold)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
@@ -1050,7 +1060,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file
     ):
         # For now we assume a single validator
-        evm_validator0_addr, evm_validator0_key = exactly_one(evm_validator_accounts)
+        evm_validator0_addr, evm_validator0_key = evm_validator_accounts[0]
 
         sifnode_validator0 = exactly_one(sifnode_validators)
         sifnode_validator0_address = sifnode_validator0["address"]
@@ -1059,11 +1069,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         sifnode_relayer0_mnemonic = sifnode_relayer0["name"]
         sifnode_relayer0_address = sifnode_relayer0["address"]
         sifnode_relayer0_home = sifnode_relayer0["home"]
-
-        sifnode_witness0 = exactly_one(sifnode_witnesses)
-        sifnode_witness0_mnemonic = sifnode_witness0["name"]
-        sifnode_witness0_address = sifnode_witness0["address"]
-        sifnode_witness0_home = sifnode_witness0["home"]
 
         bridge_registry_contract_addr = peggy_sc_addrs["BridgeRegistry"]
 
@@ -1089,26 +1094,43 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             home=sifnode_relayer0_home,
         )
 
-        witness0_exec_args = ebrelayer.peggy2_build_ebrelayer_cmd(
-            "init-witness",
-            hardhat_chain_id,
-            tcp_url,
-            web3_websocket_address,
-            bridge_registry_contract_addr,
-            sifnode_witness0_mnemonic,
-            chain_id=chain_id,
-            node=tcp_url,
-            sign_with=sifnode_witness0_address,
-            symbol_translator_file=symbol_translator_file,
-            ethereum_address=evm_validator0_addr,
-            ethereum_private_key=evm_validator0_key,
-            keyring_backend="test",
-            keyring_dir=sifnode_relayer0_home,
-            log_format="json",
-            home=sifnode_witness0_home,
-        )
+        witness_exec_args = []
+        for i, w in enumerate(sifnode_witnesses):
+            item = ebrelayer.peggy2_build_ebrelayer_cmd(
+                "init-witness",
+                hardhat_chain_id,
+                tcp_url,
+                web3_websocket_address,
+                bridge_registry_contract_addr,
+                w["name"],
+                chain_id=chain_id,
+                node=tcp_url,
+                sign_with=w["address"],
+                symbol_translator_file=symbol_translator_file,
+                ethereum_address=evm_validator_accounts[i][0],
+                ethereum_private_key=evm_validator_accounts[i][1],
+                keyring_backend="test",
+                keyring_dir=w["home"],
+                log_format="json",
+                home=w["home"],
+            )
+            witness_exec_args.append(item)
+            evm_validator_addresses = [
+                address[0] for address in evm_validator_accounts
+            ]
+            evm_validator_powers = [
+                str(x["power"]) for x in sifnode_witnesses
+            ]
+            npx_env = {
+                "COSMOSBRIDGE": peggy_sc_addrs["CosmosBridge"],
+                "POWERS": ",".join(evm_validator_powers),
+                "VALIDATORS": ",".join(evm_validator_addresses)
+            }
+            self.cmd.project.npx(["hardhat", "run", "scripts/update_validator_power.ts", "--network", "localhost"], env=npx_env,
+                         cwd=self.project.smart_contracts_dir, pipe=False)
 
-        return [relayer0_exec_args], [witness0_exec_args]
+
+        return [relayer0_exec_args], [witness_exec_args]
 
     def write_env_files(self, project_dir, go_bin_dir, evm_smart_contract_addrs, eth_accounts, admin_account_name,
         admin_account_address, sifnode_validator0_home, sifnode_validators, sifnode_relayers, sifnode_witnesses,
@@ -1230,6 +1252,19 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         launch_json = {
             "version": "0.2.0",
             "configurations": [
+                {
+                "name": "Python: siftool",
+                "type": "python",
+                "request": "launch",
+                "program": "${workspaceFolder}/test/integration/framework/siftool",
+                "args": ["run-env"],
+                "console": "integratedTerminal",
+                "justMyCode": True,
+                "env": {
+                    "WITNESS_COUNT": "1",
+                    "CONSENSUS_THRESHOLD": "49"
+                }
+                },
                 {
                     "runtimeArgs": ["node_modules/.bin/hardhat", "run"],
                     "cwd": "${workspaceFolder}/smart-contracts",
@@ -1398,7 +1433,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     {}))
 
         intellij_ebrelayer_config = exactly_one(intellij_ebrelayer_configs)
-        intellij_witness_config = exactly_one(intellij_witness_configs)
+        intellij_witness_config = intellij_witness_configs[0]
         intellij_sifnoded_config = exactly_one(intellij_sifnoded_configs)
 
         run_dir = self.project.project_dir(".run")
