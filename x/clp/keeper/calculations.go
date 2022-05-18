@@ -201,8 +201,9 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	one := big.NewRat(1, 1)
 	symmetryThresholdRat := decToRat(&symmetryThreshold)
 
-	one.Sub(one, slipAdjustmentValues.slipAdjustment)
-	if one.Cmp(&symmetryThresholdRat) == 1 { // this is: if one > symmetryThresholdRat
+	var diff big.Rat
+	diff.Sub(one, slipAdjustmentValues.slipAdjustment)
+	if diff.Cmp(&symmetryThresholdRat) == 1 { // this is: if diff > symmetryThresholdRat
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
 	}
 
