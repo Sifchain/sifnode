@@ -70,11 +70,6 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 			panic(err)
 		}
 
-		err = m.keeper.UseUnlockedLiquidity(ctx, l, lp.units, true)
-		if err != nil {
-			panic(err)
-		}
-
 		l.LiquidityProviderUnits = l.LiquidityProviderUnits.Sub(lp.units)
 		m.keeper.SetLiquidityProvider(ctx, &l)
 
