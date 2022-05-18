@@ -62,7 +62,8 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 	for _, lp := range lps {
 		l, err := m.keeper.GetLiquidityProvider(ctx, symbol, lp.address)
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error("error looking up LP for migration", "lp", lp.address)
+			continue
 		}
 		pool, err := m.keeper.GetPool(ctx, symbol)
 		if err != nil {
