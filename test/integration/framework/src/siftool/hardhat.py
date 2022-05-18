@@ -53,20 +53,7 @@ class ScriptRunner:
     # - "localhost": connect to "http://127.0.0.1:8545" where "npx hardhat node" is running
     # - anything else: use the corresponding section from smart-contracts/hardhat.config.ts, element "networks"
     def deploy_smart_contracts(self) -> Mapping[str, eth.Address]:
-        res = self.run("deploy_contracts_dev.ts")
-        # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
-        # been compiled, otherwise the output starts with 4 lines:
-        #     Compiling 35 files with 0.5.16
-        #     Generating typings for: 36 artifacts in dir: build for target: ethers-v5
-        #     Successfully generated 65 typings!
-        #     Compilation finished successfully
-        # With devtool, the compilation is performed automatically before invoking main() if the script is invoked
-        # via "npx hardhat run scripts/devenv.ts" instead of "npx ts-node scripts/devenv.ts", so normally this would
-        # not happen.
-        # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
-        stdout_lines = stdout(res).splitlines()
-        assert len(stdout_lines) >= 2
-        assert stdout_lines[0] == "No need to generate any newer typings."  # This is printed by hardhat, the rest is from the script
+        stdout_lines = self.run("deploy_contracts_dev.ts")
         tmp = json.loads(stdout_lines[-1])
         return {
             "BridgeBank": tmp["bridgeBank"],
@@ -99,7 +86,21 @@ class ScriptRunner:
             env["ETHEREUM_PRIVATE_KEY"] = self.ethereum_private_key
         if npx_env:
             env = dict_merge(env, npx_env)
-        return self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env)
+        res = self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env)
+        # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
+        # been compiled, otherwise the output starts with 4 lines:
+        #     Compiling 35 files with 0.5.16
+        #     Generating typings for: 36 artifacts in dir: build for target: ethers-v5
+        #     Successfully generated 65 typings!
+        #     Compilation finished successfully
+        # With devtool, the compilation is performed automatically before invoking main() if the script is invoked
+        # via "npx hardhat run scripts/devenv.ts" instead of "npx ts-node scripts/devenv.ts", so normally this would
+        # not happen.
+        # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
+        stdout_lines = stdout(res).splitlines()
+        assert len(stdout_lines) > 0
+        assert stdout_lines[0] == "No need to generate any newer typings."  # This is printed by hardhat, the rest is from the script
+        return stdout_lines[1:]
 
 class HardhatAbiProvider:
     def __init__(self, cmd, deployed_contract_addresses):

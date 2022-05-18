@@ -770,8 +770,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         super().__init__(cmd)
         self.use_geth_instead_of_hardhat = False
         self.extra_balances_for_admin_account = None
-        self.witness_count = int(os.getenv("WITNESS_COUNT", 2))
-        self.consensus_threshold = int(os.getenv("CONSENSUS_THRESHOLD", 49))
+        self.witness_count = 2
+        self.consensus_threshold = 49
         self.witness_power = 100
 
     # Destuctures a linear array of EVM accounts into:
@@ -956,16 +956,19 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         log.debug("Smart contracts operator: {}".format(operator_addr))
         log.debug("ceth symbol: {}".format(ceth_symbol))
         log.debug("Admin account address: {}".format(admin_account_address))  # tokens
+        log.debug("Witness count: {}".format(self.witness_count))
+        log.debug("Consensus thresholds {}".format(self.consensus_threshold))
         log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
+        for sc_name, sc_address in peggy_sc_addrs.items():
+            log.debug("{} address: {}".format(sc_name, sc_address))
 
         evm_validator_accounts = hardhat_accounts["validators"]
         evm_validator_addresses = [address[0] for address in evm_validator_accounts]
 
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
-        [relayer0_exec_args], [witness_exec_args] = \
-            self.start_witnesses_and_relayers(w3_url, hardhat_chain_id, tcp_url,
-                chain_id, peggy_sc_addrs, evm_validator_accounts, sifnode_validators, sifnode_relayers,
-                sifnode_witnesses, symbol_translator_file, relayer_extra_args)
+        [relayer0_exec_args], [witness_exec_args] = self.start_witnesses_and_relayers(
+            w3_url, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs, evm_validator_accounts, sifnode_validators,
+            sifnode_relayers, sifnode_witnesses, symbol_translator_file, relayer_extra_args)
 
         hardhat_scripts.update_validator_power(peggy_sc_addrs["CosmosBridge"], evm_validator_addresses, sifnode_witnesses)
 
@@ -1010,8 +1013,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         validator_count = 1
         relayer_count = 1
         witness_count = self.witness_count
-        # TODO Not used
-        # rpc_port = 9000
 
         network_config_file_path = self.cmd.mktempfile()
         try:

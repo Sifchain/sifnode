@@ -40,10 +40,19 @@ def main(argv):
         if on_peggy2_branch:
             argparser.add_argument("--test-denom-count", type=int)
             argparser.add_argument("--geth", action="store_true", default=False)
+            argparser.add_argument("--witness-count", type=int)
+            argparser.add_argument("--consensus-threshold", type=int)
             args = argparser.parse_args(argv[1:])
             # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
             # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             env = Peggy2Environment(cmd)
+            witness_count = args.witness_count if args.witness_count is not None else os.getenv("WITNESS_COUNT")
+            if witness_count is not None:
+                env.witness_count = witness_count
+            consensus_threshold = args.consensus_threshold if args.consensus_threshold is not None \
+                else os.getenv("CONSENSUS_THRESHOLD")
+            if consensus_threshold is not None:
+                env.consensus_threshold = consensus_threshold
             if args.test_denom_count is not None:
                 env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
             env.use_geth_instead_of_hardhat = args.geth

@@ -739,7 +739,7 @@ class EnvCtx:
         while True:
             new_balance = self.get_erc20_token_balance(token_addr, eth_addr) if token_addr \
                 else self.eth.get_eth_balance(eth_addr)
-            log.debug("wait_for_eth_balance_change(): {}={}".format(eth_addr, new_balance))
+            # log.debug("wait_for_eth_balance_change(): {}={}".format(eth_addr, new_balance))
             if new_balance != old_balance:
                 return new_balance
             time.sleep(polling_time)
