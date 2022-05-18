@@ -23,9 +23,9 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc         codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	storeKey    sdk.StoreKey      // Unexposed key to access store from sdk.Context
-	stakeKeeper types.StakingKeeper
+	cdc             codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	storeKey        sdk.StoreKey      // Unexposed key to access store from sdk.Context
+	stakeKeeper     types.StakingKeeper
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
 	currentHeight   int64
 }
@@ -150,7 +150,12 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion, "prophecy", zap.Reflect("prophecy", prophecy))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion,
+		"prophecy", zap.Reflect("prophecy", prophecy),
+		"whitelist", zap.Reflect("whiteList", whiteList),
+		"consensusNeededUint", consensusNeededUint,
+		"voteRate", voteRate,
+	)
 
 	return prophecy
 }

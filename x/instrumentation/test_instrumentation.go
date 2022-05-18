@@ -3,6 +3,8 @@ package instrumentation
 import (
 	"github.com/tendermint/tendermint/libs/log"
 	"go.uber.org/zap"
+	"os"
+	"strings"
 )
 
 const (
@@ -19,6 +21,7 @@ const (
 	SendCoinsFromAccountToModule   = "SendCoinsFromAccountToModule"
 	BurnCoins                      = "BurnCoins"
 	SignProphecy                   = "SignProphecy"
+	ProcessSignProphecy            = "ProcessSignProphecy"
 	ProcessSuccessfulClaim         = "ProcessSuccessfulClaim"
 	CoinsSent                      = "coinsSent"
 	Burn                           = "Burn"
@@ -44,9 +47,9 @@ const (
 )
 
 func PeggyCheckpoint(logger log.Logger, kind string, keysAndValues ...interface{}) {
-	logger.Debug(peggyTestMarker, append([]interface{}{kindMarker, kind}, keysAndValues...)...)
+	logger.Debug(peggyTestMarker, append([]interface{}{kindMarker, kind, "cmdline", strings.Join(os.Args, " ")}, keysAndValues...)...)
 }
 
 func PeggyCheckpointZap(logger *zap.SugaredLogger, kind string, keysAndValues ...interface{}) {
-	logger.Debugw(peggyTestMarker, append([]interface{}{kindMarker, kind}, keysAndValues...)...)
+	logger.Debugw(peggyTestMarker, append([]interface{}{kindMarker, kind, "cmdline", strings.Join(os.Args, " ")}, keysAndValues...)...)
 }
