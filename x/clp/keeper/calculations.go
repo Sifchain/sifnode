@@ -198,7 +198,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
 
 	one := big.NewRat(1, 1)
-	symmetryThresholdRat := decToRat(&symmetryThreshold)
+	symmetryThresholdRat := DecToRat(&symmetryThreshold)
 
 	var diff big.Rat
 	diff.Sub(one, slipAdjustmentValues.slipAdjustment)
@@ -231,7 +231,7 @@ func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustme
 	stakeUnits.Quo(&n, &d)
 	stakeUnits.Mul(&stakeUnits, slipAdjustmentValues.slipAdjustment)
 
-	return ratIntDiv(&stakeUnits)
+	return RatIntQuo(&stakeUnits)
 }
 
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
