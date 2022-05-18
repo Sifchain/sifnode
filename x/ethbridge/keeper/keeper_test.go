@@ -66,12 +66,6 @@ func TestProcessClaimLock(t *testing.T) {
 
 	nonce := uint64(1)
 
-	// TODO(timlind): This default does not seem to be in any version history.
-	//invalid claim defaults to lock
-	//claimType, err := types.StringToClaimType("lkfjdsk")
-	//require.Equal(t, claimType.String(), "lock")
-	//require.Error(t, err)
-
 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethBridgeClaim := types.NewEthBridgeClaim(

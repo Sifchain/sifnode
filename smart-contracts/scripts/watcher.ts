@@ -1,30 +1,48 @@
-import { filter, map } from "rxjs/operators"
-import * as fs from "fs"
-import * as readline from "readline"
-import { Observable, ReplaySubject } from "rxjs"
-import {
-  isNotNullOrUndefined,
-  jsonParseSimple,
-  readableStreamToObservable,
-  tailFileAsObservable,
-} from "../src/watcher/utilities"
 import { lastValueFrom } from "rxjs"
-import { EvmStateTransition, toEvmRelayerEvent } from "../src/watcher/ebrelayer"
-import { sifwatch } from "../src/watcher/watcher"
+import * as rxops from "rxjs/operators"
+import { defaultSifwatchLogs, sifwatch } from "../src/watcher/watcher"
+import * as hardhat from "hardhat"
+import { container } from "tsyringe"
+import { HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens"
+import { setupDeployment } from "../src/hardhatFunctions"
+import { readDevEnvObj } from "../src/tsyringe/devenvUtilities"
+import { BridgeBank__factory } from "../build"
 
 async function main() {
-  const evmRelayerEvents = sifwatch("/tmp/sifnode/relayer.log")
+  container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
 
-  evmRelayerEvents.subscribe({
-    next: (x) => {
-      console.log(x)
-    },
-    error: (e) => console.log("goterror: ", e),
-    complete: () => console.log("alldone"),
-  })
+  await setupDeployment(container)
+
+  const devenv = await readDevEnvObj("./environment.json")
+
+  const bridgeBank = await BridgeBank__factory.connect(
+    devenv.contractResults!!.contractAddresses.bridgeBank,
+    hardhat.ethers.provider
+  )
+
+  const evmRelayerEvents = sifwatch(defaultSifwatchLogs(), hardhat, bridgeBank)
+
+  evmRelayerEvents
+    .pipe(
+      rxops.filter((x) => {
+        switch (x.kind) {
+          case "SifHeartbeat":
+          case "SifnodedInfoEvent":
+            return false
+          default:
+            return true
+        }
+      })
+    )
+    .subscribe({
+      next: (x) => {
+        console.log(JSON.stringify(x))
+      },
+      error: (e) => console.log("Terminated with error: ", e),
+      complete: () => console.log("Normal exit"),
+    })
 
   const lv = await lastValueFrom(evmRelayerEvents)
-  console.log("exitingwatcher")
 }
 
 main()
