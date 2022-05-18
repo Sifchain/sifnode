@@ -70,7 +70,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 	return nil
 }
 
-// SignProphecyToCosmos broadcast the sign prophecy message to cosmos
+// SignProphecyToCosmos broadcasts the signed prophecy message to cosmos
 func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProphecy, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) {
 	var messages []sdk.Msg
 
@@ -92,12 +92,12 @@ func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProp
 	// open question as to how we handle this situation.
 	//    do we retry,
 	//        if so, how many times do we try?
-	if err != nil {
+	if err == nil {
+		sugaredLogger.Infow("Broadcast SignProphecyToCosmos tx without error")
+	} else {
 		sugaredLogger.Errorw(
 			"failed to broadcast tx to sifchain.",
 			errorMessageKey, err.Error(),
 		)
 	}
-
-	sugaredLogger.Infow("Broadcasted tx without error")
 }

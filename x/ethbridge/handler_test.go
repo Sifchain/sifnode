@@ -146,7 +146,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	// TODO peggy2merge
+
 	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.Denom, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {

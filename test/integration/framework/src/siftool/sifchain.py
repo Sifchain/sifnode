@@ -173,10 +173,9 @@ class Sifnoded:
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 
-    def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, chain_id):
-        consensus_needed = "49"
+    def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, chain_id, consensus_needed):
         args = ["tx", "ethbridge", "update-consensus-needed", admin_account_address, str(hardhat_chain_id),
-            consensus_needed, "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
+            str(consensus_needed), "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
             "0.5rowan", "--gas-adjustment", "1.5", "-y"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res

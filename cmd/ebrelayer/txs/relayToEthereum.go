@@ -3,10 +3,12 @@ package txs
 // DONTCOVER
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"errors"
 	"math/big"
+	"sort"
 	"time"
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/CosmosBridge.sol"
@@ -78,6 +80,85 @@ func InitRelayConfig(
 	return client, transactOptsAuth, target, nil
 }
 
+type BatchSignatureUnit struct {
+	prophecyId         [][32]byte
+	batchClaimData     []cosmosbridge.CosmosBridgeClaimData
+	batchSignatureData [][]cosmosbridge.CosmosBridgeSignatureData
+}
+
+type SignatureUnit struct {
+	claimData     cosmosbridge.CosmosBridgeClaimData
+	signatureData []cosmosbridge.CosmosBridgeSignatureData
+	prophecyId    [32]byte
+}
+
+func prophecyInfoToSignatureUnit(prophecyInfo *oracletypes.ProphecyInfo) SignatureUnit {
+	claimData := cosmosbridge.CosmosBridgeClaimData{
+		CosmosSender:         []byte(prophecyInfo.CosmosSender),
+		CosmosSenderSequence: big.NewInt(int64(prophecyInfo.CosmosSenderSequence)),
+		EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
+		TokenAddress:         common.HexToAddress(prophecyInfo.TokenContractAddress),
+		Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
+		BridgeToken:          prophecyInfo.BridgeToken,
+		Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
+		NetworkDescriptor:    int32(prophecyInfo.NetworkDescriptor),
+		TokenName:            prophecyInfo.TokenName,
+		TokenSymbol:          prophecyInfo.TokenSymbol,
+		TokenDecimals:        uint8(prophecyInfo.Decimail),
+		CosmosDenom:          prophecyInfo.TokenDenomHash,
+	}
+
+	var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumAddress))
+
+	for index, address := range prophecyInfo.EthereumAddress {
+		signature := []byte(prophecyInfo.Signatures[index])
+		var r [32]byte
+		var s [32]byte
+		copy(r[:], signature[0:32])
+		copy(s[:], signature[32:64])
+
+		signatureData[index] = cosmosbridge.CosmosBridgeSignatureData{
+			Signer: common.HexToAddress(address),
+			V:      signature[64] + 27,
+			R:      r,
+			S:      s,
+		}
+	}
+
+	sort.Slice(signatureData, func(i, j int) bool {
+		return bytes.Compare(signatureData[i].Signer[:], signatureData[j].Signer[:]) < 0
+	})
+
+	var id [32]byte
+	copy(id[:], prophecyInfo.ProphecyId)
+
+	return SignatureUnit{
+		claimData:     claimData,
+		signatureData: signatureData,
+		prophecyId:    id,
+	}
+}
+
+func buildBatchClaim(batchProphecyInfo []*oracletypes.ProphecyInfo) BatchSignatureUnit {
+	batchLen := len(batchProphecyInfo)
+	batchClaimData := make([]cosmosbridge.CosmosBridgeClaimData, batchLen)
+	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
+	prophecyID := make([][32]byte, batchLen)
+
+	for index, prophecyInfo := range batchProphecyInfo {
+		sUnit := prophecyInfoToSignatureUnit(prophecyInfo)
+		batchClaimData[index] = sUnit.claimData
+		batchSignatureData[index] = sUnit.signatureData
+		prophecyID[index] = sUnit.prophecyId
+	}
+
+	return BatchSignatureUnit{
+		batchClaimData:     batchClaimData,
+		batchSignatureData: batchSignatureData,
+		prophecyId:         prophecyID,
+	}
+}
+
 // RelayBatchProphecyCompletedToEthereum send the prophecy aggregation to CosmosBridge contract on the Ethereum network
 func RelayBatchProphecyCompletedToEthereum(
 	batchProphecyInfo []*oracletypes.ProphecyInfo,
@@ -86,78 +167,33 @@ func RelayBatchProphecyCompletedToEthereum(
 	auth *bind.TransactOpts,
 	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
 ) error {
-
 	if len(batchProphecyInfo) == 0 {
 		return nil
 	}
 
-	batchLen := len(batchProphecyInfo)
-	batchClaimData := make([]cosmosbridge.CosmosBridgeClaimData, batchLen)
-	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
-	batchID := make([][32]byte, batchLen)
-
 	// reset the gas limit according to length of batchProphecyInfo
-	auth.GasLimit = auth.GasLimit * uint64(batchLen)
+	auth.GasLimit = auth.GasLimit * uint64(len(batchProphecyInfo))
 
-	for index, prophecyInfo := range batchProphecyInfo {
+	batch := buildBatchClaim(batchProphecyInfo)
 
-		claimData := cosmosbridge.CosmosBridgeClaimData{
-			CosmosSender:         []byte(prophecyInfo.CosmosSender),
-			CosmosSenderSequence: big.NewInt(int64(prophecyInfo.CosmosSenderSequence)),
-			EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
-			TokenAddress:         common.HexToAddress(prophecyInfo.TokenContractAddress),
-			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
-			BridgeToken:          prophecyInfo.BridgeToken,
-			Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
-			NetworkDescriptor:    int32(prophecyInfo.NetworkDescriptor),
-			TokenName:            prophecyInfo.TokenName,
-			TokenSymbol:          prophecyInfo.TokenSymbol,
-			TokenDecimals:        uint8(prophecyInfo.Decimail),
-			CosmosDenom:          prophecyInfo.TokenDenomHash,
-		}
-		batchClaimData[index] = claimData
-
-		var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumAddress))
-
-		for index, address := range prophecyInfo.EthereumAddress {
-			signature := []byte(prophecyInfo.Signatures[index])
-			var r [32]byte
-			var s [32]byte
-			copy(r[:], signature[0:32])
-			copy(s[:], signature[32:64])
-
-			tmpSignature := cosmosbridge.CosmosBridgeSignatureData{
-				Signer: common.HexToAddress(address),
-				V:      signature[64] + 27,
-				R:      r,
-				S:      s,
-			}
-
-			signatureData[index] = tmpSignature
-		}
-
-		batchSignatureData[index] = signatureData
-		var id [32]byte
-		copy(id[:], prophecyInfo.ProphecyId)
-		batchID[index] = id
-	}
+	sugaredLogger.Errorw(
+		"buildBatchClaim",
+		"batch", batch,
+	)
 
 	tx, err := cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs(
 		auth,
-		batchID,
-		batchClaimData,
-		batchSignatureData,
+		batch.prophecyId,
+		batch.batchClaimData,
+		batch.batchSignatureData,
 	)
-
-	// sleep 2 seconds to wait for tx to go through before querying.
-	sleepThread(2)
 
 	if err != nil {
 		sugaredLogger.Errorw(
 			"cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs",
-			"batchID", batchID,
-			"batchClaimData", batchClaimData,
-			"batchSignatureData", batchSignatureData,
+			"prophecyId", batch.prophecyId,
+			"batchClaimData", batch.batchClaimData,
+			"batchSignatureData", batch.batchSignatureData,
 			errorMessageKey, err,
 		)
 		return err
@@ -171,6 +207,9 @@ func RelayBatchProphecyCompletedToEthereum(
 
 	// if there is an error getting the tx, or if the tx fails, retry 60 times
 	for i < maxRetries {
+		// sleep 2 seconds to wait for tx to go through before querying.
+		sleepThread(2)
+
 		// Get the transaction receipt
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
 
