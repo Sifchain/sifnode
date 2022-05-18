@@ -64,8 +64,21 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 		if err != nil {
 			panic(err)
 		}
+		pool, err := m.keeper.GetPool(ctx, symbol)
+		if err != nil {
+			panic(err)
+		}
+
+		err = m.keeper.UseUnlockedLiquidity(ctx, l, lp.units, true)
+		if err != nil {
+			panic(err)
+		}
+
 		l.LiquidityProviderUnits = l.LiquidityProviderUnits.Sub(lp.units)
 		m.keeper.SetLiquidityProvider(ctx, &l)
+
+		pool.PoolUnits = pool.PoolUnits.Sub(lp.units)
+		m.keeper.SetPool(ctx, &pool)
 	}
 
 	return nil
