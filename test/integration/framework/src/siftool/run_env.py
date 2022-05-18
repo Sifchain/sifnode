@@ -913,11 +913,13 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             for f in files_to_delete:
                 self.cmd.rm(f)
 
+        hardhat_scripts = hardhat.script_runner(url=hardhat_deploy_url, network=hardhat_config_section,
+            accounts=smart_contract_accounts)
+
         # Deploy smart ocntracts using hardhat.
         # Note: if the contracts were compiled previously for hardhat, or if previous deployment failed, you might
         # have to remove smart-contracts/{build,cache,artifacts,.openzeppelin}
-        peggy_sc_addrs = hardhat.deploy_smart_contracts(url=hardhat_deploy_url, network=hardhat_config_section,
-            accounts=smart_contract_accounts)
+        peggy_sc_addrs = hardhat_scripts.deploy_smart_contracts()
 
         admin_account_name = "sifnodeadmin"
         chain_id = "localnet"
@@ -956,11 +958,16 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         log.debug("Admin account address: {}".format(admin_account_address))  # tokens
         log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
 
+        evm_validator_accounts = hardhat_accounts["validators"]
+        evm_validator_addresses = [address[0] for address in evm_validator_accounts]
+
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
         [relayer0_exec_args], [witness_exec_args] = \
-        self.start_witnesses_and_relayers(w3_url, hardhat_chain_id, tcp_url,
-            chain_id, peggy_sc_addrs, hardhat_accounts["validators"], sifnode_validators, sifnode_relayers,
-            sifnode_witnesses, symbol_translator_file, relayer_extra_args)
+            self.start_witnesses_and_relayers(w3_url, hardhat_chain_id, tcp_url,
+                chain_id, peggy_sc_addrs, evm_validator_accounts, sifnode_validators, sifnode_relayers,
+                sifnode_witnesses, symbol_translator_file, relayer_extra_args)
+
+        hardhat_scripts.update_validator_power(peggy_sc_addrs["CosmosBridge"], evm_validator_addresses, sifnode_witnesses)
 
         relayer0_proc = self.cmd.spawn_asynchronous_process(relayer0_exec_args, log_file=relayer_log_file)
         witness_procs = []
@@ -969,8 +976,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             witness_proc = self.cmd.spawn_asynchronous_process(w, log_file=witness_log_file)
             witness_procs.append(witness_proc)
 
-
-    # In the future, we want to have one descriptor for entire environment.
+        # In the future, we want to have one descriptor for entire environment.
         # It should be able to support multiple EVM and multiple Cosmos chains, including all neccessary bridges and
         # relayers. For now this is just a prototype which is not used yet.
         _unused_peggy2_environment = {
@@ -1204,22 +1210,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             )
             witness_exec_args.append(item)
 
-        evm_validator_addresses = [address[0] for address in evm_validator_accounts]
-        self.update_validator_power(peggy_sc_addrs["CosmosBridge"], evm_validator_addresses, sifnode_witnesses)
-
         return [relayer0_exec_args], [witness_exec_args]
-
-    def update_validator_power(self, cosmos_bridge_addr, evm_validator_addresses, sifnode_witnesses):
-        evm_validator_powers = [
-            str(x["power"]) for x in sifnode_witnesses
-        ]
-        npx_env = {
-            "COSMOSBRIDGE": cosmos_bridge_addr,
-            "POWERS": ",".join(evm_validator_powers),
-            "VALIDATORS": ",".join(evm_validator_addresses)
-        }
-        self.cmd.project.npx(["hardhat", "run", "scripts/update_validator_power.ts", "--network", "localhost"],
-            env=npx_env, cwd=self.project.smart_contracts_dir, pipe=False)
 
     def write_env_files(self, project_dir, go_bin_dir, evm_smart_contract_addrs, eth_accounts, admin_account_name,
         admin_account_address, sifnode_validator0_home, sifnode_validators, sifnode_relayers, sifnode_witnesses,

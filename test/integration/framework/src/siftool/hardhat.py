@@ -1,12 +1,13 @@
 import json
 import web3
-from siftool import eth
+from siftool import eth, command
+from siftool.command import Command, ExecResult, buildcmd
 from siftool.common import *
-from siftool.command import buildcmd
 
 
 class Hardhat:
-    def __init__(self, cmd):
+    def __init__(self, cmd: Command):
+        assert on_peggy2_branch
         self.cmd = cmd
         self.project = cmd.project
 
@@ -28,27 +29,31 @@ class Hardhat:
         # smart-contracts/cache
         self.project.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
 
+    def script_runner(self, url: str = None, network: Optional[str] = None,
+        ethereum_private_key: Optional[eth.PrivateKey] = None, accounts: Optional[Sequence[eth.PrivateKey]] = None
+    ) -> 'ScriptRunner':
+        return ScriptRunner(self, url=url, network=network, ethereum_private_key=ethereum_private_key, accounts=accounts)
+
+
+# A wrapper around "npx hardhat run" for running TypeScript scripts that use hardhat.config.ts and need certain
+# parameters/environment variables. This ensures we run all the scripts in a consistent way.
+class ScriptRunner:
+    def __init__(self, hardhat: Hardhat, url: str = None, network: Optional[str] = None,
+        ethereum_private_key: Optional[eth.PrivateKey] = None, accounts: Optional[Sequence[eth.PrivateKey]] = None
+    ):
+        self.hardhat = hardhat
+        self.url = url
+        self.network = network
+        self.ethereum_private_key = ethereum_private_key
+        self.accounts = accounts
+
     # Values for 'network' parameter:
     # (see https://hardhat.org/getting-started/#connecting-a-wallet-or-dapp-to-hardhat-network):
     # - None:
     # - "localhost": connect to "http://127.0.0.1:8545" where "npx hardhat node" is running
     # - anything else: use the corresponding section from smart-contracts/hardhat.config.ts, element "networks"
-    def deploy_smart_contracts(self, url=None, network: Optional[str] = None,
-        ethereum_private_key: Optional[eth.PrivateKey] = None, accounts: Optional[Sequence[eth.PrivateKey]] = None
-    ) -> Mapping[str, eth.Address]:
-        assert on_peggy2_branch
-        # If this fails with tsyringe complaining about missing "../../build" directory, do this:
-        # rm -rf smart-contracts/artifacts.
-        args = ["hardhat", "run", "scripts/deploy_contracts_dev.ts"] + \
-            (["--network", network] if network else [])
-        env = {}
-        if url:
-            env["NETWORK_URL"] = url
-        if accounts:
-            env["ETH_ACCOUNTS"] = ",".join(accounts)
-        if ethereum_private_key:
-            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key
-        res = self.project.npx(args, cwd=project_dir("smart-contracts"), env=env or None)
+    def deploy_smart_contracts(self) -> Mapping[str, eth.Address]:
+        res = self.run("deploy_contracts_dev.ts")
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
         # been compiled, otherwise the output starts with 4 lines:
         #     Compiling 35 files with 0.5.16
@@ -71,6 +76,30 @@ class Hardhat:
             "Blocklist": tmp["blocklist"],
         }
 
+    # TODO This is called mostly from siftool and it's one line, convert to web3 call
+    def update_validator_power(self, cosmos_bridge_addr, evm_validator_addresses, sifnode_witnesses):
+        npx_env = {
+            "COSMOSBRIDGE": cosmos_bridge_addr,
+            "POWERS": ",".join(str(x["power"]) for x in sifnode_witnesses),
+            "VALIDATORS": ",".join(evm_validator_addresses)
+        }
+        self.run("update_validator_power.ts", npx_env=npx_env)
+
+    def run(self, script: str, npx_env: Mapping = None) -> ExecResult:
+        # If this fails with tsyringe complaining about missing "../../build" directory, do this:
+        # rm -rf smart-contracts/artifacts.
+        args = ["hardhat", "run", "scripts/{}".format(script)] + \
+            (["--network", self.network] if self.network else [])
+        env = {}
+        if self.url:
+            env["NETWORK_URL"] = self.url
+        if self.accounts:
+            env["ETH_ACCOUNTS"] = ",".join(self.accounts)
+        if self.ethereum_private_key:
+            env["ETHEREUM_PRIVATE_KEY"] = self.ethereum_private_key
+        if npx_env:
+            env = dict_merge(env, npx_env)
+        return self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env)
 
 class HardhatAbiProvider:
     def __init__(self, cmd, deployed_contract_addresses):

@@ -1,5 +1,6 @@
 import os
 import json
+from siftool.command import Command, ExecResult
 from siftool.common import *
 
 
@@ -19,7 +20,7 @@ def killall(processes):
 class Project:
     """Represents a checked out copy of a project in a particular directory."""
 
-    def __init__(self, cmd, base_dir):
+    def __init__(self, cmd: Command, base_dir: str):
         self.cmd = cmd
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
@@ -107,9 +108,11 @@ class Project:
     def yarn(self, args, cwd=None, env=None):
         return self.cmd.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
 
-    def npx(self, args, env=None, cwd=None, pipe=True):
+    def npx(self, args: Sequence[str], env: Optional[Mapping[str, str]] = None, cwd: Optional[str] = None,
+        pipe: bool = True
+    ) -> ExecResult:
         # Typically we want any npx commands to inherit stdout and strerr
-        return self.cmd.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
+        return self.cmd.execst(["npx"] + list(args), env=env, cwd=cwd, pipe=pipe)
 
     def run_peggy2_js_tests(self):
         # See smart-contracts/TEST.md:

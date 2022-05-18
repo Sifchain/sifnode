@@ -1,9 +1,10 @@
 import shutil
 import time
-from typing import Mapping, List, Union, Optional
+from typing import Mapping, List, Union, Optional, Tuple, AnyStr
 from siftool.common import *
 
 ExecArgs = Mapping[str, Union[List[str], str, Mapping[str, str]]]
+ExecResult = Tuple[int, AnyStr, AnyStr]
 
 
 def buildcmd(args: List[str], cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
@@ -15,7 +16,7 @@ def buildcmd(args: List[str], cwd: Optional[str] = None, env: Optional[Mapping[s
 
 
 class Command:
-    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
+    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True) -> ExecResult:
         fd_stdout = subprocess.PIPE if pipe else None
         fd_stderr = subprocess.PIPE if pipe else None
         fd_stdin = subprocess.DEVNULL
