@@ -1034,6 +1034,16 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			poolUnits:            sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
 			lpunits:              sdk.NewUint(1099511627776),
 		},
+		{
+			name:                 "success - unbalanced pool",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(0),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			poolUnits:            sdk.NewUintFromString("23663545194274114387000646"),
+			lpunits:              sdk.NewUintFromString("884643816730694062692"),
+		},
 	}
 
 	symmetryThreshold := sdk.NewDecWithPrec(1, 4)
