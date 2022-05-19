@@ -218,7 +218,8 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool, symmetryThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
+	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool,
+	symmetryThreshold, ratioThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
 	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 
 	if adjustExternalToken {
@@ -284,6 +285,12 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 
 	if sdk.OneDec().Sub(slipAdjustment).GT(symmetryThreshold) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
+	}
+
+	ratioDiff := A.Quo(R).Sub(a.Quo(r)).Abs()
+
+	if ratioDiff.GT(ratioThreshold) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))

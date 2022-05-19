@@ -133,9 +133,14 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			ratioThreshold, err := sdk.NewDecFromStr(viper.GetString(FlagSymmetryRatioThreshold))
+			if err != nil {
+				return err
+			}
 			msg := types.MsgSetSymmetryThreshold{
 				Signer:    signer.String(),
 				Threshold: threshold,
+				Ratio:     ratioThreshold,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -143,7 +148,8 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().String(FlagSymmetryThreshold, "", "")
+	cmd.Flags().AddFlagSet(FsSymmetryThreshold)
+	cmd.Flags().AddFlagSet(FsSymmetryRatioThreshold)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

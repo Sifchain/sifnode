@@ -237,8 +237,9 @@ func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.Params
 	ctx := sdk.UnwrapSDKContext(c)
 	params := k.Keeper.GetParams(ctx)
 	threshold := k.Keeper.GetSymmetryThreshold(ctx)
+	ratioThreshold := k.Keeper.GetSymmetryRatio(ctx)
 
-	return &types.ParamsRes{Params: &params, SymmetryThreshold: threshold}, nil
+	return &types.ParamsRes{Params: &params, SymmetryThreshold: threshold, SymmetryRatioThreshold: ratioThreshold}, nil
 }
 
 func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*types.RewardParamsRes, error) {
