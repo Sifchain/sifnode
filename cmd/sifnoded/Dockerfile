@@ -29,7 +29,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CHAINNET=$CHAINNET make install
+RUN CHAINNET=$CHAINNET make install-bin
 
 #
 # Main
