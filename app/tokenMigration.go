@@ -60,6 +60,10 @@ func MigrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bank
 
 		// set the balance for new denom
 		if newDenom, ok := tokenMap[coin.Denom]; ok {
+			if newDenom == coin.Denom {
+				continue
+			}
+
 			// send old coins to module
 			err := bankKeeper.SendCoinsFromAccountToModule(ctx, address, ethbridge.ModuleName, sdk.NewCoins(coin))
 			if err != nil {
