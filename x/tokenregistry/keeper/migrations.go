@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"encoding/json"
 	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"io/ioutil"
+	"path/filepath"
 )
 
 type Migrator struct {
@@ -28,14 +29,13 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer4(ctx sdk.Context) {
-	denomMigrationsList := GetDenomMigrationMap()
-	for denom, migration := range denomMigrationsList {
-		entry, err := m.keeper.GetRegistryEntry(ctx, denom)
+	denomMigrations := GetDenomMigrationMap()
+	for peggy1denom, peggy2denom := range denomMigrations {
+		entry, err := m.keeper.GetRegistryEntry(ctx, peggy1denom)
 		if err != nil {
 			panic(err)
 		}
 		peggyTwoEntry := entry
-		peggy2denom := types.GetDenom(migration.NetworkDescriptor, migration.TokenContractAddress)
 		entry.Permissions = []tkrtypes.Permission{
 			tkrtypes.Permission_IBCIMPORT,
 		}
@@ -53,16 +53,23 @@ func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
 	store.Delete(key)
 }
 
-type DenomMigrator struct {
-	NetworkDescriptor    oracleTypes.NetworkDescriptor
-	TokenContractAddress types.EthereumAddress
-}
-
-func GetDenomMigrationMap() map[string]DenomMigrator {
-	migrationMap := make(map[string]DenomMigrator)
-	migrationMap["ceth"] = DenomMigrator{
-		NetworkDescriptor:    oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-		TokenContractAddress: types.NewEthereumAddress("0x0000000000000000000000000000000000000000"),
+func GetDenomMigrationMap() map[string]string {
+	migrationMap := map[string]string{}
+	input, err := ioutil.ReadFile(DenomMigrationFilePath())
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(input, &migrationMap)
+	if err != nil {
+		panic(err)
 	}
 	return migrationMap
+}
+
+func DenomMigrationFilePath() string {
+	fp, err := filepath.Abs("../../../smart-contracts/data/denom_mapping_peggy1_to_peggy2.json")
+	if err != nil {
+		panic(err)
+	}
+	return fp
 }

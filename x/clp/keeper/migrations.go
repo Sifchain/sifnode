@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	tkrKeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -20,8 +19,7 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 	pools := m.keeper.GetPools(ctx)
 	migrationMap := tkrKeeper.GetDenomMigrationMap()
 	for _, pool := range pools {
-		if migrationExtAsset, found := migrationMap[pool.ExternalAsset.Symbol]; found {
-			peggy2Denom := types.GetDenom(migrationExtAsset.NetworkDescriptor, migrationExtAsset.TokenContractAddress)
+		if peggy2Denom, found := migrationMap[pool.ExternalAsset.Symbol]; found {
 			peggy2Pool := *pool
 			peggy2Pool.ExternalAsset = &clptypes.Asset{Symbol: peggy2Denom}
 			err := m.keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)

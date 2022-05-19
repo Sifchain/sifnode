@@ -81,7 +81,6 @@ func OnRecvPacketWhitelistConvert(
 		mintedDenom = convertToDenomEntry.Denom
 		amount = convAmount
 	}
-
 	finalDenomEntry, err := whitelistKeeper.GetRegistryEntry(ctx, mintedDenom)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err.Error())
