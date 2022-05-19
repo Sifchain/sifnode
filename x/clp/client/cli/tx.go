@@ -556,8 +556,8 @@ func GetCmdUnlockLiquidity() *cobra.Command {
 
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			signer := clientCtx.GetFromAddress()
-			units := viper.GetUint64(FlagUnits)
-			unitsInt := sdk.NewUint(units)
+			units := viper.GetString(FlagUnits)
+			unitsInt := sdk.NewUintFromString(units)
 			msg := types.MsgUnlockLiquidityRequest{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,
@@ -596,8 +596,8 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			signer := clientCtx.GetFromAddress()
-			units := viper.GetUint64(FlagUnits)
-			unitsInt := sdk.NewUint(units)
+			units := viper.GetString(FlagUnits)
+			unitsInt := sdk.NewUintFromString(units)
 			msg := types.MsgCancelUnlock{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,
