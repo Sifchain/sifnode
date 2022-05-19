@@ -224,11 +224,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.constants.denom.none,
       ]);
 
-      const signatures = await signHash([userOne, userTwo], digest);
+      const signatures = await signHash([userOne], digest);
       const invalidSig = await signHash([userFour], invalidDigest);
 
       // push this signature onto the valid signature array
       signatures.push(invalidSig[0]);
+
 
       let claimData = {
         cosmosSender: state.sender,

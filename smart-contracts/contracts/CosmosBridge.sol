@@ -6,8 +6,6 @@ import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-error InvalidSigner(uint256 index);
-
 /**
  * @title Cosmos Bridge
  * @dev Processes Prophecy Claims and communicates with the
@@ -230,10 +228,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       // need to make sure that the next validator in the array
       // (if we're not at the end) isn't a duplicate and is
       // sorted correctly
-      if (i + 1 <= validatorLength - 1) {
-        if (validator.signer >= _validators[i + 1].signer) {
-          revert InvalidSigner(i);
-        }
+      if (i > 0) {
+        require(validator.signer != _validators[i - 1].signer, "DUP_SIGNER");
+        require(validator.signer > _validators[i - 1].signer, "SIGNER_OUT_OF_ORDER");
       }
 
       unchecked { ++i; }
