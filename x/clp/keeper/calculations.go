@@ -35,20 +35,6 @@ func SwapOne(from types.Asset,
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
 
-func CalcSwapPrice(from types.Asset,
-	sentAmount sdk.Uint,
-	to types.Asset,
-	pool types.Pool,
-	normalizationFactor sdk.Dec,
-	adjustExternalToken bool,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
-
-	X, Y, toRowan := pool.ExtractValues(to)
-	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, sentAmount, Y, pmtpCurrentRunningRate)
-
-	return swapResult
-}
-
 func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	// if pmtpCurrentRunningRate.IsNil() {
 	// 	if toRowan {
@@ -376,49 +362,6 @@ func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
 		return *res.SetInt(dec)
 	}
 	return *res.SetFrac(big.NewInt(1), dec)
-}
-
-func CalcSwapPriceResult(toRowan bool,
-	normalizationFactor sdk.Dec,
-	adjustExternalToken bool,
-	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
-	if !ValidateZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroDec()
-	}
-
-	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
-	if adjustExternalToken {
-		if toRowan {
-			X = X.Mul(nf)
-			x = x.Mul(nf)
-		} else {
-			Y = Y.Mul(nf)
-		}
-	} else {
-		if toRowan {
-			Y = Y.Mul(nf)
-		} else {
-			X = X.Mul(nf)
-			x = x.Mul(nf)
-		}
-	}
-
-	minLen := GetMinLen([]sdk.Uint{X, x, Y})
-	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
-	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
-	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
-
-	s := xd.Add(Xd)
-	d := s.Mul(s)
-	y := xd.Mul(Xd).Mul(Yd).Quo(d)
-	y = IncreasePrecision(y, minLen)
-	// we're looking for price in absolute units here
-	if toRowan {
-		y = y.Quo(normalizationFactor)
-	}
-	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
-	return y
 }
 
 func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
