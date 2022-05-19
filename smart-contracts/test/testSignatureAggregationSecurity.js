@@ -230,7 +230,6 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       // push this signature onto the valid signature array
       signatures.push(invalidSig[0]);
 
-
       let claimData = {
         cosmosSender: state.sender,
         cosmosSenderSequence: state.senderSequence,
