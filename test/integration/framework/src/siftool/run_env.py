@@ -196,7 +196,7 @@ class Integrator(Ganache, Command):
         return self.execst(["python3", os.path.join(self.project.test_integration_dir, "src/py/wait_for_sif_account.py"),
             netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
 
-    def wait_for_sif_account_up(self, address: cosmos.Address, tcp_url: str = None):
+    def wait_for_sif_account_up(self, address: cosmos.Address, tcp_url: str = None, timeout: int = 90):
         # TODO Deduplicate: this is also in run_ebrelayer()
         # netdef_json is path to file containing json_dump(netdef)
         # while not self.cmd.tcp_probe_connect("localhost", tendermint_port):
@@ -208,12 +208,19 @@ class Integrator(Ganache, Command):
         # So the port has to be up first, but this query will fail anyway if it is not.
         args = ["sifnoded", "query", "account", address] + \
             (["--node", tcp_url] if tcp_url else [])
+        last_exception = None
+        start_time = time.time()
         while True:
             try:
-                self.execst(args)
+                self.execst(args, disable_log=True)
                 break
             except Exception as e:
-                log.debug(f"Waiting for sif account {address}... ({repr(e)})")
+                if last_exception is None:
+                    log.debug(f"Waiting for sif account {address}...")
+                if time.time() - start_time > timeout:
+                    message = "Timeout expired while waiting for sif account {} to become available".format(address)
+                    raise Exception(message) from e
+                last_exception = e
                 time.sleep(1)
 
     def _npm_install(self):

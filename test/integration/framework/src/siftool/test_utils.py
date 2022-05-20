@@ -590,13 +590,13 @@ class EnvCtx:
         return retval
 
     def get_sifchain_balance(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
-        offset: Optional[int] = None
+        offset: Optional[int] = None, disable_log: bool = False
     ) -> cosmos.Balance:
         args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
             (["--limit", str(limit)] if limit is not None else []) + \
             (["--offset", str(offset)] if offset is not None else []) + \
             self._sifnoded_chain_id_and_node_arg()
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
+        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
         res = json.loads(stdout(res))
         if res["pagination"]["next_key"] is not None:
             raise Exception("More than {} results in balances".format(limit))
@@ -609,16 +609,17 @@ class EnvCtx:
     # You cannot use min_changes and expected_balance at the same time.
     def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
         min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
-        timeout: int = 90, change_timeout: int = None
+        timeout: int = 90, change_timeout: int = None, disable_log: bool = True
     ) -> cosmos.Balance:
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
+        log.debug("Waiting for balance to change for account {}...".format(sif_addr))
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
         expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
         start_time = time.time()
         last_change_time = None
         last_changed_balance = None
         while True:
-            new_balance = self.get_sifchain_balance(sif_addr)
+            new_balance = self.get_sifchain_balance(sif_addr, disable_log=disable_log)
             delta = cosmos.balance_sub(new_balance, old_balance)
             if expected_balance is not None:
                 should_return = cosmos.balance_equal(expected_balance, new_balance)

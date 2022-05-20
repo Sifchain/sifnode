@@ -78,7 +78,7 @@ def mkcmd(args, env=None, cwd=None, stdin=None):
 # If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
 def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[str, str]] = None,
     text: Optional[bool] = None, stdin: Union[str, int, IO, None] = None, stdout: Optional[IO] = None,
-    stderr: Optional[IO] = None, disable_log = False
+    stderr: Optional[IO] = None, disable_log: bool = False
 ) -> subprocess.Popen:
     if env:
         env = dict_merge(os.environ, env)

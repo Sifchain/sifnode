@@ -4,7 +4,7 @@ import time
 import grpc
 import re
 import web3
-from typing import Mapping, Any, Tuple
+from typing import Mapping, Any, Tuple, AnyStr
 from siftool import command, cosmos, eth
 from siftool.common import *
 
@@ -196,11 +196,14 @@ class Sifnoded:
             (["--home", self.home] if self.home else [])
         return command.buildcmd(args)
 
-    def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
+    def sifnoded_exec(self, args: Sequence[str], sifnoded_home: Optional[str] = None,
+        keyring_backend: Optional[str] = None, stdin: Optional[AnyStr] = None, cwd: Optional[str] = None,
+        disable_log: bool = False
+    ) -> command.ExecResult:
         args = [self.binary] + args + \
             (["--home", sifnoded_home] if sifnoded_home else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend else [])
-        res = self.cmd.execst(args, stdin=stdin, cwd=cwd)
+        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log)
         return res
 
     def _rpc_get(self, host, port, relative_url):
@@ -210,14 +213,18 @@ class Sifnoded:
     def get_status(self, host, port):
         return self._rpc_get(host, port, "node_info")
 
-    def wait_for_last_transaction_to_be_mined(self, count=1):
+    def wait_for_last_transaction_to_be_mined(self, count: int = 1, disable_log: bool = True, timeout: int = 90):
         # TODO return int(self._rpc_get(host, port, abci_info)["response"]["last_block_height"])
         def latest_block_height():
             args = ["status"]  # TODO --node
-            return int(json.loads(stderr(self.sifnoded_exec(args)))["SyncInfo"]["latest_block_height"])
+            return int(json.loads(stderr(self.sifnoded_exec(args, disable_log=disable_log)))["SyncInfo"]["latest_block_height"])
+        log.debug("Waiting for last sifnode transaction to be mined...")
+        start_time = time.time()
         initial_block = latest_block_height()
         while latest_block_height() < initial_block + count:
             time.sleep(1)
+            if time.time() - start_time > timeout:
+                raise Exception("Timeout expired while waiting for last sifnode transaction to be mined")
 
     def wait_up(self, host, port):
         while True:
