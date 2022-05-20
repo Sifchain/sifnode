@@ -2,9 +2,11 @@ name: Smart Contracts
 
 on:
   pull_request:
-    paths: ['smart-contracts/**']
+    paths-ignore:
+      - "ui/**"
   push:
-    paths: ['smart-contracts/**']
+    paths-ignore:
+      - "ui/**"
 
 jobs:
   test:
