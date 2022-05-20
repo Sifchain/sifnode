@@ -154,14 +154,14 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
         cosmosDenom: state.constants.denom.none,
-        validators: [userOne, userTwo, userFour, userFour],
+        validators: [userOne, userOne, userTwo, userFour],
       });
 
       await expect(
         state.cosmosBridge
           .connect(userOne)
           .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
-      ).to.be.revertedWith("DUP_SIGNER");
+      ).to.be.revertedWith("custom error 'DuplicateSigner(3, \"" + userOne.address + "\")'");
     });
 
     it("there is an invalid signer", async function () {
@@ -249,7 +249,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.cosmosBridge
           .connect(userOne)
           .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
-      ).to.be.revertedWith("INV_SIG");
+      ).to.be.revertedWith("custom error 'OutOfOrderSigner(0)'");
     });
 
     it("there is not enough power to complete prophecy", async function () {
@@ -426,8 +426,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
 });
 
 /**
- * 
- * 
+ *
+ *
 Unlock Gas Cost With 4 Validators
 tx0  182434
 ~~~~~~~~~~~~
@@ -437,5 +437,5 @@ Mint Gas Cost With 4 Validators
 tx0  198100
 ~~~~~~~~~~~~
 Total:  198100
- * 
+ *
  */
