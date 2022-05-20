@@ -1034,6 +1034,16 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			poolUnits:            sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
 			lpunits:              sdk.NewUint(1099511627776),
 		},
+		{
+			name:                 "success - unbalanced pool",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(0),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			poolUnits:            sdk.NewUintFromString("23663545194274114387000646"),
+			lpunits:              sdk.NewUintFromString("884643816730694062692"),
+		},
 	}
 
 	symmetryThreshold := sdk.NewDecWithPrec(1, 4)
@@ -1255,6 +1265,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		pmtpCurrentRunningRate sdk.Dec
 		err                    error
 		errString              error
+		panicErr               string
 	}{
 		{
 			name:                   "adjust external token with rowan",
@@ -1282,6 +1293,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(0),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			panicErr:               "NewMustNat: Uint was 0",
 		},
 		{
 			name:                   "x=1, X=1, Y=1",
@@ -1315,7 +1327,14 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+			if tc.panicErr != "" {
+				// nolint:errcheck
+				require.PanicsWithError(t, tc.panicErr, func() {
+					clpkeeper.CalcSwapResult(tc.toRowan, clpkeeper.NewMustNat(&tc.X), clpkeeper.NewMustNat(&tc.x), clpkeeper.NewMustNat(&tc.Y), tc.pmtpCurrentRunningRate)
+				})
+				return
+			}
+			y := clpkeeper.CalcSwapResult(tc.toRowan, clpkeeper.NewMustNat(&tc.X), clpkeeper.NewMustNat(&tc.x), clpkeeper.NewMustNat(&tc.Y), tc.pmtpCurrentRunningRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
