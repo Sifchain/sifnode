@@ -1,9 +1,6 @@
 name: Smart Contracts
 
 on:
-  pull_request:
-    paths-ignore:
-      - "ui/**"
   push:
     paths-ignore:
       - "ui/**"
