@@ -232,7 +232,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       // (if we're not at the end) isn't a duplicate and is
       // sorted correctly
       if (i + 1 <= validatorLength - 1) {
-        if (validator.signer == _validators[i+1].signer) {
+        if (validator.signer == _validators[i + 1].signer) {
           revert DuplicateSigner(i + 1, validator.signer);
         }
         if (validator.signer > _validators[i + 1].signer) {
