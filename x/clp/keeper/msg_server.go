@@ -348,6 +348,11 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 }
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
+	// TODO: change SentAmount to nat and reject MsgSwap with SentAmount 0 when unmarshalling
+	if msg.SentAmount.IsZero() {
+		return nil, types.ErrInValidAmount
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	var (
 		priceImpact sdk.Uint
@@ -401,7 +406,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if !msg.SentAsset.Equals(nativeAsset) && !msg.ReceivedAsset.Equals(nativeAsset) {
-		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate)
+		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, NewMustNat(&sentAmount), nativeAsset, inPool, pmtpCurrentRunningRate)
 		if err != nil {
 			return nil, err
 		}
@@ -409,6 +414,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 		}
+
 		sentAmount = emitAmount
 		sentAsset = &nativeAsset
 		priceImpact = priceImpact.Add(ts)
@@ -427,7 +433,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 	}
 	// Calculating amount user receives
-	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool, pmtpCurrentRunningRate)
+	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, NewMustNat(&sentAmount), *receivedAsset, outPool, pmtpCurrentRunningRate)
 	if err != nil {
 		return nil, err
 	}
@@ -543,7 +549,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate)
+		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), NewMustNat(&swapAmount), *msg.ExternalAsset, pool, pmtpCurrentRunningRate)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -564,7 +570,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate)
+		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, NewMustNat(&swapAmount), types.GetSettlementAsset(), pool, pmtpCurrentRunningRate)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}

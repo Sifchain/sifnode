@@ -9,7 +9,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-// Nat wraps sdk.Uint which are >= 1
+// nat wraps sdk.Uint which are >= 1
 type nat struct {
 	i *sdk.Uint
 }
@@ -35,4 +35,8 @@ func NewMustNat(n *sdk.Uint) *nat {
 
 func (n nat) BigInt() *big.Int {
 	return n.i.BigInt()
+}
+
+func (n nat) Uint() *sdk.Uint {
+	return n.i
 }

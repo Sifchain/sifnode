@@ -14,32 +14,31 @@ import (
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func SwapOne(from types.Asset,
-	sentAmount sdk.Uint,
+	sentAmount *nat,
 	to types.Asset,
 	pool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
-	if IsAnyZero([]sdk.Uint{X, sentAmount, Y}) {
+	if X.IsZero() || Y.IsZero() {
 		// TODO: log
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrInputIsZero
 	}
 
 	XNat := NewMustNat(&X)
 	YNat := NewMustNat(&Y)
-	sentAmountNat := NewMustNat(&sentAmount)
 
-	liquidityFee := CalcLiquidityFee(XNat, sentAmountNat, YNat)
-	priceImpact := calcPriceImpact(XNat, sentAmountNat)
-	swapResult := CalcSwapResult(toRowan, XNat, sentAmountNat, YNat, pmtpCurrentRunningRate)
+	liquidityFee := CalcLiquidityFee(XNat, sentAmount, YNat)
+	priceImpact := calcPriceImpact(XNat, sentAmount)
+	swapResult := CalcSwapResult(toRowan, XNat, sentAmount, YNat, pmtpCurrentRunningRate)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
 
-	pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
+	pool.UpdateBalances(toRowan, X, *sentAmount.Uint(), Y, swapResult)
 
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }

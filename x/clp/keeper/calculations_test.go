@@ -87,7 +87,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 	// asymmetry is positive
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, sdk.OneDec())
+	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), clpkeeper.NewMustNat(&swapAmount), asset, *pool, sdk.OneDec())
 	assert.NoError(t, err)
 	assert.Equal(t, "19", swapResult.String())
 	assert.Equal(t, "978", liquidityFee.String())
@@ -121,6 +121,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		expectedPool           types.Pool
 		err                    error
 		errString              error
+		panicErr               string
 	}{
 		{
 			name:                   "successful swap with single pool units",
@@ -193,7 +194,8 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				ExternalAssetBalance: sdk.NewUint(833),
 				PoolUnits:            sdk.NewUint(998),
 			},
-			errString: errors.New("not enough received asset tokens to swap"),
+			errString: errors.New("enough received asset tokens to swap"),
+			panicErr:  "NewMustNat: Uint was 0",
 		},
 		{
 			name:                   "successful swap by inversing from/to assets",
@@ -825,9 +827,23 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			if to == (types.Asset{}) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
+
+			if tc.panicErr != "" {
+				// nolint:errcheck
+				require.PanicsWithError(t, tc.panicErr, func() {
+					_, _, _, _, _ = clpkeeper.SwapOne(
+						from,
+						clpkeeper.NewMustNat(&swapAmount),
+						to,
+						pool,
+						tc.pmtpCurrentRunningRate)
+				})
+				return
+			}
+
 			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(
 				from,
-				swapAmount,
+				clpkeeper.NewMustNat(&swapAmount),
 				to,
 				pool,
 				tc.pmtpCurrentRunningRate,
