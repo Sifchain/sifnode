@@ -605,5 +605,43 @@ describe("Test Cosmos Bridge", function () {
       const endingBalance = await deployedToken.balanceOf(state.recipient.address);
       expect(endingBalance).to.be.equal(state.amount * 2);
     });
+
+    it("should get an signer out of order exception", async function () {
+      const beforeUserBalance = Number(await state.token.balanceOf(state.recipient.address));
+      beforeUserBalance.should.be.bignumber.equal(Number(0));
+
+      // Last nonce should be 0
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
+
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        bridgeToken: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
+        validators: [userOne, userTwo, userFour],
+      });
+
+      outOfOrderSignatures = []
+      outOfOrderSignatures.push(signatures[2])
+      outOfOrderSignatures.push(signatures[1])
+      outOfOrderSignatures.push(signatures[0])
+
+      await expect(
+        state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest, claimData, outOfOrderSignatures)
+      ).to.be.revertedWith("custom error 'OutOfOrderSigner(0)'"); // TODO: Assert on the error itself
+    });
   });
 });
