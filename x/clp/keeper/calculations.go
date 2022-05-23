@@ -29,14 +29,14 @@ func SwapOne(from types.Asset,
 	XNat := NewMustNat(&X)
 	YNat := NewMustNat(&Y)
 
-	liquidityFee := CalcLiquidityFee(XNat, sentAmount, YNat)
-	priceImpact := calcPriceImpact(XNat, sentAmount)
 	swapResult := CalcSwapResult(toRowan, XNat, sentAmount, YNat, pmtpCurrentRunningRate)
-
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
+
+	liquidityFee := CalcLiquidityFee(XNat, sentAmount, YNat)
+	priceImpact := calcPriceImpact(XNat, sentAmount)
 
 	pool.UpdateBalances(toRowan, X, *sentAmount.Uint(), Y, swapResult)
 
