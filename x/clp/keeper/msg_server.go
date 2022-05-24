@@ -310,16 +310,8 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
 
-		withdrawNativeAssetInt, ok := k.Keeper.ParseToInt(withdrawNativeAsset.String())
-		if !ok {
-			return nil, types.ErrUnableToParseInt
-		}
-		withdrawExternalAssetInt, ok := k.Keeper.ParseToInt(withdrawExternalAsset.String())
-		if !ok {
-			return nil, types.ErrUnableToParseInt
-		}
-		withdrawNativeCoins := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetInt)
-		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, withdrawExternalAssetInt)
+		withdrawNativeCoins := sdk.NewCoin(types.GetSettlementAsset().Symbol, UintToInt(withdrawNativeAsset))
+		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, UintToInt(withdrawExternalAsset))
 		refundingCoins := sdk.NewCoins(withdrawExternalCoins, withdrawNativeCoins)
 		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, *lp)
 		if err != nil {
@@ -347,17 +339,22 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	return &types.MsgDecommissionPoolResponse{}, nil
 }
 
-func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
-	// TODO: change SentAmount to nat and reject MsgSwap with SentAmount 0 when unmarshalling
-	if msg.SentAmount.IsZero() {
-		return nil, types.ErrInValidAmount
+type checkedMsgSwap struct {
+	Msg    *types.MsgSwap
+	Signer sdk.AccAddress
+}
+
+// TODO: All these checks could be done when unmarshalling so this code never sees faulty messages by default
+func (k msgServer) msgSwapToCheckedMsgSwap(ctx *sdk.Context, msg *types.MsgSwap) (*checkedMsgSwap, error) {
+	if msg.SentAsset.Equals(*msg.ReceivedAsset) {
+		return nil, types.ErrSwapAssetsEqual
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	var (
-		priceImpact sdk.Uint
-	)
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	if msg.SentAmount.IsZero() {
+		return nil, types.ErrInputIsZero
+	}
+
+	registry := k.tokenRegistryKeeper.GetRegistry(*ctx)
 	sAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.SentAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
@@ -372,6 +369,35 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
+
+	accAddr, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &checkedMsgSwap{Msg: msg, Signer: accAddr}, nil
+}
+
+func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	checkedMsg, err := k.msgSwapToCheckedMsgSwap(&ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.swap(goCtx, checkedMsg)
+}
+
+func (k msgServer) swap(goCtx context.Context, checkedMsg *checkedMsgSwap) (*types.MsgSwapResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	var (
+		priceImpact sdk.Uint
+		err         error
+	)
+
+	msg := checkedMsg.Msg
+	accAddr := checkedMsg.Signer
+
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
@@ -384,21 +410,14 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	nativeAsset := types.GetSettlementAsset()
 	inPool, outPool := types.Pool{}, types.Pool{}
 	// If sending rowan ,deduct directly from the Native balance  instead of fetching from rowan pool
-	if !msg.SentAsset.Equals(types.GetSettlementAsset()) {
+	if !msg.SentAsset.Equals(nativeAsset) {
 		inPool, err = k.Keeper.GetPool(ctx, msg.SentAsset.Symbol)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
 		}
 	}
-	sentAmountInt, ok := k.Keeper.ParseToInt(sentAmount.String())
-	if !ok {
-		return nil, types.ErrUnableToParseInt
-	}
-	accAddr, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return nil, err
-	}
-	sentCoin := sdk.NewCoin(msg.SentAsset.Symbol, sentAmountInt)
+
+	sentCoin := sdk.NewCoin(msg.SentAsset.Symbol, UintToInt(sentAmount))
 	err = k.Keeper.InitiateSwap(ctx, sentCoin, accAddr)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
@@ -421,7 +440,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		liquidityFeeNative = liquidityFeeNative.Add(lp)
 	}
 	// If receiving  rowan , add directly to  Native balance  instead of fetching from rowan pool
-	if msg.ReceivedAsset.Equals(types.GetSettlementAsset()) {
+	if msg.ReceivedAsset.Equals(nativeAsset) {
 		outPool, err = k.Keeper.GetPool(ctx, msg.SentAsset.Symbol)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
@@ -456,7 +475,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		return &types.MsgSwapResponse{}, types.ErrReceivedAmountBelowExpected
 	}
 	// todo nil pointer deref test
-	err = k.Keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, *msg)
+	err = k.Keeper.FinalizeSwap(ctx, emitAmount, finalPool, *msg)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
@@ -529,16 +548,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, err
 	}
 
-	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
-	if !ok {
-		return nil, types.ErrUnableToParseInt
-	}
-	withdrawNativeAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawNativeAssetAmount.String())
-	if !ok {
-		return nil, types.ErrUnableToParseInt
-	}
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, withdrawExternalAssetAmountInt)
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetAmountInt)
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, UintToInt(withdrawExternalAssetAmount))
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, UintToInt(withdrawNativeAssetAmount))
 	// Subtract Value from pool
 	pool.PoolUnits = pool.PoolUnits.Sub(lp.LiquidityProviderUnits).Add(lpUnitsLeft)
 	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
@@ -554,16 +565,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
 		if !swapResult.IsZero() {
-			swapResultInt, ok := k.Keeper.ParseToInt(swapResult.String())
-			if !ok {
-				return nil, types.ErrUnableToParseInt
-			}
-			swapAmountInt, ok := k.Keeper.ParseToInt(swapAmount.String())
-			if !ok {
-				return nil, types.ErrUnableToParseInt
-			}
-			swapCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapResultInt)
-			swapAmountInCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapAmountInt)
+			swapCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, UintToInt(swapResult))
+			swapAmountInCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, UintToInt(swapAmount))
 			externalAssetCoin = externalAssetCoin.Add(swapCoin)
 			nativeAssetCoin = nativeAssetCoin.Sub(swapAmountInCoin)
 		}
@@ -575,16 +578,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
 		if !swapResult.IsZero() {
-			swapInt, ok := k.Keeper.ParseToInt(swapResult.String())
-			if !ok {
-				return nil, types.ErrUnableToParseInt
-			}
-			swapAmountInt, ok := k.Keeper.ParseToInt(swapAmount.String())
-			if !ok {
-				return nil, types.ErrUnableToParseInt
-			}
-			swapCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapInt)
-			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapAmountInt)
+			swapCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, UintToInt(swapResult))
+			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, UintToInt(swapAmount))
 			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
 			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
 		}
@@ -654,16 +649,8 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		return nil, err
 	}
 
-	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
-	if !ok {
-		return nil, types.ErrUnableToParseInt
-	}
-	withdrawNativeAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawNativeAssetAmount.String())
-	if !ok {
-		return nil, types.ErrUnableToParseInt
-	}
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, withdrawExternalAssetAmountInt)
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetAmountInt)
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, UintToInt(withdrawExternalAssetAmount))
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, UintToInt(withdrawNativeAssetAmount))
 	// Subtract Value from pool
 	pool.PoolUnits = pool.PoolUnits.Sub(lp.LiquidityProviderUnits).Add(lpUnitsLeft)
 	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)

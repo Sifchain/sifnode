@@ -15,25 +15,14 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	if msg == nil {
 		return nil, errors.New("MsgCreatePool can not be nil")
 	}
-	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
-
-	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
 
 	addr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, err
 	}
 
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, UintToInt(msg.ExternalAssetAmount))
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, UintToInt(msg.NativeAssetAmount))
 	if !k.bankKeeper.HasBalance(ctx, addr, externalAssetCoin) && !k.bankKeeper.HasBalance(ctx, addr, nativeAssetCoin) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -61,17 +50,8 @@ func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpu
 func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
 	// Verify user has coins to add liquidiy
-	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
-
-	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
-	if !ok {
-		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
-		return nil, types.ErrUnableToParseInt
-	}
+	extInt := UintToInt(msg.ExternalAssetAmount)
+	nativeInt := UintToInt(msg.NativeAssetAmount)
 
 	var coins sdk.Coins
 	if extInt != sdk.ZeroInt() {
@@ -205,14 +185,10 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	return nil
 
 }
-func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
+func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool types.Pool, msg types.MsgSwap) error {
 	err := k.SetPool(ctx, &finalPool)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
-	}
-	sentAmountInt, ok := k.ParseToInt(sentAmount)
-	if !ok {
-		return types.ErrUnableToParseInt
 	}
 	// Adding balance to users account ,Received Asset is the asset the user wants to receive
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
@@ -222,15 +198,10 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types
 	if err != nil {
 		return err
 	}
-	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sentAmountInt)
+	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, UintToInt(sentAmount))
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(sentCoin))
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// Use strings instead of Unit/Int in between conventions
-func (k Keeper) ParseToInt(nu string) (sdk.Int, bool) {
-	return sdk.NewIntFromString(nu)
 }

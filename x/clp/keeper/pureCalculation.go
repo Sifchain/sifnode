@@ -64,3 +64,7 @@ func Abs(a int16) uint16 {
 	}
 	return uint16(a)
 }
+
+func UintToInt(n sdk.Uint) sdk.Int {
+	return sdk.NewIntFromBigInt(n.BigInt())
+}

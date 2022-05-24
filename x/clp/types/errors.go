@@ -39,4 +39,5 @@ var (
 	ErrTypeCast                        = sdkerrors.Register(ModuleName, 37, "Could not perform type cast")
 	ErrUintIsZero                      = sdkerrors.Register(ModuleName, 38, "Cannot convert sdk.Uint to nat. Was 0")
 	ErrInputIsZero                     = sdkerrors.Register(ModuleName, 39, "Input was 0")
+	ErrSwapAssetsEqual                 = sdkerrors.Register(ModuleName, 40, "Swap sent and received assets are the same")
 )

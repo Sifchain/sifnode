@@ -285,34 +285,20 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
 	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin2, nativeCoin))
 	msg := types.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
-	err = app.ClpKeeper.FinalizeSwap(ctx, "", *pool, msg)
-	assert.Error(t, err, "Unable to parse to Int")
+	oneUint := sdk.OneUint()
 
-	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	err = app.ClpKeeper.FinalizeSwap(ctx, oneUint, *pool, msg)
 	require.NoError(t, err)
 
 	msg = types.NewMsgSwap(signer, types.NewAsset("xxx"), types.NewAsset("xxxx"), sdk.NewUint(1), sdk.NewUint(10))
-	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	err = app.ClpKeeper.FinalizeSwap(ctx, oneUint, *pool, msg)
 	assert.Error(t, err, "insufficient funds")
 
 	msg = types.NewMsgSwap(nil, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
-	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	err = app.ClpKeeper.FinalizeSwap(ctx, oneUint, *pool, msg)
 	assert.Error(t, err, "empty address string is not allowed")
 	msg = types.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
 	pool.ExternalAsset.Symbol = ""
-	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	err = app.ClpKeeper.FinalizeSwap(ctx, oneUint, *pool, msg)
 	assert.Error(t, err, "Unable to set pool")
-}
-
-func TestKeeper_ParseToInt(t *testing.T) {
-	_, app := test.CreateTestAppClp(false)
-	res, boolean := app.ClpKeeper.ParseToInt("1")
-	assert.True(t, boolean)
-	assert.Equal(t, res.String(), "1")
-}
-
-func TestKeeper_ParseToInt_WithBigNumber(t *testing.T) {
-	_, app := test.CreateTestAppClp(false)
-	_, boolean := app.ClpKeeper.ParseToInt("10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-	assert.False(t, boolean)
 }
