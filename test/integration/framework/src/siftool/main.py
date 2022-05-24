@@ -148,7 +148,17 @@ def main(argv):
     elif what == "recover-eth":
         test_utils.recover_eth_from_test_accounts()
     elif what == "run-peggy2-tests":
-        cmd.execst(["yarn", "test"], cwd=project.smart_contracts_dir)
+        import glob
+        from siftool.hardhat import Hardhat, default_accounts
+        test_files = \
+            glob.glob(os.path.join(project.smart_contracts_dir, "test", "*.js")) + \
+            glob.glob(os.path.join(project.smart_contracts_dir, "test", "*.ts"))
+        hardhat = Hardhat(cmd)
+        # Running tests against geth is not working yet
+        # hardhat_accounts = [private_key for _, private_key in default_accounts()]
+        # script_runner = hardhat.script_runner("http://localhost:8545/", network="geth", accounts=hardhat_accounts)
+        script_runner = hardhat.script_runner()
+        script_runner.test(test_files)
     elif what == "generate-python-protobuf-stubs":
         project.generate_python_protobuf_stubs()
     elif what == "localnet":

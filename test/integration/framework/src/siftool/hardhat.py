@@ -72,25 +72,10 @@ class ScriptRunner:
         }
         self.run("update_validator_power.ts", npx_env=npx_env)
 
-    def run(self, script: str, npx_env: Mapping = None) -> ExecResult:
-        # If this fails with tsyringe complaining about missing "../../build" directory, do this:
-        # rm -rf smart-contracts/artifacts.
+    def run(self, script: str, npx_env: Optional[Mapping[str, str]] = None) -> ExecResult:
         args = ["hardhat", "run", "scripts/{}".format(script)] + \
             (["--network", self.network] if self.network else [])
-        env = {}
-        if self.url:
-            env["NETWORK_URL"] = self.url
-        if self.accounts:
-            env["ETH_ACCOUNTS"] = ",".join(self.accounts)
-        if self.ethereum_private_key:
-            env["ETHEREUM_PRIVATE_KEY"] = self.ethereum_private_key
-        if npx_env:
-            env = dict_merge(env, npx_env)
-        if not env:
-            # Avoid passing empty environment, it crashes hardhat on some string split presumably because a variable
-            # which it expects does not exist.
-            env = None
-        res = self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env)
+        res = self.__npx_hardhat(args, npx_env=npx_env)
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
         # been compiled, otherwise the output starts with 4 lines:
         #     Compiling 35 files with 0.5.16
@@ -105,6 +90,29 @@ class ScriptRunner:
         assert len(stdout_lines) > 0
         assert stdout_lines[0] == "No need to generate any newer typings."  # This is printed by hardhat, the rest is from the script
         return stdout_lines[1:]
+
+    def test(self, test_files: Sequence[str], npx_env: Optional[Mapping[str, str]] = None):
+        args = ["hardhat", "test" ] + list(test_files) + \
+            (["--network", self.network] if self.network else [])
+        return self.__npx_hardhat(args, npx_env=npx_env, pipe=False)
+
+    def __npx_hardhat(self, args, npx_env: Optional[Mapping[str, str]] = None, pipe: bool = True):
+        # If this fails with tsyringe complaining about missing "../../build" directory, do this:
+        # rm -rf smart-contracts/artifacts.
+        env = {}
+        if self.url:
+            env["NETWORK_URL"] = self.url
+        if self.accounts:
+            env["ETH_ACCOUNTS"] = ",".join(self.accounts)
+        if self.ethereum_private_key:
+            env["ETHEREUM_PRIVATE_KEY"] = self.ethereum_private_key
+        if npx_env:
+            env = dict_merge(env, npx_env)
+        if not env:
+            # Avoid passing empty environment, it crashes hardhat on some string split presumably because a variable
+            # which it expects does not exist.
+            env = None
+        return self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env, pipe=pipe)
 
 class HardhatAbiProvider:
     def __init__(self, cmd, deployed_contract_addresses):
