@@ -895,8 +895,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 # needs at least 4 accounts, they are destructured like this:
                 # const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts]
                 smart_contract_accounts = [private_key for _, private_key in sample_eth_accounts]
-                relayer_extra_args = {"max_fee_per_gas": 300000000000, "max_priority_fee_per_gas": 100000000000}
-
+                relayer_extra_args = {"max_fee_per_gas": 300 * eth.GWEI, "max_priority_fee_per_gas": 100 * eth.GWEI}
             else:
                 hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
                 hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=hardhat_port)

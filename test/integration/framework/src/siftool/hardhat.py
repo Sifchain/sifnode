@@ -86,6 +86,10 @@ class ScriptRunner:
             env["ETHEREUM_PRIVATE_KEY"] = self.ethereum_private_key
         if npx_env:
             env = dict_merge(env, npx_env)
+        if not env:
+            # Avoid passing empty environment, it crashes hardhat on some string split presumably because a variable
+            # which it expects does not exist.
+            env = None
         res = self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env)
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
         # been compiled, otherwise the output starts with 4 lines:

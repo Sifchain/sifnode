@@ -8,6 +8,17 @@ from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
 
 
+def wait_for_enter_key_pressed():
+    try:
+        input("Press ENTER to exit...")
+    except EOFError:
+        log = logging.getLogger(__name__)
+        log.error("Cannot wait for ENTER keypress since standard input is closed. Instead, this program will now wait "
+            "for 100 years and you will have to kill it manually. If you get this message when running in recent "
+            "versions of pycharm, enable 'Emulate terminal in output console' in run configuration.")
+        time.sleep(3155760000)
+
+
 def main(argv):
     # tmux usage:
     # tmux new-session -d -s env1
@@ -68,7 +79,7 @@ def main(argv):
             # - If you ran the execute_integration_test_*.sh you need to kill ganache-cli for proper cleanup
             #   as it might have been killed and started outside of our control
         if not in_github_ci:
-            input("Press ENTER to exit...")
+            wait_for_enter_key_pressed()
             killall(processes)
     elif what == "devenv":
         project.npx(["hardhat", "run", "scripts/devenv.ts"], cwd=project.smart_contracts_dir, pipe=False)
@@ -89,7 +100,7 @@ def main(argv):
         env = IntegrationTestsEnvironment(cmd)
         env.restore_snapshot(snapshot_name)
         processes = env.restart_processes()
-        input("Press ENTER to exit...")
+        wait_for_enter_key_pressed()
         killall(processes)
     elif what == "run-ibc-env":
         env = IBCEnvironment(cmd)
@@ -129,7 +140,7 @@ def main(argv):
             for expected_addr, private_key in hardhat.default_accounts():
                 addr = g.create_account("password", private_key, datadir=datadir_for_keys)
                 assert addr == expected_addr
-            input("Press ENTER to exit...")
+            wait_for_enter_key_pressed()
             killall((geth_proc,))
     elif what == "inflate-tokens":
         from siftool import inflate_tokens
