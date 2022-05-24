@@ -381,8 +381,18 @@ async function getValidClaim({
     nonce,
     cosmosDenom,
   ]);
+  
+  const sorted_validators = validators.sort((v1, v2) => {
+    if (v1.address > v2.address) {
+      return 1;
+    }
+    if (v1.address < v2.address) {
+      return -1;
+    }
+    return 0;
+  })
 
-  const signatures = await signHash(validators, digest);
+  const signatures = await signHash(sorted_validators, digest);
 
   const claimData = {
     cosmosSender: sender,
