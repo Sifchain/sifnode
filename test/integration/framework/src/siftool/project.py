@@ -195,6 +195,7 @@ class Project:
     def __rm_peggy2_compiled_go_stubs(self):
         # Peggy2: generated Go stubs (by smart-contracts/Makefile)
         self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+        self.__rm(project_dir(".proto-gen"))
 
     def __rm_run_env_files(self):
         self.__rm(self.cmd.get_user_home(".sifnoded"))
@@ -206,6 +207,7 @@ class Project:
         self.__rm(self.project_dir("smart-contracts", "env.json"))
         self.__rm(self.project_dir("smart-contracts", ".env"))
         self.__rm(self.project_dir("smart-contracts", "venv"))
+        self.__rm(self.project_dir(".run"))
 
     def clean(self):
         self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
