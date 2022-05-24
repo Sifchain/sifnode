@@ -920,6 +920,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		externalAssetBalance sdk.Uint
 		nativeAssetAmount    sdk.Uint
 		externalAssetAmount  sdk.Uint
+		externalDecimals     uint8
 		poolUnits            sdk.Uint
 		lpunits              sdk.Uint
 		err                  error
@@ -933,6 +934,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.ZeroUint(),
 			externalAssetAmount:  sdk.ZeroUint(),
+			externalDecimals:     18,
 			errString:            errors.New("Tx amount is too low"),
 		},
 		{
@@ -942,6 +944,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.ZeroUint(),
 			externalAssetAmount:  sdk.ZeroUint(),
+			externalDecimals:     18,
 			errString:            errors.New("Tx amount is too low"),
 		},
 		{
@@ -951,6 +954,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.ZeroUint(),
 			externalAssetAmount:  sdk.OneUint(),
+			externalDecimals:     18,
 			errString:            errors.New("0: insufficient funds"),
 		},
 		{
@@ -960,6 +964,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.ZeroUint(),
+			externalDecimals:     18,
 			errString:            errors.New("0: insufficient funds"),
 		},
 		{
@@ -969,6 +974,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(100),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.OneUint(),
+			externalDecimals:     18,
 			poolUnits:            sdk.OneUint(),
 			lpunits:              sdk.OneUint(),
 		},
@@ -979,6 +985,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(100),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.OneUint(),
+			externalDecimals:     18,
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
 		},
@@ -989,6 +996,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(100),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.OneUint(),
+			externalDecimals:     18,
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
 			errString:            errors.New("Cannot add liquidity asymmetrically"),
@@ -1000,6 +1008,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(1),
 			nativeAssetAmount:    sdk.NewUint(1),
 			externalAssetAmount:  sdk.NewUint(1),
+			externalDecimals:     18,
 			poolUnits:            sdk.NewUint(2),
 			lpunits:              sdk.NewUint(1),
 		},
@@ -1010,6 +1019,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(1099511627776),
 			nativeAssetAmount:    sdk.NewUint(1099511627776),
 			externalAssetAmount:  sdk.NewUint(1099511627776),
+			externalDecimals:     18,
 			poolUnits:            sdk.NewUint(2199023255552),
 			lpunits:              sdk.NewUint(1099511627776),
 		},
@@ -1020,6 +1030,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(1024123),
 			nativeAssetAmount:    sdk.NewUint(999),
 			externalAssetAmount:  sdk.NewUint(111),
+			externalDecimals:     18,
 			poolUnits:            sdk.NewUintFromString("1100094484982"),
 			lpunits:              sdk.NewUintFromString("582857206"),
 			errString:            errors.New("Cannot add liquidity asymmetrically"),
@@ -1031,18 +1042,96 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
 			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
 			externalAssetAmount:  sdk.NewUint(1099511627776),
+			externalDecimals:     18,
 			poolUnits:            sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
 			lpunits:              sdk.NewUint(1099511627776),
 		},
 		{
-			name:                 "success - unbalanced pool",
+			name:                 "failure - asymmetric",
 			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
 			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance: sdk.NewUint(2674623482959),
 			nativeAssetAmount:    sdk.NewUint(0),
 			externalAssetAmount:  sdk.NewUint(200000000),
-			poolUnits:            sdk.NewUintFromString("23663545194274114387000646"),
-			lpunits:              sdk.NewUintFromString("884643816730694062692"),
+			externalDecimals:     18,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			name:                 "opportunist scenario - fails trivially due to div zero",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(0),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			name:                 "opportunist scenario with one native asset - avoids div zero trivial fail",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(1),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			name:                 "success",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(68140),
+			externalDecimals:     6,
+			poolUnits:            sdk.NewUintFromString("23662661153298835875523384"),
+			lpunits:              sdk.NewUintFromString("602841452182585430"),
+		},
+		{
+			// Same test as above but with external asset amount just below top limit
+			name:                 "success (normalized) ratios diff = 0.000000000000000499",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(70140),
+			externalDecimals:     6,
+			poolUnits:            sdk.NewUintFromString("23662661162145935094484778"),
+			lpunits:              sdk.NewUintFromString("611688551401546824"),
+		},
+		{
+			// Same test as above but with external asset amount just above top limit
+			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(70141),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			// Same test as above but with external asset amount just above bottom limit
+			name:                 "success (normalized) ratios diff = 0.000000000000000499",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(66141),
+			externalDecimals:     6,
+			poolUnits:            sdk.NewUintFromString("23662661144456159305055227"),
+			lpunits:              sdk.NewUintFromString("593998775612117273"),
+		},
+		{
+			// Same test as above but with external asset amount just below bottom limit
+			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(66140),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
 		},
 	}
 
@@ -1059,6 +1148,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 						tc.externalAssetBalance,
 						tc.nativeAssetAmount,
 						tc.externalAssetAmount,
+						tc.externalDecimals,
 						symmetryThreshold,
 					)
 				})
@@ -1071,6 +1161,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 				tc.externalAssetBalance,
 				tc.nativeAssetAmount,
 				tc.externalAssetAmount,
+				tc.externalDecimals,
 				symmetryThreshold,
 			)
 
@@ -1723,6 +1814,60 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalculateRatioDiff(t *testing.T) {
+
+	testcases := []struct {
+		name       string
+		A, R, a, r *big.Int
+		expected   sdk.Dec
+		errString  error
+	}{
+		{
+			name:     "symmetric",
+			A:        big.NewInt(20),
+			R:        big.NewInt(10),
+			a:        big.NewInt(8),
+			r:        big.NewInt(4),
+			expected: sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+		{
+			name:     "not symmetric",
+			A:        big.NewInt(20),
+			R:        big.NewInt(10),
+			a:        big.NewInt(16),
+			r:        big.NewInt(4),
+			expected: sdk.MustNewDecFromStr("2.000000000000000000"),
+		},
+		{
+			name:     "not symmetric",
+			A:        big.NewInt(501),
+			R:        big.NewInt(100),
+			a:        big.NewInt(5),
+			r:        big.NewInt(1),
+			expected: sdk.MustNewDecFromStr("0.010000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			ratio, err := clpkeeper.CalculateRatioDiff(tc.A, tc.R, tc.a, tc.r)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+
+			ratioDec := clpkeeper.RatToDec(&ratio)
+
+			require.Equal(t, tc.expected.String(), ratioDec.String())
 		})
 	}
 }

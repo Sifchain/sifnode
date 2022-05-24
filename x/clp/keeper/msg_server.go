@@ -708,8 +708,12 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
 	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
+	if err != nil {
+		return nil, err
+	}
 	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
-		nativeBalance, externalBalance, symmetryThreshold)
+		nativeBalance, externalBalance, externalDecimals, symmetryThreshold)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -759,12 +763,17 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		return nil, types.ErrPoolDoesNotExist
 	}
 	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
+	if err != nil {
+		return nil, err
+	}
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
 		pool.ExternalAssetBalance,
 		msg.NativeAssetAmount,
 		msg.ExternalAssetAmount,
+		externalDecimals,
 		symmetryThreshold)
 	if err != nil {
 		return nil, err

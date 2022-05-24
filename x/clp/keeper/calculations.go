@@ -164,7 +164,7 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, symmetryThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
+	externalAssetAmount sdk.Uint, externalDecimals uint8, symmetryThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
 
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
@@ -192,6 +192,18 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
 	}
 
+	ratioThreshold := sdk.MustNewDecFromStr("0.0005")
+	ratioThresholdRat := DecToRat(&ratioThreshold)
+	normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
+	ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
+	ratioDiff, err := CalculateRatioDiff(externalAssetBalance.BigInt(), nativeAssetBalance.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
+	if err != nil {
+		return sdk.ZeroUint(), sdk.ZeroUint(), err
+	}
+	if ratioDiff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
+	}
+
 	stakeUnits := calculateStakeUnits(oldPoolUnits.BigInt(), nativeAssetBalance.BigInt(),
 		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), slipAdjustmentValues)
 
@@ -199,6 +211,21 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	newPoolUnit.Add(oldPoolUnits.BigInt(), stakeUnits)
 
 	return sdk.NewUintFromBigInt(&newPoolUnit), sdk.NewUintFromBigInt(stakeUnits), nil
+}
+
+// | A/R - a/r |
+func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
+	if R.Cmp(big.NewInt(0)) == 0 || r.Cmp(big.NewInt(0)) == 0 { // check for zeros
+		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
+	}
+	var AdivR, adivr, diff big.Rat
+
+	AdivR.SetFrac(A, R)
+	adivr.SetFrac(a, r)
+	diff.Sub(&AdivR, &adivr)
+	diff.Abs(&diff)
+
+	return diff, nil
 }
 
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
