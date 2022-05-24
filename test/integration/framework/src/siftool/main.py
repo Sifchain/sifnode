@@ -132,7 +132,7 @@ def main(argv):
             input("Press ENTER to exit...")
             killall((geth_proc,))
     elif what == "inflate-tokens":
-        import inflate_tokens
+        from siftool import inflate_tokens
         inflate_tokens.run(*argv[1:])
     elif what == "recover-eth":
         test_utils.recover_eth_from_test_accounts()
