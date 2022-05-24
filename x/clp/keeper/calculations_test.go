@@ -1136,6 +1136,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 	}
 
 	symmetryThreshold := sdk.NewDecWithPrec(1, 4)
+	ratioThreshold := sdk.NewDecWithPrec(5, 4)
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -1150,6 +1151,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 						tc.externalAssetAmount,
 						tc.externalDecimals,
 						symmetryThreshold,
+						ratioThreshold,
 					)
 				})
 				return
@@ -1163,6 +1165,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 				tc.externalAssetAmount,
 				tc.externalDecimals,
 				symmetryThreshold,
+				ratioThreshold,
 			)
 
 			if tc.errString != nil {

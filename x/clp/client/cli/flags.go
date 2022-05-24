@@ -31,6 +31,7 @@ const (
 	FlagMintParams                   = "mint-params"
 	FlagMinter                       = "minter"
 	FlagSymmetryThreshold            = "threshold"
+	FlagSymmetryRatioThreshold       = "ratio"
 )
 
 // common flagsets to add to various functions
@@ -60,6 +61,8 @@ var (
 	FsFlagNewPolicy                = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagMintParams               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagMinter                   = flag.NewFlagSet("", flag.ContinueOnError)
+	FsSymmetryThreshold            = flag.NewFlagSet("", flag.ContinueOnError)
+	FsSymmetryRatioThreshold       = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -89,4 +92,6 @@ func init() {
 	FsFlagRewardPeriods.String(FlagRewardPeriods, "", "Path to Json File containing reward periods")
 	FsFlagMintParams.String(FlagMintParams, "", "Inflation")
 	FsFlagMinter.String(FlagMinter, "", "Inflation Max")
+	FsSymmetryThreshold.String(FlagSymmetryThreshold, "", "Set slippage adjustement threshold for symmetric liquitidy add")
+	FsSymmetryRatioThreshold.String(FlagSymmetryRatioThreshold, "", "Set ratio threshold for symmetric liquitidy add")
 }

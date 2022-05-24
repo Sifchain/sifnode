@@ -701,23 +701,25 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
+
 	// Check if pool already exists
 	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrUnableToCreatePool
 	}
+
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	symmetryThreshold := k.GetSymmetryThreshold(ctx)
 	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
 	if err != nil {
 		return nil, err
 	}
+
 	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
-		nativeBalance, externalBalance, externalDecimals, symmetryThreshold)
+		nativeBalance, externalBalance, externalDecimals, k.GetSymmetryThreshold(ctx), k.GetSymmetryRatio(ctx))
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
-	// Create Pool
+
 	pool, err := k.Keeper.CreatePool(ctx, poolUnits, msg)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
@@ -762,11 +764,12 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+
 	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
 	if err != nil {
 		return nil, err
 	}
+
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
@@ -774,7 +777,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		msg.NativeAssetAmount,
 		msg.ExternalAssetAmount,
 		externalDecimals,
-		symmetryThreshold)
+		k.GetSymmetryThreshold(ctx),
+		k.GetSymmetryRatio(ctx))
 	if err != nil {
 		return nil, err
 	}
