@@ -23,10 +23,10 @@ jobs:
       - name: Clean
         run: make clean
 
-      - name: Unit test
+      - name: Build
         run: |
           source ~/.bash_profile
-          make install && make tests
+          make install
 
       - name: Start standalone peggy
         run: |

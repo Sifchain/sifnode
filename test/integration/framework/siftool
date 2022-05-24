@@ -63,6 +63,12 @@ def load_main_module():
 
 
 def main(argv):
+    if (sys.version_info.major > 3) or ((sys.version_info.major == 3) and (sys.version_info.minor > 9)):
+        print("Due to a bug in web3/websockets siftool currently works with Python versions up to 3.9 only.", file=sys.stderr)
+        print("See https://github.com/aaugustin/websockets/issues/916 for more information.", file=sys.stderr)
+        print("You can use pyenv to install a compatible version of Python: https://github.com/pyenv/pyenv", file=sys.stderr)
+        sys.exit(255)
+
     main_module = load_main_module()
     main_module.main(argv)
 

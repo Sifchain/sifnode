@@ -78,11 +78,12 @@ def mkcmd(args, env=None, cwd=None, stdin=None):
 # If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
 def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[str, str]] = None,
     text: Optional[bool] = None, stdin: Union[str, int, IO, None] = None, stdout: Optional[IO] = None,
-    stderr: Optional[IO] = None
+    stderr: Optional[IO] = None, disable_log: bool = False
 ) -> subprocess.Popen:
     if env:
         env = dict_merge(os.environ, env)
-    log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+    if not disable_log:
+        log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 def dict_merge(*dicts, override=True):
@@ -100,15 +101,18 @@ def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)
     return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
 
+def disable_noisy_loggers():
+    logging.getLogger("eth").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+    logging.getLogger("web3").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+
 def basic_logging_setup():
     import sys
     # logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="%(name)s: %(message)s")
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s")
     # logging.getLogger(__name__).setLevel(logging.DEBUG)
-    logging.getLogger("eth").setLevel(logging.WARNING)
-    logging.getLogger("websockets").setLevel(logging.WARNING)
-    logging.getLogger("web3").setLevel(logging.WARNING)
-    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    disable_noisy_loggers()
 
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
