@@ -103,8 +103,8 @@ def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):
     amount_per_tx = 1000100101
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, None)
 
-def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, 
-    transfer_table: List[List[int]], token_address: Optional[Address], isRowan: bool = False, randomize: bool = None):
+def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, transfer_table: List[List[int]],
+    token_address: Optional[Address], isRowan: bool = False, randomize: Optional[random.Random] = None):
     # rowan is natvie token, denom not from contract in Ethereum
     if isRowan:
         token_denom = rowan
@@ -116,10 +116,10 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     n_sif: int = len(transfer_table)
     assert n_sif > 0
     n_eth: int = len(transfer_table[0])
-    assert all([len(row) == n_eth for row in transfer_table]), "transfer_table has to be rectangular"
+    assert all(len(row) == n_eth for row in transfer_table), "transfer_table has to be rectangular"
     sum_sif: List[int] = [sum(x) for x in transfer_table]
-    sum_eth: List[int] = [sum([x[i] for x in transfer_table]) for i in range(n_eth)]
-    sum_all: int = sum([sum(x) for x in transfer_table])
+    sum_eth: List[int] = [sum(x[i] for x in transfer_table) for i in range(n_eth)]
+    sum_all: int = sum(sum(x) for x in transfer_table)
 
     # Create n_sif test sif accounts.
     # Each sif account needs sif_tx_burn_fee_in_rowan * rowan + sif_tx_burn_fee_in_ceth ceth for every transaction.
@@ -142,6 +142,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     if token_address is not None:
         erc20_balances_initial: List[str] = [ctx.get_erc20_token_balance(token_address, eth_acct) for eth_acct in eth_accts]
         assert all([b == 0 for b in eth_balances_initial])  # Might be non-zero if we're recycling accounts
+        assert all(b == 0 for b in eth_balances_initial)  # Might be non-zero if we're recycling accounts
 
 
     # Create a dispensation sif account that will receive all locked ETH and dispense it to each sif account
@@ -275,10 +276,10 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     while True:
         if token_address == None:
             token_balances = [ctx.eth.get_eth_balance(eth_acct) for eth_acct in eth_accts]
-            balance_delta = sum([token_balances[i] - eth_balances_initial[i] for i in range(n_eth)])
         else:
             token_balances = [ctx.get_erc20_token_balance(token_address, eth_acct) for eth_acct in eth_accts]
-            balance_delta = sum([token_balances[i] - eth_balances_initial[i] for i in range(n_eth)])
+
+        balance_delta = sum(token_balances[i] - eth_balances_initial[i] for i in range(n_eth))
 
         now = time.time()
         total = sum_all * amount_per_tx

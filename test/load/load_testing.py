@@ -73,7 +73,7 @@ def get_erc20_token_address(ctx: test_utils.EnvCtx, sif_denom_hash: str) -> eth.
     return token_address
 
 
-def choose_from(distr: Sequence[Any], rnd: random.Random = None) -> int:
+def choose_from(distr: Sequence[Any], rnd: Optional[random.Random] = None) -> int:
     r = (rnd.randrange(sum(distr))) if rnd else 0
     s = 0
     for i, di in enumerate(distr):
