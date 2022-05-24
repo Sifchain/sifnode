@@ -61,7 +61,7 @@ def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account: str, test_eth_acc
     eth_tx_wrappers: List[eth.EthereumTxWrapper] = []
 
     for i in range(threads_num):
-        w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
+        w3_conn = eth.web3_connect(w3_url)
         conn_list.append(w3_conn)
         bridge_bank_abi, _, bridge_bank_address = ctx.abi_provider.get_descriptor("BridgeBank")
         bridge_bank_sc = w3_conn.eth.contract(abi=bridge_bank_abi, address=bridge_bank_address)

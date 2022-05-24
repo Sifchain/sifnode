@@ -4,7 +4,7 @@ import time
 import grpc
 import re
 import web3
-from typing import Mapping, Any, Tuple
+from typing import Mapping, Any, Tuple, AnyStr
 from siftool import command, cosmos, eth
 from siftool.common import *
 
@@ -98,17 +98,17 @@ class Sifnoded:
     def keys_delete(self, name):
         self.cmd.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", self.keyring_backend], stdin=["y"], check_exit=False)
 
-    def add_genesis_account(self, sifnodeadmin_addr, tokens):
-        tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
+    def add_genesis_account(self, sifnodeadmin_addr: cosmos.Address, tokens: cosmos.Balance):
+        tokens_str = cosmos.balance_format(tokens)
         self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str], sifnoded_home=self.home)
 
-    def add_genesis_validators(self, address):
+    def add_genesis_validators(self, address: cosmos.Address):
         args = ["sifnoded", "add-genesis-validators", address]
         res = self.cmd.execst(args)
         return res
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
-    def add_genesis_validators_peggy(self, evm_network_descriptor, valoper, validator_power):
+    def add_genesis_validators_peggy(self, evm_network_descriptor: int, valoper: str, validator_power: int):
         self.sifnoded_exec(["add-genesis-validators", str(evm_network_descriptor), valoper, str(validator_power)],
             sifnoded_home=self.home)
 
@@ -126,7 +126,7 @@ class Sifnoded:
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
     # This was split from init_common
-    def peggy2_add_account(self, name, tokens, is_admin=False):
+    def peggy2_add_account(self, name: str, tokens: cosmos.Balance, is_admin: bool = False):
         # TODO Peggy2 devenv feed "yes\nyes" into standard input, we only have "y\n"
         account = self.keys_add_1(name)
         account_address = account["address"]
@@ -137,7 +137,9 @@ class Sifnoded:
             self.set_genesis_whitelister_admin(account_address)
         return account_address
 
-    def peggy2_add_relayer_witness_account(self, name, tokens, evm_network_descriptor, validator_power, denom_whitelist_file):
+    def peggy2_add_relayer_witness_account(self, name: str, tokens: cosmos.Balance, evm_network_descriptor: int,
+        validator_power: int, denom_whitelist_file: str
+    ):
         account_address = self.peggy2_add_account(name, tokens)  # Note: is_admin=False
         # Whitelist relayer/witness account
         valoper = self.get_val_address(name)
@@ -194,11 +196,14 @@ class Sifnoded:
             (["--home", self.home] if self.home else [])
         return command.buildcmd(args)
 
-    def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
+    def sifnoded_exec(self, args: Sequence[str], sifnoded_home: Optional[str] = None,
+        keyring_backend: Optional[str] = None, stdin: Optional[AnyStr] = None, cwd: Optional[str] = None,
+        disable_log: bool = False
+    ) -> command.ExecResult:
         args = [self.binary] + args + \
             (["--home", sifnoded_home] if sifnoded_home else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend else [])
-        res = self.cmd.execst(args, stdin=stdin, cwd=cwd)
+        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log)
         return res
 
     def _rpc_get(self, host, port, relative_url):
@@ -208,14 +213,18 @@ class Sifnoded:
     def get_status(self, host, port):
         return self._rpc_get(host, port, "node_info")
 
-    def wait_for_last_transaction_to_be_mined(self, count=1):
+    def wait_for_last_transaction_to_be_mined(self, count: int = 1, disable_log: bool = True, timeout: int = 90):
         # TODO return int(self._rpc_get(host, port, abci_info)["response"]["last_block_height"])
         def latest_block_height():
             args = ["status"]  # TODO --node
-            return int(json.loads(stderr(self.sifnoded_exec(args)))["SyncInfo"]["latest_block_height"])
+            return int(json.loads(stderr(self.sifnoded_exec(args, disable_log=disable_log)))["SyncInfo"]["latest_block_height"])
+        log.debug("Waiting for last sifnode transaction to be mined...")
+        start_time = time.time()
         initial_block = latest_block_height()
         while latest_block_height() < initial_block + count:
             time.sleep(1)
+            if time.time() - start_time > timeout:
+                raise Exception("Timeout expired while waiting for last sifnode transaction to be mined")
 
     def wait_up(self, host, port):
         while True:
@@ -361,9 +370,11 @@ class Ebrelayer:
         self.cmd = cmd
         self.binary = "ebrelayer"
 
-    def peggy2_build_ebrelayer_cmd(self, init_what, network_descriptor, tendermint_node, web3_provider,
-        bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,
-        keyring_dir=None, sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None,
+    def peggy2_build_ebrelayer_cmd(self, init_what: str, network_descriptor: int, tendermint_node: str,
+        web3_provider: str, bridge_registry_contract_address: eth.Address, validator_mnemonic: str, chain_id: str,
+        node: Optional[str] = None, keyring_backend: Optional[str] = None, keyring_dir: Optional[str] = None,
+        sign_with: Optional[str] = None, symbol_translator_file: Optional[str] = None, log_format: Optional[str] = None,
+        max_fee_per_gas: Optional[int] = None, max_priority_fee_per_gas: Optional[str] = None, extra_args=None,
         ethereum_private_key=None, ethereum_address=None, home=None, cwd=None
     ):
         env = _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key)
@@ -384,7 +395,10 @@ class Ebrelayer:
             (["--home", home] if home else []) + \
             (["--keyring-dir", keyring_dir] if keyring_dir else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
-            (["--log_format", log_format] if log_format else [])
+            (["--log_format", log_format] if log_format else []) + \
+            (["--maxFeePerGasFlag", str(max_fee_per_gas)] if max_fee_per_gas is not None else []) + \
+            (["--maxPriorityFeePerGasFlag", str(max_priority_fee_per_gas)] if max_priority_fee_per_gas is not None else [])
+
         return command.buildcmd(args, env=env, cwd=cwd)
 
     # Legacy stuff - pre-peggy2

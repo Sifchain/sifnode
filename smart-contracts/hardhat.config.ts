@@ -38,6 +38,11 @@ if (reportGas) print("warn", "HARDHAT :: Gas reporter is ON")
 const useForking = process.env["USE_FORKING"] ? true : false
 if (useForking) print("warn", "HARDHAT :: Forking is ON")
 
+var accounts: string[] = []
+if (process.env["ETH_ACCOUNTS"] ? true : false) {
+    accounts = (process.env["ETH_ACCOUNTS"] || "").split(",")
+}
+
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
@@ -58,6 +63,13 @@ const config: HardhatUserConfig = {
       url: networkUrl,
       accounts: keyList,
       gas: 2000000,
+    },
+    geth: {
+      url: networkUrl,
+      accounts: accounts,
+      gas: 6000000,
+      gasPrice: "auto",
+      gasMultiplier: 1.2,
     },
     mainnet: {
       url: networkUrl,

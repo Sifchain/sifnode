@@ -45,7 +45,6 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     # Verify final balance
     ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before)
 
-
 def test_erc20_to_sifnode_and_back_first_time(ctx):
     token_decimals = 18
     token_sc = deploy_erc20_token_for_test(ctx, token_decimals)

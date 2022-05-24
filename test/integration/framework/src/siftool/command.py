@@ -1,12 +1,13 @@
 import shutil
 import time
-from typing import Mapping, List, Union, Optional
+from typing import Mapping, List, Union, Optional, Tuple, AnyStr
 from siftool.common import *
 
 ExecArgs = Mapping[str, Union[List[str], str, Mapping[str, str]]]
+ExecResult = Tuple[int, AnyStr, AnyStr]
 
 
-def buildcmd(args: Optional[str] = None, cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
+def buildcmd(args: List[str], cwd: Optional[str] = None, env: Optional[Mapping[str, Optional[str]]] = None
 ) -> ExecArgs:
     return dict((("args", args),) +
         ((("cwd", cwd),) if cwd is not None else ()) +
@@ -15,7 +16,9 @@ def buildcmd(args: Optional[str] = None, cwd: Optional[str] = None, env: Optiona
 
 
 class Command:
-    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
+    def execst(self, args: Sequence[str], cwd: str = None, env: Mapping[str, str] = None, stdin: Optional[AnyStr] = None,
+        binary: bool = False, pipe: bool = True, check_exit: bool = True, disable_log: bool = False
+    ) -> ExecResult:
         fd_stdout = subprocess.PIPE if pipe else None
         fd_stderr = subprocess.PIPE if pipe else None
         fd_stdin = subprocess.DEVNULL
@@ -23,7 +26,8 @@ class Command:
             fd_stdin = subprocess.PIPE
             if type(stdin) == list:
                 stdin = "".join([line + "\n" for line in stdin])
-        proc = popen(args, env=env, cwd=cwd, stdin=fd_stdin, stdout=fd_stdout, stderr=fd_stderr, text=not binary)
+        proc = popen(args, env=env, cwd=cwd, stdin=fd_stdin, stdout=fd_stdout, stderr=fd_stderr, text=not binary,
+            disable_log=disable_log)
         stdout_data, stderr_data = proc.communicate(input=stdin)
         assert pipe == (stdout_data is not None)
         assert pipe == (stderr_data is not None)

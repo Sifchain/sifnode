@@ -69,6 +69,7 @@ def get_env_ctx_peggy2():
         "CosmosBridge": tmp["cosmosBridge"],
         "BridgeRegistry": tmp["bridgeRegistry"],
         "Rowan": tmp["rowanContract"],
+        "Blocklist": tmp["blocklist"],
     }, deployed_contract_address_overrides)
     abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
 
@@ -85,7 +86,7 @@ def get_env_ctx_peggy2():
     rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
     w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
-    w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
+    w3_conn = eth.web3_connect(w3_url)
 
     sifnode_url = dot_env_vars["TCP_URL"]
     sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
@@ -112,7 +113,7 @@ def get_env_ctx_peggy2():
         "gasPrice": ctx.eth.w3_conn.eth.gas_price,
     }
     # Hardhat uses base fee of 7 + 1 GWEI
-    assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
+    # assert ctx.eth.fixed_gas_args["gasPrice"] == 1 * eth.GWEI + 7
 
     # Monkeypatching for peggy2 extras
     # TODO These are set in run_env.py:Peggy2Environment.init_sifchain(), specifically "sifnoded tx ethbridge set-cross-chain-fee"
@@ -203,7 +204,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     sifnoded_home = None  # Implies default ~/.sifnoded
     deployed_smart_contract_address_overrides = get_overrides_for_smart_contract_addresses(env_vars)
 
-    w3_conn = eth.web3_connect(w3_url, websocket_timeout=90)
+    w3_conn = eth.web3_connect(w3_url)
 
     # This variable enables behaviour that is specific to running local Ethereum node (ganache, hardhat):
     # - low-level "advance blocks" command that forces mining of 50 blocks
@@ -287,18 +288,9 @@ class EnvCtx:
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
 
-    def advance_block_w3(self, number):
-        for _ in range(number):
-            # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
-            self.w3_conn.provider.make_request("evm_mine", [])
-
+    # TODO Redirect callers and remove
     def advance_blocks(self, number=50):
-        # TODO Move to eth (it should be per-w3_conn)
-        if self.eth.is_local_node:
-            previous_block = self.eth.w3_conn.eth.block_number
-            self.advance_block_w3(number)
-            assert self.eth.w3_conn.eth.block_number - previous_block >= number
-        # Otherwise do nothing (e.g. wait for balance change takes longer)
+        return self.eth.advance_block_w3(number)
 
     def get_blocklist_sc(self):
         abi, _, address = self.abi_provider.get_descriptor("Blocklist")
@@ -597,12 +589,18 @@ class EnvCtx:
                 raise Exception(raw_log)
         return retval
 
-    def get_sifchain_balance(self, sif_addr: cosmos.Address) -> cosmos.Balance:
-        args = ["query", "bank", "balances", sif_addr, "--limit", str(100000000), "--output", "json"] + \
+    def get_sifchain_balance(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
+        offset: Optional[int] = None, disable_log: bool = False
+    ) -> cosmos.Balance:
+        args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
+            (["--limit", str(limit)] if limit is not None else []) + \
+            (["--offset", str(offset)] if offset is not None else []) + \
             self._sifnoded_chain_id_and_node_arg()
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home)
-        res = json.loads(stdout(res))["balances"]
-        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res) if amount != 0}
+        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
+        res = json.loads(stdout(res))
+        if res["pagination"]["next_key"] is not None:
+            raise Exception("More than {} results in balances".format(limit))
+        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
 
     # Unless timed out, this function will exit:
     # - if min_changes are given: when changes are greater.
@@ -611,16 +609,17 @@ class EnvCtx:
     # You cannot use min_changes and expected_balance at the same time.
     def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
         min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
-        timeout: int = 90, change_timeout: int = None
+        timeout: int = 90, change_timeout: int = None, disable_log: bool = True
     ) -> cosmos.Balance:
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
+        log.debug("Waiting for balance to change for account {}...".format(sif_addr))
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
         expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
         start_time = time.time()
         last_change_time = None
         last_changed_balance = None
         while True:
-            new_balance = self.get_sifchain_balance(sif_addr)
+            new_balance = self.get_sifchain_balance(sif_addr, disable_log=disable_log)
             delta = cosmos.balance_sub(new_balance, old_balance)
             if expected_balance is not None:
                 should_return = cosmos.balance_equal(expected_balance, new_balance)
@@ -741,6 +740,7 @@ class EnvCtx:
         while True:
             new_balance = self.get_erc20_token_balance(token_addr, eth_addr) if token_addr \
                 else self.eth.get_eth_balance(eth_addr)
+            # log.debug("wait_for_eth_balance_change(): {}={}".format(eth_addr, new_balance))
             if new_balance != old_balance:
                 return new_balance
             time.sleep(polling_time)
@@ -775,8 +775,8 @@ class EnvCtx:
         if fund_amount is not None:
             fund_from = fund_from or self.operator
             funder_balance_before = self.eth.get_eth_balance(fund_from)
-            assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: need {}, have {}" \
-                .format(fund_amount, funder_balance_before)
+            assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: {} needs {}, but has {}" \
+                .format(fund_from, fund_amount, funder_balance_before)
             target_balance_before = self.eth.get_eth_balance(address)
             difference = fund_amount - target_balance_before
             if difference > 0:
@@ -901,3 +901,17 @@ def sifnoded_parse_output_lines(stdout):
         m = pat.match(line)
         result[m[1]] = m[2]
     return result
+
+def pytest_ctx_fixture(request):
+    # To pass the "snapshot_name" as a parameter with value "foo" from test, annotate the test function like this:
+    # @pytest.mark.snapshot_name("foo")
+    snapshot_name = request.node.get_closest_marker("snapshot_name")
+    if snapshot_name is not None:
+        snapshot_name = snapshot_name.args[0]
+        logging.debug("Context setup: snapshot_name={}".format(repr(snapshot_name)))
+    with get_test_env_ctx() as ctx:
+        yield ctx
+        logging.debug("Test context cleanup")
+
+def pytest_test_wrapper_fixture():
+    disable_noisy_loggers()
