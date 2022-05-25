@@ -632,5 +632,45 @@ describe("Test Bridge Bank", function () {
       denomInBridgeBank3 = await state.bridgeBank.contractDenom(state.token3.address);
       expect(denomInBridgeBank3).to.be.equal("");
     });
+
+    it("should allow owner to add an existing token into white list", async function () {
+      var inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(inWhiteList).to.be.equal(false);
+
+      // only owner can add existing bridge token
+      await expect(
+        state.bridgeBank
+          .connect(userOne)
+          .addExistingBridgeToken(state.token1.address)
+      ).to.be.revertedWith("!owner");
+
+      await expect(
+        state.bridgeBank
+          .connect(owner)
+          .addExistingBridgeToken(state.token1.address)
+      ).to.be.fulfilled;
+
+      inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(inWhiteList).to.be.equal(true);
+
+      inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(inWhiteList).to.be.equal(false);
+
+      // only owner can batch add existing bridge token
+      await expect(
+        state.bridgeBank
+          .connect(userOne)
+          .batchAddExistingBridgeTokens([state.token2.address])
+      ).to.be.revertedWith("!owner");
+
+      await expect(
+        state.bridgeBank
+          .connect(owner)
+          .batchAddExistingBridgeTokens([state.token2.address])
+      ).to.be.fulfilled;
+
+      inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(inWhiteList).to.be.equal(true);
+    });
   });
 });
