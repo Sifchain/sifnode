@@ -1,3 +1,4 @@
+import argparse
 import sys
 import time
 
@@ -5,6 +6,17 @@ from siftool import test_utils
 from siftool.run_env import Integrator, UIStackEnvironment, Peggy2Environment, IBCEnvironment, IntegrationTestsEnvironment
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
+
+
+def wait_for_enter_key_pressed():
+    try:
+        input("Press ENTER to exit...")
+    except EOFError:
+        log = logging.getLogger(__name__)
+        log.error("Cannot wait for ENTER keypress since standard input is closed. Instead, this program will now wait "
+            "for 100 years and you will have to kill it manually. If you get this message when running in recent "
+            "versions of pycharm, enable 'Emulate terminal in output console' in run configuration.")
+        time.sleep(3155760000)
 
 
 def main(argv):
@@ -19,6 +31,7 @@ def main(argv):
     what = argv[0] if argv else None
     cmd = Integrator()
     project = cmd.project
+    argparser = argparse.ArgumentParser()
     if what == "project-init":
         project.init()
     elif what == "clean":
@@ -34,10 +47,26 @@ def main(argv):
         e.stack_save_snapshot()
         e.stack_push()
     elif what == "run-env":
+        project.clean_run_env_state()
         if on_peggy2_branch:
+            argparser.add_argument("--test-denom-count", type=int)
+            argparser.add_argument("--geth", action="store_true", default=False)
+            argparser.add_argument("--witness-count", type=int)
+            argparser.add_argument("--consensus-threshold", type=int)
+            args = argparser.parse_args(argv[1:])
             # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
             # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             env = Peggy2Environment(cmd)
+            witness_count = args.witness_count if args.witness_count is not None else os.getenv("WITNESS_COUNT")
+            if witness_count is not None:
+                env.witness_count = witness_count
+            consensus_threshold = args.consensus_threshold if args.consensus_threshold is not None \
+                else os.getenv("CONSENSUS_THRESHOLD")
+            if consensus_threshold is not None:
+                env.consensus_threshold = consensus_threshold
+            if args.test_denom_count is not None:
+                env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
+            env.use_geth_instead_of_hardhat = args.geth
             processes = env.run()
         else:
             env = IntegrationTestsEnvironment(cmd)
@@ -50,7 +79,7 @@ def main(argv):
             # - If you ran the execute_integration_test_*.sh you need to kill ganache-cli for proper cleanup
             #   as it might have been killed and started outside of our control
         if not in_github_ci:
-            input("Press ENTER to exit...")
+            wait_for_enter_key_pressed()
             killall(processes)
     elif what == "devenv":
         project.npx(["hardhat", "run", "scripts/devenv.ts"], cwd=project.smart_contracts_dir, pipe=False)
@@ -71,7 +100,7 @@ def main(argv):
         env = IntegrationTestsEnvironment(cmd)
         env.restore_snapshot(snapshot_name)
         processes = env.restart_processes()
-        input("Press ENTER to exit...")
+        wait_for_enter_key_pressed()
         killall(processes)
     elif what == "run-ibc-env":
         env = IBCEnvironment(cmd)
@@ -111,15 +140,25 @@ def main(argv):
             for expected_addr, private_key in hardhat.default_accounts():
                 addr = g.create_account("password", private_key, datadir=datadir_for_keys)
                 assert addr == expected_addr
-            input("Press ENTER to exit...")
+            wait_for_enter_key_pressed()
             killall((geth_proc,))
     elif what == "inflate-tokens":
-        import inflate_tokens
+        from siftool import inflate_tokens
         inflate_tokens.run(*argv[1:])
     elif what == "recover-eth":
         test_utils.recover_eth_from_test_accounts()
     elif what == "run-peggy2-tests":
-        cmd.execst(["yarn", "test"], cwd=project.smart_contracts_dir)
+        import glob
+        from siftool.hardhat import Hardhat, default_accounts
+        test_files = \
+            glob.glob(os.path.join(project.smart_contracts_dir, "test", "*.js")) + \
+            glob.glob(os.path.join(project.smart_contracts_dir, "test", "*.ts"))
+        hardhat = Hardhat(cmd)
+        # Running tests against geth is not working yet
+        # hardhat_accounts = [private_key for _, private_key in default_accounts()]
+        # script_runner = hardhat.script_runner("http://localhost:8545/", network="geth", accounts=hardhat_accounts)
+        script_runner = hardhat.script_runner()
+        script_runner.test(test_files)
     elif what == "generate-python-protobuf-stubs":
         project.generate_python_protobuf_stubs()
     elif what == "localnet":
@@ -128,6 +167,14 @@ def main(argv):
     elif what == "download-ibc-binaries":
         import localnet
         localnet.download_ibc_binaries(cmd, *argv[1:])
+    elif what == "geth":
+        import siftool.geth, siftool.eth
+        geth = siftool.geth.Geth(cmd)
+        datadir = os.path.join(os.environ["HOME"], ".siftool-geth")
+        datadir = None
+        signer_addr, signer_private_key = siftool.eth.web3_create_account()
+        ethereum_chain_id = 9999
+        geth.init(ethereum_chain_id, [signer_addr], datadir)
     else:
         raise Exception("Missing/unknown command")
 
