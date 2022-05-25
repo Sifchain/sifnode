@@ -21,7 +21,7 @@ enum Permission {
 }
 
 message RegistryEntry {
-  bool is_whitelisted = 1;
+  reserved 1;
   int64 decimals = 2;
   string denom = 3;
   string base_denom = 4;
