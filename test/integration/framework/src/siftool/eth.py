@@ -30,7 +30,7 @@ def web3_create_account():
     return account.address, account.key.hex()[2:]
 
 def web3_connect(url: str) -> web3.Web3:
-    if url.startswith("ws://"):
+    if url.startswith("ws://") or url.startswith("wss://"):
         return web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
     elif url.startswith("http://"):
         return web3.Web3(web3.Web3.HTTPProvider(url))
