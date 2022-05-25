@@ -15,7 +15,7 @@ const (
 	ProphecyLifeTime = 520000
 	// Max prophecy returned in one query
 	MaxProphecyQueryResult = 10
-	// Clean up outdated prophecies every 1024 blocks
+	// Clean up outdated prophecies every 1000 blocks
 	CleanUpFrequency = 1000
 )
 
