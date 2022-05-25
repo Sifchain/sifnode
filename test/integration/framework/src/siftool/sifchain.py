@@ -8,6 +8,10 @@ from typing import Mapping, Any, Tuple, AnyStr
 from siftool import command, cosmos, eth
 from siftool.common import *
 
+
+log = siftool_logger(__name__)
+
+
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")

@@ -31,6 +31,7 @@ def main(argv):
     what = argv[0] if argv else None
     cmd = Integrator()
     project = cmd.project
+    log = siftool_logger(__name__)
     argparser = argparse.ArgumentParser()
     if what == "project-init":
         project.init()

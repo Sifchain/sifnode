@@ -4,6 +4,9 @@ from siftool.command import Command, ExecResult
 from siftool.common import *
 
 
+log = siftool_logger(__name__)
+
+
 def force_kill_processes(cmd):
     cmd.execst(["pkill", "node"], check_exit=False)
     cmd.execst(["pkill", "ebrelayer"], check_exit=False)

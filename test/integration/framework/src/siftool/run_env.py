@@ -15,6 +15,9 @@ from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
 
 
+log = siftool_logger(__name__)
+
+
 class Integrator(Ganache, Command):
     def __init__(self):
         super().__init__()  # TODO Which super is this? All of them?

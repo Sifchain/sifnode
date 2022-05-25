@@ -16,7 +16,7 @@ MIN_TX_GAS = 21000
 Address = eth_typing.AnyAddress
 PrivateKey = eth_typing.HexStr
 
-log = logging.getLogger(__name__)
+log = siftool_logger(__name__)
 
 
 def web3_ropsten_alchemy_url(alchemy_id: str) -> str:

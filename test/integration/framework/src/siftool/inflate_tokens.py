@@ -3,19 +3,18 @@
 # See https://www.notion.so/sifchain/TEST-TOKEN-DISTRIBUTION-PROCESS-41ad0861560c4be58918838dbd292497
 
 import json
-import logging
 import re
 
 from siftool import eth, test_utils
 from siftool.common import *
 
-log = logging.getLogger(__name__)
+log = siftool_logger(__name__)
 
 
 class InflateTokens:
     def __init__(self, ctx):
         self.ctx = ctx
-        self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 mins
+        self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 min = 1200 s
         self.excluded_token_symbols = ["erowan"]
 
         # Only transfer this tokens in a batch for Peggy1. See #2397. You would need to adjust this if
@@ -51,7 +50,7 @@ class InflateTokens:
             m = ibc_pattern.match(token_symbol)
             if m:
                 token["ibc"] = m[1].lower()
-            log.debug("Whitelisted entry: {}".format(repr(token_data)))
+            log.debug("Found whitelisted entry: {}".format(repr(token_data)))
             assert token_symbol not in result, f"Symbol {token_symbol} is being used by more than one whitelisted token"
             result.append(token)
         erowan_token = [t for t in result if t["symbol"] == "erowan"]
@@ -172,7 +171,7 @@ class InflateTokens:
         self.ctx.advance_blocks()
         log.info("Ethereum blocks advanced by {}".format(self.ctx.eth.w3_conn.eth.block_number - previous_block))
         self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
-            polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+            polling_time=5, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
     # Distributes from intermediate_sif_account to each individual account
     def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):

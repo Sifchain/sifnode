@@ -21,6 +21,9 @@ ROWAN = "rowan"
 
 sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
 
+log = siftool_logger(__name__)
+
+
 # This is called from test fixture and will optionally set a snapshot to run the test in.
 def get_test_env_ctx(snapshot_name=None):
     assert snapshot_name is None, "Not implemented yet"
@@ -655,6 +658,7 @@ class EnvCtx:
 
     # from_sif_addr has to be the address which was used at genesis time for "set-genesis-whitelister-admin".
     # You need to have its private key in the test keyring.
+    # This is needed when creating pools for the token or when doing IBC transfers.
     def token_registry_register(self, address, symbol, token_name, decimals, from_sif_addr):
         # Check that we have the private key in test keyring. This will throw an exception if we don't.
         self.cmd.sifnoded_keys_show(from_sif_addr)

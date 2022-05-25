@@ -8,7 +8,6 @@ import yaml
 import urllib.request
 from typing import Optional, Mapping, Sequence, IO, Union
 
-log = logging.getLogger(__name__)
 
 ANY_ADDR = "0.0.0.0"
 
@@ -83,7 +82,7 @@ def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[
     if env:
         env = dict_merge(os.environ, env)
     if not disable_log:
-        log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+        __log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 def dict_merge(*dicts, override=True):
@@ -114,6 +113,11 @@ def basic_logging_setup():
     # logging.getLogger(__name__).setLevel(logging.DEBUG)
     disable_noisy_loggers()
 
+def siftool_logger(name: Optional[str] = None):
+    if name is not None:
+        name = name[name.rfind(".") + 1:]
+    return logging.getLogger(name)
+
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
 # 'You are very late!'
@@ -130,3 +134,6 @@ def template_transform(s, d):
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
 
 in_github_ci = (os.environ.get("CI") == "true") and os.environ.get("GITHUB_REPOSITORY") and os.environ.get("GITHUB_RUN_ID")
+
+# Make log variable private since it's this module is commonly imported as "*"
+__log = siftool_logger(__name__)
