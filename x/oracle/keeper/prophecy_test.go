@@ -16,9 +16,9 @@ func TestProphecy(t *testing.T) {
 	networkDescriptor := types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 	cosmosSender := "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 	cosmosSenderSequence := uint64(1)
-	ethereumReceiver := "0x0000000000000000000000000000000000000000"
+	ethereumReceiver := "0x0000000000000000000000000000000000000001"
 	tokenDenomHash := "rowan"
-	tokenContractAddress := "0x0000000000000000000000000000000000000000"
+	tokenContractAddress := "0x0000000000000000000000000000000000000002"
 	tokenAmount := sdk.NewInt(1)
 	crosschainFee := sdk.NewInt(1)
 	bridgeToken := true
@@ -119,9 +119,9 @@ func TestDeleteProphecyInfo(t *testing.T) {
 	networkDescriptor := types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 	cosmosSender := "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 	cosmosSenderSequence := uint64(1)
-	ethereumReceiver := "0x0000000000000000000000000000000000000000"
+	ethereumReceiver := "0x0000000000000000000000000000000000000003"
 	tokenDenomHash := "rowan"
-	tokenContractAddress := "0x0000000000000000000000000000000000000000"
+	tokenContractAddress := "0x0000000000000000000000000000000000000004"
 	tokenAmount := sdk.NewInt(1)
 	crosschainFee := sdk.NewInt(1)
 	bridgeToken := true
