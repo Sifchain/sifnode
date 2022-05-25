@@ -1,5 +1,5 @@
 import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand"
-import { DeployedContractAddresses } from "../../scripts/deploy_contracts"
+import { DeployedContractAddresses } from "../../scripts/deploy_contracts_dev"
 
 export class SmartContractDeployResult extends SynchronousCommandResult {
   constructor(

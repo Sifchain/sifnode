@@ -13,44 +13,51 @@ import (
 	bridgeregistry "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol"
 )
 
-// TODO: Update BridgeRegistry contract so that all bridge contract addresses can be queried
-//		in one transaction. Then refactor ContractRegistry to a map and store it under new
-//		Relayer struct.
-
 // ContractRegistry is an enum for the bridge contract types
 type ContractRegistry byte
 
 const (
-	// Valset valset contract
-	Valset ContractRegistry = iota + 1
-	// Oracle oracle contract
-	Oracle
 	// BridgeBank bridgeBank contract
-	BridgeBank
+	BridgeBank ContractRegistry = iota + 1
 	// CosmosBridge cosmosBridge contract
 	CosmosBridge
 )
 
+var bridgeBankAddress = common.HexToAddress(nullAddress)
+var cosmosBridgeAddress = common.HexToAddress(nullAddress)
+
 // String returns the event type as a string
 func (d ContractRegistry) String() string {
-	return [...]string{"valset", "oracle", "bridgebank", "cosmosbridge"}[d-1]
+	return [...]string{"bridgebank", "cosmosbridge"}[d-1]
 }
 
 // GetAddressFromBridgeRegistry queries the requested contract address from the BridgeRegistry contract
 func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Address, target ContractRegistry,
 	sugaredLogger *zap.SugaredLogger) (common.Address, error) {
+	// Return address if already got and stored
+	switch target {
+	case BridgeBank:
+		if bridgeBankAddress.Hex() != nullAddress {
+			return bridgeBankAddress, nil
+		}
+	case CosmosBridge:
+		if cosmosBridgeAddress.Hex() != nullAddress {
+			return cosmosBridgeAddress, nil
+		}
+	default:
+		panic("invalid target contract address")
+	}
+
+	// load sender for query
 	sender, err := LoadSender()
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get sender", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get header", errorMessageKey, err.Error())
-
 		return common.Address{}, err
 	}
 
@@ -65,27 +72,30 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	// Initialize BridgeRegistry instance
 	registryInstance, err := bridgeregistry.NewBridgeRegistry(registry, client)
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get registry contract address", errorMessageKey, err.Error())
-
 		return common.Address{}, err
 	}
 
-	var address common.Address
+	address, err := registryInstance.BridgeBank(&auth)
+	if err != nil {
+		sugaredLogger.Errorw("failed to get bridge bank address from registry", errorMessageKey, err.Error())
+		return common.Address{}, err
+	}
+	bridgeBankAddress = address
+
+	address, err = registryInstance.CosmosBridge(&auth)
+	if err != nil {
+		sugaredLogger.Errorw("failed to get cosmos bridge address from registry", errorMessageKey, err.Error())
+		return common.Address{}, err
+	}
+	cosmosBridgeAddress = address
+
 	switch target {
 	case BridgeBank:
-		address, err = registryInstance.BridgeBank(&auth)
+		return bridgeBankAddress, nil
 	case CosmosBridge:
-		address, err = registryInstance.CosmosBridge(&auth)
+		return cosmosBridgeAddress, nil
 	default:
 		panic("invalid target contract address")
 	}
-
-	if err != nil {
-		// log.Println(err)
-		sugaredLogger.Errorw("failed to get contract address from registry", errorMessageKey, err.Error())
-		return common.Address{}, err
-	}
-
-	return address, nil
 }
