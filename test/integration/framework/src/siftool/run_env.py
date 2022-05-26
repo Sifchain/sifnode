@@ -4,6 +4,7 @@ import re
 import time
 from typing import List, Tuple, TextIO, Any
 
+import siftool.eth
 from siftool import eth, cosmos, command
 from siftool.hardhat import Hardhat, default_accounts as hardhat_default_accounts
 from siftool.geth import Geth
@@ -856,8 +857,12 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         operator_addr, operator_private_key = operator_acct
 
         files_to_delete = []
+        manual_funds_alloc = None
+        special_web3py_middleware_required = False
         try:
             if self.use_geth_instead_of_hardhat:
+                geth_dev_mode = True
+                special_web3py_middleware_required = geth_dev_mode
                 # EnvCtx takes environment "ETH_ACCOUNT_OWNER_ADDRESS" for funding ETH accounts which is set from
                 # hardhat_accounts["owner"] Smart contract delpoyment however needs funds on 0'th account which is the
                 # operator. For now we fund both. TODO cleanup, allocate all ether to make EnvCtx fund accounts from ETH_ACCOUNT_OPERATOR_ADDRESS
@@ -866,10 +871,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     [hardhat_accounts[who][0] for who in ["owner", "operator"]] + \
                     [acct[0] for acct in hardhat_accounts["validators"]]
                 funds_alloc = {addr: 1000 * eth.ETH for addr in accounts_to_fund}
-                funds_alloc = {acct[0]: 1000 * eth.ETH for acct in sample_eth_accounts}
-                # geth needs at least one account to run, it has to be unlocked, but doesn't have to be funded.
-                geth_runner_acct = operator_acct
-                geth_runner_password = ""
+                # funds_alloc = {acct[0]: 1000 * eth.ETH for acct in sample_eth_accounts}
                 geth_http_port = 8546
                 geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
                 geth_datadir = self.cmd.tmpdir("geth")  # TODO self.cmd.mktempdir()
@@ -877,16 +879,33 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 self.cmd.rmdir(geth_datadir)
                 self.cmd.mkdir(geth_datadir)
                 geth = Geth(self.cmd, datadir=geth_datadir)
-                geth.create_account(geth_runner_acct[1], password=geth_runner_password)
-                geth.init(ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc, block_mining_period=1)
-                tmp_password_file = self.cmd.mktempfile()
+                if geth_dev_mode:
+                    # "geth --dev" runs a proof-of-authority chain with on-demand mining and zero gas price.
+                    # See https://geth.ethereum.org/docs/getting-started/dev-mode for more information about it.
+                    # Unfortunately, there is no standard for connecting to such chains, so we need to inject a custom
+                    # middleware into every web3py connection.
+                    # See https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
+                    # Also unfortunately, this mode seems to be incompatible with ebrelayer which waits for 50 blocks
+                    # to process transaction, while "geth --dev" mode will only mine blocks on demand => deadlock.
+                    geth_run_args = geth.buid_run_args(ethereum_chain_id, dev=True, http_port=geth_http_port,
+                        ws_port=geth_ws_port, mine=True, allow_insecure_unlock=True, rpc_allow_unprotected_txs=True)
+                    manual_funds_alloc = funds_alloc
+                else:
+                    # geth needs at least one account to run, it has to be unlocked, but doesn't have to be funded.
+                    geth_runner_acct = operator_acct
+                    geth_runner_password = ""
+                    geth.create_account(geth_runner_acct[1], password=geth_runner_password)
+                    if not geth_dev_mode:
+                        geth.init(ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc, block_mining_period=1)
+                    tmp_password_file = self.cmd.mktempfile()
+                    files_to_delete.append(tmp_password_file)
+                    self.cmd.write_text_file(tmp_password_file, geth_runner_password)
+                    # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
+                    #      transactions allowed over RPC" when sending transactions
+                    geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
+                        mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
+                        rpc_allow_unprotected_txs=True, dev=geth_dev_mode)
 
-                self.cmd.write_text_file(tmp_password_file, geth_runner_password)
-                # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
-                #      transactions allowed over RPC" when sending transactions
-                geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
-                    mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
-                    rpc_allow_unprotected_txs=True)
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
 
                 hardhat_proc = geth_proc
@@ -911,7 +930,18 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 smart_contract_accounts = None  # Provided by hardhat (hardcoded)
                 relayer_extra_args = {}
 
-            w3_conn = eth.web3_wait_for_connection_up(w3_url)
+            w3_conn = eth.web3_connect(w3_url, geth_dev_mode=special_web3py_middleware_required)
+            w3_conn = eth.web3_wait_for_connection_up(w3_conn)
+
+            # In dev mode, funds are not allocated in genesis file, but they need to be distributed from eth.coinbase.
+            # Since we don't have coinbase's account, we have to use the "unlocked account" transction.
+            if manual_funds_alloc:
+                coinbase = w3_conn.eth.coinbase
+                log.debug("Ethereum coinbase address: {}".format(coinbase))
+                for addr, amount in manual_funds_alloc.items():
+                    txhash = w3_conn.eth.send_transaction({"from": coinbase, "to": addr, "value": amount})
+                    w3_conn.eth.wait_for_transaction_receipt(txhash)
+
             balances_check = {a[0]: w3_conn.eth.get_balance(a[0]) for a in sample_eth_accounts}
             assert balances_check[hardhat_accounts["owner"][0]] >= 1 * eth.ETH
             assert balances_check[hardhat_accounts["operator"][0]] >= 1 * eth.ETH

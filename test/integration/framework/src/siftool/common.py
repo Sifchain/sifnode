@@ -114,8 +114,9 @@ def basic_logging_setup():
     disable_noisy_loggers()
 
 def siftool_logger(name: Optional[str] = None):
-    if name is not None:
-        name = name[name.rfind(".") + 1:]
+    # Shortening "siftool.eth" to "eth" results in a name clash with "eth" dependencies for which we want to disable logging...
+    # if name is not None:
+    #     name = name[name.rfind(".") + 1:]
     return logging.getLogger(name)
 
 # Recursively transforms template strings containing "${VALUE}". Example:

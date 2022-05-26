@@ -29,17 +29,24 @@ def web3_create_account():
     account = web3.Web3().eth.account.create()
     return account.address, account.key.hex()[2:]
 
-def web3_connect(url: str) -> web3.Web3:
+def web3_connect(url: str, geth_dev_mode: bool = False) -> web3.Web3:
     if url.startswith("ws://") or url.startswith("wss://"):
-        return web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
+        w3_conn = web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
     elif url.startswith("http://"):
-        return web3.Web3(web3.Web3.HTTPProvider(url))
+        w3_conn = web3.Web3(web3.Web3.HTTPProvider(url))
     else:
         raise Exception("Invalid web3 URL '{}', at the moment only http:// and ws:// are supported.".format(url))
+    if geth_dev_mode:
+        # https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
+        from web3.middleware import geth_poa_middleware
+        # inject the poa compatibility middleware to the innermost layer
+        w3_conn.middleware_onion.inject(geth_poa_middleware, layer=0)
+        # confirm that the connection succeeded
+        # log.debug("Injected custom middleware for 'geth --dev' connection: {}".format(w3_conn.clientVersion))
+    return w3_conn
 
-def web3_wait_for_connection_up(url: str, polling_time: int = 1, timeout: int = 90):
+def web3_wait_for_connection_up(w3_conn: web3.Web3, polling_time: int = 1, timeout: int = 90):
     start_time = time.time()
-    w3_conn = web3_connect(url)
     while True:
         try:
             w3_conn.eth.block_number
@@ -48,7 +55,7 @@ def web3_wait_for_connection_up(url: str, polling_time: int = 1, timeout: int = 
             pass
         now = time.time()
         if now - start_time > timeout:
-            raise Exception(f"Timeout when trying to connect to {url}")
+            raise Exception("Timeout when trying to connect to {}".format(w3_conn.provider.endpoint_uri))
         time.sleep(polling_time)
 
 def validate_address_and_private_key(addr: Optional[Address], private_key: PrivateKey
