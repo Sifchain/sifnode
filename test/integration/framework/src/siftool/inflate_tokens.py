@@ -270,6 +270,13 @@ class InflateTokens:
             self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, total_token_amount, total_eth_amount_gwei)
         self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, token_amount, target_sif_accounts, eth_amount_gwei)
 
+        log.info("Done.")
+        log.info("To see newly minted tokens in UI, you need to edit 'scripts/ibc/tokenregistry/generate-erc20-jsons.sh' "
+            "and add any tokens that are not already there. Then cd into the directory and run './generate-erc20-jsons.sh devnet' "\
+            "and commit the results in the sifchain-devnet-1 folder. @tim will pick up the PR and register it on "
+            "devnet by running './register-one.sh' with the registry key. In the future this might be open for anybody "
+            "to do on their own for devnet and testnet.")
+
     def transfer_eth(self, from_eth_addr, amount_gwei, target_sif_accounts):
         pending_txs = []
         for sif_acct in target_sif_accounts:
