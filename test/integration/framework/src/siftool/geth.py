@@ -163,9 +163,10 @@ class Geth:
         #     --http --http.addr 0.0.0.0 --http.port 7990 --http.api personal,eth,net,web3,debug \
         #     --rpc.allow-unprotected-txs \
         #     --dev --dev.period 1 --rpcvhosts=* --mine --miner.threads=1
-        return self.geth_cmd(datadir=datadir, network_id=3, ipcpath="/tmp/geth.ipc", ws=True, ws_addr=ANY_ADDR,
-            ws_port=8646, http=True, http_addr=ANY_ADDR, http_port=7990, http_api=("personal", "eth", "net", "web3", "debug"),
-            rpc_allow_unprotected_txs=True, dev=True, dev_period=1, mine=True, miner_threads=1)
+        return self.geth_cmd(datadir=datadir, network_id=3, ipcpath=self.cmd.tmpdir("geth.ipc"), ws=True,
+            ws_addr=ANY_ADDR, ws_port=8646, http=True, http_addr=ANY_ADDR, http_port=7990,
+            http_api=("personal", "eth", "net", "web3", "debug"), rpc_allow_unprotected_txs=True, dev=True,
+            dev_period=1, mine=True, miner_threads=1)
 
     # </editor-fold>
 

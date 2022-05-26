@@ -510,7 +510,7 @@ class IntegrationTestsEnvironment:
 
         self.prepare()
 
-        log_dir = "/tmp/sifnode"
+        log_dir = self.cmd.tmpdir("sifnode")
         self.cmd.mkdir(log_dir)
         ganache_log_file = open(os.path.join(log_dir, "ganache.log"), "w")  # TODO close
         sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
@@ -815,7 +815,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         # TODO: where is log watcher?
 
-        log_dir = "/tmp/sifnode"
+        log_dir = self.cmd.tmpdir("sifnode")
         self.cmd.mkdir(log_dir)
         hardhat_log_file = open(os.path.join(log_dir, "hardhat.log"), "w")  # TODO close + use a different name
         sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
@@ -872,7 +872,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 geth_runner_password = ""
                 geth_http_port = 8546
                 geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
-                geth_datadir = "/tmp/geth"  # TODO self.cmd.mktempdir()
+                geth_datadir = self.cmd.tmpdir("geth")  # TODO self.cmd.mktempdir()
                 w3_url = eth.web3_host_port_url("localhost", geth_ws_port)
                 self.cmd.rmdir(geth_datadir)
                 self.cmd.mkdir(geth_datadir)
@@ -953,7 +953,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             "sifBridge00030x1111111111111111111111111111111111111111": 10 ** 16,
         }
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
-        sifnoded_network_dir = "/tmp/sifnodedNetwork"  # Gets written to .vscode/launch.json
+        sifnoded_network_dir = self.cmd.tmpdir("sifnodedNetwork")  # Gets written to .vscode/launch.json
         self.cmd.rmdir(sifnoded_network_dir)
         self.cmd.mkdir(sifnoded_network_dir)
         network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, sifnode_validators, \
