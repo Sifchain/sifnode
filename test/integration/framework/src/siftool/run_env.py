@@ -858,11 +858,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         files_to_delete = []
         manual_funds_alloc = None
-        special_web3py_middleware_required = False
         try:
             if self.use_geth_instead_of_hardhat:
                 geth_dev_mode = True
-                special_web3py_middleware_required = geth_dev_mode
                 # EnvCtx takes environment "ETH_ACCOUNT_OWNER_ADDRESS" for funding ETH accounts which is set from
                 # hardhat_accounts["owner"] Smart contract delpoyment however needs funds on 0'th account which is the
                 # operator. For now we fund both. TODO cleanup, allocate all ether to make EnvCtx fund accounts from ETH_ACCOUNT_OPERATOR_ADDRESS
@@ -871,7 +869,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     [hardhat_accounts[who][0] for who in ["owner", "operator"]] + \
                     [acct[0] for acct in hardhat_accounts["validators"]]
                 funds_alloc = {addr: 1000 * eth.ETH for addr in accounts_to_fund}
-                # funds_alloc = {acct[0]: 1000 * eth.ETH for acct in sample_eth_accounts}
                 geth_http_port = 8546
                 geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
                 geth_datadir = self.cmd.tmpdir("geth")  # TODO self.cmd.mktempdir()
@@ -882,8 +879,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 if geth_dev_mode:
                     # "geth --dev" runs a proof-of-authority chain with on-demand mining and zero gas price.
                     # See https://geth.ethereum.org/docs/getting-started/dev-mode for more information about it.
-                    # Unfortunately, there is no standard for connecting to such chains, so we need to inject a custom
-                    # middleware into every web3py connection.
+                    # Unfortunately, there is no standard for connecting to such PoA chains, so we need to inject a
+                    # custom middleware into every web3py connection. It seems that this is only needed if we use
+                    # eth.sendTransaction(), but not for eth.sendRawTransaction(), so we only use it below, while
+                    # connections from test_utils and TypeScript still work without this.
                     # See https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
                     # Also unfortunately, this mode seems to be incompatible with ebrelayer which waits for 50 blocks
                     # to process transaction, while "geth --dev" mode will only mine blocks on demand => deadlock.
@@ -904,7 +903,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     #      transactions allowed over RPC" when sending transactions
                     geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
                         mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
-                        rpc_allow_unprotected_txs=True, dev=geth_dev_mode)
+                        rpc_allow_unprotected_txs=True)
 
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
 
@@ -930,12 +929,14 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 smart_contract_accounts = None  # Provided by hardhat (hardcoded)
                 relayer_extra_args = {}
 
-            w3_conn = eth.web3_connect(w3_url, geth_dev_mode=special_web3py_middleware_required)
+            w3_conn = eth.web3_connect(w3_url)
             w3_conn = eth.web3_wait_for_connection_up(w3_conn)
 
-            # In dev mode, funds are not allocated in genesis file, but they need to be distributed from eth.coinbase.
-            # Since we don't have coinbase's account, we have to use the "unlocked account" transction.
+            # In "geth --dev" mode, funds are not allocated in genesis file, but they need to be manually funded from
+            # eth.coinbase. Since we don't have coinbase's private key, we have to use the "local account" API for
+            # signing transaction. Special PoA middleware is required for implictly signed transaction (see above).
             if manual_funds_alloc:
+                eth.web3_inject_geth_poa_middleware(w3_conn)
                 coinbase = w3_conn.eth.coinbase
                 log.debug("Ethereum coinbase address: {}".format(coinbase))
                 for addr, amount in manual_funds_alloc.items():

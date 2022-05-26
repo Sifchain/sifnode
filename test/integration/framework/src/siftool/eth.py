@@ -29,21 +29,21 @@ def web3_create_account():
     account = web3.Web3().eth.account.create()
     return account.address, account.key.hex()[2:]
 
-def web3_connect(url: str, geth_dev_mode: bool = False) -> web3.Web3:
+def web3_connect(url: str) -> web3.Web3:
     if url.startswith("ws://") or url.startswith("wss://"):
-        w3_conn = web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
+        return web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
     elif url.startswith("http://"):
-        w3_conn = web3.Web3(web3.Web3.HTTPProvider(url))
+        return web3.Web3(web3.Web3.HTTPProvider(url))
     else:
         raise Exception("Invalid web3 URL '{}', at the moment only http:// and ws:// are supported.".format(url))
-    if geth_dev_mode:
-        # https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
-        from web3.middleware import geth_poa_middleware
-        # inject the poa compatibility middleware to the innermost layer
-        w3_conn.middleware_onion.inject(geth_poa_middleware, layer=0)
-        # confirm that the connection succeeded
-        # log.debug("Injected custom middleware for 'geth --dev' connection: {}".format(w3_conn.clientVersion))
-    return w3_conn
+
+def web3_inject_geth_poa_middleware(w3_conn: web3.Web3):
+    # https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
+    from web3.middleware import geth_poa_middleware
+    # inject the poa compatibility middleware to the innermost layer
+    w3_conn.middleware_onion.inject(geth_poa_middleware, layer=0)
+    # confirm that the connection succeeded
+    # log.debug("Injected custom middleware for 'geth --dev' connection: {}".format(w3_conn.clientVersion))
 
 def web3_wait_for_connection_up(w3_conn: web3.Web3, polling_time: int = 1, timeout: int = 90):
     start_time = time.time()
