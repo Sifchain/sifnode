@@ -494,6 +494,7 @@ func (m *ProphecyInfo) GetSignatures() []string {
 	return nil
 }
 
+// ConsensusNeeded threshold for prophocy finalization
 type ConsensusNeeded struct {
 	ConsensusNeeded uint32 `protobuf:"varint,1,opt,name=consensus_needed,json=consensusNeeded,proto3" json:"consensus_needed,omitempty"`
 }
@@ -538,6 +539,7 @@ func (m *ConsensusNeeded) GetConsensusNeeded() uint32 {
 	return 0
 }
 
+// LockBurnNonceKey the key for LockBurnNonce used in sifnode keeper
 type LockBurnNonceKey struct {
 	NetworkDescriptor NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
 	ValidatorAddress  []byte            `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
@@ -590,6 +592,7 @@ func (m *LockBurnNonceKey) GetValidatorAddress() []byte {
 	return nil
 }
 
+// LockBurnNonce the value stored in the sifnode keeper
 type LockBurnNonce struct {
 	LockBurnNonce uint64 `protobuf:"varint,1,opt,name=lock_burn_nonce,json=lockBurnNonce,proto3" json:"lock_burn_nonce,omitempty"`
 }
@@ -634,7 +637,7 @@ func (m *LockBurnNonce) GetLockBurnNonce() uint64 {
 	return 0
 }
 
-// Global sequence
+// GlobalSequenceKey the key for GlobalSequence used in sifnode keeper
 type GlobalSequenceKey struct {
 	NetworkDescriptor NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
 	GlobalSequence    uint64            `protobuf:"varint,2,opt,name=global_sequence,json=globalSequence,proto3" json:"global_sequence,omitempty"`
@@ -687,6 +690,7 @@ func (m *GlobalSequenceKey) GetGlobalSequence() uint64 {
 	return 0
 }
 
+// GlobalSequence the value stored in sifnode keeper
 type GlobalSequence struct {
 	GlobalSequence uint64 `protobuf:"varint,1,opt,name=global_sequence,json=globalSequence,proto3" json:"global_sequence,omitempty"`
 }
@@ -731,6 +735,7 @@ func (m *GlobalSequence) GetGlobalSequence() uint64 {
 	return 0
 }
 
+// BlockNumber is value stored in sifnode keeper
 type BlockNumber struct {
 	BlockNumber uint64 `protobuf:"varint,1,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
 }

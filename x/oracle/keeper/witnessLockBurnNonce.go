@@ -44,6 +44,5 @@ func (k Keeper) GetWitnessLockBurnSequencePrefix(networkDescriptor types.Network
 		ValidatorAddress:  valAccount,
 	})
 
-	tmpKey := append(types.WitnessLockBurnNoncePrefix, bs[:]...)
-	return append(tmpKey, valAccount...)
+	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
 }

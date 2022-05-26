@@ -37,7 +37,7 @@ func GetFromPrefix(cdc codec.BinaryCodec, key []byte) (NetworkIdentity, error) {
 	// check the key which correct prefix
 	if bytes.HasPrefix(key, WhiteListValidatorPrefix) {
 		var networkIdentity NetworkIdentity
-		err := cdc.Unmarshal(key[1:], &networkIdentity)
+		err := cdc.Unmarshal(key[len(WhiteListValidatorPrefix):], &networkIdentity)
 
 		if err == nil {
 			return networkIdentity, nil

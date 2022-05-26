@@ -97,19 +97,26 @@ message ProphecyInfo {
   repeated string signatures = 17;
 }
 
+// ConsensusNeeded threshold for prophocy finalization
 message ConsensusNeeded { uint32 consensus_needed = 1; }
 
+// LockBurnNonceKey the key for LockBurnNonce used in sifnode keeper
 message LockBurnNonceKey {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   bytes validator_address = 2;
 }
+
+// LockBurnNonce the value stored in the sifnode keeper
 message LockBurnNonce { uint64 lock_burn_nonce = 1; }
 
-// Global sequence
+// GlobalSequenceKey the key for GlobalSequence used in sifnode keeper
 message GlobalSequenceKey {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   uint64 global_sequence = 2;
 }
 
+// GlobalSequence the value stored in sifnode keeper
 message GlobalSequence { uint64 global_sequence = 1; }
+
+// BlockNumber is value stored in sifnode keeper
 message BlockNumber { uint64 block_number = 1; }
