@@ -96,3 +96,20 @@ message ProphecyInfo {
   repeated string ethereum_address = 16;
   repeated string signatures = 17;
 }
+
+message ConsensusNeeded { uint32 consensus_needed = 1; }
+
+message LockBurnNonceKey {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  bytes validator_address = 2;
+}
+message LockBurnNonce { uint64 lock_burn_nonce = 1; }
+
+// Global sequence
+message GlobalSequenceKey {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_sequence = 2;
+}
+
+message GlobalSequence { uint64 global_sequence = 1; }
+message BlockNumber { uint64 block_number = 1; }

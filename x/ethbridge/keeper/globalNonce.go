@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
-
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -20,10 +18,10 @@ func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes
 		return uint64(1)
 	}
 
-	value := store.Get(prefix)
-	globalNonce := binary.LittleEndian.Uint64(value)
+	var globalSequence oracletypes.GlobalSequence
+	k.cdc.MustUnmarshal(store.Get(prefix), &globalSequence)
 
-	return globalNonce
+	return globalSequence.GlobalSequence
 }
 
 // UpdateGlobalSequence get current global nonce and update it
@@ -32,13 +30,13 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	blockNumber uint64) {
 	prefix := k.getGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
+	globalSequence := k.GetGlobalSequence(ctx, networkDescriptor)
 
-	globalNonce := k.GetGlobalSequence(ctx, networkDescriptor)
-
-	bs := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, globalNonce+1)
+	bs := k.cdc.MustMarshal(&oracletypes.GlobalSequence{
+		GlobalSequence: globalSequence + 1,
+	})
 	store.Set(prefix, bs)
-	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonce, blockNumber)
+	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalSequence, blockNumber)
 }
 
 // getGlobalSequencePrefix compute the prefix
@@ -61,8 +59,10 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 		return uint64(0)
 	}
 
-	value := store.Get(prefix)
-	return binary.LittleEndian.Uint64(value)
+	var blockNumber oracletypes.BlockNumber
+
+	k.cdc.MustUnmarshal(store.Get(prefix), &blockNumber)
+	return blockNumber.BlockNumber
 }
 
 // SetGlobalSequenceToBlockNumber
@@ -75,8 +75,9 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 	store := ctx.KVStore(k.storeKey)
 	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
 
-	bs := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, blockNumber)
+	bs := k.cdc.MustMarshal(&oracletypes.BlockNumber{
+		BlockNumber: blockNumber,
+	})
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetGlobalSequenceToBlockNumber, "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
 
@@ -84,13 +85,11 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 }
 
 // getGlobalSequenceToBlockNumberPrefix
-func (k Keeper) getGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
-	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
-	bs := k.cdc.MustMarshal(&networkIdentity)
-	tmpKey := append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
+func (k Keeper) getGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) []byte {
+	bs := k.cdc.MustMarshal(&oracletypes.GlobalSequenceKey{
+		NetworkDescriptor: networkDescriptor,
+		GlobalSequence:    globalSequence,
+	})
 
-	bs = make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, globalNonce)
-
-	return append(tmpKey, bs[:]...)
+	return append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
 }

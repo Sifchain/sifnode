@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 
@@ -16,8 +15,9 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetConsensusNeededPrefix(k.cdc)
 
-	bs := make([]byte, 4)
-	binary.BigEndian.PutUint32(bs, consensusNeeded)
+	bs := k.cdc.MustMarshal(&types.ConsensusNeeded{
+		ConsensusNeeded: consensusNeeded,
+	})
 
 	store.Set(key, bs)
 }
@@ -32,9 +32,11 @@ func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.Networ
 	}
 
 	bz := store.Get(key)
-	consensusNeeded := binary.BigEndian.Uint32(bz)
-	if consensusNeeded > 100 {
+	var consensusNeeded types.ConsensusNeeded
+	k.cdc.MustUnmarshal(bz, &consensusNeeded)
+
+	if consensusNeeded.ConsensusNeeded > 100 {
 		return 0, errors.New("consensusNeeded stored is too large")
 	}
-	return consensusNeeded, nil
+	return consensusNeeded.ConsensusNeeded, nil
 }

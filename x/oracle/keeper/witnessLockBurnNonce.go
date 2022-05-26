@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -14,8 +12,9 @@ func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types
 	store := ctx.KVStore(k.storeKey)
 	key := k.GetWitnessLockBurnSequencePrefix(networkDescriptor, valAccount)
 
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newNonce)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+		LockBurnNonce: newNonce,
+	})
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetWitnessLockBurnNonce, "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
 
@@ -32,17 +31,19 @@ func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor ty
 		return 0
 	}
 
-	bz := store.Get(key)
-	return binary.BigEndian.Uint64(bz)
+	var lockBurnNonce types.LockBurnNonce
+	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
+
+	return lockBurnNonce.LockBurnNonce
 }
 
 // GetWitnessLockBurnSequencePrefix return storage prefix
 func (k Keeper) GetWitnessLockBurnSequencePrefix(networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	err := binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
-	if err != nil {
-		panic(err.Error())
-	}
-	tmpKey := append(types.WitnessLockBurnNoncePrefix, bytebuf.Bytes()...)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	})
+
+	tmpKey := append(types.WitnessLockBurnNoncePrefix, bs[:]...)
 	return append(tmpKey, valAccount...)
 }

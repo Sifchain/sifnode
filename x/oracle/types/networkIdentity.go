@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -31,9 +32,10 @@ func (n NetworkIdentity) GetConsensusNeededPrefix(cdc codec.BinaryCodec) []byte 
 	return append(ConsensusNeededPrefix, bytebuf...)
 }
 
-// GetFromPrefix return a NetworkIdentity from prefix
-func GetFromPrefix(cdc codec.BinaryCodec, prefix []byte, key []byte) (NetworkIdentity, error) {
-	if len(prefix) == 1 && len(key) >= 1 && prefix[0] == key[0] {
+// GetFromPrefix return a NetworkIdentity from key which include the WhiteListValidatorPrefix and encoded NetworkIdentity
+func GetFromPrefix(cdc codec.BinaryCodec, key []byte) (NetworkIdentity, error) {
+	// check the key which correct prefix
+	if bytes.HasPrefix(key, WhiteListValidatorPrefix) {
 		var networkIdentity NetworkIdentity
 		err := cdc.Unmarshal(key[1:], &networkIdentity)
 
