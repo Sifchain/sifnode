@@ -66,11 +66,7 @@ func (s *IntegrationTestSuite) TearDownSuite() {
 	s.network.Cleanup()
 }
 
-func (s *IntegrationTestSuite) TestRowanBalanceExists() {
-	s.T().Log("#################################")
-	s.T().Log("TestRowanBalanceExists")
-	s.T().Log("#################################")
-
+func (s *IntegrationTestSuite) TestA_RowanBalanceExists() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
@@ -90,13 +86,7 @@ func (s *IntegrationTestSuite) TestRowanBalanceExists() {
 	s.Require().Contains(balancesRes.Balances, sdk.NewCoin("rowan", amount))
 }
 
-func (s *IntegrationTestSuite) TestCLPsExists() {
-	s.T().Log("#################################")
-	s.T().Log("TestCLPsExists")
-	s.T().Log("#################################")
-
-	return
-
+func (s *IntegrationTestSuite) TestB_CLPsExists() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
@@ -192,13 +182,7 @@ func (s *IntegrationTestSuite) TestCLPsExists() {
 	)
 }
 
-func (s *IntegrationTestSuite) TestPMTPDefaultParams() {
-	s.T().Log("#################################")
-	s.T().Log("TestPMTPDefaultParams")
-	s.T().Log("#################################")
-
-	return
-
+func (s *IntegrationTestSuite) TestC_PMTPDefaultParams() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
@@ -216,13 +200,7 @@ func (s *IntegrationTestSuite) TestPMTPDefaultParams() {
 	})
 }
 
-func (s *IntegrationTestSuite) TestModifyPMTPRates() {
-	s.T().Log("#################################")
-	s.T().Log("TestModifyPMTPRates")
-	s.T().Log("#################################")
-
-	return
-
+func (s *IntegrationTestSuite) TestD_ModifyPMTPRates() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
@@ -266,17 +244,14 @@ func (s *IntegrationTestSuite) TestModifyPMTPRates() {
 	})
 }
 
-func (s *IntegrationTestSuite) TestEndPMTPPolicy() {
-	s.T().Log("#################################")
-	s.T().Log("TestEndPMTPPolicy")
-	s.T().Log("#################################")
-
-	return
-
+func (s *IntegrationTestSuite) TestE_EndPMTPPolicy() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
 	from := val.Address
+
+	blockRate := sdk.MustNewDecFromStr("0.000000458623032662")
+	runningRate := sdk.MustNewDecFromStr("1.308075140599690284")
 
 	out, err := MsgClpEndPolicyExec(
 		clientCtx,
@@ -302,24 +277,18 @@ func (s *IntegrationTestSuite) TestEndPMTPPolicy() {
 		PmtpPeriodEndBlock:       0,
 	})
 	s.Require().Equal(pmtpParamsRes.PmtpRateParams, &clptypes.PmtpRateParams{
-		PmtpCurrentRunningRate: sdk.ZeroDec(),
-		PmtpPeriodBlockRate:    sdk.ZeroDec(),
-		PmtpInterPolicyRate:    sdk.ZeroDec(),
+		PmtpCurrentRunningRate: runningRate,
+		PmtpPeriodBlockRate:    blockRate,
+		PmtpInterPolicyRate:    runningRate,
 	})
 }
 
-func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
-	s.T().Log("#################################")
-	s.T().Log("TestSetNewPMTPPolicy")
-	s.T().Log("#################################")
-
-	return
-
+func (s *IntegrationTestSuite) TestF_SetNewPMTPPolicyThrowsError() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
 	from := val.Address
-	startBlock := sdk.NewInt(11)
+	startBlock := sdk.NewInt(1)
 	endBlock := sdk.NewInt(100)
 	epochLength := sdk.NewInt(10)
 	rGov := sdk.MustNewDecFromStr("0.10")
@@ -337,7 +306,36 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 	var respType proto.Message = &sdk.TxResponse{}
 	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
 	txResp := respType.(*sdk.TxResponse)
-	s.Require().Equal(uint32(0), txResp.Code)
+	s.Require().Contains(txResp.RawLog, "Start block cannot be in the past/current block")
+	s.Require().Equal(txResp.Code, uint32(1))
+}
+
+func (s *IntegrationTestSuite) TestG_SetNewPMTPPolicy() {
+	val := s.network.Validators[0]
+	clientCtx := val.ClientCtx
+
+	from := val.Address
+	startBlock := sdk.NewInt(13)
+	endBlock := sdk.NewInt(102)
+	epochLength := sdk.NewInt(10)
+	rGov := sdk.MustNewDecFromStr("0.10")
+	blockRate := sdk.MustNewDecFromStr("0.000000458623032662")
+	runningRate := sdk.MustNewDecFromStr("1.308075140599690284")
+
+	out, err := MsgClpUpdatePmtpParamsExec(
+		clientCtx,
+		from,
+		startBlock,
+		endBlock,
+		epochLength,
+		rGov,
+	)
+	s.Require().NoError(err)
+
+	var respType proto.Message = &sdk.TxResponse{}
+	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
+	txResp := respType.(*sdk.TxResponse)
+	s.Require().Equal(txResp.Code, uint32(0))
 
 	out, err = QueryClpPmtpParamsExec(clientCtx)
 	s.Require().NoError(err)
@@ -352,9 +350,9 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 		PmtpPeriodEndBlock:       endBlock.Int64(),
 	})
 	s.Require().Equal(pmtpParamsRes.PmtpRateParams, &clptypes.PmtpRateParams{
-		PmtpCurrentRunningRate: sdk.ZeroDec(),
-		PmtpPeriodBlockRate:    sdk.ZeroDec(),
-		PmtpInterPolicyRate:    sdk.ZeroDec(),
+		PmtpCurrentRunningRate: runningRate,
+		PmtpPeriodBlockRate:    blockRate,
+		PmtpInterPolicyRate:    runningRate,
 	})
 
 	testCases := []struct {
@@ -364,7 +362,7 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 		expectedSwapPriceExternal sdk.Dec
 	}{
 		{
-			height: 8,
+			height: 14,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: "cusdc"},
 				NativeAssetBalance:            sdk.NewUintFromString("52798591956187184978275830"),
@@ -372,11 +370,11 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 				PoolUnits:                     sdk.NewUintFromString("52798591956187184978275830"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.112507537332000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.888293386477892504"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.261841043706393082"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("3.819110960763842632"),
 		},
 		{
-			height: 11,
+			height: 16,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: "cusdc"},
 				NativeAssetBalance:            sdk.NewUintFromString("52798591956187184978275830"),
@@ -384,11 +382,11 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 				PoolUnits:                     sdk.NewUintFromString("52798591956187184978275830"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.113584975076283602"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.803981330500189701"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.264047906251278156"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("3.787191552449924316"),
 		},
 		{
-			height: 12,
+			height: 18,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: "cusdc"},
 				NativeAssetBalance:            sdk.NewUintFromString("52798591956187184978275830"),
@@ -396,8 +394,8 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 				PoolUnits:                     sdk.NewUintFromString("52798591956187184978275830"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.114672730992312279"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.720469036914894168"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.266297239593273164"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("3.755202275187950631"),
 		},
 	}
 
@@ -414,10 +412,6 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 			var poolsRes clptypes.PoolsRes
 			s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &poolsRes), out.String())
 
-			s.T().Log("######################################")
-			s.T().Log(poolsRes.Pools[1])
-			s.T().Log("######################################")
-
 			tc.expectedPool.SwapPriceNative = &tc.expectedSwapPriceNative
 			tc.expectedPool.SwapPriceExternal = &tc.expectedSwapPriceExternal
 			s.Require().Contains(poolsRes.Pools, &tc.expectedPool)
@@ -425,14 +419,8 @@ func (s *IntegrationTestSuite) TestSetNewPMTPPolicy() {
 	}
 }
 
-func (s *IntegrationTestSuite) TestResetPMTPParams() {
-	s.T().Log("#################################")
-	s.T().Log("TestResetPMTPParams")
-	s.T().Log("#################################")
+func (s *IntegrationTestSuite) TestH_ResetPMTPParams() {
 }
 
-func (s *IntegrationTestSuite) TestEndPolicy() {
-	s.T().Log("#################################")
-	s.T().Log("TestEndPolicy")
-	s.T().Log("#################################")
+func (s *IntegrationTestSuite) TestI_EndPolicy() {
 }
