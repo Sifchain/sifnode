@@ -82,10 +82,10 @@ func run(cmd *cobra.Command, args []string) error {
 		panic(err)
 	}
 
-	txf.WithAccountNumber(accountNumber).WithSequence(seq)
+	txf.WithAccountNumber(accountNumber)
 
 	for a := 0; a < positions; a++ {
-		txf.WithSequence(seq + uint64(a))
+		txf = txf.WithSequence(seq + uint64(a))
 		err := broadcastTrade(clientCtx, txf, key)
 		if err != nil {
 			panic(err)
@@ -152,26 +152,27 @@ func newFaucet(keys keyring.Keyring, from, mnemonic string) (keyring.Info, error
 	return keys.NewAccount(from, mnemonic, keyring.DefaultBIP39Passphrase, hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
 }
 
-func buildMsgs(traders []sdk.AccAddress) []*types.MsgOpenLong {
+func buildMsgs(traders []sdk.AccAddress) []*types.MsgOpen {
 	collateralAsset := "rowan"
 	collateralAmount := uint64(100)
-	borrowAsset := "stake"
+	borrowAsset := "ceth"
 
-	var msgs []*types.MsgOpenLong
+	var msgs []*types.MsgOpen
 	for i := range traders {
 		log.Printf("%s", traders[i].String())
-		msgs = append(msgs, &types.MsgOpenLong{
+		msgs = append(msgs, &types.MsgOpen{
 			Signer:           traders[i].String(),
 			CollateralAsset:  collateralAsset,
 			CollateralAmount: sdk.NewUint(collateralAmount),
 			BorrowAsset:      borrowAsset,
+			Position:         types.Position_LONG,
 		})
 	}
 
 	return msgs
 }
 
-func buildTxs(txf tx.Factory, msgs []*types.MsgOpenLong) []client.TxBuilder {
+func buildTxs(txf tx.Factory, msgs []*types.MsgOpen) []client.TxBuilder {
 	var txs []client.TxBuilder
 	for i := range msgs {
 		txb, err := tx.BuildUnsignedTx(txf, msgs[i])
@@ -204,13 +205,14 @@ func sendTxs(clientCtx client.Context, txs []client.TxBuilder) {
 func broadcastTrade(clientCtx client.Context, txf tx.Factory, key keyring.Info) error {
 	collateralAsset := "rowan"
 	collateralAmount := uint64(100)
-	borrowAsset := "stake"
+	borrowAsset := "ceth"
 
-	msg := types.MsgOpenLong{
+	msg := types.MsgOpen{
 		Signer:           key.GetAddress().String(),
 		CollateralAsset:  collateralAsset,
 		CollateralAmount: sdk.NewUint(collateralAmount),
 		BorrowAsset:      borrowAsset,
+		Position:         types.Position_LONG,
 	}
 	txb, err := tx.BuildUnsignedTx(txf, &msg)
 	if err != nil {
@@ -224,7 +226,7 @@ func broadcastTrade(clientCtx client.Context, txf tx.Factory, key keyring.Info) 
 	if err != nil {
 		panic(err)
 	}
-	res, err := clientCtx.WithSimulation(true).WithBroadcastMode("block").BroadcastTx(txBytes)
+	res, err := clientCtx.WithSimulation(true). /*.WithBroadcastMode("block")*/ BroadcastTx(txBytes)
 	if err != nil {
 		return err
 	}
