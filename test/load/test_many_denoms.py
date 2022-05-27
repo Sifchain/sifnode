@@ -114,9 +114,12 @@ def test(ctx: test_utils.EnvCtx):
     _parametric_test(ctx, 2)
 
 
-def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report_lines: Union[List[str], None] = None):
+def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample_loop_size: int = 20,
+    report_lines: Optional[List[str]] = None,
+):
     report_lines = [] if report_lines is None else report_lines
     assert number_of_erc20_tokens > 1
+    assert sample_loop_size > 0
 
     token_name_base = random_string(4)
     owner = ctx.operator
@@ -195,22 +198,20 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
     # We assert that the fees are equal to the fee of a single transaction as given by get_sif_tx_fees() and
     # get_sif_burn_fees().
 
-    test_loop_count = 10
-
     tmp_sif_account = ctx.create_sifchain_addr()
     tmp_eth_account = ctx.create_and_fund_eth_account()
 
-    sif_send_time_fat = timed_tx_send_loop(ctx, fat_sif_wallet, tmp_sif_account, {denom0: 1}, test_loop_count)
-    report(report_lines, "Average tx_send time for fat_sif_wallet: {:.2f} s".format(sif_send_time_fat / test_loop_count))
+    sif_send_time_fat = timed_tx_send_loop(ctx, fat_sif_wallet, tmp_sif_account, {denom0: 1}, sample_loop_size)
+    report(report_lines, "Average tx_send time for fat_sif_wallet: {:.2f} s".format(sif_send_time_fat / sample_loop_size))
 
-    sif_burn_time_fat = timed_tx_burn_loop(ctx, fat_sif_wallet, tmp_eth_account, denom0, 1, test_loop_count)
-    report(report_lines, "Average tx_burn time for fat_sif_wallet: {:.2f} s".format(sif_burn_time_fat / test_loop_count))
+    sif_burn_time_fat = timed_tx_burn_loop(ctx, fat_sif_wallet, tmp_eth_account, denom0, 1, sample_loop_size)
+    report(report_lines, "Average tx_burn time for fat_sif_wallet: {:.2f} s".format(sif_burn_time_fat / sample_loop_size))
 
-    sif_send_time_slim = timed_tx_send_loop(ctx, slim_sif_wallet, tmp_sif_account, {denom0: 1}, test_loop_count)
-    report(report_lines, "Average tx_send time for slim_sif_wallet: {:.2f} s".format(sif_send_time_slim / test_loop_count))
+    sif_send_time_slim = timed_tx_send_loop(ctx, slim_sif_wallet, tmp_sif_account, {denom0: 1}, sample_loop_size)
+    report(report_lines, "Average tx_send time for slim_sif_wallet: {:.2f} s".format(sif_send_time_slim / sample_loop_size))
 
-    sif_burn_time_slim = timed_tx_burn_loop(ctx, slim_sif_wallet, tmp_eth_account, denom0, 1, test_loop_count)
-    report(report_lines, "Average tx_burn time for slim_sif_wallet: {:.2f} s".format(sif_burn_time_slim / test_loop_count))
+    sif_burn_time_slim = timed_tx_burn_loop(ctx, slim_sif_wallet, tmp_eth_account, denom0, 1, sample_loop_size)
+    report(report_lines, "Average tx_burn time for slim_sif_wallet: {:.2f} s".format(sif_burn_time_slim / sample_loop_size))
 
     report(report_lines, "Relative fat/slim speed for tx_send: {:.2f}".format(sif_send_time_fat / sif_send_time_slim))
     report(report_lines, "Relative fat/slim speed for tx_burn: {:.2f}".format(sif_burn_time_fat / sif_burn_time_slim))
@@ -225,10 +226,11 @@ if __name__ == "__main__":
     ctx = test_utils.get_env_ctx()
     parser = argparse.ArgumentParser()
     parser.add_argument("--count", type=int, default=2)
+    parser.add_argument("--sample-loop-size", type=int, default=10)
     parser.add_argument("--report")
     args = parser.parse_args(sys.argv[1:])
     report_lines = []
-    _parametric_test(ctx, args.count, report_lines=report_lines)
+    _parametric_test(ctx, args.count, sample_loop_size=args.sample_loop_size, report_lines=report_lines)
     if args.report:
         command.Command().write_text_file(args.report, joinlines(report_lines))
     log.info("Finished successfully")

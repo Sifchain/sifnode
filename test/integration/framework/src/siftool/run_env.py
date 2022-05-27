@@ -19,6 +19,8 @@ from siftool.common import *
 log = siftool_logger(__name__)
 
 
+# Extension of Command class
+# TODO This is now obsolete and should be refactored out
 class Integrator(Ganache, Command):
     def __init__(self):
         super().__init__()  # TODO Which super is this? All of them?
@@ -776,14 +778,49 @@ class IntegrationTestsEnvironment:
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
 
+# Peggy2 environment
+# Originally derived from devenv which ran hardhat, sifnoded, ebrelayer like this: cd smart-contracts; GOBIN=~/go/bin npx hardhat run scripts/devenv.ts
 class Peggy2Environment(IntegrationTestsEnvironment):
     def __init__(self, cmd: Command):
         super().__init__(cmd)
-        self.use_geth_instead_of_hardhat = False
         self.extra_balances_for_admin_account = None
-        self.witness_count = 2
+        self.witness_count = 1
         self.consensus_threshold = 49
         self.witness_power = 100
+
+        self.ethereum_chain_id = 9999
+        self.chain_id = "localnet"
+        self.ceth_symbol = sifchain_denom_hash(self.ethereum_chain_id, eth.NULL_ADDRESS)
+        assert self.ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
+
+        # This goes to validator0, i.e. sifnode_validators[0]["address"]
+        self.validator_mint_amounts: cosmos.Balance = {
+            "rowan": 999999 * 10**27,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16,
+            self.ceth_symbol: 999999 * 10**21,
+            "sifBridge00030x1111111111111111111111111111111111111111": 137 * 10**16,
+        }
+        # These go to admin account, relayers and witnesses
+        self.admin_account_mint_amounts: cosmos.Balance = {
+            "rowan": 10**27,
+            self.ceth_symbol: 2 * 10**22,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 10 ** 16,
+            "sifBridge00030x1111111111111111111111111111111111111111": 10 ** 16,
+        }
+
+        # The following are only meaningful if use_geth_instead_of_hardhat is enabled
+        self.use_geth_instead_of_hardhat = False
+        # From https://stackoverflow.com/a/50972677/8338100:
+        # > The gasLimit in the genesis block is only used as a starting point. As blocks are added to the chain, the
+        # > block gas limit will change over time based on the miners processing the transactions on the network. To
+        # > keep the block gas limit higher, you need to override the default configuration in your node client.
+        # In dev_mode this is passed via "--dev.gaslimit", and in regular mode via genesis + "--miner.gaslimit".
+        # "None" means to use some arbitrary default (typically 8000000).
+        # Ethereum mainnet currently uses gas price of ~30 * 10**6.
+        self.geth_gas_limit = 30 * 10**6
+        self.geth_gas_limit = 100 * 10**6
+        self.geth_dev_mode = False
+        self.geth_block_mining_period = 1  # Only applicable when not geth_dev_mode
 
     # Destuctures a linear array of EVM accounts into:
     # [operator, owner, pauser, [validator-0, validator-1, ...], [...available...]]
@@ -803,7 +840,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         }
 
     # Override
-    def run(self):
+    def run(self) -> Tuple[subprocess.Popen, subprocess.Popen, subprocess.Popen, List[subprocess.Popen]]:
         # self.project._make_go_binaries()
 
         # Ordering (for possible parallelisation):
@@ -824,8 +861,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Purge test keyring backend
 
-        ethereum_chain_id = 9999
-
         hardhat = Hardhat(self.cmd)
 
         hardhat.compile_smart_contracts()
@@ -833,13 +868,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # This determines how many EVM accounts we want to allocate for validators.
         # Since every validator needs on EVM account, this should be equal to the number of validators (possibly more).
         hardhat_validator_count = self.witness_count
-        hardhat_network_id = 1  # Not used in smart-contracts/src/devenv/hardhatNode.ts
-        # This value is actually returned from HardhatNodeRunner. It comes from smart-contracts/hardhat.config.ts.
-        # In Typescript, its value is obtained by 'require("hardhat").hre.network.config.chainId'.
-        # See https://hardhat.org/advanced/hardhat-runtime-environment.html
-        # The value is not used; instead a hardcoded constant 9999 is passed to ebrelayerWitnessBuilder.
-        # Ask juniuszhou for details.
-        hardhat_chain_id = 9999  # Still hardcoded in hardhat.config.ts if we're using hardhat node
         hardhat_port = 8545  # The port on which to listen for new connections (default: 8545)
 
         # We need at least 4 accounts for operator, owner, pauser, validator1. They can be any accounts, but if we're
@@ -860,7 +888,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         manual_funds_alloc = None
         try:
             if self.use_geth_instead_of_hardhat:
-                geth_dev_mode = True
                 # EnvCtx takes environment "ETH_ACCOUNT_OWNER_ADDRESS" for funding ETH accounts which is set from
                 # hardhat_accounts["owner"] Smart contract delpoyment however needs funds on 0'th account which is the
                 # operator. For now we fund both. TODO cleanup, allocate all ether to make EnvCtx fund accounts from ETH_ACCOUNT_OPERATOR_ADDRESS
@@ -876,34 +903,37 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 self.cmd.rmdir(geth_datadir)
                 self.cmd.mkdir(geth_datadir)
                 geth = Geth(self.cmd, datadir=geth_datadir)
-                if geth_dev_mode:
+                if self.geth_dev_mode:
                     # "geth --dev" runs a proof-of-authority chain with on-demand mining and zero gas price.
                     # See https://geth.ethereum.org/docs/getting-started/dev-mode for more information about it.
                     # Unfortunately, there is no standard for connecting to such PoA chains, so we need to inject a
-                    # custom middleware into every web3py connection. It seems that this is only needed if we use
+                    # custom middleware into every web3py connection. (It seems that this is only needed for using
                     # eth.sendTransaction(), but not for eth.sendRawTransaction(), so we only use it below, while
-                    # connections from test_utils and TypeScript still work without this.
+                    # connections from test_utils and TypeScript still work without this.)
                     # See https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
-                    # Also unfortunately, this mode seems to be incompatible with ebrelayer which waits for 50 blocks
+                    # Also unfortunately, dev mode seems to be incompatible with ebrelayer which waits for 50 blocks
                     # to process transaction, while "geth --dev" mode will only mine blocks on demand => deadlock.
-                    geth_run_args = geth.buid_run_args(ethereum_chain_id, dev=True, http_port=geth_http_port,
-                        ws_port=geth_ws_port, mine=True, allow_insecure_unlock=True, rpc_allow_unprotected_txs=True)
+                    # Could be solved by doing 50 no-op transactions or by making ebrelayer not wait.
+                    geth_run_args = geth.buid_run_args(self.ethereum_chain_id, dev=True, http_port=geth_http_port,
+                        ws_port=geth_ws_port, mine=True, allow_insecure_unlock=True, rpc_allow_unprotected_txs=True,
+                        gas_limit=self.geth_gas_limit)
                     manual_funds_alloc = funds_alloc
                 else:
+                    # geth "regular" private mode. We need to create a genesis and assign funds there.
                     # geth needs at least one account to run, it has to be unlocked, but doesn't have to be funded.
                     geth_runner_acct = operator_acct
                     geth_runner_password = ""
                     geth.create_account(geth_runner_acct[1], password=geth_runner_password)
-                    if not geth_dev_mode:
-                        geth.init(ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc, block_mining_period=1)
+                    geth.init(self.ethereum_chain_id, [geth_runner_acct[0]], funds_alloc=funds_alloc,
+                        block_mining_period=self.geth_block_mining_period, gas_limit=self.geth_gas_limit)
                     tmp_password_file = self.cmd.mktempfile()
                     files_to_delete.append(tmp_password_file)
                     self.cmd.write_text_file(tmp_password_file, geth_runner_password)
                     # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
                     #      transactions allowed over RPC" when sending transactions
-                    geth_run_args = geth.buid_run_args(ethereum_chain_id, http_port=geth_http_port, ws_port=geth_ws_port,
-                        mine=True, unlock=geth_runner_acct[0], password=tmp_password_file, allow_insecure_unlock=True,
-                        rpc_allow_unprotected_txs=True)
+                    geth_run_args = geth.buid_run_args(self.ethereum_chain_id, http_port=geth_http_port,
+                        ws_port=geth_ws_port, mine=True, unlock=geth_runner_acct[0], password=tmp_password_file,
+                        allow_insecure_unlock=True, rpc_allow_unprotected_txs=True, gas_limit=self.geth_gas_limit)
 
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
 
@@ -962,39 +992,22 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         peggy_sc_addrs = hardhat_scripts.deploy_smart_contracts()
 
         admin_account_name = "sifnodeadmin"
-        chain_id = "localnet"
-        ceth_symbol = sifchain_denom_hash(ethereum_chain_id, eth.NULL_ADDRESS)
-        assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
-        # This goes to validator0, i.e. sifnode_validators[0]["address"]
-        validator_mint_amounts: cosmos.Balance = {
-            "rowan": 999999 * 10**27,
-            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16,
-            ceth_symbol: 999999 * 10**21,
-            "sifBridge00030x1111111111111111111111111111111111111111": 137 * 10**16,
-        }
         validator_power = self.witness_power
         seed_ip_address = "10.10.1.1"
         tendermint_port = 26657
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
-        # These go to admin account, relayers and witnesses
-        admin_account_mint_amounts: cosmos.Balance = {
-            "rowan": 10**27,
-            ceth_symbol: 2 * 10**22,
-            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 10 ** 16,
-            "sifBridge00030x1111111111111111111111111111111111111111": 10 ** 16,
-        }
         registry_json = project_dir("smart-contracts", "src", "devenv", "registry.json")
         sifnoded_network_dir = self.cmd.tmpdir("sifnodedNetwork")  # Gets written to .vscode/launch.json
         self.cmd.rmdir(sifnoded_network_dir)
         self.cmd.mkdir(sifnoded_network_dir)
         network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, sifnode_validators, \
             sifnode_relayers, sifnode_witnesses, sifnode_validator0_home, chain_dir = \
-                self.init_sifchain(sifnoded_network_dir, sifnoded_log_file, chain_id, ethereum_chain_id,
-                    validator_mint_amounts, validator_power, seed_ip_address, tendermint_port, denom_whitelist_file,
-                    admin_account_mint_amounts, registry_json, admin_account_name, ceth_symbol)
+                self.init_sifchain(sifnoded_network_dir, sifnoded_log_file, self.validator_mint_amounts,
+                    validator_power, seed_ip_address, tendermint_port, denom_whitelist_file,
+                    self.admin_account_mint_amounts, registry_json, admin_account_name, self.ceth_symbol)
 
         log.debug("Smart contracts operator: {}".format(operator_addr))
-        log.debug("ceth symbol: {}".format(ceth_symbol))
+        log.debug("ceth symbol: {}".format(self.ceth_symbol))
         log.debug("Admin account address: {}".format(admin_account_address))  # tokens
         log.debug("Witness count: {}".format(self.witness_count))
         log.debug("Consensus thresholds {}".format(self.consensus_threshold))
@@ -1007,8 +1020,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
         [relayer0_exec_args], [witness_exec_args] = self.start_witnesses_and_relayers(
-            w3_url, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs, evm_validator_accounts, sifnode_validators,
-            sifnode_relayers, sifnode_witnesses, symbol_translator_file, relayer_extra_args)
+            w3_url, self.ethereum_chain_id, tcp_url, self.chain_id, peggy_sc_addrs, evm_validator_accounts,
+            sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file, relayer_extra_args)
 
         hardhat_scripts.update_validator_power(peggy_sc_addrs["CosmosBridge"], evm_validator_addresses, sifnode_witnesses)
 
@@ -1030,8 +1043,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             },
             "symbol_translator_file": symbol_translator_file,
             "w3_url": w3_url,
-            "evm_chain_id": ethereum_chain_id,
-            "chain_id": chain_id,
+            "evm_chain_id": self.ethereum_chain_id,
+            "chain_id": self.chain_id,
             "validators": sifnode_validators,  # From yaml file generated by sifgen
             "relayers": sifnode_relayers,
             "smart_contracts": peggy_sc_addrs
@@ -1039,13 +1052,13 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         self.write_env_files(self.project.project_dir(), self.project.go_bin_dir, peggy_sc_addrs, hardhat_accounts,
             admin_account_name, admin_account_address, sifnode_validator0_home, sifnode_validators, sifnode_relayers,
-            sifnode_witnesses, tcp_url, hardhat_bind_hostname, hardhat_port, ethereum_chain_id, chain_dir,
+            sifnode_witnesses, tcp_url, hardhat_bind_hostname, hardhat_port, self.ethereum_chain_id, chain_dir,
             sifnoded_exec_args, relayer0_exec_args, witness_exec_args
         )
 
-        return hardhat_proc, sifnoded_proc, relayer0_proc, witness_proc
+        return hardhat_proc, sifnoded_proc, relayer0_proc, witness_procs
 
-    def init_sifchain(self, sifnoded_network_dir: str, sifnoded_log_file: TextIO, chain_id: str, hardhat_chain_id: int,
+    def init_sifchain(self, sifnoded_network_dir: str, sifnoded_log_file: TextIO,
         validator_mint_amounts: cosmos.Balance, validator_power: int, seed_ip_address: str, tendermint_port: int,
         denom_whitelist_file: str, admin_account_mint_amounts: cosmos.Balance, registry_json: str,
         admin_account_name: str, ceth_symbol: str
@@ -1056,7 +1069,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         network_config_file_path = self.cmd.mktempfile()
         try:
-            self.cmd.sifgen_create_network(chain_id, validator_count, sifnoded_network_dir, network_config_file_path,
+            self.cmd.sifgen_create_network(self.chain_id, validator_count, sifnoded_network_dir, network_config_file_path,
                 seed_ip_address, mint_amount=validator_mint_amounts)
             network_config_file = self.cmd.read_text_file(network_config_file_path)
         finally:
@@ -1080,7 +1093,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         #     is_seed: bool
         assert len(validators) == validator_count
 
-        chain_dir_base = os.path.join(sifnoded_network_dir, "validators", chain_id)
+        chain_dir_base = os.path.join(sifnoded_network_dir, "validators", self.chain_id)
 
         for validator in validators:
             validator_moniker = validator["moniker"]
@@ -1114,8 +1127,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: "--home" is shared with sifnoded's "--home"
         relayers = [{
             "name": name,
-            "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts, hardhat_chain_id,
-                validator_power, denom_whitelist_file),
+            "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts,
+                self.ethereum_chain_id, validator_power, denom_whitelist_file),
             "home": validator0_home,
         } for name in [f"relayer-{i}" for i in range(relayer_count)]]
 
@@ -1123,8 +1136,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: "--home" is shared with sifnoded's "--home"
         witnesses = [{
             "name": name,
-            "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts, hardhat_chain_id,
-                validator_power, denom_whitelist_file),
+            "address": sifnode.peggy2_add_relayer_witness_account(name, admin_account_mint_amounts,
+                self.ethereum_chain_id, validator_power, denom_whitelist_file),
             "home": validator0_home,
             "power": validator_power
         } for name in [f"witness-{i}" for i in range(witness_count)]]
@@ -1143,7 +1156,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # The same happens also in devenv.
         # TODO Try whitelister account instead of admin
         res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_name,
-            chain_id)
+            self.chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 1
         assert res[0]["code"] == 0
@@ -1155,17 +1168,17 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         cross_chain_lock_fee = 1
         cross_chain_burn_fee = 1
         ethereum_cross_chain_fee_token = ceth_symbol
-        assert hardhat_chain_id == int(ethereum_cross_chain_fee_token[9:13])  # Assume they should match
+        assert self.ethereum_chain_id == int(ethereum_cross_chain_fee_token[9:13])  # Assume they should match
         gas_prices = [0.5, "rowan"]
         gas_adjustment = 1.5
-        sifnode.peggy2_set_cross_chain_fee(admin_account_address, hardhat_chain_id,
+        sifnode.peggy2_set_cross_chain_fee(admin_account_address, self.ethereum_chain_id,
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
-            admin_account_name, chain_id, gas_prices, gas_adjustment)
+            admin_account_name, self.chain_id, gas_prices, gas_adjustment)
 
         # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
         # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
         sifnode.wait_for_last_transaction_to_be_mined()
-        sifnode.peggy2_update_consensus_needed(admin_account_address, hardhat_chain_id, chain_id, self.consensus_threshold)
+        sifnode.peggy2_update_consensus_needed(admin_account_address, self.ethereum_chain_id, self.chain_id, self.consensus_threshold)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
@@ -1258,7 +1271,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         tcp_url, hardhat_bind_hostname, hardhat_port, hardhat_chain_id, chain_dir, sifnoded_exec_args,
         relayer0_exec_args, witness0_exec_args
     ):
-        eth_chain_id = hardhat_chain_id
         w3_url = eth.web3_host_port_url(hardhat_bind_hostname, hardhat_port)
 
         # @TODO At the moment, values are fed from one rendered template into the next.
@@ -1295,7 +1307,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 },
                 "httpHost": hardhat_bind_hostname,
                 "httpPort": hardhat_port,
-                "chainId": eth_chain_id,
+                "chainId": self.ethereum_chain_id,
             },
             "goResults": {
                 # "completed": True,
@@ -1327,7 +1339,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             "ETH_ACCOUNT_PROXYADMIN_PRIVATEKEY": "0x" + eth_accounts["proxy_admin"][1],
             "ETH_ACCOUNT_VALIDATOR_ADDRESS": eth_accounts["validators"][0][0],
             "ETH_ACCOUNT_VALIDATOR_PRIVATEKEY": "0x" + eth_accounts["validators"][0][1],
-            "ETH_CHAIN_ID": str(eth_chain_id),
+            "ETH_CHAIN_ID": str(self.ethereum_chain_id),
             "ETH_HOST": hardhat_bind_hostname,
             "ETH_PORT": str(hardhat_port),
             "ROWAN_SOURCE": admin_account_address,
@@ -1419,7 +1431,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # "env": {"ETHEREUM_PRIVATE_KEY": eth_accounts["validators"][0][1]},
                     "args": [
                         "init-relayer",
-                        "--network-descriptor", str(eth_chain_id),
+                        "--network-descriptor", str(self.ethereum_chain_id),
                         "--tendermint-node", tcp_url,
                         "--web3-provider", w3_url,
                         "--bridge-registry-contract-address", evm_smart_contract_addrs["BridgeRegistry"],
@@ -1447,7 +1459,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # "env": {"ETHEREUM_PRIVATE_KEY": eth_accounts["validators"][0][1]},
                     "args": [
                         "init-witness",
-                        "--network-descriptor", str(eth_chain_id),
+                        "--network-descriptor", str(self.ethereum_chain_id),
                         "--tendermint-node", tcp_url,
                         "--web3-provider", w3_url,
                         "--bridge-registry-contract-address", evm_smart_contract_addrs["BridgeRegistry"],

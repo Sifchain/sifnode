@@ -55,21 +55,20 @@ def main(argv):
             argparser.add_argument("--witness-count", type=int)
             argparser.add_argument("--consensus-threshold", type=int)
             args = argparser.parse_args(argv[1:])
-            # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
-            # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             env = Peggy2Environment(cmd)
-            DEFAULT_WITNESS_COUNT=2
-            witness_count = args.witness_count if args.witness_count is not None else int(os.getenv("WITNESS_COUNT", DEFAULT_WITNESS_COUNT))
-            if witness_count is not None:
-                env.witness_count = witness_count
-            consensus_threshold = args.consensus_threshold if args.consensus_threshold is not None \
-                else os.getenv("CONSENSUS_THRESHOLD")
-            if consensus_threshold is not None:
-                env.consensus_threshold = consensus_threshold
-            if args.test_denom_count is not None:
-                env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
+            if args.witness_count is not None:
+                env.witness_count = args.witness_count
+            else:
+                env.witness_count = int(os.getenv("WITNESS_COUNT", 2))
+            if args.consensus_threshold is not None:
+                env.consensus_threshold = args.consensus_threshold
+            elif "CONSENSUS_THRESHOLD" in os.environ:
+                env.consensus_threshold = int(os.getenv("CONSENSUS_THRESHOLD"))
             env.use_geth_instead_of_hardhat = args.geth
-            processes = env.run()
+            if args.test_denom_count:
+                env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
+            hardhat_proc, sifnoded_proc, relayer0_proc, witness_procs = env.run()
+            processes = [hardhat_proc, sifnoded_proc, relayer0_proc] + witness_procs
         else:
             env = IntegrationTestsEnvironment(cmd)
             project.clean()

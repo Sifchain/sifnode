@@ -6,7 +6,7 @@ import string
 import random
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union
+from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List
 
 
 ANY_ADDR = "0.0.0.0"
@@ -93,8 +93,8 @@ def dict_merge(*dicts, override=True):
                 result[k] = v
     return result
 
-def flatten_list(l):
-    return [item for sublist in l for item in sublist]
+def flatten(items: Iterable[Iterable]) -> List:
+    return [item for sublist in items for item in sublist]
 
 def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)

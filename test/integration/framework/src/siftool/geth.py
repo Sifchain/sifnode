@@ -199,13 +199,15 @@ class Geth:
             "alloc": {k: {"balance": str(v)} for k, v in alloc.items()}
         }
 
-    def init(self, ethereum_chain_id: int, signers: Iterable[eth.Address],
+    def init(self, ethereum_chain_id: int, signers: Iterable[eth.Address], gas_limit: Optional[int] = None,
         funds_alloc: Optional[Mapping[eth.Address, int]] = None, block_mining_period: Optional[int] = None
     ):
         funds_alloc = funds_alloc or {}
         kwargs = {}
         if block_mining_period is not None:
             kwargs["block_mining_period"] = block_mining_period
+        if gas_limit is not None:
+            kwargs["gas_limit"] = gas_limit
         tmp_genesis_file = self.cmd.mktempfile()
         try:
             genesis = self.create_genesis_config_clique(ethereum_chain_id, signers, funds_alloc, **kwargs)
@@ -220,12 +222,13 @@ class Geth:
     def buid_run_args(self, network_id: int, http_port: Optional[int] = None, ws_port: Optional[int] = None,
         dev: bool = False, mine: bool = False, unlock: Optional[str] = None, password: Optional[str] = None,
         allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False, gas_price: Optional[int] = None,
-        verbosity: Optional[int] = None
+        gas_limit: Optional[int] = None, verbosity: Optional[int] = None
     ):
         args = [self.program, "--networkid", str(network_id), "--nodiscover"] + \
             (["--dev"] if dev else []) + \
             (["--mine"] if mine else []) + \
             (["--miner.gasprice", str(gas_price)] if gas_price is not None else []) + \
+            (["--dev.gaslimit" if dev else "--miner.gaslimit", str(gas_limit)] if gas_limit is not None else []) + \
             (["--unlock", unlock] if unlock else []) + \
             (["--password", password] if password else []) + \
             (["--allow-insecure-unlock"] if allow_insecure_unlock else []) + \

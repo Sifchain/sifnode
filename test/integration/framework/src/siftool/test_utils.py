@@ -643,7 +643,7 @@ class EnvCtx:
                 if not cosmos.balance_zero(delta):
                     last_changed_balance = new_balance
                     last_change_time = now
-                    log.debug("New state detected: {}".format(delta))
+                    log.debug("New state detected ({} denoms changed)".format(len(delta)))
                 if (change_timeout is not None) and (now - last_change_time > change_timeout):
                     raise Exception("Timeout waiting for sif balance to change")
             time.sleep(polling_time)
