@@ -101,7 +101,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var mtp *types.MTP
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, err = k.ForceCloseLong(ctx, msg)
+		mtp, err = k.Keeper.ForceCloseLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
@@ -225,7 +225,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	return &mtp, nil
 }
 
-func (k msgServer) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, error) {
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, err

@@ -26,6 +26,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 					mtp.MtpHealth = h
 					_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
 					_ = k.SetMTP(ctx, mtp)
+					_, _ = k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
 				}
 
 				_ = k.UpdatePoolHealth(ctx, pool)

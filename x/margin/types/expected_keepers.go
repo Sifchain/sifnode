@@ -64,4 +64,6 @@ type Keeper interface {
 	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
+
+	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
 }
