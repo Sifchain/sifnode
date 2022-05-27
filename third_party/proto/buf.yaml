@@ -1,0 +1,13 @@
+version: v1
+lint:
+  use:
+    - DEFAULT
+  ignore:
+    - gogoproto
+    - google
+    - cosmos
+breaking:
+  use:
+    - FILE
+  ignore:
+    - gogoproto
