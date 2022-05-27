@@ -20,6 +20,7 @@ func TestTypes_ParamSetPairs(t *testing.T) {
 		InterestRateDecrease: sdk.NewDec(3),
 		HealthGainFactor:     sdk.NewDec(9),
 		EpochLength:          45,
+		ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
 	}
 
 	got := p.ParamSetPairs()
@@ -63,6 +64,11 @@ func TestTypes_ParamSetPairs(t *testing.T) {
 			key:          "EpochLength",
 			param:        &p.EpochLength,
 			paramSetPair: got[6],
+		},
+		{
+			key:          "ForceCloseThreshold",
+			param:        &p.ForceCloseThreshold,
+			paramSetPair: got[7],
 		},
 	}
 

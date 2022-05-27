@@ -38,9 +38,10 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 	require.Equal(t, reflect.TypeOf(handler).String(), "types.Handler")
 
 	var (
-		msgOpenLong  sdk.Msg = &types.MsgOpenLong{}
-		msgCloseLong sdk.Msg = &types.MsgCloseLong{}
-		msgOther     sdk.Msg
+		msgOpen       sdk.Msg = &types.MsgOpen{}
+		msgClose      sdk.Msg = &types.MsgClose{}
+		msgForceClose sdk.Msg = &types.MsgForceClose{}
+		msgOther      sdk.Msg
 	)
 
 	newLegacyHandlerTests := []struct {
@@ -51,18 +52,23 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 	}{
 		{
 			name:      "msg open long",
-			msg:       msgOpenLong,
-			errString: errors.New(": pool does not exist"),
+			msg:       msgOpen,
+			errString: errors.New("UNSPECIFIED: mtp position invalid"),
 		},
 		{
 			name:      "msg close long",
-			msg:       msgCloseLong,
+			msg:       msgClose,
 			errString: errors.New("mtp not found"),
 		},
 		{
-			name: "msg other",
-			msg:  msgOther,
-			err:  sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request"),
+			name:      "msg force close long",
+			msg:       msgForceClose,
+			errString: errors.New("mtp not found"),
+		},
+		{
+			name:      "msg other",
+			msg:       msgOther,
+			errString: errors.New("unrecognized margin message type: <nil>: unknown request"),
 		},
 	}
 

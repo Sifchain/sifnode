@@ -73,7 +73,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "generate JSON for a token registration",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.MaximumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -180,7 +180,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				// to prevent accidentally leaving off IBC details and
 				return errors.New("--token_denom must be specified if no IBC channel is provided")
 			}
-			// --token_denom always takes precendence over IBC generation if specified
+			// --token_denom always takes precedence over IBC generation if specified
 			if initialDenom != "" {
 				denom = initialDenom
 			}

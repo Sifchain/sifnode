@@ -17,11 +17,13 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	}
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
 	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
@@ -61,11 +63,13 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	// Verify user has coins to add liquidiy
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
 	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 

@@ -9,7 +9,6 @@ import (
 
 // Default parameter namespace
 const (
-	DefaultParamspace                    = ModuleName
 	DefaultMinCreatePoolThreshold uint64 = 100
 )
 
@@ -41,11 +40,16 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // DefaultParams defines the parameters for this module
 func DefaultParams() Params {
-	return NewParams(DefaultMinCreatePoolThreshold)
+	return Params{
+		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
+	}
 }
 
 func (p Params) Validate() error {
-	return validateMinCreatePoolThreshold(p.MinCreatePoolThreshold)
+	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
+		return err
+	}
+	return nil
 }
 
 func validateMinCreatePoolThreshold(i interface{}) error {

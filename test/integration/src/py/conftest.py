@@ -4,7 +4,7 @@ import os
 import threading
 
 import pytest
-import integration_test_context
+import siftool_path
 
 import test_utilities
 from burn_lock_functions import decrease_log_level, force_log_level
@@ -352,7 +352,7 @@ def restore_default_rescue_location(
 threadlocals = threading.local()
 
 @pytest.fixture
-def ctx(snapshot_name):
+def ctx_legacy(snapshot_name):
     logging.debug("Before ctx()")
     yield threadlocals.ctx
     logging.debug("After ctx()")
@@ -373,3 +373,16 @@ def with_snapshot(snapshot_name):
     main.project.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
     logging.info("Terminated processes: {}".format(repr(ctx.processes)))
     del threadlocals.ctx
+
+@pytest.fixture(scope="function")
+def ctx(request):
+    # To pass the "snapshot_name" as a parameter with value "foo" from test, annotate the test function like this:
+    # @pytest.mark.snapshot_name("foo")
+    snapshot_name = request.node.get_closest_marker("snapshot_name")
+    if snapshot_name is not None:
+        snapshot_name = snapshot_name.args[0]
+        logging.debug("Context setup: snapshot_name={}".format(repr(snapshot_name)))
+    from siftool import test_utils
+    with test_utils.get_test_env_ctx() as ctx:
+        yield ctx
+        logging.debug("Test context cleanup")

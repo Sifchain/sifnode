@@ -17,7 +17,7 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorForAsset(sdk.Context, string) (sdk.Dec, bool, error)
+	GetNormalizationFactorFromAsset(sdk.Context, clptypes.Asset) (sdk.Dec, bool, error)
 
 	ValidateZero(inputs []sdk.Uint) bool
 	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
@@ -34,13 +34,13 @@ type Keeper interface {
 	BankKeeper() BankKeeper
 
 	SetMTP(ctx sdk.Context, mtp *MTP) error
-	GetMTP(ctx sdk.Context, collateralAsset string, custodyAsset string, address string) (MTP, error)
+	GetMTP(ctx sdk.Context, address string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
 	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
-	DestroyMTP(sdk.Context, string, string, string) error
+	DestroyMTP(sdk.Context, string, uint64) error
 
 	GetLeverageParam(sdk.Context) sdk.Uint
 	GetInterestRateMax(sdk.Context) sdk.Dec
@@ -49,14 +49,15 @@ type Keeper interface {
 	GetInterestRateDecrease(ctx sdk.Context) sdk.Dec
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
+	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
 	GetEnabledPools(ctx sdk.Context) []string
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
 
 	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
-	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *MTP, pool clptypes.Pool, leverage sdk.Uint) error
-	TakeInCustody(ctx sdk.Context, mtp MTP, pool clptypes.Pool) error
-	TakeOutCustody(ctx sdk.Context, mtp MTP, pool clptypes.Pool) error
+	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, leverage sdk.Uint) error
+	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
+	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 

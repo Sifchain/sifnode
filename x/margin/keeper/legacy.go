@@ -18,14 +18,17 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		switch msg := msg.(type) {
-		case *types.MsgOpenLong:
-			res, err := msgServer.OpenLong(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgOpen:
+			res, err := msgServer.Open(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgCloseLong:
-			res, err := msgServer.CloseLong(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgClose:
+			res, err := msgServer.Close(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgForceClose:
+			res, err := msgServer.ForceClose(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
-			return nil, sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request")
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized margin message type: %T", msg)
 		}
 	}
 }

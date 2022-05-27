@@ -22,6 +22,7 @@ func TestKeeper_ParamGetter(t *testing.T) {
 		InterestRateDecrease: sdk.NewDec(1),
 		HealthGainFactor:     sdk.NewDec(1),
 		EpochLength:          1,
+		ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
 	}}
 	marginKeeper.InitGenesis(ctx, data)
 
@@ -64,6 +65,11 @@ func TestKeeper_ParamGetter(t *testing.T) {
 			name:   "EpochLength",
 			want:   fmt.Sprint(data.Params.EpochLength),
 			method: func(ctx sdk.Context) string { return fmt.Sprint(marginKeeper.GetEpochLength(ctx)) },
+		},
+		{
+			name:   "ForceCloseThreshold",
+			want:   fmt.Sprint(data.Params.ForceCloseThreshold),
+			method: func(ctx sdk.Context) string { return fmt.Sprint(marginKeeper.GetForceCloseThreshold(ctx)) },
 		},
 	}
 

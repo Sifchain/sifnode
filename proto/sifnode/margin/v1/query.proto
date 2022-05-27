@@ -9,23 +9,17 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 service Query {
   rpc GetMTP(MTPRequest) returns (MTPResponse) {}
-  rpc GetPositionsForAddress(PositionsForAddressRequest) returns (PositionsForAddressResponse) {}
+  rpc GetPositionsForAddress(PositionsForAddressRequest)
+      returns (PositionsForAddressResponse) {}
 }
 
 message MTPRequest {
   string address = 1;
-  string custody_asset = 2;
-  string collateral_asset = 3;
+  uint64 id = 2;
 }
 
-message MTPResponse {
-  MTP mtp = 1;
-}
+message MTPResponse { MTP mtp = 1; }
 
-message PositionsForAddressRequest {
-  string address = 1;
-}
+message PositionsForAddressRequest { string address = 1; }
 
-message PositionsForAddressResponse {
-  repeated MTP mtps = 1;
-}
+message PositionsForAddressResponse { repeated MTP mtps = 1; }

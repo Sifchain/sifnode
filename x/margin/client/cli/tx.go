@@ -17,15 +17,17 @@ func GetTxCmd() *cobra.Command {
 		Short: "Margin transactions sub-commands",
 	}
 	cmd.AddCommand(
-		GetOpenLongCmd(),
+		GetOpenCmd(),
+		GetCloseCmd(),
+		GetForceCloseCmd(),
 	)
 	return cmd
 }
 
-func GetOpenLongCmd() *cobra.Command {
+func GetOpenCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "open-long",
-		Short: "Open long position",
+		Use:   "open",
+		Short: "Open margin position",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -47,11 +49,18 @@ func GetOpenLongCmd() *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgOpenLong{
+			position, err := cmd.Flags().GetString("position")
+			if err != nil {
+				return err
+			}
+			positionEnum := types.GetPositionFromString(position)
+
+			msg := types.MsgOpen{
 				Signer:           clientCtx.GetFromAddress().String(),
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: sdk.NewUint(collateralAmount),
 				BorrowAsset:      borrowAsset,
+				Position:         positionEnum,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -65,35 +74,30 @@ func GetOpenLongCmd() *cobra.Command {
 	cmd.Flags().Uint64("collateral_amount", 0, "amount of collateral asset < max_uint64")
 	cmd.Flags().String("collateral_asset", "", "symbol of asset")
 	cmd.Flags().String("borrow_asset", "", "symbol of asset")
+	cmd.Flags().String("position", "", "type of position")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 
 }
 
-func GetCloseLongCmd() *cobra.Command {
+func GetCloseCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "close-long",
-		Short: "Close long position",
+		Use:   "close",
+		Short: "Close margin position",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			collateralAsset, err := cmd.Flags().GetString("collateral_asset")
+			id, err := cmd.Flags().GetUint64("id")
 			if err != nil {
 				return err
 			}
 
-			borrowAsset, err := cmd.Flags().GetString("borrow_asset")
-			if err != nil {
-				return err
-			}
-
-			msg := types.MsgCloseLong{
-				Signer:          clientCtx.GetFromAddress().String(),
-				CollateralAsset: collateralAsset,
-				BorrowAsset:     borrowAsset,
+			msg := types.MsgClose{
+				Signer: clientCtx.GetFromAddress().String(),
+				Id:     id,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -104,9 +108,47 @@ func GetCloseLongCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String("collateral_asset", "", "symbol of asset")
-	cmd.Flags().String("borrow_asset", "", "symbol of asset")
+	cmd.Flags().Uint64("id", 0, "id of the position")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 
+}
+
+func GetForceCloseCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "force-close",
+		Short: "Force close margin position",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			MtpAddress, err := cmd.Flags().GetString("mtp_address")
+			if err != nil {
+				return err
+			}
+
+			id, err := cmd.Flags().GetUint64("id")
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgForceClose{
+				Signer:     clientCtx.GetFromAddress().String(),
+				MtpAddress: MtpAddress,
+				Id:         id,
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	cmd.Flags().Uint64("id", 0, "id of the position")
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
