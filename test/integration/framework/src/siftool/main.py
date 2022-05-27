@@ -57,7 +57,8 @@ def main(argv):
             # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
             # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
             env = Peggy2Environment(cmd)
-            witness_count = args.witness_count if args.witness_count is not None else int(os.getenv("WITNESS_COUNT"))
+            DEFAULT_WITNESS_COUNT=2
+            witness_count = args.witness_count if args.witness_count is not None else int(os.getenv("WITNESS_COUNT", DEFAULT_WITNESS_COUNT))
             if witness_count is not None:
                 env.witness_count = witness_count
             consensus_threshold = args.consensus_threshold if args.consensus_threshold is not None \
