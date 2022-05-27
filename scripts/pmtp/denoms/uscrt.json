@@ -1,0 +1,26 @@
+{
+    "entries": [
+        {
+            "decimals": "6",
+            "denom": "ibc/XXXXX",
+            "base_denom": "uscrt",
+            "path": "transfer/channel-65",
+            "ibc_channel_id": "channel-65",
+            "ibc_counterparty_channel_id": "channel-15",
+            "display_name": "",
+            "display_symbol": "",
+            "network": "",
+            "address": "",
+            "external_symbol": "",
+            "transfer_limit": "",
+            "permissions": [
+                "CLP",
+                "IBCEXPORT",
+                "IBCIMPORT"
+            ],
+            "unit_denom": "",
+            "ibc_counterparty_denom": "",
+            "ibc_counterparty_chain_id": "secret-4"
+        }
+    ]
+}
