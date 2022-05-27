@@ -50,7 +50,7 @@ def web3_wait_for_connection_up(w3_conn: web3.Web3, polling_time: int = 1, timeo
     while True:
         try:
             w3_conn.eth.block_number
-            return w3_conn
+            return
         except OSError:
             pass
         now = time.time()

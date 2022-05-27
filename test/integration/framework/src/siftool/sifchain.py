@@ -12,6 +12,9 @@ from siftool.common import *
 log = siftool_logger(__name__)
 
 
+ROWAN = "rowan"
+
+
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
@@ -41,7 +44,7 @@ def is_cosmos_native_denom(denom: str) -> bool:
     that was not imported using Peggy"""
     return not str.startswith(denom, "sifBridge")
 
-def import_generated_protobuf_sources():
+def ondemand_import_generated_protobuf_sources():
     import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
     import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
@@ -152,6 +155,18 @@ class Sifnoded:
         return account_address
 
     def tx_clp_create_pool(self, chain_id, from_name, symbol, fees, native_amount, external_amount):
+        # For more examples see ticket #2470, e.g.
+        # sifnoded tx clp create-pool \
+        #   --from $SIF_ACT \
+        #   --keyring-backend test \
+        #   --symbol ceth \
+        #   --nativeAmount 49352380611368792060339203 \
+        #   --externalAmount 1576369012576526264262 \
+        #   --fees 100000000000000000rowan \
+        #   --node ${SIFNODE_NODE} \
+        #   --chain-id $SIFNODE_CHAIN_ID \
+        #   --broadcast-mode block \
+        #   -y
         args = ["tx", "clp", "create-pool", "--chain-id", chain_id, "--from", from_name, "--symbol", symbol,
             "--fees", sif_format_amount(*fees), "--nativeAmount", str(native_amount), "--externalAmount",
             str(external_amount), "--yes"]
@@ -325,7 +340,7 @@ class SifnodeClient:
         return grpc.insecure_channel("127.0.0.1:9090")
 
     def broadcast_tx(self, encoded_tx: bytes):
-        import_generated_protobuf_sources()
+        ondemand_import_generated_protobuf_sources()
         broadcast_mode = cosmos_pb.BROADCAST_MODE_ASYNC
         with self.open_grpc_channel() as channel:
             tx_stub = cosmos_pb_grpc.ServiceStub(channel)

@@ -11,7 +11,7 @@ from siftool.geth import Geth
 from siftool.truffle import Ganache
 from siftool.localnet import Localnet
 from siftool.command import Command
-from siftool.sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash
+from siftool.sifchain import Sifgen, Sifnoded, Ebrelayer, sifchain_denom_hash, ROWAN
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
 
@@ -175,7 +175,7 @@ class Integrator(Ganache, Command):
         # Add sifnodeadmin to ~/.sifnoded
         sifnode0 = Sifnoded(self)
         sifnodeadmin_addr = sifnode0.keys_add_1("sifnodeadmin")["address"]
-        tokens = [[10**20, "rowan"]]
+        tokens = [[10**20, ROWAN]]
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
@@ -322,7 +322,7 @@ class UIStackEnvironment:
         self.cmd.execst(["sifnoded", "validate-genesis"])
 
         log.info("Starting test chain...")
-        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"])  # TODO sifnoded_home=???
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, ROWAN])  # TODO sifnoded_home=???
 
         # sifnoded must be up before continuing
         self.cmd.sif_wait_up("localhost", 1317)
@@ -338,24 +338,24 @@ class UIStackEnvironment:
         # Original scripts say "if we don't sleep there are issues"
         time.sleep(10)
         log.info("Creating liquidity pool from catk:rowan...")
-        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "catk", [10**5, "rowan"], 10**25, 10**25)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "catk", [10**5, ROWAN], 10**25, 10**25)
         time.sleep(5)
         log.info("Creating liquidity pool from cbtk:rowan...")
-        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cbtk", [10**5, "rowan"], 10**25, 10**25)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cbtk", [10**5, ROWAN], 10**25, 10**25)
         # should now be able to swap from catk:cbtk
         time.sleep(5)
         log.info("Creating liquidity pool from ceth:rowan...")
-        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ceth", [10**5, "rowan"], 10**25, 83*10**20)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ceth", [10**5, ROWAN], 10**25, 83*10**20)
         # should now be able to swap from x:ceth
         time.sleep(5)
         log.info("Creating liquidity pool from cusdc:rowan...")
-        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cusdc", [10**5, "rowan"], 10**25, 10**25)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cusdc", [10**5, ROWAN], 10**25, 10**25)
         time.sleep(5)
         log.info("Creating liquidity pool from clink:rowan...")
-        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "clink", [10**5, "rowan"], 10**25, 588235*10**18)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "clink", [10**5, ROWAN], 10**25, 588235*10**18)
         time.sleep(5)
         log.info("Creating liquidity pool from ctest:rowan...")
-        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
+        sifnode.tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ctest", [10**5, ROWAN], 10**25, 10**13)
 
         # ui/scripts/_migrate.sh -> ui/chains/post_migrate.sh
 
@@ -403,7 +403,7 @@ class UIStackEnvironment:
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
         ebrelayer_proc = Ebrelayer(self.cmd).init("tcp://localhost:26657", "ws://localhost:7545/",
             bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, self.chain_id,
-            ethereum_private_key=ethereum_private_key, gas=5*10**12, gas_prices=[0.5, "rowan"])
+            ethereum_private_key=ethereum_private_key, gas=5*10**12, gas_prices=[0.5, ROWAN])
 
         # At this point we have 3 running processes - ganache_proc, sifnoded_proc and ebrelayer_proc
         # await sif-node-up and migrate-complete
@@ -585,7 +585,7 @@ class IntegrationTestsEnvironment:
         validator_count = 1
         network_definition_file = os.path.join(networks_dir, "network-definition.yml")
         seed_ip_address = "192.168.1.2"
-        mint_amount = [[999999 * 10**21, "rowan"], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
+        mint_amount = [[999999 * 10**21, ROWAN], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
 
         self.cmd.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
 
@@ -606,7 +606,7 @@ class IntegrationTestsEnvironment:
             denom_whitelist_file)
 
         # Start sifnoded
-        sifnoded_proc = sifnode.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"],
+        sifnoded_proc = sifnode.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, ROWAN],
             log_file=sifnoded_log_file)
 
         # TODO: wait for sifnoded to come up before continuing
@@ -756,7 +756,7 @@ class IntegrationTestsEnvironment:
         networks_dir = project_dir("deploy/networks")
         chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
         sifnoded_home = os.path.join(chaindir, ".sifnoded")
-        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], sifnoded_home=sifnoded_home)
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, ROWAN], sifnoded_home=sifnoded_home)
 
         bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
             self.cmd.get_bridge_smart_contract_addresses(self.network_id)
@@ -781,35 +781,38 @@ class IntegrationTestsEnvironment:
 # Peggy2 environment
 # Originally derived from devenv which ran hardhat, sifnoded, ebrelayer like this: cd smart-contracts; GOBIN=~/go/bin npx hardhat run scripts/devenv.ts
 class Peggy2Environment(IntegrationTestsEnvironment):
-    def __init__(self, cmd: Command):
+    def __init__(self, cmd: Command, witness_count: int = 1, witness_power: int = 100, consensus_threshold: int = 49,
+        ethereum_ws_port: int = 8545, ethereum_chain_id: int = 9999, sif_chain_id = "localnet", use_geth: bool = False
+    ):
         super().__init__(cmd)
         self.extra_balances_for_admin_account = None
-        self.witness_count = 1
-        self.consensus_threshold = 49
-        self.witness_power = 100
+        self.witness_count = witness_count
+        self.witness_power = witness_power
+        self.consensus_threshold = consensus_threshold
 
-        self.ethereum_chain_id = 9999
-        self.chain_id = "localnet"
+        self.ethereum_ws_port = ethereum_ws_port
+        self.ethereum_chain_id = ethereum_chain_id
+        self.chain_id = sif_chain_id
         self.ceth_symbol = sifchain_denom_hash(self.ethereum_chain_id, eth.NULL_ADDRESS)
         assert self.ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
 
         # This goes to validator0, i.e. sifnode_validators[0]["address"]
         self.validator_mint_amounts: cosmos.Balance = {
-            "rowan": 999999 * 10**27,
-            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16,
+            ROWAN: 999999 * 10**27,
             self.ceth_symbol: 999999 * 10**21,
             "sifBridge00030x1111111111111111111111111111111111111111": 137 * 10**16,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16,
         }
         # These go to admin account, relayers and witnesses
         self.admin_account_mint_amounts: cosmos.Balance = {
-            "rowan": 10**27,
+            ROWAN: 10**27,
             self.ceth_symbol: 2 * 10**22,
-            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 10 ** 16,
             "sifBridge00030x1111111111111111111111111111111111111111": 10 ** 16,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 10 ** 16,
         }
 
         # The following are only meaningful if use_geth_instead_of_hardhat is enabled
-        self.use_geth_instead_of_hardhat = False
+        self.use_geth_instead_of_hardhat = use_geth
         # From https://stackoverflow.com/a/50972677/8338100:
         # > The gasLimit in the genesis block is only used as a starting point. As blocks are added to the chain, the
         # > block gas limit will change over time based on the miners processing the transactions on the network. To
@@ -884,6 +887,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         operator_acct = hardhat_accounts["operator"]
         operator_addr, operator_private_key = operator_acct
 
+        w3_url = eth.web3_host_port_url("localhost", self.ethereum_ws_port)
+
         files_to_delete = []
         manual_funds_alloc = None
         try:
@@ -895,11 +900,13 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 accounts_to_fund = \
                     [hardhat_accounts[who][0] for who in ["owner", "operator"]] + \
                     [acct[0] for acct in hardhat_accounts["validators"]]
-                funds_alloc = {addr: 1000 * eth.ETH for addr in accounts_to_fund}
-                geth_http_port = 8546
+                funds_alloc = {addr: 1000000 * eth.ETH for addr in accounts_to_fund}
+                # Default http port for geth is 8545, but we're using it for ws:// for compatibility with hardhat.
+                # Since we're using hardhat for deployment, and deployment script scripts/deploy_contracts_dev.ts uses
+                # hardhat, and since hardhat can deploy only over http, we also need geth to listen on http port.
+                geth_http_port = self.ethereum_ws_port + 1
                 geth_ws_port = 8545  # We're reversing default values for http and ws ports to keep ws on the same port as hardhat
                 geth_datadir = self.cmd.tmpdir("geth")  # TODO self.cmd.mktempdir()
-                w3_url = eth.web3_host_port_url("localhost", geth_ws_port)
                 self.cmd.rmdir(geth_datadir)
                 self.cmd.mkdir(geth_datadir)
                 geth = Geth(self.cmd, datadir=geth_datadir)
@@ -915,8 +922,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # to process transaction, while "geth --dev" mode will only mine blocks on demand => deadlock.
                     # Could be solved by doing 50 no-op transactions or by making ebrelayer not wait.
                     geth_run_args = geth.buid_run_args(self.ethereum_chain_id, dev=True, http_port=geth_http_port,
-                        ws_port=geth_ws_port, mine=True, allow_insecure_unlock=True, rpc_allow_unprotected_txs=True,
-                        gas_limit=self.geth_gas_limit)
+                        ws_port=self.ethereum_ws_port, mine=True, allow_insecure_unlock=True,
+                        rpc_allow_unprotected_txs=True, gas_limit=self.geth_gas_limit)
                     manual_funds_alloc = funds_alloc
                 else:
                     # geth "regular" private mode. We need to create a genesis and assign funds there.
@@ -932,11 +939,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
                     #      transactions allowed over RPC" when sending transactions
                     geth_run_args = geth.buid_run_args(self.ethereum_chain_id, http_port=geth_http_port,
-                        ws_port=geth_ws_port, mine=True, unlock=geth_runner_acct[0], password=tmp_password_file,
+                        ws_port=self.ethereum_ws_port, mine=True, unlock=geth_runner_acct[0], password=tmp_password_file,
                         allow_insecure_unlock=True, rpc_allow_unprotected_txs=True, gas_limit=self.geth_gas_limit)
 
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
-
                 hardhat_proc = geth_proc
                 hardhat_config_section = "geth"
                 hardhat_bind_hostname = "localhost"
@@ -949,18 +955,17 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 relayer_extra_args = {"max_fee_per_gas": 300 * eth.GWEI, "max_priority_fee_per_gas": 100 * eth.GWEI}
             else:
                 hardhat_bind_hostname = "localhost"  # The host to which to bind to for new connections (Defaults to 127.0.0.1 running locally, and 0.0.0.0 in Docker)
-                hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=hardhat_port)
+                hardhat_exec_args = hardhat.build_start_args(hostname=hardhat_bind_hostname, port=self.ethereum_ws_port)
                 hardhat_proc = self.cmd.spawn_asynchronous_process(hardhat_exec_args, log_file=hardhat_log_file)
                 hardhat_config_section = "localhost"
+                # hardhat has a blockchain node that will support web socket communication but the node it communicates
+                # with internally must be HTTP.
                 hardhat_deploy_url = None
-                # hardhat has a blockchain node that will support web socket communication but the node it communicates with
-                # internally must be HTTP
-                w3_url = "ws://localhost:{}".format(8545)
                 smart_contract_accounts = None  # Provided by hardhat (hardcoded)
                 relayer_extra_args = {}
 
             w3_conn = eth.web3_connect(w3_url)
-            w3_conn = eth.web3_wait_for_connection_up(w3_conn)
+            eth.web3_wait_for_connection_up(w3_conn)
 
             # In "geth --dev" mode, funds are not allocated in genesis file, but they need to be manually funded from
             # eth.coinbase. Since we don't have coinbase's private key, we have to use the "local account" API for
@@ -1144,7 +1149,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
         # @TODO Detect if sifnoded is already running, for now it fails silently and we wait forever in wait_for_sif_account_up
-        sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=[0.5, "rowan"],
+        sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=[0.5, ROWAN],
             log_format_json=True)
         sifnoded_proc = self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=sifnoded_log_file)
 
@@ -1155,7 +1160,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
         # TODO Try whitelister account instead of admin
-        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, "rowan"], 1.5, admin_account_name,
+        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, ROWAN], 1.5, admin_account_name,
             self.chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 1
@@ -1169,7 +1174,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         cross_chain_burn_fee = 1
         ethereum_cross_chain_fee_token = ceth_symbol
         assert self.ethereum_chain_id == int(ethereum_cross_chain_fee_token[9:13])  # Assume they should match
-        gas_prices = [0.5, "rowan"]
+        gas_prices = [0.5, ROWAN]
         gas_adjustment = 1.5
         sifnode.peggy2_set_cross_chain_fee(admin_account_address, self.ethereum_chain_id,
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
@@ -1487,7 +1492,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "start",
                         "--log_format", "json",
                         "--log_level", "debug",
-                        "--minimum-gas-prices", "0.5rowan",
+                        "--minimum-gas-prices", f"0.5{ROWAN}",
                         "--rpc.laddr", tcp_url,
                         "--home", sifnode_validator0_home
                     ]
