@@ -24,6 +24,10 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
+	_ sdk.Msg = &MsgAddSwapPermission{}
+	_ sdk.Msg = &MsgRemoveSwapPermission{}
+	_ sdk.Msg = &MsgUpdateLiquidityProtectionParams{}
+	_ sdk.Msg = &MsgModifyLiquidityProtectionRates{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -536,4 +540,119 @@ func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
 		panic(err)
 	}
 	return []sdk.AccAddress{addr}
+}
+
+func (m MsgAddSwapPermission) Route() string {
+	return RouterKey
+}
+
+func (m MsgAddSwapPermission) Type() string {
+	return "add_swap_permission"
+}
+
+func (m MsgAddSwapPermission) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgAddSwapPermission) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddSwapPermission) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgRemoveSwapPermission) Route() string {
+	return RouterKey
+}
+
+func (m MsgRemoveSwapPermission) Type() string {
+	return "remove_swap_permission"
+}
+
+func (m MsgRemoveSwapPermission) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgRemoveSwapPermission) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgRemoveSwapPermission) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m *MsgUpdateLiquidityProtectionParams) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	if m.EpochLength <= 0 {
+		return fmt.Errorf("liquidity protection epoch length must be greated than zero: %d", m.EpochLength)
+	}
+	return nil
+}
+
+func (m *MsgUpdateLiquidityProtectionParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateLiquidityProtectionParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateLiquidityProtectionParams) Type() string {
+	return "update_liquidity_protection_params"
+}
+
+func (m MsgUpdateLiquidityProtectionParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m *MsgModifyLiquidityProtectionRates) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MsgModifyLiquidityProtectionRates) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgModifyLiquidityProtectionRates) Route() string {
+	return RouterKey
+}
+
+func (m MsgModifyLiquidityProtectionRates) Type() string {
+	return "modify_liquidity_protection_rates"
+}
+
+func (m MsgModifyLiquidityProtectionRates) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }

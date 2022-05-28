@@ -27,15 +27,23 @@ const (
 )
 
 var (
-	PoolPrefix               = []byte{0x00} // key for storing Pools
-	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
-	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
-	PmtpRateParamsPrefix     = []byte{0x03} // Key to store the Pmtp rate params
-	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
-	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
-	RewardParamPrefix        = []byte{0x06}
-	SymmetryThresholdPrefix  = []byte{0x07}
+	PoolPrefix                          = []byte{0x00} // key for storing Pools
+	LiquidityProviderPrefix             = []byte{0x01} // key for storing Liquidity Providers
+	WhiteListValidatorPrefix            = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
+	PmtpRateParamsPrefix                = []byte{0x03} // Key to store the Pmtp rate params
+	PmtpEpochPrefix                     = []byte{0x04} // Key to store the Epoch
+	PmtpParamsPrefix                    = []byte{0x05} // Key to store the Pmtp params
+	RewardParamPrefix                   = []byte{0x06}
+	SymmetryThresholdPrefix             = []byte{0x07}
+	SwapPermissionStorePrefix           = []byte{0x08}
+	LiquidityProtectionParamsPrefix     = []byte{0x09} // Key to store the Liquidity Protection params
+	LiquidityProtectionRateParamsPrefix = []byte{0x0a} // Key to store the Liquidity Protection rate params
 )
+
+func GetSwapPermissionKey(swapType SwapType) []byte {
+	key := []byte(swapType.String())
+	return append(SwapPermissionStorePrefix, key...)
+}
 
 // Generates a key for storing a specific pool
 // The key is of the format externalticker_nativeticker
@@ -68,5 +76,13 @@ func GetDefaultPmtpParams() *PmtpParams {
 		PmtpPeriodEpochLength:    1,
 		PmtpPeriodStartBlock:     0,
 		PmtpPeriodEndBlock:       0,
+	}
+}
+
+func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
+	return &LiquidityProtectionParams{
+		MaxRowanLiquidityThreshold:      sdk.MustNewDecFromStr("1000"),
+		MaxRowanLiquidityThresholdAsset: "cusdt",
+		EpochLength:                     14400,
 	}
 }

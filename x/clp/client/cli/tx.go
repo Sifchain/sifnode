@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -44,6 +45,10 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
+		GetCmdAddSwapPermission(),
+		GetCmdRemoveSwapPermission(),
+		GetCmdUpdateLiquidityProtectionParams(),
+		GetCmdModifyLiquidityProtectionRates(),
 	)
 
 	return clpTxCmd
@@ -627,5 +632,158 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 
+	return cmd
+}
+
+func GetCmdAddSwapPermission() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-swap-permission [type]",
+		Short: "Add a swap permission",
+		Long: `Add a swap permission. Valid types are:
+	BUY_NATIVE_TOKEN
+	SELL_NATIVE_TOKEN
+	BUY_EXTERNAL_TOKEN
+	SELL_EXTERNAL_TOKEN
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			swapType, ok := types.SwapType_value[args[0]]
+			if !ok {
+				return errors.New("invalid swap type")
+			}
+			msg := types.MsgAddSwapPermission{
+				Signer: signer.String(),
+				SwapPermission: &types.SwapPermission{
+					SwapType: types.SwapType(swapType),
+				},
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdRemoveSwapPermission() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "remove-swap-permission [type]",
+		Short: "Remove a swap permission",
+		Long: `Remove a swap permission. Valid types are:
+	BUY_NATIVE_TOKEN
+	SELL_NATIVE_TOKEN
+	BUY_EXTERNAL_TOKEN
+	SELL_EXTERNAL_TOKEN
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			swapType, ok := types.SwapType_value[args[0]]
+			if !ok {
+				return errors.New("invalid swap type")
+			}
+			msg := types.MsgRemoveSwapPermission{
+				Signer: signer.String(),
+				SwapPermission: &types.SwapPermission{
+					SwapType: types.SwapType(swapType),
+				},
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "liquidity-protection-params",
+		Short: "Update liquidity protection params to set new threshold",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgUpdateLiquidityProtectionParams{
+				Signer:                          signer.String(),
+				MaxRowanLiquidityThreshold:      sdk.MustNewDecFromStr(viper.GetString(FlagMaxRowanLiquidityThreshold)),
+				MaxRowanLiquidityThresholdAsset: viper.GetString(FlagMaxRowanLiquidityThresholdAsset),
+				EpochLength:                     viper.GetInt64(FlagLiquidityProtectionEpochLength),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThreshold)
+	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThresholdAsset)
+	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
+	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThreshold); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThresholdAsset); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdModifyLiquidityProtectionRates() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "liquidity-protection-rates",
+		Short: "Modify liquidity protection current rowan liquidity threshold",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgModifyLiquidityProtectionRates{
+				Signer:                         signer.String(),
+				CurrentRowanLiquidityThreshold: sdk.MustNewDecFromStr(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsCurrentRowanLiquidityThreshold)
+	if err := cmd.MarkFlagRequired(FlagCurrentRowanLiquidityThreshold); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

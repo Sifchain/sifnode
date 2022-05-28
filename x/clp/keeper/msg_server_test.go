@@ -219,28 +219,39 @@ func TestMsgServer_DecommissionPool(t *testing.T) {
 
 func TestMsgServer_Swap(t *testing.T) {
 	testcases := []struct {
-		name                   string
-		createBalance          bool
-		createPool             bool
-		createLPs              bool
-		poolAsset              string
-		address                string
-		nativeBalance          sdk.Int
-		externalBalance        sdk.Int
-		nativeAssetAmount      sdk.Uint
-		externalAssetAmount    sdk.Uint
-		poolUnits              sdk.Uint
-		poolAssetPermissions   []tokenregistrytypes.Permission
-		nativeAssetPermissions []tokenregistrytypes.Permission
-		msg                    *types.MsgSwap
-		err                    error
-		errString              error
+		name                            string
+		createBalance                   bool
+		createPool                      bool
+		createLPs                       bool
+		poolAsset                       string
+		address                         string
+		nativeBalance                   sdk.Int
+		externalBalance                 sdk.Int
+		nativeAssetAmount               sdk.Uint
+		externalAssetAmount             sdk.Uint
+		poolUnits                       sdk.Uint
+		poolAssetPermissions            []tokenregistrytypes.Permission
+		nativeAssetPermissions          []tokenregistrytypes.Permission
+		swapPermissions                 []types.SwapPermission
+		currentRowanLiquidityThreshold  sdk.Dec
+		maxRowanLiquidityThresholdAsset string
+		msg                             *types.MsgSwap
+		err                             error
+		errString                       error
 	}{
 		{
 			name:          "sent asset token not supported",
 			createBalance: false,
 			createPool:    false,
 			createLPs:     false,
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "xxx"},
@@ -256,6 +267,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:    false,
 			createLPs:     false,
 			poolAsset:     "eth",
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -271,6 +290,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:    false,
 			createLPs:     false,
 			poolAsset:     "eth",
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -287,6 +314,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			createLPs:            false,
 			poolAsset:            "eth",
 			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -310,6 +345,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			poolUnits:              sdk.NewUint(1000),
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -333,6 +376,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			poolUnits:              sdk.NewUint(1000),
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -341,6 +392,117 @@ func TestMsgServer_Swap(t *testing.T) {
 				MinReceivingAmount: sdk.NewUint(1),
 			},
 			errString: errors.New("0rowan is smaller than 41rowan: insufficient funds: Unable to swap"),
+		},
+		{
+			name:                   "buy native token not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to buy native token"),
+		},
+		{
+			name:                   "sell native token not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to sell native token"),
+		},
+		{
+			name:                   "buy external token not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to buy external token"),
+		},
+		{
+			name:                   "sell external token not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to sell external token"),
+		},
+		{
+			name:                   "sell native token over threshold",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapPermissions: []types.SwapPermission{
+				{SwapType: types.SwapType_BUY_NATIVE_TOKEN},
+				{SwapType: types.SwapType_SELL_NATIVE_TOKEN},
+				{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN},
+				{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN},
+			},
+			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUintFromString("10000000000000000000000"),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, reached maximum rowan liquidity threshold"),
 		},
 	}
 
@@ -412,19 +574,36 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(1))
 
+			// remove all default permissions first
+			app.ClpKeeper.RemoveSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_BUY_NATIVE_TOKEN})
+			app.ClpKeeper.RemoveSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_SELL_NATIVE_TOKEN})
+			app.ClpKeeper.RemoveSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN})
+			app.ClpKeeper.RemoveSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN})
+
+			// add the test case permissions
+			for _, sp := range tc.swapPermissions {
+				sp := sp
+				app.ClpKeeper.AddSwapPermission(ctx, &sp)
+			}
+
+			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
+			liquidityProtectionParam.MaxRowanLiquidityThresholdAsset = tc.maxRowanLiquidityThresholdAsset
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
+			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
+
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
 			_, err := msgServer.Swap(sdk.WrapSDKContext(ctx), tc.msg)
 
-			//if tc.errString != nil {
-			//	require.EqualError(t, err, tc.errString.Error())
-			//	return
-			//}
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 				return
 			}
-			//require.NoError(t, err)
+			require.NoError(t, err)
 		})
 	}
 }

@@ -52,7 +52,7 @@ func TestKeeper_SetPmtpEpoch(t *testing.T) {
 	})
 }
 
-func TestKeeper_DecrementEpochCounter(t *testing.T) {
+func TestKeeper_DecrementPmtpEpochCounter(t *testing.T) {
 	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
 	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
@@ -83,7 +83,7 @@ func TestKeeper_DecrementEpochCounter(t *testing.T) {
 
 	app.ClpKeeper.SetPmtpEpoch(ctx, params)
 
-	app.ClpKeeper.DecrementEpochCounter(ctx)
+	app.ClpKeeper.DecrementPmtpEpochCounter(ctx)
 
 	got := app.ClpKeeper.GetPmtpEpoch(ctx)
 
@@ -93,7 +93,7 @@ func TestKeeper_DecrementEpochCounter(t *testing.T) {
 	})
 }
 
-func TestKeeper_DecrementBlockCounter(t *testing.T) {
+func TestKeeper_DecrementPmtpBlockCounter(t *testing.T) {
 	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
 	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
@@ -124,7 +124,7 @@ func TestKeeper_DecrementBlockCounter(t *testing.T) {
 
 	app.ClpKeeper.SetPmtpEpoch(ctx, params)
 
-	app.ClpKeeper.DecrementBlockCounter(ctx)
+	app.ClpKeeper.DecrementPmtpBlockCounter(ctx)
 
 	got := app.ClpKeeper.GetPmtpEpoch(ctx)
 
@@ -134,7 +134,7 @@ func TestKeeper_DecrementBlockCounter(t *testing.T) {
 	})
 }
 
-func TestKeeper_SetBlockCounter(t *testing.T) {
+func TestKeeper_SetPmtpBlockCounter(t *testing.T) {
 	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
 	const poolAsset = "eth"
 	nativeBalance := sdk.NewInt(10000)
@@ -165,7 +165,7 @@ func TestKeeper_SetBlockCounter(t *testing.T) {
 
 	app.ClpKeeper.SetPmtpEpoch(ctx, params)
 
-	app.ClpKeeper.SetBlockCounter(ctx, 2000)
+	app.ClpKeeper.SetPmtpBlockCounter(ctx, 2000)
 
 	got := app.ClpKeeper.GetPmtpEpoch(ctx)
 

@@ -30,6 +30,20 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 	// get current block height
 	currentHeight := ctx.BlockHeight()
+
+	/*
+		Liquidity protection current rowan liquidity threshold update
+	*/
+	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
+	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
+	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
+	if maxRowanLiquidityThreshold.GT(sdk.ZeroDec()) {
+		currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+		currentRowanLiquidityThreshold = sdk.MinDec(currentRowanLiquidityThreshold.Add(maxRowanLiquidityThreshold.QuoInt(sdk.NewInt(liquidityProtectionParams.EpochLength))), maxRowanLiquidityThreshold)
+		k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+		k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | maxRowanLiquidityThreshold: %s | asset: %s | currentRowanLiquidityThreshold: %s | maxPerBlock: %s", maxRowanLiquidityThreshold, maxRowanLiquidityThresholdAsset, k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold, maxRowanLiquidityThreshold.QuoInt(sdk.NewInt(liquidityProtectionParams.EpochLength))))
+	}
+
 	// get PMTP period params
 	pmtpPeriodStartBlock := k.GetPmtpParams(ctx).PmtpPeriodStartBlock
 	pmtpPeriodEndBlock := k.GetPmtpParams(ctx).PmtpPeriodEndBlock
@@ -61,14 +75,14 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.GetPmtpEpoch(ctx).EpochCounter > 0 {
 		// Calculate R running for policy params
 		pmtpCurrentRunningRate = k.PolicyCalculations(ctx)
-		k.DecrementBlockCounter(ctx)
+		k.DecrementPmtpBlockCounter(ctx)
 	}
 	// Manage Epoch Counter
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
 		currentHeight < pmtpPeriodEndBlock &&
 		currentHeight >= pmtpPeriodStartBlock {
-		k.DecrementEpochCounter(ctx)
-		k.SetBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
+		k.DecrementPmtpEpochCounter(ctx)
+		k.SetPmtpBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
 	}
 
 	if currentHeight == pmtpPeriodEndBlock {

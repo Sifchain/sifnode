@@ -40,7 +40,6 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgUpdatePmtpParams:
 			res, err := msgServer.UpdatePmtpParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
 		case *types.MsgUnlockLiquidityRequest:
 			res, err := msgServer.UnlockLiquidity(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
@@ -52,6 +51,18 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgUpdateStakingRewardParams:
 			res, err := msgServer.UpdateStakingRewardParams(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgAddSwapPermission:
+			res, err := msgServer.AddSwapPermission(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgRemoveSwapPermission:
+			res, err := msgServer.RemoveSwapPermission(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgUpdateLiquidityProtectionParams:
+			res, err := msgServer.UpdateLiquidityProtectionParams(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgModifyLiquidityProtectionRates:
+			res, err := msgServer.ModifyLiquidityProtectionRates(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)

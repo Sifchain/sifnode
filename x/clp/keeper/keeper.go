@@ -126,3 +126,62 @@ func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSet
 	bz := k.cdc.MustMarshal(setThreshold)
 	store.Set(types.SymmetryThresholdPrefix, bz)
 }
+
+func (k Keeper) GetSwapPermissionIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.SwapPermissionStorePrefix)
+}
+
+func (k Keeper) GetSwapPermissions(ctx sdk.Context) []*types.SwapPermission {
+	var swapPermissions []*types.SwapPermission
+	iterator := k.GetSwapPermissionIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var st types.SwapPermission
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &st)
+		swapPermissions = append(swapPermissions, &st)
+	}
+	return swapPermissions
+}
+
+func (k Keeper) GetSwapTypes(ctx sdk.Context) []types.SwapType {
+	var swapTypes []types.SwapType
+	iterator := k.GetSwapPermissionIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var st types.SwapPermission
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &st)
+		swapTypes = append(swapTypes, st.SwapType)
+	}
+	return swapTypes
+}
+
+func (k Keeper) AddSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSwapPermissionKey(swapPermission.SwapType)
+	store.Set(key, k.cdc.MustMarshal(swapPermission))
+}
+
+func (k Keeper) RemoveSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSwapPermissionKey(swapPermission.SwapType)
+	store.Delete(key)
+}
+
+func (k Keeper) checkSwapPermission(ctx sdk.Context, swapType types.SwapType) bool {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSwapPermissionKey(swapType)
+	return store.Has(key)
+}
