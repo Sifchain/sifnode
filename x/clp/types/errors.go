@@ -37,4 +37,8 @@ var (
 	ErrAsymmetricAdd                   = sdkerrors.Register(ModuleName, 35, "Cannot add liquidity asymmetrically")
 	ErrAsymmetricRemove                = sdkerrors.Register(ModuleName, 36, "Cannot remove liquidity asymmetrically")
 	ErrAsymmetricRatioAdd              = sdkerrors.Register(ModuleName, 37, "Cannot add liquidity with asymmetric ratio")
+	ErrNotAllowedToBuyNativeToken      = sdkerrors.Register(ModuleName, 38, "Unable to swap, not allowed to buy native token")
+	ErrNotAllowedToSellNativeToken     = sdkerrors.Register(ModuleName, 39, "Unable to swap, not allowed to sell native token")
+	ErrNotAllowedToBuyExternalToken    = sdkerrors.Register(ModuleName, 40, "Unable to swap, not allowed to buy external token")
+	ErrNotAllowedToSellExternalToken   = sdkerrors.Register(ModuleName, 41, "Unable to swap, not allowed to sell external token")
 )

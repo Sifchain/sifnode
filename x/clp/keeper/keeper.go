@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strings"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -125,4 +126,52 @@ func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSet
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(setThreshold)
 	store.Set(types.SymmetryThresholdPrefix, bz)
+}
+
+func (k Keeper) GetSwapPermissionIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.SwapPermissionStorePrefix)
+}
+
+func (k Keeper) GetSwapPermissions(ctx sdk.Context) []*types.SwapPermission {
+	var swapPermissions []*types.SwapPermission
+	iterator := k.GetSwapPermissionIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var st types.SwapPermission
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &st)
+		swapPermissions = append(swapPermissions, &st)
+	}
+	return swapPermissions
+}
+
+func (k Keeper) AddSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSwapPermissionKey(*swapPermission)
+	store.Set(key, k.cdc.MustMarshal(swapPermission))
+}
+
+func (k Keeper) RemoveSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSwapPermissionKey(*swapPermission)
+	store.Delete(key)
+}
+
+func (k Keeper) checkSwapPermission(ctx sdk.Context, swapType types.SwapType) bool {
+	swapPermissions := k.GetSwapPermissions(ctx)
+	if len(swapPermissions) == 0 {
+		return false
+	}
+	for _, swapPermission := range swapPermissions {
+		if strings.EqualFold(swapPermission.SwapType.String(), swapType.String()) {
+			return true
+		}
+	}
+	return false
 }

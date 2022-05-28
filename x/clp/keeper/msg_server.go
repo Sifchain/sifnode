@@ -367,6 +367,20 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
+
+	if strings.EqualFold(rAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_BUY_NATIVE_TOKEN) {
+		return nil, types.ErrNotAllowedToBuyNativeToken
+	}
+	if strings.EqualFold(sAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_SELL_NATIVE_TOKEN) {
+		return nil, types.ErrNotAllowedToSellNativeToken
+	}
+	if !strings.EqualFold(rAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_BUY_EXTERNAL_TOKEN) {
+		return nil, types.ErrNotAllowedToBuyExternalToken
+	}
+	if !strings.EqualFold(sAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_SELL_EXTERNAL_TOKEN) {
+		return nil, types.ErrNotAllowedToSellExternalToken
+	}
+
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	decimals := sAsset.Decimals
 	liquidityFeeNative := sdk.ZeroUint()
@@ -803,4 +817,34 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		),
 	})
 	return &types.MsgAddLiquidityResponse{}, nil
+}
+
+func (k msgServer) AddSwapPermission(goCtx context.Context, msg *types.MsgAddSwapPermission) (*types.MsgAddSwapPermissionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.Keeper.AddSwapPermission(ctx, msg.SwapPermission)
+
+	return &types.MsgAddSwapPermissionResponse{}, nil
+}
+
+func (k msgServer) RemoveSwapPermission(goCtx context.Context, msg *types.MsgRemoveSwapPermission) (*types.MsgRemoveSwapPermissionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.Keeper.RemoveSwapPermission(ctx, msg.SwapPermission)
+
+	return &types.MsgRemoveSwapPermissionResponse{}, nil
 }

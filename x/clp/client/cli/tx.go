@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -44,6 +45,8 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
+		GetCmdAddSwapPermission(),
+		GetCmdRemoveSwapPermission(),
 	)
 
 	return clpTxCmd
@@ -627,5 +630,91 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 
+	return cmd
+}
+
+func GetCmdAddSwapPermission() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-swap-permission [type]",
+		Short: "Add a swap permission",
+		Long: `Add a swap permission. Valid types are:
+	BUY_NATIVE_TOKEN
+	SELL_NATIVE_TOKEN
+	BUY_EXTERNAL_TOKEN
+	SELL_EXTERNAL_TOKEN
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			swapType, ok := types.SwapType_value[args[0]]
+			if !ok {
+				return errors.New("invalid swap type")
+			}
+			msg := types.MsgAddSwapPermission{
+				Signer: signer.String(),
+				SwapPermission: &types.SwapPermission{
+					SwapType: types.SwapType(swapType),
+				},
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdRemoveSwapPermission() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "remove-swap-permission [type]",
+		Short: "Remove a swap permission",
+		Long: `Remove a swap permission. Valid types are:
+	BUY_NATIVE_TOKEN
+	SELL_NATIVE_TOKEN
+	BUY_EXTERNAL_TOKEN
+	SELL_EXTERNAL_TOKEN
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			swapType, ok := types.SwapType_value[args[0]]
+			if !ok {
+				return errors.New("invalid swap type")
+			}
+			msg := types.MsgRemoveSwapPermission{
+				Signer: signer.String(),
+				SwapPermission: &types.SwapPermission{
+					SwapType: types.SwapType(swapType),
+				},
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
