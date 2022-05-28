@@ -156,13 +156,12 @@ message ParamsRes {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
+  repeated SwapAssetPermission swap_asset_permissions = 4;
 }
 
 message RewardParamsReq {}
 
-message RewardParamsRes {
-  RewardParams params = 1;
-}
+message RewardParamsRes { RewardParams params = 1; }
 message PmtpParamsReq {}
 
 message PmtpParamsRes {

@@ -238,8 +238,14 @@ func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.Params
 	params := k.Keeper.GetParams(ctx)
 	threshold := k.Keeper.GetSymmetryThreshold(ctx)
 	ratioThreshold := k.Keeper.GetSymmetryRatio(ctx)
+	swapAssetPermissions := k.Keeper.GetSwapAssetPermissions(ctx)
 
-	return &types.ParamsRes{Params: &params, SymmetryThreshold: threshold, SymmetryRatioThreshold: ratioThreshold}, nil
+	return &types.ParamsRes{
+		Params:                 &params,
+		SymmetryThreshold:      threshold,
+		SymmetryRatioThreshold: ratioThreshold,
+		SwapAssetPermissions:   swapAssetPermissions,
+	}, nil
 }
 
 func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*types.RewardParamsRes, error) {

@@ -25,11 +25,11 @@ message Pool {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"pool_units\""
   ];
-	string swap_price_native = 5 [
+  string swap_price_native = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.moretags) = "yaml:\"swap_price_native \""
   ];
-	string swap_price_external = 6 [
+  string swap_price_external = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.moretags) = "yaml:\"swap_price_external \""
   ];
@@ -73,7 +73,18 @@ message LiquidityProviderData {
 }
 
 message EventPolicy {
-  string event_type=1;
+  string event_type = 1;
   string pmtp_period_start_block = 2;
   string pmtp_period_end_block = 3;
+}
+
+enum SwapPermission {
+  UNSPECIFIED = 0;
+  DISABLE_BUY = 1;
+  DISABLE_SELL = 2;
+}
+
+message SwapAssetPermission {
+  string asset = 1;
+  SwapPermission swap_permission = 2;
 }

@@ -232,6 +232,7 @@ func TestMsgServer_Swap(t *testing.T) {
 		poolUnits              sdk.Uint
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
+		swapAssetPermissions   []types.SwapAssetPermission
 		msg                    *types.MsgSwap
 		err                    error
 		errString              error
@@ -342,6 +343,78 @@ func TestMsgServer_Swap(t *testing.T) {
 			},
 			errString: errors.New("0rowan is smaller than 41rowan: insufficient funds: Unable to swap"),
 		},
+		{
+			name:                   "buy rowan not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapAssetPermissions: []types.SwapAssetPermission{
+				{Asset: "rowan", SwapPermission: types.SwapPermission_DISABLE_BUY},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to buy selected asset"),
+		},
+		{
+			name:                   "sell rowan not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapAssetPermissions: []types.SwapAssetPermission{
+				{Asset: "rowan", SwapPermission: types.SwapPermission_DISABLE_SELL},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to sell selected asset"),
+		},
+		{
+			name:                   "buy eth not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapAssetPermissions: []types.SwapAssetPermission{
+				{Asset: "eth", SwapPermission: types.SwapPermission_DISABLE_BUY},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to buy selected asset"),
+		},
+		{
+			name:                   "sell eth not allowed",
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			swapAssetPermissions: []types.SwapAssetPermission{
+				{Asset: "eth", SwapPermission: types.SwapPermission_DISABLE_SELL},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, not allowed to sell selected asset"),
+		},
 	}
 
 	for _, tc := range testcases {
@@ -412,19 +485,25 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(1))
 
+			// add the test case swap asset permissions
+			for _, sp := range tc.swapAssetPermissions {
+				sp := sp
+				app.ClpKeeper.AddSwapAssetPermission(ctx, types.NewAsset(sp.Asset), sp.SwapPermission)
+			}
+
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
 			_, err := msgServer.Swap(sdk.WrapSDKContext(ctx), tc.msg)
 
-			//if tc.errString != nil {
-			//	require.EqualError(t, err, tc.errString.Error())
-			//	return
-			//}
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 				return
 			}
-			//require.NoError(t, err)
+			require.NoError(t, err)
 		})
 	}
 }

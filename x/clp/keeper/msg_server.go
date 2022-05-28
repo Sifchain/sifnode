@@ -367,6 +367,14 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
+
+	if k.checkSwapPermission(ctx, types.NewAsset(sAsset.Denom), types.SwapPermission_DISABLE_SELL) {
+		return nil, types.ErrNotAllowedToSellAsset
+	}
+	if k.checkSwapPermission(ctx, types.NewAsset(rAsset.Denom), types.SwapPermission_DISABLE_BUY) {
+		return nil, types.ErrNotAllowedToBuyAsset
+	}
+
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	decimals := sAsset.Decimals
 	liquidityFeeNative := sdk.ZeroUint()
@@ -803,4 +811,34 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		),
 	})
 	return &types.MsgAddLiquidityResponse{}, nil
+}
+
+func (k msgServer) AddSwapAssetPermission(goCtx context.Context, msg *types.MsgAddSwapAssetPermission) (*types.MsgAddSwapAssetPermissionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.Keeper.AddSwapAssetPermission(ctx, *msg.Asset, msg.SwapPermission)
+
+	return &types.MsgAddSwapAssetPermissionResponse{}, nil
+}
+
+func (k msgServer) RemoveSwapAssetPermission(goCtx context.Context, msg *types.MsgRemoveSwapAssetPermission) (*types.MsgRemoveSwapAssetPermissionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.Keeper.RemoveSwapAssetPermission(ctx, *msg.Asset, msg.SwapPermission)
+
+	return &types.MsgRemoveSwapAssetPermissionResponse{}, nil
 }
