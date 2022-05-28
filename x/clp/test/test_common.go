@@ -60,6 +60,7 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	})
 	app.ClpKeeper.SetParams(ctx, types.Params{
 		MinCreatePoolThreshold: 100,
+		EnableSwap:             true,
 	})
 	app.ClpKeeper.SetPmtpParams(ctx, &types.PmtpParams{
 		PmtpPeriodGovernanceRate: sdk.OneDec(),

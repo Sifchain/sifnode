@@ -22,6 +22,6 @@ func Test_ParamsEqual(t *testing.T) {
 	params2 := DefaultParams()
 	boolean := params1.Equal(params2)
 	assert.True(t, boolean)
-	boolean = params1.Equal(NewParams(uint64(10)))
+	boolean = params1.Equal(NewParams(uint64(10), true))
 	assert.False(t, boolean)
 }
