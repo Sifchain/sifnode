@@ -73,8 +73,11 @@ coverage:
 test-peggy:
 	make -C smart-contracts tests
 
-tests: test-peggy
+test-bin:
 	@go test -v -coverprofile .testCoverage.txt ./...
+
+tests: test-peggy test-bin
+.PHONY: test-peggy test-bin
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
