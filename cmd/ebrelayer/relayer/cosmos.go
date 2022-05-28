@@ -200,10 +200,9 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 
 				claimType := getOracleClaimType(event.GetType())
 
-				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
+					sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
 					// the relayer for signature aggregator not handle burn and lock
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
