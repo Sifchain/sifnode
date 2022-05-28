@@ -352,7 +352,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 	isSwapEnabled := k.Keeper.GetEnableSwap(ctx)
 	if !isSwapEnabled {
-		return nil, types.ErrSwapInterrupted
+		return nil, types.ErrSwapDisabled
 	}
 
 	var (
