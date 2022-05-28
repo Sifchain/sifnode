@@ -23,6 +23,7 @@ service Msg {
   rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams) returns (MsgUpdateStakingRewardParamsResponse);
   rpc SetSymmetryThreshold(MsgSetSymmetryThreshold) returns (MsgSetSymmetryThresholdResponse);
   rpc CancelUnlockLiquidity(MsgCancelUnlock) returns (MsgCancelUnlockResponse);
+  rpc EnableSwap(MsgEnableSwap) returns (MsgEnableSwapResponse);
 }
 
 //message MsgUpdateStakingRewardParams{
@@ -223,3 +224,10 @@ message MsgCancelUnlock {
 }
 
 message MsgCancelUnlockResponse {}
+
+message MsgEnableSwap {
+  string signer = 1;
+  bool enable_swap = 2;
+}
+
+message MsgEnableSwapResponse {}

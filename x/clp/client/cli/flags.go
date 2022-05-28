@@ -31,6 +31,7 @@ const (
 	FlagMintParams                   = "mint-params"
 	FlagMinter                       = "minter"
 	FlagSymmetryThreshold            = "threshold"
+	FlagEnableSwap                   = "enableSwap"
 )
 
 // common flagsets to add to various functions
@@ -60,6 +61,7 @@ var (
 	FsFlagNewPolicy                = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagMintParams               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagMinter                   = flag.NewFlagSet("", flag.ContinueOnError)
+	FsEnableSwap                   = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -89,4 +91,5 @@ func init() {
 	FsFlagRewardPeriods.String(FlagRewardPeriods, "", "Path to Json File containing reward periods")
 	FsFlagMintParams.String(FlagMintParams, "", "Inflation")
 	FsFlagMinter.String(FlagMinter, "", "Inflation Max")
+	FsEnableSwap.String(FlagEnableSwap, "", "Set flag to true to interrupt the swap mechanism")
 }
