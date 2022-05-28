@@ -537,6 +537,7 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			// add the test case permissions
 			for _, sp := range tc.swapPermissions {
+				sp := sp
 				app.ClpKeeper.AddSwapPermission(ctx, &sp)
 			}
 
