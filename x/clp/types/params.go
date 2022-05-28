@@ -10,11 +10,13 @@ import (
 // Default parameter namespace
 const (
 	DefaultMinCreatePoolThreshold uint64 = 100
+	DefaultEnableSwap             bool   = true
 )
 
 // Parameter store keys
 var (
 	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
+	KeyEnableSwap             = []byte("EnableSwap")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -25,9 +27,10 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params object
-func NewParams(minThreshold uint64) Params {
+func NewParams(minThreshold uint64, enableSwap bool) Params {
 	return Params{
 		MinCreatePoolThreshold: minThreshold,
+		EnableSwap:             enableSwap,
 	}
 }
 
@@ -35,6 +38,7 @@ func NewParams(minThreshold uint64) Params {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
+		paramtypes.NewParamSetPair(KeyEnableSwap, &p.EnableSwap, validateEnableSwap),
 	}
 }
 
@@ -42,11 +46,15 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
+		EnableSwap:             DefaultEnableSwap,
 	}
 }
 
 func (p Params) Validate() error {
 	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
+		return err
+	}
+	if err := validateEnableSwap(p.EnableSwap); err != nil {
 		return err
 	}
 	return nil
@@ -59,6 +67,14 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	}
 	if v == 0 {
 		return fmt.Errorf("min create pool threshold must be positive: %d", v)
+	}
+	return nil
+}
+
+func validateEnableSwap(i interface{}) error {
+	_, ok := i.(bool)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	return nil
 }

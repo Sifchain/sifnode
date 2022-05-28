@@ -31,7 +31,10 @@ func Migrate(genesis v039clp.GenesisState) clptypes.GenesisState {
 	}
 
 	return clptypes.GenesisState{
-		Params:             clptypes.Params{MinCreatePoolThreshold: uint64(genesis.Params.MinCreatePoolThreshold)},
+		Params: clptypes.Params{
+			MinCreatePoolThreshold: uint64(genesis.Params.MinCreatePoolThreshold),
+			EnableSwap:             bool(genesis.Params.EnableSwap),
+		},
 		AddressWhitelist:   whitelist,
 		PoolList:           poolList,
 		LiquidityProviders: liquidityProviders,

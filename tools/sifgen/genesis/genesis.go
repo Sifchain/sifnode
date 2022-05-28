@@ -69,6 +69,25 @@ func ReplaceCLPMinCreatePoolThreshold(nodeHomeDir string, minCreatePoolThreshold
 	return nil
 }
 
+func ReplaceCLPEnableSwap(nodeHomeDir string, enableSwap bool) error {
+	genesis, err := readGenesis(nodeHomeDir)
+	if err != nil {
+		return err
+	}
+
+	(*genesis).AppState.CLP.Params.EnableSwap = enableSwap
+	content, err := tmjson.Marshal(genesis)
+	if err != nil {
+		return err
+	}
+
+	if err := writeGenesis(nodeHomeDir, content); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func ReplaceGovDepositParamsMinDeposit(nodeHomeDir, tokenDenom string) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {

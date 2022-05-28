@@ -152,6 +152,7 @@ type RewardPeriod struct {
 
 type CLPParams struct {
 	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
+	EnableSwap             bool        `json:"enable_swap"`
 }
 
 type CLP struct {

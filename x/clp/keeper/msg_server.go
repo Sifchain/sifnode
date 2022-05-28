@@ -349,6 +349,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
 	var (
 		priceImpact sdk.Uint
 	)

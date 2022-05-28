@@ -10,6 +10,11 @@ func (k Keeper) GetMinCreatePoolThreshold(ctx sdk.Context) (res uint64) {
 	return res
 }
 
+func (k Keeper) GetEnableSwap(ctx sdk.Context) (res uint64) {
+	k.paramstore.Get(ctx, types.KeyEnableSwap, &res)
+	return res
+}
+
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramstore.GetParamSet(ctx, &params)
 	return params

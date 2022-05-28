@@ -37,6 +37,7 @@ type Node struct {
 	BondAmount                string        `yaml:"-"`
 	MintAmount                string        `yaml:"-"`
 	MinCLPCreatePoolThreshold uint64        `yaml:"-"`
+	EnableSwap                bool          `yaml:"-"`
 	GovMaxDepositPeriod       time.Duration `yaml:"-"`
 	GovVotingPeriod           time.Duration `yaml:"-"`
 	PeerAddress               string        `yaml:"-"`
@@ -201,6 +202,10 @@ func (n *Node) seedGenesis() error {
 	}
 
 	if err = genesis.ReplaceCLPMinCreatePoolThreshold(common.DefaultNodeHome, n.MinCLPCreatePoolThreshold); err != nil {
+		return err
+	}
+
+	if err = genesis.ReplaceCLPEnableSwap(common.DefaultNodeHome, n.EnableSwap); err != nil {
 		return err
 	}
 
