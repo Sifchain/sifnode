@@ -349,6 +349,12 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	isSwapEnabled := k.Keeper.GetEnableSwap(ctx)
+	if !isSwapEnabled {
+		return nil, types.ErrSwapInterrupted
+	}
+
 	var (
 		priceImpact sdk.Uint
 	)
@@ -803,4 +809,19 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		),
 	})
 	return &types.MsgAddLiquidityResponse{}, nil
+}
+
+func (k msgServer) EnableSwap(goCtx context.Context, msg *types.MsgEnableSwap) (*types.MsgEnableSwapResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.Keeper.SetEnableSwap(ctx, msg)
+
+	return &types.MsgEnableSwapResponse{}, nil
 }

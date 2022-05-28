@@ -24,6 +24,7 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
+	_ sdk.Msg = &MsgEnableSwap{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -531,6 +532,34 @@ func (m MsgSetSymmetryThreshold) GetSignBytes() []byte {
 }
 
 func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgEnableSwap) Route() string {
+	return RouterKey
+}
+
+func (m MsgEnableSwap) Type() string {
+	return "enable_swap"
+}
+
+func (m MsgEnableSwap) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgEnableSwap) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgEnableSwap) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

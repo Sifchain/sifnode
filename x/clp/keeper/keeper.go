@@ -126,3 +126,20 @@ func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSet
 	bz := k.cdc.MustMarshal(setThreshold)
 	store.Set(types.SymmetryThresholdPrefix, bz)
 }
+
+func (k Keeper) GetEnableSwap(ctx sdk.Context) bool {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.EnableSwapPrefix)
+	if bz == nil {
+		return true
+	}
+	var enableSwap types.MsgEnableSwap
+	k.cdc.MustUnmarshal(bz, &enableSwap)
+	return enableSwap.EnableSwap
+}
+
+func (k Keeper) SetEnableSwap(ctx sdk.Context, enableSwap *types.MsgEnableSwap) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(enableSwap)
+	store.Set(types.EnableSwapPrefix, bz)
+}

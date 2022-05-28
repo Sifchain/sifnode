@@ -44,6 +44,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
+		GetCmdEnableSwap(),
 	)
 
 	return clpTxCmd
@@ -627,5 +628,37 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 
+	return cmd
+}
+
+func GetCmdEnableSwap() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "enable-swap",
+		Short: "Enable the swap mechanism",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			isSwapEnabled := viper.GetBool(FlagEnableSwap)
+			if err != nil {
+				return err
+			}
+			msg := types.MsgEnableSwap{
+				Signer:     signer.String(),
+				EnableSwap: isSwapEnabled,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsEnableSwap)
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
