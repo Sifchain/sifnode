@@ -98,7 +98,7 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 
 # Add state data here if required
 
-cosmovisor start --home ~/.sifnoded/ --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9096 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27665 >> sifnode.log 2>&1  &
+cosmovisor start --home ~/.sifnoded/ --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9096 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:26657 >> sifnode.log 2>&1  &
 #sleep 7
 #sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
 sleep 7
