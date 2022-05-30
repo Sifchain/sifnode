@@ -1,7 +1,6 @@
 syntax = "proto3";
 package sifnode.tokenregistry.v1;
 
-import "gogoproto/gogo.proto";
 import "sifnode/tokenregistry/v1/types.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
