@@ -122,6 +122,7 @@ func TestSetBlacklist(t *testing.T) {
 			From:      adminAddress.String(),
 			Addresses: tc.updated,
 		})
+		require.NoError(t, err)
 	}
 }
 
