@@ -102,13 +102,9 @@ proto-format:
 	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
 .PHONY: proto-format
 
-# This generates the SDK's custom wrapper for google.protobuf.Any. It should only be run manually when needed
-proto-gen-any:
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protocgen-any.sh
-.PHONY: proto-gen-any
-
 proto-swagger-gen:
-	@./scripts/protoc-swagger-gen.sh
+	@echo "Generating Swagger files from Protobuf"
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protoc-swagger-gen.sh
 .PHONY: proto-swagger-gen
 
 proto-lint:
