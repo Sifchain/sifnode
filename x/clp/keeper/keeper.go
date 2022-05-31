@@ -150,6 +150,24 @@ func (k Keeper) GetSwapPermissions(ctx sdk.Context) []*types.SwapPermission {
 	return swapPermissions
 }
 
+func (k Keeper) GetSwapTypes(ctx sdk.Context) []types.SwapType {
+	var swapTypes []types.SwapType
+	iterator := k.GetSwapPermissionIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var st types.SwapPermission
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &st)
+		swapTypes = append(swapTypes, st.SwapType)
+	}
+	return swapTypes
+}
+
 func (k Keeper) AddSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSwapPermissionKey(swapPermission.SwapType)

@@ -39,7 +39,7 @@ var (
 )
 
 func GetSwapPermissionKey(swapType SwapType) []byte {
-	key := []byte(fmt.Sprintf("%s", swapType.String()))
+	key := []byte(swapType.String())
 	return append(SwapPermissionStorePrefix, key...)
 }
 
