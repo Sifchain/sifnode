@@ -43,7 +43,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 				From: admin.String(),
 				Entry: &types.RegistryEntry{
 					Denom:    "TestDenom",
-					Decimals: 0,
+					Decimals: -1,
 				},
 			},
 			assertion: assert.Error,
