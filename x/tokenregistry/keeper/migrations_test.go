@@ -39,12 +39,25 @@ func Test_MigrateToVer4(t *testing.T) {
 		},
 	}
 	// Test setup
-	for _, s := range tt {
+	for peggy1denom := range keeper.GetDenomMigrationMap() {
 		app.TokenRegistryKeeper.SetToken(ctx, &tkrtypes.RegistryEntry{
-			Denom:       s.denom,
-			Permissions: s.permissions,
+			Denom: peggy1denom,
+			Permissions: []tkrtypes.Permission{
+				tkrtypes.Permission_IBCIMPORT,
+				tkrtypes.Permission_IBCEXPORT,
+				tkrtypes.Permission_CLP,
+			},
 		})
 	}
+	// Set token which is not part of migration
+	app.TokenRegistryKeeper.SetToken(ctx, &tkrtypes.RegistryEntry{
+		Denom: "cdash",
+		Permissions: []tkrtypes.Permission{
+			tkrtypes.Permission_IBCIMPORT,
+			tkrtypes.Permission_IBCEXPORT,
+			tkrtypes.Permission_CLP,
+		},
+	})
 	migrator := keeper.NewMigrator(app.TokenRegistryKeeper)
 	migrator.MigrateToVer4(ctx)
 

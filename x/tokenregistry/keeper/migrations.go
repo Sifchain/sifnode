@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"encoding/json"
 	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"io/ioutil"
+	"path/filepath"
 )
 
 type Migrator struct {
@@ -28,14 +29,13 @@ func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer4(ctx sdk.Context) {
-	denomMigrationsList := GetDenomMigrationList()
-	for _, migration := range denomMigrationsList {
-		entry, err := m.keeper.GetRegistryEntry(ctx, migration.denom)
+	denomMigrations := GetDenomMigrationMap()
+	for peggy1denom, peggy2denom := range denomMigrations {
+		entry, err := m.keeper.GetRegistryEntry(ctx, peggy1denom)
 		if err != nil {
 			panic(err)
 		}
 		peggyTwoEntry := entry
-		peggy2denom := types.GetDenom(migration.networkDescriptor, migration.tokenContractAddress)
 		entry.Permissions = []tkrtypes.Permission{
 			tkrtypes.Permission_IBCIMPORT,
 		}
@@ -53,18 +53,23 @@ func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
 	store.Delete(key)
 }
 
-type DenomMigrator struct {
-	denom                string
-	networkDescriptor    oracleTypes.NetworkDescriptor
-	tokenContractAddress types.EthereumAddress
+func GetDenomMigrationMap() map[string]string {
+	migrationMap := map[string]string{}
+	input, err := ioutil.ReadFile(DenomMigrationFilePath())
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(input, &migrationMap)
+	if err != nil {
+		panic(err)
+	}
+	return migrationMap
 }
 
-func GetDenomMigrationList() []DenomMigrator {
-	return []DenomMigrator{
-		{
-			denom:                "ceth",
-			networkDescriptor:    oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-			tokenContractAddress: types.NewEthereumAddress("0x0000000000000000000000000000000000000000"),
-		},
+func DenomMigrationFilePath() string {
+	fp, err := filepath.Abs("../../../smart-contracts/data/denom_mapping_peggy1_to_peggy2.json")
+	if err != nil {
+		panic(err)
 	}
+	return fp
 }
