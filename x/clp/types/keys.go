@@ -38,8 +38,8 @@ var (
 	SwapPermissionStorePrefix = []byte{0x08}
 )
 
-func GetSwapPermissionKey(swapPermission SwapPermission) []byte {
-	key := []byte(fmt.Sprintf("%s", swapPermission.SwapType.String()))
+func GetSwapPermissionKey(swapType SwapType) []byte {
+	key := []byte(fmt.Sprintf("%s", swapType.String()))
 	return append(SwapPermissionStorePrefix, key...)
 }
 

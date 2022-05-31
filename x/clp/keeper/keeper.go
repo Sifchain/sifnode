@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"strings"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -153,25 +152,18 @@ func (k Keeper) GetSwapPermissions(ctx sdk.Context) []*types.SwapPermission {
 
 func (k Keeper) AddSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetSwapPermissionKey(*swapPermission)
+	key := types.GetSwapPermissionKey(swapPermission.SwapType)
 	store.Set(key, k.cdc.MustMarshal(swapPermission))
 }
 
 func (k Keeper) RemoveSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetSwapPermissionKey(*swapPermission)
+	key := types.GetSwapPermissionKey(swapPermission.SwapType)
 	store.Delete(key)
 }
 
 func (k Keeper) checkSwapPermission(ctx sdk.Context, swapType types.SwapType) bool {
-	swapPermissions := k.GetSwapPermissions(ctx)
-	if len(swapPermissions) == 0 {
-		return false
-	}
-	for _, swapPermission := range swapPermissions {
-		if strings.EqualFold(swapPermission.SwapType.String(), swapType.String()) {
-			return true
-		}
-	}
-	return false
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSwapPermissionKey(swapType)
+	return store.Has(key)
 }
