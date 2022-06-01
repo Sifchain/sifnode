@@ -19,8 +19,9 @@ class Command:
     def __init__(self):
         self._tmpdir: Optional[str] = None
 
-    def execst(self, args: Sequence[str], cwd: str = None, env: Mapping[str, str] = None, stdin: Optional[AnyStr] = None,
-        binary: bool = False, pipe: bool = True, check_exit: bool = True, disable_log: bool = False
+    def execst(self, args: Sequence[str], cwd: str = None, env: Mapping[str, str] = None,
+        stdin: Union[str, bytes, List[str], None] = None, binary: bool = False, pipe: bool = True,
+        check_exit: bool = True, disable_log: bool = False
     ) -> ExecResult:
         fd_stdout = subprocess.PIPE if pipe else None
         fd_stderr = subprocess.PIPE if pipe else None

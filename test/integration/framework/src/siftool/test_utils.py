@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import random
@@ -581,7 +582,8 @@ class EnvCtx:
         amounts = cosmos.balance_normalize(amounts)
         amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
-            self._sifnoded_chain_id_and_node_arg() + \
+            self.sifnode_client._chain_id_args() + \
+            self.sifnode_client._node_args() + \
             self._sifnoded_fees_arg() + \
             ["--yes", "--output", "json"]
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
@@ -598,12 +600,54 @@ class EnvCtx:
         args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
             (["--limit", str(limit)] if limit is not None else []) + \
             (["--offset", str(offset)] if offset is not None else []) + \
-            self._sifnoded_chain_id_and_node_arg()
+            self.sifnode_client._chain_id_args() + \
+            self.sifnode_client._node_args()
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
         res = json.loads(stdout(res))
         if res["pagination"]["next_key"] is not None:
             raise Exception("More than {} results in balances".format(limit))
         return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
+
+    def get_sifchain_balance_long(self, sif_addr: cosmos.Address, height: Optional[int] = None,
+        disable_log: bool = False
+    ) -> cosmos.Balance:
+        block = self.get_current_block()
+        block = 7000
+        limit = None
+        offset = None
+        all_balances = {}
+        requested_page_size = 1000
+        offset = 0
+        while True:
+            args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
+                (["--height", str(block)] if block is not None else []) + \
+                (["--limit", str(requested_page_size)] if requested_page_size is not None else []) + \
+                (["--offset", str(offset)] if offset is not None else []) + \
+                self.sifnode_client._chain_id_args() + \
+                self.sifnode_client._node_args()
+            res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
+            res = json.loads(stdout(res))
+            balances = res["balances"]
+            next_key = base64.b64decode(res["pagination"]["next_key"])
+            for bal in balances:
+                denom, amount = bal["denom"], int(bal["amount"])
+                assert denom not in all_balances
+                all_balances[denom] = amount
+            offset += requested_page_size
+            log.debug("Read {} balances, offset={}, first='{}', next_key={}".format(len(balances), offset, balances[0]["denom"], next_key))
+            if len(balances) < requested_page_size:
+                break
+        if res["pagination"]["next_key"] is not None:
+            raise Exception("More than {} results in balances".format(limit))
+        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
+
+    def get_current_block(self):
+        return int(self.status()["SyncInfo"]["latest_block_height"])
+
+    def status(self):
+        args = ["status"] + self.sifnode_client._node_args()
+        res = self.sifnode.sifnoded_exec(args)
+        return json.loads(stderr(res))
 
     # Unless timed out, this function will exit:
     # - if min_changes are given: when changes are greater.

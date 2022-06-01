@@ -14,6 +14,11 @@ log = siftool_logger(__name__)
 
 ROWAN = "rowan"
 
+# Sifchain public network URLs
+URL_RPC_BETANET = "https://rpc.sifchain.finance"
+URL_RPC_TESTNET = "https://rpc-testnet.sifchain.finance"
+URL_RPC_DEVNET = "https://rpc-devnet.sifchain.finance"
+
 
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
@@ -215,7 +220,7 @@ class Sifnoded:
             (["--home", self.home] if self.home else [])
         return command.buildcmd(args)
 
-    def sifnoded_exec(self, args: Sequence[str], sifnoded_home: Optional[str] = None,
+    def sifnoded_exec(self, args: List[str], sifnoded_home: Optional[str] = None,
         keyring_backend: Optional[str] = None, stdin: Optional[AnyStr] = None, cwd: Optional[str] = None,
         disable_log: bool = False
     ) -> command.ExecResult:
@@ -287,7 +292,8 @@ class SifnodeClient:
             (["--generate-only"] if generate_only else []) + \
             self._gas_prices_args() + \
             self._home_args() + \
-            self._chain_id_and_node_args() + \
+            self._chain_id_args() + \
+            self._node_args() + \
             (self._keyring_backend_args() if not generate_only else [])
         res = self.sifnoded_exec(args)
         result = json.loads(stdout(res))
@@ -314,7 +320,8 @@ class SifnodeClient:
             args = ["tx", "sign", tmp_tx_file, "--from", from_sif_addr] + \
                 (["--sequence", str(sequence), "--offline", "--account-number", str(account_number)] if sequence else []) + \
                 self._home_args() + \
-                self._chain_id_and_node_args() + \
+                self._chain_id_args() + \
+                self._node_args() + \
                 self._keyring_backend_args()
             res = self.sifnoded_exec(args)
             signed_tx = json.loads(stderr(res))
@@ -351,10 +358,11 @@ class SifnodeClient:
     def _gas_prices_args(self):
         return ["--gas-prices", "0.5rowan", "--gas-adjustment", "1.5"]
 
-    def _chain_id_and_node_args(self):
-        return \
-           (["--node", self.node] if self.node else []) + \
-           (["--chain-id", self.chain_id] if self.chain_id else [])
+    def _chain_id_args(self):
+        return ["--chain-id", self.chain_id] if self.chain_id else []
+
+    def _node_args(self):
+        return ["--node", self.node] if self.node else []
 
     def _keyring_backend_args(self):
         keyring_backend = self.ctx.sifnode.keyring_backend
@@ -393,9 +401,11 @@ class Ebrelayer:
         web3_provider: str, bridge_registry_contract_address: eth.Address, validator_mnemonic: str, chain_id: str,
         node: Optional[str] = None, keyring_backend: Optional[str] = None, keyring_dir: Optional[str] = None,
         sign_with: Optional[str] = None, symbol_translator_file: Optional[str] = None, log_format: Optional[str] = None,
-        max_fee_per_gas: Optional[int] = None, max_priority_fee_per_gas: Optional[str] = None, extra_args=None,
-        ethereum_private_key=None, ethereum_address=None, home=None, cwd=None
-    ):
+        max_fee_per_gas: Optional[int] = None, max_priority_fee_per_gas: Optional[str] = None,
+        extra_args: Mapping[str, Any] = None, ethereum_private_key: Optional[eth.PrivateKey] = None,
+        ethereum_address: Optional[eth.Address] = None, home: Optional[str] = None, log_level: Optional[str] = None,
+        cwd: Optional[str] = None
+    ) -> command.ExecArgs:
         env = _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key)
         args = [
             self.binary,
@@ -415,6 +425,7 @@ class Ebrelayer:
             (["--keyring-dir", keyring_dir] if keyring_dir else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--log_format", log_format] if log_format else []) + \
+            (["--log_level", log_level] if log_level else []) + \
             (["--maxFeePerGasFlag", str(max_fee_per_gas)] if max_fee_per_gas is not None else []) + \
             (["--maxPriorityFeePerGasFlag", str(max_priority_fee_per_gas)] if max_priority_fee_per_gas is not None else [])
 

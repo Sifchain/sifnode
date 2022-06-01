@@ -811,6 +811,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 10 ** 16,
         }
 
+        # Log levels for "ebrelayer --log_level". Use `None` to skip this parameter and let ebrelayer use its default
+        self.log_level_relayer = None
+        self.log_level_witness = None
+
         # The following are only meaningful if use_geth_instead_of_hardhat is enabled
         self.use_geth_instead_of_hardhat = use_geth
         # From https://stackoverflow.com/a/50972677/8338100:
@@ -1026,7 +1030,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
         [relayer0_exec_args], [witness_exec_args] = self.start_witnesses_and_relayers(
             w3_url, self.ethereum_chain_id, tcp_url, self.chain_id, peggy_sc_addrs, evm_validator_accounts,
-            sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file, relayer_extra_args)
+            sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file, self.log_level_relayer,
+            self.log_level_witness, relayer_extra_args)
 
         hardhat_scripts.update_validator_power(peggy_sc_addrs["CosmosBridge"], evm_validator_addresses, sifnode_witnesses)
 
@@ -1207,10 +1212,12 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
         self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
 
-    def start_witnesses_and_relayers(self, web3_websocket_address, hardhat_chain_id, tcp_url, chain_id, peggy_sc_addrs,
-        evm_validator_accounts, sifnode_validators, sifnode_relayers, sifnode_witnesses, symbol_translator_file,
-        relayer_extra_args
-    ):
+    def start_witnesses_and_relayers(self, web3_websocket_address: str, hardhat_chain_id: int, tcp_url: str,
+        chain_id: str, peggy_sc_addrs: Mapping[str, eth.Address], evm_validator_accounts: List,
+        sifnode_validators: Sequence[Mapping[str, Any]], sifnode_relayers: Sequence[Mapping[str, Any]],
+        sifnode_witnesses: Sequence[Mapping[str, Any]], symbol_translator_file: str, log_level_relayer: Optional[str],
+        log_level_witness: Optional[str], relayer_extra_args: Mapping[str, Any]
+    ) -> Tuple[Sequence[command.ExecArgs], Sequence[command.ExecArgs]]:
         # For now we assume a single validator
         evm_validator0_addr, evm_validator0_key = evm_validator_accounts[0]
 
@@ -1244,6 +1251,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             keyring_backend="test",
             keyring_dir=sifnode_relayer0_home,
             home=sifnode_relayer0_home,
+            log_level=log_level_relayer,
             **relayer_extra_args,
         )
 
@@ -1266,6 +1274,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 keyring_dir=w["home"],
                 log_format="json",
                 home=w["home"],
+                log_level=log_level_witness,
             )
             witness_exec_args.append(item)
 
