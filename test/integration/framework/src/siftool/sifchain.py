@@ -211,8 +211,9 @@ class Sifnoded:
             log_format_json=log_format_json)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
-    def build_start_cmd(self, tcp_url: str = None, minimum_gas_prices=None, log_format_json=False):
-        args = [self.binary, "start", "--trace"] + \
+    def build_start_cmd(self, tcp_url: str = None, minimum_gas_prices: cosmos.Balance=None, log_format_json=False, trace: bool = True):
+        args = [self.binary, "start"] + \
+            (["--trace"] if trace else []) + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--log_level", "debug"] if log_format_json else []) + \

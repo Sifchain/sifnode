@@ -129,13 +129,15 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     fat_sif_wallet = ctx.create_sifchain_addr()
     slim_sif_wallet = ctx.create_sifchain_addr()
 
+    report(report_lines, "Number of tokens: {}".format(number_of_erc20_tokens))
+    log.info("Fat sif wallet ({} denoms): {}".format(number_of_erc20_tokens, fat_sif_wallet))
+    log.info("Slim sif wallet (1 denom): {}".format(slim_sif_wallet))
+
     def token_data_provider(i: int) -> Tuple[str, str, int]:
         token_name = "{}{}".format(token_name_base, i)
         token_symbol = "eth-symbol-{}".format(i)
         token_decimals = 6
         return token_name, token_symbol, token_decimals
-
-    report(report_lines, "Number of tokens: {}".format(number_of_erc20_tokens))
 
     setup_start_time = time.time()
     time_before = time.time()
@@ -147,7 +149,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
 
     sif_denoms = [sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, addr) for addr in contract_addresses]
 
-    amount = 123456  # Must be > test_loop_count
+    amount = 123456
+    assert amount > sample_loop_size
 
     time_before = time.time()
     batch_mint_erc20_tokens(ctx, owner, eth_sender, amount, contract_addresses)
