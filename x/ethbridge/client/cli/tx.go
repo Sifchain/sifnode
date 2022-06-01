@@ -59,8 +59,8 @@ func GetCmdBurn() *cobra.Command {
 				return err
 			}
 
-			if !common.IsHexAddress(args[1]) {
-				return errors.Errorf("invalid [ethereum-receiver-address]: %s", args[1])
+			if !common.IsHexAddress(args[0]) {
+				return errors.Errorf("invalid [ethereum-receiver-address]: %s", args[0])
 			}
 			ethereumReceiver := types.NewEthereumAddress(args[0])
 
@@ -124,9 +124,9 @@ func GetCmdLock() *cobra.Command {
 			}
 
 			if !common.IsHexAddress(args[0]) {
-				return errors.Errorf("invalid [ethereum-receiver-address]: %s", args[1])
+				return errors.Errorf("invalid [ethereum-receiver-address]: %s", args[0])
 			}
-			ethereumReceiver := types.NewEthereumAddress(args[1])
+			ethereumReceiver := types.NewEthereumAddress(args[0])
 
 			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[1]) {
