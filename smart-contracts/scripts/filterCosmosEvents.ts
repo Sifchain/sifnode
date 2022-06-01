@@ -1,4 +1,4 @@
-import { Client } from "pg";
+import { Client, Pool } from "pg";
 
 // Goal:
 /**
@@ -34,18 +34,16 @@ type raw_ibc_transfer = {
 // I Create this type so if we want to attach metadata we can
 type IBCTransferEvent = raw_ibc_transfer & { amount: denom };
 
-let pgClient: Client;
-
 // Return type?
 function fetchTransfer(cosmosAddress: cosmosAddress) {}
 
-async function retrieveRawIBCEvent(): Promise<raw_ibc_transfer[]> {
+async function retrieveRawIBCEvent(pool: Pool): Promise<raw_ibc_transfer[]> {
   let query: string = "SELECT * from events_audit limit 1";
 
-  console.log("Querying", pgClient);
-  pgClient.query(
+  console.log("Querying", pool);
+  pool.query(
     query,
-    (out, err) => {
+    (err, out) => {
       console.log(out);
       console.log(err);
     }
@@ -79,27 +77,37 @@ function filterIBCByCosmosAddress() {}
 
 function fetchSwapEvents(cosmosAddress: cosmosAddress) {}
 
-function initPg(): Client {
-  // const pgClient = new Client();
-  pgClient = new Client();
-  pgClient.connect();
+async function initPg(): Promise<Pool> {
+  const pool = new Pool({
+    keepAliveInitialDelayMillis: 180_000,
+    idle_in_transaction_session_timeout: 180_000,
+    connectionTimeoutMillis: 180_000,
+    idleTimeoutMillis: 180_000,
+    ssl: false
+  });
+  await pool.connect();
   console.log("Connected to tsdb");
-  return pgClient;
+  return pool;
 }
 
-async function endPg(): Promise<void> {
+async function endPg(pool: Pool): Promise<void> {
   console.log("Closing connection");
-  await pgClient.end();
+  await pool.end();
 }
 
 async function main(): Promise<void> {
+  let pool : Pool;
   try {
-    initPg();
-    retrieveRawIBCEvent();
+    pool = await initPg();
   } catch (error) {
-    console.log("Had err");
-  } finally {
-    endPg();
+    console.error("Error connecting occurred: ", error);
+    return;
+  } try {
+    retrieveRawIBCEvent(pool);
+  } catch (error) {
+    console.log("Had error: ", error);
+} finally {
+    endPg(pool);
   }
 }
 
