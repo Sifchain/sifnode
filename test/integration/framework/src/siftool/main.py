@@ -129,20 +129,6 @@ def main(argv):
         ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
         res = stdout_lines(cmd.execst(**ls_cmd))
         print(ls_cmd)
-    elif what == "poc-geth":
-        import geth
-        g = geth.Geth(cmd)
-        with open(cmd.mktempfile(), "w") as geth_log_file:
-            datadir_for_running = cmd.mktempdir()
-            datadir_for_keys = cmd.mktempdir()
-            args = g.geth_cmd__test_integration_geth_branch(datadir=datadir_for_running)
-            geth_proc = cmd.popen(args, log_file=geth_log_file)
-            import hardhat
-            for expected_addr, private_key in hardhat.default_accounts():
-                addr = g.create_account("password", private_key, datadir=datadir_for_keys)
-                assert addr == expected_addr
-            wait_for_enter_key_pressed()
-            killall((geth_proc,))
     elif what == "inflate-tokens":
         from siftool import inflate_tokens
         inflate_tokens.run(*argv[1:])

@@ -137,39 +137,6 @@ class Geth:
         res = self.cmd.popen(cmd)
         return res
 
-    # <editor-fold>
-
-    # Examples of usage of geth from branch 'test-integration-geth'.
-    # Dev mode creates one account with a near-infinite balance (console: eth.getBalance(eth.accounts[0])).
-    # Not used at the moment
-    def geth_cmd__test_integration_geth_branch(self, datadir=None):
-        # def geth_cmd(args: env_ethereum.EthereumInput) -> str:
-        #     apis = "personal,eth,net,web3,debug"
-        #     cmd = " ".join([
-        #         "geth",
-        #         f"--networkid {args.network_id}",
-        #         f"--ipcpath {ipcpath}",
-        #         f"--ws --ws.addr 0.0.0.0 --ws.port {args.ws_port} --ws.api {apis}",
-        #         f"--http --http.addr 0.0.0.0 --http.port {args.http_port} --http.api {apis}",
-        #         "--rpc.allow-unprotected-txs",
-        #         "--dev --dev.period 1",
-        #         "--rpcvhosts=*",
-        #         "--mine --miner.threads=1",
-        #     ])
-        #     return cmd
-        #
-        # geth --networkid 3 --ipcpath /tmp/geth.ipc \
-        #     --ws --ws.addr 0.0.0.0 --ws.port 8646 --ws.api personal,eth,net,web3,debug \
-        #     --http --http.addr 0.0.0.0 --http.port 7990 --http.api personal,eth,net,web3,debug \
-        #     --rpc.allow-unprotected-txs \
-        #     --dev --dev.period 1 --rpcvhosts=* --mine --miner.threads=1
-        return self.geth_cmd(datadir=datadir, network_id=3, ipcpath=self.cmd.tmpdir("geth.ipc"), ws=True,
-            ws_addr=ANY_ADDR, ws_port=8646, http=True, http_addr=ANY_ADDR, http_port=7990,
-            http_api=("personal", "eth", "net", "web3", "debug"), rpc_allow_unprotected_txs=True, dev=True,
-            dev_period=1, mine=True, miner_threads=1)
-
-    # </editor-fold>
-
     def create_genesis_config_clique(self, chain_id: int, signer_addresses: Iterable[eth.Address],
         alloc: Mapping[eth.Address, int], gas_limit: int = 8000000, difficulty: int = 1, block_mining_period: int = 5,
     ) -> Mapping[str, Any]:
