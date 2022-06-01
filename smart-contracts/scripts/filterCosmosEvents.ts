@@ -41,14 +41,8 @@ async function retrieveRawIBCEvent(pool: Pool): Promise<raw_ibc_transfer[]> {
   let query: string = "SELECT * from events_audit limit 1";
 
   console.log("Querying", pool);
-  pool.query(
-    query,
-    (err, out) => {
-      console.log(out);
-      console.log(err);
-    }
-    // values: [],
-  );
+  const output = await pool.query(query);
+  console.log(output);
   // .then((output) => console.log("Output", output))
   // .catch((err) => console.error("Error rawibc query", err));
 
@@ -90,6 +84,19 @@ async function initPg(): Promise<Pool> {
   return pool;
 }
 
+async function findTransfers(pool: Pool, addresses: string[]) {
+  const query = "select bn_recipient, bn_sender, bn_amount, bn_token, log from events_audit where type in ('burn', 'lock') and log -> 0 -> 'attributes' -> 2 ->> 'key' = 'ethereum_chain_id' and time > NOW() - interval '30 days';";
+  const values = [];
+  const result = await pool.query(query);
+  return result;
+}
+
+async function lockAndBurn(pool: Pool) {
+  const query = "select bn_recipient, bn_sender, bn_amount, bn_token, log from events_audit where type in ('burn', 'lock') and log -> 0 -> 'attributes' -> 2 ->> 'key' = 'ethereum_chain_id' and time > NOW() - interval '30 days';";
+  const out = await pool.query(query);
+  console.log(out);
+}
+
 async function endPg(pool: Pool): Promise<void> {
   console.log("Closing connection");
   await pool.end();
@@ -103,7 +110,8 @@ async function main(): Promise<void> {
     console.error("Error connecting occurred: ", error);
     return;
   } try {
-    retrieveRawIBCEvent(pool);
+    await retrieveRawIBCEvent(pool);
+    await lockAndBurn(pool);
   } catch (error) {
     console.log("Had error: ", error);
 } finally {
