@@ -40,7 +40,9 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgUpdatePmtpParams:
 			res, err := msgServer.UpdatePmtpParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
+		case *types.MsgCancelUnlock:
+			res, err := msgServer.CancelUnlockLiquidity(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgUnlockLiquidityRequest:
 			res, err := msgServer.UnlockLiquidity(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
