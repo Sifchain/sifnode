@@ -480,12 +480,11 @@ func NewSifApp(
 		banktypes.ModuleName,
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
-		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
-
+		ibchost.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
 		clptypes.ModuleName,
