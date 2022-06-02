@@ -611,34 +611,40 @@ class EnvCtx:
     def get_sifchain_balance_long(self, sif_addr: cosmos.Address, height: Optional[int] = None,
         disable_log: bool = False
     ) -> cosmos.Balance:
-        height = height if height is not None else self.get_current_block()
         all_balances = {}
-        requested_page_size = 1000
-        offset = 0
+        requested_page_size = 10000  # The actual limit might be capped to a lower value, in this case we'll get fewer results
+        page_key = None
         while True:
             args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
                 (["--height", str(height)] if height is not None else []) + \
                 (["--limit", str(requested_page_size)] if requested_page_size is not None else []) + \
-                (["--offset", str(offset)] if offset is not None else []) + \
+                (["--page-key", page_key] if page_key is not None else []) + \
                 self.sifnode_client._chain_id_args() + \
                 self.sifnode_client._node_args()
             res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
             res = json.loads(stdout(res))
             balances = res["balances"]
             next_key = res["pagination"]["next_key"]
-            next_key = None if next_key is None else base64.b64decode(next_key)
+            if next_key is not None:
+                if height is None:
+                    # There are more results than fit on a page. To ensure we get all balances as a consistent
+                    # snapshot, retry with "--height" fised to the current block. This wastes one request.
+                    # We could optimize this by starting with explicit "--height" in the first place, but the current
+                    # assumption is that most of results will fit on one page and that this will be faster without
+                    # "--height".
+                    height = self.get_current_block()
+                    log.debug("Large balance result, switching to paged mode using height of {}.".format(height))
+                    continue
+                page_key = base64.b64decode(next_key).decode("UTF-8")
             for bal in balances:
                 denom, amount = bal["denom"], int(bal["amount"])
                 assert denom not in all_balances
                 all_balances[denom] = amount
-            offset += requested_page_size
-            log.debug("Read {} balances, offset={}, first='{}', next_key={}".format(len(balances), offset,
+            log.debug("Read {} balances, first='{}', next_key={}".format(len(balances),
                 balances[0]["denom"] if len(balances) > 0 else None, next_key))
-            if len(balances) < requested_page_size:
+            if next_key is None:
                 break
-        if res["pagination"]["next_key"] is not None:
-            raise Exception("More than {} results in balances".format(limit))
-        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
+        return all_balances
 
     def get_current_block(self):
         return int(self.status()["SyncInfo"]["latest_block_height"])

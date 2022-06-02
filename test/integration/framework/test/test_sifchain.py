@@ -7,9 +7,9 @@ def get_ctx():
 
 def test_many_balances():
     ctx = get_ctx()
-    _test_many_balances(ctx, "sif16xkjwvvgg5ua48mg8kqy366xq36rz3yexf9nst")
+    _test_many_balances(ctx, "sif12qykekulyevag8f7egccayg7x8a98udhf3fn26")
 
 
 def _test_many_balances(ctx: test_utils.EnvCtx, sif_addr: cosmos.Address):
-    balances = ctx.get_sifchain_balance_long(sif_addr, height=3350)
+    balances = ctx.get_sifchain_balance_long(sif_addr)
     return
