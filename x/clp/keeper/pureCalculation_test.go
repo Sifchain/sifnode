@@ -21,7 +21,7 @@ func TestKeeper_DecRatIdentity(t *testing.T) {
 		expected := genDec(t)
 
 		rat := clpkeeper.DecToRat(&expected)
-		actual := clpkeeper.RatToDec(&rat)
+		actual, _ := clpkeeper.RatToDec(&rat)
 
 		if !expected.Equal(actual) {
 			t.Fatalf("\nexpected %s\nactual   %s", expected.String(), actual.String())
@@ -97,7 +97,7 @@ func TestKeeper_RatToDec(t *testing.T) {
 
 			var rat big.Rat
 			rat.SetFrac(tc.num, tc.denom)
-			y := clpkeeper.RatToDec(&rat)
+			y, _ := clpkeeper.RatToDec(&rat)
 
 			require.Equal(t, tc.expected, y)
 		})

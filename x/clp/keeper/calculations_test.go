@@ -1868,7 +1868,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 
 			require.NoError(t, err)
 
-			ratioDec := clpkeeper.RatToDec(&ratio)
+			ratioDec, _ := clpkeeper.RatToDec(&ratio)
 
 			require.Equal(t, tc.expected.String(), ratioDec.String())
 		})

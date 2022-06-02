@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 
@@ -19,8 +20,7 @@ func DecToRat(d *sdk.Dec) big.Rat {
 	return rat
 }
 
-// The sdk.Dec returned by this method can exceed the sdk.Decimal maxDecBitLen
-func RatToDec(r *big.Rat) sdk.Dec {
+func RatToDec(r *big.Rat) (sdk.Dec, error) {
 	num := r.Num()
 	denom := r.Denom() // big.Rat guarantees that denom is always > 0
 
@@ -30,7 +30,11 @@ func RatToDec(r *big.Rat) sdk.Dec {
 	d.Mul(num, multiplier)
 	d.Quo(&d, denom)
 
-	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision)
+	if d.BitLen() > 316 {
+		return sdk.ZeroDec(), fmt.Errorf("decimal out of range; bitLen: got %d, max %d", d.BitLen(), 316)
+	}
+
+	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision), nil
 }
 
 func RatIntQuo(r *big.Rat) *big.Int {

@@ -72,12 +72,12 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 
 		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
-			// Error occurs if native asset pool depth is zero
+			// Error occurs if native asset pool depth is zero or result overflows
 			spotPriceNative = sdk.ZeroDec()
 		}
 		spotPriceExternal, err := CalcSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
 		if err != nil {
-			// Error occurs if external asset pool depth is zero
+			// Error occurs if external asset pool depth is zero or result overflows
 			spotPriceExternal = sdk.ZeroDec()
 		}
 
