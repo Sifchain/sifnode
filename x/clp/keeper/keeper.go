@@ -127,14 +127,14 @@ func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSet
 	store.Set(types.SymmetryThresholdPrefix, bz)
 }
 
-func (k Keeper) GetSwapPermissionIterator(ctx sdk.Context) sdk.Iterator {
+func (k Keeper) GetSwapAssetPermissionIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.SwapPermissionStorePrefix)
+	return sdk.KVStorePrefixIterator(store, types.SwapAssetPermissionStorePrefix)
 }
 
-func (k Keeper) GetSwapPermissions(ctx sdk.Context) []*types.SwapPermission {
-	var swapPermissions []*types.SwapPermission
-	iterator := k.GetSwapPermissionIterator(ctx)
+func (k Keeper) GetSwapAssetPermissions(ctx sdk.Context) []*types.SwapAssetPermission {
+	var swapAssetPermissions []*types.SwapAssetPermission
+	iterator := k.GetSwapAssetPermissionIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
 		if err != nil {
@@ -142,46 +142,29 @@ func (k Keeper) GetSwapPermissions(ctx sdk.Context) []*types.SwapPermission {
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		var st types.SwapPermission
+		var st types.SwapAssetPermission
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &st)
-		swapPermissions = append(swapPermissions, &st)
+		swapAssetPermissions = append(swapAssetPermissions, &st)
 	}
-	return swapPermissions
+	return swapAssetPermissions
 }
 
-func (k Keeper) GetSwapTypes(ctx sdk.Context) []types.SwapType {
-	var swapTypes []types.SwapType
-	iterator := k.GetSwapPermissionIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(iterator)
-	for ; iterator.Valid(); iterator.Next() {
-		var st types.SwapPermission
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &st)
-		swapTypes = append(swapTypes, st.SwapType)
-	}
-	return swapTypes
-}
-
-func (k Keeper) AddSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
+func (k Keeper) AddSwapAssetPermission(ctx sdk.Context, asset types.Asset, swapPermission types.SwapPermission) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetSwapPermissionKey(swapPermission.SwapType)
-	store.Set(key, k.cdc.MustMarshal(swapPermission))
+	key := types.GetSwapAssetPermissionKey(asset, swapPermission)
+	bz := k.cdc.MustMarshal(&types.SwapAssetPermission{Asset: asset.Symbol, SwapPermission: swapPermission})
+	store.Set(key, bz)
 }
 
-func (k Keeper) RemoveSwapPermission(ctx sdk.Context, swapPermission *types.SwapPermission) {
+func (k Keeper) RemoveSwapAssetPermission(ctx sdk.Context, asset types.Asset, swapPermission types.SwapPermission) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetSwapPermissionKey(swapPermission.SwapType)
+	key := types.GetSwapAssetPermissionKey(asset, swapPermission)
 	store.Delete(key)
 }
 
-func (k Keeper) checkSwapPermission(ctx sdk.Context, swapType types.SwapType) bool {
+func (k Keeper) checkSwapPermission(ctx sdk.Context, asset types.Asset, swapPermission types.SwapPermission) bool {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetSwapPermissionKey(swapType)
+	key := types.GetSwapAssetPermissionKey(asset, swapPermission)
 	return store.Has(key)
 }

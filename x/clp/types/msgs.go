@@ -24,8 +24,8 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
-	_ sdk.Msg = &MsgAddSwapPermission{}
-	_ sdk.Msg = &MsgRemoveSwapPermission{}
+	_ sdk.Msg = &MsgAddSwapAssetPermission{}
+	_ sdk.Msg = &MsgRemoveSwapAssetPermission{}
 	_ sdk.Msg = &MsgUpdateLiquidityProtectionParams{}
 	_ sdk.Msg = &MsgModifyLiquidityProtectionRates{}
 
@@ -542,15 +542,15 @@ func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (m MsgAddSwapPermission) Route() string {
+func (m MsgAddSwapAssetPermission) Route() string {
 	return RouterKey
 }
 
-func (m MsgAddSwapPermission) Type() string {
-	return "add_swap_permission"
+func (m MsgAddSwapAssetPermission) Type() string {
+	return "add_swap_asset_permission"
 }
 
-func (m MsgAddSwapPermission) ValidateBasic() error {
+func (m MsgAddSwapAssetPermission) ValidateBasic() error {
 	if m.Signer == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -558,11 +558,11 @@ func (m MsgAddSwapPermission) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgAddSwapPermission) GetSignBytes() []byte {
+func (m MsgAddSwapAssetPermission) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
-func (m MsgAddSwapPermission) GetSigners() []sdk.AccAddress {
+func (m MsgAddSwapAssetPermission) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
@@ -570,15 +570,15 @@ func (m MsgAddSwapPermission) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (m MsgRemoveSwapPermission) Route() string {
+func (m MsgRemoveSwapAssetPermission) Route() string {
 	return RouterKey
 }
 
-func (m MsgRemoveSwapPermission) Type() string {
-	return "remove_swap_permission"
+func (m MsgRemoveSwapAssetPermission) Type() string {
+	return "remove_swap_asset_permission"
 }
 
-func (m MsgRemoveSwapPermission) ValidateBasic() error {
+func (m MsgRemoveSwapAssetPermission) ValidateBasic() error {
 	if m.Signer == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -586,11 +586,11 @@ func (m MsgRemoveSwapPermission) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgRemoveSwapPermission) GetSignBytes() []byte {
+func (m MsgRemoveSwapAssetPermission) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
-func (m MsgRemoveSwapPermission) GetSigners() []sdk.AccAddress {
+func (m MsgRemoveSwapAssetPermission) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

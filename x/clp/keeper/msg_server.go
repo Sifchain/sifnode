@@ -368,21 +368,11 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 
-	// buy rowan
-	if strings.EqualFold(rAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_BUY_NATIVE_TOKEN) {
-		return nil, types.ErrNotAllowedToBuyNativeToken
+	if k.checkSwapPermission(ctx, types.NewAsset(sAsset.Denom), types.SwapPermission_DISABLE_SELL) {
+		return nil, types.ErrNotAllowedToSellAsset
 	}
-	// sell rowan
-	if strings.EqualFold(sAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_SELL_NATIVE_TOKEN) {
-		return nil, types.ErrNotAllowedToSellNativeToken
-	}
-	// buy external token
-	if !strings.EqualFold(rAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_BUY_EXTERNAL_TOKEN) {
-		return nil, types.ErrNotAllowedToBuyExternalToken
-	}
-	// sell external token
-	if !strings.EqualFold(sAsset.Denom, types.NativeSymbol) && !k.checkSwapPermission(ctx, types.SwapType_SELL_EXTERNAL_TOKEN) {
-		return nil, types.ErrNotAllowedToSellExternalToken
+	if k.checkSwapPermission(ctx, types.NewAsset(rAsset.Denom), types.SwapPermission_DISABLE_BUY) {
+		return nil, types.ErrNotAllowedToBuyAsset
 	}
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
@@ -874,7 +864,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	return &types.MsgAddLiquidityResponse{}, nil
 }
 
-func (k msgServer) AddSwapPermission(goCtx context.Context, msg *types.MsgAddSwapPermission) (*types.MsgAddSwapPermissionResponse, error) {
+func (k msgServer) AddSwapAssetPermission(goCtx context.Context, msg *types.MsgAddSwapAssetPermission) (*types.MsgAddSwapAssetPermissionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
@@ -884,12 +874,12 @@ func (k msgServer) AddSwapPermission(goCtx context.Context, msg *types.MsgAddSwa
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
-	k.Keeper.AddSwapPermission(ctx, msg.SwapPermission)
+	k.Keeper.AddSwapAssetPermission(ctx, *msg.Asset, msg.SwapPermission)
 
-	return &types.MsgAddSwapPermissionResponse{}, nil
+	return &types.MsgAddSwapAssetPermissionResponse{}, nil
 }
 
-func (k msgServer) RemoveSwapPermission(goCtx context.Context, msg *types.MsgRemoveSwapPermission) (*types.MsgRemoveSwapPermissionResponse, error) {
+func (k msgServer) RemoveSwapAssetPermission(goCtx context.Context, msg *types.MsgRemoveSwapAssetPermission) (*types.MsgRemoveSwapAssetPermissionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
@@ -899,9 +889,9 @@ func (k msgServer) RemoveSwapPermission(goCtx context.Context, msg *types.MsgRem
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
-	k.Keeper.RemoveSwapPermission(ctx, msg.SwapPermission)
+	k.Keeper.RemoveSwapAssetPermission(ctx, *msg.Asset, msg.SwapPermission)
 
-	return &types.MsgRemoveSwapPermissionResponse{}, nil
+	return &types.MsgRemoveSwapAssetPermissionResponse{}, nil
 }
 
 func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *types.MsgUpdateLiquidityProtectionParams) (*types.MsgUpdateLiquidityProtectionParamsResponse, error) {

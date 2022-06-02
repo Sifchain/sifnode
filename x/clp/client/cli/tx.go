@@ -45,8 +45,8 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
-		GetCmdAddSwapPermission(),
-		GetCmdRemoveSwapPermission(),
+		GetCmdAddSwapAssetPermission(),
+		GetCmdRemoveSwapAssetPermission(),
 		GetCmdUpdateLiquidityProtectionParams(),
 		GetCmdModifyLiquidityProtectionRates(),
 	)
@@ -635,22 +635,20 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 	return cmd
 }
 
-func GetCmdAddSwapPermission() *cobra.Command {
+func GetCmdAddSwapAssetPermission() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add-swap-permission [type]",
-		Short: "Add a swap permission",
-		Long: `Add a swap permission. Valid types are:
-	BUY_NATIVE_TOKEN
-	SELL_NATIVE_TOKEN
-	BUY_EXTERNAL_TOKEN
-	SELL_EXTERNAL_TOKEN
+		Use:   "add-swap-asset-permission [asset] [permission]",
+		Short: "Add a swap asset permission",
+		Long: `Add a swap asset permission. Valid permissions are:
+	DISABLE_BUY
+	DISABLE_SELL
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			err = cobra.ExactArgs(1)(cmd, args)
+			err = cobra.ExactArgs(2)(cmd, args)
 			if err != nil {
 				return err
 			}
@@ -658,15 +656,15 @@ func GetCmdAddSwapPermission() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			swapType, ok := types.SwapType_value[args[0]]
+			asset := types.NewAsset(args[0])
+			swapPermission, ok := types.SwapPermission_value[args[1]]
 			if !ok {
-				return errors.New("invalid swap type")
+				return errors.New("invalid swap permission")
 			}
-			msg := types.MsgAddSwapPermission{
-				Signer: signer.String(),
-				SwapPermission: &types.SwapPermission{
-					SwapType: types.SwapType(swapType),
-				},
+			msg := types.MsgAddSwapAssetPermission{
+				Signer:         signer.String(),
+				Asset:          &asset,
+				SwapPermission: types.SwapPermission(swapPermission),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -678,22 +676,20 @@ func GetCmdAddSwapPermission() *cobra.Command {
 	return cmd
 }
 
-func GetCmdRemoveSwapPermission() *cobra.Command {
+func GetCmdRemoveSwapAssetPermission() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "remove-swap-permission [type]",
-		Short: "Remove a swap permission",
-		Long: `Remove a swap permission. Valid types are:
-	BUY_NATIVE_TOKEN
-	SELL_NATIVE_TOKEN
-	BUY_EXTERNAL_TOKEN
-	SELL_EXTERNAL_TOKEN
+		Use:   "remove-swap-asset-permission [type]",
+		Short: "Remove a swap asset permission",
+		Long: `Remove a swap asset permission. Valid types are:
+	DISABLE_BUY
+	DISABLE_SELL
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			err = cobra.ExactArgs(1)(cmd, args)
+			err = cobra.ExactArgs(2)(cmd, args)
 			if err != nil {
 				return err
 			}
@@ -701,15 +697,15 @@ func GetCmdRemoveSwapPermission() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			swapType, ok := types.SwapType_value[args[0]]
+			asset := types.NewAsset(args[0])
+			swapPermission, ok := types.SwapPermission_value[args[1]]
 			if !ok {
-				return errors.New("invalid swap type")
+				return errors.New("invalid swap permission")
 			}
-			msg := types.MsgRemoveSwapPermission{
-				Signer: signer.String(),
-				SwapPermission: &types.SwapPermission{
-					SwapType: types.SwapType(swapType),
-				},
+			msg := types.MsgRemoveSwapAssetPermission{
+				Signer:         signer.String(),
+				Asset:          &asset,
+				SwapPermission: types.SwapPermission(swapPermission),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

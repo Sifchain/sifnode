@@ -39,12 +39,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 		CurrentRowanLiquidityThreshold: types.GetDefaultLiquidityProtectionParams().MaxRowanLiquidityThreshold,
 	})
 
-	// Add all swap permissions by default
-	k.AddSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_BUY_NATIVE_TOKEN})
-	k.AddSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_SELL_NATIVE_TOKEN})
-	k.AddSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_BUY_EXTERNAL_TOKEN})
-	k.AddSwapPermission(ctx, &types.SwapPermission{SwapType: types.SwapType_SELL_EXTERNAL_TOKEN})
-
 	wl := make([]sdk.AccAddress, len(data.AddressWhitelist))
 	if data.AddressWhitelist != nil {
 		for i, entry := range data.AddressWhitelist {
