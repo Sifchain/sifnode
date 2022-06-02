@@ -321,7 +321,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "tx",
       "ethbridge",
       "set-cross-chain-fee",
-      sifnodeAdminAccount.account,
       networkId, // This is 31377 for HARDHAT
       crossChainFee,
       feeCurrencyGas,
@@ -358,7 +357,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "tx",
       "ethbridge",
       "update-consensus-needed",
-      sifnodeAdminAccount.account,
       networkId,
       ConsensusNeeded,
       "--home",
