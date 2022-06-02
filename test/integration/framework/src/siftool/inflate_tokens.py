@@ -107,7 +107,7 @@ class InflateTokens:
             token_name = token["name"]
             token_symbol = token["symbol"]
             token_decimals = token["decimals"]
-            log.info(f"Creating token {token_symbol}...")
+            log.info(f"Deploying generic ERC20 smart contract for token {token_symbol}...")
             txhash = self.ctx.tx_deploy_new_generic_erc20_token(self.ctx.operator, token_name, token_symbol, token_decimals)
             pending_txs.append(txhash)
 
@@ -242,6 +242,7 @@ class InflateTokens:
         assert rowan_source_key is not None, "Need private key of broker account {} in sifnoded test keyring".format(sif_broker_account)
 
         existing_tokens = self.get_whitelisted_tokens()
+        log.info("Existing tokens: {}".repr(existing_tokens))
 
         tokens_to_create = self.build_list_of_tokens_to_create(existing_tokens, requested_tokens)
         new_tokens = self.create_new_tokens(tokens_to_create)
@@ -286,6 +287,10 @@ class InflateTokens:
 
 
 def run(*args):
+    # This script should be run with ENV_FILE set to a file containing definitions for OPERATOR_ADDRESS,
+    # ROWAN_SOURCE eth. Depending on if you're running it on Peggy1 or Peggy2 the format might be different.
+    # See get_env_ctx() for details.
+    # At the moment this script does not run on Peggy2 due to differences in smart contracts.
     assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
     ctx = test_utils.get_env_ctx()
     script = InflateTokens(ctx)
@@ -295,7 +300,7 @@ def run(*args):
         # Usage: inflate_tokens.py export assets.json
         ctx.cmd.write_text_file(args[0], json.dumps(script.export(), indent=4))
     elif cmd == "transfer":
-        # Usage: inflate_tokens.py transfer assets.json amount accounts.json
+        # Usage: inflate_tokens.py transfer assets.json token_amount accounts.json amount_eth_gwei
         assets_json_file, token_amount, accounts_json_file, amount_eth_gwei = args
         tokens = json.loads(ctx.cmd.read_text_file(assets_json_file))
         accounts = json.loads(ctx.cmd.read_text_file(accounts_json_file))
