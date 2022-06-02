@@ -110,7 +110,7 @@ sleep 7
 sifnoded query gov proposal 1
 
 # Add hardcoded logic for additional upgrade
-sleep 70
+sleep 60
 mkdir -p $DAEMON_HOME/cosmovisor/upgrades/0.14.0-rc.1/bin
 cp $GOPATH/bin/v0.14.0-rc.1/sifnoded $DAEMON_HOME/cosmovisor/upgrades/0.14.0-rc.1/bin/
 sleep 7
