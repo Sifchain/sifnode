@@ -109,14 +109,12 @@ clear
 sleep 7
 sifnoded query gov proposal 1
 
-tail -f sifnode.log
-
 # Add hardcoded logic for additional upgrade
 
 mkdir -p $DAEMON_HOME/cosmovisor/upgrades/0.14.0-rc.1/bin
-cp $GOPATH/bin/v0.14.0-rc.1/sifnoded $DAEMON_HOME/cosmovisor/upgrades/v0.14.0-rc.1/bin/
+cp $GOPATH/bin/v0.14.0-rc.1/sifnoded $DAEMON_HOME/cosmovisor/upgrades/0.14.0-rc.1/bin/
 sleep 7
-sifnoded tx gov submit-proposal software-upgrade v0.14.0-rc.1 --from sif --deposit 100000000stake --upgrade-height 25 --title v0.14.0-rc.1 --description v0.14.0-rc.1 --keyring-backend test --chain-id localnet --yes
+sifnoded tx gov submit-proposal software-upgrade 0.14.0-rc.1 --from sif --deposit 100000000stake --upgrade-height 35 --title v0.14.0-rc.1 --description v0.14.0-rc.1 --keyring-backend test --chain-id localnet --yes
 sleep 7
 sifnoded tx gov vote 2 yes --from sif --keyring-backend test --chain-id localnet --yes
 clear
