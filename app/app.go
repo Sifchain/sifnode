@@ -1,6 +1,7 @@
 package app
 
 import (
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"io"
 	"math/big"
 	"net/http"
@@ -475,7 +476,21 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		govtypes.ModuleName,
+		crisistypes.ModuleName,
+		genutiltypes.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
+		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
 		dispensation.ModuleName,
 		clptypes.ModuleName,
 	)
