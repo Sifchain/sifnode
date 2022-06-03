@@ -70,3 +70,16 @@ func (k Keeper) CashbackPolicyRun(ctx sdk.Context) error {
 	allPools := k.GetPools(ctx)
 	return k.doCashback(ctx, allPools)
 }
+
+func (k Keeper) SetCashbackParams(ctx sdk.Context, params *types.CashbackParams) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.CashbackParamsPrefix, k.cdc.MustMarshal(params))
+}
+
+func (k Keeper) GetCashbackParams(ctx sdk.Context) *types.CashbackParams {
+	params := types.CashbackParams{}
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.CashbackParamsPrefix)
+	k.cdc.MustUnmarshal(bz, &params)
+	return &params
+}
