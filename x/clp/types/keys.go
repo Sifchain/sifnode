@@ -35,6 +35,7 @@ var (
 	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
 	RewardParamPrefix        = []byte{0x06}
 	SymmetryThresholdPrefix  = []byte{0x07}
+	CashbackParamsPrefix     = []byte{0x08}
 )
 
 // Generates a key for storing a specific pool
