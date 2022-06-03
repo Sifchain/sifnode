@@ -91,6 +91,15 @@ type TokenRegistry struct {
 	Registry Registry `json:"registry"`
 }
 
+type Admin struct {
+	AdminAccounts []AdminAccount `json:"admin_accounts"`
+}
+
+type AdminAccount struct {
+	AdminType    int32  `json:"admin_type"`
+	AdminAddress string `json:"admin_address"`
+}
+
 type ConstantFee struct {
 	Amount string `json:"amount"`
 	Denom  string `json:"denom"`
@@ -430,6 +439,7 @@ type AppState struct {
 	Genutil       Genutil       `json:"genutil"`
 	Crisis        Crisis        `json:"crisis"`
 	TokenRegistry TokenRegistry `json:"tokenregistry"`
+	Admin         Admin         `json:"admin"`
 }
 
 type Genesis struct {
