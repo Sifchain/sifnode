@@ -1,11 +1,16 @@
 package keeper
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+const (
+	maxDecBitLen = 315 // sdk.Dec doesn't export this value but see here: https://github.com/cosmos/cosmos-sdk/blob/main/types/decimal.go#L34
 )
 
 func DecToRat(d *sdk.Dec) big.Rat {
@@ -19,8 +24,7 @@ func DecToRat(d *sdk.Dec) big.Rat {
 	return rat
 }
 
-// The sdk.Dec returned by this method can exceed the sdk.Decimal maxDecBitLen
-func RatToDec(r *big.Rat) sdk.Dec {
+func RatToDec(r *big.Rat) (sdk.Dec, error) {
 	num := r.Num()
 	denom := r.Denom() // big.Rat guarantees that denom is always > 0
 
@@ -30,7 +34,13 @@ func RatToDec(r *big.Rat) sdk.Dec {
 	d.Mul(num, multiplier)
 	d.Quo(&d, denom)
 
-	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision)
+	// There's a bug in the SDK which allows sdk.NewDecFromBigIntWithPrec to create an sdk.Dec with > maxDecBitLen bits
+	// This leads to an error when attempting to unmarshal such sdk.Decs
+	if d.BitLen() > maxDecBitLen {
+		return sdk.ZeroDec(), fmt.Errorf("decimal out of range; bitLen: got %d, max %d", d.BitLen(), maxDecBitLen)
+	}
+
+	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision), nil
 }
 
 func RatIntQuo(r *big.Rat) *big.Int {
