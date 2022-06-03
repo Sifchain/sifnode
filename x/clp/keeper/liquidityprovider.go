@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"math"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -74,6 +76,14 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddre
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(key)
+}
+
+func (k Keeper) GetAllLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset) ([]*types.LiquidityProvider, error) {
+	lps, _, err := k.GetLiquidityProvidersForAssetPaginated(ctx, asset, &query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	})
+
+	return lps, err
 }
 
 func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset,
