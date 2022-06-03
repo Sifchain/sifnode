@@ -64,6 +64,7 @@ func TestKeeper_RatToDec(t *testing.T) {
 		num      *big.Int
 		denom    *big.Int
 		expected sdk.Dec
+		err      error
 	}{
 		{
 			name:     "small values",
@@ -84,10 +85,10 @@ func TestKeeper_RatToDec(t *testing.T) {
 			expected: sdk.MustNewDecFromStr("-2.333333333333333333"),
 		},
 		{
-			name:     "big numbers",
-			num:      big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
-			denom:    big.NewInt(3),
-			expected: sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
+			name:  "big numbers",
+			num:   big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
+			denom: big.NewInt(3),
+			err:   errors.New("decimal out of range; bitLen: got 459, max 316"),
 		},
 	}
 
@@ -97,8 +98,14 @@ func TestKeeper_RatToDec(t *testing.T) {
 
 			var rat big.Rat
 			rat.SetFrac(tc.num, tc.denom)
-			y, _ := clpkeeper.RatToDec(&rat)
+			y, err := clpkeeper.RatToDec(&rat)
 
+			if tc.err != nil {
+				require.EqualError(t, err, tc.err.Error())
+				return
+			}
+
+			require.NoError(t, err)
 			require.Equal(t, tc.expected, y)
 		})
 	}

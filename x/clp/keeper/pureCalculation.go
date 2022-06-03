@@ -9,6 +9,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const (
+	maxDecBitLen = 316 // sdk.Dec doesn't export this value but see here: https://github.com/cosmos/cosmos-sdk/blob/3f8596c1955e40ef30e4abcd06f2237d132db3a9/types/decimal.go#L29
+)
+
 func DecToRat(d *sdk.Dec) big.Rat {
 	var rat big.Rat
 
@@ -30,8 +34,10 @@ func RatToDec(r *big.Rat) (sdk.Dec, error) {
 	d.Mul(num, multiplier)
 	d.Quo(&d, denom)
 
-	if d.BitLen() > 316 {
-		return sdk.ZeroDec(), fmt.Errorf("decimal out of range; bitLen: got %d, max %d", d.BitLen(), 316)
+	// There's a bug in the SDK which allows sdk.NewDecFromBigIntWithPrec to create an sdk.Dec with > maxDecBitLen bits
+	// This leads to a panic when attempting to unmarshal such sdk.Decs
+	if d.BitLen() > maxDecBitLen {
+		return sdk.ZeroDec(), fmt.Errorf("decimal out of range; bitLen: got %d, max %d", d.BitLen(), maxDecBitLen)
 	}
 
 	return sdk.NewDecFromBigIntWithPrec(&d, sdk.Precision), nil
