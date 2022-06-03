@@ -1578,7 +1578,7 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 			decimalsY:              0,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
 			isXNative:              true,
-			errString:              errors.New("decimal out of range; bitLen: got 907, max 316"),
+			errString:              errors.New("decimal out of range; bitLen: got 907, max 315"),
 		},
 		{
 			name:                   "success big decimals, small answer",
@@ -1788,7 +1788,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 			externalAssetBalance:   sdk.NewUint(100),
 			decimalsExternal:       255,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
-			errString:              errors.New("decimal out of range; bitLen: got 848, max 316"),
+			errString:              errors.New("decimal out of range; bitLen: got 848, max 315"),
 		},
 		{
 			name:                   "success small decimals",
