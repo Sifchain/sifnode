@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -1343,9 +1342,6 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			pool, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
 
 			require.Equal(t, tc.expectedPoolUnits.String(), pool.PoolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
-
-			fmt.Printf("LP units: %s\n", lp.LiquidityProviderUnits.String())
-			fmt.Printf("Expected pool units: %s\n", tc.expectedPoolUnits.String())
 			require.Equal(t, tc.expectedLPUnits.String(), lp.LiquidityProviderUnits.String())
 		})
 	}
