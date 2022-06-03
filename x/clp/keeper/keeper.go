@@ -73,32 +73,6 @@ func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) 
 	return k.bankKeeper.HasBalance(ctx, addr, coin)
 }
 
-func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
-	normalizationFactor := sdk.NewDec(1)
-	adjustExternalToken := false
-	nf := decimals
-	if nf != 18 {
-		var diffFactor int64
-		if nf < 18 {
-			diffFactor = 18 - nf
-			adjustExternalToken = true
-		} else {
-			diffFactor = nf - 18
-		}
-		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
-	return normalizationFactor, adjustExternalToken
-}
-
-func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Asset) (sdk.Dec, bool) {
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset.Symbol)
-	if err != nil {
-		return sdk.Dec{}, false
-	}
-	return k.GetNormalizationFactor(registryEntry.Decimals)
-}
-
 func (k Keeper) GetAssetDecimals(ctx sdk.Context, asset types.Asset) (uint8, error) {
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset.Symbol)
