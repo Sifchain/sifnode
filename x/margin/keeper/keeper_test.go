@@ -112,12 +112,12 @@ func TestKeeper_GetMTPs(t *testing.T) {
 	}
 }
 
-func TestKeeper_GetMTPsForAsset(t *testing.T) {
+func TestKeeper_GetMTPsForCollateralAsset(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", types.Position_LONG, 1)
 	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", types.Position_LONG, 1)
 	want := []*types.MTP{&key1, &key2}
-	got := marginKeeper.GetMTPsForAsset(ctx, "ceth")
+	got := marginKeeper.GetMTPsForCollateralAsset(ctx, "ceth")
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)

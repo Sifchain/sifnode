@@ -37,7 +37,8 @@ type Keeper interface {
 	GetMTP(ctx sdk.Context, address string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
-	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP
+	GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*MTP
+	GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
 	DestroyMTP(sdk.Context, string, uint64) error

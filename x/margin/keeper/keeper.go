@@ -90,7 +90,7 @@ func (k Keeper) GetMTPs(ctx sdk.Context) []*types.MTP {
 	return mtpList
 }
 
-func (k Keeper) GetMTPsForAsset(ctx sdk.Context, asset string) []*types.MTP {
+func (k Keeper) GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*types.MTP {
 	var mtpList []*types.MTP
 	iterator := k.GetMTPIterator(ctx)
 	defer iterator.Close()
@@ -98,7 +98,22 @@ func (k Keeper) GetMTPsForAsset(ctx sdk.Context, asset string) []*types.MTP {
 		var mtp types.MTP
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if mtp.CollateralAsset == asset {
+		if strings.EqualFold(mtp.CollateralAsset, asset) {
+			mtpList = append(mtpList, &mtp)
+		}
+	}
+	return mtpList
+}
+
+func (k Keeper) GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*types.MTP {
+	var mtpList []*types.MTP
+	iterator := k.GetMTPIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var mtp types.MTP
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		if strings.EqualFold(mtp.CustodyAsset, asset) {
 			mtpList = append(mtpList, &mtp)
 		}
 	}
