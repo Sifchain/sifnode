@@ -11,5 +11,5 @@ def test_many_balances():
 
 
 def _test_many_balances(ctx: test_utils.EnvCtx, sif_addr: cosmos.Address):
-    balances = ctx.get_sifchain_balance_long(sif_addr)
+    balances = ctx.get_sifchain_balance_large(sif_addr)
     return

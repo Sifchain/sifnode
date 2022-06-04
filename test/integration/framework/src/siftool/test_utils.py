@@ -607,20 +607,30 @@ class EnvCtx:
             raise Exception("More than {} results in balances".format(limit))
         return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
 
-    def get_sifchain_balance_long(self, sif_addr: cosmos.Address, height: Optional[int] = None,
-        disable_log: bool = False
+    # Experimental
+    def get_sifchain_balance_large(self, sif_addr: cosmos.Address, height: Optional[int] = None,
+        disable_log: bool = False, retries_on_error: int = 3, delay_on_error: int = 3
     ) -> cosmos.Balance:
         all_balances = {}
-        requested_page_size = 10000  # The actual limit might be capped to a lower value, in this case we'll get fewer results
+        desired_page_size = 5000  # The actual limit might be capped to a lower value, in this case we'll get fewer results
         page_key = None
         while True:
             args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
                 (["--height", str(height)] if height is not None else []) + \
-                (["--limit", str(requested_page_size)] if requested_page_size is not None else []) + \
+                (["--limit", str(desired_page_size)] if desired_page_size is not None else []) + \
                 (["--page-key", page_key] if page_key is not None else []) + \
                 self.sifnode_client._chain_id_args() + \
                 self.sifnode_client._node_args()
-            res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
+            retries_left = retries_on_error
+            try:
+                res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
+            except Exception as e:
+                retries_left -= 1
+                if retries_left == 0:
+                    raise e
+                log.error("Error reading balances, retries left: {}".format(retries_left))
+                time.sleep(delay_on_error)
+                continue
             res = json.loads(stdout(res))
             balances = res["balances"]
             next_key = res["pagination"]["next_key"]
@@ -639,7 +649,7 @@ class EnvCtx:
                 denom, amount = bal["denom"], int(bal["amount"])
                 assert denom not in all_balances
                 all_balances[denom] = amount
-            log.debug("Read {} balances, first='{}', next_key={}".format(len(balances),
+            log.debug("Read {} balances, all={}, first='{}', next_key={}".format(len(balances), len(all_balances),
                 balances[0]["denom"] if len(balances) > 0 else None, next_key))
             if next_key is None:
                 break
