@@ -560,7 +560,7 @@ class EnvCtx:
         from rowan_source to the account before returning.
         """
         moniker = moniker or "test-" + random_string(20)
-        acct = self.sifnode.keys_add_1(moniker)
+        acct = self.sifnode.keys_add(moniker)
         sif_address = acct["address"]
         if fund_amounts:
             fund_amounts = cosmos.balance_normalize(fund_amounts)  # Convert from old format if neccessary

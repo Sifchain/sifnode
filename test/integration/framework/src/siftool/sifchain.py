@@ -14,10 +14,10 @@ log = siftool_logger(__name__)
 
 ROWAN = "rowan"
 
-# Sifchain public network URLs
-URL_RPC_BETANET = "https://rpc.sifchain.finance"
-URL_RPC_TESTNET = "https://rpc-testnet.sifchain.finance"
-URL_RPC_DEVNET = "https://rpc-devnet.sifchain.finance"
+# Sifchain public network endpoints
+BETANET = {"url": "https://rpc.sifchain.finance", "chain_id": "sifchain-1"}
+TESTNET = {"url": "https://rpc-testnet.sifchain.finance", "chain_id": "sifchain-testnet-1"}
+DEVNET = {"url": "https://rpc-devnet.sifchain.finance", "chain_id": "sifchain-devnet-1"}
 
 
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
@@ -86,28 +86,18 @@ class Sifnoded:
         assert result == expected
         return result
 
-    # How "sifnoded keys add <name> --keyring-backend test" works:
-    # If name does not exist yet, it creates it and returns a yaml
-    # If name alredy exists, prompts for overwrite (y/n) on standard input, generates new address/pubkey/mnemonic
-    # Directory used is xxx/keyring-test if "--home xxx" is specified, otherwise $HOME/.sifnoded/keyring-test
-
-    def keys_add(self, moniker, mnemonic):
-        stdin = [" ".join(mnemonic)]
-        res = self.sifnoded_exec(["keys", "add", moniker, "--recover"], keyring_backend=self.keyring_backend,
-            sifnoded_home=self.home, stdin=stdin)
+    def keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Mapping[str, Any]:
+        if mnemonic is None:
+            res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend=self.keyring_backend,
+                 sifnoded_home=self.home, stdin=["y"])
+            _unused_mnemonic = stderr(res).splitlines()[-1].split(" ")
+        else:
+            res = self.sifnoded_exec(["keys", "add", moniker, "--recover"], keyring_backend=self.keyring_backend,
+                sifnoded_home=self.home, stdin=[" ".join(mnemonic)])
         account = exactly_one(yaml_load(stdout(res)))
         return account
 
-    # Creates a new key in the keyring and returns its address ("sif1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx").
-    # Since this is a test keyring, we don't need to save the generated private key.
-    # If we wanted to recreate it, we can capture the mnemonic from the message that is printed to stderr.
-    def keys_add_1(self, moniker):
-        res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend=self.keyring_backend, sifnoded_home=self.home, stdin=["y"])
-        account = exactly_one(yaml_load(stdout(res)))
-        unused_mnemonic = stderr(res).splitlines()[-1].split(" ")
-        return account
-
-    def keys_delete(self, name):
+    def keys_delete(self, name: str):
         self.cmd.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", self.keyring_backend], stdin=["y"], check_exit=False)
 
     def add_genesis_account(self, sifnodeadmin_addr: cosmos.Address, tokens: cosmos.Balance):
@@ -140,7 +130,7 @@ class Sifnoded:
     # This was split from init_common
     def peggy2_add_account(self, name: str, tokens: cosmos.Balance, is_admin: bool = False):
         # TODO Peggy2 devenv feed "yes\nyes" into standard input, we only have "y\n"
-        account = self.keys_add_1(name)
+        account = self.keys_add(name)
         account_address = account["address"]
 
         self.add_genesis_account(account_address, tokens)
@@ -222,8 +212,8 @@ class Sifnoded:
         return command.buildcmd(args)
 
     def sifnoded_exec(self, args: List[str], sifnoded_home: Optional[str] = None,
-        keyring_backend: Optional[str] = None, stdin: Optional[AnyStr] = None, cwd: Optional[str] = None,
-        disable_log: bool = False
+        keyring_backend: Optional[str] = None, stdin: Union[str, bytes, Sequence[str], None] = None,
+        cwd: Optional[str] = None, disable_log: bool = False
     ) -> command.ExecResult:
         args = [self.binary] + args + \
             (["--home", sifnoded_home] if sifnoded_home else []) + \

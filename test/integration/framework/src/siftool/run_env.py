@@ -174,7 +174,7 @@ class Integrator(Ganache, Command):
     def sifchain_init_common(self, sifnode, denom_whitelist_file):
         # Add sifnodeadmin to ~/.sifnoded
         sifnode0 = Sifnoded(self)
-        sifnodeadmin_addr = sifnode0.keys_add_1("sifnodeadmin")["address"]
+        sifnodeadmin_addr = sifnode0.keys_add("sifnodeadmin")["address"]
         tokens = [[10**20, ROWAN]]
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
