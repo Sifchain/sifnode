@@ -15,9 +15,9 @@ log = siftool_logger(__name__)
 ROWAN = "rowan"
 
 # Sifchain public network endpoints
-BETANET = {"url": "https://rpc.sifchain.finance", "chain_id": "sifchain-1"}
-TESTNET = {"url": "https://rpc-testnet.sifchain.finance", "chain_id": "sifchain-testnet-1"}
-DEVNET = {"url": "https://rpc-devnet.sifchain.finance", "chain_id": "sifchain-devnet-1"}
+BETANET = {"node": "https://rpc.sifchain.finance", "chain_id": "sifchain-1"}
+TESTNET = {"node": "https://rpc-testnet.sifchain.finance", "chain_id": "sifchain-testnet-1"}
+DEVNET = {"node": "https://rpc-devnet.sifchain.finance", "chain_id": "sifchain-devnet-1"}
 
 
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
@@ -55,7 +55,7 @@ def ondemand_import_generated_protobuf_sources():
 
 
 class Sifnoded:
-    def __init__(self, cmd, home: str = None):
+    def __init__(self, cmd, home: Optional[str] = None):
         self.cmd = cmd
         self.binary = "sifnoded"
         self.home = home
@@ -165,7 +165,7 @@ class Sifnoded:
         args = ["tx", "clp", "create-pool", "--chain-id", chain_id, "--from", from_name, "--symbol", symbol,
             "--fees", sif_format_amount(*fees), "--nativeAmount", str(native_amount), "--externalAmount",
             str(external_amount), "--yes"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend)  # TODO home?
+        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend)  # TODO home, node?
         return yaml_load(stdout(res))
 
     def peggy2_token_registry_register_all(self, registry_path, gas_prices, gas_adjustment, from_account,

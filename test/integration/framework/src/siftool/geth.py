@@ -23,16 +23,22 @@ class Geth:
         self.datadir = datadir
 
     def geth_cmd(self, command: Optional[str] = None, network_id: Optional[int] = None, datadir: Optional[str] = None,
+        unlock: Optional[Iterable[str]] = None, password: Optional[str] = None, allow_insecure_unlock: bool = False,
         ipcpath: Optional[str] = None, ws: bool = False, ws_addr: Optional[str] = None, ws_port: Optional[int] = None,
         ws_api: Iterable[str] = None, http: bool = False, http_addr: Optional[str] = None,
         http_port: Optional[int] = None, http_api: Iterable[str] = None, rpc_allow_unprotected_txs: bool = False,
-        dev: bool = False, dev_period: Optional[int] = None, rpcvhosts: Optional[str] = None, mine: bool = False,
-        miner_threads: Optional[int] = None, no_discover: bool = False,
+        dev: bool = False, dev_gas_limit: Optional[int] = None, dev_period: Optional[int] = None,
+        rpcvhosts: Optional[str] = None, mine: bool = False, miner_gas_price: Optional[int] = None,
+        miner_gas_limit: Optional[int] = None, miner_threads: Optional[int] = None, no_discover: bool = False,
+        verbosity: Optional[str] = None,
      ):
         args = [self.program] + \
             ([command] if command else []) + \
             (["--networkid", str(network_id)] if network_id else []) + \
             (["--datadir", datadir] if datadir else []) + \
+            (["--unlock", ",".join(unlock)] if unlock else []) + \
+            (["--password", password] if password else []) + \
+            (["--allow-insecure-unlock"] if allow_insecure_unlock else []) + \
             (["--ipcpath", ipcpath] if ipcpath else []) + \
             (["--ws"] if ws else []) + \
             (["--ws.addr", ws_addr] if ws_addr else []) + \
@@ -44,11 +50,15 @@ class Geth:
             (["--http.api", ",".join(http_api)] if http_api else []) + \
             (["--rpc.allow-unprotected-txs"] if rpc_allow_unprotected_txs else []) + \
             (["--dev"] if dev else []) + \
+            (["--dev.gaslimit" str(dev_gas_limit)] if dev_gas_limit is not None else []) + \
             (["--dev.period", str(dev_period)] if dev_period is not None else []) + \
             (["--rpcvhosts", rpcvhosts] if rpcvhosts else []) + \
             (["--mine"] if mine else []) + \
+            (["--miner.gasprice", str(miner_gas_price)] if miner_gas_price is not None else []) + \
+            (["--miner.gaslimit", str(miner_gas_limit)] if miner_gas_limit is not None else []) + \
             (["--miner.threads", str(miner_threads)] if miner_threads is not None else []) + \
-            (["--nodiscover"] if no_discover else [])
+            (["--nodiscover"] if no_discover else []) + \
+            (["--verbosity", str(verbosity)] if verbosity is not None else [])
         return args
 
     def geth_exec(self, geth_cmd_string, ipcpath):
@@ -123,20 +133,6 @@ class Geth:
             self.cmd.rm(keyfile)
             self.cmd.rm(passfile)
 
-    def run_dev(self, network_id, datadir=None, http_port=None, ws_port=None, ipcpath=None):
-        kwargs = {}
-        if http_port is not None:
-            kwargs["http"] = True
-            kwargs["http_port"] = http_port
-            kwargs["http_addr"] = ANY_ADDR
-            kwargs["http_api"] = ("personal", "eth", "net", "web3", "debug")
-        if ws_port is not None:
-            kwargs["ws"] = True
-            kwargs["ws_addr"] = ANY_ADDR
-        cmd = self.geth_cmd(network_id=network_id, datadir=datadir, ipcpath=ipcpath, **kwargs)
-        res = self.cmd.popen(cmd)
-        return res
-
     def create_genesis_config_clique(self, chain_id: int, signer_addresses: Iterable[eth.Address],
         alloc: Mapping[eth.Address, int], gas_limit: int = 8000000, difficulty: int = 1, block_mining_period: int = 5,
     ) -> Mapping[str, Any]:
@@ -181,17 +177,22 @@ class Geth:
             self.cmd.write_text_file(tmp_genesis_file, json.dumps(genesis))
             args = [self.program, "init", tmp_genesis_file] + \
                 (["--datadir", self.datadir] if self.datadir else [])
-            # cmd = command.buildcmd(args=args)
             res = self.cmd.execst(args)
         finally:
             self.cmd.rm(tmp_genesis_file)
 
     def buid_run_args(self, network_id: int, http_port: Optional[int] = None, ws_port: Optional[int] = None,
-        dev: bool = False, mine: bool = False, unlock: Optional[str] = None, password: Optional[str] = None,
+        dev: bool = False, mine: bool = False, unlock: Optional[Iterable[str]] = None, password: Optional[str] = None,
         allow_insecure_unlock: bool = False, rpc_allow_unprotected_txs: bool = False, gas_price: Optional[int] = None,
         gas_limit: Optional[int] = None, verbosity: Optional[int] = None
     ):
-        args = [self.program, "--networkid", str(network_id), "--nodiscover"] + \
+        all_apis = "personal,eth,net,web3"
+        args = self.geth_cmd(network_id=network_id, no_discover=True, dev=dev, mine=mine, miner_gas_price=gas_price,
+            dev_gas_limit=gas_limit if dev else None, miner_gas_limit=gas_limit if not dev else None, unlock=unlock,
+            password=password, allow_insecure_unlock=allow_insecure_unlock, datadir=self.datadir, ws=True,
+            ws_addr=ANY_ADDR, ws_port=ws_port, ws_api=all_apis, http=True, http_addr=ANY_ADDR, http_port=http_port,
+            http_api=all_apis, rpc_allow_unprotected_txs=rpc_allow_unprotected_txs, verbosity=verbosity)
+        _args = [self.program, "--networkid", str(network_id), "--nodiscover"] + \
             (["--dev"] if dev else []) + \
             (["--mine"] if mine else []) + \
             (["--miner.gasprice", str(gas_price)] if gas_price is not None else []) + \
@@ -200,14 +201,8 @@ class Geth:
             (["--password", password] if password else []) + \
             (["--allow-insecure-unlock"] if allow_insecure_unlock else []) + \
             (["--datadir", self.datadir] if self.datadir else []) + \
-            (["--ws", "--ws.addr", "0.0.0.0", "--ws.port", str(ws_port), "--ws.api", "personal,eth,net,web3"] if ws_port is not None else []) + \
-            (["--http", "--http.addr", "0.0.0.0", "--http.port", str(http_port), "--http.api", "personal,eth,net,web3"] if http_port is not None else []) + \
+            (["--ws", "--ws.addr", ANY_ADDR, "--ws.port", str(ws_port), "--ws.api", all_apis] if ws_port is not None else []) + \
+            (["--http", "--http.addr", ANY_ADDR, "--http.port", str(http_port), "--http.api", all_apis] if http_port is not None else []) + \
             (["--rpc.allow-unprotected-txs"] if rpc_allow_unprotected_txs else []) + \
             (["--verbosity", str(verbosity)] if verbosity is not None else [])
         return command.buildcmd(args)
-
-
-# How Wilson is running geth:
-# https://github.com/Sifchain/sifnode/commit/3e4feff2d5f707109aa609b8941f06d3cd349c92
-
-# TODO How to mint, create initial accounts, fund them

@@ -943,8 +943,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                     # TODO Disable rpc_allow_unprotected_txs and fix the cause of "only replay-protected (EIP-155)
                     #      transactions allowed over RPC" when sending transactions
                     geth_run_args = geth.buid_run_args(self.ethereum_chain_id, http_port=geth_http_port,
-                        ws_port=self.ethereum_ws_port, mine=True, unlock=geth_runner_acct[0], password=tmp_password_file,
-                        allow_insecure_unlock=True, rpc_allow_unprotected_txs=True, gas_limit=self.geth_gas_limit)
+                        ws_port=self.ethereum_ws_port, mine=True, unlock=[geth_runner_acct[0]],
+                        password=tmp_password_file, allow_insecure_unlock=True, rpc_allow_unprotected_txs=True,
+                        gas_limit=self.geth_gas_limit)
 
                 geth_proc = self.cmd.spawn_asynchronous_process(geth_run_args, log_file=hardhat_log_file)
                 hardhat_proc = geth_proc
