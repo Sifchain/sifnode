@@ -40,7 +40,7 @@ class Command:
         return proc.returncode, stdout_data, stderr_data
 
     # Default implementation of popen for environemnts to start long-lived processes
-    def popen(self, args, log_file=None, **kwargs) -> subprocess.Popen:
+    def popen(self, args, log_file: Optional[IO] = None, **kwargs) -> subprocess.Popen:
         stdout = log_file or None
         stderr = log_file or None
         return popen(args, stdout=stdout, stderr=stderr, **kwargs)

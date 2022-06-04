@@ -54,7 +54,8 @@ def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)
 
 # TODO Move to sifchain.py
-def sif_format_amount(amount, denom):
+# TODO Refactoring in progress. This should be moved to sifchain.py and only used for gas (float amount) + renamed
+def sif_format_amount(amount: Union[int, float], denom: str) -> str:
     return "{}{}".format(amount, denom)
 
 def http_get(url):

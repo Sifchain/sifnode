@@ -19,6 +19,7 @@ BETANET = {"node": "https://rpc.sifchain.finance", "chain_id": "sifchain-1"}
 TESTNET = {"node": "https://rpc-testnet.sifchain.finance", "chain_id": "sifchain-testnet-1"}
 DEVNET = {"node": "https://rpc-devnet.sifchain.finance", "chain_id": "sifchain-devnet-1"}
 
+GasFees = Tuple[float, str]  # Special case of cosmos.Balance with only one denom and float amount
 
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
@@ -39,10 +40,6 @@ def sifchain_denom_hash_to_token_contract_address(token_hash: str) -> Tuple[int,
 # Deprecated
 def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmos.Balance:
     return cosmos.balance_sub(balances2, balances1)
-
-# Deprecated
-def balance_zero(balances: cosmos.Balance) -> bool:
-    return cosmos.balance_zero(balances)
 
 def is_cosmos_native_denom(denom: str) -> bool:
     """Returns true if denom is a native cosmos token (Rowan, ibc)
@@ -149,7 +146,9 @@ class Sifnoded:
         self.add_genesis_validators_peggy(evm_network_descriptor, valoper, validator_power)
         return account_address
 
-    def tx_clp_create_pool(self, chain_id, from_name, symbol, fees, native_amount, external_amount):
+    def tx_clp_create_pool(self, chain_id: str, from_name: cosmos.Address, symbol: str, fees: GasFees,
+        native_amount: int, external_amount: int
+    ) -> Mapping[str, Any]:
         # For more examples see ticket #2470, e.g.
         # sifnoded tx clp create-pool \
         #   --from $SIF_ACT \
@@ -168,9 +167,9 @@ class Sifnoded:
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend)  # TODO home, node?
         return yaml_load(stdout(res))
 
-    def peggy2_token_registry_register_all(self, registry_path, gas_prices, gas_adjustment, from_account,
-        chain_id
-    ):
+    def peggy2_token_registry_set_registry(self, registry_path: str, gas_prices: GasFees, gas_adjustment: float,
+        from_account: cosmos.Address, chain_id: str
+    ) -> List[Mapping[str, Any]]:
         args = ["tx", "tokenregistry", "set-registry", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
             "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json",
             "--yes"]
@@ -181,7 +180,6 @@ class Sifnoded:
         cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee, admin_account_name, chain_id, gas_prices,
         gas_adjustment
     ):
-        # Checked OK
         args = ["tx", "ethbridge", "set-cross-chain-fee", admin_account_address, str(network_id),
             ethereum_cross_chain_fee_token, str(cross_chain_fee_base), str(cross_chain_lock_fee),
             str(cross_chain_burn_fee), "--from", admin_account_name, "--chain-id", chain_id, "--gas-prices",
@@ -196,12 +194,16 @@ class Sifnoded:
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
         return res
 
-    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, log_format_json=False, log_file=None):
+    def sifnoded_start(self, tcp_url=None, minimum_gas_prices: Optional[GasFees] = None,
+        log_format_json: bool = False, log_file: Optional[IO] = None
+    ):
         sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=minimum_gas_prices,
             log_format_json=log_format_json)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
-    def build_start_cmd(self, tcp_url: str = None, minimum_gas_prices: cosmos.Balance=None, log_format_json=False, trace: bool = True):
+    def build_start_cmd(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
+        log_format_json: bool = False, trace: bool = True
+    ):
         args = [self.binary, "start"] + \
             (["--trace"] if trace else []) + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
@@ -252,8 +254,11 @@ class Sifnoded:
 
 # Refactoring in progress
 class SifnodeClient:
-    def __init__(self, cmd, node=None, home=None, chain_id=None, grpc_port=None):
+    def __init__(self, cmd: command.Command, ctx, node: Optional[str] = None, home:
+        Optional[str] = None, chain_id: Optional[str] = None, grpc_port: Optional[int] = None
+    ):
         self.cmd = cmd
+        self.ctx = ctx  # TODO Remove (currently needed for cross-chain fees for Peggy2)
         self.binary = "sifnoded"
         self.node = node
         self.home = home

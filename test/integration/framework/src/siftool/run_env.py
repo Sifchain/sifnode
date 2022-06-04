@@ -175,7 +175,7 @@ class Integrator(Ganache, Command):
         # Add sifnodeadmin to ~/.sifnoded
         sifnode0 = Sifnoded(self)
         sifnodeadmin_addr = sifnode0.keys_add("sifnodeadmin")["address"]
-        tokens = [[10**20, ROWAN]]
+        tokens = {ROWAN: 10**20}
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
@@ -184,7 +184,9 @@ class Integrator(Ganache, Command):
         return sifnodeadmin_addr
 
     # @TODO Move to Sifgen class
-    def sifgen_create_network(self, chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
+    def sifgen_create_network(self, chain_id: str, validator_count: int, networks_dir: str, network_definition_file: str,
+        seed_ip_address: str, mint_amount: Optional[cosmos.Balance] = None
+    ):
         # Old call (no longer works either):
         # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
         #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
@@ -585,7 +587,7 @@ class IntegrationTestsEnvironment:
         validator_count = 1
         network_definition_file = os.path.join(networks_dir, "network-definition.yml")
         seed_ip_address = "192.168.1.2"
-        mint_amount = [[999999 * 10**21, ROWAN], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
+        mint_amount = {ROWAN: 999999 * 10**21, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16}
 
         self.cmd.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
 
@@ -606,7 +608,7 @@ class IntegrationTestsEnvironment:
             denom_whitelist_file)
 
         # Start sifnoded
-        sifnoded_proc = sifnode.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, ROWAN],
+        sifnoded_proc = sifnode.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=(0.5, ROWAN),
             log_file=sifnoded_log_file)
 
         # TODO: wait for sifnoded to come up before continuing
@@ -1154,8 +1156,9 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         } for name in [f"witness-{i}" for i in range(witness_count)]]
 
         tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
+        gas_prices = (0.5, ROWAN)
         # @TODO Detect if sifnoded is already running, for now it fails silently and we wait forever in wait_for_sif_account_up
-        sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=[0.5, ROWAN],
+        sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=gas_prices,
             log_format_json=True)
         sifnoded_proc = self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=sifnoded_log_file)
 
@@ -1166,7 +1169,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # TODO This command exits with status 0, but looks like there are some errros.
         # The same happens also in devenv.
         # TODO Try whitelister account instead of admin
-        res = sifnode.peggy2_token_registry_register_all(registry_json, [0.5, ROWAN], 1.5, admin_account_name,
+        res = sifnode.peggy2_token_registry_set_registry(registry_json, gas_prices, 1.5, admin_account_address,
             self.chain_id)
         log.debug("Result from token registry: {}".format(repr(res)))
         assert len(res) == 1

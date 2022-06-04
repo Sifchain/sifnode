@@ -282,8 +282,7 @@ class EnvCtx:
         self.sifnode_url = sifnode_url
         self.sifnode_chain_id = sifnode_chain_id
         # Refactoring in progress: moving stuff into separate client that encapsulates things like url, home and chain_id
-        self.sifnode_client = sifchain.SifnodeClient(self.cmd, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
-        self.sifnode_client.ctx = self  # For cross-chain fees for Peggy2
+        self.sifnode_client = sifchain.SifnodeClient(self.cmd, self, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
         self.rowan_source = rowan_source
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
@@ -661,7 +660,7 @@ class EnvCtx:
     # You cannot use min_changes and expected_balance at the same time.
     def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
         min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
-        timeout: int = 90, change_timeout: int = None, disable_log: bool = True
+        timeout: Optional[int] = 90, change_timeout: int = None, disable_log: bool = True
     ) -> cosmos.Balance:
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         log.debug("Waiting for balance to change for account {}...".format(sif_addr))
