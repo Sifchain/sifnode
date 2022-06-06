@@ -7,7 +7,7 @@ sifnoded tx clp remove-liquidity \
   --keyring-backend test \
   --symbol cusdt \
   --asymmetry 0 \
-  --wBasis 5000 \
+  --wBasis 10 \
   --fees 100000000000000000rowan \
   --node ${SIFNODE_NODE} \
   --chain-id $SIFNODE_CHAIN_ID \
