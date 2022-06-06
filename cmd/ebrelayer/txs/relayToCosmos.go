@@ -44,6 +44,8 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 			// to avoid too many data in single transaction, send out by batch
 			if len(messages) == 5 {
 				err = sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
+				sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+				instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
 				if err != nil {
 					return err
 				}
@@ -52,8 +54,14 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		}
 	}
 
-	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
+	// send out the last batch message
+	if len(messages) > 0 {
+		err := sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
+		sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+		instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
+		return err
+	}
+
 	return nil
 }
 
