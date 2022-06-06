@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"math/big"
 	"strings"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -455,14 +456,15 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 }
 
 func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
-	liabilitiesI := mtp.LiabilitiesI
-	liabilitiesP := mtp.LiabilitiesP
+	var liabilitiesIRat, liabilitiesRat, rate big.Rat
 
-	liabilitiesIDec := interestRate.
-		Mul(sdk.NewDecFromBigInt(liabilitiesP.Add(liabilitiesI).BigInt())).
-		Add(sdk.NewDecFromBigInt(liabilitiesI.BigInt()))
+	rate.SetFloat64(interestRate.MustFloat64())
 
-	mtp.LiabilitiesI = sdk.NewUintFromBigInt(liabilitiesIDec.TruncateInt().BigInt())
+	liabilitiesRat.SetInt(mtp.LiabilitiesP.BigInt().Add(mtp.LiabilitiesP.BigInt(), mtp.LiabilitiesI.BigInt()))
+	liabilitiesIRat.Mul(&rate, &liabilitiesRat)
+
+	liabilitiesINew := liabilitiesIRat.Num().Quo(liabilitiesRat.Num(), liabilitiesIRat.Denom())
+	mtp.LiabilitiesI = sdk.NewUintFromBigInt(liabilitiesINew.Add(liabilitiesINew, mtp.LiabilitiesI.BigInt()))
 
 	return k.SetMTP(ctx, mtp)
 }

@@ -844,6 +844,27 @@ func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
 	require.Nil(t, got)
 }
 
+func TestKeeper_UpdateMTPInterestLiabilitiesOverflow(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+
+	mtp := types.MTP{
+		Address:          "sif123",
+		CollateralAsset:  "rowan",
+		CollateralAmount: sdk.Uint{},
+		LiabilitiesP:     sdk.NewUintFromString("100"),
+		LiabilitiesI:     sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
+		CustodyAsset:     "ceth",
+		CustodyAmount:    sdk.Uint{},
+		Leverage:         sdk.Uint{},
+		MtpHealth:        sdk.Dec{},
+		Position:         types.Position_LONG,
+		Id:               1,
+	}
+
+	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(3.0))
+	require.Nil(t, got)
+}
+
 func TestKeeper_InterestRateComputation(t *testing.T) {
 	interestRateComputationTests := []struct {
 		name                 string
