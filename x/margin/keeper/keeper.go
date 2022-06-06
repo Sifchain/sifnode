@@ -330,7 +330,7 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 	// delta x in calculate in y currency
 	nativeAsset := types.GetSettlementAsset()
 
-	var normalizedCollateral, normalizedLiabilities, normalizedCustody sdk.Dec
+	var normalizedCollateral, normalizedLiabilitiesP, normalizedLiabilitiesI, normalizedCustody sdk.Dec
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
 		normalizedCustodyInt, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
 		if err != nil {
@@ -338,26 +338,32 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		}
 		normalizedCustody = sdk.NewDecFromBigInt(normalizedCustodyInt.BigInt())
 		normalizedCollateral = sdk.NewDecFromBigInt(mtp.CollateralAmount.BigInt())
-		normalizedLiabilities = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
+		normalizedLiabilitiesP = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
+		normalizedLiabilitiesI = sdk.NewDecFromBigInt(mtp.LiabilitiesI.BigInt())
 	} else { // collateral is external
 		normalizedCollateralInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.CollateralAmount)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
 		normalizedCollateral = sdk.NewDecFromBigInt(normalizedCollateralInt.BigInt())
-		normalizedLiabilitiesInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
+		normalizedLiabilitiesPInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
-		normalizedLiabilities = sdk.NewDecFromBigInt(normalizedLiabilitiesInt.BigInt())
+		normalizedLiabilitiesP = sdk.NewDecFromBigInt(normalizedLiabilitiesPInt.BigInt())
+		normalizedLiabilitiesIInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesI)
+		if err != nil {
+			return sdk.Dec{}, err
+		}
+		normalizedLiabilitiesI = sdk.NewDecFromBigInt(normalizedLiabilitiesIInt.BigInt())
 		normalizedCustody = sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	}
 
-	if normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
+	if normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
 		return sdk.Dec{}, types.ErrMTPInvalid
 	}
 
-	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody))
+	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody))
 
 	return health, nil
 }
