@@ -82,6 +82,7 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 		name     string
 		height   int64
 		use      sdk.Uint
+		any      bool
 		unlocks  []*types.LiquidityUnlock
 		expected error
 	}{
@@ -95,6 +96,19 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 			height:   5,
 			use:      sdk.NewUint(1000),
 			expected: types.ErrBalanceNotAvailable,
+			unlocks: []*types.LiquidityUnlock{
+				{
+					RequestHeight: 1,
+					Units:         sdk.NewUint(1000),
+				},
+			},
+		},
+		{
+			name:     "Unlock in any state",
+			height:   5,
+			use:      sdk.NewUint(1000),
+			any:      true,
+			expected: nil,
 			unlocks: []*types.LiquidityUnlock{
 				{
 					RequestHeight: 1,
@@ -136,7 +150,7 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 				Unlocks:                  tc.unlocks,
 			}
 			app.ClpKeeper.SetLiquidityProvider(ctx, &lp)
-			err := app.ClpKeeper.UseUnlockedLiquidity(ctx, lp, sdk.NewUint(1000))
+			err := app.ClpKeeper.UseUnlockedLiquidity(ctx, lp, sdk.NewUint(1000), tc.any)
 			require.ErrorIs(t, err, tc.expected)
 		})
 	}
