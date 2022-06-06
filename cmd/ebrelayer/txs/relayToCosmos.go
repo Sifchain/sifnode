@@ -41,18 +41,30 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 			continue
 		} else {
 			messages = append(messages, &msg)
+			// to avoid too many data in single transaction, send out by batch
+			if len(messages) == 5 {
+				err = sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
+				if err != nil {
+					return err
+				}
+				messages = messages[:0]
+			}
 		}
 	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
 	instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
+	return nil
+}
 
+// Send the messages to sifnode via broadcast transaction
+func sendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages *[]sdk.Msg, sugaredLogger *zap.SugaredLogger) error {
 	err := tx.BroadcastTx(
 		cliCtx,
 		factory.
 			WithGas(1000000000000000000).
 			WithFees("500000000000000000rowan"),
-		messages...,
+		*messages...,
 	)
 
 	// Broadcast to a Tendermint node
