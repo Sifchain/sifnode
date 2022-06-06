@@ -23,6 +23,8 @@ type CLPKeeper interface {
 	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
 	IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec
 	GetMinLen(inputs []sdk.Uint) int64
+
+	GetPmtpRateParams(ctx sdk.Context) clptypes.PmtpRateParams
 }
 
 type Keeper interface {

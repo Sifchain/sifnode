@@ -177,6 +177,7 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	   But a upgraded version that include swap, updating bouding curve (to be inside the old one)
 	   One can think about this as a state jump:
 	*/
+
 	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 	if err != nil {
 		return sdk.ZeroUint(), err
@@ -187,6 +188,8 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	if !k.clpKeeper.ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
+
+	pmtpCurrentRunningRate := k.clpKeeper.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 
 	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 	if adjustExternalToken {
@@ -231,6 +234,8 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 		y = y.Quo(normalizationFactor)
 	}
 
+	y = CalcCustodySwapPmtp(toRowan, y, pmtpCurrentRunningRate)
+
 	swapResult := sdk.NewUintFromBigInt(y.RoundInt().BigInt())
 
 	if swapResult.GTE(Y) {
@@ -238,6 +243,13 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	}
 
 	return swapResult, nil
+}
+
+func CalcCustodySwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
+	if toRowan {
+		return y.Quo(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
+	}
+	return y.Mul(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
 }
 
 func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint, bool) {

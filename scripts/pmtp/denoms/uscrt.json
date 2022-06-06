@@ -2,11 +2,11 @@
     "entries": [
         {
             "decimals": "6",
-            "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
-            "base_denom": "uatom",
-            "path": "transfer/channel-0",
-            "ibc_channel_id": "channel-0",
-            "ibc_counterparty_channel_id": "channel-192",
+            "denom": "ibc/XXXXX",
+            "base_denom": "uscrt",
+            "path": "transfer/channel-65",
+            "ibc_channel_id": "channel-65",
+            "ibc_counterparty_channel_id": "channel-15",
             "display_name": "",
             "display_symbol": "",
             "network": "",
@@ -20,7 +20,7 @@
             ],
             "unit_denom": "",
             "ibc_counterparty_denom": "",
-            "ibc_counterparty_chain_id": "cosmoshub-4"
+            "ibc_counterparty_chain_id": "secret-4"
         }
     ]
 }

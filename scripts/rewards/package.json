@@ -1,0 +1,14 @@
+{
+  "name": "rewards",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Caner Candan",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "rewards-period": "node rewards-period.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.2.4"
+  }
+}
