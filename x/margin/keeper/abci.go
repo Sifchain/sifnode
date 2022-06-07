@@ -1,6 +1,10 @@
 package keeper
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/margin/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	//check if epoch has passed then execute
@@ -17,15 +21,10 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				}
 				pool.InterestRate = rate
 				//mtps := k.GetMTPsForPool(ctx, pool) // TODO define
-				mtps := k.GetMTPsForAsset(ctx, pool.ExternalAsset.Symbol)
+				mtps := k.GetMTPsForCustodyAsset(ctx, pool.ExternalAsset.Symbol)
+				ctx.Logger().Info("Number of MTPs", "mtps", len(mtps))
 				for _, mtp := range mtps {
-					h, err := k.UpdateMTPHealth(ctx, *mtp, *pool)
-					if err != nil {
-						continue // ?
-					}
-					mtp.MtpHealth = h
-					_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
-					_ = k.SetMTP(ctx, mtp)
+					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
 
 				_ = k.UpdatePoolHealth(ctx, pool)
@@ -35,4 +34,22 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 
 	}
 
+}
+
+func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) {
+	defer func() {
+		if r := recover(); r != nil {
+			if msg, ok := r.(string); ok {
+				ctx.Logger().Error(msg)
+			}
+		}
+	}()
+	h, err := k.UpdateMTPHealth(ctx, *mtp, *pool)
+	if err != nil {
+		return
+	}
+	mtp.MtpHealth = h
+	_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
+	_ = k.SetMTP(ctx, mtp)
+	_, _ = k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
 }
