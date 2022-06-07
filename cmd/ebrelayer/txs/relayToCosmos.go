@@ -94,9 +94,9 @@ func sendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages *[
 }
 
 // SignProphecyToCosmos broadcasts the signed prophecy message to cosmos
-func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProphecy, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) {
+func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProphecy, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	messages = append(messages, &signProphecy)
-	sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
+	return sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
 }
