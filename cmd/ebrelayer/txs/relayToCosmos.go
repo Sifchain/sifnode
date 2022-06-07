@@ -67,6 +67,9 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 
 // Send the messages to sifnode via broadcast transaction
 func sendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages *[]sdk.Msg, sugaredLogger *zap.SugaredLogger) error {
+	// TODO this WithGas isn't correct
+	// TODO we need to investigate retries
+	// TODO we need to investigate what happens when the transaction has already been completed
 	err := tx.BroadcastTx(
 		cliCtx,
 		factory.
@@ -95,29 +98,5 @@ func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProp
 	var messages []sdk.Msg
 
 	messages = append(messages, &signProphecy)
-
-	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	// TODO this WithGas isn't correct
-	// TODO we need to investigate retries
-	// TODO we need to investigate what happens when the transaction has already been completed
-	err := tx.BroadcastTx(
-		cliCtx,
-		factory.
-			WithGas(1000000000000000000).
-			WithFees("500000000000000000rowan"),
-		messages...,
-	)
-
-	// Broadcast to a Tendermint node
-	// open question as to how we handle this situation.
-	//    do we retry,
-	//        if so, how many times do we try?
-	if err == nil {
-		sugaredLogger.Infow("Broadcast SignProphecyToCosmos tx without error")
-	} else {
-		sugaredLogger.Errorw(
-			"failed to broadcast tx to sifchain.",
-			errorMessageKey, err.Error(),
-		)
-	}
+	sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
 }
