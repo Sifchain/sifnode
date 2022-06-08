@@ -54,7 +54,10 @@ def main(argv):
             argparser.add_argument("--geth", action="store_true", default=False)
             argparser.add_argument("--witness-count", type=int)
             argparser.add_argument("--consensus-threshold", type=int)
+            argparser.add_argument("--pkill", action="store_true", default=False)
             args = argparser.parse_args(argv[1:])
+            if args.pkill:
+                project.pkill()
             env = Peggy2Environment(cmd)
             if args.witness_count is not None:
                 env.witness_count = args.witness_count
