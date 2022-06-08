@@ -53,6 +53,7 @@ def main(argv):
             argparser.add_argument("--test-denom-count", type=int)
             argparser.add_argument("--geth", action="store_true", default=False)
             argparser.add_argument("--witness-count", type=int)
+            argparser.add_argument("--ebrelayer-log-level")
             argparser.add_argument("--consensus-threshold", type=int)
             argparser.add_argument("--pkill", action="store_true", default=False)
             args = argparser.parse_args(argv[1:])
@@ -67,6 +68,8 @@ def main(argv):
                 env.consensus_threshold = args.consensus_threshold
             elif "CONSENSUS_THRESHOLD" in os.environ:
                 env.consensus_threshold = int(os.getenv("CONSENSUS_THRESHOLD"))
+            if args.ebrelayer_log_level:
+                env.log_level_witness = env.log_level_relayer = args.ebrelayer_log_level
             env.use_geth_instead_of_hardhat = args.geth
             if args.test_denom_count:
                 env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
