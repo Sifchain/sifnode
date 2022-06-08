@@ -336,7 +336,13 @@ func (sub CosmosSub) witnessSignAndBroadcastProphecy(
 
 	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.WitnessSignProphecy, zap.Reflect("prophecy", signProphecy))
 
-	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
+	err = txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
+	if err != nil {
+		sub.SugaredLogger.Infow(
+			"failed to send signProphecy to sifnode",
+			errorMessageKey, err.Error(),
+		)
+	}
 
 }
 
