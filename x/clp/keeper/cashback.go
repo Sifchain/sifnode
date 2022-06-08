@@ -5,19 +5,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetCashbackBlockRate(ctx sdk.Context) sdk.Dec {
-	return sdk.NewDecWithPrec(1, 2)
-	//k.GetCashbackParams(ctx).BlockRate
-}
+func (k Keeper) CashbackPolicyRun(ctx sdk.Context) error {
+	currentHeight := ctx.BlockHeight()
+	period := k.findValidCashbackPeriod(ctx, currentHeight)
+	if period == nil {
+		return nil
+	}
 
-func (k Keeper) GetCashbackFinalBlock(ctx sdk.Context) int64 {
-	return 42
-	//k.GetCashbackParams(ctx).BlockRate
-}
-
-func (k Keeper) GetCashbackStartBlock(ctx sdk.Context) int64 {
-	return 23
-	//k.GetCashbackParams(ctx).BlockRate
+	allPools := k.GetPools(ctx)
+	return k.doCashback(ctx, allPools, period.CashbackPeriodBlockRate)
 }
 
 func CalcCashbackAmount(rowanCashedback sdk.Dec, totalPoolUnits, providerPoolUnits sdk.Uint) sdk.Uint {
@@ -44,8 +40,7 @@ func (k Keeper) payOutLPs(ctx sdk.Context, rowanCashbacked sdk.Dec, totalPoolUni
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, sdk.NewCoins(coin))
 }
 
-func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool) error {
-	blockRate := k.GetCashbackBlockRate(ctx)
+func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) error {
 	for _, pool := range pools {
 		lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
 		if err != nil {
@@ -68,19 +63,19 @@ func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool) error {
 	return nil
 }
 
-func (k Keeper) CashbackPolicyRun(ctx sdk.Context) error {
-	currentHeight := ctx.BlockHeight()
-	startBlock := k.GetCashbackStartBlock(ctx)
-	finalBlock := k.GetCashbackFinalBlock(ctx)
-
-	if currentHeight >= startBlock &&
-		currentHeight <= finalBlock {
-		allPools := k.GetPools(ctx)
-		return k.doCashback(ctx, allPools)
+func (k Keeper) findValidCashbackPeriod(ctx sdk.Context, currentHeight int64) *types.CashbackPeriod {
+	params := k.GetCashbackParams(ctx)
+	for _, period := range params.CashbackPeriods {
+		if isActivePeriod(currentHeight, period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock) {
+			return period
+		}
 	}
 
-	// Log
 	return nil
+}
+
+func isActivePeriod(current, start, end int64) bool {
+	return start >= current && end <= current
 }
 
 func (k Keeper) SetCashbackParams(ctx sdk.Context, params *types.CashbackParams) {
@@ -93,5 +88,6 @@ func (k Keeper) GetCashbackParams(ctx sdk.Context) *types.CashbackParams {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.CashbackParamsPrefix)
 	k.cdc.MustUnmarshal(bz, &params)
+
 	return &params
 }

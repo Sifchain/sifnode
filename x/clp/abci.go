@@ -30,6 +30,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	k.CashbackPolicyRun(ctx)
+
 	// get current block height
 	currentHeight := ctx.BlockHeight()
 	// get PMTP period params
