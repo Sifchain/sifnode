@@ -2,9 +2,12 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
@@ -284,4 +287,21 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	}
 
 	return &mtp, nil
+}
+
+func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("Signer : %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	msg.Params.Pools = params.Pools
+	k.SetParams(ctx, msg.Params)
+
+	return &types.MsgUpdateParamsResponse{}, nil
 }

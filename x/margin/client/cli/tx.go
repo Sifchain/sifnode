@@ -2,6 +2,7 @@ package cli
 
 import (
 	"github.com/Sifchain/sifnode/x/margin/types"
+	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -20,6 +21,7 @@ func GetTxCmd() *cobra.Command {
 		GetOpenCmd(),
 		GetCloseCmd(),
 		GetForceCloseCmd(),
+		GetUpdateParamsCmd(),
 	)
 	return cmd
 }
@@ -149,6 +151,51 @@ func GetForceCloseCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().Uint64("id", 0, "id of the position")
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetUpdateParamsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-params",
+		Short: "Update margin params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgUpdateParams{
+				Signer: clientCtx.GetFromAddress().String(),
+				Params: &types.Params{
+					LeverageMax:          sdk.NewUintFromString(viper.GetString("leverage-max")),
+					InterestRateMax:      sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
+					InterestRateMin:      sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
+					InterestRateIncrease: sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),
+					InterestRateDecrease: sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
+					HealthGainFactor:     sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
+					ForceCloseThreshold:  sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
+					EpochLength:          viper.GetInt64("epoch-length"),
+				},
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String("leverage-max", "", "max leverage")
+	cmd.Flags().String("interest-rate-max", "", "max interest rate")
+	cmd.Flags().String("interest-rate-min", "", "min interest rate")
+	cmd.Flags().String("interest-rate-increase", "", "interest rate increase")
+	cmd.Flags().String("interest-rate-decrease", "", "interest rate decrease")
+	cmd.Flags().String("health-gain-factor", "", "health gain factor")
+	cmd.Flags().String("force-close-threshold", "", "force close threshold")
+	cmd.Flags().Int64("epoch-length", 1, "epoch length in blocks")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
