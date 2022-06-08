@@ -43,6 +43,13 @@ func QueryClpPoolsExec(clientCtx client.Context, extraArgs ...string) (testutil.
 	return clitestutil.ExecTestCLICmd(clientCtx, clpcli.GetCmdPools(""), args)
 }
 
+func QueryClpPoolExec(clientCtx client.Context, symbol string, extraArgs ...string) (testutil.BufferWriter, error) {
+	args := []string{symbol, fmt.Sprintf("--%s=json", cli.OutputFlag)}
+	args = append(args, extraArgs...)
+
+	return clitestutil.ExecTestCLICmd(clientCtx, clpcli.GetCmdPool(""), args)
+}
+
 func QueryClpPmtpParamsExec(clientCtx client.Context, extraArgs ...string) (testutil.BufferWriter, error) {
 	args := []string{fmt.Sprintf("--%s=json", cli.OutputFlag)}
 	args = append(args, extraArgs...)

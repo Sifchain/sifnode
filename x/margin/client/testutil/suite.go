@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sifapp "github.com/Sifchain/sifnode/app"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -99,12 +100,30 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	height, _ := s.network.LatestHeight()
 
 	testCases := []struct {
-		height       int64
-		forcedClosed bool
-		expectedMtp  margintypes.MTP
+		height                    int64
+		expectedPool              clptypes.Pool
+		expectedSwapPriceNative   sdk.Dec
+		expectedSwapPriceExternal sdk.Dec
+		forcedClosed              bool
+		expectedMtp               margintypes.MTP
 	}{
 		{
 			height: height + 1,
+			expectedPool: clptypes.Pool{
+				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
+				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.NewUintFromString("0"),
+				ExternalCustody:               sdk.NewUintFromString("4409900942"),
+				NativeLiabilities:             collateralAmount,
+				NativeCustody:                 sdk.NewUintFromString("0"),
+				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				InterestRate:                  sdk.MustNewDecFromStr("0.900000000000000000"),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
 			expectedMtp: margintypes.MTP{
 				Id:               uint64(1),
 				Address:          from.String(),
@@ -121,6 +140,21 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 		},
 		{
 			height: height + 5,
+			expectedPool: clptypes.Pool{
+				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
+				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.NewUintFromString("0"),
+				ExternalCustody:               sdk.NewUintFromString("4409900942"),
+				NativeLiabilities:             collateralAmount,
+				NativeCustody:                 sdk.NewUintFromString("0"),
+				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				InterestRate:                  sdk.MustNewDecFromStr("1.300000000000000000"),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
 			expectedMtp: margintypes.MTP{
 				Id:               uint64(1),
 				Address:          from.String(),
@@ -136,8 +170,23 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			},
 		},
 		{
-			height:       height + 10,
-			forcedClosed: true,
+			height: height + 10,
+			expectedPool: clptypes.Pool{
+				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
+				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.NewUintFromString("0"),
+				ExternalCustody:               sdk.NewUintFromString("4409900942"),
+				NativeLiabilities:             collateralAmount,
+				NativeCustody:                 sdk.NewUintFromString("0"),
+				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				InterestRate:                  sdk.MustNewDecFromStr("1.800000000000000000"),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			forcedClosed:              true,
 		},
 	}
 
@@ -148,6 +197,17 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 		s.Require().NoError(err)
 
 		s.Run(fmt.Sprintf("height: %d", tc.height), func() {
+			out, err := QueryClpPoolExec(clientCtx, borrowAsset)
+			s.Require().NoError(err)
+
+			var poolRes clptypes.PoolRes
+			s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &poolRes), out.String())
+
+			tc.expectedPool.SwapPriceNative = &tc.expectedSwapPriceNative
+			tc.expectedPool.SwapPriceExternal = &tc.expectedSwapPriceExternal
+			s.T().Logf("pool: %v", poolRes.Pool)
+			s.Require().Equal(poolRes.Pool, &tc.expectedPool)
+
 			out, err = QueryMarginPositionsForAddressExec(clientCtx, val.Address)
 			s.Require().NoError(err)
 
