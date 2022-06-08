@@ -138,13 +138,13 @@ func GetClpGenesisState(cfg network.Config) ([]byte, error) {
 func GetMarginGenesisState(cfg network.Config) ([]byte, error) {
 	gs := &margintypes.GenesisState{
 		Params: &margintypes.Params{
-			LeverageMax:          sdk.NewUint(1),
-			HealthGainFactor:     sdk.NewDec(1),
-			InterestRateMin:      sdk.NewDecWithPrec(5, 3),
-			InterestRateMax:      sdk.NewDec(3),
-			InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
-			InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:  sdk.NewDecWithPrec(1, 1),
+			LeverageMax:          sdk.NewUintFromString("1"),
+			HealthGainFactor:     sdk.MustNewDecFromStr("1.0"),
+			InterestRateMin:      sdk.MustNewDecFromStr("0.005"),
+			InterestRateMax:      sdk.MustNewDecFromStr("3.0"),
+			InterestRateDecrease: sdk.MustNewDecFromStr("0.10"),
+			InterestRateIncrease: sdk.MustNewDecFromStr("0.10"),
+			ForceCloseThreshold:  sdk.MustNewDecFromStr("0.10"),
 			EpochLength:          1,
 			Pools:                []string{"cusdt", "cusdc"},
 		},

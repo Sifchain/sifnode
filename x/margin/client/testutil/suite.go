@@ -99,8 +99,9 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	height, _ := s.network.LatestHeight()
 
 	testCases := []struct {
-		height      int64
-		expectedMtp margintypes.MTP
+		height       int64
+		forcedClosed bool
+		expectedMtp  margintypes.MTP
 	}{
 		{
 			height: height + 1,
@@ -110,11 +111,11 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: collateralAmount,
 				LiabilitiesP:     collateralAmount,
-				LiabilitiesI:     sdk.ZeroUint(),
+				LiabilitiesI:     sdk.NewUintFromString("4656613983300"),
 				CustodyAsset:     borrowAsset,
-				CustodyAmount:    sdk.ZeroUint(),
+				CustodyAmount:    sdk.NewUintFromString("4409900942"),
 				Leverage:         sdk.NewUintFromString("1"),
-				MtpHealth:        sdk.MustNewDecFromStr("0.5"),
+				MtpHealth:        sdk.MustNewDecFromStr("0.101538596164020080"),
 				Position:         margintypes.Position_LONG,
 			},
 		},
@@ -126,29 +127,17 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: collateralAmount,
 				LiabilitiesP:     collateralAmount,
-				LiabilitiesI:     sdk.ZeroUint(),
+				LiabilitiesI:     sdk.NewUintFromString("30000000018626846731702"),
 				CustodyAsset:     borrowAsset,
-				CustodyAmount:    sdk.ZeroUint(),
+				CustodyAmount:    sdk.NewUintFromString("4409900942"),
 				Leverage:         sdk.NewUintFromString("1"),
-				MtpHealth:        sdk.MustNewDecFromStr("0.5"),
+				MtpHealth:        sdk.MustNewDecFromStr("0.077830267765395576"),
 				Position:         margintypes.Position_LONG,
 			},
 		},
 		{
-			height: height + 10,
-			expectedMtp: margintypes.MTP{
-				Id:               uint64(1),
-				Address:          from.String(),
-				CollateralAsset:  collateralAsset,
-				CollateralAmount: collateralAmount,
-				LiabilitiesP:     collateralAmount,
-				LiabilitiesI:     sdk.ZeroUint(),
-				CustodyAsset:     borrowAsset,
-				CustodyAmount:    sdk.ZeroUint(),
-				Leverage:         sdk.NewUintFromString("1"),
-				MtpHealth:        sdk.MustNewDecFromStr("0.5"),
-				Position:         margintypes.Position_LONG,
-			},
+			height:       height + 10,
+			forcedClosed: true,
 		},
 	}
 
@@ -165,15 +154,14 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			var positionsRes margintypes.PositionsForAddressResponse
 			s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &positionsRes), out.String())
 
-			s.Require().Equal(positionsRes.Mtps, []*margintypes.MTP{
-				&tc.expectedMtp,
-			})
+			if tc.forcedClosed {
+				s.Require().Empty(positionsRes.Mtps)
+			} else {
+				s.T().Logf("mtp: %v", positionsRes.Mtps[0])
+				s.Require().Equal(positionsRes.Mtps[0], &tc.expectedMtp)
+			}
 		})
 	}
-
-	// TODO:
-	// * add list of testcases for expected mtp states for any given block height
-	// * test force close when we hit force close threshold
 }
 
 func (s *IntegrationTestSuite) TestC_CloseLongMTP() {
