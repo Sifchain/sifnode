@@ -63,12 +63,15 @@ message PoolMultiplier {
   ];
 }
 
-message CashbackParams {
-    string cashback_period_governance_rate = 1 [
+message CashbackPeriod {
+    string cashback_period_block_rate = 1 [
         (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
         (gogoproto.nullable) = false
     ];
-    int64 cashback_period_epoch_length = 2;
-    int64 cashback_period_start_block = 3;
-    int64 cashback_period_end_block = 4;
+    int64 cashback_period_start_block = 2;
+    int64 cashback_period_end_block = 3;
+}
+
+message CashbackParams {
+  repeated CashbackPeriod cashback_periods = 1;
 }
