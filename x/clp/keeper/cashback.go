@@ -15,6 +15,11 @@ func (k Keeper) GetCashbackFinalBlock(ctx sdk.Context) int64 {
 	//k.GetCashbackParams(ctx).BlockRate
 }
 
+func (k Keeper) GetCashbackStartBlock(ctx sdk.Context) int64 {
+	return 23
+	//k.GetCashbackParams(ctx).BlockRate
+}
+
 func CalcCashbackAmount(rowanCashedback sdk.Dec, totalPoolUnits, providerPoolUnits sdk.Uint) sdk.Uint {
 	//provider_percentage = provider_units / total_pool_units
 	totalPoolUnitsDec := sdk.NewDecFromBigInt(totalPoolUnits.BigInt())
@@ -27,11 +32,16 @@ func CalcCashbackAmount(rowanCashedback sdk.Dec, totalPoolUnits, providerPoolUni
 }
 
 func (k Keeper) payOutLPs(ctx sdk.Context, rowanCashbacked sdk.Dec, totalPoolUnits sdk.Uint, lp *types.LiquidityProvider) error {
+	address, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+	if err != nil {
+		return nil
+	}
+
 	providerRowan := CalcCashbackAmount(rowanCashbacked, totalPoolUnits, lp.LiquidityProviderUnits)
 
 	//TransferCoinsFromPool(pool, provider_rowan, provider_address)
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.Int(providerRowan))
-	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sdk.AccAddress(lp.LiquidityProviderAddress), sdk.NewCoins(coin))
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, sdk.NewCoins(coin))
 }
 
 func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool) error {
@@ -60,15 +70,17 @@ func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool) error {
 
 func (k Keeper) CashbackPolicyRun(ctx sdk.Context) error {
 	currentHeight := ctx.BlockHeight()
+	startBlock := k.GetCashbackStartBlock(ctx)
 	finalBlock := k.GetCashbackFinalBlock(ctx)
 
-	if currentHeight > finalBlock {
-		// Log
-		return nil
+	if currentHeight >= startBlock &&
+		currentHeight <= finalBlock {
+		allPools := k.GetPools(ctx)
+		return k.doCashback(ctx, allPools)
 	}
 
-	allPools := k.GetPools(ctx)
-	return k.doCashback(ctx, allPools)
+	// Log
+	return nil
 }
 
 func (k Keeper) SetCashbackParams(ctx sdk.Context, params *types.CashbackParams) {
