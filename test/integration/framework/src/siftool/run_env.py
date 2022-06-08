@@ -1020,12 +1020,12 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         log.debug("Smart contracts operator: {}".format(operator_addr))
         log.debug("ceth symbol: {}".format(self.ceth_symbol))
-        log.debug("Admin account address: {}".format(admin_account_address))  # tokens
+        log.debug("Admin account address (rowan source): {}".format(admin_account_address))  # tokens
         log.debug("Witness count: {}".format(self.witness_count))
         log.debug("Consensus thresholds {}".format(self.consensus_threshold))
         log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
         for sc_name, sc_address in peggy_sc_addrs.items():
-            log.debug("{} address: {}".format(sc_name, sc_address))
+            log.debug("{} smart contract address: {}".format(sc_name, sc_address))
 
         evm_validator_accounts = hardhat_accounts["validators"]
         evm_validator_addresses = [address[0] for address in evm_validator_accounts]
