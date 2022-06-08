@@ -45,6 +45,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
+require github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+
 require (
 	filippo.io/edwards25519 v1.0.0-beta.2 // indirect
 	github.com/99designs/keyring v1.1.6 // indirect
@@ -151,6 +153,7 @@ require (
 )
 
 replace (
+	github.com/cosmos/cosmos-sdk => github.com/Sifchain/cosmos-sdk v0.45.1-issue.11957
 	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.3-issue.850
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
