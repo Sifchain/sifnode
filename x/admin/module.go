@@ -1,12 +1,10 @@
-package tokenregistry
+package admin
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/Sifchain/sifnode/x/tokenregistry/client/cli"
-	"github.com/Sifchain/sifnode/x/tokenregistry/client/rest"
+	"github.com/Sifchain/sifnode/x/admin/client/cli"
 
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -18,9 +16,9 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/Sifchain/sifnode/x/tokenregistry/handler"
-	"github.com/Sifchain/sifnode/x/tokenregistry/keeper"
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	//"github.com/Sifchain/sifnode/x/tokenregistry/handler"
+	"github.com/Sifchain/sifnode/x/admin/keeper"
+	"github.com/Sifchain/sifnode/x/admin/types"
 )
 
 var (
@@ -66,15 +64,15 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, _ sdkclient.T
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *runtime.ServeMux) {
-	err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
-	if err != nil {
-		panic(err)
-	}
+	//err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	//if err != nil {
+	//	panic(err)
+	//}
 }
 
 // RegisterRESTRoutes registers the REST routes.
 func (b AppModuleBasic) RegisterRESTRoutes(ctx sdkclient.Context, router *mux.Router) {
-	rest.RegisterRESTRoutes(ctx, router)
+	// rest.RegisterRESTRoutes(ctx, router)
 }
 
 // GetTxCmd returns the root tx command.
@@ -96,22 +94,22 @@ type AppModuleSimulation struct{}
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
-	Keeper types.Keeper
+	Keeper keeper.Keeper
 	Codec  *codec.Codec
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
-	m := keeper.NewMigrator(am.Keeper)
-	err := cfg.RegisterMigration(types.ModuleName, 3, m.MigrateToVer4)
-	if err != nil {
-		panic(err)
-	}
+	//m := keeper.NewMigrator(am.Keeper)
+	//err := cfg.RegisterMigration(types.ModuleName, 0, m.InitialMigration)
+	//if err != nil {
+	//	panic(err)
+	//}
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper types.Keeper, cdc *codec.Codec) AppModule {
+func NewAppModule(keeper keeper.Keeper, cdc *codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
@@ -136,7 +134,7 @@ func (am AppModule) Route() sdk.Route {
 
 // NewHandler returns an sdk.Handler for the module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return handler.NewHandler(am.Keeper)
+	return keeper.NewHandler(am.Keeper)
 }
 
 // QuerierRoute returns the module's querier route name.
@@ -170,4 +168,4 @@ func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 	return nil
 }
 
-func (AppModule) ConsensusVersion() uint64 { return 4 }
+func (AppModule) ConsensusVersion() uint64 { return 3 }
