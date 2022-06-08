@@ -3,7 +3,8 @@ import json
 import os
 import random
 import time
-from typing import Iterable, Mapping, Union, List
+import typing
+from typing import Iterable, Mapping, Union, List, Callable
 import web3
 from web3.eth import Contract
 from hexbytes import HexBytes
@@ -963,6 +964,31 @@ def sifnoded_parse_output_lines(stdout):
         m = pat.match(line)
         result[m[1]] = m[2]
     return result
+
+# Generalized version of "grep -B _ -A _". Can be used as iterator on long streams without loading everything to memory.
+def generalized_grep(items: Iterable, match_fn: Callable, before: int = 0, after: int = 0):
+    it = iter(items)
+    buf = []
+    matched = False
+    while True:
+        try:
+            item = next(it)
+        except StopIteration:
+            break
+        if len(buf) > before + 1:
+            buf.pop(0)
+        buf.append(item)
+        if match_fn(item):
+            yield from buf
+            matched = True
+            break
+    if matched:
+        for _ in range(after):
+            try:
+                item = next(it)
+            except StopIteration:
+                break
+            yield item
 
 def pytest_ctx_fixture(request):
     # To pass the "snapshot_name" as a parameter with value "foo" from test, annotate the test function like this:
