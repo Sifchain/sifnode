@@ -47,6 +47,10 @@ service Query {
   rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
+
+  rpc GetCashbackParams(CashbackParamsReq) returns (CashbackParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/cashback_params";
+  };
 }
 
 message PoolReq {
@@ -170,4 +174,11 @@ message PmtpParamsRes {
   sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
   sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
   int64 height = 4;
+}
+
+
+message CashbackParamsReq {}
+
+message CashbackParamsRes {
+  CashbackParams params = 1;
 }
