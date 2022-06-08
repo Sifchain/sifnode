@@ -23,6 +23,8 @@ type CLPKeeper interface {
 	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
 	IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec
 	GetMinLen(inputs []sdk.Uint) int64
+
+	GetPmtpRateParams(ctx sdk.Context) clptypes.PmtpRateParams
 }
 
 type Keeper interface {
@@ -37,7 +39,8 @@ type Keeper interface {
 	GetMTP(ctx sdk.Context, address string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
-	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP
+	GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*MTP
+	GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
 	DestroyMTP(sdk.Context, string, uint64) error
@@ -64,4 +67,6 @@ type Keeper interface {
 	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
+
+	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
 }

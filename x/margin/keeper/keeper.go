@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"math/big"
 	"strings"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -90,7 +91,7 @@ func (k Keeper) GetMTPs(ctx sdk.Context) []*types.MTP {
 	return mtpList
 }
 
-func (k Keeper) GetMTPsForAsset(ctx sdk.Context, asset string) []*types.MTP {
+func (k Keeper) GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*types.MTP {
 	var mtpList []*types.MTP
 	iterator := k.GetMTPIterator(ctx)
 	defer iterator.Close()
@@ -98,7 +99,22 @@ func (k Keeper) GetMTPsForAsset(ctx sdk.Context, asset string) []*types.MTP {
 		var mtp types.MTP
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if mtp.CollateralAsset == asset {
+		if strings.EqualFold(mtp.CollateralAsset, asset) {
+			mtpList = append(mtpList, &mtp)
+		}
+	}
+	return mtpList
+}
+
+func (k Keeper) GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*types.MTP {
+	var mtpList []*types.MTP
+	iterator := k.GetMTPIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var mtp types.MTP
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		if strings.EqualFold(mtp.CustodyAsset, asset) {
 			mtpList = append(mtpList, &mtp)
 		}
 	}
@@ -161,6 +177,7 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	   But a upgraded version that include swap, updating bouding curve (to be inside the old one)
 	   One can think about this as a state jump:
 	*/
+
 	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 	if err != nil {
 		return sdk.ZeroUint(), err
@@ -171,6 +188,8 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	if !k.clpKeeper.ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
+
+	pmtpCurrentRunningRate := k.clpKeeper.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 
 	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 	if adjustExternalToken {
@@ -215,6 +234,8 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 		y = y.Quo(normalizationFactor)
 	}
 
+	y = CalcCustodySwapPmtp(toRowan, y, pmtpCurrentRunningRate)
+
 	swapResult := sdk.NewUintFromBigInt(y.RoundInt().BigInt())
 
 	if swapResult.GTE(Y) {
@@ -222,6 +243,13 @@ func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sent
 	}
 
 	return swapResult, nil
+}
+
+func CalcCustodySwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
+	if toRowan {
+		return y.Quo(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
+	}
+	return y.Mul(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
 }
 
 func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint, bool) {
@@ -314,7 +342,7 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 	// delta x in calculate in y currency
 	nativeAsset := types.GetSettlementAsset()
 
-	var normalizedCollateral, normalizedLiabilities, normalizedCustody sdk.Dec
+	var normalizedCollateral, normalizedLiabilitiesP, normalizedLiabilitiesI, normalizedCustody sdk.Dec
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
 		normalizedCustodyInt, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
 		if err != nil {
@@ -322,26 +350,32 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		}
 		normalizedCustody = sdk.NewDecFromBigInt(normalizedCustodyInt.BigInt())
 		normalizedCollateral = sdk.NewDecFromBigInt(mtp.CollateralAmount.BigInt())
-		normalizedLiabilities = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
+		normalizedLiabilitiesP = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
+		normalizedLiabilitiesI = sdk.NewDecFromBigInt(mtp.LiabilitiesI.BigInt())
 	} else { // collateral is external
 		normalizedCollateralInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.CollateralAmount)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
 		normalizedCollateral = sdk.NewDecFromBigInt(normalizedCollateralInt.BigInt())
-		normalizedLiabilitiesInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
+		normalizedLiabilitiesPInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
-		normalizedLiabilities = sdk.NewDecFromBigInt(normalizedLiabilitiesInt.BigInt())
+		normalizedLiabilitiesP = sdk.NewDecFromBigInt(normalizedLiabilitiesPInt.BigInt())
+		normalizedLiabilitiesIInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesI)
+		if err != nil {
+			return sdk.Dec{}, err
+		}
+		normalizedLiabilitiesI = sdk.NewDecFromBigInt(normalizedLiabilitiesIInt.BigInt())
 		normalizedCustody = sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	}
 
-	if normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
+	if normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
 		return sdk.Dec{}, types.ErrMTPInvalid
 	}
 
-	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody))
+	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody))
 
 	return health, nil
 }
@@ -440,14 +474,15 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 }
 
 func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
-	liabilitiesI := mtp.LiabilitiesI
-	liabilitiesP := mtp.LiabilitiesP
+	var liabilitiesIRat, liabilitiesRat, rate big.Rat
 
-	liabilitiesIDec := interestRate.
-		Mul(sdk.NewDecFromBigInt(liabilitiesP.Add(liabilitiesI).BigInt())).
-		Add(sdk.NewDecFromBigInt(liabilitiesI.BigInt()))
+	rate.SetFloat64(interestRate.MustFloat64())
 
-	mtp.LiabilitiesI = sdk.NewUintFromBigInt(liabilitiesIDec.TruncateInt().BigInt())
+	liabilitiesRat.SetInt(mtp.LiabilitiesP.BigInt().Add(mtp.LiabilitiesP.BigInt(), mtp.LiabilitiesI.BigInt()))
+	liabilitiesIRat.Mul(&rate, &liabilitiesRat)
+
+	liabilitiesINew := liabilitiesIRat.Num().Quo(liabilitiesRat.Num(), liabilitiesIRat.Denom())
+	mtp.LiabilitiesI = sdk.NewUintFromBigInt(liabilitiesINew.Add(liabilitiesINew, mtp.LiabilitiesI.BigInt()))
 
 	return k.SetMTP(ctx, mtp)
 }

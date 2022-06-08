@@ -112,12 +112,12 @@ func TestKeeper_GetMTPs(t *testing.T) {
 	}
 }
 
-func TestKeeper_GetMTPsForAsset(t *testing.T) {
+func TestKeeper_GetMTPsForCollateralAsset(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", types.Position_LONG, 1)
 	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", types.Position_LONG, 1)
 	want := []*types.MTP{&key1, &key2}
-	got := marginKeeper.GetMTPsForAsset(ctx, "ceth")
+	got := marginKeeper.GetMTPsForCollateralAsset(ctx, "ceth")
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)
@@ -841,6 +841,27 @@ func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
 	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1)
 
 	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(1.0))
+	require.Nil(t, got)
+}
+
+func TestKeeper_UpdateMTPInterestLiabilitiesOverflow(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+
+	mtp := types.MTP{
+		Address:          "sif123",
+		CollateralAsset:  "rowan",
+		CollateralAmount: sdk.Uint{},
+		LiabilitiesP:     sdk.NewUintFromString("100"),
+		LiabilitiesI:     sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
+		CustodyAsset:     "ceth",
+		CustodyAmount:    sdk.Uint{},
+		Leverage:         sdk.Uint{},
+		MtpHealth:        sdk.Dec{},
+		Position:         types.Position_LONG,
+		Id:               1,
+	}
+
+	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(3.0))
 	require.Nil(t, got)
 }
 
