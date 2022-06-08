@@ -2,8 +2,8 @@
   "entries": [
     {
       "decimals": "18",
-      "denom": "ibc/6A5D6AB31758B27B3703FF0069C6F6EE4AA447BCDBB05C60DB5D59AB0D8A271E",
-      "base_denom": "cdmx",
+      "denom": "ibc/2A030468C9180DA1EE806E0355904EBF61EF713BAB0E47E78F2DE596181BC594",
+      "base_denom": "ucmdx",
       "path": "transfer/channel-30",
       "ibc_channel_id": "channel-30",
       "ibc_counterparty_channel_id": "channel-8",
