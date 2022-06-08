@@ -42,7 +42,7 @@ import (
 const (
 	trailingBlocks        = 50
 	ethereumSleepDuration = 1
-	maxQueryBlocks        = 50
+	maxQueryBlocks        = 25
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
