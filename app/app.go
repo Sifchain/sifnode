@@ -520,6 +520,7 @@ func NewSifApp(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
+		margin.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
 		clptypes.ModuleName,

@@ -39,7 +39,7 @@ func GetOpenCmd() *cobra.Command {
 				return err
 			}
 
-			collateralAmount, err := cmd.Flags().GetUint64("collateral_amount")
+			collateralAmount, err := cmd.Flags().GetString("collateral_amount")
 			if err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func GetOpenCmd() *cobra.Command {
 			msg := types.MsgOpen{
 				Signer:           clientCtx.GetFromAddress().String(),
 				CollateralAsset:  collateralAsset,
-				CollateralAmount: sdk.NewUint(collateralAmount),
+				CollateralAmount: sdk.NewUintFromString(collateralAmount),
 				BorrowAsset:      borrowAsset,
 				Position:         positionEnum,
 			}
@@ -71,7 +71,7 @@ func GetOpenCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().Uint64("collateral_amount", 0, "amount of collateral asset < max_uint64")
+	cmd.Flags().String("collateral_amount", "0", "amount of collateral asset")
 	cmd.Flags().String("collateral_asset", "", "symbol of asset")
 	cmd.Flags().String("borrow_asset", "", "symbol of asset")
 	cmd.Flags().String("position", "", "type of position")
