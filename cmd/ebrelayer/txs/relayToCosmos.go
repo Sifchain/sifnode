@@ -12,6 +12,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const MessagesInBatch = 5
+
 var (
 	errorMessageKey = "errorMessage"
 )
@@ -42,10 +44,8 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		} else {
 			messages = append(messages, &msg)
 			// to avoid too many data in single transaction, send out by batch
-			if len(messages) == 5 {
-				err = sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
-				sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-				instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
+			if len(messages) == MessagesInBatch {
+				err = SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
 				if err != nil {
 					return err
 				}
@@ -56,9 +56,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 
 	// send out the last batch message
 	if len(messages) > 0 {
-		err := sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
-		sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-		instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
+		err := SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
 		return err
 	}
 
@@ -66,7 +64,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 }
 
 // Send the messages to sifnode via broadcast transaction
-func sendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages *[]sdk.Msg, sugaredLogger *zap.SugaredLogger) error {
+func SendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages []sdk.Msg, sugaredLogger *zap.SugaredLogger) error {
 	// TODO this WithGas isn't correct
 	// TODO we need to investigate retries
 	// TODO we need to investigate what happens when the transaction has already been completed
@@ -75,8 +73,11 @@ func sendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages *[
 		factory.
 			WithGas(1000000000000000000).
 			WithFees("500000000000000000rowan"),
-		*messages...,
+		messages...,
 	)
+
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+	instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
@@ -98,5 +99,5 @@ func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProp
 	var messages []sdk.Msg
 
 	messages = append(messages, &signProphecy)
-	return sendMessagesToCosmos(factory, cliCtx, &messages, sugaredLogger)
+	return SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
 }
