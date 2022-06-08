@@ -24,6 +24,7 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
+	_ sdk.Msg = &MsgAddCashbackPeriodRequest{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -39,6 +40,7 @@ var (
 	_ legacytx.LegacyMsg = &MsgUpdateStakingRewardParams{}
 	_ legacytx.LegacyMsg = &MsgSetSymmetryThreshold{}
 	_ legacytx.LegacyMsg = &MsgCancelUnlock{}
+	_ legacytx.LegacyMsg = &MsgAddCashbackPeriodRequest{}
 )
 
 func (m MsgCancelUnlock) Route() string {
@@ -531,6 +533,35 @@ func (m MsgSetSymmetryThreshold) GetSignBytes() []byte {
 }
 
 func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgAddCashbackPeriodRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgAddCashbackPeriodRequest) Type() string {
+	return "add_cashback_period"
+}
+
+func (m MsgAddCashbackPeriodRequest) ValidateBasic() error {
+	for _, period := range m.CashbackPeriods {
+		if period.CashbackPeriodStartBlock > period.CashbackPeriodEndBlock {
+			return fmt.Errorf("cashback period start block must be before end block: %d %d", period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock)
+		}
+	}
+	return nil
+}
+
+func (m MsgAddCashbackPeriodRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddCashbackPeriodRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

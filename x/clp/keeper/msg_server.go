@@ -127,6 +127,23 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 	return response, nil
 }
 
+func (k msgServer) AddCashbackPeriod(goCtx context.Context, msg *types.MsgAddCashbackPeriodRequest) (*types.MsgAddCashbackPeriodResponse, error) {
+	response := &types.MsgAddCashbackPeriodResponse{}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := &types.CashbackParams{}
+	params.CashbackPeriods = msg.CashbackPeriods
+	k.SetCashbackParams(ctx, params)
+
+	return response, nil
+}
+
 func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	response := &types.MsgUpdatePmtpParamsResponse{}
