@@ -42,7 +42,7 @@ import (
 const (
 	trailingBlocks        = 50
 	ethereumSleepDuration = 1
-	maxQueryBlocks        = 5000
+	maxQueryBlocks        = 25
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -279,6 +279,11 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			endBlock = fromBlockNumber + maxQueryBlocks
 		}
 
+		sub.SugaredLogger.Infow("ethClient retrieving filterlogs.", "fromBlockNumber", fromBlockNumber, "endBlock", endBlock)
+
+		// This is added to measure the performance of ethClient.FilterLogs
+		startTime := time.Now()
+
 		// query the events with block scope
 		ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
 			FromBlock: big.NewInt(int64(fromBlockNumber)),
@@ -287,11 +292,15 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			Topics:    topics,
 		})
 
+		sub.SugaredLogger.Infow("ethClient retrieving filtelogs completed.", "fromBlockNumber", fromBlockNumber, "endBlock", endBlock, "Elapsed", time.Since(startTime))
+
 		if err != nil {
 			sub.SugaredLogger.Errorw("failed to filter the logs from ethereum client",
 				errorMessageKey, err.Error())
 			return
 		}
+
+		sub.SugaredLogger.Infow("ethLogs size", "size", len(ethLogs))
 
 		// loop over ethlogs, and build an array of burn/lock events
 		for _, ethLog := range ethLogs {
