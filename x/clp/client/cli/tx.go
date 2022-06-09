@@ -44,6 +44,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
+		GetCmdSetCashbackPeriods(),
 	)
 
 	return clpTxCmd
@@ -86,6 +87,7 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
+
 func GetCmdUpdateRewardParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reward-params",
@@ -625,6 +627,47 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdSetCashbackPeriods() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-cashback-params",
+		Short: "Set cashback params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			var cashbackPeriods []*types.CashbackPeriod
+			signer := clientCtx.GetFromAddress()
+			filePath := viper.GetString(FlagCashbackPeriods)
+			file, err := filepath.Abs(filePath)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &cashbackPeriods)
+			if err != nil {
+				return err
+			}
+			msg := types.MsgAddCashbackPeriodRequest{
+				Signer:          signer.String(),
+				CashbackPeriods: cashbackPeriods,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsFlagCashbackPeriods)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
