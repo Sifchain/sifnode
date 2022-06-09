@@ -33,6 +33,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdParams(queryRoute),
 		GetCmdRewardsParams(queryRoute),
 		GetCmdPmtpParams(queryRoute),
+		GetCmdCashbackParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -322,5 +323,27 @@ func GetCmdPmtpParams(queryRoute string) *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 
+	return cmd
+}
+
+func GetCmdCashbackParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cashback-params",
+		Short: "Get the clp cashback params",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetCashbackParams(context.Background(), &types.CashbackParamsReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
