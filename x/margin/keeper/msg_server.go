@@ -6,12 +6,10 @@ import (
 	"strings"
 
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/pkg/errors"
-
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -296,7 +294,7 @@ func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 		return nil, err
 	}
 	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
-		return nil, errors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("Signer : %s", msg.Signer))
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
 	}
 
 	params := k.GetParams(ctx)

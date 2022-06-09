@@ -188,14 +188,21 @@ func GetUpdateParamsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String("leverage-max", "", "max leverage")
-	cmd.Flags().String("interest-rate-max", "", "max interest rate")
-	cmd.Flags().String("interest-rate-min", "", "min interest rate")
-	cmd.Flags().String("interest-rate-increase", "", "interest rate increase")
-	cmd.Flags().String("interest-rate-decrease", "", "interest rate decrease")
-	cmd.Flags().String("health-gain-factor", "", "health gain factor")
-	cmd.Flags().String("force-close-threshold", "", "force close threshold")
-	cmd.Flags().Int64("epoch-length", 1, "epoch length in blocks")
+	cmd.Flags().String("leverage-max", "", "max leverage (integer)")
+	cmd.Flags().String("interest-rate-max", "", "max interest rate (decimal)")
+	cmd.Flags().String("interest-rate-min", "", "min interest rate (decimal)")
+	cmd.Flags().String("interest-rate-increase", "", "interest rate increase (decimal)")
+	cmd.Flags().String("interest-rate-decrease", "", "interest rate decrease (decimal)")
+	cmd.Flags().String("health-gain-factor", "", "health gain factor (decimal)")
+	cmd.Flags().String("force-close-threshold", "", "force close threshold (decimal range 0-1)")
+	cmd.Flags().Int64("epoch-length", 1, "epoch length in blocks (integer)")
+	_ = cmd.MarkFlagRequired("leverage-max")
+	_ = cmd.MarkFlagRequired("interest-rate-max")
+	_ = cmd.MarkFlagRequired("interest-rate-min")
+	_ = cmd.MarkFlagRequired("interest-rate-increase")
+	_ = cmd.MarkFlagRequired("interest-rate-decrease")
+	_ = cmd.MarkFlagRequired("health-gain-factor")
+	_ = cmd.MarkFlagRequired("force-close-threshold")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

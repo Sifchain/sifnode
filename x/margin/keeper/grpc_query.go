@@ -36,3 +36,9 @@ func (srv queryServer) GetPositionsForAddress(ctx context.Context, request *type
 
 	return &types.PositionsForAddressResponse{Mtps: mtps}, nil
 }
+
+func (srv queryServer) GetParams(ctx context.Context, request *types.ParamsRequest) (*types.ParamsResponse, error) {
+	params := srv.keeper.GetParams(sdk.UnwrapSDKContext(ctx))
+
+	return &types.ParamsResponse{Params: &params}, nil
+}
