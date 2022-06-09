@@ -504,7 +504,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(sdk.NewDecFromBigInt(mul1.BigInt())).Mul(sdk.NewDecFromBigInt(mul2.BigInt()))
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
