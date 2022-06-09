@@ -14,11 +14,13 @@ var (
 	_ sdk.Msg = &MsgClose{}
 	_ sdk.Msg = &MsgForceClose{}
 	_ sdk.Msg = &MsgUpdateParams{}
+	_ sdk.Msg = &MsgUpdatePools{}
 
 	_ legacytx.LegacyMsg = &MsgOpen{}
 	_ legacytx.LegacyMsg = &MsgClose{}
 	_ legacytx.LegacyMsg = &MsgForceClose{}
 	_ legacytx.LegacyMsg = &MsgUpdateParams{}
+	_ legacytx.LegacyMsg = &MsgUpdatePools{}
 )
 
 func Validate(asset string) bool {
@@ -170,6 +172,34 @@ func (m MsgUpdateParams) ValidateBasic() error {
 }
 
 func (m MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgUpdatePools) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdatePools) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdatePools) Type() string {
+	return "update_pools"
+}
+
+func (m MsgUpdatePools) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgUpdatePools) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

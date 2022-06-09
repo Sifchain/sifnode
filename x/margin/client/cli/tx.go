@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
+	"io/ioutil"
+
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/spf13/viper"
 
@@ -22,6 +25,7 @@ func GetTxCmd() *cobra.Command {
 		GetCloseCmd(),
 		GetForceCloseCmd(),
 		GetUpdateParamsCmd(),
+		GetUpdatePoolsCmd(),
 	)
 	return cmd
 }
@@ -205,4 +209,51 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("force-close-threshold")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
+}
+
+func GetUpdatePoolsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-pools [pools.json]",
+		Short: "Update margin enabled pools",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			pools, err := readPoolsJSON(args[0])
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgUpdatePools{
+				Signer: clientCtx.GetFromAddress().String(),
+				Pools:  pools,
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func readPoolsJSON(filename string) ([]string, error) {
+	var pools []string
+	bz, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return []string{}, err
+	}
+	err = json.Unmarshal(bz, &pools)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return pools, nil
 }
