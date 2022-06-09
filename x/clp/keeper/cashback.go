@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -30,7 +32,7 @@ func CalcCashbackAmount(rowanCashedback sdk.Dec, totalPoolUnits, providerPoolUni
 func (k Keeper) payOutLPs(ctx sdk.Context, rowanCashbacked sdk.Dec, totalPoolUnits sdk.Uint, lp *types.LiquidityProvider) error {
 	address, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	providerRowan := CalcCashbackAmount(rowanCashbacked, totalPoolUnits, lp.LiquidityProviderUnits)
@@ -44,9 +46,8 @@ func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool, blockRate sdk.D
 	for _, pool := range pools {
 		lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
 		if err != nil {
-			// Ignore and continue for the rest of the pools?
+			k.Logger(ctx).Error(fmt.Sprintf("Getting liquidity providers for asset %s error %s", pool.ExternalAsset.Symbol, err.Error()))
 			continue
-			//return err
 		}
 
 		//	rowan_cashbacked = r_block * pool_depth_rowan
@@ -54,8 +55,7 @@ func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool, blockRate sdk.D
 		for _, lp := range lps {
 			err = k.payOutLPs(ctx, rowanCashbacked, pool.PoolUnits, lp)
 			if err != nil {
-				// Ignore and continue for the rest of the pools?
-				//return sdkerrors.Wrap(types.ErrUnableToAddBalance, err.Error())
+				k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s for asset %s error %s", lp.LiquidityProviderAddress, pool.ExternalAsset.Symbol, err.Error()))
 			}
 		}
 	}
