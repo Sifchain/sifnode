@@ -549,6 +549,10 @@ func (m MsgAddCashbackPeriodRequest) Type() string {
 }
 
 func (m MsgAddCashbackPeriodRequest) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
 	for _, period := range m.CashbackPeriods {
 		if period.CashbackPeriodStartBlock > period.CashbackPeriodEndBlock {
 			return fmt.Errorf("cashback period start block must be before end block: %d %d", period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock)
