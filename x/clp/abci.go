@@ -14,22 +14,27 @@ import (
 
 func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+
+	err := keeper.CashbackPolicyRun(ctx)
+	if err != nil {
+		keeper.Logger(ctx).Error(fmt.Sprintf("Cashback policy run error %s", err.Error()))
+	}
+
 	params := keeper.GetRewardsParams(ctx)
 	pools := keeper.GetPools(ctx)
 	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
 	if currentPeriod != nil && !currentPeriod.RewardPeriodAllocation.IsZero() {
 		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
 		if err != nil {
-			panic(err)
+			keeper.Logger(ctx).Error(fmt.Sprintf("Rewards policy run error %s", err.Error()))
 		}
 	}
+
 	return []abci.ValidatorUpdate{}
 }
 
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-
-	k.CashbackPolicyRun(ctx)
 
 	// get current block height
 	currentHeight := ctx.BlockHeight()
