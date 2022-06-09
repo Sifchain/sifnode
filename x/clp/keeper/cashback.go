@@ -7,15 +7,39 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) CashbackPolicyRun(ctx sdk.Context) error {
+type CashbackMap map[string]sdk.Uint
+
+func (k Keeper) CashbackPolicyRun(ctx sdk.Context) {
+	cashbackMap := k.DoCashback(ctx)
+	for lpAddress, cashbackRowan := range cashbackMap {
+		address, err := sdk.AccAddressFromBech32(lpAddress)
+		if err != nil {
+			k.Logger(ctx).Error(fmt.Sprintf("Liquidity provider address %s error %s", lpAddress, err.Error()))
+			continue
+		}
+
+		err = k.transferCashback(ctx, address, cashbackRowan)
+		if err != nil {
+			k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s error %s", address, err.Error()))
+		}
+	}
+}
+
+func (k Keeper) DoCashback(ctx sdk.Context) CashbackMap {
 	currentHeight := ctx.BlockHeight()
 	period := k.findValidCashbackPeriod(ctx, currentHeight)
 	if period == nil {
-		return nil
+		return make(CashbackMap)
 	}
 
 	allPools := k.GetPools(ctx)
-	return k.doCashback(ctx, allPools, period.CashbackPeriodBlockRate)
+	return k.collectCashbacks(ctx, allPools, period.CashbackPeriodBlockRate)
+}
+
+func (k Keeper) transferCashback(ctx sdk.Context, providerAddress sdk.AccAddress, providerRowan sdk.Uint) error {
+	//TransferCoinsFromPool(pool, provider_rowan, provider_address)
+	coin := sdk.NewCoin(types.NativeSymbol, sdk.Int(providerRowan))
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, providerAddress, sdk.NewCoins(coin))
 }
 
 func (k Keeper) findValidCashbackPeriod(ctx sdk.Context, currentHeight int64) *types.CashbackPeriod {
@@ -33,7 +57,9 @@ func isActivePeriod(current, start, end int64) bool {
 	return start >= current && end <= current
 }
 
-func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) error {
+func (k Keeper) collectCashbacks(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) CashbackMap {
+	m := make(CashbackMap)
+
 	for _, pool := range pools {
 		lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
 		if err != nil {
@@ -44,27 +70,13 @@ func (k Keeper) doCashback(ctx sdk.Context, pools []*types.Pool, blockRate sdk.D
 		//	rowan_cashbacked = r_block * pool_depth_rowan
 		rowanCashbacked := blockRate.Mul(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()))
 		for _, lp := range lps {
-			err = k.payOutLPs(ctx, rowanCashbacked, pool.PoolUnits, lp)
-			if err != nil {
-				k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s for asset %s error %s", lp.LiquidityProviderAddress, pool.ExternalAsset.Symbol, err.Error()))
-			}
+			providerRowan := CalcCashbackAmount(rowanCashbacked, pool.PoolUnits, lp.LiquidityProviderUnits)
+			rowanSoFar := m[lp.LiquidityProviderAddress]
+			m[lp.LiquidityProviderAddress] = rowanSoFar.Add(providerRowan)
 		}
 	}
 
-	return nil
-}
-
-func (k Keeper) payOutLPs(ctx sdk.Context, rowanCashbacked sdk.Dec, totalPoolUnits sdk.Uint, lp *types.LiquidityProvider) error {
-	address, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
-	if err != nil {
-		return err
-	}
-
-	providerRowan := CalcCashbackAmount(rowanCashbacked, totalPoolUnits, lp.LiquidityProviderUnits)
-
-	//TransferCoinsFromPool(pool, provider_rowan, provider_address)
-	coin := sdk.NewCoin(types.NativeSymbol, sdk.Int(providerRowan))
-	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, sdk.NewCoins(coin))
+	return m
 }
 
 func CalcCashbackAmount(rowanCashedback sdk.Dec, totalPoolUnits, providerPoolUnits sdk.Uint) sdk.Uint {

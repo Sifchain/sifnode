@@ -15,10 +15,7 @@ import (
 func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
-	err := keeper.CashbackPolicyRun(ctx)
-	if err != nil {
-		keeper.Logger(ctx).Error(fmt.Sprintf("Cashback policy run error %s", err.Error()))
-	}
+	keeper.CashbackPolicyRun(ctx)
 
 	params := keeper.GetRewardsParams(ctx)
 	pools := keeper.GetPools(ctx)
