@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "decimals": "18",
+      "decimals": "6",
       "denom": "ibc/902CFB7D533886C25315A4602EB1938968565215A770E6E2EBA0842FC14A62C9",
       "base_denom": "ucmdx",
       "path": "transfer/channel-72",

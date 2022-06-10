@@ -340,7 +340,7 @@ sifnoded q tokenregistry generate -o json \
   --token_ibc_counterparty_channel_id=$COMDEX_COUNTERPARTY_CHANNEL_ID \
 	--token_ibc_counterparty_denom="" \
 	--token_unit_denom="" \
-	--token_decimals=18 \
+	--token_decimals=6 \
 	--token_display_name="Comdex" \
 	--token_external_symbol="" \
 	--token_permission_clp=true \
