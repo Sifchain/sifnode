@@ -584,7 +584,7 @@ class EnvCtx:
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
             self.sifnode_client._chain_id_args() + \
             self.sifnode_client._node_args() + \
-            self._sifnoded_fees_arg() + \
+            self.sifnode_client._fees_args() + \
             ["--yes", "--output", "json"]
         res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
         retval = json.loads(stdout(res))
@@ -747,8 +747,9 @@ class EnvCtx:
         try:
             self.cmd.write_text_file(tmp_registry_json, json.dumps(token_data, indent=4))
             args = ["tx", "tokenregistry", "register", tmp_registry_json] + \
-                self._sifnoded_chain_id_and_node_arg() + \
-                self._sifnoded_fees_arg() + [
+                self.sifnode_client._chain_id_args() + \
+                self.sifnode_client._node_args() + \
+                self.sifnode_client._fees_args() + [
                 "--from", from_sif_addr,
                 "--output", "json",
                 "--broadcast-mode", "block",  # One of sync|async|block; block will actually get us raw_message
@@ -765,15 +766,6 @@ class EnvCtx:
         finally:
             self.cmd.rm(tmp_registry_json)
 
-    def _sifnoded_chain_id_and_node_arg(self):
-        return [] + \
-            (["--node", self.sifnode_url] if self.sifnode_url else []) + \
-            (["--chain-id", self.sifnode_chain_id] if self.sifnode_chain_id else [])
-
-    def _sifnoded_home_arg(self):
-        return [] + \
-            (["--home", self.sifnode.home] if self.sifnode.home else [])
-
     # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
     # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
     # See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
@@ -781,13 +773,6 @@ class EnvCtx:
     @property
     def sifchain_fees(self):
         return 200000
-
-    def _sifnoded_fees_arg(self):
-        sifnode_tx_fees = [10**17, "rowan"]
-        return [
-            # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
-            # "--gas-prices", "0.5rowan", "--gas-adjustment", "1.5",
-            "--fees", sif_format_amount(*sifnode_tx_fees)]
 
     def __enter__(self):
         return self

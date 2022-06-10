@@ -146,27 +146,6 @@ class Sifnoded:
         self.add_genesis_validators_peggy(evm_network_descriptor, valoper, validator_power)
         return account_address
 
-    def tx_clp_create_pool(self, chain_id: str, from_name: cosmos.Address, symbol: str, fees: GasFees,
-        native_amount: int, external_amount: int
-    ) -> Mapping[str, Any]:
-        # For more examples see ticket #2470, e.g.
-        # sifnoded tx clp create-pool \
-        #   --from $SIF_ACT \
-        #   --keyring-backend test \
-        #   --symbol ceth \
-        #   --nativeAmount 49352380611368792060339203 \
-        #   --externalAmount 1576369012576526264262 \
-        #   --fees 100000000000000000rowan \
-        #   --node ${SIFNODE_NODE} \
-        #   --chain-id $SIFNODE_CHAIN_ID \
-        #   --broadcast-mode block \
-        #   -y
-        args = ["tx", "clp", "create-pool", "--chain-id", chain_id, "--from", from_name, "--symbol", symbol,
-            "--fees", sif_format_amount(*fees), "--nativeAmount", str(native_amount), "--externalAmount",
-            str(external_amount), "--yes"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend)  # TODO home, node?
-        return yaml_load(stdout(res))
-
     def peggy2_token_registry_set_registry(self, registry_path: str, gas_prices: GasFees, gas_adjustment: float,
         from_account: cosmos.Address, chain_id: str
     ) -> List[Mapping[str, Any]]:
@@ -252,7 +231,8 @@ class Sifnoded:
                 time.sleep(1)
 
 
-# Refactoring in progress
+# Refactoring in progress - this class is supposed to become the successor of class Sifnode.
+# It wraps node, home, chain_id, fees and keyring backend
 class SifnodeClient:
     def __init__(self, cmd: command.Command, ctx, node: Optional[str] = None, home:
         Optional[str] = None, chain_id: Optional[str] = None, grpc_port: Optional[int] = None
@@ -296,6 +276,87 @@ class SifnodeClient:
         if not generate_only:
             assert "failed to execute message" not in result["raw_log"]
         return result
+
+    def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
+    ) -> Mapping[str, Any]:
+        # For more examples see ticket #2470, e.g.
+        # sifnoded tx clp create-pool \
+        #   --from $SIF_ACT \
+        #   --keyring-backend test \
+        #   --symbol ceth \
+        #   --nativeAmount 49352380611368792060339203 \
+        #   --externalAmount 1576369012576526264262 \
+        #   --fees 100000000000000000rowan \
+        #   --node ${SIFNODE_NODE} \
+        #   --chain-id $SIFNODE_CHAIN_ID \
+        #   --broadcast-mode block \
+        #   -y
+        args = ["tx", "clp", "create-pool", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
+            str(native_amount), "--externalAmount", str(external_amount), "--yes"] + \
+            self._chain_id_args() + \
+            self._node_args() + \
+            self._fees_args() + \
+            self._home_args() + \
+            self._keyring_backend_args() + \
+            self._broadcast_mode_args("block")
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def tx_clp_add_liquidity(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
+    ) -> Mapping[str, Any]:
+        args = ["tx", "clp", "add-liquidity", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
+            str(native_amount), "--externalAmount", str(external_amount) + "--yes"] + \
+            self._chain_id_args() + \
+            self._node_args() + \
+            self._fees_args() + \
+            self._home_args() + \
+            self._keyring_backend_args() + \
+            self._broadcast_mode_args("block")
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def tx_clp_unbond_liquidity(self, from_addr: cosmos.Address, symbol: str, units: int):
+        args = ["tx", "clp", "unbond-liquidity", "--from", from_addr, "--symbol", symbol, "--units", str(units) +
+            "--yes"] + \
+            self._chain_id_args() + \
+            self._node_args() + \
+            self._fees_args() + \
+            self._home_args() + \
+            self._keyring_backend_args() + \
+            self._broadcast_mode_args("block")
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def tx_clp_cancel_unbound(self):
+        pass  # TODO
+
+    def tx_clp_remove_liquidity_units(self):
+        pass  # TODO
+
+    def tx_clp_swap(self):
+        pass  # TODO
+
+    def query_pools(self):
+        page_key = None
+        height = None
+        all_pools = []
+        while True:
+            args = ["query", "clp", "pools"] + \
+                (["--height", str(height)] if height is not None else []) + \
+                (["--page-key", page_key] if page_key is not None else []) + \
+                self._chain_id_args() + \
+                self._node_args()
+            res = self.sifnoded_exec(args)
+            page_of_results = yaml_load(stdout(res))
+            clp_module_address = page_of_results["clp_module_address"]  # TODO What is this? Should we return it in results?
+            pools = page_of_results["pools"]
+            pagination = page_of_results["pagination"]
+            next_key = pagination["next_key"]
+            all_pools.extend(pools)
+            if next_key is None:
+                break
+            page_key = next_key
+        return all_pools
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str
@@ -354,6 +415,13 @@ class SifnodeClient:
     def _gas_prices_args(self):
         return ["--gas-prices", "0.5rowan", "--gas-adjustment", "1.5"]
 
+    def _fees_args(self):
+        sifnode_tx_fees = [10 ** 17, "rowan"]
+        return [
+            # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+            # "--gas-prices", "0.5rowan", "--gas-adjustment", "1.5",
+            "--fees", sif_format_amount(*sifnode_tx_fees)]
+
     def _chain_id_args(self):
         return ["--chain-id", self.chain_id] if self.chain_id else []
 
@@ -363,6 +431,9 @@ class SifnodeClient:
     def _keyring_backend_args(self):
         keyring_backend = self.ctx.sifnode.keyring_backend
         return ["--keyring-backend", keyring_backend] if keyring_backend else []
+
+    def _broadcast_mode_args(self, broadcast_mode):
+        return ["--broadcast-mode", broadcast_mode]
 
     def _home_args(self):
         return ["--home", self.home] if self.home else []

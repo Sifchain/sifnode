@@ -18,7 +18,7 @@ sif_tx_burn_fee_in_ceth = 1
 # {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"...","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
 sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
 
-rowan = "rowan"
+ROWAN = sifchain.ROWAN
 
 # Fee for transfering ERC20 tokens from an ethereum account to sif account (approve + lock). This is the maximum cost
 # for a single transfer (regardless of amount) that the sender needs to have in his account in order for transaction to
