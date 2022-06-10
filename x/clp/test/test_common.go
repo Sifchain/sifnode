@@ -125,7 +125,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 }
 
 func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
-	var lpList []*types.LiquidityProvider
+	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
 	for i, poolUnits := range poolUnitss {
@@ -133,7 +133,7 @@ func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
 		asset := types.NewAsset(TrimFirstRune(externalToken))
 		address := GenerateAddress(fmt.Sprintf("%d", i))
 		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
-		lpList = append(lpList, &lp)
+		lpList[i] = &lp
 	}
 
 	return lpList
