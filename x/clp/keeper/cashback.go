@@ -26,14 +26,19 @@ func (k Keeper) CashbackPolicyRun(ctx sdk.Context) {
 }
 
 func (k Keeper) DoCashback(ctx sdk.Context) CashbackMap {
-	currentHeight := ctx.BlockHeight()
-	period := k.findValidCashbackPeriod(ctx, currentHeight)
+	blockHeight := ctx.BlockHeight()
+	params := k.GetCashbackParams(ctx)
+	if params == nil {
+		return make(CashbackMap)
+	}
+
+	period := FindActiveCashbackPeriod(blockHeight, params.CashbackPeriods)
 	if period == nil {
 		return make(CashbackMap)
 	}
 
 	allPools := k.GetPools(ctx)
-	return k.collectCashbacks(ctx, allPools, period.CashbackPeriodBlockRate)
+	return k.CollectCashbacks(ctx, allPools, period.CashbackPeriodBlockRate)
 }
 
 func (k Keeper) transferCashback(ctx sdk.Context, providerAddress sdk.AccAddress, providerRowan sdk.Uint) error {
@@ -42,9 +47,8 @@ func (k Keeper) transferCashback(ctx sdk.Context, providerAddress sdk.AccAddress
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, providerAddress, sdk.NewCoins(coin))
 }
 
-func (k Keeper) findValidCashbackPeriod(ctx sdk.Context, currentHeight int64) *types.CashbackPeriod {
-	params := k.GetCashbackParams(ctx)
-	for _, period := range params.CashbackPeriods {
+func FindActiveCashbackPeriod(currentHeight int64, periods []*types.CashbackPeriod) *types.CashbackPeriod {
+	for _, period := range periods {
 		if isActivePeriod(currentHeight, period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock) {
 			return period
 		}
@@ -54,10 +58,10 @@ func (k Keeper) findValidCashbackPeriod(ctx sdk.Context, currentHeight int64) *t
 }
 
 func isActivePeriod(current, start, end int64) bool {
-	return start >= current && end <= current
+	return current >= start && current <= end
 }
 
-func (k Keeper) collectCashbacks(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) CashbackMap {
+func (k Keeper) CollectCashbacks(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) CashbackMap {
 	m := make(CashbackMap)
 
 	for _, pool := range pools {
@@ -67,22 +71,26 @@ func (k Keeper) collectCashbacks(ctx sdk.Context, pools []*types.Pool, blockRate
 			continue
 		}
 
-		//	rowan_cashbacked = r_block * pool_depth_rowan
-		rowanCashbacked := blockRate.Mul(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()))
-		for _, lp := range lps {
-			providerRowan := CalcCashbackAmount(rowanCashbacked, pool.PoolUnits, lp.LiquidityProviderUnits)
-			rowanSoFar := m[lp.LiquidityProviderAddress]
-			m[lp.LiquidityProviderAddress] = rowanSoFar.Add(providerRowan)
-		}
+		CollectCashback(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
+			blockRate, pool.PoolUnits, lps, m)
 	}
 
 	return m
 }
 
+func CollectCashback(poolDepthRowan, blockRate sdk.Dec, poolUnits sdk.Uint, lps []*types.LiquidityProvider, cbm CashbackMap) {
+	//	rowan_cashbacked = r_block * pool_depth_rowan
+	rowanCashbacked := blockRate.Mul(poolDepthRowan)
+	for _, lp := range lps {
+		providerRowan := CalcCashbackAmount(rowanCashbacked, poolUnits, lp.LiquidityProviderUnits)
+		rowanSoFar := cbm[lp.LiquidityProviderAddress]
+		cbm[lp.LiquidityProviderAddress] = rowanSoFar.Add(providerRowan)
+	}
+}
+
 func CalcCashbackAmount(rowanCashedback sdk.Dec, totalPoolUnits, providerPoolUnits sdk.Uint) sdk.Uint {
 	//provider_percentage = provider_units / total_pool_units
-	totalPoolUnitsDec := sdk.NewDecFromBigInt(totalPoolUnits.BigInt())
-	providerPercentage := sdk.NewDecFromBigInt(providerPoolUnits.BigInt()).Quo(totalPoolUnitsDec)
+	providerPercentage := sdk.NewDecFromBigInt(providerPoolUnits.BigInt()).Quo(sdk.NewDecFromBigInt(totalPoolUnits.BigInt()))
 
 	//provider_rowan = provider_percentage * rowan_cashbacked
 	providerRowan := providerPercentage.Mul(rowanCashedback)
