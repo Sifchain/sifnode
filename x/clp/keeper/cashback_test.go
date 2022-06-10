@@ -86,3 +86,15 @@ func TestKeeper_CollectCashback(t *testing.T) {
 	fifthCashbackAmount := sdk.NewUint(251)
 	require.Equal(t, fifthCashbackAmount, cbm[lps[4].LiquidityProviderAddress])
 }
+
+// multiple pools, non-disjoint lps
+func TestKeeper_CollectCashbacks(t *testing.T) {
+	blockRate := sdk.MustNewDecFromStr("0.003141590000000000")
+	nPools := 5
+	nLPs := 3
+	ctx, app := test.CreateTestAppClp(false)
+	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, nPools, nLPs)
+	cbm := app.ClpKeeper.CollectCashbacks(ctx, pools, blockRate)
+
+	require.Equal(t, nLPs, len(cbm))
+}
