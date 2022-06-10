@@ -2,7 +2,7 @@ import argparse
 import sys
 import time
 
-from siftool import test_utils
+from siftool import test_utils, run_env
 from siftool.run_env import Integrator, UIStackEnvironment, Peggy2Environment, IBCEnvironment, IntegrationTestsEnvironment
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
@@ -49,17 +49,28 @@ def main(argv):
         e.stack_push()
     elif what == "run-env":
         project.clean_run_env_state()
-        if on_peggy2_branch:
+        argparser.add_argument("--type")
+        args, remaining_args = argparser.parse_known_args(argv[1:])
+        if args.type:
+            class_name = args.type
+        else:
+            if on_peggy2_branch:
+                class_name = "Peggy2Environment"
+            else:
+                class_name = "IntegrationTestsEnvironment"
+        class_to_use = getattr(run_env, class_name)
+        env = class_to_use(cmd)
+        argparser = argparse.ArgumentParser()
+        if class_to_use == Peggy2Environment:
             argparser.add_argument("--test-denom-count", type=int)
             argparser.add_argument("--geth", action="store_true", default=False)
             argparser.add_argument("--witness-count", type=int)
             argparser.add_argument("--ebrelayer-log-level")
             argparser.add_argument("--consensus-threshold", type=int)
             argparser.add_argument("--pkill", action="store_true", default=False)
-            args = argparser.parse_args(argv[1:])
+            args = argparser.parse_args(remaining_args)
             if args.pkill:
                 project.pkill()
-            env = Peggy2Environment(cmd)
             if args.witness_count is not None:
                 env.witness_count = args.witness_count
             else:
@@ -75,8 +86,7 @@ def main(argv):
                 env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
             hardhat_proc, sifnoded_proc, relayer0_proc, witness_procs = env.run()
             processes = [hardhat_proc, sifnoded_proc, relayer0_proc] + witness_procs
-        else:
-            env = IntegrationTestsEnvironment(cmd)
+        elif class_to_use == IntegrationTestsEnvironment:
             project.clean()
             # deploy/networks already included in run()
             processes = env.run()
