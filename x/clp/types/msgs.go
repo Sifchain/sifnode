@@ -554,8 +554,8 @@ func (m MsgAddCashbackPeriodRequest) ValidateBasic() error {
 	}
 
 	for _, period := range m.CashbackPeriods {
-		if period.CashbackPeriodStartBlock > period.CashbackPeriodEndBlock {
-			return fmt.Errorf("cashback period start block must be before end block: %d %d", period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock)
+		if period.CashbackPeriodStartBlock >= period.CashbackPeriodEndBlock {
+			return fmt.Errorf("cashback period start block must be <= end block: %d %d", period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock)
 		}
 	}
 	return nil
