@@ -10,7 +10,7 @@ import (
 type CashbackMap map[string]sdk.Uint
 
 func (k Keeper) CashbackPolicyRun(ctx sdk.Context) {
-	cashbackMap := k.DoCashback(ctx)
+	cashbackMap := k.doCashback(ctx)
 	for lpAddress, cashbackRowan := range cashbackMap {
 		address, err := sdk.AccAddressFromBech32(lpAddress)
 		if err != nil {
@@ -25,7 +25,7 @@ func (k Keeper) CashbackPolicyRun(ctx sdk.Context) {
 	}
 }
 
-func (k Keeper) DoCashback(ctx sdk.Context) CashbackMap {
+func (k Keeper) doCashback(ctx sdk.Context) CashbackMap {
 	blockHeight := ctx.BlockHeight()
 	params := k.GetCashbackParams(ctx)
 	if params == nil {
@@ -84,6 +84,9 @@ func CollectCashback(poolDepthRowan, blockRate sdk.Dec, poolUnits sdk.Uint, lps 
 	for _, lp := range lps {
 		providerRowan := CalcCashbackAmount(rowanCashbacked, poolUnits, lp.LiquidityProviderUnits)
 		rowanSoFar := cbm[lp.LiquidityProviderAddress]
+		if rowanSoFar == (sdk.Uint{}) { // sdk.Uint{} seems to be the default value instead of zero... lol
+			rowanSoFar = sdk.ZeroUint()
+		}
 		cbm[lp.LiquidityProviderAddress] = rowanSoFar.Add(providerRowan)
 	}
 }
