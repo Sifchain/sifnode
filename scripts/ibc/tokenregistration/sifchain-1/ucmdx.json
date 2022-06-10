@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "18",
-      "denom": "ibc/2A030468C9180DA1EE806E0355904EBF61EF713BAB0E47E78F2DE596181BC594",
+      "denom": "ibc/902CFB7D533886C25315A4602EB1938968565215A770E6E2EBA0842FC14A62C9",
       "base_denom": "ucmdx",
-      "path": "transfer/channel-30",
-      "ibc_channel_id": "channel-30",
-      "ibc_counterparty_channel_id": "channel-8",
+      "path": "transfer/channel-72",
+      "ibc_channel_id": "channel-72",
+      "ibc_counterparty_channel_id": "channel-30",
       "display_name": "Comdex",
       "display_symbol": "",
       "network": "",
