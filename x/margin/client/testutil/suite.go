@@ -108,7 +108,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 		expectedMtp               margintypes.MTP
 	}{
 		{
-			height: height + 1,
+			height: 1,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
@@ -139,7 +139,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			},
 		},
 		{
-			height: height + 5,
+			height: 2,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
@@ -151,7 +151,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
 				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
-				InterestRate:                  sdk.MustNewDecFromStr("1.300000000000000000"),
+				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
 			},
 			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
 			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
@@ -161,16 +161,16 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: collateralAmount,
 				LiabilitiesP:     collateralAmount,
-				LiabilitiesI:     sdk.NewUintFromString("30000000018626846731702"),
+				LiabilitiesI:     sdk.NewUintFromString("30000000018626455933200"),
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("4409900942"),
 				Leverage:         sdk.NewUintFromString("1"),
-				MtpHealth:        sdk.MustNewDecFromStr("0.077830267765395576"),
+				MtpHealth:        sdk.MustNewDecFromStr("0.101538596159219071"),
 				Position:         margintypes.Position_LONG,
 			},
 		},
 		{
-			height: height + 10,
+			height: 3,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
@@ -182,7 +182,45 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
 				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
-				InterestRate:                  sdk.MustNewDecFromStr("1.800000000000000000"),
+				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			forcedClosed:              true,
+		},
+		{
+			height: 4,
+			expectedPool: clptypes.Pool{
+				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
+				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.NewUintFromString("0"),
+				ExternalCustody:               sdk.NewUintFromString("4409900942"),
+				NativeLiabilities:             collateralAmount,
+				NativeCustody:                 sdk.NewUintFromString("0"),
+				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			forcedClosed:              true,
+		},
+		{
+			height: 5,
+			expectedPool: clptypes.Pool{
+				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
+				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.NewUintFromString("0"),
+				ExternalCustody:               sdk.NewUintFromString("4409900942"),
+				NativeLiabilities:             collateralAmount,
+				NativeCustody:                 sdk.NewUintFromString("0"),
+				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
 			},
 			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
 			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
@@ -193,10 +231,10 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	for _, tc := range testCases {
 		tc := tc
 
-		_, err := s.network.WaitForHeight(tc.height)
+		_, err := s.network.WaitForHeight(height + tc.height)
 		s.Require().NoError(err)
 
-		s.Run(fmt.Sprintf("height: %d", tc.height), func() {
+		s.Run(fmt.Sprintf("height: %d (%d)", height+tc.height, tc.height), func() {
 			out, err := QueryClpPoolExec(clientCtx, borrowAsset)
 			s.Require().NoError(err)
 
@@ -217,6 +255,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			if tc.forcedClosed {
 				s.Require().Empty(positionsRes.Mtps)
 			} else {
+				s.Require().NotEmpty(positionsRes.Mtps)
 				s.T().Logf("mtp: %v", positionsRes.Mtps[0])
 				s.Require().Equal(positionsRes.Mtps[0], &tc.expectedMtp)
 			}
@@ -229,14 +268,33 @@ func (s *IntegrationTestSuite) TestC_CloseLongMTP() {
 	clientCtx := val.ClientCtx
 
 	from := val.Address
-	id := uint64(1)
+	collateralAsset := "rowan"
+	collateralAmount := sdk.NewUintFromString("10000000000000000000000")
+	borrowAsset := "cusdt"
+	position := "long"
 
-	out, err := MsgMarginCloseExec(clientCtx, from, id)
+	out, err := MsgMarginOpenExec(clientCtx, from, collateralAsset, collateralAmount, borrowAsset, position)
 	s.Require().NoError(err)
 
 	var respType proto.Message = &sdk.TxResponse{}
 	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
 	txResp := respType.(*sdk.TxResponse)
+	s.Require().Equal(uint32(0), txResp.Code)
+
+	out, err = QueryMarginPositionsForAddressExec(clientCtx, val.Address)
+	s.Require().NoError(err)
+
+	var positionsRes margintypes.PositionsForAddressResponse
+	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &positionsRes), out.String())
+
+	s.Require().NotEmpty(positionsRes.Mtps)
+
+	out, err = MsgMarginCloseExec(clientCtx, from, positionsRes.Mtps[0].Id)
+	s.Require().NoError(err)
+
+	respType = &sdk.TxResponse{}
+	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
+	txResp = respType.(*sdk.TxResponse)
 	s.Require().Equal(uint32(0), txResp.Code)
 
 	err = s.network.WaitForNextBlock()
@@ -245,7 +303,6 @@ func (s *IntegrationTestSuite) TestC_CloseLongMTP() {
 	out, err = QueryMarginPositionsForAddressExec(clientCtx, val.Address)
 	s.Require().NoError(err)
 
-	var positionsRes margintypes.PositionsForAddressResponse
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &positionsRes), out.String())
 
 	s.Require().Empty(positionsRes.Mtps)
