@@ -139,6 +139,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
         token_decimals = 6
         return token_name, token_symbol, token_decimals
 
+    log.info("Current phase: deploy sample ERC20 smart contracts (batch_deploy_erc20_tokens)")
+
     setup_start_time = time.time()
     time_before = time.time()
     contract_addresses = batch_deploy_erc20_tokens(ctx, number_of_erc20_tokens, ctx.operator, token_data_provider)
@@ -152,12 +154,16 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     amount = 123456
     assert amount > sample_loop_size
 
+    log.info("Current phase: mint sample tokens (batch_approve_and_lock_erc20_tokens)")
+
     time_before = time.time()
     batch_mint_erc20_tokens(ctx, owner, eth_sender, amount, contract_addresses)
     mint_time = time.time() - time_before
 
     report(report_lines, "batch_mint_erc20_tokens(): {:.2f} s, {:.2f} items/s".format(mint_time,
         number_of_erc20_tokens / mint_time if mint_time > 0 else 0))
+
+    log.info("Current phase: send sample tokens from Ethereum to Sifchain (batch_approve_and_lock_erc20_tokens)")
 
     eth_balance_before = ctx.eth.get_eth_balance(eth_sender)
     sif_balance_before = ctx.get_sifchain_balance(fat_sif_wallet)
@@ -167,6 +173,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     approve_and_lock_time = time.time() - time_before
     report(report_lines, "batch_approve_and_lock_erc20_tokens(): {:.2f} s, {:.2f} items/s".format(approve_and_lock_time,
         number_of_erc20_tokens / approve_and_lock_time if approve_and_lock_time > 0 else 0))
+
+    log.info("Current phase: wait for sif balance to change (wait_for_sif_balance_change)")
 
     fat_balance = {denom: amount for denom in sif_denoms}
     time_before = time.time()
@@ -196,6 +204,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     batch_approve_and_lock_erc20_tokens(ctx, eth_sender, slim_sif_wallet, [token0], amount)
     ctx.wait_for_sif_balance_change(slim_sif_wallet, sif_balance_before, expected_balance=expected_slim_balance)
     assert cosmos.balance_equal(ctx.get_sifchain_balance(slim_sif_wallet), expected_slim_balance)
+
+    log.info("Current phase: timing send and burn operations for fat vs. slim wallet")
 
     # We do few transfers and burns to get the average time per transaction for fat wallet.
     # We assert that the fees are equal to the fee of a single transaction as given by get_sif_tx_fees() and
