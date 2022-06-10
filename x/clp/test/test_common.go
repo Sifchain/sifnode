@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"path/filepath"
@@ -123,20 +124,33 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 	return poolList
 }
 
-func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
-	var lpList []types.LiquidityProvider
+func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
+	var lpList []*types.LiquidityProvider
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
-	for i := 0; i < numberOfLp; i++ {
+	for i, poolUnits := range poolUnitss {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(TrimFirstRune(externalToken))
-		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-		if err != nil {
-			panic(err)
-		}
-		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddess)
-		lpList = append(lpList, lp)
+		address := GenerateAddress(fmt.Sprintf("%d", i))
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
+		lpList = append(lpList, &lp)
 	}
+
+	return lpList
+}
+
+func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
+	poolUnitss := make([]uint64, numberOfLp)
+	for i := 0; i < numberOfLp; i++ {
+		poolUnitss[i] = 1
+	}
+
+	// convert from []*foo to []foo to keep old interface
+	var lpList []types.LiquidityProvider
+	for _, lpPtr := range GenerateRandomLPWithUnits(poolUnitss) {
+		lpList = append(lpList, *lpPtr)
+	}
+
 	return lpList
 }
 
