@@ -623,15 +623,17 @@ class EnvCtx:
                 self.sifnode_client._chain_id_args() + \
                 self.sifnode_client._node_args()
             retries_left = retries_on_error
-            try:
-                res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
-            except Exception as e:
-                retries_left -= 1
-                if retries_left == 0:
-                    raise e
-                log.error("Error reading balances, retries left: {}".format(retries_left))
-                time.sleep(delay_on_error)
-                continue
+            while True:
+                try:
+                    res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
+                    break
+                except Exception as e:
+                    retries_left -= 1
+                    log.error("Error reading balances, retries left: {}".format(retries_left))
+                    if retries_left > 0:
+                        time.sleep(delay_on_error)
+                    else:
+                        raise e
             res = json.loads(stdout(res))
             balances = res["balances"]
             next_key = res["pagination"]["next_key"]
