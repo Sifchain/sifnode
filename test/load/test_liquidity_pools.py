@@ -109,9 +109,15 @@ log = logging.getLogger(__name__)
 #   --chain-id $SIFNODE_CHAIN_ID
 
 def test_liquidity_pools(ctx: test_utils.EnvCtx, example_param: int):
+    # Note: start the environment in a separate window with "siftool --test-denom-count 10" to automatically create 10
+    # test denoms in sifnoded genesis file. They will be named test0, test1, ..., test9 and credited to admin
+    # address. When you create a new account via "create_sifchain_addr()" below, you can then use "fund_amounts"
+    # parameter to automatically transfer some tokens from admin acount to the newly created account.
+
     # Test setup
-    symbol = "cusdt"
-    test_sif_addr = ctx.create_sifchain_addr(fund_amounts={ROWAN: 10**20})
+    symbol = "test1"
+    test_sif_addr = ctx.create_sifchain_addr(fund_amounts={ROWAN: 10**20, symbol: 10**18})
+    assert ctx.get_sifchain_balance(test_sif_addr)[symbol] == 10**18
     ctx.sifnode_client.tx_clp_create_pool(test_sif_addr, symbol, 25990373000000000000000000, 123010000000)
     pools = ctx.sifnode_client.query_pools()
 

@@ -505,6 +505,10 @@ class IntegrationTestsEnvironment:
         self.ethereum_websocket_address = "ws://localhost:7545/"
         self.ganache_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
                 "crumble", "sweet", "treat"]
+        self.mint_amount = {
+            ROWAN: 999999 * 10**21,
+            "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16
+        }
 
     def prepare(self):
         self.project.make_go_binaries()
@@ -587,9 +591,8 @@ class IntegrationTestsEnvironment:
         validator_count = 1
         network_definition_file = os.path.join(networks_dir, "network-definition.yml")
         seed_ip_address = "192.168.1.2"
-        mint_amount = {ROWAN: 999999 * 10**21, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16}
 
-        self.cmd.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
+        self.cmd.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=self.mint_amount)
 
         netdef, netdef_json = self.process_netdef(network_definition_file)
 

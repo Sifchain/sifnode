@@ -2,7 +2,7 @@ import argparse
 import sys
 import time
 
-from siftool import test_utils, run_env
+from siftool import test_utils, run_env, cosmos
 from siftool.run_env import Integrator, UIStackEnvironment, Peggy2Environment, IBCEnvironment, IntegrationTestsEnvironment
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
@@ -83,12 +83,17 @@ def main(argv):
                 env.log_level_witness = env.log_level_relayer = args.ebrelayer_log_level
             env.use_geth_instead_of_hardhat = args.geth
             if args.test_denom_count:
-                env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
+                env.extra_balances_for_admin_account = {"test{}".format(i): 10**27 for i in range(args.test_denom_count)}
             hardhat_proc, sifnoded_proc, relayer0_proc, witness_procs = env.run()
             processes = [hardhat_proc, sifnoded_proc, relayer0_proc] + witness_procs
         elif class_to_use == IntegrationTestsEnvironment:
             project.clean()
             # deploy/networks already included in run()
+            argparser.add_argument("--test-denom-count", type=int)
+            args = argparser.parse_args(remaining_args)
+            if args.test_denom_count:
+                extra_balances = {"test{}".format(i): 10**27 for i in range(args.test_denom_count)}
+                env.mint_amount = cosmos.balance_add(env.mint_amount, extra_balances)
             processes = env.run()
             # TODO Cleanup:
             # - rm -rf test/integration/sifnoderelayerdb
