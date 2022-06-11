@@ -24,6 +24,12 @@ def init_venv(venv_dir, requirements_txt):
     execst([venv_pip, "install", "--upgrade", "pip"])
     execst([venv_pip, "install", "wheel"])
     execst([venv_pip, "install", "-r", requirements_txt])
+    if False and (sys.version_info.major > 3) or ((sys.version_info.major == 3) and (sys.version_info.minor > 9)):
+        # Temporary workaround for https://github.com/aaugustin/websockets/issues/916
+        # Needed only until a newer version of web3py is released.
+        # Due to a bug in web3/websockets siftool currently works with Python versions up to 3.9 only.
+        # You can use pyenv to install a compatible version of Python: https://github.com/pyenv/pyenv
+        execst([venv_pip, "install", "--upgrade", "websockets==10.3"])
 
 
 def ensure_venv(venv_dir, requirements_txt, lock_file=None):

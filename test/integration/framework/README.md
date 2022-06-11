@@ -1,5 +1,12 @@
 # siftool
 
+Prerequisite
+- gcc
+- python3
+- python3-dev
+- docker
+- abigen
+
 To start the local environment:
 
 siftool run-env
