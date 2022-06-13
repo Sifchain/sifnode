@@ -342,8 +342,7 @@ func buildZapLogger(cmd *cobra.Command) (*zap.Logger, func(), error) {
 
 	var logConfig zap.Config
 	switch logLevelFlag {
-	case "debug":
-	case "trace":
+	case "debug", "trace":
 		logConfig = zap.NewDevelopmentConfig()
 	default:
 		logConfig = zap.NewProductionConfig()
