@@ -249,9 +249,9 @@ func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*
 	return &types.RewardParamsRes{Params: params}, nil
 }
 
-func (k Querier) GetCashbackParams(c context.Context, _ *types.CashbackParamsReq) (*types.CashbackParamsRes, error) {
+func (k Querier) GetProviderDistributionParams(c context.Context, _ *types.ProviderDistributionParamsReq) (*types.ProviderDistributionParamsRes, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	params := k.Keeper.GetCashbackParams(ctx)
+	params := k.Keeper.GetProviderDistributionParams(ctx)
 
-	return &types.CashbackParamsRes{Params: params}, nil
+	return &types.ProviderDistributionParamsRes{Params: params}, nil
 }

@@ -44,7 +44,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
-		GetCmdSetCashbackPeriods(),
+		GetCmdSetProviderDistributionPeriods(),
 	)
 
 	return clpTxCmd
@@ -632,18 +632,18 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 	return cmd
 }
 
-func GetCmdSetCashbackPeriods() *cobra.Command {
+func GetCmdSetProviderDistributionPeriods() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-cashback-params",
-		Short: "Set cashback params",
+		Use:   "set-lppd-params",
+		Short: "Set LP provider distribution params",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			var cashbackPeriods []*types.CashbackPeriod
+			var distributionPeriods []*types.ProviderDistributionPeriod
 			signer := clientCtx.GetFromAddress()
-			filePath := viper.GetString(FlagCashbackPeriods)
+			filePath := viper.GetString(FlagProviderDistributionPeriods)
 			file, err := filepath.Abs(filePath)
 			if err != nil {
 				return err
@@ -652,13 +652,13 @@ func GetCmdSetCashbackPeriods() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			err = json.Unmarshal(input, &cashbackPeriods)
+			err = json.Unmarshal(input, &distributionPeriods)
 			if err != nil {
 				return err
 			}
-			msg := types.MsgAddCashbackPeriodRequest{
-				Signer:          signer.String(),
-				CashbackPeriods: cashbackPeriods,
+			msg := types.MsgAddProviderDistributionPeriodRequest{
+				Signer:              signer.String(),
+				DistributionPeriods: distributionPeriods,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -667,7 +667,7 @@ func GetCmdSetCashbackPeriods() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().AddFlagSet(FsFlagCashbackPeriods)
+	cmd.Flags().AddFlagSet(FsFlagProviderDistributionPeriods)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

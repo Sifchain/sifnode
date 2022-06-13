@@ -23,7 +23,7 @@ service Msg {
   rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams) returns (MsgUpdateStakingRewardParamsResponse);
   rpc SetSymmetryThreshold(MsgSetSymmetryThreshold) returns (MsgSetSymmetryThresholdResponse);
   rpc CancelUnlockLiquidity(MsgCancelUnlock) returns (MsgCancelUnlockResponse);
-  rpc AddCashbackPeriod(MsgAddCashbackPeriodRequest) returns (MsgAddCashbackPeriodResponse);
+  rpc AddProviderDistributionPeriod(MsgAddProviderDistributionPeriodRequest) returns (MsgAddProviderDistributionPeriodResponse);
 }
 
 //message MsgUpdateStakingRewardParams{
@@ -229,9 +229,9 @@ message MsgCancelUnlock {
 
 message MsgCancelUnlockResponse {}
 
-message MsgAddCashbackPeriodRequest {
+message MsgAddProviderDistributionPeriodRequest {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
-  repeated CashbackPeriod cashback_periods = 2;
+  repeated ProviderDistributionPeriod distribution_periods = 2;
 }
 
-message MsgAddCashbackPeriodResponse {}
+message MsgAddProviderDistributionPeriodResponse {}

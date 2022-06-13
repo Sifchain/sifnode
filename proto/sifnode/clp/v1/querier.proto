@@ -48,8 +48,8 @@ service Query {
     option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
 
-  rpc GetCashbackParams(CashbackParamsReq) returns (CashbackParamsRes) {
-    option (google.api.http).get = "/sifchain/clp/v1/cashback_params";
+  rpc GetProviderDistributionParams(ProviderDistributionParamsReq) returns (ProviderDistributionParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/provider_distribution_params";
   };
 }
 
@@ -177,8 +177,8 @@ message PmtpParamsRes {
 }
 
 
-message CashbackParamsReq {}
+message ProviderDistributionParamsReq {}
 
-message CashbackParamsRes {
-  CashbackParams params = 1;
+message ProviderDistributionParamsRes {
+  ProviderDistributionParams params = 1;
 }
