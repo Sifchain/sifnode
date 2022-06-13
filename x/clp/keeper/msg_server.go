@@ -130,6 +130,11 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 func (k msgServer) AddCashbackPeriod(goCtx context.Context, msg *types.MsgAddCashbackPeriodRequest) (*types.MsgAddCashbackPeriodResponse, error) {
 	response := &types.MsgAddCashbackPeriodResponse{}
 
+	// defensive programming
+	if msg == nil {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, "msg was nil")
+	}
+
 	if err := msg.ValidateBasic(); err != nil {
 		return response, err
 	}
@@ -147,6 +152,11 @@ func (k msgServer) AddCashbackPeriod(goCtx context.Context, msg *types.MsgAddCas
 	params := &types.CashbackParams{}
 	params.CashbackPeriods = msg.CashbackPeriods
 	k.SetCashbackParams(ctx, params)
+
+	eventMsg := createEventMsg(msg.Signer)
+	attribute := sdk.NewAttribute(types.AttributeKeyCashbackParams, params.String())
+	cashbackPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewCashbackPolicy, attribute)
+	ctx.EventManager().EmitEvents(sdk.Events{cashbackPolicyEvent, eventMsg})
 
 	return response, nil
 }
@@ -827,4 +837,19 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		),
 	})
 	return &types.MsgAddLiquidityResponse{}, nil
+}
+
+func createEventMsg(signer string) sdk.Event {
+	return sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		sdk.NewAttribute(sdk.AttributeKeySender, signer))
+}
+
+func createEventBlockHeight(ctx sdk.Context, eventType string, attribute sdk.Attribute) sdk.Event {
+	return sdk.NewEvent(
+		eventType,
+		attribute,
+		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+	)
 }
