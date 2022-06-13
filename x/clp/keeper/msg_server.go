@@ -132,7 +132,7 @@ func (k msgServer) AddCashbackPeriod(goCtx context.Context, msg *types.MsgAddCas
 
 	// defensive programming
 	if msg == nil {
-		return response, errors.Wrap(types.ErrNotEnoughPermissions, "msg was nil")
+		return response, errors.Errorf("msg was nil")
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
