@@ -44,6 +44,7 @@ func (k Keeper) doCashback(ctx sdk.Context) CashbackMap {
 func (k Keeper) transferCashback(ctx sdk.Context, providerAddress sdk.AccAddress, providerRowan sdk.Uint) error {
 	//TransferCoinsFromPool(pool, provider_rowan, provider_address)
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.Int(providerRowan))
+	// TODO: fire event? For failure and for success?
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, providerAddress, sdk.NewCoins(coin))
 }
 

@@ -327,5 +327,9 @@ func GetAdmins(address string) *tokenregistrytypes.AdminAccounts {
 			AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
 			AdminAddress: address,
 		},
+		{
+			AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
+			AdminAddress: address,
+		},
 	}}
 }
