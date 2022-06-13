@@ -350,7 +350,7 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	}
 	defer gRpcClientConn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(gRpcClientConn)
 
@@ -375,10 +375,9 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 
 	response2, err := client.GlobalSequenceBlockNumber(ctx, &sequenceToBlockNumberRequest)
 	if err != nil {
+		sub.SugaredLogger.Errorf("GlobalSequenceBlockNumber returned error %v", err)
 		return 0, 0, err
 	}
-
-	sub.SugaredLogger.Debugw("Retrieved block number", "response", &response2)
 
 	return globalSequence, response2.BlockNumber, nil
 }
