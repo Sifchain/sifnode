@@ -270,27 +270,18 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		sifnodeGrpc = defaultSifnodeGrpc
 	}
 
-	logConfig := zap.NewDevelopmentConfig()
-	logConfig.Sampling = nil
-	logConfig.Encoding = "json"
-	logger, err := logConfig.Build()
-
+	logger, loggerCleanup, err := buildZapLogger(cmd)
 	if err != nil {
-		log.Fatalln("failed to init zap logging")
+		log.Fatalln("failed to init zap logging: {}", err)
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Println("failed to sync zap logging")
-		}
-	}()
-
-	sugaredLogger := logger.Sugar()
-	zap.RedirectStdLog(sugaredLogger.Desugar())
+	defer loggerCleanup()
 
 	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
 	if err != nil {
 		return err
 	}
+
+	sugaredLogger := logger.Sugar()
 
 	instrumentation.PeggyCheckpointZap(
 		sugaredLogger,
@@ -336,6 +327,45 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll.Wait()
 
 	return nil
+}
+
+// buildZapLogger creates a zap logger based on the flags.FlagLogLevel
+// setting.  At debug or trace, it configures the logger with NewDevelopmentConfig,
+// otherwise NewProductionConfig.
+//
+// You must call loggerCleanup in a defer after calling buildZapLogger.
+func buildZapLogger(cmd *cobra.Command) (*zap.Logger, func(), error) {
+	logLevelFlag, err := cmd.Flags().GetString(flags.FlagLogLevel)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var logConfig zap.Config
+	switch logLevelFlag {
+	case "debug":
+	case "trace":
+		logConfig = zap.NewDevelopmentConfig()
+	default:
+		logConfig = zap.NewProductionConfig()
+	}
+	logConfig.Sampling = nil // neither production nor development use log sampling
+	logConfig.Encoding = "json"
+	logger, err := logConfig.Build()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	sugaredLogger := logger.Sugar()
+	cleanupLogRedirection := zap.RedirectStdLog(sugaredLogger.Desugar())
+
+	loggerCleanup := func() {
+		if err := logger.Sync(); err != nil {
+			log.Println("failed to sync zap logging")
+		}
+		cleanupLogRedirection()
+	}
+
+	return logger, loggerCleanup, nil
 }
 
 // RunInitWitnessCmd executes initWitnessCmd
@@ -433,19 +463,11 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		sifnodeGrpc = defaultSifnodeGrpc
 	}
 
-	logConfig := zap.NewDevelopmentConfig()
-	logConfig.Encoding = "json"
-	logConfig.Sampling = nil
-	logger, err := logConfig.Build()
-
+	logger, loggerCleanup, err := buildZapLogger(cmd)
 	if err != nil {
-		log.Fatalln("failed to init zap logging")
+		log.Fatalln("failed to init zap logging: {}", err)
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Println("failed to sync zap logging")
-		}
-	}()
+	defer loggerCleanup()
 
 	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
 	if err != nil {
@@ -453,7 +475,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	sugaredLogger := logger.Sugar()
-	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
