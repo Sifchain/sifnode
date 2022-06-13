@@ -58,17 +58,26 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 }
 
 // AddTokenMetadata adds new token metadata information if the token does not exist in the keeper.
+// If it already exists, it just returns the denomHash.
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
 	denomHash := ethbridgetypes.GetDenom(
 		metadata.NetworkDescriptor,
 		ethbridgetypes.NewEthereumAddress(metadata.TokenAddress),
 	)
 
+	// Verify the Registry Entry is empty before adding token metadata
+	// If it is not, simply return the current denomHash without updating
+	// If any other error is returned, panic.
 	entry, err := k.GetRegistryEntry(ctx, denomHash)
-	if err != nil {
-		entry = &types.RegistryEntry{}
+	// If entry was found since no error was returned
+	if err == nil {
+		return denomHash
+		// If Error was reported, verify its only of type Key Not Found, otherwise panic
+	} else if !errors.IsOf(err, errors.ErrKeyNotFound) {
+		panic("Unexpected error from GetRegistryEntry")
 	}
 
+	entry = &types.RegistryEntry{}
 	entry.Decimals = metadata.Decimals
 	entry.DisplayName = metadata.Name
 	entry.DisplaySymbol = metadata.Symbol

@@ -427,14 +427,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     );
     // need to make a business decision on what this symbol should be
     // First lock of this asset, deploy new contract and get new symbol/token address
-    address newTokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
+    tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
       name,
       symbol,
       decimals,
       cosmosDenom
     );
 
-    cosmosDenomToDestinationAddress[cosmosDenom] = newTokenAddress;
+    cosmosDenomToDestinationAddress[cosmosDenom] = tokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,
@@ -442,11 +442,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       name,
       symbol,
       sourceChainTokenAddress,
-      newTokenAddress,
+      tokenAddress,
       cosmosDenom
     );
-
-    return newTokenAddress;
   }
 
   /**
