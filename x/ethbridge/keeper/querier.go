@@ -12,8 +12,6 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-// TODO: move to x/oracle
-
 // NewLegacyQuerier is the module level router for state queries
 //lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier {
