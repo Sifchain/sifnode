@@ -14,6 +14,7 @@ const (
 	EventTypeCancelUnlock            = "cancel_unlock_liquidity"
 	EventTypeSwap                    = "swap_successful"
 	EventTypeSwapFailed              = "swap_failed"
+	EventTypeAddNewCashbackPolicy    = "cashback_new_policy"
 	AttributeKeyThreshold            = "min_threshold"
 	AttributeKeySwapAmount           = "swap_amount"
 	AttributeKeyLiquidityFee         = "liquidity_fee"
@@ -28,5 +29,6 @@ const (
 	AttributeKeyUnits                = "liquidity_units"
 	AttributeKeyPmtpPolicyParams     = "pmtp_policy_params"
 	AttributeKeyPmtpRateParams       = "pmtp_rate_params"
+	AttributeKeyCashbackParams       = "cashback_params"
 	AttributeValueCategory           = ModuleName
 )
