@@ -30,6 +30,7 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { 
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		app.MintKeeper,
 		app.GetSubspace(types.ModuleName),
 	)

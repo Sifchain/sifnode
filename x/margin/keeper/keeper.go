@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"strings"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,24 +13,33 @@ import (
 )
 
 type Keeper struct {
-	storeKey   sdk.StoreKey
-	cdc        codec.BinaryCodec
-	bankKeeper types.BankKeeper
-	clpKeeper  types.CLPKeeper
-	paramStore paramtypes.Subspace
+	storeKey    sdk.StoreKey
+	cdc         codec.BinaryCodec
+	bankKeeper  types.BankKeeper
+	clpKeeper   types.CLPKeeper
+	adminKeeper adminkeeper.Keeper
+	paramStore  paramtypes.Subspace
 }
 
 func NewKeeper(storeKey sdk.StoreKey,
 	cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
+	adminKeeper adminkeeper.Keeper,
 	ps paramtypes.Subspace) types.Keeper {
 
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
-	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, paramStore: ps, storeKey: storeKey, cdc: cdc}
+	return Keeper{
+		bankKeeper:  bankKeeper,
+		clpKeeper:   clpKeeper,
+		adminKeeper: adminKeeper,
+		paramStore:  ps,
+		storeKey:    storeKey,
+		cdc:         cdc,
+	}
 }
 
 func (k Keeper) GetMTPCount(ctx sdk.Context) uint64 {
@@ -167,6 +177,10 @@ func (k Keeper) ClpKeeper() types.CLPKeeper {
 
 func (k Keeper) BankKeeper() types.BankKeeper {
 	return k.bankKeeper
+}
+
+func (k Keeper) AdminKeeper() adminkeeper.Keeper {
+	return k.adminKeeper
 }
 
 func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error) {

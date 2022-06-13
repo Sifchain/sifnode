@@ -2,13 +2,14 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -284,4 +285,38 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	}
 
 	return &mtp, nil
+}
+
+func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	msg.Params.Pools = params.Pools
+	k.SetParams(ctx, msg.Params)
+
+	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools) (*types.MsgUpdatePoolsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	params.Pools = msg.Pools
+	k.SetParams(ctx, &params)
+
+	return &types.MsgUpdatePoolsResponse{}, nil
 }

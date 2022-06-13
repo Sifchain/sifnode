@@ -8,61 +8,45 @@ import (
 )
 
 func (k Keeper) GetLeverageParam(ctx sdk.Context) sdk.Uint {
-	var leverageMax sdk.Uint
-	k.paramStore.Get(ctx, types.KeyLeverageMaxParam, &leverageMax)
-	return leverageMax
+	return k.GetParams(ctx).LeverageMax
 }
 
 func (k Keeper) GetInterestRateMax(ctx sdk.Context) sdk.Dec {
-	var d sdk.Dec
-	k.paramStore.Get(ctx, types.KeyInterestRateMaxParam, &d)
-	return d
+	return k.GetParams(ctx).InterestRateMax
 }
 
 func (k Keeper) GetInterestRateMin(ctx sdk.Context) sdk.Dec {
-	var d sdk.Dec
-	k.paramStore.Get(ctx, types.KeyInterestRateMinParam, &d)
-	return d
+	return k.GetParams(ctx).InterestRateMin
 }
 
 func (k Keeper) GetInterestRateIncrease(ctx sdk.Context) sdk.Dec {
-	var d sdk.Dec
-	k.paramStore.Get(ctx, types.KeyInterestRateIncreaseParam, &d)
-	return d
+	return k.GetParams(ctx).InterestRateIncrease
 }
 
 func (k Keeper) GetInterestRateDecrease(ctx sdk.Context) sdk.Dec {
-	var d sdk.Dec
-	k.paramStore.Get(ctx, types.KeyInterestRateDecreaseParam, &d)
-	return d
+	return k.GetParams(ctx).InterestRateDecrease
 }
 
 func (k Keeper) GetHealthGainFactor(ctx sdk.Context) sdk.Dec {
-	var d sdk.Dec
-	k.paramStore.Get(ctx, types.KeyHealthGainFactorParam, &d)
-	return d
+	return k.GetParams(ctx).HealthGainFactor
 }
 
 func (k Keeper) GetEpochLength(ctx sdk.Context) int64 {
-	var d int64
-	k.paramStore.Get(ctx, types.KeyEpochLengthParam, &d)
-	return d
+	return k.GetParams(ctx).EpochLength
 }
 
 func (k Keeper) GetForceCloseThreshold(ctx sdk.Context) sdk.Dec {
-	var d sdk.Dec
-	k.paramStore.Get(ctx, types.KeyForceCloseThresholdParam, &d)
-	return d
+	return k.GetParams(ctx).ForceCloseThreshold
 }
 
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
-	var pools []string
-	k.paramStore.Get(ctx, types.KeyPoolsParam, &pools)
-	return pools
+	return k.GetParams(ctx).Pools
 }
 
 func (k Keeper) SetEnabledPools(ctx sdk.Context, pools []string) {
-	k.paramStore.Set(ctx, types.KeyPoolsParam, &pools)
+	params := k.GetParams(ctx)
+	params.Pools = pools
+	k.SetParams(ctx, &params)
 }
 
 func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
@@ -77,5 +61,17 @@ func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 }
 
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
-	k.paramStore.SetParamSet(ctx, params)
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.ParamsPrefix, k.cdc.MustMarshal(params))
+}
+
+func (k Keeper) GetParams(ctx sdk.Context) types.Params {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ParamsPrefix)
+	if bz == nil {
+		return *types.DefaultGenesis().Params
+	}
+	var params types.Params
+	k.cdc.MustUnmarshal(bz, &params)
+	return params
 }

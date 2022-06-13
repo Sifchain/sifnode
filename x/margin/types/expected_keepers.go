@@ -1,6 +1,7 @@
 package types
 
 import (
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/abci/types"
@@ -34,6 +35,10 @@ type Keeper interface {
 
 	ClpKeeper() CLPKeeper
 	BankKeeper() BankKeeper
+	AdminKeeper() adminkeeper.Keeper
+
+	GetParams(sdk.Context) Params
+	SetParams(sdk.Context, *Params)
 
 	SetMTP(ctx sdk.Context, mtp *MTP) error
 	GetMTP(ctx sdk.Context, address string, id uint64) (MTP, error)

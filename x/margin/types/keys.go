@@ -5,6 +5,7 @@ import "encoding/binary"
 var (
 	MTPPrefix      = []byte{0x01}
 	MTPCountPrefix = []byte{0x02}
+	ParamsPrefix   = []byte{0x03}
 )
 
 func GetMTPKey(address string, id uint64) []byte {

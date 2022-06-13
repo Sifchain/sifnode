@@ -14,13 +14,13 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/spf13/cobra"
 
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 )
 
 func SetGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-genesis-whitelister-admin [address_or_key_name]",
-		Short: "Add a genesis account to genesis.json that has permission to edit token whitelist.",
+		Short: "Add a genesis account to genesis.json that has permission to manage admin accounts.",
 		Long: `Add a genesis account to genesis.json. The provided account must specify
 the account address or key name. If a key name is given,
 the address will be looked up in the local Keybase.
@@ -55,19 +55,34 @@ the address will be looked up in the local Keybase.
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
-			state := tokenregistrytypes.UnmarshalGenesis(cdc, appState[tokenregistrytypes.ModuleName])
-			account := tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
+			state := admintypes.UnmarshalGenesis(cdc, appState[admintypes.ModuleName])
+			state.AdminAccounts = []*admintypes.AdminAccount{
 				{
 					AdminAddress: addr.String(),
-					AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
+					AdminType:    admintypes.AdminType_ADMIN,
 				},
-			}}
-			state.AdminAccounts = &account
+				{
+					AdminAddress: addr.String(),
+					AdminType:    admintypes.AdminType_TOKENREGISTRY,
+				},
+				{
+					AdminAddress: addr.String(),
+					AdminType:    admintypes.AdminType_PMTPREWARDS,
+				},
+				{
+					AdminAddress: addr.String(),
+					AdminType:    admintypes.AdminType_CLPDEX,
+				},
+				{
+					AdminAddress: addr.String(),
+					AdminType:    admintypes.AdminType_ETHBRIDGE,
+				},
+			}
 			stateBz, err := json.Marshal(state)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
-			appState[tokenregistrytypes.ModuleName] = stateBz
+			appState[admintypes.ModuleName] = stateBz
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal application genesis state: %w", err)

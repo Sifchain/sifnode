@@ -10,6 +10,8 @@ service Msg {
   rpc Open(MsgOpen) returns (MsgOpenResponse) {}
   rpc Close(MsgClose) returns (MsgCloseResponse) {}
   rpc ForceClose(MsgForceClose) returns (MsgForceCloseResponse) {}
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {}
+  rpc UpdatePools(MsgUpdatePools) returns (MsgUpdatePoolsResponse) {}
 }
 
 message MsgOpen {
@@ -39,3 +41,17 @@ message MsgForceClose {
 }
 
 message MsgForceCloseResponse {}
+
+message MsgUpdateParams {
+  string signer = 1;
+  Params params = 2;
+}
+
+message MsgUpdateParamsResponse {}
+
+message MsgUpdatePools {
+  string signer = 1;
+  repeated string pools = 2;
+}
+
+message MsgUpdatePoolsResponse {}

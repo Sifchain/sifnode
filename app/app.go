@@ -7,6 +7,9 @@ import (
 	"os"
 
 	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
+	"github.com/Sifchain/sifnode/x/admin"
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -145,6 +148,7 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
+		admin.AppModuleBasic{},
 		margin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
@@ -220,6 +224,7 @@ type SifchainApp struct {
 	EthbridgeKeeper     ethbridgekeeper.Keeper
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
+	AdminKeeper         adminkeeper.Keeper
 
 	mm           *module.Manager
 	sm           *module.SimulationManager
@@ -259,6 +264,7 @@ func NewSifApp(
 		margintypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
+		admintypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -344,17 +350,19 @@ func NewSifApp(
 	)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
+	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		appCodec,
 		keys[clptypes.StoreKey],
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
-	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper, app.GetSubspace(margintypes.ModuleName))
+	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper, app.AdminKeeper, app.GetSubspace(margintypes.ModuleName))
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -410,7 +418,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
-		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -470,6 +478,7 @@ func NewSifApp(
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
+		admin.NewAppModule(app.AdminKeeper, &appCodec),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -512,6 +521,7 @@ func NewSifApp(
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
 		tokenregistrytypes.ModuleName,
+		admintypes.ModuleName,
 		clptypes.ModuleName,
 		margintypes.ModuleName,
 		oracletypes.ModuleName,
