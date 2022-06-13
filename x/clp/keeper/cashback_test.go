@@ -26,34 +26,40 @@ func TestKeeper_FindActivePeriod(t *testing.T) {
 	secondPeriod := types.CashbackPeriod{CashbackPeriodStartBlock: 8, CashbackPeriodEndBlock: 12, CashbackPeriodBlockRate: sdk.NewDec(1)}
 	thirdPeriod := types.CashbackPeriod{CashbackPeriodStartBlock: 20, CashbackPeriodEndBlock: 20, CashbackPeriodBlockRate: sdk.NewDec(1)}
 
-	currentHeight := 0
-	period := keeper.FindActiveCashbackPeriod(int64(currentHeight), []*types.CashbackPeriod{&firstPeriod, &secondPeriod, &thirdPeriod})
+	periods := make([]*types.CashbackPeriod, 3)
+	periods[0] = &firstPeriod
+	periods[1] = &secondPeriod
+	periods[2] = &thirdPeriod
+
+	currentHeight := int64(0)
+	period := keeper.FindActiveCashbackPeriod(currentHeight, periods)
 	require.Nil(t, period)
 
 	currentHeight = 4
-	period = keeper.FindActiveCashbackPeriod(int64(currentHeight), []*types.CashbackPeriod{&firstPeriod, &secondPeriod, &thirdPeriod})
+	period = keeper.FindActiveCashbackPeriod(currentHeight, periods)
 	require.Equal(t, &firstPeriod, period)
 
 	currentHeight = 10
-	period = keeper.FindActiveCashbackPeriod(int64(currentHeight), []*types.CashbackPeriod{&firstPeriod, &secondPeriod, &thirdPeriod})
+	period = keeper.FindActiveCashbackPeriod(currentHeight, periods)
 	require.Equal(t, &firstPeriod, period)
 
 	currentHeight = 11
-	period = keeper.FindActiveCashbackPeriod(int64(currentHeight), []*types.CashbackPeriod{&firstPeriod, &secondPeriod, &thirdPeriod})
+	period = keeper.FindActiveCashbackPeriod(currentHeight, periods)
 	require.Equal(t, &secondPeriod, period)
 
 	currentHeight = 20
-	period = keeper.FindActiveCashbackPeriod(int64(currentHeight), []*types.CashbackPeriod{&firstPeriod, &secondPeriod, &thirdPeriod})
+	period = keeper.FindActiveCashbackPeriod(currentHeight, periods)
 	require.Equal(t, &thirdPeriod, period)
 
 	currentHeight = 30
-	period = keeper.FindActiveCashbackPeriod(int64(currentHeight), []*types.CashbackPeriod{&firstPeriod, &secondPeriod, &thirdPeriod})
+	period = keeper.FindActiveCashbackPeriod(currentHeight, periods)
 	require.Nil(t, period)
 }
 
 func TestKeeper_CollectCashback(t *testing.T) {
 	blockRate := sdk.MustNewDecFromStr("0.003141590000000000")
 	poolDepthRowan := sdk.NewDec(200_000)
+	totalCashbacked := sdk.NewUint(628) // blockRate * poolDepthRowan
 	poolUnitss := make([]uint64, 5)
 	poolUnitss[0] = 10
 	poolUnitss[1] = 0
@@ -85,9 +91,11 @@ func TestKeeper_CollectCashback(t *testing.T) {
 
 	fifthCashbackAmount := sdk.NewUint(251)
 	require.Equal(t, fifthCashbackAmount, cbm[lps[4].LiquidityProviderAddress])
+
+	sum := firstCashbackAmount.Add(secondCashbackAmount).Add(thirdCashbackAmount).Add(fourthCashbackAmount).Add(fifthCashbackAmount)
+	require.Equal(t, totalCashbacked, sum)
 }
 
-// multiple pools, non-disjoint lps
 func TestKeeper_CollectCashbacks(t *testing.T) {
 	blockRate := sdk.MustNewDecFromStr("0.003141590000000000")
 	nPools := 5
@@ -96,5 +104,6 @@ func TestKeeper_CollectCashbacks(t *testing.T) {
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, nPools, nLPs)
 	cbm := app.ClpKeeper.CollectCashbacks(ctx, pools, blockRate)
 
+	// TODO: something better
 	require.Equal(t, nLPs, len(cbm))
 }
