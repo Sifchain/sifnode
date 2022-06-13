@@ -74,8 +74,8 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
-	app.ClpKeeper.SetCashbackParams(ctx, &types.CashbackParams{
-		CashbackPeriods: nil,
+	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
+		DistributionPeriods: nil,
 	})
 	return ctx, app
 }
@@ -104,8 +104,8 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
-	app.ClpKeeper.SetCashbackParams(ctx, &types.CashbackParams{
-		CashbackPeriods: nil,
+	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
+		DistributionPeriods: nil,
 	})
 	return ctx, app
 }

@@ -184,32 +184,32 @@ func TestNewMsgRemoveLiquidity(t *testing.T) {
 	assert.Error(t, err, "invalid address")
 }
 
-func TestNewMsgAddCashbackPeriodRequest(t *testing.T) {
+func TestNewMsgAddProviderDistributionPeriodRequest(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
-	var periods []*CashbackPeriod
+	var periods []*ProviderDistributionPeriod
 
-	validPeriod := CashbackPeriod{CashbackPeriodStartBlock: 10, CashbackPeriodEndBlock: 10, CashbackPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
-	startBeforeEnd := CashbackPeriod{CashbackPeriodStartBlock: 10, CashbackPeriodEndBlock: 8, CashbackPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
-	rateTooLow := CashbackPeriod{CashbackPeriodStartBlock: 10, CashbackPeriodEndBlock: 12, CashbackPeriodBlockRate: sdk.NewDec(-1)}
-	rateTooHigh := CashbackPeriod{CashbackPeriodStartBlock: 10, CashbackPeriodEndBlock: 12, CashbackPeriodBlockRate: sdk.NewDec(2)}
+	validPeriod := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 10, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
+	startBeforeEnd := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 8, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
+	rateTooLow := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 12, DistributionPeriodBlockRate: sdk.NewDec(-1)}
+	rateTooHigh := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 12, DistributionPeriodBlockRate: sdk.NewDec(2)}
 
 	periods = append(periods, &validPeriod)
-	tx := MsgAddCashbackPeriodRequest{Signer: signer.String(), CashbackPeriods: periods}
+	tx := MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
 	err := tx.ValidateBasic()
 	assert.NoError(t, err)
 
 	periods = append(periods, &startBeforeEnd)
-	tx = MsgAddCashbackPeriodRequest{Signer: signer.String(), CashbackPeriods: periods}
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
 
 	periods[1] = &rateTooLow
-	tx = MsgAddCashbackPeriodRequest{Signer: signer.String(), CashbackPeriods: periods}
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
 
 	periods[1] = &rateTooHigh
-	tx = MsgAddCashbackPeriodRequest{Signer: signer.String(), CashbackPeriods: periods}
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
 }

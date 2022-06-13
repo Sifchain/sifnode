@@ -1055,7 +1055,7 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 	}
 }
 
-func TestMsgServer_AddCashback(t *testing.T) {
+func TestMsgServer_AddProviderDistribution(t *testing.T) {
 	admin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9q"
 	nonAdmin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9r"
 	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
@@ -1070,36 +1070,36 @@ func TestMsgServer_AddCashback(t *testing.T) {
 	})
 	msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
-	_, err := msgServer.AddCashbackPeriod(sdk.WrapSDKContext(ctx), nil)
+	_, err := msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), nil)
 	require.Error(t, err)
 
-	var periods []*types.CashbackPeriod
-	validPeriod := types.CashbackPeriod{CashbackPeriodStartBlock: 10, CashbackPeriodEndBlock: 10, CashbackPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
-	wrongPeriod := types.CashbackPeriod{CashbackPeriodStartBlock: 10, CashbackPeriodEndBlock: 9, CashbackPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
+	var periods []*types.ProviderDistributionPeriod
+	validPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 10, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
+	wrongPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 9, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2)}
 
 	periods = append(periods, &wrongPeriod)
-	msg := types.MsgAddCashbackPeriodRequest{Signer: admin, CashbackPeriods: periods}
-	_, err = msgServer.AddCashbackPeriod(sdk.WrapSDKContext(ctx), &msg)
+	msg := types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
 	require.Error(t, err)
 	// check events didn't fire
 	require.Equal(t, len(ctx.EventManager().Events()), 0)
 
 	periods[0] = &validPeriod
-	msg = types.MsgAddCashbackPeriodRequest{Signer: admin, CashbackPeriods: periods}
-	_, err = msgServer.AddCashbackPeriod(sdk.WrapSDKContext(ctx), &msg)
+	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
 	require.NoError(t, err)
 	// check events fired
 	require.Equal(t, len(ctx.EventManager().Events()), 2)
 
 	// non admin acc
-	msg = types.MsgAddCashbackPeriodRequest{Signer: nonAdmin, CashbackPeriods: periods}
-	_, err = msgServer.AddCashbackPeriod(sdk.WrapSDKContext(ctx), &msg)
+	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: nonAdmin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
 	require.Error(t, err)
 	// check no additional events fired
 	require.Equal(t, len(ctx.EventManager().Events()), 2)
 
-	cbp := app.ClpKeeper.GetCashbackParams(ctx)
+	cbp := app.ClpKeeper.GetProviderDistributionParams(ctx)
 	require.NotNil(t, cbp)
-	require.Equal(t, 1, len(cbp.CashbackPeriods))
-	require.Equal(t, *cbp.CashbackPeriods[0], validPeriod)
+	require.Equal(t, 1, len(cbp.DistributionPeriods))
+	require.Equal(t, *cbp.DistributionPeriods[0], validPeriod)
 }

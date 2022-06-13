@@ -127,8 +127,8 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 	return response, nil
 }
 
-func (k msgServer) AddCashbackPeriod(goCtx context.Context, msg *types.MsgAddCashbackPeriodRequest) (*types.MsgAddCashbackPeriodResponse, error) {
-	response := &types.MsgAddCashbackPeriodResponse{}
+func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *types.MsgAddProviderDistributionPeriodRequest) (*types.MsgAddProviderDistributionPeriodResponse, error) {
+	response := &types.MsgAddProviderDistributionPeriodResponse{}
 
 	// defensive programming
 	if msg == nil {
@@ -149,14 +149,14 @@ func (k msgServer) AddCashbackPeriod(goCtx context.Context, msg *types.MsgAddCas
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
-	params := &types.CashbackParams{}
-	params.CashbackPeriods = msg.CashbackPeriods
-	k.SetCashbackParams(ctx, params)
+	params := &types.ProviderDistributionParams{}
+	params.DistributionPeriods = msg.DistributionPeriods
+	k.SetProviderDistributionParams(ctx, params)
 
 	eventMsg := createEventMsg(msg.Signer)
-	attribute := sdk.NewAttribute(types.AttributeKeyCashbackParams, params.String())
-	cashbackPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewCashbackPolicy, attribute)
-	ctx.EventManager().EmitEvents(sdk.Events{cashbackPolicyEvent, eventMsg})
+	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
+	providerDistributionPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
+	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
 
 	return response, nil
 }

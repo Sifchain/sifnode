@@ -53,8 +53,8 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgUpdateStakingRewardParams:
 			res, err := msgServer.UpdateStakingRewardParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgAddCashbackPeriodRequest:
-			res, err := msgServer.AddCashbackPeriod(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgAddProviderDistributionPeriodRequest:
+			res, err := msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)

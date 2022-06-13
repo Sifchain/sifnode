@@ -24,7 +24,7 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
-	_ sdk.Msg = &MsgAddCashbackPeriodRequest{}
+	_ sdk.Msg = &MsgAddProviderDistributionPeriodRequest{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -40,7 +40,7 @@ var (
 	_ legacytx.LegacyMsg = &MsgUpdateStakingRewardParams{}
 	_ legacytx.LegacyMsg = &MsgSetSymmetryThreshold{}
 	_ legacytx.LegacyMsg = &MsgCancelUnlock{}
-	_ legacytx.LegacyMsg = &MsgAddCashbackPeriodRequest{}
+	_ legacytx.LegacyMsg = &MsgAddProviderDistributionPeriodRequest{}
 )
 
 func (m MsgCancelUnlock) Route() string {
@@ -540,38 +540,38 @@ func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (m MsgAddCashbackPeriodRequest) Route() string {
+func (m MsgAddProviderDistributionPeriodRequest) Route() string {
 	return RouterKey
 }
 
-func (m MsgAddCashbackPeriodRequest) Type() string {
-	return "add_cashback_period"
+func (m MsgAddProviderDistributionPeriodRequest) Type() string {
+	return "add_provider_distribution_period"
 }
 
-func (m MsgAddCashbackPeriodRequest) ValidateBasic() error {
+func (m MsgAddProviderDistributionPeriodRequest) ValidateBasic() error {
 	if m.Signer == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 
-	for _, period := range m.CashbackPeriods {
-		if period.CashbackPeriodStartBlock > period.CashbackPeriodEndBlock {
-			return fmt.Errorf("cashback period start block must be < end block: %d %d", period.CashbackPeriodStartBlock, period.CashbackPeriodEndBlock)
+	for _, period := range m.DistributionPeriods {
+		if period.DistributionPeriodStartBlock > period.DistributionPeriodEndBlock {
+			return fmt.Errorf("provider distribution period start block must be < end block: %d %d", period.DistributionPeriodStartBlock, period.DistributionPeriodEndBlock)
 		}
 
-		if period.CashbackPeriodBlockRate.LT(sdk.NewDec(0)) ||
-			period.CashbackPeriodBlockRate.GT(sdk.NewDec(1)) {
-			return fmt.Errorf("cashback period block rate must be >= 0 and <= 1 but is: %s d", period.CashbackPeriodBlockRate.String())
+		if period.DistributionPeriodBlockRate.LT(sdk.NewDec(0)) ||
+			period.DistributionPeriodBlockRate.GT(sdk.NewDec(1)) {
+			return fmt.Errorf("provider distribution period block rate must be >= 0 and <= 1 but is: %s d", period.DistributionPeriodBlockRate.String())
 		}
 	}
 
 	return nil
 }
 
-func (m MsgAddCashbackPeriodRequest) GetSignBytes() []byte {
+func (m MsgAddProviderDistributionPeriodRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
-func (m MsgAddCashbackPeriodRequest) GetSigners() []sdk.AccAddress {
+func (m MsgAddProviderDistributionPeriodRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

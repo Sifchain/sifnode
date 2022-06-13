@@ -27,15 +27,15 @@ const (
 )
 
 var (
-	PoolPrefix               = []byte{0x00} // key for storing Pools
-	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
-	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
-	PmtpRateParamsPrefix     = []byte{0x03} // Key to store the Pmtp rate params
-	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
-	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
-	RewardParamPrefix        = []byte{0x06}
-	SymmetryThresholdPrefix  = []byte{0x07}
-	CashbackParamsPrefix     = []byte{0x08}
+	PoolPrefix                       = []byte{0x00} // key for storing Pools
+	LiquidityProviderPrefix          = []byte{0x01} // key for storing Liquidity Providers
+	WhiteListValidatorPrefix         = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
+	PmtpRateParamsPrefix             = []byte{0x03} // Key to store the Pmtp rate params
+	PmtpEpochPrefix                  = []byte{0x04} // Key to store the Epoch
+	PmtpParamsPrefix                 = []byte{0x05} // Key to store the Pmtp params
+	RewardParamPrefix                = []byte{0x06}
+	SymmetryThresholdPrefix          = []byte{0x07}
+	ProviderDistributionParamsPrefix = []byte{0x08}
 )
 
 // Generates a key for storing a specific pool
