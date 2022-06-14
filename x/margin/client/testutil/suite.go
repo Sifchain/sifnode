@@ -42,6 +42,10 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 	s.cfg.GenesisState["bank"] = bz
 
+	bz, err = GetAdminGenesisState(s.cfg, s.address)
+	s.Require().NoError(err)
+	s.cfg.GenesisState["admin"] = bz
+
 	bz, err = GetTokenRegistryGenesisState(s.cfg, s.address)
 	s.Require().NoError(err)
 	s.cfg.GenesisState["tokenregistry"] = bz

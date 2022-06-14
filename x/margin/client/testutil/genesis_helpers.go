@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -26,28 +27,37 @@ func GetBankGenesisState(cfg network.Config, address string) ([]byte, error) {
 	return bz, err
 }
 
-func GetTokenRegistryGenesisState(cfg network.Config, address string) ([]byte, error) {
-	gs := &tokenregistrytypes.GenesisState{
-		AdminAccounts: &tokenregistrytypes.AdminAccounts{
-			AdminAccounts: []*tokenregistrytypes.AdminAccount{
-				{
-					AdminType:    tokenregistrytypes.AdminType_CLPDEX,
-					AdminAddress: address,
-				},
-				{
-					AdminType:    tokenregistrytypes.AdminType_ETHBRIDGE,
-					AdminAddress: address,
-				},
-				{
-					AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
-					AdminAddress: address,
-				},
-				{
-					AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
-					AdminAddress: address,
-				},
+func GetAdminGenesisState(cfg network.Config, address string) ([]byte, error) {
+	gs := &admintypes.GenesisState{
+		AdminAccounts: []*admintypes.AdminAccount{
+			{
+				AdminType:    admintypes.AdminType_ADMIN,
+				AdminAddress: address,
+			},
+			{
+				AdminType:    admintypes.AdminType_CLPDEX,
+				AdminAddress: address,
+			},
+			{
+				AdminType:    admintypes.AdminType_ETHBRIDGE,
+				AdminAddress: address,
+			},
+			{
+				AdminType:    admintypes.AdminType_PMTPREWARDS,
+				AdminAddress: address,
+			},
+			{
+				AdminType:    admintypes.AdminType_TOKENREGISTRY,
+				AdminAddress: address,
 			},
 		},
+	}
+	bz, err := cfg.Codec.MarshalJSON(gs)
+	return bz, err
+}
+
+func GetTokenRegistryGenesisState(cfg network.Config, address string) ([]byte, error) {
+	gs := &tokenregistrytypes.GenesisState{
 		Registry: &tokenregistrytypes.Registry{
 			Entries: []*tokenregistrytypes.RegistryEntry{
 				{Denom: "node0token", BaseDenom: "node0token", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_IBCEXPORT, tokenregistrytypes.Permission_IBCIMPORT}},
