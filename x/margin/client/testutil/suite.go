@@ -89,7 +89,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 
 	from := val.Address
 	collateralAsset := "rowan"
-	collateralAmount := sdk.NewUintFromString("10000000000000000000000")
+	collateralAmount := sdk.NewUintFromString("10000000000000000000000") // 10000 rowan
 	borrowAsset := "cusdt"
 	position := "long"
 
@@ -115,19 +115,19 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			height: 1,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
-				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
-				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
+				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"), // 1560459 rowan
+				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),              // 169838 cusdt
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 				ExternalLiabilities:           sdk.NewUintFromString("0"),
-				ExternalCustody:               sdk.NewUintFromString("4409900942"),
+				ExternalCustody:               sdk.NewUintFromString("4409900942"), // 4409 cusdt
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
-				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				Health:                        sdk.MustNewDecFromStr("0.993550297802862968"),
 				InterestRate:                  sdk.MustNewDecFromStr("0.900000000000000000"),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.110252109898000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.070121205951520641"),
 			expectedMtp: margintypes.MTP{
 				Id:               uint64(1),
 				Address:          from.String(),
@@ -138,7 +138,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("4409900942"),
 				Leverage:         sdk.NewUintFromString("1"),
-				MtpHealth:        sdk.MustNewDecFromStr("0.101538596164020080"),
+				MtpHealth:        sdk.MustNewDecFromStr("0.102579668460296506"),
 				Position:         margintypes.Position_LONG,
 			},
 		},
@@ -146,7 +146,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			height: 2,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
-				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
 				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -154,11 +154,11 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				ExternalCustody:               sdk.NewUintFromString("4409900942"),
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
-				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				Health:                        sdk.MustNewDecFromStr("0.993550297802862968"),
 				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.110252109898000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.070121205951520641"),
 			expectedMtp: margintypes.MTP{
 				Id:               uint64(1),
 				Address:          from.String(),
@@ -169,7 +169,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("4409900942"),
 				Leverage:         sdk.NewUintFromString("1"),
-				MtpHealth:        sdk.MustNewDecFromStr("0.101538596159219071"),
+				MtpHealth:        sdk.MustNewDecFromStr("0.102579668455396542"),
 				Position:         margintypes.Position_LONG,
 			},
 		},
@@ -177,7 +177,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			height: 3,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
-				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
 				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -185,18 +185,18 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				ExternalCustody:               sdk.NewUintFromString("4409900942"),
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
-				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				Health:                        sdk.MustNewDecFromStr("0.993550297802862968"),
 				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.110252109898000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.070121205951520641"),
 			forcedClosed:              true,
 		},
 		{
 			height: 4,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
-				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
 				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -204,18 +204,18 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				ExternalCustody:               sdk.NewUintFromString("4409900942"),
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
-				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				Health:                        sdk.MustNewDecFromStr("0.993550297802862968"),
 				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.110252109898000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.070121205951520641"),
 			forcedClosed:              true,
 		},
 		{
 			height: 5,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
-				NativeAssetBalance:            sdk.NewUintFromString("1560459183129248235861408"),
+				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
 				ExternalAssetBalance:          sdk.NewUintFromString("169838875152"),
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -223,11 +223,11 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				ExternalCustody:               sdk.NewUintFromString("4409900942"),
 				NativeLiabilities:             collateralAmount,
 				NativeCustody:                 sdk.NewUintFromString("0"),
-				Health:                        sdk.MustNewDecFromStr("0.993632435591178938"),
+				Health:                        sdk.MustNewDecFromStr("0.993550297802862968"),
 				InterestRate:                  sdk.MustNewDecFromStr("1.000000000000000000"),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.108839037245000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.187879875642809899"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.110252109898000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("9.070121205951520641"),
 			forcedClosed:              true,
 		},
 	}
