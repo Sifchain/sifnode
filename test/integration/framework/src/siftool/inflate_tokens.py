@@ -3,20 +3,22 @@
 # See https://www.notion.so/sifchain/TEST-TOKEN-DISTRIBUTION-PROCESS-41ad0861560c4be58918838dbd292497
 
 import json
-import logging
 import re
+from typing import Any, Mapping, Iterable, Sequence
 
-from siftool import eth, test_utils
+from siftool import eth, test_utils, cosmos
 from siftool.common import *
 
-log = logging.getLogger(__name__)
+log = siftool_logger(__name__)
+
+TokenDict = Mapping[str, Any]
 
 
 class InflateTokens:
-    def __init__(self, ctx):
+    def __init__(self, ctx: test_utils.EnvCtx):
         self.ctx = ctx
-        self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 mins
-        self.excluded_token_symbols = ["erowan"]
+        self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 min = 1200 s
+        self.excluded_token_symbols = ["erowan"]  # TODO peggy1 only
 
         # Only transfer this tokens in a batch for Peggy1. See #2397. You would need to adjust this if
         # test_inflate_tokens_short is passing, but test_inflate_tokens_long is timing out. It only applies to Peggy 1.
@@ -33,7 +35,7 @@ class InflateTokens:
         # big, so we limit the maximum batch size here.
         self.max_sifnoded_batch_size = 5
 
-    def get_whitelisted_tokens(self):
+    def get_whitelisted_tokens(self) -> List[TokenDict]:
         whitelist = self.ctx.get_whitelisted_tokens_from_bridge_bank_past_events()
         ibc_pattern = re.compile("^ibc/([0-9a-fA-F]{64})$")
         result = []
@@ -51,7 +53,7 @@ class InflateTokens:
             m = ibc_pattern.match(token_symbol)
             if m:
                 token["ibc"] = m[1].lower()
-            log.debug("Whitelisted entry: {}".format(repr(token_data)))
+            log.debug("Found whitelisted entry: {}".format(repr(token_data)))
             assert token_symbol not in result, f"Symbol {token_symbol} is being used by more than one whitelisted token"
             result.append(token)
         erowan_token = [t for t in result if t["symbol"] == "erowan"]
@@ -68,7 +70,8 @@ class InflateTokens:
             result.append(txrcpt)
         return result
 
-    def build_list_of_tokens_to_create(self, existing_tokens, requested_tokens):
+    def build_list_of_tokens_to_create(self, existing_tokens: Iterable[TokenDict], requested_tokens: Iterable[TokenDict]
+    ) -> Sequence[Mapping[str, Any]]:
         """
         This part deploys SifchainTestoken for every requested token that has not yet been deployed.
         The list of requested tokens is (historically) read from assets.json, but in practice it can be
@@ -93,7 +96,7 @@ class InflateTokens:
             if existing_token is None:
                 tokens_to_create.append(token)
             else:
-                if not all([existing_token[f] == token[f] for f in ["name", "decimals"]]):
+                if not all(existing_token[f] == token[f] for f in ["name", "decimals"]):
                     assert False, "Existing token's name/decimals does not match requested for token: " \
                         "requested={}, existing={}".format(repr(token), repr(existing_token))
                 if existing_token["is_whitelisted"]:
@@ -102,13 +105,13 @@ class InflateTokens:
                     log.warning(f"Skipping token {token_symbol} as it is currently un-whitelisted")
         return tokens_to_create
 
-    def create_new_tokens(self, tokens_to_create):
+    def create_new_tokens(self, tokens_to_create: Iterable[TokenDict]) -> Sequence[TokenDict]:
         pending_txs = []
         for token in tokens_to_create:
             token_name = token["name"]
             token_symbol = token["symbol"]
             token_decimals = token["decimals"]
-            log.info(f"Creating token {token_symbol}...")
+            log.info(f"Deploying generic ERC20 smart contract for token {token_symbol}...")
             txhash = self.ctx.tx_deploy_new_generic_erc20_token(self.ctx.operator, token_name, token_symbol, token_decimals)
             pending_txs.append(txhash)
 
@@ -172,7 +175,7 @@ class InflateTokens:
         self.ctx.advance_blocks()
         log.info("Ethereum blocks advanced by {}".format(self.ctx.eth.w3_conn.eth.block_number - previous_block))
         self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
-            polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+            polling_time=5, timeout=None, change_timeout=self.wait_for_account_change_timeout)
 
     # Distributes from intermediate_sif_account to each individual account
     def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):
@@ -203,7 +206,9 @@ class InflateTokens:
             "decimals": token["decimals"]
         } for token in self.get_whitelisted_tokens() if ("ibc" not in token) and (token["symbol"] not in self.excluded_token_symbols)]
 
-    def transfer(self, requested_tokens, token_amount, target_sif_accounts, eth_amount_gwei):
+    def transfer(self, requested_tokens: Sequence[TokenDict], token_amount: int,
+        target_sif_accounts: Sequence[cosmos.Address], eth_amount_gwei: int
+    ):
         """
         It goes like this:
         1. Starting with assets.json of your choice, It will first compare the list of tokens to existing whitelist and deploy any new tokens (ones that have not yet been whitelisted)
@@ -214,7 +219,7 @@ class InflateTokens:
         familiar so that any tokens that would get stuck in the case of interrupting the script can be recovered.
         """
 
-        # TODO Add support for "ceth" and "rowan"
+        # TODO Add support for "rowan"
 
         n_accounts = len(target_sif_accounts)
         total_token_amount = token_amount * n_accounts
@@ -243,8 +248,11 @@ class InflateTokens:
         assert rowan_source_key is not None, "Need private key of broker account {} in sifnoded test keyring".format(sif_broker_account)
 
         existing_tokens = self.get_whitelisted_tokens()
-
         tokens_to_create = self.build_list_of_tokens_to_create(existing_tokens, requested_tokens)
+        log.info("Existing tokens: {}".format(len(existing_tokens)))
+        log.info("Requested tokens: {}".format(len(requested_tokens)))
+        log.info("Tokens to create: {}".format(len(tokens_to_create)))
+
         new_tokens = self.create_new_tokens(tokens_to_create)
         existing_tokens.extend(new_tokens)
 
@@ -271,15 +279,25 @@ class InflateTokens:
             self.transfer_from_eth_to_sifnode(eth_broker_account, sif_broker_account, tokens_to_transfer, total_token_amount, total_eth_amount_gwei)
         self.distribute_tokens_to_wallets(sif_broker_account, tokens_to_transfer, token_amount, target_sif_accounts, eth_amount_gwei)
 
-    def transfer_eth(self, from_eth_addr, amount_gwei, target_sif_accounts):
+        log.info("Done.")
+        log.info("To see newly minted tokens in UI, you need to edit 'scripts/ibc/tokenregistry/generate-erc20-jsons.sh' "
+            "and add any tokens that are not already there. Then cd into the directory and run './generate-erc20-jsons.sh devnet' "\
+            "and commit the results in the sifchain-devnet-1 folder. @tim will pick up the PR and register it on "
+            "devnet by running './register-one.sh' with the registry key. In the future this might be open for anybody "
+            "to do on their own for devnet and testnet.")
+
+    def transfer_eth(self, from_eth_addr: eth.Address, amount_gwei: int, target_sif_accounts: Iterable[cosmos.Address]):
         pending_txs = []
         for sif_acct in target_sif_accounts:
-            txrcpt = self.ctx.eth.tx_bridge_bank_lock_eth(from_eth_addr, sif_acct, amount_gwei * eth.GWEI)
+            txrcpt = self.ctx.tx_bridge_bank_lock_eth(from_eth_addr, sif_acct, amount_gwei * eth.GWEI)
             pending_txs.append(txrcpt)
         self.wait_for_all(pending_txs)
 
 
 def run(*args):
+    # This script should be run with ENV_FILE set to a file containing definitions for OPERATOR_ADDRESS,
+    # ROWAN_SOURCE eth. Depending on if you're running it on Peggy1 or Peggy2 the format might be different.
+    # See get_env_ctx() for details.
     assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
     ctx = test_utils.get_env_ctx()
     script = InflateTokens(ctx)
@@ -289,7 +307,7 @@ def run(*args):
         # Usage: inflate_tokens.py export assets.json
         ctx.cmd.write_text_file(args[0], json.dumps(script.export(), indent=4))
     elif cmd == "transfer":
-        # Usage: inflate_tokens.py transfer assets.json amount accounts.json
+        # Usage: inflate_tokens.py transfer assets.json token_amount accounts.json amount_eth_gwei
         assets_json_file, token_amount, accounts_json_file, amount_eth_gwei = args
         tokens = json.loads(ctx.cmd.read_text_file(assets_json_file))
         accounts = json.loads(ctx.cmd.read_text_file(accounts_json_file))

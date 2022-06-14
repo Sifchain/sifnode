@@ -4,7 +4,7 @@ import web3
 import eth_typing
 from hexbytes import HexBytes
 from web3.types import TxReceipt
-from typing import NewType, Sequence
+from typing import Sequence, Tuple
 
 from siftool.common import *
 
@@ -14,37 +14,52 @@ GWEI = 10**9
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 MIN_TX_GAS = 21000
 Address = eth_typing.AnyAddress
+PrivateKey = eth_typing.HexStr
 
-log = logging.getLogger(__name__)
+log = siftool_logger(__name__)
 
 
-def web3_ropsten_alchemy_url(alchemy_id):
+def web3_ropsten_alchemy_url(alchemy_id: str) -> str:
     return "wss://eth-ropsten.alchemyapi.io/v2/{}".format(alchemy_id)
 
-def web3_host_port_url(host, port):
+def web3_host_port_url(host: str, port: int) -> str:
     return "ws://{}:{}".format(host, port)
 
-def web3_connect(url, websocket_timeout=None):
-    kwargs = {}
-    if websocket_timeout is not None:
-        kwargs["websocket_timeout"] = websocket_timeout
-    return web3.Web3(web3.Web3.WebsocketProvider(url, **kwargs))
+def web3_create_account():
+    account = web3.Web3().eth.account.create()
+    return account.address, account.key.hex()[2:]
 
-def web3_wait_for_connection_up(url, polling_time=1, timeout=90):
+def web3_connect(url: str) -> web3.Web3:
+    if url.startswith("ws://") or url.startswith("wss://"):
+        return web3.Web3(web3.Web3.WebsocketProvider(url, websocket_timeout=90))
+    elif url.startswith("http://"):
+        return web3.Web3(web3.Web3.HTTPProvider(url))
+    else:
+        raise Exception("Invalid web3 URL '{}', at the moment only http:// and ws:// are supported.".format(url))
+
+def web3_inject_geth_poa_middleware(w3_conn: web3.Web3):
+    # https://web3py.readthedocs.io/en/stable/middleware.html#geth-style-proof-of-authority
+    from web3.middleware import geth_poa_middleware
+    # inject the poa compatibility middleware to the innermost layer
+    w3_conn.middleware_onion.inject(geth_poa_middleware, layer=0)
+    # confirm that the connection succeeded
+    # log.debug("Injected custom middleware for 'geth --dev' connection: {}".format(w3_conn.clientVersion))
+
+def web3_wait_for_connection_up(w3_conn: web3.Web3, polling_time: int = 1, timeout: int = 90):
     start_time = time.time()
-    w3_conn = web3_connect(url)
     while True:
         try:
             w3_conn.eth.block_number
-            return w3_conn
+            return
         except OSError:
             pass
         now = time.time()
         if now - start_time > timeout:
-            raise Exception(f"Timeout when trying to connect to {url}")
+            raise Exception("Timeout when trying to connect to {}".format(w3_conn.provider.endpoint_uri))
         time.sleep(polling_time)
 
-def validate_address_and_private_key(addr, private_key):
+def validate_address_and_private_key(addr: Optional[Address], private_key: PrivateKey
+) -> Tuple[Address, Optional[PrivateKey]]:
     a = web3.Web3().eth.account
     addr = web3.Web3.toChecksumAddress(addr) if addr else None
     if private_key:
@@ -96,7 +111,7 @@ class EthereumTxWrapper:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
-    def set_private_key(self, addr, private_key):
+    def set_private_key(self, addr: Address, private_key: PrivateKey):
         a = web3.Web3().eth.account
         addr = web3.Web3.toChecksumAddress(addr)
         if private_key is None:
@@ -113,9 +128,9 @@ class EthereumTxWrapper:
             # self.w3_conn.geth.personal.import_raw_key(private_key, "")
             pass
 
+    # Obsolete
     def create_new_eth_account(self):
-        account = self.w3_conn.eth.account.create()
-        return account.address, account.key.hex()[2:]
+        return web3_create_account()
 
     # TODO This only works for local nodes (i.e. geth, ganache).
     # It does not work with hosted nodes such as Alchemy, because they don't hold users' private keys.
@@ -248,7 +263,7 @@ class EthereumTxWrapper:
         return txhash
 
     def wait_for_all_transaction_receipts(self, tx_hashes: Sequence[HexBytes], sleep_time: int = 5,
-        timeout: Union[int, None] = None
+        timeout: Optional[int] = None
     ) -> Sequence[TxReceipt]:
         result = []
         for txhash in tx_hashes:
@@ -256,7 +271,8 @@ class EthereumTxWrapper:
             result.append(txrcpt)
         return result
 
-    def wait_for_transaction_receipt(self, txhash, sleep_time=5, timeout=None) -> TxReceipt:
+    def wait_for_transaction_receipt(self, txhash: HexBytes, sleep_time: int = 5, timeout: Optional[int] = None
+    ) -> TxReceipt:
         return self.w3_conn.eth.wait_for_transaction_receipt(txhash, timeout=timeout, poll_latency=sleep_time)
 
     def transact_sync(self, smart_contract_function, eth_addr, tx_opts=None, timeout=None):
@@ -275,12 +291,24 @@ class EthereumTxWrapper:
             return txhash
         return wrapped_fn
 
-    def send_eth(self, from_addr: str, to_addr: str, amount: int):
+    def send_eth(self, from_addr: Address, to_addr: Address, amount: int) -> TxReceipt:
         log.info(f"Sending {amount} wei from {from_addr} to {to_addr}...")
         tx = {"to": to_addr, "value": amount}
         txhash = self._send_raw_transaction(None, from_addr, tx)
         txrcpt = self.wait_for_transaction_receipt(txhash)
         return txrcpt
+
+    def advance_block_w3(self, number):
+        for _ in range(number):
+            # See smart-contracts/node_modules/@openzeppelin/test-helpers/src/time.js:advanceBlockTo()
+            self.w3_conn.provider.make_request("evm_mine", [])
+
+    def advance_blocks(self, number=50):
+        if self.is_local_node:
+            previous_block = self.w3_conn.eth.block_number
+            self.advance_block_w3(number)
+            assert self.w3_conn.eth.block_number - previous_block >= number
+        # Otherwise do nothing (e.g. wait for balance change takes longer)
 
     def is_contract_logic_error(self, exception, expected_message):
         if on_peggy2_branch:
