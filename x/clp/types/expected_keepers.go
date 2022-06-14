@@ -1,6 +1,7 @@
 package types
 
 import (
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -34,5 +35,8 @@ type TokenRegistryKeeper interface {
 	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
 	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
 	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
-	IsAdminAccount(ctx sdk.Context, moduleName tokenregistryTypes.AdminType, adminAccount sdk.AccAddress) bool
+}
+
+type AdminKeeper interface {
+	IsAdminAccount(ctx sdk.Context, moduleName admintypes.AdminType, adminAccount sdk.AccAddress) bool
 }

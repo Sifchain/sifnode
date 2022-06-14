@@ -11,6 +11,7 @@ service Query {
   rpc GetMTP(MTPRequest) returns (MTPResponse) {}
   rpc GetPositionsForAddress(PositionsForAddressRequest)
       returns (PositionsForAddressResponse) {}
+  rpc GetParams(ParamsRequest) returns (ParamsResponse) {}
 }
 
 message MTPRequest {
@@ -23,3 +24,9 @@ message MTPResponse { MTP mtp = 1; }
 message PositionsForAddressRequest { string address = 1; }
 
 message PositionsForAddressResponse { repeated MTP mtps = 1; }
+
+message ParamsRequest {}
+
+message ParamsResponse {
+  Params params = 1;
+}
