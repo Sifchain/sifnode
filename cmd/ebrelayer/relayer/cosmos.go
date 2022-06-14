@@ -140,7 +140,7 @@ func (sub CosmosSub) CheckSequenceAndProcess(txFactory tx.Factory,
 
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get the validator address from validataor moniker",
+		sub.SugaredLogger.Errorw("failed to get the validator address from validator moniker",
 			errorMessageKey, err.Error())
 		return
 	}
@@ -195,15 +195,14 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		}
 
 		for _, txLog := range block.TxsResults {
-			sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 			for _, event := range txLog.Events {
 
 				claimType := getOracleClaimType(event.GetType())
 
-				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
+					sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
+
 					// the relayer for signature aggregator not handle burn and lock
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
