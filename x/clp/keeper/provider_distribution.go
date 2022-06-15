@@ -85,7 +85,7 @@ func CollectProviderDistribution(poolDepthRowan, blockRate sdk.Dec, poolUnits sd
 	for _, lp := range lps {
 		providerRowan := CalcProviderDistributionAmount(rowanPd, poolUnits, lp.LiquidityProviderUnits)
 		rowanSoFar := cbm[lp.LiquidityProviderAddress]
-		if rowanSoFar == (sdk.Uint{}) { // sdk.Uint{} seems to be the default value instead of zero... lol
+		if rowanSoFar == (sdk.Uint{}) { // sdk.Uint{} seems to be the default value instead of zero...
 			rowanSoFar = sdk.ZeroUint()
 		}
 		cbm[lp.LiquidityProviderAddress] = rowanSoFar.Add(providerRowan)
