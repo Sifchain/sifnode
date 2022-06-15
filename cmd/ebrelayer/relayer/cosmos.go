@@ -153,6 +153,14 @@ func (sub CosmosSub) CheckSequenceAndProcess(txFactory tx.Factory,
 		return
 	}
 
+	// If block number for the next global sequence is zero, means no new lock/burn transaction happened in Sifnode side.
+	// just return here, to avoid the unnecessary events querying from block 0 to current block.
+	if blockNumber == 0 {
+		sub.SugaredLogger.Infow("CheckSequenceAndProcess",
+			"globalSequence", globalSequence)
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	block, err := client.Block(ctx, nil)
@@ -175,12 +183,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		"globalSequence", globalSequence,
 		"fromBlockNumber", fromBlockNumber,
 		"toBlockNumber", toBlockNumber)
-
-	// BlockResults API require the block number greater than zero
-	// fromBlockNumber is set to 0 when entry is not found
-	if fromBlockNumber == 0 {
-		fromBlockNumber = 1
-	}
 
 	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; blockNumber++ {
 		tmpBlockNumber := int64(blockNumber)
