@@ -670,6 +670,7 @@ func TestMsgServer_CreatePool(t *testing.T) {
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		msg                    *types.MsgCreatePool
+		expectedEvents         []sdk.Event
 		err                    error
 		errString              error
 	}{
@@ -774,6 +775,35 @@ func TestMsgServer_CreatePool(t *testing.T) {
 				NativeAssetAmount:   sdk.NewUintFromString(types.PoolThrehold),
 				ExternalAssetAmount: sdk.NewUintFromString(types.PoolThrehold),
 			},
+			expectedEvents: []sdk.Event{sdk.NewEvent("coin_spent",
+				sdk.NewAttribute("spender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				sdk.NewAttribute("amount", "1000000000000000000eth,1000000000000000000rowan"),
+			),
+				sdk.NewEvent("coin_received",
+					sdk.NewAttribute("receiver", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("amount", "1000000000000000000eth,1000000000000000000rowan"),
+				),
+				sdk.NewEvent("transfer",
+					sdk.NewAttribute("recipient", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+					sdk.NewAttribute("amount", "1000000000000000000eth,1000000000000000000rowan"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+				sdk.NewEvent("created_new_pool",
+					sdk.NewAttribute("pool", "external_asset:<symbol:\"eth\" > native_asset_balance:\"1000000000000000000\" external_asset_balance:\"1000000000000000000\" pool_units:\"1000000000000000000\" reward_period_native_distributed:\"0\" "),
+					sdk.NewAttribute("height", "0"),
+				),
+				sdk.NewEvent("created_new_liquidity_provider",
+					sdk.NewAttribute("liquidity_provider", "asset:<symbol:\"eth\" > liquidity_provider_units:\"1000000000000000000\" liquidity_provider_address:\"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd\" "),
+					sdk.NewAttribute("height", "0"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("module", "clp"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+			},
 		},
 	}
 
@@ -846,16 +876,34 @@ func TestMsgServer_CreatePool(t *testing.T) {
 
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
+			// We clear the EventManager before every call as Events accumulate throughout calls
+			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			_, err := msgServer.CreatePool(sdk.WrapSDKContext(ctx), tc.msg)
-
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
 				return
 			}
+
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 				return
 			}
+
+			if tc.expectedEvents != nil {
+				require.ElementsMatch(t, tc.expectedEvents, ctx.EventManager().Events())
+				// For more readable debugging on failure, replace above with the below
+				// and add prints were needed
+				//
+				//for i, event := range ctx.EventManager().Events() {
+				//	require.Equal(t, tc.expectedEvents[i].Type, event.Type)
+				//	expectedAttributes := tc.expectedEvents[i].Attributes
+				//	require.Equal(t, len(expectedAttributes), len(event.Attributes))
+				//	for j, attr := range event.Attributes {
+				//		require.Equal(t, expectedAttributes[j].String(), attr.String())
+				//	}
+				//}
+			}
+
 			require.NoError(t, err)
 		})
 	}
