@@ -156,7 +156,7 @@ func (sub CosmosSub) CheckSequenceAndProcess(txFactory tx.Factory,
 	// If block number for the next global sequence is zero, means no new lock/burn transaction happened in Sifnode side.
 	// just return here, to avoid the unnecessary events querying from block 0 to current block.
 	if blockNumber == 0 {
-		sub.SugaredLogger.Infow("CheckSequenceAndProcess",
+		sub.SugaredLogger.Infow("CheckSequenceAndProcess, no new lock burn in Sifnode",
 			"globalSequence", globalSequence)
 		return
 	}
