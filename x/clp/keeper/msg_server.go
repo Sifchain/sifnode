@@ -51,6 +51,7 @@ func (k msgServer) CancelUnlockLiquidity(goCtx context.Context, request *types.M
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
+
 	// Prune unlocks
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -60,6 +61,13 @@ func (k msgServer) CancelUnlockLiquidity(goCtx context.Context, request *types.M
 		return nil, err
 	}
 
+	fireCancelUnlockEvents(ctx, request, &lp)
+
+	return &types.MsgCancelUnlockResponse{}, nil
+}
+
+func fireCancelUnlockEvents(ctx sdk.Context, request *types.MsgCancelUnlock, lp *types.LiquidityProvider) {
+	eventMsg := createEventMsg(request.Signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCancelUnlock,
@@ -67,13 +75,8 @@ func (k msgServer) CancelUnlockLiquidity(goCtx context.Context, request *types.M
 			sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
 			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
 		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, request.Signer),
-		),
+		eventMsg,
 	})
-	return &types.MsgCancelUnlockResponse{}, nil
 }
 
 func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.MsgUpdateStakingRewardParams) (*types.MsgUpdateStakingRewardParamsResponse, error) {
@@ -153,12 +156,16 @@ func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *typ
 	params.DistributionPeriods = msg.DistributionPeriods
 	k.SetProviderDistributionParams(ctx, params)
 
-	eventMsg := createEventMsg(msg.Signer)
-	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
-	providerDistributionPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
-	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
+	fireAddProviderDistributionEvents(ctx, msg.Signer, params)
 
 	return response, nil
+}
+func fireAddProviderDistributionEvents(ctx sdk.Context, signer string, params *types.ProviderDistributionParams) {
+	eventMsg := createEventMsg(signer)
+	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
+	providerDistributionPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
+
+	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
 }
 
 func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
@@ -193,19 +200,17 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	}
 
 	k.SetPmtpParams(ctx, params)
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeAddNewPmtpPolicy,
-			sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
-	})
+	fireUpdatePmtpEvents(ctx, msg.Signer, params)
+
 	return &types.MsgUpdatePmtpParamsResponse{}, nil
+}
+
+func fireUpdatePmtpEvents(ctx sdk.Context, signer string, params *types.PmtpParams) {
+	eventMsg := createEventMsg(signer)
+	attribute := sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String())
+	newPmtpPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewPmtpPolicy, attribute)
+
+	ctx.EventManager().EmitEvents(sdk.Events{newPmtpPolicyEvent, eventMsg})
 }
 
 func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPmtpRates) (*types.MsgModifyPmtpRatesResponse, error) {
@@ -241,7 +246,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 		rateParams.PmtpInterPolicyRate = runningRate
 	}
 	k.SetPmtpRateParams(ctx, rateParams)
-	events := sdk.EmptyEvents()
+
 	// End Policy If Needed , returns if not policy is presently
 	if msg.EndPolicy && k.IsInsidePmtpWindow(ctx) {
 		params.PmtpPeriodEndBlock = ctx.BlockHeight()
@@ -250,23 +255,24 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 			EpochCounter: 0,
 			BlockCounter: 0,
 		})
+
 		k.SetPmtpInterPolicyRate(ctx, rateParams.PmtpCurrentRunningRate)
-		events = events.AppendEvents(sdk.Events{
-			sdk.NewEvent(
-				types.EventTypeEndPmtpPolicy,
-				sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
-				sdk.NewAttribute(types.AttributeKeyPmtpRateParams, rateParams.String()),
-				sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-			),
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-			),
-		})
+		fireModifyPmtpEvents(ctx, msg.Signer, params, &rateParams)
 	}
-	ctx.EventManager().EmitEvents(events)
+
 	return response, nil
+}
+
+func fireModifyPmtpEvents(ctx sdk.Context, signer string, params *types.PmtpParams, rateParams *types.PmtpRateParams) {
+	eventMsg := createEventMsg(signer)
+	pmtpEvent := sdk.NewEvent(
+		types.EventTypeEndPmtpPolicy,
+		sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
+		sdk.NewAttribute(types.AttributeKeyPmtpRateParams, rateParams.String()),
+		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+	)
+
+	ctx.EventManager().EmitEvents(sdk.Events{pmtpEvent, eventMsg})
 }
 
 func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlockLiquidityRequest) (*types.MsgUnlockLiquidityResponse, error) {
@@ -290,6 +296,13 @@ func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlo
 		Units:         request.Units,
 	})
 	k.Keeper.SetLiquidityProvider(ctx, &lp)
+	fireUnlockLiquidityEvents(ctx, request, &lp)
+
+	return &types.MsgUnlockLiquidityResponse{}, nil
+}
+
+func fireUnlockLiquidityEvents(ctx sdk.Context, request *types.MsgUnlockLiquidityRequest, lp *types.LiquidityProvider) {
+	eventMsg := createEventMsg(request.Signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeRequestUnlock,
@@ -297,13 +310,8 @@ func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlo
 			sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
 			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
 		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, request.Signer),
-		),
+		eventMsg,
 	})
-	return &types.MsgUnlockLiquidityResponse{}, nil
 }
 
 func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommissionPool) (*types.MsgDecommissionPoolResponse, error) {
@@ -366,19 +374,18 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToDecommissionPool, err.Error())
 	}
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeDecommissionPool,
-			sdk.NewAttribute(types.AttributeKeyPool, pool.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
-	})
+
+	fireDecommissionPoolEvents(ctx, msg.Signer, &pool)
+
 	return &types.MsgDecommissionPoolResponse{}, nil
+}
+
+func fireDecommissionPoolEvents(ctx sdk.Context, signer string, pool *types.Pool) {
+	eventMsg := createEventMsg(signer)
+	attribute := sdk.NewAttribute(types.AttributeKeyPool, pool.String())
+	decomissionPoolEvent := createEventBlockHeight(ctx, types.EventTypeDecommissionPool, attribute)
+
+	ctx.EventManager().EmitEvents(sdk.Events{decomissionPoolEvent, eventMsg})
 }
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
@@ -471,21 +478,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		return nil, err
 	}
 	if emitAmount.LT(msg.MinReceivingAmount) {
-		ctx.EventManager().EmitEvents(sdk.Events{
-			sdk.NewEvent(
-				types.EventTypeSwapFailed,
-				sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
-				sdk.NewAttribute(types.AttributeKeyThreshold, msg.MinReceivingAmount.String()),
-				sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
-				sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
-				sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-			),
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-			),
-		})
+		fireSwapFailedEvents(ctx, msg.Signer, emitAmount, msg.MinReceivingAmount, &inPool, &outPool)
+
 		return &types.MsgSwapResponse{}, types.ErrReceivedAmountBelowExpected
 	}
 	// todo nil pointer deref test
@@ -502,6 +496,15 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		totalLiquidityFee = liquidityFeeNative.Add(lp)
 	}
 	priceImpact = priceImpact.Add(ts)
+
+	pmtpBlockRate := k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate
+	fireSwapSuccessEvents(ctx, msg.Signer, emitAmount, totalLiquidityFee, priceImpact, &inPool, &outPool, pmtpBlockRate, pmtpCurrentRunningRate)
+
+	return &types.MsgSwapResponse{}, nil
+}
+
+func fireSwapSuccessEvents(ctx sdk.Context, signer string, emitAmount, totalLiquidityFee, priceImpact sdk.Uint, inPool, outPool *types.Pool, pmtpBlockRate, pmtpCurrentRunningRate sdk.Dec) {
+	eventMsg := createEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
@@ -510,17 +513,27 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 			sdk.NewAttribute(types.AttributeKeyPriceImpact, priceImpact.String()),
 			sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
 			sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
-			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
+			sdk.NewAttribute(types.AttributePmtpBlockRate, pmtpBlockRate.String()),
 			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
+		eventMsg,
 	})
-	return &types.MsgSwapResponse{}, nil
+}
+
+func fireSwapFailedEvents(ctx sdk.Context, signer string, emitAmount, minReceivingAmount sdk.Uint, inPool, outPool *types.Pool) {
+	eventMsg := createEventMsg(signer)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeSwapFailed,
+			sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyThreshold, minReceivingAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
+			sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		eventMsg,
+	})
 }
 
 func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
@@ -631,22 +644,25 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
 	}
+
+	pmtpBlockRate := k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate
+	fireRemoveLiquidityEvents(ctx, msg.Signer, &lp, lpUnitsLeft, pmtpBlockRate, pmtpCurrentRunningRate)
+
+	return &types.MsgRemoveLiquidityResponse{}, nil
+}
+
+func fireRemoveLiquidityEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, lpUnitsLeft sdk.Uint, pmtpPeriodBlockRate, pmtpCurrentRunningRate sdk.Dec) {
+	eventMsg := createEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeRemoveLiquidity,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
 			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
-			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
+			sdk.NewAttribute(types.AttributePmtpBlockRate, pmtpPeriodBlockRate.String()),
 			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
+		), eventMsg,
 	})
-	return &types.MsgRemoveLiquidityResponse{}, nil
 }
 
 func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRemoveLiquidityUnits) (*types.MsgRemoveLiquidityUnitsResponse, error) {
@@ -710,21 +726,9 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
 	}
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeRemoveLiquidity,
-			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
-			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
-			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
-			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
-	})
+
+	fireRemoveLiquidityEvents(ctx, msg.Signer, &lp, lpUnitsLeft, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate, pmtpCurrentRunningRate)
+
 	return &types.MsgRemoveLiquidityUnitsResponse{}, nil
 }
 
@@ -767,41 +771,43 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		return nil, err
 	}
 	lp := k.Keeper.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpunits, accAddr)
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeCreatePool,
-			sdk.NewAttribute(types.AttributeKeyPool, pool.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			types.EventTypeCreateLiquidityProvider,
-			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
-	})
+
+	fireCreatePoolEvents(ctx, msg.Signer, &lp, pool)
+
 	return &types.MsgCreatePoolResponse{}, nil
+}
+
+func fireCreatePoolEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, pool *types.Pool) {
+	eventMsg := createEventMsg(signer)
+
+	createLiquidityAttribute := sdk.NewAttribute(types.EventTypeCreateLiquidityProvider, lp.String())
+	createLiquidityEvent := createEventBlockHeight(ctx, types.AttributeKeyLiquidityProvider, createLiquidityAttribute)
+
+	createPoolAttribute := sdk.NewAttribute(types.AttributeKeyPool, pool.String())
+	createPoolEvent := createEventBlockHeight(ctx, types.EventTypeCreatePool, createPoolAttribute)
+
+	ctx.EventManager().EmitEvents(sdk.Events{createPoolEvent, createLiquidityEvent, eventMsg})
 }
 
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
+
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
+
 	// Get pool
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
+
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	symmetryThreshold := k.GetSymmetryThreshold(ctx)
 	ratioThreshold := k.GetSymmetryRatio(ctx)
@@ -815,28 +821,33 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		adjustExternalToken,
 		symmetryThreshold,
 		ratioThreshold)
+
 	if err != nil {
 		return nil, err
 	}
+
 	// Get lp , if lp doesnt exist create lp
 	lp, err := k.Keeper.AddLiquidity(ctx, msg, pool, newPoolUnits, lpUnits)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToAddLiquidity, err.Error())
+
 	}
+
+	fireAddLiquidityEvents(ctx, msg.Signer, lp, lpUnits)
+
+	return &types.MsgAddLiquidityResponse{}, nil
+}
+
+func fireAddLiquidityEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, lpUnits sdk.Uint) {
+	eventMsg := createEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeAddLiquidity,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
 			sdk.NewAttribute(types.AttributeKeyUnits, lpUnits.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
+		), eventMsg,
 	})
-	return &types.MsgAddLiquidityResponse{}, nil
 }
 
 func createEventMsg(signer string) sdk.Event {
