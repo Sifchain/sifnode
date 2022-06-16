@@ -37,7 +37,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
 	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
-	if maxRowanLiquidityThreshold.GT(sdk.ZeroDec()) {
+	if liquidityProtectionParams.IsActive {
 		currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
 		currentRowanLiquidityThreshold = sdk.MinDec(currentRowanLiquidityThreshold.Add(maxRowanLiquidityThreshold.QuoInt(sdk.NewInt(liquidityProtectionParams.EpochLength))), maxRowanLiquidityThreshold)
 		k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)

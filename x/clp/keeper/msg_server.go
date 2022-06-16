@@ -378,7 +378,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	)
 
 	// if max rowan liquidity threshold set
-	if maxRowanLiquidityThreshold.GT(sdk.ZeroDec()) {
+	if liquidityProtectionParams.IsActive {
 		// if asset is rowan then threshold defined in rowan
 		if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
 			maxRowanLiquidityThresholdAssetNativePrice = sdk.MustNewDecFromStr("1.0")
@@ -522,7 +522,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	})
 
 	// if max rowan liquidity threshold set
-	if maxRowanLiquidityThreshold.GT(sdk.ZeroDec()) {
+	if liquidityProtectionParams.IsActive {
 		// if sell rowan
 		if strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
 			sentAmount := maxRowanLiquidityThresholdAssetNativePrice.MulInt(sdk.Int(msg.SentAmount))
@@ -871,6 +871,7 @@ func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *t
 	params.MaxRowanLiquidityThreshold = msg.MaxRowanLiquidityThreshold
 	params.MaxRowanLiquidityThresholdAsset = msg.MaxRowanLiquidityThresholdAsset
 	params.EpochLength = msg.EpochLength
+	params.IsActive = msg.IsActive
 	k.SetLiquidityProtectionParams(ctx, params)
 	k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, params.MaxRowanLiquidityThreshold)
 	ctx.EventManager().EmitEvents(sdk.Events{

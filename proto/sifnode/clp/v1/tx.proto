@@ -251,5 +251,6 @@ message MsgUpdateLiquidityProtectionParams {
   ];
   string max_rowan_liquidity_threshold_asset = 4;
   int64 epoch_length = 3;
+  bool is_active = 5;
 }
 message MsgUpdateLiquidityProtectionParamsResponse {}

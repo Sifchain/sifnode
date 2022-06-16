@@ -445,6 +445,7 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
 			liquidityProtectionParam.MaxRowanLiquidityThresholdAsset = tc.maxRowanLiquidityThresholdAsset
+			liquidityProtectionParam.IsActive = true
 			app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
 

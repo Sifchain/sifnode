@@ -65,6 +65,7 @@ message LiquidityProtectionParams {
   ];
   string max_rowan_liquidity_threshold_asset = 2;
   int64 epoch_length = 3;
+  bool is_active = 4;
 }
 message LiquidityProtectionRateParams {
   string current_rowan_liquidity_threshold = 1 [
