@@ -94,6 +94,14 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
 	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
 	if err != nil {
 		return nil, err
@@ -227,14 +235,6 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 }
 
 func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, error) {
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return nil, err
-	}
-	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
-		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
-	}
-
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, err
