@@ -30,8 +30,6 @@ service Msg {
   rpc SetSymmetryThreshold(MsgSetSymmetryThreshold)
       returns (MsgSetSymmetryThresholdResponse);
   rpc CancelUnlockLiquidity(MsgCancelUnlock) returns (MsgCancelUnlockResponse);
-  rpc AddSwapAssetPermission(MsgAddSwapAssetPermission) returns (MsgAddSwapAssetPermissionResponse);
-  rpc RemoveSwapAssetPermission(MsgRemoveSwapAssetPermission) returns (MsgRemoveSwapAssetPermissionResponse);
   rpc UpdateLiquidityProtectionParams(MsgUpdateLiquidityProtectionParams) returns (MsgUpdateLiquidityProtectionParamsResponse);
   rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
 }
@@ -234,22 +232,6 @@ message MsgCancelUnlock {
 }
 
 message MsgCancelUnlockResponse {}
-
-message MsgAddSwapAssetPermission {
-  string signer = 1;
-  sifnode.clp.v1.Asset asset = 2;
-  SwapPermission swap_permission = 3;
-}
-
-message MsgAddSwapAssetPermissionResponse {}
-
-message MsgRemoveSwapAssetPermission {
-  string signer = 1;
-  sifnode.clp.v1.Asset asset = 2;
-  SwapPermission swap_permission = 3;
-}
-
-message MsgRemoveSwapAssetPermissionResponse {}
 
 message MsgModifyLiquidityProtectionRates {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];

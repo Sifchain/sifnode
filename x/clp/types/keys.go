@@ -35,15 +35,9 @@ var (
 	PmtpParamsPrefix                    = []byte{0x05} // Key to store the Pmtp params
 	RewardParamPrefix                   = []byte{0x06}
 	SymmetryThresholdPrefix             = []byte{0x07}
-	SwapAssetPermissionStorePrefix      = []byte{0x08}
 	LiquidityProtectionParamsPrefix     = []byte{0x09} // Key to store the Liquidity Protection params
 	LiquidityProtectionRateParamsPrefix = []byte{0x0a} // Key to store the Liquidity Protection rate params
 )
-
-func GetSwapAssetPermissionKey(asset Asset, swapPermission SwapPermission) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", asset.Symbol, swapPermission.String()))
-	return append(SwapAssetPermissionStorePrefix, key...)
-}
 
 // Generates a key for storing a specific pool
 // The key is of the format externalticker_nativeticker

@@ -77,14 +77,3 @@ message EventPolicy {
   string pmtp_period_start_block = 2;
   string pmtp_period_end_block = 3;
 }
-
-enum SwapPermission {
-  UNSPECIFIED = 0;
-  DISABLE_BUY = 1;
-  DISABLE_SELL = 2;
-}
-
-message SwapAssetPermission {
-  string asset = 1;
-  SwapPermission swap_permission = 2;
-}
