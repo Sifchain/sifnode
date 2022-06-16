@@ -35,3 +35,7 @@ sifnoded collect-gentxs
 
 echo "Validating genesis file..."
 sifnoded validate-genesis
+
+contents="$(jq '.app_state.gov.voting_params.voting_period = "30s"' $DAEMON_HOME/config/genesis.json)" && \
+echo "${contents}" > $DAEMON_HOME/config/genesis.json
+
