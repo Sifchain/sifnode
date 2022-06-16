@@ -29,6 +29,7 @@ func TestMsgServer_DecommissionPool(t *testing.T) {
 		externalAssetAmount sdk.Uint
 		poolUnits           sdk.Uint
 		msg                 *types.MsgDecommissionPool
+		expectedEvents      []sdk.Event
 		err                 error
 		errString           error
 	}{
@@ -202,7 +203,12 @@ func TestMsgServer_DecommissionPool(t *testing.T) {
 
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
+			// We clear the EventManager before every call as Events accumulate throughout calls
+			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			_, err := msgServer.DecommissionPool(sdk.WrapSDKContext(ctx), tc.msg)
+			if tc.expectedEvents != nil {
+				checkEvents(t, tc.expectedEvents, ctx.EventManager().Events())
+			}
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -233,6 +239,7 @@ func TestMsgServer_Swap(t *testing.T) {
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		msg                    *types.MsgSwap
+		expectedEvents         []sdk.Event
 		err                    error
 		errString              error
 	}{
@@ -297,7 +304,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("permission denied for denom"),
 		},
 		{
-			name:                   "received amount below expected",
+			name:                   "received amount below expected - one",
 			createBalance:          true,
 			createPool:             true,
 			createLPs:              true,
@@ -317,10 +324,38 @@ func TestMsgServer_Swap(t *testing.T) {
 				SentAmount:         sdk.NewUint(1),
 				MinReceivingAmount: sdk.NewUint(1),
 			},
+			expectedEvents: []sdk.Event{sdk.NewEvent("coin_spent",
+				sdk.NewAttribute("spender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				sdk.NewAttribute("amount", "1eth"),
+			),
+				sdk.NewEvent("coin_received",
+					sdk.NewAttribute("receiver", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("amount", "1eth"),
+				),
+				sdk.NewEvent("transfer",
+					sdk.NewAttribute("recipient", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+					sdk.NewAttribute("amount", "1eth"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+				sdk.NewEvent("swap_failed",
+					sdk.NewAttribute("swap_amount", "0"),
+					sdk.NewAttribute("min_threshold", "1"),
+					sdk.NewAttribute("in_pool", "external_asset:<symbol:\"eth\" > native_asset_balance:\"1000\" external_asset_balance:\"1000\" pool_units:\"1000\" reward_period_native_distributed:\"0\" "),
+					sdk.NewAttribute("out_pool", "external_asset:<symbol:\"eth\" > native_asset_balance:\"1000\" external_asset_balance:\"1000\" pool_units:\"1000\" reward_period_native_distributed:\"0\" "),
+					sdk.NewAttribute("height", "0"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("module", "clp"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+			},
 			errString: errors.New("Unable to swap, received amount is below expected"),
 		},
 		{
-			name:                   "received amount below expected",
+			name:                   "received amount below expected - two",
 			createBalance:          true,
 			createPool:             true,
 			createLPs:              true,
@@ -339,6 +374,24 @@ func TestMsgServer_Swap(t *testing.T) {
 				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
 				SentAmount:         sdk.NewUint(100),
 				MinReceivingAmount: sdk.NewUint(1),
+			},
+
+			expectedEvents: []sdk.Event{sdk.NewEvent("coin_spent",
+				sdk.NewAttribute("spender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				sdk.NewAttribute("amount", "100eth"),
+			),
+				sdk.NewEvent("coin_received",
+					sdk.NewAttribute("receiver", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("amount", "100eth"),
+				),
+				sdk.NewEvent("transfer",
+					sdk.NewAttribute("recipient", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+					sdk.NewAttribute("amount", "100eth"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
 			},
 			errString: errors.New("0rowan is smaller than 41rowan: insufficient funds: Unable to swap"),
 		},
@@ -414,7 +467,12 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
+			// We clear the EventManager before every call as Events accumulate throughout calls
+			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			_, err := msgServer.Swap(sdk.WrapSDKContext(ctx), tc.msg)
+			if tc.expectedEvents != nil {
+				checkEvents(t, tc.expectedEvents, ctx.EventManager().Events())
+			}
 
 			//if tc.errString != nil {
 			//	require.EqualError(t, err, tc.errString.Error())
@@ -445,6 +503,7 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		msg                    *types.MsgRemoveLiquidity
+		expectedEvents         []sdk.Event
 		err                    error
 		errString              error
 	}{
@@ -545,6 +604,18 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				WBasisPoints:  sdk.NewInt(1),
 				Asymmetry:     sdk.NewInt(0),
 			},
+			expectedEvents: []sdk.Event{sdk.NewEvent("removed_liquidity",
+				sdk.NewAttribute("liquidity_provider", "asset:<symbol:\"eth\" > liquidity_provider_units:\"1000\" liquidity_provider_address:\"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd\" "),
+				sdk.NewAttribute("liquidity_units", "0"),
+				sdk.NewAttribute("pmtp_block_rate", "1.000000000000000000"),
+				sdk.NewAttribute("pmtp_current_running_rate", "1.000000000000000000"),
+				sdk.NewAttribute("height", "0"),
+			),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("module", "clp"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+			},
 		},
 		{
 			name:                   "received amount below expected",
@@ -639,16 +710,23 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
+			// We clear the EventManager before every call as Events accumulate throughout calls
+			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			_, err := msgServer.RemoveLiquidity(sdk.WrapSDKContext(ctx), tc.msg)
+			if tc.expectedEvents != nil {
+				checkEvents(t, tc.expectedEvents, ctx.EventManager().Events())
+			}
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
 				return
 			}
+
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 				return
 			}
+
 			require.NoError(t, err)
 		})
 	}
@@ -879,6 +957,10 @@ func TestMsgServer_CreatePool(t *testing.T) {
 			// We clear the EventManager before every call as Events accumulate throughout calls
 			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			_, err := msgServer.CreatePool(sdk.WrapSDKContext(ctx), tc.msg)
+			if tc.expectedEvents != nil {
+				checkEvents(t, tc.expectedEvents, ctx.EventManager().Events())
+			}
+
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
 				return
@@ -887,21 +969,6 @@ func TestMsgServer_CreatePool(t *testing.T) {
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 				return
-			}
-
-			if tc.expectedEvents != nil {
-				require.ElementsMatch(t, tc.expectedEvents, ctx.EventManager().Events())
-				// For more readable debugging on failure, replace above with the below
-				// and add prints were needed
-				//
-				//for i, event := range ctx.EventManager().Events() {
-				//	require.Equal(t, tc.expectedEvents[i].Type, event.Type)
-				//	expectedAttributes := tc.expectedEvents[i].Attributes
-				//	require.Equal(t, len(expectedAttributes), len(event.Attributes))
-				//	for j, attr := range event.Attributes {
-				//		require.Equal(t, expectedAttributes[j].String(), attr.String())
-				//	}
-				//}
 			}
 
 			require.NoError(t, err)
@@ -925,6 +992,7 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 		poolAssetPermissions   []tokenregistrytypes.Permission
 		nativeAssetPermissions []tokenregistrytypes.Permission
 		msg                    *types.MsgAddLiquidity
+		expectedEvents         []sdk.Event
 		err                    error
 		errString              error
 	}{
@@ -1016,6 +1084,32 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 				NativeAssetAmount:   sdk.NewUintFromString(types.PoolThrehold),
 				ExternalAssetAmount: sdk.NewUintFromString(types.PoolThrehold),
 			},
+			expectedEvents: []sdk.Event{sdk.NewEvent("coin_spent",
+				sdk.NewAttribute("spender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				sdk.NewAttribute("amount", "1000000000000000000eth,1000000000000000000rowan"),
+			),
+				sdk.NewEvent("coin_received",
+					sdk.NewAttribute("receiver", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("amount", "1000000000000000000eth,1000000000000000000rowan"),
+				),
+				sdk.NewEvent("transfer",
+					sdk.NewAttribute("recipient", "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+					sdk.NewAttribute("amount", "1000000000000000000eth,1000000000000000000rowan"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+				sdk.NewEvent("added_liquidity",
+					sdk.NewAttribute("liquidity_provider", "asset:<symbol:\"eth\" > liquidity_provider_units:\"1000000000000001000\" liquidity_provider_address:\"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd\" "),
+					sdk.NewAttribute("liquidity_units", "1000000000000000000"),
+					sdk.NewAttribute("height", "0"),
+				),
+				sdk.NewEvent("message",
+					sdk.NewAttribute("module", "clp"),
+					sdk.NewAttribute("sender", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"),
+				),
+			},
 		},
 	}
 
@@ -1088,16 +1182,23 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
+			// We clear the EventManager before every call as Events accumulate throughout calls
+			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			_, err := msgServer.AddLiquidity(sdk.WrapSDKContext(ctx), tc.msg)
+			if tc.expectedEvents != nil {
+				checkEvents(t, tc.expectedEvents, ctx.EventManager().Events())
+			}
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
 				return
 			}
+
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 				return
 			}
+
 			require.NoError(t, err)
 		})
 	}
@@ -1136,8 +1237,18 @@ func TestMsgServer_AddProviderDistribution(t *testing.T) {
 	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
 	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
 	require.NoError(t, err)
-	// check events fired
+	// check correct events fired
 	require.Equal(t, len(ctx.EventManager().Events()), 2)
+	expectedEvents := []sdk.Event{sdk.NewEvent("lppd_new_policy",
+		sdk.NewAttribute("lppd_params", "distribution_periods:<distribution_period_block_rate:\"10000000000000000\" distribution_period_start_block:10 distribution_period_end_block:10 > "),
+		sdk.NewAttribute("height", "0"),
+	),
+		sdk.NewEvent("message",
+			sdk.NewAttribute("module", "clp"),
+			sdk.NewAttribute("sender", "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9q"),
+		),
+	}
+	checkEvents(t, expectedEvents, ctx.EventManager().Events())
 
 	// non admin acc
 	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: nonAdmin, DistributionPeriods: periods}
@@ -1150,4 +1261,19 @@ func TestMsgServer_AddProviderDistribution(t *testing.T) {
 	require.NotNil(t, cbp)
 	require.Equal(t, 1, len(cbp.DistributionPeriods))
 	require.Equal(t, *cbp.DistributionPeriods[0], validPeriod)
+}
+
+func checkEvents(t *testing.T, expectedEvents, events []sdk.Event) {
+	require.ElementsMatch(t, expectedEvents, events)
+	// For more readable debugging on failure, replace above with the below
+	// and add prints were needed
+	//
+	//for i, event := range ctx.EventManager().Events() {
+	//	require.Equal(t, tc.expectedEvents[i].Type, event.Type)
+	//	expectedAttributes := tc.expectedEvents[i].Attributes
+	//	require.Equal(t, len(expectedAttributes), len(event.Attributes))
+	//	for j, attr := range event.Attributes {
+	//		require.Equal(t, expectedAttributes[j].String(), attr.String())
+	//	}
+	//}
 }
