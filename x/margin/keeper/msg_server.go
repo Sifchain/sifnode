@@ -152,7 +152,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
 	}
 
-	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))
+	leveragedAmount := collateralAmount.Mul(leverage)
 
 	borrowAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
 	if err != nil {
