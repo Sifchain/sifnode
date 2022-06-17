@@ -29,6 +29,13 @@ func QueryBalancesExec(clientCtx client.Context, address fmt.Stringer, extraArgs
 	return clitestutil.ExecTestCLICmd(clientCtx, bankcli.GetBalancesCmd(), args)
 }
 
+func QueryMarginParamsExec(clientCtx client.Context, extraArgs ...string) (testutil.BufferWriter, error) {
+	args := []string{fmt.Sprintf("--%s=json", cli.OutputFlag)}
+	args = append(args, extraArgs...)
+
+	return clitestutil.ExecTestCLICmd(clientCtx, margincli.GetCmdParams(), args)
+}
+
 func QueryMarginPositionsForAddressExec(clientCtx client.Context, address fmt.Stringer, extraArgs ...string) (testutil.BufferWriter, error) {
 	args := []string{address.String(), fmt.Sprintf("--%s=json", cli.OutputFlag)}
 	args = append(args, extraArgs...)
