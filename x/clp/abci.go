@@ -39,9 +39,21 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
 	if liquidityProtectionParams.IsActive {
 		currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
-		currentRowanLiquidityThreshold = sdk.MinDec(currentRowanLiquidityThreshold.Add(maxRowanLiquidityThreshold.QuoInt(sdk.NewInt(liquidityProtectionParams.EpochLength))), maxRowanLiquidityThreshold)
+		// Validation check ensures that Epoch length =/= zero
+		replenishmentAmount := maxRowanLiquidityThreshold.QuoUint64(liquidityProtectionParams.EpochLength)
+
+		// This is equivalent to:
+		//    proposedThreshold := currentRowanLiquidityThreshold.Add(replenishmentAmount)
+		//    currentRowanLiquidityThreshold = sdk.MinUint(proposedThreshold, maxRowanLiquidityThreshold)
+		// except it prevents any overflows when adding the replenishmentAmount
+		if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(replenishmentAmount) {
+			currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
+		} else {
+			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(replenishmentAmount)
+		}
+
 		k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
-		k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | maxRowanLiquidityThreshold: %s | asset: %s | currentRowanLiquidityThreshold: %s | maxPerBlock: %s", maxRowanLiquidityThreshold, maxRowanLiquidityThresholdAsset, k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold, maxRowanLiquidityThreshold.QuoInt(sdk.NewInt(liquidityProtectionParams.EpochLength))))
+		k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | maxRowanLiquidityThreshold: %s | asset: %s | currentRowanLiquidityThreshold: %s | maxPerBlock: %s", maxRowanLiquidityThreshold, maxRowanLiquidityThresholdAsset, k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold, replenishmentAmount))
 	}
 
 	// get PMTP period params

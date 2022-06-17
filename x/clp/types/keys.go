@@ -75,8 +75,9 @@ func GetDefaultPmtpParams() *PmtpParams {
 
 func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
 	return &LiquidityProtectionParams{
-		MaxRowanLiquidityThreshold:      sdk.MustNewDecFromStr("1000"),
+		MaxRowanLiquidityThreshold:      sdk.NewUint(1000),
 		MaxRowanLiquidityThresholdAsset: "cusdt",
 		EpochLength:                     14400,
+		IsActive:                        false,
 	}
 }

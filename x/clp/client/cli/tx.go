@@ -644,9 +644,9 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgUpdateLiquidityProtectionParams{
 				Signer:                          signer.String(),
-				MaxRowanLiquidityThreshold:      sdk.MustNewDecFromStr(viper.GetString(FlagMaxRowanLiquidityThreshold)),
+				MaxRowanLiquidityThreshold:      sdk.NewUintFromString(viper.GetString(FlagMaxRowanLiquidityThreshold)),
 				MaxRowanLiquidityThresholdAsset: viper.GetString(FlagMaxRowanLiquidityThresholdAsset),
-				EpochLength:                     viper.GetInt64(FlagLiquidityProtectionEpochLength),
+				EpochLength:                     viper.GetUint64(FlagLiquidityProtectionEpochLength),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -683,7 +683,7 @@ func GetCmdModifyLiquidityProtectionRates() *cobra.Command {
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgModifyLiquidityProtectionRates{
 				Signer:                         signer.String(),
-				CurrentRowanLiquidityThreshold: sdk.MustNewDecFromStr(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
+				CurrentRowanLiquidityThreshold: sdk.NewUintFromString(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

@@ -74,7 +74,7 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 		RewardPeriods:                nil,
 	})
 	liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
-	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroDec()
+	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
 	app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 	return ctx, app
 }

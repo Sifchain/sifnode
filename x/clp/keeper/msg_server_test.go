@@ -232,8 +232,10 @@ func TestMsgServer_Swap(t *testing.T) {
 		poolUnits                       sdk.Uint
 		poolAssetPermissions            []tokenregistrytypes.Permission
 		nativeAssetPermissions          []tokenregistrytypes.Permission
-		currentRowanLiquidityThreshold  sdk.Dec
+		currentRowanLiquidityThreshold  sdk.Uint
+		expectedRunningThresholdEnd     sdk.Uint
 		maxRowanLiquidityThresholdAsset string
+		maxRowanLiquidityThreshold      sdk.Uint
 		msg                             *types.MsgSwap
 		err                             error
 		errString                       error
@@ -243,7 +245,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createBalance:                   false,
 			createPool:                      false,
 			createLPs:                       false,
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
@@ -260,7 +262,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:                      false,
 			createLPs:                       false,
 			poolAsset:                       "eth",
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
@@ -277,7 +279,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createPool:                      false,
 			createLPs:                       false,
 			poolAsset:                       "eth",
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
@@ -295,7 +297,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			createLPs:                       false,
 			poolAsset:                       "eth",
 			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
@@ -320,7 +322,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			poolUnits:                       sdk.NewUint(1000),
 			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
@@ -332,7 +334,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("Unable to swap, received amount is below expected"),
 		},
 		{
-			name:                            "received amount below expected",
+			name:                            "success",
 			createBalance:                   true,
 			createPool:                      true,
 			createLPs:                       true,
@@ -345,8 +347,10 @@ func TestMsgServer_Swap(t *testing.T) {
 			poolUnits:                       sdk.NewUint(1000),
 			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			expectedRunningThresholdEnd:     sdk.NewUint(1041),
 			maxRowanLiquidityThresholdAsset: "rowan",
+			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -354,7 +358,6 @@ func TestMsgServer_Swap(t *testing.T) {
 				SentAmount:         sdk.NewUint(100),
 				MinReceivingAmount: sdk.NewUint(1),
 			},
-			errString: errors.New("0rowan is smaller than 41rowan: insufficient funds: Unable to swap"),
 		},
 		{
 			name:                            "sell native token over threshold",
@@ -362,7 +365,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			currentRowanLiquidityThreshold:  sdk.MustNewDecFromStr("1000"),
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
@@ -372,6 +375,151 @@ func TestMsgServer_Swap(t *testing.T) {
 				MinReceivingAmount: sdk.NewUint(1),
 			},
 			errString: errors.New("Unable to swap, reached maximum rowan liquidity threshold"),
+		},
+		{
+			name:                            "sell native token over threshold - zero threshold",
+			poolAsset:                       "eth",
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(0),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUintFromString("10000000000000000000000"),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, reached maximum rowan liquidity threshold"),
+		},
+		{
+			name:                            "sell native token just over threshold",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(100000),
+			externalAssetAmount:             sdk.NewUint(200000),
+			poolUnits:                       sdk.NewUint(100000),
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			maxRowanLiquidityThresholdAsset: "eth",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(251),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+			errString: errors.New("Unable to swap, reached maximum rowan liquidity threshold"),
+		},
+		{
+			name:                            "sell native token just below threshold",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(100000),
+			externalAssetAmount:             sdk.NewUint(200000),
+			poolUnits:                       sdk.NewUint(100000),
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(4000),
+			expectedRunningThresholdEnd:     sdk.NewUint(3000),
+			maxRowanLiquidityThresholdAsset: "eth",
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(250),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
+		{
+			name:                            "buy rowan, threshold in eth",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(100000),
+			externalAssetAmount:             sdk.NewUint(200000),
+			poolUnits:                       sdk.NewUint(100000),
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(200),
+			expectedRunningThresholdEnd:     sdk.NewUint(300),
+			maxRowanLiquidityThresholdAsset: "eth",
+			maxRowanLiquidityThreshold:      sdk.NewUint(1000),
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
+		{
+			name:                            "buy rowan, threshold in eth, low max liquidity threshold",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(100000),
+			externalAssetAmount:             sdk.NewUint(200000),
+			poolUnits:                       sdk.NewUint(100000),
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(200),
+			expectedRunningThresholdEnd:     sdk.NewUint(250),
+			maxRowanLiquidityThresholdAsset: "eth",
+			maxRowanLiquidityThreshold:      sdk.NewUint(250),
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
+		{
+			name:                            "buy rowan, threshold in eth, maximum max liquidity threshold",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(100000),
+			externalAssetAmount:             sdk.NewUint(200000),
+			poolUnits:                       sdk.NewUint(100000),
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUintFromString("115792089237316195423570985008687907853269984665640564039457584007913129639935"),
+			expectedRunningThresholdEnd:     sdk.NewUintFromString("115792089237316195423570985008687907853269984665640564039457584007913129639935"),
+			maxRowanLiquidityThresholdAsset: "eth",
+			maxRowanLiquidityThreshold:      sdk.NewUintFromString("115792089237316195423570985008687907853269984665640564039457584007913129639935"),
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
 		},
 	}
 
@@ -393,12 +541,23 @@ func TestMsgServer_Swap(t *testing.T) {
 				genesisState["tokenregistry"] = bz
 
 				if tc.createBalance {
+					externalCLP, _ := sdk.NewIntFromString(tc.externalAssetAmount.String())
+					nativeCLP, _ := sdk.NewIntFromString(tc.nativeAssetAmount.String())
+					clpAddrs := app.AccountKeeper.GetModuleAddress("clp").String()
+
 					balances := []banktypes.Balance{
 						{
 							Address: tc.address,
 							Coins: sdk.Coins{
 								sdk.NewCoin(tc.poolAsset, tc.externalBalance),
 								sdk.NewCoin("rowan", tc.nativeBalance),
+							},
+						},
+						{
+							Address: clpAddrs,
+							Coins: sdk.Coins{
+								sdk.NewCoin(tc.poolAsset, externalCLP),
+								sdk.NewCoin("rowan", nativeCLP),
 							},
 						},
 					}
@@ -445,6 +604,7 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
 			liquidityProtectionParam.MaxRowanLiquidityThresholdAsset = tc.maxRowanLiquidityThresholdAsset
+			liquidityProtectionParam.MaxRowanLiquidityThreshold = tc.maxRowanLiquidityThreshold
 			liquidityProtectionParam.IsActive = true
 			app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
@@ -462,6 +622,10 @@ func TestMsgServer_Swap(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+
+			runningThreshold := app.ClpKeeper.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+			require.Equal(t, tc.expectedRunningThresholdEnd.String(), runningThreshold.String())
+
 		})
 	}
 }

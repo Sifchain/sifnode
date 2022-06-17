@@ -368,40 +368,37 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
-	precision := sdk.NewDec(10).Power(uint64(18))
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
 	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
 	currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
 	var (
-		maxRowanLiquidityThresholdAssetNativePrice sdk.Dec
+		sentValue sdk.Uint
 	)
 
-	// if max rowan liquidity threshold set
-	if liquidityProtectionParams.IsActive {
-		// if asset is rowan then threshold defined in rowan
+	// if liquidity protection is active and selling rowan
+	if liquidityProtectionParams.IsActive && strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
 		if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
-			maxRowanLiquidityThresholdAssetNativePrice = sdk.MustNewDecFromStr("1.0")
+			sentValue = msg.SentAmount
 		} else {
-			// otherwise retrieve asset pool to retrieve native swap price
-			maxRowanLiquidityThresholdAssetPool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+			pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
 			if err != nil {
 				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
 			}
-			maxRowanLiquidityThresholdAssetNativePrice = *maxRowanLiquidityThresholdAssetPool.SwapPriceNative
+			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		// if sell rowan
-		if strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
-			sentAmount := maxRowanLiquidityThresholdAssetNativePrice.MulInt(sdk.Int(msg.SentAmount))
-			// if reached max rowan liquidity threshold
-			if currentRowanLiquidityThreshold.Mul(precision).LT(sentAmount) {
-				return nil, types.ErrReachedMaxRowanLiquidityThreshold
-			}
+		if currentRowanLiquidityThreshold.LT(sentValue) {
+			return nil, types.ErrReachedMaxRowanLiquidityThreshold
 		}
 	}
 
-	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	decimals := sAsset.Decimals
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
@@ -521,19 +518,40 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		),
 	})
 
-	// if max rowan liquidity threshold set
 	if liquidityProtectionParams.IsActive {
 		// if sell rowan
 		if strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
-			sentAmount := maxRowanLiquidityThresholdAssetNativePrice.MulInt(sdk.Int(msg.SentAmount))
-			currentRowanLiquidityThreshold := sdk.MaxDec(currentRowanLiquidityThreshold.Sub(sentAmount.Quo(precision)), sdk.ZeroDec())
+			// we know that sentValue < currentRowanLiquidityThreshold so we can do the
+			// substitution knowing it won't panic
+			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Sub(sentValue)
 			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
 		}
 
 		// if buy rowan
 		if strings.EqualFold(rAsset.Denom, types.NativeSymbol) {
-			emitAmount := maxRowanLiquidityThresholdAssetNativePrice.MulInt(sdk.Int(emitAmount))
-			currentRowanLiquidityThreshold := sdk.MinDec(currentRowanLiquidityThreshold.Add(emitAmount.Quo(precision)), maxRowanLiquidityThreshold)
+			var emitValue sdk.Uint
+			if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+				emitValue = emitAmount
+			} else {
+				pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+				if err != nil {
+					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+				}
+				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount)
+
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			// This is equivalent to currentRowanLiquidityThreshold := sdk.MinUint(currentRowanLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
+			// except it prevents any overflows when adding the emitValue
+			if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(emitValue) {
+				currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
+			} else {
+				currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(emitValue)
+			}
+
 			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
 		}
 	}
