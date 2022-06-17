@@ -302,7 +302,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	}
 
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
-	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage))
+	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
@@ -321,10 +321,10 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CollateralAmount)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
 		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
 	} else { // collateral is external
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CollateralAmount)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
 	}
 	err = k.ClpKeeper().SetPool(ctx, pool)
