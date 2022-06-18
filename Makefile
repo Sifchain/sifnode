@@ -42,8 +42,22 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum
+install-all: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
+
+install: install-all
+
+install-ebrelayer: go.sum
+	go install ${BUILD_FLAGS} ./cmd/ebrelayer
+
+install-sifgen: go.sum
+	go install ${BUILD_FLAGS} ./cmd/sifgen
+
+install-sifnode: go.sum
+	go install ${BUILD_FLAGS} ./cmd/sifnoded
+
+install-sifnode-rocks: go.sum
+	go install ${BUILD_FLAGS} -tags rocksdb ./cmd/sifnoded
 
 build-sifd: go.sum
 	go build  ${BUILD_FLAGS} ./cmd/sifnoded
