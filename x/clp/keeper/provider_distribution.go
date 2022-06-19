@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,7 +19,7 @@ func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
 			continue
 		}
 
-		err = k.transferProviderDistribution(ctx, address, pdRowan)
+		err = k.TransferProviderDistribution(ctx, address, pdRowan)
 		if err != nil {
 			k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s error %s", address, err.Error()))
 		}
@@ -41,11 +42,23 @@ func (k Keeper) doProviderDistribution(ctx sdk.Context) ProviderDistributionMap 
 	return k.CollectProviderDistributions(ctx, allPools, period.DistributionPeriodBlockRate)
 }
 
-func (k Keeper) transferProviderDistribution(ctx sdk.Context, providerAddress sdk.AccAddress, providerRowan sdk.Uint) error {
+func (k Keeper) TransferProviderDistribution(ctx sdk.Context, providerAddress sdk.AccAddress, providerRowan sdk.Uint) error {
 	//TransferCoinsFromPool(pool, provider_rowan, provider_address)
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.Int(providerRowan))
-	// TODO: fire event? For failure and for success?
+	fireDistributionEvent(ctx, coin, providerAddress)
+
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, providerAddress, sdk.NewCoins(coin))
+}
+
+func fireDistributionEvent(ctx sdk.Context, coin sdk.Coin, to sdk.Address) {
+	distribtionEvent := sdk.NewEvent(
+		types.EventTypeProviderDistributionDistribution,
+		sdk.NewAttribute(types.AttributeProbiverDistributionAmount, coin.String()),
+		sdk.NewAttribute(types.AttributeProbiverDistributionReceiver, to.String()),
+		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+	)
+
+	ctx.EventManager().EmitEvents(sdk.Events{distribtionEvent})
 }
 
 func FindProviderDistributionPeriod(currentHeight int64, periods []*types.ProviderDistributionPeriod) *types.ProviderDistributionPeriod {

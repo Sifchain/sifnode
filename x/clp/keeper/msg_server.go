@@ -153,9 +153,9 @@ func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *typ
 	params.DistributionPeriods = msg.DistributionPeriods
 	k.SetProviderDistributionParams(ctx, params)
 
-	eventMsg := createEventMsg(msg.Signer)
+	eventMsg := CreateEventMsg(msg.Signer)
 	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
-	providerDistributionPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
+	providerDistributionPolicyEvent := CreateEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
 	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
 
 	return response, nil
@@ -837,19 +837,4 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		),
 	})
 	return &types.MsgAddLiquidityResponse{}, nil
-}
-
-func createEventMsg(signer string) sdk.Event {
-	return sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, signer))
-}
-
-func createEventBlockHeight(ctx sdk.Context, eventType string, attribute sdk.Attribute) sdk.Event {
-	return sdk.NewEvent(
-		eventType,
-		attribute,
-		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-	)
 }
