@@ -74,4 +74,6 @@ type Keeper interface {
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 
 	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
+
+	EmitForceClose(ctx sdk.Context, mtp *MTP, closer string)
 }

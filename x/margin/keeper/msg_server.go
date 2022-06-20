@@ -94,6 +94,14 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
 	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
 	if err != nil {
 		return nil, err
@@ -110,19 +118,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
-		sdk.NewAttribute("position", mtp.Position.String()),
-		sdk.NewAttribute("address", mtp.Address),
-		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
-		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
-		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
-		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
-		sdk.NewAttribute("leverage", mtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
-		sdk.NewAttribute("health", mtp.MtpHealth.String()),
-		sdk.NewAttribute("closer", msg.Signer),
-	))
+	k.EmitForceClose(ctx, mtp, msg.Signer)
 
 	return &types.MsgForceCloseResponse{}, nil
 }
@@ -293,7 +289,7 @@ func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 	if err != nil {
 		return nil, err
 	}
-	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
 		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
 	}
 
@@ -310,7 +306,7 @@ func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools)
 	if err != nil {
 		return nil, err
 	}
-	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
 		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
 	}
 
