@@ -460,7 +460,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
-// GetLockBurnNonceFromCosmos via rpc
+// GetLockBurnSequenceFromCosmos via rpc
 func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
