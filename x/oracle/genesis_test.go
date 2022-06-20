@@ -1,6 +1,8 @@
 package oracle_test
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,6 +12,10 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
+)
+
+var (
+	featureToggleSdk045 = os.Getenv("FEATURE_TOGGLE_SDK_045") == "1"
 )
 
 func TestInitGenesis(t *testing.T) {
@@ -119,6 +125,48 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	whitelist := make([]string, len(valAddrs))
 	for i, addr := range valAddrs {
 		whitelist[i] = addr.String()
+	}
+
+	if featureToggleSdk045 {
+		prophecies := []types.Prophecy{}
+		for i := 0; i <= 5; i++ {
+			prophecy := types.Prophecy{
+				ID: fmt.Sprintf("prophecy%d", i),
+				Status: types.Status{
+					Text:       types.StatusText_STATUS_TEXT_PENDING,
+					FinalClaim: "abc",
+				},
+				ClaimValidators: map[string][]sdk.ValAddress{
+					"123": valAddrs,
+				},
+				ValidatorClaims: map[string]string{
+					"321": "4321",
+				},
+			}
+			prophecies = append(prophecies, prophecy)
+		}
+
+		dbProphecies := []*types.DBProphecy{}
+		for _, p := range prophecies {
+			dbProphecy, err := p.SerializeForDB()
+			require.NoError(t, err)
+			dbProphecies = append(dbProphecies, &dbProphecy)
+		}
+
+		return []testCase{
+			{
+				name:    "Default genesis",
+				genesis: *types.DefaultGenesisState(),
+			},
+			{
+				name: "Prophecy",
+				genesis: types.GenesisState{
+					AddressWhitelist: whitelist,
+					AdminAddress:     addrs[0].String(),
+					Prophecies:       dbProphecies,
+				},
+			},
+		}, prophecies
 	}
 
 	prophecy := types.Prophecy{

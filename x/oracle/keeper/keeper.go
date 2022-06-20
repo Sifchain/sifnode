@@ -2,12 +2,17 @@ package keeper
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
+)
+
+var (
+	featureToggleSdk045 = os.Getenv("FEATURE_TOGGLE_SDK_045") == "1"
 )
 
 // Keeper maintains the link to data storage and
@@ -40,10 +45,17 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) GetProphecyIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	if featureToggleSdk045 {
+		return sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
+	}
+	return store.Iterator(types.ProphecyPrefix, nil)
+}
+
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
-	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.ProphecyPrefix, nil)
+	iter := k.GetProphecyIterator(ctx)
 	for ; iter.Valid(); iter.Next() {
 		var dbProphecy types.DBProphecy
 		k.cdc.MustUnmarshal(iter.Value(), &dbProphecy)

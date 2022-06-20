@@ -1,10 +1,17 @@
 package keeper
 
 import (
+	"os"
+
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	db "github.com/tendermint/tm-db"
+)
+
+var (
+	featureToggleSdk045 = os.Getenv("FEATURE_TOGGLE_SDK_045") == "1"
 )
 
 func (k Keeper) IsBlacklisted(ctx sdk.Context, address string) bool {
@@ -25,7 +32,12 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	store := ctx.KVStore(k.storeKey)
 	// Process removals
 	var removals []string
-	iter := store.Iterator(types.BlacklistPrefix, nil)
+	var iter db.Iterator
+	if featureToggleSdk045 {
+		iter = sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
+	} else {
+		iter = store.Iterator(types.BlacklistPrefix, nil)
+	}
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		if len(key) > 1 {
@@ -61,7 +73,12 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 func (k Keeper) GetBlacklist(ctx sdk.Context) []string {
 	var addresses []string
 	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.BlacklistPrefix, nil)
+	var iter db.Iterator
+	if featureToggleSdk045 {
+		iter = sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
+	} else {
+		iter = store.Iterator(types.BlacklistPrefix, nil)
+	}
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()

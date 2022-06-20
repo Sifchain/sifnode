@@ -1,6 +1,16 @@
+import web3
+from siftool import test_utils, eth
 import siftool.main as mod_main
 import siftool.geth as mod_geth
 from siftool.eth import ETH
+
+
+
+def test1():
+    w3_url = "ws://localhost:8545/"
+    w3_conn = eth.web3_connect(w3_url)
+    current_block_number = w3_conn.eth.block_number
+    print(w3_conn.eth.current_block)
 
 
 def geth_proof_of_concept():
@@ -8,7 +18,6 @@ def geth_proof_of_concept():
     geth = mod_geth.Geth(cmd)
     geth_datadir = cmd.mktempdir()
     geth_ipcpath = cmd.mktempfile()
-    # geth.run_dev(3, datadir=geth_datadir, ipcpath=geth_ipcpath)
     geth_ipcpath = "/tmp/geth.ipc"
     f = geth.attach_eval_fn(geth_ipcpath)
     coinbase_addr = f.coinbase_addr
