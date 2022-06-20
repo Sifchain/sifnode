@@ -128,3 +128,22 @@ func (k Keeper) GetProviderDistributionParams(ctx sdk.Context) *types.ProviderDi
 
 	return &params
 }
+
+func (k Keeper) IsDistributionBlock(ctx sdk.Context) bool {
+	blockHeight := ctx.BlockHeight()
+	params := k.GetProviderDistributionParams(ctx)
+	period := FindProviderDistributionPeriod(blockHeight, params.DistributionPeriods)
+	if period == nil {
+		return false
+	}
+
+	startHeight := period.DistributionPeriodStartBlock
+	mod := period.DistributionPeriodMod
+
+	return IsDistributionBlockPure(blockHeight, startHeight, mod)
+}
+
+// do the thing every mod blocks starting at startHeight
+func IsDistributionBlockPure(blockHeight, startHeight, mod int64) bool {
+	return (blockHeight-startHeight)%mod == 0
+}

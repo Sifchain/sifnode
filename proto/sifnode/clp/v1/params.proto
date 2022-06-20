@@ -70,6 +70,7 @@ message ProviderDistributionPeriod {
     ];
     int64 distribution_period_start_block = 2;
     int64 distribution_period_end_block = 3;
+    int64 distribution_period_mod = 4;
 }
 
 message ProviderDistributionParams {
