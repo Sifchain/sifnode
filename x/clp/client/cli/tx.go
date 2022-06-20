@@ -647,6 +647,7 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 				MaxRowanLiquidityThreshold:      sdk.NewUintFromString(viper.GetString(FlagMaxRowanLiquidityThreshold)),
 				MaxRowanLiquidityThresholdAsset: viper.GetString(FlagMaxRowanLiquidityThresholdAsset),
 				EpochLength:                     viper.GetUint64(FlagLiquidityProtectionEpochLength),
+				IsActive:                        viper.GetBool(FlagLiquidityProtectionIsActive),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -657,6 +658,7 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThreshold)
 	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThresholdAsset)
 	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
+	cmd.Flags().AddFlagSet(FsLiquidityThresholdIsActive)
 	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
@@ -664,6 +666,9 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThresholdAsset); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagLiquidityProtectionIsActive); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 
