@@ -2,7 +2,6 @@ package cli
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -45,8 +44,6 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
-		GetCmdAddSwapAssetPermission(),
-		GetCmdRemoveSwapAssetPermission(),
 		GetCmdUpdateLiquidityProtectionParams(),
 		GetCmdModifyLiquidityProtectionRates(),
 	)
@@ -635,88 +632,6 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 	return cmd
 }
 
-func GetCmdAddSwapAssetPermission() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "add-swap-asset-permission [asset] [permission]",
-		Short: "Add a swap asset permission",
-		Long: `Add a swap asset permission. Valid permissions are:
-	DISABLE_BUY
-	DISABLE_SELL
-`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			err = cobra.ExactArgs(2)(cmd, args)
-			if err != nil {
-				return err
-			}
-			signer := clientCtx.GetFromAddress()
-			if err != nil {
-				return err
-			}
-			asset := types.NewAsset(args[0])
-			swapPermission, ok := types.SwapPermission_value[args[1]]
-			if !ok {
-				return errors.New("invalid swap permission")
-			}
-			msg := types.MsgAddSwapAssetPermission{
-				Signer:         signer.String(),
-				Asset:          &asset,
-				SwapPermission: types.SwapPermission(swapPermission),
-			}
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
-func GetCmdRemoveSwapAssetPermission() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "remove-swap-asset-permission [type]",
-		Short: "Remove a swap asset permission",
-		Long: `Remove a swap asset permission. Valid types are:
-	DISABLE_BUY
-	DISABLE_SELL
-`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			err = cobra.ExactArgs(2)(cmd, args)
-			if err != nil {
-				return err
-			}
-			signer := clientCtx.GetFromAddress()
-			if err != nil {
-				return err
-			}
-			asset := types.NewAsset(args[0])
-			swapPermission, ok := types.SwapPermission_value[args[1]]
-			if !ok {
-				return errors.New("invalid swap permission")
-			}
-			msg := types.MsgRemoveSwapAssetPermission{
-				Signer:         signer.String(),
-				Asset:          &asset,
-				SwapPermission: types.SwapPermission(swapPermission),
-			}
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
 func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "liquidity-protection-params",
@@ -729,9 +644,10 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgUpdateLiquidityProtectionParams{
 				Signer:                          signer.String(),
-				MaxRowanLiquidityThreshold:      sdk.MustNewDecFromStr(viper.GetString(FlagMaxRowanLiquidityThreshold)),
+				MaxRowanLiquidityThreshold:      sdk.NewUintFromString(viper.GetString(FlagMaxRowanLiquidityThreshold)),
 				MaxRowanLiquidityThresholdAsset: viper.GetString(FlagMaxRowanLiquidityThresholdAsset),
-				EpochLength:                     viper.GetInt64(FlagLiquidityProtectionEpochLength),
+				EpochLength:                     viper.GetUint64(FlagLiquidityProtectionEpochLength),
+				IsActive:                        viper.GetBool(FlagLiquidityProtectionIsActive),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -742,6 +658,7 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThreshold)
 	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThresholdAsset)
 	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
+	cmd.Flags().AddFlagSet(FsLiquidityThresholdIsActive)
 	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
@@ -749,6 +666,9 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThresholdAsset); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagLiquidityProtectionIsActive); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 
@@ -768,7 +688,7 @@ func GetCmdModifyLiquidityProtectionRates() *cobra.Command {
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgModifyLiquidityProtectionRates{
 				Signer:                         signer.String(),
-				CurrentRowanLiquidityThreshold: sdk.MustNewDecFromStr(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
+				CurrentRowanLiquidityThreshold: sdk.NewUintFromString(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

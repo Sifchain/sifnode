@@ -18,7 +18,7 @@ func (k Keeper) GetLiquidityProtectionRateParams(ctx sdk.Context) types.Liquidit
 	return params
 }
 
-func (k Keeper) SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx sdk.Context, currentRowanLiquidityThreshold sdk.Dec) {
+func (k Keeper) SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx sdk.Context, currentRowanLiquidityThreshold sdk.Uint) {
 	currentParams := k.GetLiquidityProtectionRateParams(ctx)
 	currentParams.CurrentRowanLiquidityThreshold = currentRowanLiquidityThreshold
 	k.SetLiquidityProtectionRateParams(ctx, currentParams)

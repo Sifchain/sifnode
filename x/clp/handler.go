@@ -52,12 +52,6 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgUpdateStakingRewardParams:
 			res, err := msgServer.UpdateStakingRewardParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgAddSwapAssetPermission:
-			res, err := msgServer.AddSwapAssetPermission(sdk.WrapSDKContext(ctx), msg)
-			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgRemoveSwapAssetPermission:
-			res, err := msgServer.RemoveSwapAssetPermission(sdk.WrapSDKContext(ctx), msg)
-			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgUpdateLiquidityProtectionParams:
 			res, err := msgServer.UpdateLiquidityProtectionParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

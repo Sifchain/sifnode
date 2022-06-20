@@ -36,6 +36,7 @@ const (
 	FlagMaxRowanLiquidityThresholdAsset = "maxRowanLiquidityThresholdAsset"
 	FlagLiquidityProtectionEpochLength  = "epochLength"
 	FlagCurrentRowanLiquidityThreshold  = "currentRowanLiquidityThreshold"
+	FlagLiquidityProtectionIsActive     = "isActive"
 )
 
 // common flagsets to add to various functions
@@ -69,6 +70,7 @@ var (
 	FsSymmetryRatioThreshold          = flag.NewFlagSet("", flag.ContinueOnError)
 	FsMaxRowanLiquidityThreshold      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsMaxRowanLiquidityThresholdAsset = flag.NewFlagSet("", flag.ContinueOnError)
+	FsLiquidityThresholdIsActive      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsLiquidityProtectionEpochLength  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsCurrentRowanLiquidityThreshold  = flag.NewFlagSet("", flag.ContinueOnError)
 )
@@ -105,5 +107,6 @@ func init() {
 	FsMaxRowanLiquidityThreshold.String(FlagMaxRowanLiquidityThreshold, "", "Set max rowan liquidity threshold value according to asset used in maxRowanLiquidityThresholdAsset")
 	FsMaxRowanLiquidityThresholdAsset.String(FlagMaxRowanLiquidityThresholdAsset, "", "Set max rowan liquidity threshold asset to use to determine native price (if set to 'rowan' the threshold can be define as rowan)")
 	FsLiquidityProtectionEpochLength.String(FlagLiquidityProtectionEpochLength, "", "Set liquidity protection epoch length")
+	FsLiquidityThresholdIsActive.String(FlagLiquidityProtectionIsActive, "", "Set liquidity protection isActive")
 	FsCurrentRowanLiquidityThreshold.String(FlagCurrentRowanLiquidityThreshold, "", "Set current rowan liquidity threshold value")
 }

@@ -30,8 +30,6 @@ service Msg {
   rpc SetSymmetryThreshold(MsgSetSymmetryThreshold)
       returns (MsgSetSymmetryThresholdResponse);
   rpc CancelUnlockLiquidity(MsgCancelUnlock) returns (MsgCancelUnlockResponse);
-  rpc AddSwapAssetPermission(MsgAddSwapAssetPermission) returns (MsgAddSwapAssetPermissionResponse);
-  rpc RemoveSwapAssetPermission(MsgRemoveSwapAssetPermission) returns (MsgRemoveSwapAssetPermissionResponse);
   rpc UpdateLiquidityProtectionParams(MsgUpdateLiquidityProtectionParams) returns (MsgUpdateLiquidityProtectionParamsResponse);
   rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
 }
@@ -235,26 +233,10 @@ message MsgCancelUnlock {
 
 message MsgCancelUnlockResponse {}
 
-message MsgAddSwapAssetPermission {
-  string signer = 1;
-  sifnode.clp.v1.Asset asset = 2;
-  SwapPermission swap_permission = 3;
-}
-
-message MsgAddSwapAssetPermissionResponse {}
-
-message MsgRemoveSwapAssetPermission {
-  string signer = 1;
-  sifnode.clp.v1.Asset asset = 2;
-  SwapPermission swap_permission = 3;
-}
-
-message MsgRemoveSwapAssetPermissionResponse {}
-
 message MsgModifyLiquidityProtectionRates {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   string current_rowan_liquidity_threshold = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
 }
@@ -264,10 +246,11 @@ message MsgModifyLiquidityProtectionRatesResponse {}
 message MsgUpdateLiquidityProtectionParams {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   string max_rowan_liquidity_threshold = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
   string max_rowan_liquidity_threshold_asset = 4;
-  int64 epoch_length = 3;
+  uint64 epoch_length = 3;
+  bool is_active = 5;
 }
 message MsgUpdateLiquidityProtectionParamsResponse {}
