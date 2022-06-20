@@ -13,7 +13,7 @@ jobs:
         id: release_tag
         run: echo ::set-output name=name::${GITHUB_REF/refs\/tags\//}
 
-      - uses: convictional/trigger-workflow-and-wait@v1.6.1
+      - uses: convictional/trigger-workflow-and-wait@v1.6.3
         with:
           owner: sifchain
           repo: sifchain-chainops
