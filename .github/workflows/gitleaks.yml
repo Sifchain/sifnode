@@ -13,4 +13,3 @@ jobs:
       uses: gitleaks/gitleaks-action@master
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
