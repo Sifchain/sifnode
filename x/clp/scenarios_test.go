@@ -58,7 +58,6 @@ func TestScenarios(t *testing.T) {
 		tc := tc
 		ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 			trGs := &tokenregistrytypes.GenesisState{
-				AdminAccounts: test.GetAdmins(tc.Address),
 				Registry: &tokenregistrytypes.Registry{
 					Entries: []*tokenregistrytypes.RegistryEntry{
 						{Denom: tc.PoolAsset, BaseDenom: tc.PoolAsset, Decimals: tc.PoolAssetDecimals, Permissions: tc.PoolAssetPermissions},

@@ -1,33 +1,21 @@
 package app
 
 import (
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
-	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "0.13.2"
+const releaseVersion = "0.13.3-rc.1"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
-		amt, ok := sdk.NewIntFromString("150000000000000000000000000")
-		if !ok {
-			panic("error converting mint amount")
-		}
-		mintCoins := sdk.NewCoins(sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, amt))
-		err := app.BankKeeper.MintCoins(ctx, dispensationtypes.ModuleName, mintCoins)
-		if err != nil {
-			panic(err)
-		}
-		address, err := sdk.AccAddressFromBech32("sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3")
-		if err != nil {
-			panic(err)
-		}
-		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins)
+
+		adminMigrator := adminkeeper.NewMigrator(app.AdminKeeper)
+		err := adminMigrator.InitialMigration(ctx)
 		if err != nil {
 			panic(err)
 		}

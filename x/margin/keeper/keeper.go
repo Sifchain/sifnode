@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"strings"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,24 +13,33 @@ import (
 )
 
 type Keeper struct {
-	storeKey   sdk.StoreKey
-	cdc        codec.BinaryCodec
-	bankKeeper types.BankKeeper
-	clpKeeper  types.CLPKeeper
-	paramStore paramtypes.Subspace
+	storeKey    sdk.StoreKey
+	cdc         codec.BinaryCodec
+	bankKeeper  types.BankKeeper
+	clpKeeper   types.CLPKeeper
+	adminKeeper adminkeeper.Keeper
+	paramStore  paramtypes.Subspace
 }
 
 func NewKeeper(storeKey sdk.StoreKey,
 	cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
+	adminKeeper adminkeeper.Keeper,
 	ps paramtypes.Subspace) types.Keeper {
 
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
-	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, paramStore: ps, storeKey: storeKey, cdc: cdc}
+	return Keeper{
+		bankKeeper:  bankKeeper,
+		clpKeeper:   clpKeeper,
+		adminKeeper: adminKeeper,
+		paramStore:  ps,
+		storeKey:    storeKey,
+		cdc:         cdc,
+	}
 }
 
 func (k Keeper) GetMTPCount(ctx sdk.Context) uint64 {
@@ -169,6 +179,10 @@ func (k Keeper) BankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
+func (k Keeper) AdminKeeper() adminkeeper.Keeper {
+	return k.adminKeeper
+}
+
 func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error) {
 	/*
 	   calculate swap fee based on math spec
@@ -288,7 +302,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	}
 
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
-	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage))
+	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
@@ -307,10 +321,10 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CollateralAmount)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
 		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
 	} else { // collateral is external
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtp.CollateralAmount)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
 	}
 	err = k.ClpKeeper().SetPool(ctx, pool)

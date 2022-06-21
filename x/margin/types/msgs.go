@@ -6,12 +6,21 @@ import (
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 )
 
 var (
 	_ sdk.Msg = &MsgOpen{}
 	_ sdk.Msg = &MsgClose{}
 	_ sdk.Msg = &MsgForceClose{}
+	_ sdk.Msg = &MsgUpdateParams{}
+	_ sdk.Msg = &MsgUpdatePools{}
+
+	_ legacytx.LegacyMsg = &MsgOpen{}
+	_ legacytx.LegacyMsg = &MsgClose{}
+	_ legacytx.LegacyMsg = &MsgForceClose{}
+	_ legacytx.LegacyMsg = &MsgUpdateParams{}
+	_ legacytx.LegacyMsg = &MsgUpdatePools{}
 )
 
 func Validate(asset string) bool {
@@ -135,6 +144,62 @@ func (m MsgForceClose) ValidateBasic() error {
 }
 
 func (m MsgForceClose) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgUpdateParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateParams) Type() string {
+	return "update_params"
+}
+
+func (m MsgUpdateParams) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgUpdatePools) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdatePools) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdatePools) Type() string {
+	return "update_pools"
+}
+
+func (m MsgUpdatePools) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgUpdatePools) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

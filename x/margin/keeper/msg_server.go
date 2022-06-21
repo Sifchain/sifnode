@@ -2,13 +2,14 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -93,6 +94,14 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
 	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
 	if err != nil {
 		return nil, err
@@ -109,19 +118,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
-		sdk.NewAttribute("position", mtp.Position.String()),
-		sdk.NewAttribute("address", mtp.Address),
-		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
-		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
-		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
-		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
-		sdk.NewAttribute("leverage", mtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
-		sdk.NewAttribute("health", mtp.MtpHealth.String()),
-		sdk.NewAttribute("closer", msg.Signer),
-	))
+	k.EmitForceClose(ctx, mtp, msg.Signer)
 
 	return &types.MsgForceCloseResponse{}, nil
 }
@@ -151,7 +148,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
 	}
 
-	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))
+	leveragedAmount := collateralAmount.Mul(leverage)
 
 	borrowAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
 	if err != nil {
@@ -284,4 +281,38 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	}
 
 	return &mtp, nil
+}
+
+func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	msg.Params.Pools = params.Pools
+	k.SetParams(ctx, msg.Params)
+
+	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools) (*types.MsgUpdatePoolsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	params.Pools = msg.Pools
+	k.SetParams(ctx, &params)
+
+	return &types.MsgUpdatePoolsResponse{}, nil
 }
