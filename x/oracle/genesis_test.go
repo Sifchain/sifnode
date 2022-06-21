@@ -131,7 +131,6 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
 	// power := uint32(100)
 
-	// TODO peggy2merge need to look at peggy2 version
 	whitelist := make([]string, len(valAddrs))
 	for i, addr := range valAddrs {
 		whitelist[i] = addr.String()

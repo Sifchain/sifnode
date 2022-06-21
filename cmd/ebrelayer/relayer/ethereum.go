@@ -432,8 +432,8 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	for _, event := range events {
 		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
-			sub.SugaredLogger.Errorw(".",
-				"fail to get the eth bridge claim from Ethereum event", err.Error())
+			sub.SugaredLogger.Errorw("HandleEthereumEvent: failed to parse the eth bridge claim from the Ethereum event",
+				errorMessageKey, err.Error())
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
@@ -460,7 +460,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
-// GetLockBurnNonceFromCosmos via rpc
+// GetLockBurnSequenceFromCosmos via rpc
 func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
