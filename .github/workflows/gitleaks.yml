@@ -6,10 +6,10 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
         fetch-depth: '0'
     - name: gitleaks-action
-      uses: gitleaks/gitleaks-action@master
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: zricethezav/gitleaks-action@master
+      with:
+        config-path: .github/.gitleaks.toml
