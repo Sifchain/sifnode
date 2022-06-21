@@ -16,7 +16,7 @@ const (
 	Startup                        = "Startup"
 	EthereumEvent                  = "EthereumEvent"
 	CosmosEvent                    = "CosmosEvent"
-	EthereumProphecyClaim          = "EthereumProphecyClaim"
+	EthereumBridgeClaim            = "EthereumBridgeClaim"
 	SetGlobalSequenceToBlockNumber = "SetGlobalSequenceToBlockNumber"
 	SendCoinsFromAccountToModule   = "SendCoinsFromAccountToModule"
 	BurnCoins                      = "BurnCoins"
