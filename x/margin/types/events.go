@@ -1,5 +1,5 @@
 package types
 
-const EventOpen = "open"
-const EventClose = "close"
-const EventForceClose = "force_close"
+const EventOpen = "mtp_open"
+const EventClose = "mtp_close"
+const EventForceClose = "mtp_force_close"
