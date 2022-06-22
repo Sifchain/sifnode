@@ -13,8 +13,6 @@ Prerequisite
 - sudo apt install -y gcc make python3-dev python3-venv golang
 - curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
 - sudo apt install nodejs npm
-- npm -g install ganache
-- Make sure ganache-cli and ~/go/bin are in $PATH
 
 
 To start the local environment:
