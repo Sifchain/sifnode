@@ -23,10 +23,13 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		rewardsParams := k.GetRewardsParams(ctx)
 		rewardsParams.RewardPeriodStartTime = ctx.BlockTime().String()
 		k.SetRewardParams(ctx, rewardsParams)
-	}
-	periodLength := period.RewardPeriodEndBlock - period.RewardPeriodStartBlock + 1
-	blockDistribution := period.RewardPeriodAllocation.QuoUint64(periodLength)
 
+		periodLength := period.RewardPeriodEndBlock - period.RewardPeriodStartBlock + 1
+		blockDistribution := period.RewardPeriodAllocation.QuoUint64(periodLength)
+		k.SetRewardsBlockDistribution(ctx, blockDistribution)
+	}
+
+	blockDistribution := k.GetRewardsBlockDistribution(ctx)
 	if blockDistribution.IsZero() {
 		return nil
 	}
@@ -185,4 +188,26 @@ func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.
 	}
 
 	return *period.RewardPeriodDefaultMultiplier
+}
+
+func (k Keeper) SetRewardsBlockDistribution(ctx sdk.Context, blockDistribution sdk.Uint) {
+	store := ctx.KVStore(k.storeKey)
+	bytes, err := blockDistribution.Marshal()
+	if err != nil {
+		panic(err)
+	}
+
+	store.Set(types.RewardsBlockDistributionPrefix, bytes)
+}
+
+func (k Keeper) GetRewardsBlockDistribution(ctx sdk.Context) sdk.Uint {
+	val := sdk.Uint{}
+	store := ctx.KVStore(k.storeKey)
+	bytes := store.Get(types.RewardsBlockDistributionPrefix)
+	err := val.Unmarshal(bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	return val
 }
