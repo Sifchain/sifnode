@@ -1,5 +1,5 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
+//go:build FEATURE_TOGGLE_SDK_045
+// +build FEATURE_TOGGLE_SDK_045
 
 package app
 
@@ -10,9 +10,6 @@ import (
 	"os"
 
 	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
-	"github.com/Sifchain/sifnode/x/admin"
-	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -24,9 +21,6 @@ import (
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	"github.com/Sifchain/sifnode/x/margin"
-	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
-	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -55,6 +49,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -151,8 +146,6 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
-		admin.AppModuleBasic{},
-		margin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
 
@@ -168,7 +161,6 @@ var (
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
-		margintypes.ModuleName:         {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -222,12 +214,10 @@ type SifchainApp struct {
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
 	ClpKeeper           clpkeeper.Keeper
-	MarginKeeper        margintypes.Keeper
 	OracleKeeper        oraclekeeper.Keeper
 	EthbridgeKeeper     ethbridgekeeper.Keeper
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
-	AdminKeeper         adminkeeper.Keeper
 
 	mm           *module.Manager
 	sm           *module.SimulationManager
@@ -264,10 +254,8 @@ func NewSifApp(
 		disptypes.StoreKey,
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
-		margintypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
-		admintypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -353,19 +341,16 @@ func NewSifApp(
 	)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
-	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		appCodec,
 		keys[clptypes.StoreKey],
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
-		app.AdminKeeper,
 		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
-	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper, app.AdminKeeper, app.GetSubspace(margintypes.ModuleName))
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -421,7 +406,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
-		app.AdminKeeper,
+		app.TokenRegistryKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -476,16 +461,16 @@ func NewSifApp(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
-		margin.NewAppModule(app.MarginKeeper, &appCodec),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
-		admin.NewAppModule(app.AdminKeeper, &appCodec),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
+	// NOTE: staking module is required if HistoricalEntries param > 0
+	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
@@ -494,20 +479,53 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		govtypes.ModuleName,
+		crisistypes.ModuleName,
+		genutiltypes.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		ibchost.ModuleName,
-		margin.ModuleName,
-		dispensation.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
+		vestingtypes.ModuleName,
 		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
+		dispensation.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
+		capabilitytypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		minttypes.ModuleName,
+		genutiltypes.ModuleName,
+		evidencetypes.ModuleName,
 		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
 	app.mm.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -518,19 +536,23 @@ func NewSifApp(
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
-		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
-		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
-		tokenregistrytypes.ModuleName,
-		admintypes.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		clptypes.ModuleName,
-		margintypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
 	)
+
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(app.configurator)
@@ -713,7 +735,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(clptypes.ModuleName)
-	paramsKeeper.Subspace(margintypes.ModuleName).WithKeyTable(margintypes.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
