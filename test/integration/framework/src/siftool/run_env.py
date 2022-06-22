@@ -510,6 +510,8 @@ class IntegrationTestsEnvironment:
             "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16
         }
 
+        self.ganache_executable = self.project.project_dir("smart-contracts", "node_modules", ".bin", "ganache-cli")
+
     def prepare(self):
         self.project.make_go_binaries()
         self.project.install_smart_contracts_dependencies()
@@ -538,8 +540,8 @@ class IntegrationTestsEnvironment:
         block_time = None  # TODO
         account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
         ganache_db_path = self.cmd.mktempdir()
-        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
-            mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, executable=self.ganache_executable, block_time=block_time,
+            host=ANY_ADDR, mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
             account_keys_path=account_keys_path, log_file=ganache_log_file)
 
         self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
@@ -550,7 +552,7 @@ class IntegrationTestsEnvironment:
         ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
         ebrelayer_ethereum_addr = "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
         assert ebrelayer_ethereum_addr in ganache_keys["private_keys"]
-        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr][2:]
 
         env_file = project_dir("test/integration/.env.ciExample")
         env_vars = self.cmd.primitive_parse_env_file(env_file)
@@ -749,8 +751,8 @@ class IntegrationTestsEnvironment:
         ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
         account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")  # TODO this is in test/integration/vagrant/data, which is supposed to be cleared
 
-        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
-            mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, executable=self.ganache_executable, block_time=block_time,
+            host=ANY_ADDR, mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
             account_keys_path=account_keys_path)  # TODO log_file
 
         self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
