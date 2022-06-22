@@ -10,5 +10,4 @@ cp $GOPATH/bin/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin/
 mkdir -p $DAEMON_HOME/cosmovisor/upgrades/
 
 #sifnoded rest-server &
-cosmovisor start
-
+cosmovisor start --x-crisis-skip-assert-invariants --inv-check-period 600
