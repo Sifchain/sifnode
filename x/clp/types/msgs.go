@@ -276,8 +276,15 @@ func (m MsgDecommissionPool) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
-	return MsgSwap{Signer: signer.String(), SentAsset: &sentAsset, ReceivedAsset: &receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
+func NewMsgSwap(signer sdk.AccAddress,
+	sentAsset, receivedAsset Asset,
+	sentAmount, minReceivingAmount sdk.Uint) MsgSwap {
+	return MsgSwap{
+		Signer:             signer.String(),
+		SentAsset:          &sentAsset,
+		ReceivedAsset:      &receivedAsset,
+		SentAmount:         sentAmount,
+		MinReceivingAmount: minReceivingAmount}
 }
 
 func (m MsgSwap) Route() string {
