@@ -51,12 +51,12 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		poolDistributionDec := weight.Mul(blockDistributionDec)
 		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
 
-		if poolDistribution.GT(remaining) {
-			poolDistribution = remaining
-		}
-
 		if poolDistribution.IsZero() {
 			continue
+		}
+
+		if poolDistribution.GT(remaining) {
+			poolDistribution = remaining
 		}
 
 		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
