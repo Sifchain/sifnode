@@ -36,6 +36,7 @@ var (
 	RewardParamPrefix                = []byte{0x06}
 	SymmetryThresholdPrefix          = []byte{0x07}
 	ProviderDistributionParamsPrefix = []byte{0x08}
+	RewardsBlockDistributionPrefix   = []byte{0x09}
 )
 
 // Generates a key for storing a specific pool
