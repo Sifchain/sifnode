@@ -545,13 +545,12 @@ class IntegrationTestsEnvironment:
         self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
         time.sleep(2)
 
+        # Pick an account for ebrelayer from 10 hardcoded ganache_keys. In theory, it shouldn't matter which one we pick
+        # but since other parts of the code might have some hidden assumptions we just pick a fixed one for now.
         ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
-        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+        ebrelayer_ethereum_addr = "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+        assert ebrelayer_ethereum_addr in ganache_keys["private_keys"]
         ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
-        # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
-        # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
-        assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
-        assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
 
         env_file = project_dir("test/integration/.env.ciExample")
         env_vars = self.cmd.primitive_parse_env_file(env_file)
