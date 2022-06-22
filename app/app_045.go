@@ -10,6 +10,9 @@ import (
 	"os"
 
 	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
+	"github.com/Sifchain/sifnode/x/admin"
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -21,6 +24,9 @@ import (
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	"github.com/Sifchain/sifnode/x/margin"
+	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -146,6 +152,8 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
+		admin.AppModuleBasic{},
+		margin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
 
@@ -161,6 +169,7 @@ var (
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
+		margintypes.ModuleName:         {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -214,10 +223,12 @@ type SifchainApp struct {
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
 	ClpKeeper           clpkeeper.Keeper
+	MarginKeeper        margintypes.Keeper
 	OracleKeeper        oraclekeeper.Keeper
 	EthbridgeKeeper     ethbridgekeeper.Keeper
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
+	AdminKeeper         adminkeeper.Keeper
 
 	mm           *module.Manager
 	sm           *module.SimulationManager
@@ -254,8 +265,10 @@ func NewSifApp(
 		disptypes.StoreKey,
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
+		margintypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
+		admintypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -341,16 +354,19 @@ func NewSifApp(
 	)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
+	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		appCodec,
 		keys[clptypes.StoreKey],
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
+	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper, app.AdminKeeper, app.GetSubspace(margintypes.ModuleName))
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -406,7 +422,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
-		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -461,10 +477,12 @@ func NewSifApp(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		margin.NewAppModule(app.MarginKeeper, &appCodec),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
+		admin.NewAppModule(app.AdminKeeper, &appCodec),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -488,12 +506,14 @@ func NewSifApp(
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
+		margin.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
 		vestingtypes.ModuleName,
 		clptypes.ModuleName,
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
+		admintypes.ModuleName,
 		oracletypes.ModuleName,
 		dispensation.ModuleName,
 	)
@@ -514,11 +534,13 @@ func NewSifApp(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
+		margin.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
 		clptypes.ModuleName,
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
+		admintypes.ModuleName,
 		oracletypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -545,9 +567,11 @@ func NewSifApp(
 		ibchost.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
-		clptypes.ModuleName,
-		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
+		admintypes.ModuleName,
+		clptypes.ModuleName,
+		margintypes.ModuleName,
+		ethbridgetypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
@@ -735,6 +759,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(clptypes.ModuleName)
+	paramsKeeper.Subspace(margintypes.ModuleName).WithKeyTable(margintypes.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
