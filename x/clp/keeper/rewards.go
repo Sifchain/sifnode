@@ -27,12 +27,55 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	periodLength := period.RewardPeriodEndBlock - period.RewardPeriodStartBlock + 1
 	blockDistribution := period.RewardPeriodAllocation.QuoUint64(periodLength)
 
-	remaining := blockDistribution
-
-	if remaining.IsZero() || blockDistribution.IsZero() {
+	if blockDistribution.IsZero() {
 		return nil
 	}
 
+	totalDepth, err := k.calcTotalDepth(ctx, pools, period, height)
+	if err != nil {
+		return err
+	}
+
+	if totalDepth.LTE(sdk.ZeroDec()) {
+		return nil
+	}
+
+	remaining := blockDistribution
+	for _, pool := range pools {
+		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
+		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
+		poolDistributionDec := weight.Mul(blockDistributionDec)
+		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
+
+		if poolDistribution.GT(remaining) {
+			poolDistribution = remaining
+		}
+
+		if poolDistribution.IsZero() {
+			continue
+		}
+
+		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
+		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
+		if err != nil {
+			return err
+		}
+
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
+		pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(poolDistribution)
+		remaining = remaining.Sub(poolDistribution)
+
+		err = k.SetPool(ctx, pool)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k Keeper) calcTotalDepth(ctx sdk.Context, pools []*types.Pool, period *types.RewardPeriod, height uint64) (sdk.Dec, error) {
 	totalDepth := sdk.ZeroDec()
 	for _, pool := range pools {
 		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
@@ -41,40 +84,12 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 			pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
 			err := k.SetPool(ctx, pool)
 			if err != nil {
-				return err
-			}
-		}
-	}
-	if totalDepth.GT(sdk.ZeroDec()) {
-		for _, pool := range pools {
-
-			m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
-			weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
-			blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
-			poolDistributionDec := weight.Mul(blockDistributionDec)
-			poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
-			if poolDistribution.GT(remaining) {
-				poolDistribution = remaining
-			}
-			if poolDistribution.IsZero() {
-				continue
-			}
-			rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
-			err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
-			if err != nil {
-				return err
-			}
-			pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
-			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(poolDistribution)
-			remaining = remaining.Sub(poolDistribution)
-			err = k.SetPool(ctx, pool)
-			if err != nil {
-				return err
+				return sdk.Dec{}, err
 			}
 		}
 	}
 
-	return nil
+	return totalDepth, nil
 }
 
 func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider, units sdk.Uint, any bool) error {
