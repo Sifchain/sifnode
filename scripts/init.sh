@@ -36,5 +36,5 @@ sifnoded collect-gentxs
 echo "Validating genesis file..."
 sifnoded validate-genesis
 
-contents="$(jq '.app_state.gov.voting_params.voting_period = "30s"' ~/.sifnoded/config/genesis.json)" && echo "${contents}" > ~/.sifnoded/config/genesis.js
-
+contents="$(jq '.app_state.gov.voting_params.voting_period = "10s"' ~/.sifnoded/config/genesis.json)" && \
+echo "${contents}" > ~/.sifnoded/config/genesis.json
