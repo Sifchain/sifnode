@@ -37,7 +37,9 @@ sifnoded tx clp set-lppd-params \
    -y \
    --path <( echo '[
     {
+        "distribution_period_block_rate": "0.01",
         "distribution_period_start_block": 1000,
+        "distribution_period_mod": 10,
         "distribution_period_end_block": 433000
     }
 ]' )
