@@ -530,6 +530,14 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, err
 	}
 
+	futurePool := pool
+	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
+	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
+	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).GT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
+		k.QueueRemoval(ctx, msg /*, rowanValue */)
+		return nil, types.ErrQueued
+	}
+
 	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
@@ -655,6 +663,19 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
 	if err != nil {
 		return nil, err
+	}
+
+	futurePool := pool
+	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
+	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
+	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).GT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
+		k.QueueRemoval(ctx, &types.MsgRemoveLiquidity{
+			Signer:        msg.Signer,
+			ExternalAsset: msg.ExternalAsset,
+			WBasisPoints:  ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, msg.WithdrawUnits),
+			Asymmetry:     sdk.ZeroInt(),
+		} /*, rowanValue */)
+		return nil, types.ErrQueued
 	}
 
 	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
@@ -800,5 +821,10 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
+
+	if k.GetRemovalQueue(ctx).Count > 0 {
+		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
+	}
+
 	return &types.MsgAddLiquidityResponse{}, nil
 }

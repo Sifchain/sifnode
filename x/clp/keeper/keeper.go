@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 
@@ -23,12 +24,13 @@ type Keeper struct {
 	tokenRegistryKeeper types.TokenRegistryKeeper
 	adminKeeper         types.AdminKeeper
 	mintKeeper          mintkeeper.Keeper
+	marginKeeper        margintypes.Keeper
 	paramstore          paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
 func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper,
-	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
+	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, marginKeeper margintypes.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -41,6 +43,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		tokenRegistryKeeper: tokenRegistryKeeper,
 		adminKeeper:         adminKeeper,
 		mintKeeper:          mintKeeper,
+		marginKeeper:        marginKeeper,
 		paramstore:          ps,
 	}
 	return keeper
@@ -61,6 +64,10 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 
 func (k Keeper) GetAuthKeeper() types.AuthKeeper {
 	return k.authKeeper
+}
+
+func (k Keeper) GetMarginKeeper() margintypes.Keeper {
+	return k.marginKeeper
 }
 
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {

@@ -336,6 +336,11 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 }
 
 func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error {
+	pool.Health = k.CalculatePoolHealth(pool)
+	return k.ClpKeeper().SetPool(ctx, pool)
+}
+
+func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 	// can be both X and Y
 	ExternalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
 	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
@@ -347,8 +352,7 @@ func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error {
 
 	H := mul1.Mul(mul2)
 
-	pool.Health = H
-	return k.ClpKeeper().SetPool(ctx, pool)
+	return H
 }
 
 // TODO Rename to CalcMTPHealth if not storing.

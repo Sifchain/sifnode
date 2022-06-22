@@ -223,3 +223,8 @@ message MsgCancelUnlock {
 }
 
 message MsgCancelUnlockResponse {}
+
+message RemovalRequest {
+  int64 id = 1;
+  MsgRemoveLiquidity msg = 2;
+}

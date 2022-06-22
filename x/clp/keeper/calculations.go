@@ -445,3 +445,21 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 		sdk.ZeroInt(),
 	)
 }
+
+func ConvUnitsToWBasisPoints(total, units sdk.Uint) sdk.Int {
+	totalDec, err := sdk.NewDecFromStr(total.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", total, err))
+	}
+	unitsDec, err := sdk.NewDecFromStr(units.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", total, err))
+	}
+	wbasis := sdk.NewDec(10000).Quo(totalDec.Quo(unitsDec))
+	return wbasis.TruncateInt()
+}
+
+func ConvWBasisPointsToUnits(total sdk.Uint, wbasis sdk.Int) sdk.Uint {
+	wbasisUint := sdk.NewUintFromString(wbasis.String())
+	return total.Quo(sdk.NewUint(10000).Quo(wbasisUint))
+}

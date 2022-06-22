@@ -35,6 +35,8 @@ var (
 	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
 	RewardParamPrefix        = []byte{0x06}
 	SymmetryThresholdPrefix  = []byte{0x07}
+	RemovalRequestPrefix     = []byte{0x08}
+	RemovalQueuePrefix       = []byte{0x09}
 )
 
 // Generates a key for storing a specific pool
@@ -51,6 +53,13 @@ func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
 func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
+}
+
+// GetRemovalRequestKey generates a key to store a removal request,
+// the key is in the format: lpaddress_id
+func GetRemovalRequestKey(request RemovalRequest) []byte {
+	key := []byte(fmt.Sprintf("%s_%s", request.Msg.Signer, request.Id))
+	return append(RemovalRequestPrefix, key...)
 }
 
 func GetDefaultRewardParams() *RewardParams {

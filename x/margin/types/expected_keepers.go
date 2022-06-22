@@ -58,6 +58,7 @@ type Keeper interface {
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
 	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
+	GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec
 	GetEnabledPools(ctx sdk.Context) []string
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
@@ -68,6 +69,8 @@ type Keeper interface {
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
+
+	CalculatePoolHealth(*clptypes.Pool) sdk.Dec
 
 	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
