@@ -10,7 +10,7 @@ Prerequisite
 # Set up on Ubuntu 22.04
 - sudo apt update
 - sudo apt upgrade
-- sudo apt install python3.9 python3-venv python3-dev gcc make golang
+- sudo apt install -y gcc make python3-dev python3-venv golang
 - curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
 - sudo apt install nodejs npm
 - npm -g install ganache
