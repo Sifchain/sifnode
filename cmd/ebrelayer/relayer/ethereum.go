@@ -417,7 +417,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	return event, true, nil
 }
 
-// handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
+// handleEthereumEvent unpacks an Ethereum event, converts it to a EthBridgeClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	events []types.EthereumEvent,
 	symbolTranslator *symbol_translator.SymbolTranslator,
@@ -439,7 +439,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || ethBridgeClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				ethBridgeClaims = append(ethBridgeClaims, &ethBridgeClaim)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", ethBridgeClaim)
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumBridgeClaim, zap.Reflect("event", event), "bridgeClaim", ethBridgeClaim)
 				lockBurnNonce = ethBridgeClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
