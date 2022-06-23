@@ -17,6 +17,9 @@ func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity) {
 
 	queue.Count += 1
 	queue.Id += 1
+	if queue.Count == 1 {
+		queue.StartHeight = ctx.BlockHeight()
+	}
 	k.SetRemovalQueue(ctx, queue)
 }
 
@@ -57,12 +60,12 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 		withdrawWBasisPoints := ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, withdrawUnits)
 
 		// Reuse removal logic using withdrawWBasisPoints
-		/*k.ProcessRemoveLiqiduityMsg(ctx, types.MsgRemoveLiquidity{
+		k.ProcessRemoveLiquidityMsg(ctx, &types.MsgRemoveLiquidity{
 			Signer:        request.Msg.Signer,
 			ExternalAsset: request.Msg.ExternalAsset,
 			WBasisPoints:  withdrawWBasisPoints,
 			Asymmetry:     request.Msg.Asymmetry,
-		})*/
+		})
 
 		// Update the queued request
 		k.SetProcessedRemovalRequest(ctx, request, withdrawWBasisPoints /*, rowanValue*/)
@@ -86,4 +89,21 @@ func (k Keeper) DequeueRemovalRequest(ctx sdk.Context, request types.RemovalRequ
 	queue := k.GetRemovalQueue(ctx)
 	queue.Count -= 1
 	k.SetRemovalQueue(ctx, queue)
+}
+
+func (k Keeper) GetRemovalQueueUnitsForLP(ctx sdk.Context, lp types.LiquidityProvider) sdk.Uint {
+	store := ctx.KVStore(k.storeKey)
+	prefix := types.GetRemovalRequestLPPrefix(lp.LiquidityProviderAddress)
+	iterator := sdk.KVStorePrefixIterator(store, prefix)
+	defer iterator.Close()
+
+	var units sdk.Uint
+	for ; iterator.Valid(); iterator.Next() {
+		var request types.RemovalRequest
+		k.cdc.MustUnmarshal(iterator.Value(), &request)
+
+		units = units.Add(ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, request.Msg.WBasisPoints))
+	}
+
+	return units
 }

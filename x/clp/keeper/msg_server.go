@@ -520,6 +520,13 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, types.ErrAsymmetricRemove
 	}
 
+	//  ensure requested removal amount is less than available - what is already on the queue
+	lpQueuedUnits := k.GetRemovalQueueUnitsForLP(ctx, lp)
+	msgUnits := ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, msg.WBasisPoints)
+	if msgUnits.GT(lp.LiquidityProviderUnits.Sub(lpQueuedUnits)) {
+		return nil, types.ErrUnableToRemoveLiquidity
+	}
+
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
@@ -643,9 +650,10 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
-
-	if msg.WithdrawUnits.GT(lp.LiquidityProviderUnits) {
-		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s", msg.WithdrawUnits, lp.LiquidityProviderUnits))
+	//  ensure requested removal amount is less than available - what is already on the queue
+	lpQueuedUnits := k.GetRemovalQueueUnitsForLP(ctx, lp)
+	if msg.WithdrawUnits.GT(lp.LiquidityProviderUnits.Sub(lpQueuedUnits)) {
+		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msg.WithdrawUnits, lp.LiquidityProviderUnits))
 	}
 
 	poolOriginalEB := pool.ExternalAssetBalance
