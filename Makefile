@@ -1,7 +1,7 @@
 CHAINNET?=betanet
 BINARY?=sifnoded
 GOPATH?=$(shell go env GOPATH)
-GOBIN?=${GOPATH}/bin
+GOBIN?=$(GOPATH)/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
@@ -13,8 +13,11 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bu
 GOFLAGS:=""
 TAGS:=
 ifeq ($(FEATURE_TOGGLE_SDK_045), 1)
-	GOFLAGS := "-modfile=go_045.mod"
-	TAGS := FEATURE_TOGGLE_SDK_045
+	GOFLAGS:="-modfile=go_045.mod"
+	TAGS:=$(TAGS)FEATURE_TOGGLE_SDK_045,
+endif
+ifeq ($(FEATURE_TOGGLE_MARGIN_CLI_ALPHA), 1)
+	TAGS:=$(TAGS)FEATURE_TOGGLE_MARGIN_CLI_ALPHA,
 endif
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
@@ -41,7 +44,7 @@ start:
 
 lint-pre:
 	@test -z $(gofmt -l .)
-	@GOFLAGS=${GOFLAGS} go mod verify
+	@GOFLAGS=$(GOFLAGS) go mod verify
 
 lint: lint-pre
 	@golangci-lint run
@@ -50,25 +53,25 @@ lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
 install: go.sum
-	GOFLAGS=${GOFLAGS} go install ${BUILD_FLAGS} ${BINARIES}
+	GOFLAGS=$(GOFLAGS) go install $(BUILD_FLAGS) $(BINARIES)
 
 build-sifd: go.sum
-	GOFLAGS=${GOFLAGS} go build  ${BUILD_FLAGS} ./cmd/sifnoded
+	GOFLAGS=$(GOFLAGS) go build  $(BUILD_FLAGS) ./cmd/sifnoded
 
 clean:
-	@rm -rf ${GOBIN}/sif*
+	@rm -rf $(GOBIN)/sif*
 
 coverage:
-	@GOFLAGS=${GOFLAGS} go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+	@GOFLAGS=$(GOFLAGS) go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 tests:
-	@GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
+	@GOFLAGS=$(GOFLAGS) go test -v -coverprofile .testCoverage.txt ./...
 
 feature-tests:
-	@GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
+	@GOFLAGS=$(GOFLAGS) go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	GOFLAGS=${GOFLAGS} go run ./cmd/sifnoded start
+	GOFLAGS=$(GOFLAGS) go run ./cmd/sifnoded start
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
