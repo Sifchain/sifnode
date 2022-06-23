@@ -417,7 +417,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	return event, true, nil
 }
 
-// handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
+// handleEthereumEvent unpacks an Ethereum event, converts it to a EthBridgeClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	events []types.EthereumEvent,
 	symbolTranslator *symbol_translator.SymbolTranslator,
@@ -432,14 +432,14 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	for _, event := range events {
 		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
-			sub.SugaredLogger.Errorw(".",
-				"fail to get the eth bridge claim from Ethereum event", err.Error())
+			sub.SugaredLogger.Errorw("HandleEthereumEvent: failed to parse the eth bridge claim from the Ethereum event",
+				errorMessageKey, err.Error())
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || ethBridgeClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				ethBridgeClaims = append(ethBridgeClaims, &ethBridgeClaim)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", ethBridgeClaim)
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumBridgeClaim, zap.Reflect("event", event), "bridgeClaim", ethBridgeClaim)
 				lockBurnNonce = ethBridgeClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
@@ -460,7 +460,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
-// GetLockBurnNonceFromCosmos via rpc
+// GetLockBurnSequenceFromCosmos via rpc
 func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {

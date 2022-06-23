@@ -140,7 +140,7 @@ func (sub CosmosSub) CheckSequenceAndProcess(txFactory tx.Factory,
 
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get the validator address from validataor moniker",
+		sub.SugaredLogger.Errorw("failed to get the validator address from validator moniker",
 			errorMessageKey, err.Error())
 		return
 	}
@@ -150,6 +150,12 @@ func (sub CosmosSub) CheckSequenceAndProcess(txFactory tx.Factory,
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the lock burn Sequence from cosmos rpc",
 			errorMessageKey, err.Error())
+		return
+	}
+
+	// If block number for the next global sequence is zero, means no new lock/burn transaction happened in Sifnode side.
+	// just return here, to avoid the unnecessary events querying from block 0 to current block.
+	if blockNumber == 0 {
 		return
 	}
 
@@ -176,12 +182,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		"fromBlockNumber", fromBlockNumber,
 		"toBlockNumber", toBlockNumber)
 
-	// BlockResults API require the block number greater than zero
-	// fromBlockNumber is set to 0 when entry is not found
-	if fromBlockNumber == 0 {
-		fromBlockNumber = 1
-	}
-
 	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; blockNumber++ {
 		tmpBlockNumber := int64(blockNumber)
 
@@ -195,15 +195,14 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		}
 
 		for _, txLog := range block.TxsResults {
-			sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 			for _, event := range txLog.Events {
 
 				claimType := getOracleClaimType(event.GetType())
 
-				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
+					sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
+
 					// the relayer for signature aggregator not handle burn and lock
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {

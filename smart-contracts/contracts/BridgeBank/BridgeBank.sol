@@ -707,12 +707,11 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   ) internal {
     // Transfer funds to intended recipient
     if (token == address(0)) {
-      (bool success, ) = recipient.call{ value: amount }("");
+      bool success = recipient.send(amount);
       require(success, "error sending ether");
     } else {
       IERC20 tokenToTransfer = IERC20(token);
 
-      // TODO: try/catch
       tokenToTransfer.safeTransfer(recipient, amount);
     }
 
