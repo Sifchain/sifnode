@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -43,45 +44,100 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 		return nil
 	}
 
-	remaining := blockDistribution
-	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
-		weight := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m).Quo(totalDepth)
-		blockDistributionDec := sdk.NewDecFromBigInt(blockDistribution.BigInt())
-		poolDistributionDec := weight.Mul(blockDistributionDec)
-		poolDistribution := sdk.NewUintFromBigInt(poolDistributionDec.TruncateInt().BigInt())
+	tuples, coinsToMint := CollectPoolRewardTuples(pools, blockDistribution, totalDepth, period)
+	rewardCoins := sdk.NewCoins(sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(coinsToMint.BigInt())))
+	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
+	if err != nil {
+		return err
+	}
 
-		if poolDistribution.IsZero() {
-			continue
+	shouldDistribute := period.RewardPeriodDistribute
+	acc := make(ProviderDistributionMap)
+	for _, e := range tuples {
+		if shouldDistribute {
+			lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *e.Pool.ExternalAsset)
+			if err != nil {
+				k.Logger(ctx).Error(fmt.Sprintf("Getting liquidity providers for asset %s error %s", e.Pool.ExternalAsset.Symbol, err.Error()))
+
+				// if this fails, we add rewards to pool instead
+				k.addRewardsToPool(ctx, e.Pool, e.Reward)
+				continue
+			}
+
+			CollectRewards(e.Reward, e.Pool.PoolUnits, lps, acc)
+		} else {
+			k.addRewardsToPool(ctx, e.Pool, e.Reward)
 		}
+	}
 
-		if poolDistribution.GT(remaining) {
-			poolDistribution = remaining
-		}
-
-		rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
-		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
-		if err != nil {
-			return err
-		}
-
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
-		pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(poolDistribution)
-		remaining = remaining.Sub(poolDistribution)
-
-		err = k.SetPool(ctx, pool)
-		if err != nil {
-			return err
-		}
+	if shouldDistribute {
+		k.TranferCoins(ctx, &acc)
 	}
 
 	return nil
 }
 
+type PoolReward struct {
+	Pool   *types.Pool
+	Reward sdk.Uint
+}
+
+func CollectPoolRewardTuples(pools []*types.Pool, blockDistribution sdk.Uint, totalDepth sdk.Dec, period *types.RewardPeriod) ([]PoolReward, sdk.Uint) {
+	coinsToMint := sdk.ZeroUint()
+	var tuples []PoolReward
+
+	remaining := blockDistribution
+	for _, pool := range pools {
+		if remaining.IsZero() { // we out of money... kthxbye
+			return tuples, coinsToMint
+		}
+
+		m := GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		poolDistribution := calcPoolDistribution(m, pool.NativeAssetBalance, totalDepth, blockDistribution)
+
+		if poolDistribution.IsZero() {
+			continue
+		}
+
+		// This is it: last pool out of pools to get rewards
+		if poolDistribution.GT(remaining) {
+			poolDistribution = remaining
+		}
+
+		coinsToMint = coinsToMint.Add(poolDistribution)
+		remaining = remaining.Sub(poolDistribution)
+		tuples = append(tuples, PoolReward{Pool: pool, Reward: poolDistribution})
+	}
+
+	return tuples, coinsToMint
+}
+
+func (k Keeper) addRewardsToPool(ctx sdk.Context, pool *types.Pool, poolDistribution sdk.Uint) {
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
+	pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(poolDistribution)
+
+	err := k.SetPool(ctx, pool)
+	// this is impossible but... defensive programming
+	if err != nil {
+		k.Logger(ctx).Error(fmt.Sprintf("The impossible happened: Unable to set pool for asset %s error %s", pool.ExternalAsset.Symbol, err.Error()))
+	}
+}
+
+func calcPoolDistribution(multiplier sdk.Dec, poolNativeBalance sdk.Uint, totalDepth sdk.Dec, blockDistributionAmount sdk.Uint) sdk.Uint {
+	weight := sdk.NewDecFromBigInt(poolNativeBalance.BigInt()).Mul(multiplier).Quo(totalDepth)
+	poolDistribution := weight.Mul(sdk.NewDecFromBigInt(blockDistributionAmount.BigInt()))
+
+	return sdk.NewUintFromBigInt(poolDistribution.TruncateInt().BigInt())
+}
+
+func CollectRewards(poolDistribution sdk.Uint, poolUnits sdk.Uint, lps []*types.LiquidityProvider, acc ProviderDistributionMap) {
+	CollectProviderDistribution(sdk.NewDecFromBigInt(poolDistribution.BigInt()), sdk.NewDec(1), poolUnits, lps, acc)
+}
+
 func (k Keeper) calcTotalDepth(ctx sdk.Context, pools []*types.Pool, period *types.RewardPeriod, height uint64) (sdk.Dec, error) {
 	totalDepth := sdk.ZeroDec()
 	for _, pool := range pools {
-		m := k.GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
+		m := GetPoolMultiplier(pool.ExternalAsset.Symbol, period)
 		totalDepth = totalDepth.Add(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Mul(m))
 		if height == period.RewardPeriodStartBlock {
 			pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
@@ -178,7 +234,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 	}
 }
 
-func (k Keeper) GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
+func GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
 	for _, m := range period.RewardPeriodPoolMultipliers {
 		if strings.EqualFold(asset, m.PoolMultiplierAsset) {
 			if m.Multiplier != nil && !m.Multiplier.IsNil() {

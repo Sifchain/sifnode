@@ -11,8 +11,12 @@ import (
 type ProviderDistributionMap map[string]sdk.Uint
 
 func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
-	pdMap := k.doProviderDistribution(ctx)
-	for lpAddress, pdRowan := range pdMap {
+	pdm := k.doProviderDistribution(ctx)
+	k.TranferCoins(ctx, &pdm)
+}
+
+func (k Keeper) TranferCoins(ctx sdk.Context, pdm *ProviderDistributionMap) {
+	for lpAddress, pdRowan := range *pdm {
 		address, err := sdk.AccAddressFromBech32(lpAddress)
 		if err != nil {
 			k.Logger(ctx).Error(fmt.Sprintf("Liquidity provider address %s error %s", lpAddress, err.Error()))

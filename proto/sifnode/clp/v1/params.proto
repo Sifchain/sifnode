@@ -54,6 +54,8 @@ message RewardPeriod {
   string reward_period_default_multiplier = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
   ];
+
+  bool reward_period_distribute = 7;
 }
 
 message PoolMultiplier {
