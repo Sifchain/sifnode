@@ -119,21 +119,21 @@ func TestKeeper_CollectProviderDistributions(t *testing.T) {
 }
 
 func TestKeeper_IsDistributionBlock(t *testing.T) {
-	startHeight := int64(12)
+	startHeight := uint64(12)
 	blockHeight := int64(12)
-	mod := int64(4)
+	mod := uint64(4)
 
-	require.True(t, keeper.IsDistributionBlockPure(startHeight, blockHeight, mod))
+	require.True(t, keeper.IsDistributionBlockPure(blockHeight, startHeight, mod))
 
 	blockHeight = 13
-	require.False(t, keeper.IsDistributionBlockPure(startHeight, blockHeight, mod))
+	require.False(t, keeper.IsDistributionBlockPure(blockHeight, startHeight, mod))
 
 	blockHeight = 14
-	require.False(t, keeper.IsDistributionBlockPure(startHeight, blockHeight, mod))
+	require.False(t, keeper.IsDistributionBlockPure(blockHeight, startHeight, mod))
 
 	blockHeight = 15
-	require.False(t, keeper.IsDistributionBlockPure(startHeight, blockHeight, mod))
+	require.False(t, keeper.IsDistributionBlockPure(blockHeight, startHeight, mod))
 
 	blockHeight = 16
-	require.True(t, keeper.IsDistributionBlockPure(startHeight, blockHeight, mod))
+	require.True(t, keeper.IsDistributionBlockPure(blockHeight, startHeight, mod))
 }

@@ -71,8 +71,8 @@ func FindProviderDistributionPeriod(currentHeight int64, periods []*types.Provid
 	return nil
 }
 
-func isActivePeriod(current, start, end int64) bool {
-	return current >= start && current <= end
+func isActivePeriod(current int64, start, end uint64) bool {
+	return current >= int64(start) && current <= int64(end)
 }
 
 func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) ProviderDistributionMap {
@@ -144,6 +144,6 @@ func (k Keeper) IsDistributionBlock(ctx sdk.Context) bool {
 }
 
 // do the thing every mod blocks starting at startHeight
-func IsDistributionBlockPure(blockHeight, startHeight, mod int64) bool {
-	return (blockHeight-startHeight)%mod == 0
+func IsDistributionBlockPure(blockHeight int64, startHeight, mod uint64) bool {
+	return (blockHeight-int64(startHeight))%int64(mod) == 0
 }
