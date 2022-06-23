@@ -154,7 +154,7 @@ require (
 )
 
 replace (
-	github.com/cosmos/cosmos-sdk => github.com/Sifchain/cosmos-sdk v0.45.4-fix
+	github.com/cosmos/cosmos-sdk => github.com/Sifchain/cosmos-sdk v0.45.4-commented
 	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.3-issue.850
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
