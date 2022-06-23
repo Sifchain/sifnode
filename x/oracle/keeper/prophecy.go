@@ -140,7 +140,8 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 	return nil
 }
 
-// CleanUpProphecy clean up outdated prophecy
+// CleanUpProphecy clean up outdated prophecy, not check the status of prophecy
+// since ProphecyLifeTime is big enough for relayers to handle prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	// it is low efficient to check outdated prophecy each block
 	if k.currentHeight % CleanUpFrequency != 0 {
