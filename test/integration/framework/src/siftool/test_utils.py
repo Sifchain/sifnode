@@ -594,7 +594,7 @@ class EnvCtx:
                 raise Exception(raw_log)
         return retval
 
-    def get_sifchain_balance(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
+    def _get_sifchain_balance_old(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
         offset: Optional[int] = None, disable_log: bool = False
     ) -> cosmos.Balance:
         args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
@@ -608,12 +608,13 @@ class EnvCtx:
             raise Exception("More than {} results in balances".format(limit))
         return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
 
-    # Experimental
-    def get_sifchain_balance_large(self, sif_addr: cosmos.Address, height: Optional[int] = None,
+    def get_sifchain_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
         disable_log: bool = False, retries_on_error: int = 3, delay_on_error: int = 3
     ) -> cosmos.Balance:
         all_balances = {}
-        desired_page_size = 5000  # The actual limit might be capped to a lower value, in this case we'll get fewer results
+        # The actual limit might be capped to a lower value (100), in this case everything will still work but we'll get
+        # fewer results
+        desired_page_size = 5000
         page_key = None
         while True:
             args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
