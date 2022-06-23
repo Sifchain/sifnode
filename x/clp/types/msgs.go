@@ -560,7 +560,11 @@ func (m MsgAddProviderDistributionPeriodRequest) ValidateBasic() error {
 
 		if period.DistributionPeriodBlockRate.LT(sdk.NewDec(0)) ||
 			period.DistributionPeriodBlockRate.GT(sdk.NewDec(1)) {
-			return fmt.Errorf("provider distribution period block rate must be >= 0 and <= 1 but is: %s d", period.DistributionPeriodBlockRate.String())
+			return fmt.Errorf("provider distribution period block rate must be >= 0 and <= 1 but is: %s", period.DistributionPeriodBlockRate.String())
+		}
+
+		if period.DistributionPeriodMod == 0 {
+			return fmt.Errorf("provider distribution period modulo must be > 0")
 		}
 	}
 

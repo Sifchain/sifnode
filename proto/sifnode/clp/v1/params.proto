@@ -70,8 +70,9 @@ message ProviderDistributionPeriod {
         (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
         (gogoproto.nullable) = false
     ];
-    int64 distribution_period_start_block = 2;
-    int64 distribution_period_end_block = 3;
+    uint64 distribution_period_start_block = 2;
+    uint64 distribution_period_end_block = 3;
+    uint64 distribution_period_mod = 4;
 }
 
 message ProviderDistributionParams {

@@ -15,7 +15,9 @@ import (
 func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
-	keeper.ProviderDistributionPolicyRun(ctx)
+	if keeper.IsDistributionBlock(ctx) {
+		keeper.ProviderDistributionPolicyRun(ctx)
+	}
 
 	params := keeper.GetRewardsParams(ctx)
 	pools := keeper.GetPools(ctx)
