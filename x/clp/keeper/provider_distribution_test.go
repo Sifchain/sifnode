@@ -114,6 +114,7 @@ func findTupleByAddress(addr sdk.AccAddress, tuples []keeper.DistributionTuple) 
 	panic("impossible")
 }
 
+//nolint
 func createTransferEvents(amount sdk.Uint, receiver sdk.AccAddress) []sdk.Event {
 	return []sdk.Event{sdk.NewEvent("lppd_distribution",
 		sdk.NewAttribute("lppd_distribution_amount", sdk.NewCoin(types.NativeSymbol, sdk.Int(amount)).String()),
