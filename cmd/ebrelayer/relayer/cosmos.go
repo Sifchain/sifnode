@@ -219,7 +219,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						will be +2 of current global sequence. then only solution is upgrade the relayer to
 						the version can handle this specific event.
 						*/
-						panicString := fmt.Sprintf("Could not create BurnLockEventToCosmos Message: %s", err.Error())
+						panicString := fmt.Sprintf("Could not create BurnLockEventToCosmos Message, IF YOU SEE THIS FILE A BUG REPORT: %s", err.Error())
 						panic(panicString)
 					}
 
