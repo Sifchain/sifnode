@@ -49,7 +49,7 @@ func (k Keeper) TransferProviderDistributionPerPool(ctx sdk.Context, pool *types
 	}
 
 	//fireDistributionEvent(ctx, tuple.Amount, tuple.ProviderAddress)
-	k.SetPool(ctx, pool)
+	k.SetPool(ctx, pool) // nolint:errcheck
 }
 
 func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, err error) {
@@ -63,6 +63,7 @@ func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, err error) 
 	ctx.EventManager().EmitEvents(sdk.Events{failureEvent})
 }
 
+//nolint
 func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(
@@ -120,7 +121,7 @@ func fireLPPGetLPsErrorEvent(ctx sdk.Context, asset types.Asset, err error) {
 }
 
 func CollectProviderDistribution(ctx sdk.Context, poolDepthRowan, blockRate sdk.Dec, poolUnits sdk.Uint, lps []*types.LiquidityProvider) []DistributionTuple {
-	var tuples []DistributionTuple
+	var tuples []DistributionTuple //nolint
 
 	//	rowan_provider_distribution = r_block * pool_depth_rowan
 	rowanPd := blockRate.Mul(poolDepthRowan)
