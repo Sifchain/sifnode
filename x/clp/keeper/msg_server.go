@@ -532,6 +532,12 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
+	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+	if err != nil {
+		return nil, err
+	}
+
 	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
 	if err != nil {
 		return nil, err
@@ -541,7 +547,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).GT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
-		k.QueueRemoval(ctx, msg /*, rowanValue */)
+		k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
 		return nil, types.ErrQueued
 	}
 
@@ -668,6 +674,12 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WithdrawUnits)
 
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
+	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+	if err != nil {
+		return nil, err
+	}
+
 	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
 	if err != nil {
 		return nil, err
@@ -682,7 +694,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 			ExternalAsset: msg.ExternalAsset,
 			WBasisPoints:  ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, msg.WithdrawUnits),
 			Asymmetry:     sdk.ZeroInt(),
-		} /*, rowanValue */)
+		}, extRowanValue.Add(withdrawNativeAssetAmount))
 		return nil, types.ErrQueued
 	}
 

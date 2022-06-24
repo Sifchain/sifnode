@@ -194,20 +194,20 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 	return nil
 }
 
-func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
+func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveLiquidity) (sdk.Int, sdk.Int, sdk.Uint, error) {
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
 	if err != nil {
-		return nil, types.ErrTokenNotSupported
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrTokenNotSupported
 	}
 	pool, err := k.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
-		return nil, types.ErrPoolDoesNotExist
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrPoolDoesNotExist
 	}
 	//Get LP
 	lp, err := k.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
 	if err != nil {
-		return nil, types.ErrLiquidityProviderDoesNotExist
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrLiquidityProviderDoesNotExist
 	}
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
@@ -218,13 +218,19 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
+	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+	if err != nil {
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), err
+	}
+
 	withdrawExternalAssetAmountInt, ok := k.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
-		return nil, types.ErrUnableToParseInt
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrUnableToParseInt
 	}
 	withdrawNativeAssetAmountInt, ok := k.ParseToInt(withdrawNativeAssetAmount.String())
 	if !ok {
-		return nil, types.ErrUnableToParseInt
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrUnableToParseInt
 	}
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, withdrawExternalAssetAmountInt)
 	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetAmountInt)
@@ -234,23 +240,23 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
 	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
-		return nil, sdkerrors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
 		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 		if err != nil {
-			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
+			return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
 		if !swapResult.IsZero() {
 			swapResultInt, ok := k.ParseToInt(swapResult.String())
 			if !ok {
-				return nil, types.ErrUnableToParseInt
+				return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrUnableToParseInt
 			}
 			swapAmountInt, ok := k.ParseToInt(swapAmount.String())
 			if !ok {
-				return nil, types.ErrUnableToParseInt
+				return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrUnableToParseInt
 			}
 			swapCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapResultInt)
 			swapAmountInCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapAmountInt)
@@ -263,16 +269,16 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 		if err != nil {
-			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
+			return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
 		if !swapResult.IsZero() {
 			swapInt, ok := k.ParseToInt(swapResult.String())
 			if !ok {
-				return nil, types.ErrUnableToParseInt
+				return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrUnableToParseInt
 			}
 			swapAmountInt, ok := k.ParseToInt(swapAmount.String())
 			if !ok {
-				return nil, types.ErrUnableToParseInt
+				return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrUnableToParseInt
 			}
 			swapCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapInt)
 			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapAmountInt)
@@ -284,10 +290,10 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	// Check and  remove Liquidity
 	err = k.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, poolOriginalEB, poolOriginalNB)
 	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
+		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
 	}
 
-	return &types.MsgRemoveLiquidityResponse{}, nil
+	return nativeAssetCoin.Amount, externalAssetCoin.Amount, extRowanValue.Add(withdrawNativeAssetAmount), nil
 }
 
 func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.AccAddress) error {

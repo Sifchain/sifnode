@@ -5,11 +5,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity) {
+func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity, rowanValue sdk.Uint) {
 	queue := k.GetRemovalQueue(ctx)
 	request := types.RemovalRequest{
-		Id:  queue.Id + 1,
-		Msg: msg,
+		Id:    queue.Id + 1,
+		Msg:   msg,
+		Value: rowanValue,
 	}
 
 	store := ctx.KVStore(k.storeKey)
@@ -17,10 +18,13 @@ func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity) {
 
 	queue.Count += 1
 	queue.Id += 1
+	queue.TotalValue = queue.TotalValue.Add(rowanValue)
 	if queue.Count == 1 {
 		queue.StartHeight = ctx.BlockHeight()
 	}
 	k.SetRemovalQueue(ctx, queue)
+
+	emitQueueRemoval(ctx, &request, &queue)
 }
 
 func (k Keeper) GetRemovalQueue(ctx sdk.Context) types.RemovalQueue {
@@ -50,38 +54,44 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 		var request types.RemovalRequest
 		k.cdc.MustUnmarshal(it.Value(), &request)
 
-		lp, err := k.GetLiquidityProvider(ctx, request.Msg.ExternalAsset.Symbol, request.Msg.Signer)
-		if err != nil {
-			continue
+		if msg.ExternalAsset.Equals(*request.Msg.ExternalAsset) {
+			lp, err := k.GetLiquidityProvider(ctx, request.Msg.ExternalAsset.Symbol, request.Msg.Signer)
+			if err != nil {
+				continue
+			}
+
+			requestUnits := ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, request.Msg.WBasisPoints)
+			withdrawUnits := sdk.MinUint(requestUnits, perRequestUnits)
+			withdrawWBasisPoints := ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, withdrawUnits)
+
+			// Reuse removal logic using withdrawWBasisPoints
+			_, _, totalRowanValue, err := k.ProcessRemoveLiquidityMsg(ctx, &types.MsgRemoveLiquidity{
+				Signer:        request.Msg.Signer,
+				ExternalAsset: msg.ExternalAsset,
+				WBasisPoints:  withdrawWBasisPoints,
+				Asymmetry:     request.Msg.Asymmetry,
+			})
+
+			// Update the queued request
+			k.SetProcessedRemovalRequest(ctx, request, withdrawWBasisPoints, totalRowanValue)
 		}
-
-		requestUnits := ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, request.Msg.WBasisPoints)
-		withdrawUnits := sdk.MinUint(requestUnits, perRequestUnits)
-		withdrawWBasisPoints := ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, withdrawUnits)
-
-		// Reuse removal logic using withdrawWBasisPoints
-		k.ProcessRemoveLiquidityMsg(ctx, &types.MsgRemoveLiquidity{
-			Signer:        request.Msg.Signer,
-			ExternalAsset: request.Msg.ExternalAsset,
-			WBasisPoints:  withdrawWBasisPoints,
-			Asymmetry:     request.Msg.Asymmetry,
-		})
-
-		// Update the queued request
-		k.SetProcessedRemovalRequest(ctx, request, withdrawWBasisPoints /*, rowanValue*/)
 	}
 }
 
-func (k Keeper) SetProcessedRemovalRequest(ctx sdk.Context, request types.RemovalRequest, pointsProcessed sdk.Int /*, rowanRemoved sdk.Uint*/) {
+func (k Keeper) SetProcessedRemovalRequest(ctx sdk.Context, request types.RemovalRequest, pointsProcessed sdk.Int, rowanRemoved sdk.Uint) {
 	request.Msg.WBasisPoints = request.Msg.WBasisPoints.Sub(pointsProcessed)
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetRemovalRequestKey(request), k.cdc.MustMarshal(&request))
-	//k.DecrementRemovalQueueTotalValue(ctx, rowanRemoved)
+
+	queue := k.GetRemovalQueue(ctx)
+	queue.TotalValue = queue.TotalValue.Sub(rowanRemoved)
+	k.SetRemovalQueue(ctx, queue)
+
 	if request.Msg.WBasisPoints.LT(sdk.ZeroInt()) {
 		k.DequeueRemovalRequest(ctx, request)
 	}
 
-	// emitProcessedRemovalRequest(request, pointsProcessed)
+	emitProcessedRemovalRequest(ctx, &request, pointsProcessed, rowanRemoved)
 }
 
 func (k Keeper) DequeueRemovalRequest(ctx sdk.Context, request types.RemovalRequest) {
@@ -89,6 +99,8 @@ func (k Keeper) DequeueRemovalRequest(ctx sdk.Context, request types.RemovalRequ
 	queue := k.GetRemovalQueue(ctx)
 	queue.Count -= 1
 	k.SetRemovalQueue(ctx, queue)
+
+	emitDequeueRemoval(ctx, &request, &queue)
 }
 
 func (k Keeper) GetRemovalQueueUnitsForLP(ctx sdk.Context, lp types.LiquidityProvider) sdk.Uint {

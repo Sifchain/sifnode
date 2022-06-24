@@ -463,3 +463,15 @@ func ConvWBasisPointsToUnits(total sdk.Uint, wbasis sdk.Int) sdk.Uint {
 	wbasisUint := sdk.NewUintFromString(wbasis.String())
 	return total.Quo(sdk.NewUint(10000).Quo(wbasisUint))
 }
+
+func CalculateWithdrawalRowanValue(
+	sentAmount sdk.Uint,
+	to types.Asset,
+	pool types.Pool,
+	normalizationFactor sdk.Dec,
+	adjustExternalToken bool,
+	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, error) {
+
+	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
+	return CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+}

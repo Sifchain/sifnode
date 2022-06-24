@@ -226,5 +226,9 @@ message MsgCancelUnlockResponse {}
 
 message RemovalRequest {
   int64 id = 1;
-  MsgRemoveLiquidity msg = 2;
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  MsgRemoveLiquidity msg = 3;
 }
