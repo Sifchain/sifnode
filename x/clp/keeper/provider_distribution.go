@@ -18,7 +18,8 @@ type PoolMap map[*types.Pool]([]DistributionTuple)
 func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
 	poolMap := k.doProviderDistribution(ctx)
 	for pool, tuples := range poolMap {
-		for _, tuple := range tuples {
+		for i, _ := range tuples {
+			tuple := tuples[i]
 			err := k.TransferProviderDistribution(ctx, pool, &tuple)
 			if err != nil {
 				k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s error %s", tuple.ProviderAddress, err.Error()))
