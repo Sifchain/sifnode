@@ -58,7 +58,7 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 // GetRemovalRequestKey generates a key to store a removal request,
 // the key is in the format: lpaddress_id
 func GetRemovalRequestKey(request RemovalRequest) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", request.Msg.Signer, request.Id))
+	key := []byte(fmt.Sprintf("%s_%d", request.Msg.Signer, request.Id))
 	return append(RemovalRequestPrefix, key...)
 }
 

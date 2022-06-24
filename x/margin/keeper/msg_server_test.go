@@ -624,14 +624,15 @@ func TestKeeper_ForceClose(t *testing.T) {
 			})
 
 			params := types.Params{
-				LeverageMax:          sdk.NewUint(1),
-				InterestRateMax:      sdk.NewDec(1),
-				InterestRateMin:      sdk.ZeroDec(),
-				InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
-				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
-				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
-				EpochLength:          0,
-				ForceCloseThreshold:  sdk.ZeroDec(),
+				LeverageMax:           sdk.NewUint(1),
+				InterestRateMax:       sdk.NewDec(1),
+				InterestRateMin:       sdk.ZeroDec(),
+				InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
+				InterestRateDecrease:  sdk.NewDecWithPrec(1, 1),
+				HealthGainFactor:      sdk.NewDecWithPrec(1, 2),
+				EpochLength:           0,
+				ForceCloseThreshold:   sdk.ZeroDec(),
+				RemovalQueueThreshold: sdk.ZeroDec(),
 			}
 
 			if tt.overrideForceCloseThreadshold != "" {
@@ -752,14 +753,15 @@ func TestKeeper_OpenClose(t *testing.T) {
 			})
 
 			params := types.Params{
-				LeverageMax:          sdk.NewUint(1),
-				InterestRateMax:      sdk.NewDec(1),
-				InterestRateMin:      sdk.ZeroDec(),
-				InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
-				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
-				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
-				EpochLength:          0,
-				ForceCloseThreshold:  sdk.ZeroDec(),
+				LeverageMax:           sdk.NewUint(1),
+				InterestRateMax:       sdk.NewDec(1),
+				InterestRateMin:       sdk.ZeroDec(),
+				InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
+				InterestRateDecrease:  sdk.NewDecWithPrec(1, 1),
+				HealthGainFactor:      sdk.NewDecWithPrec(1, 2),
+				EpochLength:           0,
+				ForceCloseThreshold:   sdk.ZeroDec(),
+				RemovalQueueThreshold: sdk.ZeroDec(),
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -1451,14 +1453,15 @@ func TestKeeper_EC(t *testing.T) {
 			})
 
 			params := types.Params{
-				LeverageMax:          sdk.NewUint(1),
-				InterestRateMax:      sdk.NewDec(1),
-				InterestRateMin:      sdk.ZeroDec(),
-				InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
-				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
-				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
-				EpochLength:          0,
-				ForceCloseThreshold:  sdk.ZeroDec(),
+				LeverageMax:           sdk.NewUint(1),
+				InterestRateMax:       sdk.NewDec(1),
+				InterestRateMin:       sdk.ZeroDec(),
+				InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
+				InterestRateDecrease:  sdk.NewDecWithPrec(1, 1),
+				HealthGainFactor:      sdk.NewDecWithPrec(1, 2),
+				EpochLength:           0,
+				ForceCloseThreshold:   sdk.ZeroDec(),
+				RemovalQueueThreshold: sdk.ZeroDec(),
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)

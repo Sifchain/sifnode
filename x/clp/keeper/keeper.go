@@ -24,13 +24,13 @@ type Keeper struct {
 	tokenRegistryKeeper types.TokenRegistryKeeper
 	adminKeeper         types.AdminKeeper
 	mintKeeper          mintkeeper.Keeper
-	marginKeeper        margintypes.Keeper
+	getMarginKeeper     func() margintypes.Keeper
 	paramstore          paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
 func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper,
-	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, marginKeeper margintypes.Keeper, ps paramtypes.Subspace) Keeper {
+	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, getMarginKeeper func() margintypes.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -43,7 +43,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		tokenRegistryKeeper: tokenRegistryKeeper,
 		adminKeeper:         adminKeeper,
 		mintKeeper:          mintKeeper,
-		marginKeeper:        marginKeeper,
+		getMarginKeeper:     getMarginKeeper,
 		paramstore:          ps,
 	}
 	return keeper
@@ -67,7 +67,7 @@ func (k Keeper) GetAuthKeeper() types.AuthKeeper {
 }
 
 func (k Keeper) GetMarginKeeper() margintypes.Keeper {
-	return k.marginKeeper
+	return k.getMarginKeeper()
 }
 
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {

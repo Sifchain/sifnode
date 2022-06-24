@@ -360,7 +360,7 @@ func NewSifApp(
 		app.TokenRegistryKeeper,
 		app.AdminKeeper,
 		app.MintKeeper,
-		app.MarginKeeper,
+		func() margintypes.Keeper { return app.MarginKeeper },
 		app.GetSubspace(clptypes.ModuleName),
 	)
 	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper, app.AdminKeeper, app.GetSubspace(margintypes.ModuleName))

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	sdkQuery "github.com/cosmos/cosmos-sdk/types/query"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -32,6 +33,7 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { 
 		app.TokenRegistryKeeper,
 		app.AdminKeeper,
 		app.MintKeeper,
+		func() margintypes.Keeper { return app.MarginKeeper },
 		app.GetSubspace(types.ModuleName),
 	)
 	return app.LegacyAmino(), app, ctx

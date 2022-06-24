@@ -28,7 +28,12 @@ func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity, row
 }
 
 func (k Keeper) GetRemovalQueue(ctx sdk.Context) types.RemovalQueue {
-	var queue types.RemovalQueue
+	queue := types.RemovalQueue{
+		Count:       0,
+		Id:          0,
+		StartHeight: 0,
+		TotalValue:  sdk.ZeroUint(),
+	}
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.RemovalQueuePrefix)
 	k.cdc.MustUnmarshal(bz, &queue)
@@ -109,7 +114,7 @@ func (k Keeper) GetRemovalQueueUnitsForLP(ctx sdk.Context, lp types.LiquidityPro
 	iterator := sdk.KVStorePrefixIterator(store, prefix)
 	defer iterator.Close()
 
-	var units sdk.Uint
+	units := sdk.ZeroUint()
 	for ; iterator.Valid(); iterator.Next() {
 		var request types.RemovalRequest
 		k.cdc.MustUnmarshal(iterator.Value(), &request)
