@@ -8,49 +8,56 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type ProviderDistributionMap map[string]sdk.Uint
+type DistributionTuple struct {
+	Amount          sdk.Uint
+	ProviderAddress sdk.AccAddress
+}
+
+type PoolMap map[*types.Pool]([]DistributionTuple)
 
 func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
-	pdMap := k.doProviderDistribution(ctx)
-	for lpAddress, pdRowan := range pdMap {
-		address, err := sdk.AccAddressFromBech32(lpAddress)
-		if err != nil {
-			k.Logger(ctx).Error(fmt.Sprintf("Liquidity provider address %s error %s", lpAddress, err.Error()))
-			continue
-		}
-
-		err = k.TransferProviderDistribution(ctx, address, pdRowan)
-		if err != nil {
-			k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s error %s", address, err.Error()))
+	poolMap := k.doProviderDistribution(ctx)
+	for pool, tuples := range poolMap {
+		for _, tuple := range tuples {
+			err := k.TransferProviderDistribution(ctx, pool, &tuple)
+			if err != nil {
+				k.Logger(ctx).Error(fmt.Sprintf("Paying out liquidity provider %s error %s", tuple.ProviderAddress, err.Error()))
+			}
 		}
 	}
 }
 
-func (k Keeper) doProviderDistribution(ctx sdk.Context) ProviderDistributionMap {
+func (k Keeper) doProviderDistribution(ctx sdk.Context) PoolMap {
 	blockHeight := ctx.BlockHeight()
 	params := k.GetProviderDistributionParams(ctx)
 	if params == nil {
-		return make(ProviderDistributionMap)
+		return make(PoolMap)
 	}
 
 	period := FindProviderDistributionPeriod(blockHeight, params.DistributionPeriods)
 	if period == nil {
-		return make(ProviderDistributionMap)
+		return make(PoolMap)
 	}
 
 	allPools := k.GetPools(ctx)
 	return k.CollectProviderDistributions(ctx, allPools, period.DistributionPeriodBlockRate)
 }
 
-func (k Keeper) TransferProviderDistribution(ctx sdk.Context, providerAddress sdk.AccAddress, providerRowan sdk.Uint) error {
+func (k Keeper) TransferProviderDistribution(ctx sdk.Context, pool *types.Pool, tuple *DistributionTuple) error {
 	//TransferCoinsFromPool(pool, provider_rowan, provider_address)
-	coin := sdk.NewCoin(types.NativeSymbol, sdk.Int(providerRowan))
-	fireDistributionEvent(ctx, coin, providerAddress)
+	err := k.SendRowanFromPool(ctx, pool, tuple.Amount, tuple.ProviderAddress)
+	if err != nil {
+		// TODO fire failure event
+		return err
+	}
 
-	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, providerAddress, sdk.NewCoins(coin))
+	fireDistributionEvent(ctx, tuple.Amount, tuple.ProviderAddress)
+
+	return nil
 }
 
-func fireDistributionEvent(ctx sdk.Context, coin sdk.Coin, to sdk.Address) {
+func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
+	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(
 		types.EventTypeProviderDistributionDistribution,
 		sdk.NewAttribute(types.AttributeProbiverDistributionAmount, coin.String()),
@@ -75,8 +82,8 @@ func isActivePeriod(current int64, start, end uint64) bool {
 	return current >= int64(start) && current <= int64(end)
 }
 
-func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) ProviderDistributionMap {
-	m := make(ProviderDistributionMap)
+func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) PoolMap {
+	poolMap := make(PoolMap, len(pools))
 
 	for _, pool := range pools {
 		lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
@@ -85,24 +92,32 @@ func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Poo
 			continue
 		}
 
-		CollectProviderDistribution(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
-			blockRate, pool.PoolUnits, lps, m)
+		tuples := CollectProviderDistribution(sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
+			blockRate, pool.PoolUnits, lps)
+		poolMap[pool] = tuples
 	}
 
-	return m
+	return poolMap
 }
 
-func CollectProviderDistribution(poolDepthRowan, blockRate sdk.Dec, poolUnits sdk.Uint, lps []*types.LiquidityProvider, cbm ProviderDistributionMap) {
+func CollectProviderDistribution(poolDepthRowan, blockRate sdk.Dec, poolUnits sdk.Uint, lps []*types.LiquidityProvider) []DistributionTuple {
+	tuples := make([]DistributionTuple, len(lps))
+
 	//	rowan_provider_distribution = r_block * pool_depth_rowan
 	rowanPd := blockRate.Mul(poolDepthRowan)
 	for _, lp := range lps {
-		providerRowan := CalcProviderDistributionAmount(rowanPd, poolUnits, lp.LiquidityProviderUnits)
-		rowanSoFar := cbm[lp.LiquidityProviderAddress]
-		if rowanSoFar == (sdk.Uint{}) { // sdk.Uint{} seems to be the default value instead of zero...
-			rowanSoFar = sdk.ZeroUint()
+		address, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+		if err != nil {
+			// TODO: collect and return
+			//k.Logger(ctx).Error(fmt.Sprintf("Liquidity provider address %s error %s", lp.LiquidityProviderAddress, err.Error()))
+			continue
 		}
-		cbm[lp.LiquidityProviderAddress] = rowanSoFar.Add(providerRowan)
+
+		providerRowan := CalcProviderDistributionAmount(rowanPd, poolUnits, lp.LiquidityProviderUnits)
+		tuples = append(tuples, DistributionTuple{Amount: providerRowan, ProviderAddress: address})
 	}
+
+	return tuples
 }
 
 func CalcProviderDistributionAmount(rowanProviderDistribution sdk.Dec, totalPoolUnits, providerPoolUnits sdk.Uint) sdk.Uint {

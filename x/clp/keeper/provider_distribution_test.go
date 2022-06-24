@@ -78,24 +78,36 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Equal(t, totalProviderDistributioned, providerSum)
 
 	lps := test.GenerateRandomLPWithUnits(poolUnitss)
-	cbm := make(keeper.ProviderDistributionMap)
+	asset := types.NewAsset("kevin")
+	pool := types.NewPool(&asset, totalProviderDistributioned, sdk.ZeroUint(), sdk.ZeroUint())
 
-	keeper.CollectProviderDistribution(poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lps, cbm)
+	tuples := keeper.CollectProviderDistribution(poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lps)
 
 	for i, providerDistribution := range providerDistributions {
-		require.Equal(t, providerDistribution, cbm[lps[i].LiquidityProviderAddress])
+		addr, _ := sdk.AccAddressFromBech32(lps[i].LiquidityProviderAddress)
+		tuple := findTupleByAddress(addr, tuples)
+		require.Equal(t, providerDistribution, tuple.Amount)
 
 		// We clear the EventManager before every call as Events accumulate throughout calls
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
-		addr, _ := sdk.AccAddressFromBech32(lps[i].LiquidityProviderAddress)
-		err := app.ClpKeeper.TransferProviderDistribution(ctx, addr, providerDistribution)
+		err := app.ClpKeeper.TransferProviderDistribution(ctx, &pool, tuple)
 		require.Nil(t, err)
 		transferEvents := createTransferEvents(providerDistribution, addr)
 
 		// NOTE: we use Subset here as bankKeeper.SendCoinsFromModuleToAccount does fire Events itself which we do not care for at this point
 		require.Subset(t, ctx.EventManager().Events(), transferEvents)
 	}
+}
+
+func findTupleByAddress(addr sdk.AccAddress, tuples []keeper.DistributionTuple) *keeper.DistributionTuple {
+	for _, tuple := range tuples {
+		if tuple.ProviderAddress.Equals(addr) {
+			return &tuple
+		}
+	}
+
+	panic("impossible")
 }
 
 func createTransferEvents(amount sdk.Uint, receiver sdk.AccAddress) []sdk.Event {
