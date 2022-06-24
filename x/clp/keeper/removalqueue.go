@@ -76,6 +76,9 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 				WBasisPoints:  withdrawWBasisPoints,
 				Asymmetry:     request.Msg.Asymmetry,
 			})
+			if err != nil {
+				continue
+			}
 
 			// Update the queued request
 			k.SetProcessedRemovalRequest(ctx, request, withdrawWBasisPoints, totalRowanValue)
