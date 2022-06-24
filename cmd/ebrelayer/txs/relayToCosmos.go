@@ -77,7 +77,6 @@ func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProp
 	messages = append(messages, &signProphecy)
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	// TODO this WithGas isn't correct
 	err := tx.BroadcastTx(
 		cliCtx,
 		factory.
