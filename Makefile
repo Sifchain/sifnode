@@ -1,13 +1,21 @@
 CHAINNET?=betanet
 BINARY?=sifnoded
+GOPATH?=$(shell go env GOPATH)
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 IMAGE_TAG?=latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
-DOCKER := $(shell which docker)
+DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
+
+GOFLAGS:=""
+TAGS:=
+ifeq ($(FEATURE_TOGGLE_SDK_045), 1)
+	GOFLAGS := "-modfile=go_045.mod"
+	TAGS := FEATURE_TOGGLE_SDK_045
+endif
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
@@ -15,7 +23,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
-BUILD_FLAGS := -ldflags '$(ldflags)'
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(TAGS)'
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 
@@ -33,7 +41,7 @@ start:
 
 lint-pre:
 	@test -z $(gofmt -l .)
-	@go mod verify
+	@GOFLAGS=${GOFLAGS} go mod verify
 
 lint: lint-pre
 	@golangci-lint run
@@ -42,25 +50,25 @@ lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
 install: go.sum
-	go install ${BUILD_FLAGS} ${BINARIES}
+	GOFLAGS=${GOFLAGS} go install ${BUILD_FLAGS} ${BINARIES}
 
 build-sifd: go.sum
-	go build  ${BUILD_FLAGS} ./cmd/sifnoded
+	GOFLAGS=${GOFLAGS} go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
 clean:
 	@rm -rf ${GOBIN}/sif*
 
 coverage:
-	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+	@GOFLAGS=${GOFLAGS} go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 tests:
-	@go test -v -coverprofile .testCoverage.txt ./...
+	@GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
 
 feature-tests:
-	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
+	@GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	go run ./cmd/sifnoded start
+	GOFLAGS=${GOFLAGS} go run ./cmd/sifnoded start
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
@@ -84,23 +92,26 @@ rollback:
 ###                                Protobuf                                 ###
 ###############################################################################
 
+protoVer=v0.3
+protoImageName=tendermintdev/sdk-proto-gen:$(protoVer)
+
 proto-all: proto-format proto-lint proto-gen
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protocgen.sh
 .PHONY: proto-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
 	$(DOCKER) run --rm -v $(CURDIR):/workspace \
-	--workdir /workspace tendermintdev/docker-build-proto \
+	--workdir /workspace $(protoImageName) \
 	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
 .PHONY: proto-format
 
 # This generates the SDK's custom wrapper for google.protobuf.Any. It should only be run manually when needed
 proto-gen-any:
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen-any.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protocgen-any.sh
 .PHONY: proto-gen-any
 
 proto-swagger-gen:
