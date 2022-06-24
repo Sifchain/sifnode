@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -218,7 +219,8 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 						will be +2 of current global sequence. then only solution is upgrade the relayer to
 						the version can handle this specific event.
 						*/
-						continue
+						panicString := fmt.Sprintf("Could not create BurnLockEventToCosmos Message: %s", err.Error())
+						panic(panicString)
 					}
 
 					sub.SugaredLogger.Infow(
