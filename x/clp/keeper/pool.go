@@ -121,7 +121,6 @@ func (k Keeper) SendRowanFromPool(ctx sdk.Context, pool *types.Pool, amount sdk.
 		return err
 	}
 
-	// TODO: fire event
 	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(amount)
-	return k.SetPool(ctx, pool)
+	return nil
 }

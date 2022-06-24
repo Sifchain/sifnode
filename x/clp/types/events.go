@@ -34,4 +34,5 @@ const (
 	AttributeValueCategory                    = ModuleName
 	AttributeProbiverDistributionAmount       = "lppd_distribution_amount"
 	AttributeProbiverDistributionReceiver     = "lppd_distribution_receiver"
+	AttributeKeyError                         = "error"
 )
