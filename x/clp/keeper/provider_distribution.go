@@ -18,7 +18,7 @@ type PoolMap map[*types.Pool]([]DistributionTuple)
 func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
 	poolMap := k.doProviderDistribution(ctx)
 	for pool, tuples := range poolMap {
-		for i, _ := range tuples {
+		for i := range tuples {
 			tuple := tuples[i]
 			err := k.TransferProviderDistribution(ctx, pool, &tuple)
 			if err != nil {
