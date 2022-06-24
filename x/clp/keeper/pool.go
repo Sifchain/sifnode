@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -106,4 +108,20 @@ func (k Keeper) DestroyPool(ctx sdk.Context, symbol string) error {
 func (k Keeper) GetPoolsIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
 	return sdk.KVStorePrefixIterator(store, types.PoolPrefix)
+}
+
+func (k Keeper) SendRowanFromPool(ctx sdk.Context, pool *types.Pool, amount sdk.Uint, recipient sdk.AccAddress) error {
+	if pool.NativeAssetBalance.LT(amount) {
+		return fmt.Errorf("pool balance too low for transfer. Has %s but transfer wants %s", pool.NativeAssetBalance, amount)
+	}
+
+	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
+	err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, recipient, sdk.NewCoins(coin))
+	if err != nil {
+		return err
+	}
+
+	// TODO: fire event
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(amount)
+	return k.SetPool(ctx, pool)
 }
