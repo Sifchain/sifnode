@@ -1,9 +1,9 @@
 {
     "entries": [
         {
-            "decimals": 6,
-            "denom": "cusdt",
-            "base_denom": "cusdt",
+            "decimals": 8,
+            "denom": "cwbtc",
+            "base_denom": "cwbtc",
             "permissions": [
                 "CLP",
                 "IBCEXPORT",

@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package test
 
 import (
@@ -20,6 +23,13 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 func CreateTestAppMargin(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	sifapp.SetConfig((false))
 	app := sifapp.Setup(isCheckTx)
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	return ctx, app
+}
+
+func CreateTestAppMarginFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp.SifchainApp, sifapp.GenesisState) sifapp.GenesisState) (sdk.Context, *sifapp.SifchainApp) {
+	sifapp.SetConfig(false)
+	app := sifapp.SetupFromGenesis(isCheckTx, genesisTransformer)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	return ctx, app
 }

@@ -2,6 +2,6 @@
 
 set -x
 
-sifnoded q params subspace margin Pools \
+sifnoded q margin params \
   --node ${SIFNODE_NODE} \
   --chain-id $SIFNODE_CHAIN_ID

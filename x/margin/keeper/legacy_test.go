@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package keeper_test
 
 import (
@@ -63,7 +66,7 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 		{
 			name:      "msg force close long",
 			msg:       msgForceClose,
-			errString: errors.New("mtp not found"),
+			errString: errors.New("empty address string is not allowed"),
 		},
 		{
 			name:      "msg other",
