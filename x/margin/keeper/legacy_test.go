@@ -66,7 +66,7 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 		{
 			name:      "msg force close long",
 			msg:       msgForceClose,
-			errString: errors.New("mtp not found"),
+			errString: errors.New("empty address string is not allowed"),
 		},
 		{
 			name:      "msg other",
