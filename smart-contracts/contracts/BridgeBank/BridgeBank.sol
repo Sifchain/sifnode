@@ -349,27 +349,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     onlyNotBlocklisted(msg.sender)
     whenNotPaused
   {
-    // burn the tokens
-    BridgeToken(token).burnFrom(msg.sender, amount);
+    uint256 currentLockBurnNonce = lockBurnNonce + 1;
+    lockBurnNonce = currentLockBurnNonce;
 
-    // decimals defaults to 18 if call to decimals fails
-    uint8 decimals = getDecimals(token);
-
-    // Denom defaults to "" (empty string) if call to cosmosDenom fails
-    string memory denom = getDenom(token);
-
-    lockBurnNonce = lockBurnNonce + 1;
-
-    emit LogBurn(
-      msg.sender,
-      recipient,
-      token,
-      amount,
-      lockBurnNonce,
-      decimals,
-      networkDescriptor,
-      denom
-    );
+    _burnTokens(recipient, token, amount, currentLockBurnNonce);
   }
 
   /**
