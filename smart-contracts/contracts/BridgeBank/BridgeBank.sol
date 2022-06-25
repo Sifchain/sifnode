@@ -628,9 +628,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
       // If it's the old erowan token, set the denom to 'rowan' and move forward
       denom = "rowan";
     } else {
-      // revert if the token doesn't have a denom
       denom = getDenom(tokenAddress);
-      require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
     }
 
     // decimals defaults to 18 if call to decimals fails
