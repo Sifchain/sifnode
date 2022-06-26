@@ -40,7 +40,7 @@ func (k Keeper) doProviderDistribution(ctx sdk.Context) PoolMap {
 func (k Keeper) TransferProviderDistributionPerPool(ctx sdk.Context, pool *types.Pool, tuples []DistributionTuple) {
 	for _, tuple := range tuples {
 		//TransferCoinsFromPool(pool, provider_rowan, provider_address)
-		err := k.SendRowanFromPool(ctx, pool, tuple.Amount, tuple.ProviderAddress)
+		err := k.SendRowanFromPoolNoPoolUpdate(ctx, pool, tuple.Amount, tuple.ProviderAddress)
 		if err != nil {
 			//k.Logger(ctx).Error(fmt.Sprintf("Paying out pool %s error %s", pool.ExternalAsset, err.Error()))
 			fireLPPayoutErrorEvent(ctx, tuple.ProviderAddress, err)

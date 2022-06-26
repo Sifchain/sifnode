@@ -111,6 +111,15 @@ func (k Keeper) GetPoolsIterator(ctx sdk.Context) sdk.Iterator {
 }
 
 func (k Keeper) SendRowanFromPool(ctx sdk.Context, pool *types.Pool, amount sdk.Uint, recipient sdk.AccAddress) error {
+	err := k.SendRowanFromPoolNoPoolUpdate(ctx, pool, amount, recipient)
+	if err != nil {
+		return err
+	}
+
+	return k.SetPool(ctx, pool)
+}
+
+func (k Keeper) SendRowanFromPoolNoPoolUpdate(ctx sdk.Context, pool *types.Pool, amount sdk.Uint, recipient sdk.AccAddress) error {
 	if pool.NativeAssetBalance.LT(amount) {
 		return fmt.Errorf("pool balance too low for transfer. Has %s but transfer wants %s", pool.NativeAssetBalance, amount)
 	}
