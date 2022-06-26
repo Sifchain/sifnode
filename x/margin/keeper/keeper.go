@@ -4,6 +4,7 @@
 package keeper
 
 import (
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -305,7 +306,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	}
 
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
-	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
+	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
@@ -324,10 +325,10 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(collateralAmount.Mul(leverage))
 		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
 	} else { // collateral is external
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(collateralAmount.Mul(leverage.Sub(sdk.OneUint())))
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(collateralAmount.Mul(leverage))
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
 	}
 	err = k.ClpKeeper().SetPool(ctx, pool)
@@ -441,6 +442,10 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	have := repayAmount.Add(CollateralAmount)
 	owe := LiabilitiesP.Add(LiabilitiesI)
 
+	fmt.Println("have:", have)
+	fmt.Println("owe:", owe)
+	fmt.Println("LiabilitiesP:", LiabilitiesP)
+
 	if have.LT(LiabilitiesP) {
 		//can't afford principle liability
 		returnAmount = sdk.ZeroUint()
@@ -458,11 +463,17 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		debtI = sdk.ZeroUint()
 	}
 
+	fmt.Println("returnAmount:", returnAmount)
+
 	if !returnAmount.IsZero() {
 		var coins sdk.Coins
 		returnCoin := sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(returnAmount.BigInt()))
 		returnCoins := coins.Add(returnCoin)
 		addr, err := sdk.AccAddressFromBech32(mtp.Address)
+		if err != nil {
+			return err
+		}
+		err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
 		if err != nil {
 			return err
 		}
@@ -521,7 +532,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(sdk.NewDecFromBigInt(mul1.BigInt())).Mul(sdk.NewDecFromBigInt(mul2.BigInt()))
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate

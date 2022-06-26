@@ -127,7 +127,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 }
 
 func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, error) {
-	leverage := k.GetLeverageParam(ctx)
+	leverage := k.GetLeverageParam(ctx).Sub(sdk.OneUint())
 
 	collateralAmount := msg.CollateralAmount
 

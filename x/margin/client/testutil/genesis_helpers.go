@@ -94,18 +94,18 @@ func GetClpGenesisState(cfg network.Config) ([]byte, error) {
 func GetMarginGenesisState(cfg network.Config) ([]byte, error) {
 	gs := &margintypes.GenesisState{
 		Params: &margintypes.Params{
-			LeverageMax:          sdk.NewUintFromString("2"),
-			HealthGainFactor:     sdk.MustNewDecFromStr("1.0"),
-			InterestRateMin:      sdk.MustNewDecFromStr("0.005"),
-			InterestRateMax:      sdk.MustNewDecFromStr("3.0"),
-			InterestRateDecrease: sdk.MustNewDecFromStr("0.10"),
-			InterestRateIncrease: sdk.MustNewDecFromStr("0.10"),
+			LeverageMax:      sdk.NewUintFromString("2"),
+			HealthGainFactor: sdk.MustNewDecFromStr("1.0"),
+			InterestRateMin:  sdk.MustNewDecFromStr("0.005"),
+			InterestRateMax:  sdk.MustNewDecFromStr("3.0"),
+			// InterestRateDecrease: sdk.MustNewDecFromStr("0.10"),
+			// InterestRateIncrease: sdk.MustNewDecFromStr("0.10"),
 			// more realist prod increment
-			// InterestRateDecrease: sdk.MustNewDecFromStr("0.001"),
-			// InterestRateIncrease: sdk.MustNewDecFromStr("0.001"),
-			ForceCloseThreshold: sdk.MustNewDecFromStr("0.10"),
-			EpochLength:         1,
-			Pools:               []string{"cusdt"},
+			InterestRateDecrease: sdk.MustNewDecFromStr("0.001"),
+			InterestRateIncrease: sdk.MustNewDecFromStr("0.001"),
+			ForceCloseThreshold:  sdk.MustNewDecFromStr("0.01"),
+			EpochLength:          1,
+			Pools:                []string{"cusdt"},
 		},
 	}
 	bz, err := cfg.Codec.MarshalJSON(gs)

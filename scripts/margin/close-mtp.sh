@@ -2,13 +2,10 @@
 
 set -x
 
-sifnoded tx margin open \
+sifnoded tx margin close \
   --from $SIF_ACT \
+  --id 2 \
   --keyring-backend test \
-  --borrow_asset cusdt \
-  --collateral_asset rowan \
-  --collateral_amount 1000 \
-  --position long \
   --fees 100000000000000000rowan \
   --node ${SIFNODE_NODE} \
   --chain-id $SIFNODE_CHAIN_ID \
