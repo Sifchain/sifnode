@@ -33,6 +33,14 @@ func (k Keeper) doProviderDistribution(ctx sdk.Context) (PoolRowanMap, LpRowanMa
 }
 
 func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
+	k.transferProviderDistributionInternal(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd_liquidity_provider_payout_error", "liquidity_provider")
+}
+
+func (k Keeper) TransferProviderDistributionRewards(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
+	k.transferProviderDistributionInternal(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "rewards_a", "rewards_b")
+}
+
+func (k Keeper) transferProviderDistributionInternal(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, a, b string) {
 	for lpAddress, totalRowan := range lpRowanMap {
 		addr, _ := sdk.AccAddressFromBech32(lpAddress) // We know this can't fail as we previously filtered out invalid strings
 		coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(totalRowan.BigInt()))
@@ -40,7 +48,7 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 		//TransferCoinsFromPool(pool, provider_rowan, provider_address)
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(coin))
 		if err != nil {
-			fireLPPayoutErrorEvent(ctx, addr, err)
+			fireLPPayoutErrorEvent(ctx, addr, a, b, err)
 
 			for _, lpPool := range lpPoolMap[lpAddress] {
 				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
@@ -54,10 +62,10 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 	}
 }
 
-func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, err error) {
+func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr, attr string, err error) {
 	failureEvent := sdk.NewEvent(
-		"lppd_liquidity_provider_payout_error",
-		sdk.NewAttribute("liquidity_provider", address.String()),
+		typeStr,
+		sdk.NewAttribute(attr, address.String()),
 		sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 	)
