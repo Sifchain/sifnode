@@ -12,15 +12,15 @@
     "@ethersproject/hardware-wallets": "^5.4.0",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.6",
-    "@nomiclabs/hardhat-truffle5": "^2.0.0",
+    "@nomiclabs/hardhat-truffle5": "^2.0.6",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.2.0",
     "@openzeppelin/hardhat-upgrades": "^1.9.0",
     "@openzeppelin/test-helpers": "^0.5.12",
-    "@openzeppelin/truffle-upgrades": "^1.8.0",
-    "@truffle/abi-utils": "^0.2.3",
-    "@truffle/contract": "^4.3.29",
-    "@truffle/hdwallet-provider": "^1.4.3",
+    "@openzeppelin/truffle-upgrades": "^1.15.0",
+    "@truffle/abi-utils": "^0.2.13",
+    "@truffle/contract": "^4.5.14",
+    "@truffle/hdwallet-provider": "^2.0.9",
     "@typechain/ethers-v5": "^7.0.1",
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.2.21",
@@ -95,6 +95,6 @@
   },
   "dependencies": {
     "concurrently": "^6.2.0",
-    "truffle": "^5.4.7"
+    "truffle": "^5.5.19"
   }
 }
