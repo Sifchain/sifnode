@@ -34,9 +34,14 @@ func (k Keeper) doProviderDistribution(ctx sdk.Context) (PoolRowanMap, LpRowanMa
 
 func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
 	k.transferProviderDistributionInternal(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd_liquidity_provider_payout_error", "liquidity_provider")
+
+	for pool, sub := range poolRowanMap {
+		// will never fail
+		k.RemoveRowanFromPool(ctx, pool, sub) // nolint:errcheck
+	}
 }
 
-func (k Keeper) TransferProviderDistributionRewards(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
+func (k Keeper) TransferRewards(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
 	k.transferProviderDistributionInternal(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "rewards_a", "rewards_b")
 }
 
@@ -54,11 +59,6 @@ func (k Keeper) transferProviderDistributionInternal(ctx sdk.Context, poolRowanM
 				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
 			}
 		}
-	}
-
-	for pool, sub := range poolRowanMap {
-		// will never fail
-		k.RemoveRowanFromPool(ctx, pool, sub) // nolint:errcheck
 	}
 }
 
