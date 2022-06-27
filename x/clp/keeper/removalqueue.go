@@ -117,7 +117,7 @@ func (k Keeper) SetProcessedRemovalRequest(ctx sdk.Context, request types.Remova
 func (k Keeper) DequeueRemovalRequest(ctx sdk.Context, request types.RemovalRequest) {
 	ctx.KVStore(k.storeKey).Delete(types.GetRemovalRequestKey(request))
 	queue := k.GetRemovalQueue(ctx)
-	queue.Count -= 1
+	queue.Count--
 	k.SetRemovalQueue(ctx, queue)
 
 	emitDequeueRemoval(ctx, &request, &queue)
