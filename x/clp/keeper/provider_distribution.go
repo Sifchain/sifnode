@@ -7,11 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type DistributionTuple struct {
-	Amount          sdk.Uint
-	ProviderAddress sdk.AccAddress
-}
-
 type PoolRowanMap map[*types.Pool]sdk.Uint
 type LpRowanMap map[string]sdk.Uint
 type LpPoolMap map[string][]LPPool
@@ -182,7 +177,6 @@ func CollectProviderDistribution(ctx sdk.Context, pool *types.Pool, poolDepthRow
 			globalLpPool = append(globalLpPool, elem)
 			globalLpPoolMap[addr] = globalLpPool
 		}
-
 	}
 
 	return totalRowanDistribute
