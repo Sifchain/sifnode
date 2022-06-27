@@ -110,9 +110,9 @@ func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Poo
 			continue
 		}
 
-		lps_filtered := FilterValidLiquidityProviders(ctx, lps)
+		lpsFiltered := FilterValidLiquidityProviders(ctx, lps)
 		rowanToDistribute := CollectProviderDistribution(ctx, pool, sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
-			blockRate, pool.PoolUnits, lps_filtered, lpMap, lpPoolMap)
+			blockRate, pool.PoolUnits, lpsFiltered, lpMap, lpPoolMap)
 		poolRowanMap[pool] = rowanToDistribute
 	}
 

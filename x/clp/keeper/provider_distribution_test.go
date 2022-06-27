@@ -82,11 +82,11 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	asset := types.NewAsset(assetStr)
 	pool := types.NewPool(&asset, totalProviderDistributioned, sdk.ZeroUint(), sdk.ZeroUint())
 
-	lps_filtered := keeper.FilterValidLiquidityProviders(ctx, lps)
+	lpsFiltered := keeper.FilterValidLiquidityProviders(ctx, lps)
 	lpRowanMap := make(keeper.LpRowanMap, 0)
 	lpPoolMap := make(keeper.LpPoolMap, 0)
 	poolRowanMap := make(keeper.PoolRowanMap, 1)
-	rowanToDistribute := keeper.CollectProviderDistribution(ctx, &pool, poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lps_filtered, lpRowanMap, lpPoolMap)
+	rowanToDistribute := keeper.CollectProviderDistribution(ctx, &pool, poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lpsFiltered, lpRowanMap, lpPoolMap)
 	require.Equal(t, totalProviderDistributioned, rowanToDistribute)
 	poolRowanMap[&pool] = rowanToDistribute
 
