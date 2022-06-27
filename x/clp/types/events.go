@@ -17,6 +17,7 @@ const (
 	EventTypeProcessedRemovalQueue   = "processed_removal_queue"
 	EventTypeQueueRemovalRequest     = "queue_removal_request"
 	EventTypeDequeueRemovalRequest   = "dequeue_removal_request"
+	EventTypeProcessRemovalError     = "process_removal_error"
 	AttributeKeyThreshold            = "min_threshold"
 	AttributeKeySwapAmount           = "swap_amount"
 	AttributeKeyLiquidityFee         = "liquidity_fee"

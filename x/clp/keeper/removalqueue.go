@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -16,8 +18,8 @@ func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity, row
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetRemovalRequestKey(request), k.cdc.MustMarshal(&request))
 
-	queue.Count += 1
-	queue.Id += 1
+	queue.Count++
+	queue.Id++
 	queue.TotalValue = queue.TotalValue.Add(rowanValue)
 	if queue.Count == 1 {
 		queue.StartHeight = ctx.BlockHeight()
@@ -62,6 +64,11 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 		if msg.ExternalAsset.Equals(*request.Msg.ExternalAsset) {
 			lp, err := k.GetLiquidityProvider(ctx, request.Msg.ExternalAsset.Symbol, request.Msg.Signer)
 			if err != nil {
+				emitRemovalQueueError(ctx, &request)
+				ctx.Logger().Error(fmt.Sprintf("error processing queued removal: %s", err.Error()),
+					"request", request.Id,
+					"lp", request.Msg.Signer,
+					"externalAsset", request.Msg.ExternalAsset.Symbol)
 				continue
 			}
 
@@ -77,6 +84,11 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 				Asymmetry:     request.Msg.Asymmetry,
 			})
 			if err != nil {
+				emitRemovalQueueError(ctx, &request)
+				ctx.Logger().Error(fmt.Sprintf("error processing queued removal: %s", err.Error()),
+					"request", request.Id,
+					"lp", request.Msg.Signer,
+					"externalAsset", request.Msg.ExternalAsset.Symbol)
 				continue
 			}
 
@@ -95,7 +107,7 @@ func (k Keeper) SetProcessedRemovalRequest(ctx sdk.Context, request types.Remova
 	queue.TotalValue = queue.TotalValue.Sub(rowanRemoved)
 	k.SetRemovalQueue(ctx, queue)
 
-	if request.Msg.WBasisPoints.LT(sdk.ZeroInt()) {
+	if request.Msg.WBasisPoints.LTE(sdk.ZeroInt()) {
 		k.DequeueRemovalRequest(ctx, request)
 	}
 

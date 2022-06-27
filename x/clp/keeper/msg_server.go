@@ -524,7 +524,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	lpQueuedUnits := k.GetRemovalQueueUnitsForLP(ctx, lp)
 	msgUnits := ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, msg.WBasisPoints)
 	if msgUnits.GT(lp.LiquidityProviderUnits.Sub(lpQueuedUnits)) {
-		return nil, types.ErrUnableToRemoveLiquidity
+		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msgUnits, lp.LiquidityProviderUnits))
 	}
 
 	//Calculate amount to withdraw
@@ -546,7 +546,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	futurePool := pool
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
-	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).GT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
+	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
 		k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
 		return nil, types.ErrQueued
 	}
@@ -688,7 +688,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	futurePool := pool
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
-	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).GT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
+	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
 		k.QueueRemoval(ctx, &types.MsgRemoveLiquidity{
 			Signer:        msg.Signer,
 			ExternalAsset: msg.ExternalAsset,

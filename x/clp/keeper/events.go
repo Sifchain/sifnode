@@ -37,3 +37,12 @@ func emitDequeueRemoval(ctx sdk.Context, request *types.RemovalRequest, queue *t
 		sdk.NewAttribute(types.AttributeKeyPool, request.Msg.ExternalAsset.Symbol),
 	))
 }
+
+func emitRemovalQueueError(ctx sdk.Context, request *types.RemovalRequest) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeProcessRemovalError,
+		sdk.NewAttribute("id", strconv.FormatInt(request.Id, 10)),
+		sdk.NewAttribute(types.AttributeKeyLiquidityProvider, request.Msg.Signer),
+		sdk.NewAttribute(types.AttributeKeyPool, request.Msg.ExternalAsset.Symbol),
+		sdk.NewAttribute("points_requested", request.Msg.WBasisPoints.String()),
+	))
+}
