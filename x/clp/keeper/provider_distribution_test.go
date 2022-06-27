@@ -78,26 +78,40 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Equal(t, totalProviderDistributioned, providerSum)
 
 	lps := test.GenerateRandomLPWithUnits(poolUnitss)
-	cbm := make(keeper.ProviderDistributionMap)
+	assetStr := "kevin"
+	asset := types.NewAsset(assetStr)
+	pool := types.NewPool(&asset, totalProviderDistributioned, sdk.ZeroUint(), sdk.ZeroUint())
 
-	keeper.CollectProviderDistribution(poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lps, cbm)
+	lpsFiltered := keeper.FilterValidLiquidityProviders(ctx, lps)
+	lpRowanMap := make(keeper.LpRowanMap, 0)
+	lpPoolMap := make(keeper.LpPoolMap, 0)
+	poolRowanMap := make(keeper.PoolRowanMap, 1)
+	rowanToDistribute := keeper.CollectProviderDistribution(ctx, &pool, poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lpsFiltered, lpRowanMap, lpPoolMap)
+	require.Equal(t, totalProviderDistributioned, rowanToDistribute)
+	poolRowanMap[&pool] = rowanToDistribute
 
 	for i, providerDistribution := range providerDistributions {
-		require.Equal(t, providerDistribution, cbm[lps[i].LiquidityProviderAddress])
+		addr := lps[i].LiquidityProviderAddress
+		//addr, _ := sdk.AccAddressFromBech32(lps[i].LiquidityProviderAddress)
+		//tuple := findTupleByAddress(addr, tuples)
+		require.Equal(t, providerDistribution, lpRowanMap[addr])
 
 		// We clear the EventManager before every call as Events accumulate throughout calls
-		ctx = ctx.WithEventManager(sdk.NewEventManager())
+		//ctx = ctx.WithEventManager(sdk.NewEventManager())
 
-		addr, _ := sdk.AccAddressFromBech32(lps[i].LiquidityProviderAddress)
-		err := app.ClpKeeper.TransferProviderDistribution(ctx, addr, providerDistribution)
-		require.Nil(t, err)
-		transferEvents := createTransferEvents(providerDistribution, addr)
-
+		//transferEvents := createTransferEvents(providerDistribution, addr)
 		// NOTE: we use Subset here as bankKeeper.SendCoinsFromModuleToAccount does fire Events itself which we do not care for at this point
-		require.Subset(t, ctx.EventManager().Events(), transferEvents)
+		//require.Subset(t, ctx.EventManager().Events(), transferEvents)
 	}
+
+	app.ClpKeeper.TransferProviderDistribution(ctx, poolRowanMap, lpRowanMap, lpPoolMap)
+
+	// pool empty after all LPs got paid
+	poolStored, _ := app.ClpKeeper.GetPool(ctx, assetStr)
+	require.Equal(t, poolStored.NativeAssetBalance.String(), sdk.ZeroUint().String())
 }
 
+//nolint
 func createTransferEvents(amount sdk.Uint, receiver sdk.AccAddress) []sdk.Event {
 	return []sdk.Event{sdk.NewEvent("lppd_distribution",
 		sdk.NewAttribute("lppd_distribution_amount", sdk.NewCoin(types.NativeSymbol, sdk.Int(amount)).String()),
@@ -112,10 +126,12 @@ func TestKeeper_CollectProviderDistributions(t *testing.T) {
 	nLPs := 3
 	ctx, app := test.CreateTestAppClp(false)
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, nPools, nLPs)
-	cbm := app.ClpKeeper.CollectProviderDistributions(ctx, pools, blockRate)
+	poolRowanMap, lpRowanMap, lpPoolMap := app.ClpKeeper.CollectProviderDistributions(ctx, pools, blockRate)
 
 	// TODO: something better
-	require.Equal(t, nLPs, len(cbm))
+	require.Equal(t, nPools, len(poolRowanMap))
+	require.Equal(t, nLPs, len(lpRowanMap))
+	require.Equal(t, len(lpPoolMap), len(lpRowanMap))
 }
 
 func TestKeeper_IsDistributionBlock(t *testing.T) {
