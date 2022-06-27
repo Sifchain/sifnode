@@ -12,6 +12,10 @@ func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardPara
 	height := uint64(ctx.BlockHeight())
 	for _, period := range params.RewardPeriods {
 		if height >= period.RewardPeriodStartBlock && height <= period.RewardPeriodEndBlock {
+			// mod 0 is undefined - in which case we'll run every block
+			if period.RewardPeriodMod == 0 {
+				period.RewardPeriodMod = 1
+			}
 			return period
 		}
 	}
@@ -84,7 +88,7 @@ type PoolReward struct {
 
 func CollectPoolRewardTuples(pools []*types.Pool, blockDistribution sdk.Uint, totalDepth sdk.Dec, period *types.RewardPeriod) ([]PoolReward, sdk.Uint) {
 	coinsToMint := sdk.ZeroUint()
-	var tuples []PoolReward
+	var tuples []PoolReward //nolint
 
 	remaining := blockDistribution
 	for _, pool := range pools {

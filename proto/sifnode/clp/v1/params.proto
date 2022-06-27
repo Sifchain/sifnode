@@ -56,6 +56,8 @@ message RewardPeriod {
   ];
 
   bool reward_period_distribute = 7;
+  uint64 reward_period_mod = 8;
+
 }
 
 message PoolMultiplier {

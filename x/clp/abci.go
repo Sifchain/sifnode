@@ -5,14 +5,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Sifchain/sifnode/x/clp/keeper"
+	kpr "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
+func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
 	if keeper.IsDistributionBlock(ctx) {
@@ -23,16 +23,21 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 	pools := keeper.GetPools(ctx)
 	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
 	if currentPeriod != nil && !currentPeriod.RewardPeriodAllocation.IsZero() {
-		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
-		if err != nil {
-			keeper.Logger(ctx).Error(fmt.Sprintf("Rewards policy run error %s", err.Error()))
+
+		isDistributionBlock := kpr.IsDistributionBlockPure(ctx.BlockHeight(), currentPeriod.RewardPeriodStartBlock, currentPeriod.RewardPeriodMod)
+
+		if isDistributionBlock {
+			err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
+			if err != nil {
+				keeper.Logger(ctx).Error(fmt.Sprintf("Rewards policy run error %s", err.Error()))
+			}
 		}
 	}
 
 	return []abci.ValidatorUpdate{}
 }
 
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// get current block height
