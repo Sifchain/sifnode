@@ -34,6 +34,16 @@ module.exports = {
       network_id: 3,
       gas: 6000000
     },
+    goerli: {
+      provider: function () {
+        return new HDWalletProvider(
+            process.env.ETHEREUM_PRIVATE_KEY,
+            process.env['WEB3_PROVIDER']
+        );
+      },
+      network_id: 5,
+      gas: 6000000
+    },
     mainnet: {
       provider: function () {
         return new HDWalletProvider(
