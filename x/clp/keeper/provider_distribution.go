@@ -54,7 +54,8 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 	}
 
 	for pool, sub := range poolRowanMap {
-		k.RemoveRowanFromPool(ctx, pool, sub)
+		// will never fail
+		k.RemoveRowanFromPool(ctx, pool, sub) // nolint:errcheck
 	}
 }
 
@@ -109,9 +110,9 @@ func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Poo
 			continue
 		}
 
-		lps_ := FilterValidLiquidityProviders(ctx, lps)
+		lps_filtered := FilterValidLiquidityProviders(ctx, lps)
 		rowanToDistribute := CollectProviderDistribution(ctx, pool, sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
-			blockRate, pool.PoolUnits, lps_, lpMap, lpPoolMap)
+			blockRate, pool.PoolUnits, lps_filtered, lpMap, lpPoolMap)
 		poolRowanMap[pool] = rowanToDistribute
 	}
 
