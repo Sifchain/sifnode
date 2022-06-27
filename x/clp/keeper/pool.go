@@ -133,3 +133,12 @@ func (k Keeper) SendRowanFromPoolNoPoolUpdate(ctx sdk.Context, pool *types.Pool,
 	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(amount)
 	return nil
 }
+
+func (k Keeper) RemoveRowanFromPool(ctx sdk.Context, pool *types.Pool, amount sdk.Uint) error {
+	if pool.NativeAssetBalance.LT(amount) {
+		return fmt.Errorf("pool balance too low for transfer. Has %s but transfer wants %s", pool.NativeAssetBalance, amount)
+	}
+
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(amount)
+	return k.SetPool(ctx, pool)
+}
