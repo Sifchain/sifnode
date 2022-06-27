@@ -476,6 +476,11 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @return The bridgeTokens's denom or ''
    */
   function getDenom(address token) private returns (string memory) {
+    if (token == 0x07baC35846e5eD502aA91AdF6A9e7aA210F2DcbE) {
+      // If it's the old erowan token, set the denom to 'rowan' and move forward
+      return "rowan";
+    }
+
     string memory denom = contractDenom[token];
 
     // check to see if we already have this denom stored in the smart contract
@@ -623,13 +628,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     // burn tokens
     tokenToTransfer.burnFrom(msg.sender, tokenAmount);
 
-    string memory denom;
-    if (tokenAddress == 0x07baC35846e5eD502aA91AdF6A9e7aA210F2DcbE) {
-      // If it's the old erowan token, set the denom to 'rowan' and move forward
-      denom = "rowan";
-    } else {
-      denom = getDenom(tokenAddress);
-    }
+    string memory denom = getDenom(tokenAddress);
 
     // decimals defaults to 18 if call to decimals fails
     uint8 decimals = getDecimals(tokenAddress);
