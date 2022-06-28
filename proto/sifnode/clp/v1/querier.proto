@@ -47,6 +47,12 @@ service Query {
   rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
+  rpc GetLiquidityProtectionParams(LiquidityProtectionParamsReq) returns (LiquidityProtectionParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/liquidity_protection_params";
+  };
+  rpc GetProviderDistributionParams(ProviderDistributionParamsReq) returns (ProviderDistributionParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/provider_distribution_params";
+  };
 }
 
 message PoolReq {
@@ -160,9 +166,7 @@ message ParamsRes {
 
 message RewardParamsReq {}
 
-message RewardParamsRes {
-  RewardParams params = 1;
-}
+message RewardParamsRes { RewardParams params = 1; }
 message PmtpParamsReq {}
 
 message PmtpParamsRes {
@@ -170,4 +174,18 @@ message PmtpParamsRes {
   sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
   sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
   int64 height = 4;
+}
+
+message LiquidityProtectionParamsReq {}
+
+message LiquidityProtectionParamsRes {
+  sifnode.clp.v1.LiquidityProtectionParams params = 1;
+  sifnode.clp.v1.LiquidityProtectionRateParams rate_params = 2;
+  int64 height = 3;
+}
+
+message ProviderDistributionParamsReq {}
+
+message ProviderDistributionParamsRes {
+  ProviderDistributionParams params = 1;
 }

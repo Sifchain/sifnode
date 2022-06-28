@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"path/filepath"
@@ -73,6 +74,12 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
+	liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
+	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
+	app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
+	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
+		DistributionPeriods: nil,
+	})
 	return ctx, app
 }
 
@@ -100,6 +107,9 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
+	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
+		DistributionPeriods: nil,
+	})
 	return ctx, app
 }
 
@@ -114,6 +124,71 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		pool := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		poolList = append(poolList, pool)
 	}
+	return poolList
+}
+
+func GenerateRandomLPWithUnitsAndAsset(poolUnitss []uint64, asset types.Asset) []*types.LiquidityProvider {
+	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
+	for i, poolUnits := range poolUnitss {
+		address := GenerateAddress(fmt.Sprintf("%d", i))
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
+		lpList[i] = &lp
+	}
+
+	return lpList
+}
+
+func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
+	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
+
+	rand.Seed(time.Now().Unix())
+
+	for i, poolUnits := range poolUnitss {
+		externalToken := tokens[rand.Intn(len(tokens))]
+		asset := types.NewAsset(TrimFirstRune(externalToken))
+		address := GenerateAddress(fmt.Sprintf("%d", i))
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
+		lpList[i] = &lp
+	}
+
+	return lpList
+}
+
+func GeneratePoolsSetLPs(keeper clpkeeper.Keeper, ctx sdk.Context, nPools, nLPs int) []*types.Pool {
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
+	if nPools > len(tokens) {
+		panic("nPools is too high")
+	}
+
+	rand.Seed(time.Now().Unix())
+	poolList := make([]*types.Pool, nPools)
+	for i := 0; i < nPools; i++ {
+		externalToken := tokens[i]
+		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
+
+		poolUnits := make([]uint64, nLPs)
+		totalPoolUnits := sdk.ZeroUint()
+		for i := 0; i < nLPs; i++ {
+			val := uint64(rand.Int31())
+			poolUnits[i] = val
+			totalPoolUnits = totalPoolUnits.Add(sdk.NewUint(val))
+		}
+
+		lps := GenerateRandomLPWithUnitsAndAsset(poolUnits, externalAsset)
+		for _, lp := range lps {
+			keeper.SetLiquidityProvider(ctx, lp)
+		}
+
+		pool := types.NewPool(&externalAsset, sdk.NewUint(100000000000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), totalPoolUnits)
+		err := keeper.SetPool(ctx, &pool)
+		if err != nil {
+			panic(err)
+		}
+
+		poolList[i] = &pool
+	}
+
 	return poolList
 }
 

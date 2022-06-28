@@ -5,31 +5,69 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Sifchain/sifnode/x/clp/keeper"
+	kpr "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
+func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+
+	if keeper.IsDistributionBlock(ctx) {
+		keeper.ProviderDistributionPolicyRun(ctx)
+	}
+
 	params := keeper.GetRewardsParams(ctx)
 	pools := keeper.GetPools(ctx)
 	currentPeriod := keeper.GetCurrentRewardPeriod(ctx, params)
 	if currentPeriod != nil && !currentPeriod.RewardPeriodAllocation.IsZero() {
-		err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
-		if err != nil {
-			panic(err)
+
+		isDistributionBlock := kpr.IsDistributionBlockPure(ctx.BlockHeight(), currentPeriod.RewardPeriodStartBlock, currentPeriod.RewardPeriodMod)
+
+		if isDistributionBlock {
+			err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
+			if err != nil {
+				keeper.Logger(ctx).Error(fmt.Sprintf("Rewards policy run error %s", err.Error()))
+			}
 		}
 	}
+
 	return []abci.ValidatorUpdate{}
 }
 
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
+
 	// get current block height
 	currentHeight := ctx.BlockHeight()
+
+	/*
+		Liquidity protection current rowan liquidity threshold update
+	*/
+	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
+	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
+	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
+	if liquidityProtectionParams.IsActive {
+		currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+		// Validation check ensures that Epoch length =/= zero
+		replenishmentAmount := maxRowanLiquidityThreshold.QuoUint64(liquidityProtectionParams.EpochLength)
+
+		// This is equivalent to:
+		//    proposedThreshold := currentRowanLiquidityThreshold.Add(replenishmentAmount)
+		//    currentRowanLiquidityThreshold = sdk.MinUint(proposedThreshold, maxRowanLiquidityThreshold)
+		// except it prevents any overflows when adding the replenishmentAmount
+		if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(replenishmentAmount) {
+			currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
+		} else {
+			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(replenishmentAmount)
+		}
+
+		k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+		k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | maxRowanLiquidityThreshold: %s | asset: %s | currentRowanLiquidityThreshold: %s | maxPerBlock: %s", maxRowanLiquidityThreshold, maxRowanLiquidityThresholdAsset, k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold, replenishmentAmount))
+	}
+
 	// get PMTP period params
 	pmtpPeriodStartBlock := k.GetPmtpParams(ctx).PmtpPeriodStartBlock
 	pmtpPeriodEndBlock := k.GetPmtpParams(ctx).PmtpPeriodEndBlock
@@ -61,14 +99,14 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.GetPmtpEpoch(ctx).EpochCounter > 0 {
 		// Calculate R running for policy params
 		pmtpCurrentRunningRate = k.PolicyCalculations(ctx)
-		k.DecrementBlockCounter(ctx)
+		k.DecrementPmtpBlockCounter(ctx)
 	}
 	// Manage Epoch Counter
 	if k.GetPmtpEpoch(ctx).BlockCounter == 0 &&
 		currentHeight < pmtpPeriodEndBlock &&
 		currentHeight >= pmtpPeriodStartBlock {
-		k.DecrementEpochCounter(ctx)
-		k.SetBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
+		k.DecrementPmtpEpochCounter(ctx)
+		k.SetPmtpBlockCounter(ctx, k.GetPmtpParams(ctx).PmtpPeriodEpochLength)
 	}
 
 	if currentHeight == pmtpPeriodEndBlock {
