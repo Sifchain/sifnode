@@ -1,9 +1,13 @@
 module.exports = async (cb) => {
-  const expectedUsage = () => {console.log("Expected usage:\nBRIDGEBANK_ADDRESS='insert bridgebank address' COSMOS_BRIDGE_ADDRESS='insert cosmosbridge address' truffle exec scripts/setBridgeBank.js --network mainnet\n")}
+  const expectedUsage = () => {
+    console.log(
+      "Expected usage:\nBRIDGEBANK_ADDRESS='insert bridgebank address' COSMOS_BRIDGE_ADDRESS='insert cosmosbridge address' truffle exec scripts/setBridgeBank.js --network mainnet\n"
+    );
+  };
   try {
     /*******************************************
      *** Set up
-    ******************************************/
+     ******************************************/
     const Web3 = require("web3");
     const HDWalletProvider = require("@truffle/hdwallet-provider");
 
@@ -12,37 +16,40 @@ module.exports = async (cb) => {
     const bridgeBankContractAddress = process.env.BRIDGEBANK_ADDRESS;
 
     if (!bridgeBankContractAddress || bridgeBankContractAddress.length !== 42) {
-      throw new Error("error, no bridgebank address")
+      throw new Error("error, no bridgebank address");
     }
 
-    if (!process.env.COSMOS_BRIDGE_ADDRESS || process.env.COSMOS_BRIDGE_ADDRESS.length !== 42) {
-      throw new Error("error, no cosmos bridge address")
+    if (
+      !process.env.COSMOS_BRIDGE_ADDRESS ||
+      process.env.COSMOS_BRIDGE_ADDRESS.length !== 42
+    ) {
+      throw new Error("error, no cosmos bridge address");
     }
     /*******************************************
      *** Constants
-    ******************************************/
+     ******************************************/
     // Config values
     const NETWORK_ROPSTEN =
       process.argv[4] === "--network" && process.argv[5] === "ropsten";
     const NETWORK_MAINNET =
       process.argv[4] === "--network" && process.argv[5] === "mainnet";
+    const NETWORK_GOERLI =
+      process.argv[4] === "--network" && process.argv[5] === "goerli";
 
     /*******************************************
      *** Web3 provider
-    *** Set contract provider based on --network flag
-    ******************************************/
+     *** Set contract provider based on --network flag
+     ******************************************/
     let provider;
-    if (NETWORK_ROPSTEN) {
+    if (NETWORK_ROPSTEN || NETWORK_MAINNET || NETWORK_GOERLI) {
       provider = new HDWalletProvider(
         process.env.ETHEREUM_PRIVATE_KEY,
-        process.env['WEB3_PROVIDER']
-      );
-    } else if (NETWORK_MAINNET) {
-      provider = new HDWalletProvider(
-        process.env.ETHEREUM_PRIVATE_KEY,
-        process.env['WEB3_PROVIDER']
+        process.env["WEB3_PROVIDER"]
       );
     } else {
+      console.log(
+        "Encountering new network, using [LOCAL_PROVIDER] to instantiate web3 connection"
+      );
       provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
     }
 
@@ -51,17 +58,19 @@ module.exports = async (cb) => {
     try {
       /*******************************************
        *** Contract interaction
-      ******************************************/
+       ******************************************/
       // Get current accounts
       const accounts = await web3.eth.getAccounts();
-      let cosmosBridgeContract = await CosmosBridgeContract.at(process.env.COSMOS_BRIDGE_ADDRESS)
+      let cosmosBridgeContract = await CosmosBridgeContract.at(
+        process.env.COSMOS_BRIDGE_ADDRESS
+      );
       // Set BridgeBank
       console.log("Loaded accounts and contract, setting bridgebank...");
 
       await cosmosBridgeContract.setBridgeBank(bridgeBankContractAddress, {
         from: accounts[0],
         value: 0,
-        gas: 300000 // 300,000 Gwei
+        gas: 300000, // 300,000 Gwei
       });
 
       console.log("CosmosBridge's BridgeBank address set");
@@ -69,12 +78,12 @@ module.exports = async (cb) => {
       cb();
     } catch (error) {
       expectedUsage();
-      console.error({error})
+      console.error({ error });
       cb();
     }
   } catch (error) {
     expectedUsage();
-    console.error({ error })
-    return cb()
+    console.error({ error });
+    return cb();
   }
 };
