@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.1.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/cespare/cp v1.1.1 // indirect
-	github.com/cosmos/cosmos-sdk v0.45.1
+	github.com/cosmos/cosmos-sdk v0.45.6
 	github.com/cosmos/ibc-go/v2 v2.0.2
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/ethereum/go-ethereum v1.10.11
@@ -154,7 +154,6 @@ require (
 )
 
 replace (
-	github.com/cosmos/cosmos-sdk => github.com/Sifchain/cosmos-sdk v0.45.4-commented
 	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.3-issue.850
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
