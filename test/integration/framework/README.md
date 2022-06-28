@@ -35,6 +35,9 @@ Peggy2 branch, and will start local processes accordingly:
 - For Peggy1, it will run ganache-cli, sifnoded and ebrelayer.
 - For Peggy2, it will run hardhat, sifnoded and two instances of ebrelayer.
 
+If you want to use Python from virtual environment that includes all of the locally installed dependencies, use
+`test/integration/framework/venv/bin/python3`.
+
 At the moment, the environment consists of Ethereum-compliant local node (ganache/hardhat), one `sifnode` validator and
 a Peggy bridge implemented by `ebrelayer` binary.
 
