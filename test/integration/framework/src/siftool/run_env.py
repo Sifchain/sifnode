@@ -133,7 +133,7 @@ class Integrator(Ganache, Command):
         # TODO script is no longer there!
         self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
 
-    # @TODO Merge
+    # Peggy1 only
     def sifchain_init_integration(self, sifnode, validator_moniker, validator_mnemonic, denom_whitelist_file):
         # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
         sifnode0 = Sifnoded(self)
@@ -145,7 +145,16 @@ class Integrator(Ganache, Command):
         # it was not working. But we assume that we want to keep it.
         sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnode.home)
 
-        adminuser_addr = self.sifchain_init_common(sifnode, denom_whitelist_file)
+        # Add sifnodeadmin to ~/.sifnoded
+        sifnode0 = Sifnoded(self)
+        adminuser_addr = sifnode0.keys_add("sifnodeadmin")["address"]
+        tokens = {ROWAN: 10 ** 28}
+        # Original from peggy:
+        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
+        sifnode.add_genesis_account(adminuser_addr, tokens)
+        sifnode.set_genesis_oracle_admin(adminuser_addr)
+        sifnode.set_gen_denom_whitelist(denom_whitelist_file)
+
         return adminuser_addr
 
     def sifnoded_peggy2_init_validator(self, sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base):
@@ -168,20 +177,6 @@ class Integrator(Ganache, Command):
         # TODO We're using default home here instead of sifnoded_home above. Does this even work?
         _whitelisted_validator = sifnode.get_val_address(validator_moniker)
         assert valoper == _whitelisted_validator
-
-    # TODO Not any longer shared between IntegrationEnvironment and PeggyEnvironment
-    # Peggy2Environment calls sifnoded_peggy2_add_account
-    def sifchain_init_common(self, sifnode, denom_whitelist_file):
-        # Add sifnodeadmin to ~/.sifnoded
-        sifnode0 = Sifnoded(self)
-        sifnodeadmin_addr = sifnode0.keys_add("sifnodeadmin")["address"]
-        tokens = {ROWAN: 10**28}
-        # Original from peggy:
-        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
-        sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
-        sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
-        sifnode.set_gen_denom_whitelist(denom_whitelist_file)
-        return sifnodeadmin_addr
 
     # @TODO Move to Sifgen class
     def sifgen_create_network(self, chain_id: str, validator_count: int, networks_dir: str, network_definition_file: str,
