@@ -37,6 +37,7 @@ var (
 	SymmetryThresholdPrefix             = []byte{0x07}
 	LiquidityProtectionParamsPrefix     = []byte{0x08} // Key to store the Liquidity Protection params
 	LiquidityProtectionRateParamsPrefix = []byte{0x09} // Key to store the Liquidity Protection rate params
+	ProviderDistributionParamsPrefix    = []byte{0x0a}
 )
 
 // Generates a key for storing a specific pool

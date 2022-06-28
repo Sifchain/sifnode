@@ -15,6 +15,8 @@ const (
 	EventTypeSwap                             = "swap_successful"
 	EventTypeSwapFailed                       = "swap_failed"
 	EventTypeUpdateLiquidityProtectionParams  = "liquidity_protection_update_params"
+	EventTypeAddNewProviderDistributionPolicy = "lppd_new_policy"
+	EventTypeProviderDistributionDistribution = "lppd_distribution"
 	AttributeKeyThreshold                     = "min_threshold"
 	AttributeKeySwapAmount                    = "swap_amount"
 	AttributeKeyLiquidityFee                  = "liquidity_fee"
@@ -31,5 +33,9 @@ const (
 	AttributeKeyPmtpRateParams                = "pmtp_rate_params"
 	AttributeKeyLiquidityProtectionParams     = "liquidity_protection_params"
 	AttributeKeyLiquidityProtectionRateParams = "liquidity_protection_rate_params"
+	AttributeKeyProviderDistributionParams    = "lppd_params"
 	AttributeValueCategory                    = ModuleName
+	AttributeProbiverDistributionAmount       = "lppd_distribution_amount"
+	AttributeProbiverDistributionReceiver     = "lppd_distribution_receiver"
+	AttributeKeyError                         = "error"
 )

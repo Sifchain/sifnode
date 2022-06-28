@@ -46,6 +46,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdSetSymmetryThreshold(),
 		GetCmdUpdateLiquidityProtectionParams(),
 		GetCmdModifyLiquidityProtectionRates(),
+		GetCmdSetProviderDistributionPeriods(),
 	)
 
 	return clpTxCmd
@@ -88,6 +89,7 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
+
 func GetCmdUpdateRewardParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reward-params",
@@ -701,5 +703,46 @@ func GetCmdModifyLiquidityProtectionRates() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetProviderDistributionPeriods() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-lppd-params",
+		Short: "Set LP provider distribution params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			var distributionPeriods []*types.ProviderDistributionPeriod
+			signer := clientCtx.GetFromAddress()
+			filePath := viper.GetString(FlagProviderDistributionPeriods)
+			file, err := filepath.Abs(filePath)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &distributionPeriods)
+			if err != nil {
+				return err
+			}
+			msg := types.MsgAddProviderDistributionPeriodRequest{
+				Signer:              signer.String(),
+				DistributionPeriods: distributionPeriods,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsFlagProviderDistributionPeriods)
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }

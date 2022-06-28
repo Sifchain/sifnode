@@ -5,10 +5,7 @@ import (
 )
 
 func (p Pool) Validate() bool {
-	if !p.ExternalAsset.Validate() {
-		return false
-	}
-	return true
+	return p.ExternalAsset.Validate()
 }
 
 // NewPool returns a new Pool

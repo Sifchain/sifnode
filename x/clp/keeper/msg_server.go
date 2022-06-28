@@ -127,6 +127,40 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 	return response, nil
 }
 
+func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *types.MsgAddProviderDistributionPeriodRequest) (*types.MsgAddProviderDistributionPeriodResponse, error) {
+	response := &types.MsgAddProviderDistributionPeriodResponse{}
+
+	// defensive programming
+	if msg == nil {
+		return response, errors.Errorf("msg was nil")
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return response, err
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+
+	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	params := &types.ProviderDistributionParams{}
+	params.DistributionPeriods = msg.DistributionPeriods
+	k.SetProviderDistributionParams(ctx, params)
+
+	eventMsg := CreateEventMsg(msg.Signer)
+	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
+	providerDistributionPolicyEvent := CreateEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
+	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
+
+	return response, nil
+}
+
 func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	response := &types.MsgUpdatePmtpParamsResponse{}

@@ -61,6 +61,10 @@ the address will be looked up in the local Keybase.
 					AdminAddress: addr.String(),
 					AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
 				},
+				{
+					AdminAddress: addr.String(),
+					AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
+				},
 			}}
 			state.AdminAccounts = &account
 			stateBz, err := json.Marshal(state)

@@ -1255,3 +1255,52 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 		})
 	}
 }
+
+func TestMsgServer_AddProviderDistribution(t *testing.T) {
+	admin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9q"
+	nonAdmin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9r"
+	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+		trGs := &tokenregistrytypes.GenesisState{
+			AdminAccounts: test.GetAdmins(admin),
+			Registry:      nil,
+		}
+		bz, _ := app.AppCodec().MarshalJSON(trGs)
+		genesisState["tokenregistry"] = bz
+
+		return genesisState
+	})
+	msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
+
+	_, err := msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), nil)
+	require.Error(t, err)
+
+	var periods []*types.ProviderDistributionPeriod
+	validPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 10, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 1}
+	wrongPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 9, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 1}
+
+	periods = append(periods, &wrongPeriod)
+	msg := types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
+	require.Error(t, err)
+	// check events didn't fire
+	require.Equal(t, len(ctx.EventManager().Events()), 0)
+
+	periods[0] = &validPeriod
+	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
+	require.NoError(t, err)
+	// check events fired
+	require.Equal(t, len(ctx.EventManager().Events()), 2)
+
+	// non admin acc
+	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: nonAdmin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
+	require.Error(t, err)
+	// check no additional events fired
+	require.Equal(t, len(ctx.EventManager().Events()), 2)
+
+	cbp := app.ClpKeeper.GetProviderDistributionParams(ctx)
+	require.NotNil(t, cbp)
+	require.Equal(t, 1, len(cbp.DistributionPeriods))
+	require.Equal(t, *cbp.DistributionPeriods[0], validPeriod)
+}

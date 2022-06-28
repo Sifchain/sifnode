@@ -260,3 +260,10 @@ func (k Querier) GetLiquidityProtectionParams(c context.Context, _ *types.Liquid
 	response := types.NewLiquidityProtectionParamsResponse(params, rateParams, ctx.BlockHeight())
 	return &response, nil
 }
+
+func (k Querier) GetProviderDistributionParams(c context.Context, _ *types.ProviderDistributionParamsReq) (*types.ProviderDistributionParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetProviderDistributionParams(ctx)
+
+	return &types.ProviderDistributionParamsRes{Params: params}, nil
+}

@@ -37,6 +37,7 @@ const (
 	FlagLiquidityProtectionEpochLength  = "epochLength"
 	FlagCurrentRowanLiquidityThreshold  = "currentRowanLiquidityThreshold"
 	FlagLiquidityProtectionIsActive     = "isActive"
+	FlagProviderDistributionPeriods     = "path"
 )
 
 // common flagsets to add to various functions
@@ -73,6 +74,7 @@ var (
 	FsLiquidityThresholdIsActive      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsLiquidityProtectionEpochLength  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsCurrentRowanLiquidityThreshold  = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagProviderDistributionPeriods = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -109,4 +111,5 @@ func init() {
 	FsLiquidityProtectionEpochLength.String(FlagLiquidityProtectionEpochLength, "", "Set liquidity protection epoch length")
 	FsLiquidityThresholdIsActive.String(FlagLiquidityProtectionIsActive, "", "Set liquidity protection isActive")
 	FsCurrentRowanLiquidityThreshold.String(FlagCurrentRowanLiquidityThreshold, "", "Set current rowan liquidity threshold value")
+	FsFlagProviderDistributionPeriods.String(FlagProviderDistributionPeriods, "", "Path to Json File containing LP provider distribution periods")
 }
