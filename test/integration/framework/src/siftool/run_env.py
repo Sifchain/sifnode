@@ -175,7 +175,7 @@ class Integrator(Ganache, Command):
         # Add sifnodeadmin to ~/.sifnoded
         sifnode0 = Sifnoded(self)
         sifnodeadmin_addr = sifnode0.keys_add("sifnodeadmin")["address"]
-        tokens = {ROWAN: 10**20}
+        tokens = {ROWAN: 10**28}
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
         sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
@@ -662,6 +662,8 @@ class IntegrationTestsEnvironment:
             "EBRELAYER_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
         self.project.write_vagrantenv_sh(self.state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
+
+        log.debug("Admin account address (rowan source): {}".format(adminuser_addr))
 
         from siftool import localnet
         localnet.run_localnet_hook()
