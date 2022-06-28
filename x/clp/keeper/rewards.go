@@ -54,7 +54,9 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	}
 
 	shouldDistribute := period.RewardPeriodDistribute
-	acc := make(ProviderDistributionMap)
+	poolRowanMap := make(PoolRowanMap)
+	lpRowanMap := make(LpRowanMap)
+	lpPoolMap := make(LpPoolMap)
 	for _, e := range tuples {
 		if shouldDistribute {
 			lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *e.Pool.ExternalAsset)
@@ -66,17 +68,52 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 				continue
 			}
 
-			CollectRewards(e.Reward, e.Pool.PoolUnits, lps, acc)
+			lpsFiltered := FilterValidLiquidityProviders(ctx, lps)
+			CollectRewards(ctx, e.Pool, e.Reward, e.Pool.PoolUnits, lpsFiltered, poolRowanMap, lpRowanMap, lpPoolMap)
 		} else {
 			k.addRewardsToPool(ctx, e.Pool, e.Reward)
 		}
 	}
 
 	if shouldDistribute {
-		k.TranferCoins(ctx, &acc)
+		prePoolRowanMap := make(PoolRowanMap, len(poolRowanMap))
+		for pool, rowan := range poolRowanMap {
+			prePoolRowanMap[pool] = rowan
+		}
+
+		// this updates poolRowanMap in case coin tranfers fails
+		k.TransferRewards(ctx, poolRowanMap, lpRowanMap, lpPoolMap)
+
+		// As we have already minted all coins we wanted to distribute, check if we could distribute them all.
+		// If not, burn what we could not distribute
+		rowanToBurn := sdk.ZeroUint()
+		for pool, rowan := range poolRowanMap {
+			diff := prePoolRowanMap[pool].Sub(rowan) // rowan is always <= prePoolRowanMap[pool]
+
+			// We did not distribute the whole amount
+			if !diff.Equal(sdk.ZeroUint()) {
+				rowanToBurn = rowanToBurn.Add(diff)
+			}
+
+			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(rowan)
+			k.SetPool(ctx, pool) // nolint:errcheck
+		}
+
+		if rowanToBurn.GT(sdk.ZeroUint()) {
+			return k.BurnRowan(ctx, rowanToBurn)
+		}
 	}
 
 	return nil
+}
+
+func (k Keeper) BurnRowan(ctx sdk.Context, amount sdk.Uint) error {
+	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
+	return k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(coin))
+}
+
+func (k Keeper) TransferRewards(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
+	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "rewards_distribution_error")
 }
 
 type PoolReward struct {
@@ -132,8 +169,9 @@ func calcPoolDistribution(multiplier sdk.Dec, poolNativeBalance sdk.Uint, totalD
 	return sdk.NewUintFromBigInt(poolDistribution.TruncateInt().BigInt())
 }
 
-func CollectRewards(poolDistribution sdk.Uint, poolUnits sdk.Uint, lps []*types.LiquidityProvider, acc ProviderDistributionMap) {
-	CollectProviderDistribution(sdk.NewDecFromBigInt(poolDistribution.BigInt()), sdk.NewDec(1), poolUnits, lps, acc)
+func CollectRewards(ctx sdk.Context, pool *types.Pool, poolDistribution sdk.Uint, poolUnits sdk.Uint, lps []ValidLiquidityProvider, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
+	rowanToDistribute := CollectProviderDistribution(ctx, pool, sdk.NewDecFromBigInt(poolDistribution.BigInt()), sdk.NewDec(1), poolUnits, lps, lpRowanMap, lpPoolMap)
+	poolRowanMap[pool] = rowanToDistribute
 }
 
 func (k Keeper) calcTotalDepth(ctx sdk.Context, pools []*types.Pool, period *types.RewardPeriod, height uint64) (sdk.Dec, error) {

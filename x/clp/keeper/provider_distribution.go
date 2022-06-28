@@ -33,7 +33,7 @@ func (k Keeper) doProviderDistribution(ctx sdk.Context) (PoolRowanMap, LpRowanMa
 }
 
 func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
-	k.transferProviderDistributionInternal(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd_liquidity_provider_payout_error", "liquidity_provider")
+	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd_liquidity_provider_payout_error")
 
 	for pool, sub := range poolRowanMap {
 		// will never fail
@@ -41,11 +41,7 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 	}
 }
 
-func (k Keeper) TransferRewards(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
-	k.transferProviderDistributionInternal(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "rewards_a", "rewards_b")
-}
-
-func (k Keeper) transferProviderDistributionInternal(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, a, b string) {
+func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, typeStr string) {
 	for lpAddress, totalRowan := range lpRowanMap {
 		addr, _ := sdk.AccAddressFromBech32(lpAddress) // We know this can't fail as we previously filtered out invalid strings
 		coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(totalRowan.BigInt()))
@@ -53,7 +49,7 @@ func (k Keeper) transferProviderDistributionInternal(ctx sdk.Context, poolRowanM
 		//TransferCoinsFromPool(pool, provider_rowan, provider_address)
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(coin))
 		if err != nil {
-			fireLPPayoutErrorEvent(ctx, addr, a, b, err)
+			fireLPPayoutErrorEvent(ctx, addr, typeStr, err)
 
 			for _, lpPool := range lpPoolMap[lpAddress] {
 				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
@@ -62,10 +58,10 @@ func (k Keeper) transferProviderDistributionInternal(ctx sdk.Context, poolRowanM
 	}
 }
 
-func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr, attr string, err error) {
+func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr string, err error) {
 	failureEvent := sdk.NewEvent(
 		typeStr,
-		sdk.NewAttribute(attr, address.String()),
+		sdk.NewAttribute("liquidity_provider", address.String()),
 		sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 	)
