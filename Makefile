@@ -11,13 +11,13 @@ DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 GOFLAGS:=""
-TAGS:=
+GOTAGS:=
 ifeq ($(FEATURE_TOGGLE_SDK_045), 1)
 	GOFLAGS:="-modfile=go_045.mod"
-	TAGS:=$(TAGS)FEATURE_TOGGLE_SDK_045,
+	GOTAGS:=$(GOTAGS)FEATURE_TOGGLE_SDK_045,
 endif
 ifeq ($(FEATURE_TOGGLE_MARGIN_CLI_ALPHA), 1)
-	TAGS:=$(TAGS)FEATURE_TOGGLE_MARGIN_CLI_ALPHA,
+	GOTAGS:=$(GOTAGS)FEATURE_TOGGLE_MARGIN_CLI_ALPHA,
 endif
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
@@ -26,7 +26,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(TAGS)'
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(GOTAGS)'
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 

@@ -595,7 +595,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 			poolEnabled:                   true,
 			fundedAccount:                 true,
 			overrideForceCloseThreadshold: "2",
-			errString:                     errors.New("0rowan is smaller than 1000rowan: insufficient funds"),
+			errString2:                    errors.New("mtp not found"),
 		},
 		{
 			name: "mtp position invalid",
@@ -903,9 +903,9 @@ func TestKeeper_OpenClose(t *testing.T) {
 				LiabilitiesP:     sdk.NewUint(1000),
 				LiabilitiesI:     sdk.ZeroUint(),
 				CustodyAsset:     tt.externalAsset,
-				CustodyAmount:    sdk.NewUint(4000),
-				Leverage:         sdk.NewUint(2),
-				MtpHealth:        sdk.NewDecWithPrec(1, 1),
+				CustodyAmount:    sdk.NewUint(2000),
+				Leverage:         sdk.NewUint(1),
+				MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 				Position:         types.Position_LONG,
 			}
 
@@ -916,9 +916,9 @@ func TestKeeper_OpenClose(t *testing.T) {
 			openExpectedPool := clptypes.Pool{
 				ExternalAsset:                 &externalAsset,
 				NativeAssetBalance:            sdk.NewUint(999999999000),
-				ExternalAssetBalance:          sdk.NewUint(999999996000),
+				ExternalAssetBalance:          sdk.NewUint(999999998000),
 				NativeCustody:                 sdk.ZeroUint(),
-				ExternalCustody:               sdk.NewUint(4000),
+				ExternalCustody:               sdk.NewUint(2000),
 				NativeLiabilities:             sdk.NewUint(1000),
 				ExternalLiabilities:           sdk.ZeroUint(),
 				PoolUnits:                     sdk.ZeroUint(),
@@ -935,12 +935,12 @@ func TestKeeper_OpenClose(t *testing.T) {
 			_, closeError := msgServer.Close(sdk.WrapSDKContext(ctx), &msgClose)
 			require.Nil(t, closeError)
 
-			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000007000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
+			require.Equal(t, sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000003000))), app.BankKeeper.GetBalance(ctx, signer, nativeAsset))
 			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			closeExpectedPool := clptypes.Pool{
 				ExternalAsset:                 &externalAsset,
-				NativeAssetBalance:            sdk.NewUint(999999991000),
+				NativeAssetBalance:            sdk.NewUint(999999995000),
 				ExternalAssetBalance:          sdk.NewUint(1000000000000),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1145,19 +1145,19 @@ func TestKeeper_EC(t *testing.T) {
 			externalAsset: "xxx",
 			tests: []Test{
 				{
-					X_A: sdk.NewUint(10000),
+					X_A: sdk.NewUint(100000),
 					Y_A: sdk.NewUint(100),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
-							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000031728),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000016949),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(48272),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(63051),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.NewUint(31),
@@ -1205,12 +1205,12 @@ func TestKeeper_EC(t *testing.T) {
 							chunk:                                sdk.NewUint(10),
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
-							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000036994),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000020556),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(7),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(63006),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(59444),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(10),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.NewUint(3),
@@ -1259,11 +1259,11 @@ func TestKeeper_EC(t *testing.T) {
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
 							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(108000),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(1),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.ZeroUint(),
@@ -1317,12 +1317,12 @@ func TestKeeper_EC(t *testing.T) {
 							chunk:                                sdk.NewUint(10),
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
-							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000037598),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000017390),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69444),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62402),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62610),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100000),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.NewUint(30556),
@@ -1370,12 +1370,12 @@ func TestKeeper_EC(t *testing.T) {
 							chunk:                                sdk.NewUint(10),
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
-							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000037597),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000017391),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(138889),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62403),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62609),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(200000),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.NewUint(61111),
@@ -1424,11 +1424,11 @@ func TestKeeper_EC(t *testing.T) {
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
 							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(108000),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(1),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.ZeroUint(),
@@ -1482,12 +1482,12 @@ func TestKeeper_EC(t *testing.T) {
 							chunk:                                sdk.NewUint(10),
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
-							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000037602),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000017396),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(3472),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62398),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(62604),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(5000),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.NewUint(1528),
@@ -1535,12 +1535,12 @@ func TestKeeper_EC(t *testing.T) {
 							chunk:                                sdk.NewUint(10),
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999999000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
-							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000003807),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerNativeAssetBalanceAfterClose:   sdk.NewUint(100000000001695),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(9000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(69),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(6193),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(6305),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(100),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.NewUint(31),
@@ -1589,11 +1589,11 @@ func TestKeeper_EC(t *testing.T) {
 							signerNativeAssetBalanceAfterOpen:    sdk.NewUint(99999999990000),
 							signerExternalAssetBalanceAfterOpen:  sdk.NewUint(100000000000000),
 							signerNativeAssetBalanceAfterClose:   sdk.NewUint(99999999990000),
-							signerExternalAssetBalanceAfterClose: sdk.NewUint(1000000000000000),
+							signerExternalAssetBalanceAfterClose: sdk.NewUint(100000000000000),
 							poolNativeAssetBalanceAfterOpen:      sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterOpen:    sdk.NewUint(1),
 							poolHealthAfterOpen:                  sdk.NewDecWithPrec(900000000000000000, 18),
-							poolNativeAssetBalanceAfterClose:     sdk.NewUint(108000),
+							poolNativeAssetBalanceAfterClose:     sdk.NewUint(90000),
 							poolExternalAssetBalanceAfterClose:   sdk.NewUint(1),
 							poolHealthAfterClose:                 sdk.NewDecWithPrec(900000000000000000, 18),
 							mtpCustodyAmount:                     sdk.ZeroUint(),
@@ -1676,8 +1676,8 @@ func TestKeeper_EC(t *testing.T) {
 				bz, _ = app.AppCodec().MarshalJSON(gs3)
 				genesisState["margin"] = bz
 
-				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUintFromString("100000000000000000000000000")))
-				externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("100000000000000000000000000")))
+				nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(100000000000000)))
+				externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100000000000000)))
 
 				balances := []banktypes.Balance{
 					{
@@ -1829,18 +1829,20 @@ func TestKeeper_EC(t *testing.T) {
 						ExternalAsset:                 &asset,
 						NativeAssetBalance:            chunkItem.poolNativeAssetBalanceAfterClose,
 						ExternalAssetBalance:          chunkItem.poolExternalAssetBalanceAfterClose,
-						NativeCustody:                 sdk.ZeroUint(),
+						PoolUnits:                     sdk.NewUintFromString("1"),
+						ExternalLiabilities:           sdk.ZeroUint(),
 						ExternalCustody:               sdk.ZeroUint(),
 						NativeLiabilities:             sdk.ZeroUint(),
-						ExternalLiabilities:           sdk.ZeroUint(),
-						PoolUnits:                     sdk.ZeroUint(),
+						NativeCustody:                 sdk.ZeroUint(),
 						Health:                        chunkItem.poolHealthAfterClose,
-						InterestRate:                  sdk.NewDecWithPrec(1, 1),
+						InterestRate:                  sdk.NewDecWithPrec(1, 2),
 						SwapPriceNative:               &SwapPriceNative,
 						SwapPriceExternal:             &SwapPriceExternal,
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					}
 					closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
+					t.Log("closeExpectedPool:", closeExpectedPool)
+					t.Log("closePool:", closePool)
 					require.Equal(t, closeExpectedPool, closePool)
 				})
 			}
@@ -1915,9 +1917,9 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		LiabilitiesP:     sdk.NewUint(1000),
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     externalAsset.Symbol,
-		CustodyAmount:    sdk.NewUint(4000),
-		Leverage:         sdk.NewUint(2),
-		MtpHealth:        sdk.NewDecWithPrec(1, 1),
+		CustodyAmount:    sdk.NewUint(2000),
+		Leverage:         sdk.NewUint(1),
+		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               1,
 	}
@@ -1942,9 +1944,9 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		LiabilitiesP:     sdk.NewUint(1000),
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     externalAsset.Symbol,
-		CustodyAmount:    sdk.NewUint(4000),
-		Leverage:         sdk.NewUint(2),
-		MtpHealth:        sdk.NewDecWithPrec(1, 1),
+		CustodyAmount:    sdk.NewUint(2000),
+		Leverage:         sdk.NewUint(1),
+		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               1,
 	}
@@ -1958,9 +1960,9 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		LiabilitiesP:     sdk.NewUint(500),
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     externalAsset.Symbol,
-		CustodyAmount:    sdk.NewUint(2000),
-		Leverage:         sdk.NewUint(2),
-		MtpHealth:        sdk.NewDecWithPrec(1, 1),
+		CustodyAmount:    sdk.NewUint(1000),
+		Leverage:         sdk.NewUint(1),
+		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               2,
 	}

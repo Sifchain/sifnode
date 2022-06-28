@@ -1,5 +1,5 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA && integration
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA,integration
 
 package cli_test
 
