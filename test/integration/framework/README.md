@@ -12,7 +12,7 @@ Prerequisite
 - sudo apt upgrade
 - sudo apt install -y gcc make python3-dev python3-venv golang
 - curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
-- sudo apt install nodejs npm
+- sudo apt install nodejs
 - Install geth (for peggy2)
   sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt-get update
