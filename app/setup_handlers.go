@@ -1,6 +1,7 @@
 package app
 
 import (
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
@@ -12,6 +13,12 @@ const releaseVersion = "0.13.4-rc.1"
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+
+		adminMigrator := adminkeeper.NewMigrator(app.AdminKeeper)
+		err := adminMigrator.InitialMigration(ctx)
+		if err != nil {
+			panic(err)
+		}
 
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
