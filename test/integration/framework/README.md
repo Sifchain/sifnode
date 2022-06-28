@@ -9,7 +9,7 @@ Prerequisite
 
 # Setup on Ubuntu 22.04
 - sudo apt update
-- sudo apt upgrade
+- sudo apt upgrade -y
 - sudo apt install -y gcc make python3-dev python3-venv golang
 - curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
 - sudo apt install nodejs
