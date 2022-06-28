@@ -146,7 +146,7 @@ func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *typ
 		return response, err
 	}
 
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
@@ -917,7 +917,7 @@ func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *t
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetLiquidityProtectionParams(ctx)
@@ -949,7 +949,7 @@ func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *ty
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	rateParams := k.GetLiquidityProtectionRateParams(ctx)
