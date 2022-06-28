@@ -319,20 +319,3 @@ func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Po
 	}
 	return poolList.Pools
 }
-
-func GetAdmins(address string) *tokenregistrytypes.AdminAccounts {
-	return &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
-		{
-			AdminType:    tokenregistrytypes.AdminType_CLPDEX,
-			AdminAddress: address,
-		},
-		{
-			AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
-			AdminAddress: address,
-		},
-		{
-			AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
-			AdminAddress: address,
-		},
-	}}
-}

@@ -65,14 +65,6 @@ type Crisis struct {
 	ConstantFee ConstantFee `json:"constant_fee"`
 }
 
-type AdminAccount struct {
-	AdminType    types.AdminType `json:"admin_type"`
-	AdminAddress string          `json:"admin_address"`
-}
-type AdminAccounts struct {
-	AdminAccounts []*AdminAccount `json:"admin_accounts"`
-}
-
 type Registry struct {
 	Entries []*RegistryEntry `json:"entries"`
 }
@@ -96,8 +88,16 @@ type RegistryEntry struct {
 	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
 }
 type TokenRegistry struct {
-	AdminAccounts AdminAccounts `json:"admin_accounts"`
-	Registry      Registry      `json:"registry"`
+	Registry Registry `json:"registry"`
+}
+
+type Admin struct {
+	AdminAccounts []AdminAccount `json:"admin_accounts"`
+}
+
+type AdminAccount struct {
+	AdminType    int32  `json:"admin_type"`
+	AdminAddress string `json:"admin_address"`
 }
 
 type ConstantFee struct {
@@ -439,6 +439,7 @@ type AppState struct {
 	Genutil       Genutil       `json:"genutil"`
 	Crisis        Crisis        `json:"crisis"`
 	TokenRegistry TokenRegistry `json:"tokenregistry"`
+	Admin         Admin         `json:"admin"`
 }
 
 type Genesis struct {

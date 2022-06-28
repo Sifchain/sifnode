@@ -6,37 +6,25 @@ import (
 )
 
 type Migrator struct {
-	keeper tkrtypes.Keeper
+	tkrtypes.Keeper
 }
 
 func NewMigrator(keeper tkrtypes.Keeper) Migrator {
-	return Migrator{keeper: keeper}
+	return Migrator{keeper}
 }
 
-func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
-	registry := m.keeper.GetRegistry(ctx)
-	for _, entry := range registry.Entries {
-		if entry.Decimals > 9 && m.keeper.CheckEntryPermissions(entry, []tkrtypes.Permission{tkrtypes.Permission_CLP, tkrtypes.Permission_IBCEXPORT}) {
-			entry.Permissions = append(entry.Permissions, tkrtypes.Permission_IBCIMPORT)
-			entry.IbcCounterpartyDenom = ""
+func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
+	store := ctx.KVStore(m.StoreKey())
+	iterator := sdk.KVStorePrefixIterator(store, []byte{0x02})
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
 		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		store.Delete(iterator.Key())
 	}
-	m.keeper.SetRegistry(ctx, registry)
-	return nil
-}
 
-func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
-	gen := tkrtypes.ProdAdminAccounts()
-	accounts := *gen
-	m.keeper.DeleteOldAdminAccount(ctx)
-	for _, account := range accounts.AdminAccounts {
-		m.keeper.SetAdminAccount(ctx, account)
-	}
 	return nil
-}
-
-func (k keeper) DeleteOldAdminAccount(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	key := tkrtypes.AdminAccountStorePrefix
-	store.Delete(key)
 }

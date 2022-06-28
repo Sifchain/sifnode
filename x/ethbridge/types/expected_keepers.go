@@ -1,8 +1,8 @@
 package types
 
 import (
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -32,6 +32,6 @@ type OracleKeeper interface {
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
 }
 
-type TokenRegistryKeeper interface {
-	IsAdminAccount(ctx sdk.Context, moduleName tokenregistryTypes.AdminType, adminAccount sdk.AccAddress) bool
+type AdminKeeper interface {
+	IsAdminAccount(ctx sdk.Context, moduleName admintypes.AdminType, adminAccount sdk.AccAddress) bool
 }
