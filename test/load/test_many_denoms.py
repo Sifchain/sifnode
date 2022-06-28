@@ -121,6 +121,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     assert number_of_erc20_tokens > 1
     assert sample_loop_size > 0
 
+    sif_balance_change_timeout = 600
+
     token_name_base = random_string(4)
     owner = ctx.operator
     test_start_time = time.time()
@@ -178,7 +180,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
 
     fat_balance = {denom: amount for denom in sif_denoms}
     time_before = time.time()
-    ctx.wait_for_sif_balance_change(fat_sif_wallet, sif_balance_before, expected_balance=fat_balance)
+    ctx.wait_for_sif_balance_change(fat_sif_wallet, sif_balance_before, expected_balance=fat_balance, timeout=None,
+        change_timeout=sif_balance_change_timeout)
     balance_change_time = time.time() - time_before
     assert balance_equal(ctx.get_sifchain_balance(fat_sif_wallet), fat_balance)
 
@@ -202,7 +205,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     slim_balance_before = ctx.get_sifchain_balance(slim_sif_wallet)
     batch_mint_erc20_tokens(ctx, owner, eth_sender, amount, [token0])
     batch_approve_and_lock_erc20_tokens(ctx, eth_sender, slim_sif_wallet, [token0], amount)
-    ctx.wait_for_sif_balance_change(slim_sif_wallet, sif_balance_before, expected_balance=expected_slim_balance)
+    ctx.wait_for_sif_balance_change(slim_sif_wallet, sif_balance_before, expected_balance=expected_slim_balance,
+        timeout=None, change_timeout=sif_balance_change_timeout)
     assert cosmos.balance_equal(ctx.get_sifchain_balance(slim_sif_wallet), expected_slim_balance)
 
     log.info("Current phase: timing send and burn operations for fat vs. slim wallet")
