@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package types
 
 import (
@@ -12,6 +15,7 @@ type BankKeeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
+	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 }
 
 type CLPKeeper interface {
@@ -77,4 +81,6 @@ type Keeper interface {
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 
 	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
+
+	EmitForceClose(ctx sdk.Context, mtp *MTP, closer string)
 }

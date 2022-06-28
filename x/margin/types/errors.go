@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package types
 
 import sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

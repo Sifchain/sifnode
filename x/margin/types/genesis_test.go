@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package types_test
 
 import (
@@ -11,7 +14,7 @@ func TestTypes_DefaultGenesis(t *testing.T) {
 	got := types.DefaultGenesis()
 
 	require.NotNil(t, got.Params.LeverageMax)
-	require.Equal(t, "1", got.Params.LeverageMax.String())
+	require.Equal(t, "2", got.Params.LeverageMax.String())
 	require.NotNil(t, got.Params.InterestRateMin)
 	require.Equal(t, "0.005000000000000000", got.Params.InterestRateMin.String())
 	require.NotNil(t, got.Params.InterestRateMax)

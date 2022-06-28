@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package keeper
 
 import (
@@ -20,15 +23,14 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 					continue // ?
 				}
 				pool.InterestRate = rate
+				_ = k.UpdatePoolHealth(ctx, pool)
+				_ = k.clpKeeper.SetPool(ctx, pool)
 				//mtps := k.GetMTPsForPool(ctx, pool) // TODO define
 				mtps := k.GetMTPsForCustodyAsset(ctx, pool.ExternalAsset.Symbol)
 				ctx.Logger().Info("Number of MTPs", "mtps", len(mtps))
 				for _, mtp := range mtps {
 					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
-
-				_ = k.UpdatePoolHealth(ctx, pool)
-				_ = k.clpKeeper.SetPool(ctx, pool)
 			}
 		}
 
@@ -51,5 +53,9 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	mtp.MtpHealth = h
 	_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
 	_ = k.SetMTP(ctx, mtp)
-	_, _ = k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
+	_, err = k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
+	if err == nil {
+		// Emit event if position was closed
+		k.EmitForceClose(ctx, mtp, "")
+	}
 }

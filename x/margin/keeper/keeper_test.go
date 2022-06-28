@@ -1,3 +1,6 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package keeper_test
 
 import (
@@ -769,7 +772,6 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
-			errString:        errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
 		},
 		{
 			name:             "collateral and native assets are equal",
