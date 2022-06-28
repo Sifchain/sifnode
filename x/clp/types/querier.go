@@ -11,6 +11,7 @@ const (
 	QueryParams                = "params"
 	QueryRewardParams          = "rewardParams"
 	QueryPmtpParams            = "pmtpParams"
+	QueryUpgradeParams         = "upgradeParams"
 )
 
 func NewQueryReqGetPool(symbol string) PoolReq {

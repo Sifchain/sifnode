@@ -33,6 +33,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdParams(queryRoute),
 		GetCmdRewardsParams(queryRoute),
 		GetCmdPmtpParams(queryRoute),
+		GetCmdUpgradeParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -108,6 +109,35 @@ func GetCmdPools(queryRoute string) *cobra.Command {
 	flags.AddPaginationFlagsToCmd(cmd, "pools")
 
 	return cmd
+}
+func GetCmdUpgradeParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "upg [handler]",
+		Short: "Get upgrade params",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			handler := args[0]
+			assetReq := types.UpgradeReq{
+				Handler: handler,
+			}
+			res, err := queryClient.GetUpgradeParams(context.Background(), &assetReq)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "assets")
+
+	return cmd
+
 }
 
 func GetCmdAssets(queryRoute string) *cobra.Command {

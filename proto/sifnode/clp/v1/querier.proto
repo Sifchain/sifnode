@@ -47,6 +47,9 @@ service Query {
   rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
+  rpc GetUpgradeParams(UpgradeReq) returns (UpgradeRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/upgrade_params";
+  };
 }
 
 message PoolReq {
@@ -160,9 +163,7 @@ message ParamsRes {
 
 message RewardParamsReq {}
 
-message RewardParamsRes {
-  RewardParams params = 1;
-}
+message RewardParamsRes { RewardParams params = 1; }
 message PmtpParamsReq {}
 
 message PmtpParamsRes {
@@ -170,4 +171,12 @@ message PmtpParamsRes {
   sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
   sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
   int64 height = 4;
+}
+
+message UpgradeReq { string handler = 1; }
+message UpgradeRes {
+  bool downgrade = 1;
+  bool hashandler = 2;
+  string plan = 3;
+  int64 plan_height = 4;
 }

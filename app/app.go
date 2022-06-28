@@ -346,6 +346,7 @@ func NewSifApp(
 		app.TokenRegistryKeeper,
 		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
+		app.UpgradeKeeper,
 	)
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks

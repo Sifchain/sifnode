@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -23,10 +24,11 @@ type Keeper struct {
 	tokenRegistryKeeper types.TokenRegistryKeeper
 	mintKeeper          mintkeeper.Keeper
 	paramstore          paramtypes.Subspace
+	upgradeKeeper       upgradekeeper.Keeper
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace, up upgradekeeper.Keeper) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -39,6 +41,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		tokenRegistryKeeper: tokenRegistryKeeper,
 		mintKeeper:          mintKeeper,
 		paramstore:          ps,
+		upgradeKeeper:       up,
 	}
 	return keeper
 }

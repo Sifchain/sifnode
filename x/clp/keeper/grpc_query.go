@@ -22,6 +22,20 @@ type Querier struct {
 
 var _ types.QueryServer = Querier{}
 
+func (k Querier) GetUpgradeParams(c context.Context, req *types.UpgradeReq) (*types.UpgradeRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	//downgradeVerfied := k.Keeper.upgradeKeeper.DowngradeVerified()
+	has_handler := k.Keeper.upgradeKeeper.HasHandler(req.Handler)
+	//plan, height := k.Keeper.upgradeKeeper.GetLastCompletedUpgrade(ctx)
+	done_height := k.Keeper.upgradeKeeper.GetDoneHeight(ctx, req.Handler)
+	return &types.UpgradeRes{
+		Downgrade:  false,
+		Hashandler: has_handler,
+		Plan:       req.Handler,
+		PlanHeight: done_height,
+	}, nil
+}
+
 func (k Querier) GetPool(c context.Context, req *types.PoolReq) (*types.PoolRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")

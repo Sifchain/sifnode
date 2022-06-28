@@ -33,10 +33,29 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 			return queryRewardParams(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryPmtpParams:
 			return queryPmtpParams(ctx, path[1:], req, legacyQuerierCdc, querier)
+		case types.QueryUpgradeParams:
+			return queryUpgradeParams(ctx, path[1:], req, legacyQuerierCdc, querier)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
 		}
 	}
+}
+
+func queryUpgradeParams(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) { //nolint
+	var params types.UpgradeReq
+	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	res, err := querier.GetUpgradeParams(sdk.WrapSDKContext(ctx), &params)
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
 }
 
 func queryPool(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) { //nolint
