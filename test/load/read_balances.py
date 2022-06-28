@@ -15,7 +15,7 @@ def get_ctx():
 
 
 def get_balances(ctx: test_utils.EnvCtx, address: cosmos.Address):
-    balances = ctx.get_sifchain_balance_large(address)
+    balances = ctx.get_sifchain_balance(address)
     log.info("Number of balances: {}".format(len(balances)))
 
 
