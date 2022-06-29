@@ -68,19 +68,26 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   bool private _reinitialized;
 
   /**
+   * @dev The address of the Rowan Token
+   */
+   address public rowanTokenAddress;
+
+  /**
    * @notice Initializer
    * @param _operator Manages the contract
    * @param _cosmosBridgeAddress The CosmosBridge contract's address
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
    * @param _networkDescriptor Indentifies the connected network
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
    */
   function initialize(
     address _operator,
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
-    int32 _networkDescriptor
+    int32 _networkDescriptor,
+    address _rowanTokenAddress
   ) public {
     require(!_initialized, "Init");
 
@@ -92,7 +99,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
 
     _initialized = true;
 
-    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor);
+    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor, _rowanTokenAddress);
   }
 
   /**
@@ -102,19 +109,21 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
    * @param _networkDescriptor Indentifies the connected network
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
    */
   function reinitialize(
     address _operator,
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
-    int32 _networkDescriptor
+    int32 _networkDescriptor,
+    address _rowanTokenAddress
   ) public onlyOperator {
     require(!_reinitialized, "Already reinitialized");
 
     _reinitialized = true;
 
-    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor);
+    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor, _rowanTokenAddress);
   }
 
   /**
@@ -124,13 +133,15 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
    * @param _networkDescriptor Indentifies the connected network
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
    */
   function _initialize(
     address _operator,
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
-    int32 _networkDescriptor
+    int32 _networkDescriptor,
+    address _rowanTokenAddress
   ) private {
     Pausable._pausableInitialize(_pauser);
 
@@ -138,7 +149,18 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     cosmosBridge = _cosmosBridgeAddress;
     owner = _owner;
     networkDescriptor = _networkDescriptor;
+    rowanTokenAddress = _rowanTokenAddress;
   }
+
+  /**
+   * @dev Set or update the rowanTokenAddress Only the operator can call this function
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
+   * @notice Cannot set RowanTokenAddress to the zero address
+   */
+   function setRowanTokenAddress(address _rowanTokenAddress) public onlyOperator {
+    require(_rowanTokenAddress != address(0), "invalid address");
+    rowanTokenAddress = _rowanTokenAddress;
+   }
 
   /**
    * @dev Modifier to restrict access to operator
@@ -476,7 +498,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @return The bridgeTokens's denom or ''
    */
   function getDenom(address token) private returns (string memory) {
-    if (token == 0x07baC35846e5eD502aA91AdF6A9e7aA210F2DcbE) {
+    if (token == rowanTokenAddress) {
       // If it's the old erowan token, set the denom to 'rowan' and move forward
       return "rowan";
     }
@@ -629,6 +651,9 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     tokenToTransfer.burnFrom(msg.sender, tokenAmount);
 
     string memory denom = getDenom(tokenAddress);
+    
+    // Explicitly check that the denom is not the empty string
+    require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
 
     // decimals defaults to 18 if call to decimals fails
     uint8 decimals = getDecimals(tokenAddress);
