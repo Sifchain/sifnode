@@ -1,6 +1,3 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package app
 
 import (
@@ -249,33 +246,30 @@ func NewSifApp(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
-	keys := sdk.NewKVStoreKeys(
-		append(
-			[]string{
-				authtypes.StoreKey,
-				banktypes.StoreKey,
-				stakingtypes.StoreKey,
-				paramstypes.StoreKey,
-				upgradetypes.StoreKey,
-				govtypes.StoreKey,
-				minttypes.StoreKey,
-				distrtypes.StoreKey,
-				slashingtypes.StoreKey,
-				evidencetypes.StoreKey,
-				ibchost.StoreKey,
-				ibctransfertypes.StoreKey,
-				feegrant.StoreKey,
-				capabilitytypes.StoreKey,
-				disptypes.StoreKey,
-				ethbridgetypes.StoreKey,
-				clptypes.StoreKey,
-				oracletypes.StoreKey,
-				tokenregistrytypes.StoreKey,
-				admintypes.StoreKey,
-			},
-			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getStoreKeys()...,
-		)...,
-	)
+	storeKeys := []string{
+		authtypes.StoreKey,
+		banktypes.StoreKey,
+		stakingtypes.StoreKey,
+		paramstypes.StoreKey,
+		upgradetypes.StoreKey,
+		govtypes.StoreKey,
+		minttypes.StoreKey,
+		distrtypes.StoreKey,
+		slashingtypes.StoreKey,
+		evidencetypes.StoreKey,
+		ibchost.StoreKey,
+		ibctransfertypes.StoreKey,
+		feegrant.StoreKey,
+		capabilitytypes.StoreKey,
+		disptypes.StoreKey,
+		ethbridgetypes.StoreKey,
+		clptypes.StoreKey,
+		oracletypes.StoreKey,
+		tokenregistrytypes.StoreKey,
+		admintypes.StoreKey,
+	}
+	storeKeys = append(storeKeys, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getStoreKeys()...)
+	keys := sdk.NewKVStoreKeys(storeKeys...)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 	var app = &SifchainApp{
@@ -362,17 +356,6 @@ func NewSifApp(
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
 	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
-	app.ClpKeeper = clpkeeper.NewKeeper(
-		appCodec,
-		keys[clptypes.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.TokenRegistryKeeper,
-		app.AdminKeeper,
-		app.MintKeeper,
-		func() margintypes.Keeper { return app.MarginKeeper },
-		app.GetSubspace(clptypes.ModuleName),
-	)
 
 	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app, keys, &appCodec)
 
@@ -462,102 +445,92 @@ func NewSifApp(
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
-	app.mm = module.NewManager(
-		append(
-			[]module.AppModule{
-				genutil.NewAppModule(
-					app.AccountKeeper,
-					app.StakingKeeper,
-					app.BaseApp.DeliverTx,
-					encodingConfig.TxConfig,
-				),
-				auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
-				vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
-				bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
-				capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-				crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
-				gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-				mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
-				slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-				distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-				staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-				upgrade.NewAppModule(app.UpgradeKeeper),
-				evidence.NewAppModule(app.EvidenceKeeper),
-				feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
-				ibc.NewAppModule(app.IBCKeeper),
-				params.NewAppModule(app.ParamsKeeper),
-				transferModule,
-				clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
-				oracle.NewAppModule(app.OracleKeeper),
-				ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
-				dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
-				tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
-				admin.NewAppModule(app.AdminKeeper, &appCodec),
-			},
-			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModules(app, &appCodec)...,
-		)...,
-	)
+	appModules := []module.AppModule{
+		genutil.NewAppModule(
+			app.AccountKeeper,
+			app.StakingKeeper,
+			app.BaseApp.DeliverTx,
+			encodingConfig.TxConfig,
+		),
+		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
+		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
+		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
+		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		upgrade.NewAppModule(app.UpgradeKeeper),
+		evidence.NewAppModule(app.EvidenceKeeper),
+		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
+		ibc.NewAppModule(app.IBCKeeper),
+		params.NewAppModule(app.ParamsKeeper),
+		transferModule,
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		oracle.NewAppModule(app.OracleKeeper),
+		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
+		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
+		admin.NewAppModule(app.AdminKeeper, &appCodec),
+	}
+	appModules = append(appModules, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModules(app, &appCodec)...)
+	app.mm = module.NewManager(appModules...)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(
-		append(
-			[]string{
-				upgradetypes.ModuleName,
-				capabilitytypes.ModuleName,
-				minttypes.ModuleName,
-				distrtypes.ModuleName,
-				slashingtypes.ModuleName,
-				evidencetypes.ModuleName,
-				stakingtypes.ModuleName,
-				ibchost.ModuleName,
-				dispensation.ModuleName,
-				clptypes.ModuleName,
-			},
-			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers()...,
-		)...,
-	)
-	app.mm.SetOrderEndBlockers(
-		append(
-			[]string{
-				crisistypes.ModuleName,
-				govtypes.ModuleName,
-				stakingtypes.ModuleName,
-				feegrant.ModuleName,
-				clptypes.ModuleName,
-			},
-			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers()...,
-		)...,
-	)
+	orderBeginBlockers := []string{
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		minttypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		stakingtypes.ModuleName,
+		ibchost.ModuleName,
+		clptypes.ModuleName,
+	}
+	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_SDK_045_getOrderBeginBlockers(&transferModule)...)
+	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers()...)
+	app.mm.SetOrderBeginBlockers(orderBeginBlockers...)
+	orderEndBlockers := []string{
+		crisistypes.ModuleName,
+		govtypes.ModuleName,
+		stakingtypes.ModuleName,
+		feegrant.ModuleName,
+		clptypes.ModuleName,
+	}
+	orderEndBlockers = append(orderEndBlockers, FEATURE_TOGGLE_SDK_045_getOrderEndBlockers(&transferModule)...)
+	orderEndBlockers = append(orderEndBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers()...)
+	app.mm.SetOrderEndBlockers(orderEndBlockers...)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
-	app.mm.SetOrderInitGenesis(
-		append(
-			[]string{
-				capabilitytypes.ModuleName,
-				authtypes.ModuleName,
-				banktypes.ModuleName,
-				distrtypes.ModuleName,
-				stakingtypes.ModuleName,
-				slashingtypes.ModuleName,
-				govtypes.ModuleName,
-				minttypes.ModuleName,
-				crisistypes.ModuleName,
-				ibchost.ModuleName,
-				genutiltypes.ModuleName,
-				evidencetypes.ModuleName,
-				ibctransfertypes.ModuleName,
-				feegrant.ModuleName,
-				tokenregistrytypes.ModuleName,
-				admintypes.ModuleName,
-				clptypes.ModuleName,
-				oracletypes.ModuleName,
-				ethbridge.ModuleName,
-				dispensation.ModuleName,
-			},
-			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderInitGenesis()...,
-		)...,
-	)
+	orderInitGenesis := []string{
+		capabilitytypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		distrtypes.ModuleName,
+		stakingtypes.ModuleName,
+		slashingtypes.ModuleName,
+		govtypes.ModuleName,
+		minttypes.ModuleName,
+		crisistypes.ModuleName,
+		ibchost.ModuleName,
+		genutiltypes.ModuleName,
+		evidencetypes.ModuleName,
+		ibctransfertypes.ModuleName,
+		feegrant.ModuleName,
+		tokenregistrytypes.ModuleName,
+		admintypes.ModuleName,
+		clptypes.ModuleName,
+		oracletypes.ModuleName,
+		ethbridge.ModuleName,
+		dispensation.ModuleName,
+	}
+	orderInitGenesis = append(orderInitGenesis, FEATURE_TOGGLE_SDK_045_getOrderInitGenesis(&transferModule)...)
+	orderInitGenesis = append(orderInitGenesis, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderInitGenesis()...)
+	app.mm.SetOrderInitGenesis(orderInitGenesis...)
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(app.configurator)

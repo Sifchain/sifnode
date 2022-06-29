@@ -4,6 +4,9 @@
 package app
 
 import (
+	"github.com/Sifchain/sifnode/x/admin"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin"
 	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
@@ -36,6 +39,17 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getStoreKeys() []string {
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app *SifchainApp, keys map[string]*types.KVStoreKey, appCodec *codec.Codec) {
+	app.ClpKeeper = clpkeeper.NewKeeper(
+		*appCodec,
+		keys[clptypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.TokenRegistryKeeper,
+		app.AdminKeeper,
+		app.MintKeeper,
+		func() margintypes.Keeper { return app.MarginKeeper },
+		app.GetSubspace(clptypes.ModuleName),
+	)
 	app.MarginKeeper = marginkeeper.NewKeeper(
 		keys[margintypes.StoreKey],
 		*appCodec,
@@ -55,12 +69,14 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModules(app *SifchainApp, appCodec *c
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers() []string {
 	return []string{
 		margin.ModuleName,
+		admin.ModuleName,
 	}
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers() []string {
 	return []string{
 		margin.ModuleName,
+		admin.ModuleName,
 	}
 }
 

@@ -13,7 +13,7 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bu
 GOFLAGS:=""
 GOTAGS:=
 ifeq ($(FEATURE_TOGGLE_SDK_045), 1)
-	GOFLAGS:="-modfile=go_045.mod"
+	GOFLAGS:="-modfile=go_FEATURE_TOGGLE_SDK_045.mod"
 	GOTAGS:=$(GOTAGS)FEATURE_TOGGLE_SDK_045,
 endif
 ifeq ($(FEATURE_TOGGLE_MARGIN_CLI_ALPHA), 1)
