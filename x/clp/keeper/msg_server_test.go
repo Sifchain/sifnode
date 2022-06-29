@@ -7,9 +7,11 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	admintest "github.com/Sifchain/sifnode/x/admin/test"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -1255,11 +1257,15 @@ func TestMsgServer_AddProviderDistribution(t *testing.T) {
 	admin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9q"
 	nonAdmin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9r"
 	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
-		trGs := &tokenregistrytypes.GenesisState{
-			AdminAccounts: test.GetAdmins(admin),
-			Registry:      nil,
+		adminGs := &admintypes.GenesisState{
+			AdminAccounts: admintest.GetAdmins(admin),
 		}
-		bz, _ := app.AppCodec().MarshalJSON(trGs)
+		bz, _ := app.AppCodec().MarshalJSON(adminGs)
+		genesisState["admin"] = bz
+		trGs := &tokenregistrytypes.GenesisState{
+			Registry: nil,
+		}
+		bz, _ = app.AppCodec().MarshalJSON(trGs)
 		genesisState["tokenregistry"] = bz
 
 		return genesisState
