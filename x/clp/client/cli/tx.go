@@ -133,9 +133,14 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			ratioThreshold, err := sdk.NewDecFromStr(viper.GetString(FlagSymmetryRatioThreshold))
+			if err != nil {
+				return err
+			}
 			msg := types.MsgSetSymmetryThreshold{
 				Signer:    signer.String(),
 				Threshold: threshold,
+				Ratio:     ratioThreshold,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -143,7 +148,8 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().String(FlagSymmetryThreshold, "", "")
+	cmd.Flags().AddFlagSet(FsSymmetryThreshold)
+	cmd.Flags().AddFlagSet(FsSymmetryRatioThreshold)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -556,8 +562,8 @@ func GetCmdUnlockLiquidity() *cobra.Command {
 
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			signer := clientCtx.GetFromAddress()
-			units := viper.GetUint64(FlagUnits)
-			unitsInt := sdk.NewUint(units)
+			units := viper.GetString(FlagUnits)
+			unitsInt := sdk.NewUintFromString(units)
 			msg := types.MsgUnlockLiquidityRequest{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,
@@ -596,8 +602,8 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			signer := clientCtx.GetFromAddress()
-			units := viper.GetUint64(FlagUnits)
-			unitsInt := sdk.NewUint(units)
+			units := viper.GetString(FlagUnits)
+			unitsInt := sdk.NewUintFromString(units)
 			msg := types.MsgCancelUnlock{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,

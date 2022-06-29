@@ -1149,6 +1149,7 @@ var xxx_messageInfo_MsgAddRewardPeriodResponse proto.InternalMessageInfo
 type MsgSetSymmetryThreshold struct {
 	Signer    string                                 `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	Threshold github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=threshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"threshold"`
+	Ratio     github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,3,opt,name=ratio,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"ratio"`
 }
 
 func (m *MsgSetSymmetryThreshold) Reset()         { *m = MsgSetSymmetryThreshold{} }
@@ -2986,6 +2987,16 @@ func (m *MsgSetSymmetryThreshold) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	var l int
 	_ = l
 	{
+		size := m.Ratio.Size()
+		i -= size
+		if _, err := m.Ratio.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	{
 		size := m.Threshold.Size()
 		i -= size
 		if _, err := m.Threshold.MarshalTo(dAtA[i:]); err != nil {
@@ -3531,6 +3542,8 @@ func (m *MsgSetSymmetryThreshold) Size() (n int) {
 		n += 1 + l + sovTx(uint64(l))
 	}
 	l = m.Threshold.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = m.Ratio.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
@@ -6209,6 +6222,40 @@ func (m *MsgSetSymmetryThreshold) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Threshold.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Ratio", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Ratio.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
