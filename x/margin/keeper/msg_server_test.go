@@ -654,16 +654,16 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 				gs3 := &types.GenesisState{
 					Params: &types.Params{
-						LeverageMax:          sdk.NewUint(2),
-						InterestRateMax:      sdk.NewDec(1),
-						InterestRateMin:      sdk.ZeroDec(),
-						InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
-						InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
-						HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
-						EpochLength:          0,
-						ForceCloseThreshold:  sdk.ZeroDec(),
-            RemovalQueueThreshold: sdk.ZeroDec(),
-						Pools:                []string{},
+						LeverageMax:           sdk.NewUint(2),
+						InterestRateMax:       sdk.NewDec(1),
+						InterestRateMin:       sdk.ZeroDec(),
+						InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
+						InterestRateDecrease:  sdk.NewDecWithPrec(1, 1),
+						HealthGainFactor:      sdk.NewDecWithPrec(1, 2),
+						EpochLength:           0,
+						ForceCloseThreshold:   sdk.ZeroDec(),
+						RemovalQueueThreshold: sdk.ZeroDec(),
+						Pools:                 []string{},
 					},
 				}
 
@@ -808,15 +808,15 @@ func TestKeeper_OpenClose(t *testing.T) {
 			})
 
 			params := types.Params{
-				LeverageMax:          sdk.NewUint(2),
-				InterestRateMax:      sdk.NewDec(1),
-				InterestRateMin:      sdk.ZeroDec(),
-				InterestRateIncrease: sdk.NewDecWithPrec(1, 1),
-				InterestRateDecrease: sdk.NewDecWithPrec(1, 1),
-				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
-				EpochLength:          0,
-				ForceCloseThreshold:  sdk.ZeroDec(),
-        RemovalQueueThreshold: sdk.ZeroDec(),
+				LeverageMax:           sdk.NewUint(2),
+				InterestRateMax:       sdk.NewDec(1),
+				InterestRateMin:       sdk.ZeroDec(),
+				InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
+				InterestRateDecrease:  sdk.NewDecWithPrec(1, 1),
+				HealthGainFactor:      sdk.NewDecWithPrec(1, 2),
+				EpochLength:           0,
+				ForceCloseThreshold:   sdk.ZeroDec(),
+				RemovalQueueThreshold: sdk.ZeroDec(),
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -1662,15 +1662,15 @@ func TestKeeper_EC(t *testing.T) {
 
 				gs3 := &types.GenesisState{
 					Params: &types.Params{
-						LeverageMax:          sdk.NewUint(2),
-						HealthGainFactor:     sdk.NewDec(1),
-						InterestRateMin:      sdk.NewDecWithPrec(5, 3),
-						InterestRateMax:      sdk.NewDec(3),
-						InterestRateDecrease: sdk.NewDecWithPrec(1, 2),
-						InterestRateIncrease: sdk.NewDecWithPrec(1, 2),
-						ForceCloseThreshold:  sdk.NewDecWithPrec(1, 2),
-            RemovalQueueThreshold: sdk.ZeroDec(),
-						EpochLength:          1,
+						LeverageMax:           sdk.NewUint(2),
+						HealthGainFactor:      sdk.NewDec(1),
+						InterestRateMin:       sdk.NewDecWithPrec(5, 3),
+						InterestRateMax:       sdk.NewDec(3),
+						InterestRateDecrease:  sdk.NewDecWithPrec(1, 2),
+						InterestRateIncrease:  sdk.NewDecWithPrec(1, 2),
+						ForceCloseThreshold:   sdk.NewDecWithPrec(1, 2),
+						RemovalQueueThreshold: sdk.ZeroDec(),
+						EpochLength:           1,
 						Pools: []string{
 							ec.externalAsset,
 						},
