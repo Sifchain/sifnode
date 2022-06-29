@@ -84,15 +84,16 @@ func (s *IntegrationTestSuite) TestA1_MarginParams() {
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &res), out.String())
 
 	s.Require().Equal(res.Params, &margintypes.Params{
-		LeverageMax:          sdk.NewUintFromString("2"),
-		HealthGainFactor:     sdk.MustNewDecFromStr("1.0"),
-		InterestRateMin:      sdk.MustNewDecFromStr("0.005"),
-		InterestRateMax:      sdk.MustNewDecFromStr("3.0"),
-		InterestRateDecrease: sdk.MustNewDecFromStr("0.001"),
-		InterestRateIncrease: sdk.MustNewDecFromStr("0.001"),
-		ForceCloseThreshold:  sdk.MustNewDecFromStr("0.01"),
-		EpochLength:          1,
-		Pools:                []string{"cusdt"},
+		LeverageMax:           sdk.NewUintFromString("2"),
+		HealthGainFactor:      sdk.MustNewDecFromStr("1.0"),
+		InterestRateMin:       sdk.MustNewDecFromStr("0.005"),
+		InterestRateMax:       sdk.MustNewDecFromStr("3.0"),
+		InterestRateDecrease:  sdk.MustNewDecFromStr("0.001"),
+		InterestRateIncrease:  sdk.MustNewDecFromStr("0.001"),
+		ForceCloseThreshold:   sdk.MustNewDecFromStr("0.01"),
+		RemovalQueueThreshold: sdk.MustNewDecFromStr("0.1"),
+		EpochLength:           1,
+		Pools:                 []string{"cusdt"},
 	})
 }
 
@@ -127,8 +128,6 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	txResp := respType.(*sdk.TxResponse)
 	s.Require().Equal(uint32(0), txResp.Code)
 
-	height, _ := s.network.LatestHeight()
-
 	testCases := []struct {
 		height                    int64
 		expectedPool              clptypes.Pool
@@ -138,7 +137,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 		expectedMtp               margintypes.MTP
 	}{
 		{
-			height: 1,
+			height: 9,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"), // 1560459 rowan
@@ -169,7 +168,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			},
 		},
 		{
-			height: 2,
+			height: 10,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
@@ -200,7 +199,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			},
 		},
 		{
-			height: 3,
+			height: 11,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
@@ -231,7 +230,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			},
 		},
 		{
-			height: 4,
+			height: 12,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
@@ -262,7 +261,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 			},
 		},
 		{
-			height: 5,
+			height: 13,
 			expectedPool: clptypes.Pool{
 				ExternalAsset:                 &clptypes.Asset{Symbol: borrowAsset},
 				NativeAssetBalance:            sdk.NewUintFromString("1540459183129248235861408"),
@@ -297,10 +296,10 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	for _, tc := range testCases {
 		tc := tc
 
-		_, err := s.network.WaitForHeight(height + tc.height)
+		_, err := s.network.WaitForHeight(tc.height)
 		s.Require().NoError(err)
 
-		s.Run(fmt.Sprintf("height: %d (%d)", height+tc.height, tc.height), func() {
+		s.Run(fmt.Sprintf("height: %d", tc.height), func() {
 			out, err := QueryClpPoolExec(clientCtx, borrowAsset)
 			s.Require().NoError(err)
 
