@@ -662,6 +662,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 						HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
 						EpochLength:          0,
 						ForceCloseThreshold:  sdk.ZeroDec(),
+            RemovalQueueThreshold: sdk.ZeroDec(),
 						Pools:                []string{},
 					},
 				}
@@ -815,6 +816,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				HealthGainFactor:     sdk.NewDecWithPrec(1, 2),
 				EpochLength:          0,
 				ForceCloseThreshold:  sdk.ZeroDec(),
+        RemovalQueueThreshold: sdk.ZeroDec(),
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -1667,6 +1669,7 @@ func TestKeeper_EC(t *testing.T) {
 						InterestRateDecrease: sdk.NewDecWithPrec(1, 2),
 						InterestRateIncrease: sdk.NewDecWithPrec(1, 2),
 						ForceCloseThreshold:  sdk.NewDecWithPrec(1, 2),
+            RemovalQueueThreshold: sdk.ZeroDec(),
 						EpochLength:          1,
 						Pools: []string{
 							ec.externalAsset,

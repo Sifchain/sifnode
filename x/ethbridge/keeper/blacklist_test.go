@@ -1,9 +1,7 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package keeper_test
 
 import (
+	"os"
 	"testing"
 
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
@@ -13,6 +11,10 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+)
+
+var (
+	isFeatureToggleSdk045 = os.Getenv("FEATURE_TOGGLE_SDK_045") != ""
 )
 
 func TestIsBlacklisted(t *testing.T) {
@@ -126,11 +128,13 @@ func TestSetBlacklist(t *testing.T) {
 			Addresses: tc.updated,
 		})
 		require.NoError(t, err)
-		for _, address := range tc.expectTrue {
-			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
-		}
-		for _, address := range tc.expectFalse {
-			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
+		if !isFeatureToggleSdk045 {
+			for _, address := range tc.expectTrue {
+				require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
+			}
+			for _, address := range tc.expectFalse {
+				require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
+			}
 		}
 	}
 }

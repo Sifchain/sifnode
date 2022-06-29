@@ -42,6 +42,10 @@ func (k Keeper) GetForceCloseThreshold(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).ForceCloseThreshold
 }
 
+func (k Keeper) GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec {
+	return k.GetParams(ctx).RemovalQueueThreshold
+}
+
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	return k.GetParams(ctx).Pools
 }

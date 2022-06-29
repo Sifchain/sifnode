@@ -38,14 +38,15 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:          sdk.NewUint(10),
-			InterestRateMax:      sdk.NewDec(5),
-			InterestRateMin:      sdk.NewDec(1),
-			InterestRateIncrease: sdk.NewDec(1),
-			InterestRateDecrease: sdk.NewDec(1),
-			HealthGainFactor:     sdk.NewDec(1),
-			EpochLength:          1,
-			ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
+			LeverageMax:           sdk.NewUint(10),
+			InterestRateMax:       sdk.NewDec(5),
+			InterestRateMin:       sdk.NewDec(1),
+			InterestRateIncrease:  sdk.NewDec(1),
+			InterestRateDecrease:  sdk.NewDec(1),
+			HealthGainFactor:      sdk.NewDec(1),
+			EpochLength:           1,
+			ForceCloseThreshold:   sdk.NewDec(1), //TODO get real default
+			RemovalQueueThreshold: sdk.ZeroDec(),
 		}
 		want := types.GenesisState{Params: &params}
 		marginKeeper.InitGenesis(ctx, want)
@@ -86,14 +87,15 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:          sdk.NewUint(10),
-			InterestRateMax:      sdk.NewDec(5),
-			InterestRateMin:      sdk.NewDec(1),
-			InterestRateIncrease: sdk.NewDec(1),
-			InterestRateDecrease: sdk.NewDec(1),
-			HealthGainFactor:     sdk.NewDec(1),
-			EpochLength:          1,
-			ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
+			LeverageMax:           sdk.NewUint(10),
+			InterestRateMax:       sdk.NewDec(5),
+			InterestRateMin:       sdk.NewDec(1),
+			InterestRateIncrease:  sdk.NewDec(1),
+			InterestRateDecrease:  sdk.NewDec(1),
+			HealthGainFactor:      sdk.NewDec(1),
+			EpochLength:           1,
+			ForceCloseThreshold:   sdk.NewDec(1), //TODO get real default
+			RemovalQueueThreshold: sdk.ZeroDec(),
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)

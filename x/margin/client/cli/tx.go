@@ -175,14 +175,15 @@ func GetUpdateParamsCmd() *cobra.Command {
 			msg := types.MsgUpdateParams{
 				Signer: clientCtx.GetFromAddress().String(),
 				Params: &types.Params{
-					LeverageMax:          sdk.NewUintFromString(viper.GetString("leverage-max")),
-					InterestRateMax:      sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
-					InterestRateMin:      sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
-					InterestRateIncrease: sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),
-					InterestRateDecrease: sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
-					HealthGainFactor:     sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
-					ForceCloseThreshold:  sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
-					EpochLength:          viper.GetInt64("epoch-length"),
+					LeverageMax:           sdk.NewUintFromString(viper.GetString("leverage-max")),
+					InterestRateMax:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
+					InterestRateMin:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
+					InterestRateIncrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),
+					InterestRateDecrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
+					HealthGainFactor:      sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
+					ForceCloseThreshold:   sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
+					EpochLength:           viper.GetInt64("epoch-length"),
+					RemovalQueueThreshold: sdk.MustNewDecFromStr(viper.GetString("removal-queue-threshold")),
 				},
 			}
 
@@ -203,6 +204,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().String("health-gain-factor", "", "health gain factor (decimal)")
 	cmd.Flags().String("force-close-threshold", "", "force close threshold (decimal range 0-1)")
 	cmd.Flags().Int64("epoch-length", 1, "epoch length in blocks (integer)")
+	cmd.Flags().String("removal-queue-threshold", "", "removal queue threshold (decimal range 0-1)")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
@@ -210,6 +212,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("interest-rate-decrease")
 	_ = cmd.MarkFlagRequired("health-gain-factor")
 	_ = cmd.MarkFlagRequired("force-close-threshold")
+	_ = cmd.MarkFlagRequired("removal-queue-threshold")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

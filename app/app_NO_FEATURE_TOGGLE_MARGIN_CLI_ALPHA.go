@@ -4,6 +4,8 @@
 package app
 
 import (
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -26,6 +28,16 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getStoreKeys() []string {
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app *SifchainApp, keys map[string]*types.KVStoreKey, appCodec *codec.Codec) {
+	app.ClpKeeper = clpkeeper.NewKeeper(
+		*appCodec,
+		keys[clptypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.TokenRegistryKeeper,
+		app.AdminKeeper,
+		app.MintKeeper,
+		app.GetSubspace(clptypes.ModuleName),
+	)
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModules(app *SifchainApp, appCodec *codec.Codec) []module.AppModule {

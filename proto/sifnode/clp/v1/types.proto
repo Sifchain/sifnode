@@ -101,3 +101,13 @@ message EventPolicy {
   string pmtp_period_start_block = 2;
   string pmtp_period_end_block = 3;
 }
+
+message RemovalQueue {
+  int64 count = 1;
+  int64 id = 2;
+  int64 start_height = 3;
+  string total_value = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
