@@ -35,13 +35,20 @@ module.exports = async (cb) => {
       process.argv[4] === "--network" && process.argv[5] === "mainnet";
     const NETWORK_GOERLI =
       process.argv[4] === "--network" && process.argv[5] === "goerli";
+    const NETWORK_SEPOLIA =
+      process.argv[4] === "--network" && process.argv[5] === "sepolia";
 
     /*******************************************
      *** Web3 provider
      *** Set contract provider based on --network flag
      ******************************************/
     let provider;
-    if (NETWORK_ROPSTEN || NETWORK_MAINNET || NETWORK_GOERLI) {
+    if (
+      NETWORK_ROPSTEN ||
+      NETWORK_MAINNET ||
+      NETWORK_GOERLI ||
+      NETWORK_SEPOLIA
+    ) {
       provider = new HDWalletProvider(
         process.env.ETHEREUM_PRIVATE_KEY,
         process.env["WEB3_PROVIDER"]
