@@ -279,6 +279,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	}
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	symmetryThreshold := k.GetSymmetryThreshold(ctx)
+	ratioThreshold := k.GetSymmetryRatio(ctx)
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
@@ -287,7 +288,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		msg.ExternalAssetAmount,
 		normalizationFactor,
 		adjustExternalToken,
-		symmetryThreshold)
+		symmetryThreshold,
+		ratioThreshold)
 	if err != nil {
 		return nil, err
 	}
