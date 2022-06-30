@@ -240,6 +240,7 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	// Nope, distribution failed
 	lpCoinsAfter := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	require.Equal(t, lpCoinsBefore, lpCoinsAfter)
+	require.Equal(t, pool.RewardPeriodNativeDistributed.String(), sdk.ZeroInt().String())
 
 	// Check tokens got burnt
 	moduleBalance := app.ClpKeeper.GetModuleRowan(ctx)
