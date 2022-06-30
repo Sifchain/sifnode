@@ -155,3 +155,53 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 		})
 	}
 }
+
+func TestKeeper_RewardsDistribution(t *testing.T) {
+	startBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewInt(42))
+	ctx, app := test.CreateTestAppClp(false)
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(startBalance))
+
+	allocation := sdk.NewUintFromString("200000000000000000000000000")
+	totalCoinsDistribution := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(allocation.BigInt()))
+	oneDec := sdk.OneDec()
+	period := types.RewardPeriod{
+		RewardPeriodId: "Test 1", RewardPeriodStartBlock: 0, RewardPeriodEndBlock: 0, RewardPeriodAllocation: &allocation,
+		RewardPeriodDefaultMultiplier: &oneDec, RewardPeriodDistribute: true, RewardPeriodMod: 0,
+		RewardPeriodPoolMultipliers: nil}
+
+	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, 1, 1)
+	pool := pools[0]
+	lps, _ := app.ClpKeeper.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
+	lp := lps[0]
+	lpAddr, _ := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+
+	lpCoinsBefore := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	// Disitribute coins to the LP
+	err := app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
+	require.Nil(t, err)
+	lpCoinsAfter1 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	require.True(t, lpCoinsBefore.IsLT(lpCoinsAfter1))
+	require.Equal(t, lpCoinsAfter1, totalCoinsDistribution)
+
+	distributed1 := pool.RewardPeriodNativeDistributed
+	moduleBalance1 := app.ClpKeeper.GetModuleRowan(ctx)
+	// We transfered all minted coins
+	require.Equal(t, startBalance.String(), moduleBalance1.String())
+
+	// This time, we do not distribute coins to the LP
+	period.RewardPeriodDistribute = false
+	// reset to easier keep track of it
+	pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
+	err = app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
+	require.Nil(t, err)
+	distributed2 := pool.RewardPeriodNativeDistributed
+	require.Equal(t, distributed1, distributed2)
+
+	lpCoinsAfter2 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	require.Equal(t, lpCoinsAfter1, lpCoinsAfter2)
+
+	moduleBalance2 := app.ClpKeeper.GetModuleRowan(ctx)
+	diffBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(distributed2.BigInt()))
+	// we did not distribute the newly minted coins
+	require.Equal(t, startBalance.Add(diffBalance).String(), moduleBalance2.String())
+}
