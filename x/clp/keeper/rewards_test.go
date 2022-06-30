@@ -185,7 +185,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 
 	distributed1 := pool.RewardPeriodNativeDistributed
 	moduleBalance1 := app.ClpKeeper.GetModuleRowan(ctx)
-	// We transfered all minted coins
+	// We transferred all minted coins
 	require.Equal(t, startBalance.String(), moduleBalance1.String())
 
 	// This time, we do not distribute coins to the LP
