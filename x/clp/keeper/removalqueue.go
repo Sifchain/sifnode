@@ -124,6 +124,7 @@ func (k Keeper) DequeueRemovalRequest(ctx sdk.Context, request types.RemovalRequ
 	emitDequeueRemoval(ctx, &request, &queue)
 }
 
+// GetRemovalQueueUnitsForLP gets the total units of removals an lp has queued for this pool
 func (k Keeper) GetRemovalQueueUnitsForLP(ctx sdk.Context, lp types.LiquidityProvider) sdk.Uint {
 	store := ctx.KVStore(k.storeKey)
 	prefix := types.GetRemovalRequestLPPrefix(lp.LiquidityProviderAddress)
@@ -135,7 +136,9 @@ func (k Keeper) GetRemovalQueueUnitsForLP(ctx sdk.Context, lp types.LiquidityPro
 		var request types.RemovalRequest
 		k.cdc.MustUnmarshal(iterator.Value(), &request)
 
-		units = units.Add(ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, request.Msg.WBasisPoints))
+		if lp.Asset.Equals(*request.Msg.ExternalAsset) {
+			units = units.Add(ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, request.Msg.WBasisPoints))
+		}
 	}
 
 	return units
