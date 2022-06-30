@@ -312,7 +312,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		),
 	})
 
-	if k.GetRemovalQueue(ctx).Count > 0 {
+	if k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol).Count > 0 {
 		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
 	}
 
