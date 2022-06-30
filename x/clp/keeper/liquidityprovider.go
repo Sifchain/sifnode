@@ -80,7 +80,7 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddre
 
 func (k Keeper) GetAllLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset) ([]*types.LiquidityProvider, error) {
 	lps, _, err := k.GetLiquidityProvidersForAssetPaginated(ctx, asset, &query.PageRequest{
-		Limit: uint64(math.MaxUint64),
+		Limit: uint64(math.MaxUint64 - 1), // minus one because of SDK bug
 	})
 
 	return lps, err
