@@ -7,7 +7,7 @@ fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
 
 
-def test_eth_to_ceth_and_back_grpc(ctx):
+def test_sign_prophecy_with_wrong_signature_grpc(ctx):
     # Create/retrieve a test ethereum account
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
