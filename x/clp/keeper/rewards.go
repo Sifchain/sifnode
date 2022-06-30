@@ -47,6 +47,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	}
 
 	tuples, coinsToMint := CollectPoolRewardTuples(pools, blockDistribution, totalDepth, period)
+	moduleBalancePreMinting := k.GetModuleRowan(ctx)
 	rewardCoins := sdk.NewCoins(sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(coinsToMint.BigInt())))
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
 	if err != nil {
@@ -76,39 +77,32 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 	}
 
 	if shouldDistribute {
-		prePoolRowanMap := make(PoolRowanMap, len(poolRowanMap))
-		for pool, rowan := range poolRowanMap {
-			prePoolRowanMap[pool] = rowan
-		}
-
 		// this updates poolRowanMap in case coin tranfers fails
 		k.TransferRewards(ctx, poolRowanMap, lpRowanMap, lpPoolMap)
 
-		// As we have already minted all coins we wanted to distribute, check if we could distribute them all.
-		// If not, burn what we could not distribute
-		rowanToBurn := sdk.ZeroUint()
 		for pool, rowan := range poolRowanMap {
-			diff := prePoolRowanMap[pool].Sub(rowan) // rowan is always <= prePoolRowanMap[pool]
-
-			// We did not distribute the whole amount
-			if !diff.Equal(sdk.ZeroUint()) {
-				rowanToBurn = rowanToBurn.Add(diff)
-			}
-
 			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(rowan)
 			k.SetPool(ctx, pool) // nolint:errcheck
 		}
 
-		if rowanToBurn.GT(sdk.ZeroUint()) {
-			return k.BurnRowan(ctx, rowanToBurn)
+		// As we have already minted all coins we wanted to distribute, check if we could distribute them all.
+		// If not, burn what we could not distribute
+		moduleBalancePostTransfer := k.GetModuleRowan(ctx)
+		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
+		if !diff.IsZero() {
+			return k.BurnRowan(ctx, diff)
 		}
 	}
 
 	return nil
 }
 
-func (k Keeper) BurnRowan(ctx sdk.Context, amount sdk.Uint) error {
-	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
+func (k Keeper) GetModuleRowan(ctx sdk.Context) sdk.Coin {
+	return k.bankKeeper.GetBalance(ctx, types.GetCLPModuleAddress(), types.NativeSymbol)
+}
+
+func (k Keeper) BurnRowan(ctx sdk.Context, amount sdk.Int) error {
+	coin := sdk.NewCoin(types.NativeSymbol, amount)
 	return k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(coin))
 }
 
