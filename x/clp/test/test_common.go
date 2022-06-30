@@ -39,10 +39,13 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
-
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
+	return CreateTestAppClpWithBlacklist(isCheckTx, []sdk.AccAddress{})
+}
+
+func CreateTestAppClpWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) (sdk.Context, *sifapp.SifchainApp) {
 	sifapp.SetConfig(false)
-	app := sifapp.Setup(isCheckTx)
+	app := sifapp.SetupWithBlacklist(isCheckTx, blacklist)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.TokenRegistryKeeper.SetRegistry(ctx, tokenregistrytypes.Registry{
 		Entries: []*tokenregistrytypes.RegistryEntry{
