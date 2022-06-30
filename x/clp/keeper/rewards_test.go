@@ -1,8 +1,10 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -204,4 +206,53 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	diffBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(distributed2.BigInt()))
 	// we did not distribute the newly minted coins
 	require.Equal(t, startBalance.Add(diffBalance).String(), moduleBalance2.String())
+}
+
+func TestKeeper_RewardsDistributionFailure(t *testing.T) {
+	sifapp.SetConfig(false) // needed for GenerateAddress to generate a proper address
+	// We cheat here to get the first LP's address in order to add it to the blacklist
+	lpAddress := test.GenerateAddress(fmt.Sprintf("%d", 0))
+	blacklist := []sdk.AccAddress{lpAddress}
+	startBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewInt(42))
+
+	ctx, app := test.CreateTestAppClpWithBlacklist(false, blacklist)
+	require.True(t, app.BankKeeper.BlockedAddr(lpAddress))
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(startBalance))
+
+	allocation := sdk.NewUintFromString("200000000000000000000000000")
+	oneDec := sdk.OneDec()
+	period := types.RewardPeriod{
+		RewardPeriodId: "Test 1", RewardPeriodStartBlock: 0, RewardPeriodEndBlock: 0, RewardPeriodAllocation: &allocation,
+		RewardPeriodDefaultMultiplier: &oneDec, RewardPeriodDistribute: true, RewardPeriodMod: 0,
+		RewardPeriodPoolMultipliers: nil}
+
+	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, 1, 1)
+	pool := pools[0]
+	lps, _ := app.ClpKeeper.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
+	lp := lps[0]
+	lpAddr, _ := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+
+	lpCoinsBefore := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	// Distribute coins to the LP
+	err := app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
+	require.Nil(t, err)
+
+	// Nope, distribution failed
+	lpCoinsAfter := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	require.Equal(t, lpCoinsBefore, lpCoinsAfter)
+
+	// Check tokens got burnt
+	moduleBalance := app.ClpKeeper.GetModuleRowan(ctx)
+	require.Equal(t, startBalance, moduleBalance)
+
+	failedEvent := createFailedEvent(lpAddr)
+	require.Subset(t, ctx.EventManager().Events(), failedEvent)
+}
+
+func createFailedEvent(receiver sdk.AccAddress) []sdk.Event {
+	return []sdk.Event{sdk.NewEvent("rewards_distribution_error",
+		sdk.NewAttribute("liquidity_provider", receiver.String()),
+		sdk.NewAttribute("error", fmt.Sprint(receiver.String(), " is not allowed to receive funds: unauthorized")),
+		sdk.NewAttribute("height", "0")),
+	}
 }
