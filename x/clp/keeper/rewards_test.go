@@ -231,14 +231,15 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	lps, _ := app.ClpKeeper.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
 	lp := lps[0]
 	lpAddr, _ := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+	require.Equal(t, lpAddress, lpAddr)
 
-	lpCoinsBefore := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	lpCoinsBefore := app.BankKeeper.GetBalance(ctx, lpAddress, types.NativeSymbol)
 	// Distribute coins to the LP
 	err := app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
 	require.Nil(t, err)
 
 	// Nope, distribution failed
-	lpCoinsAfter := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
+	lpCoinsAfter := app.BankKeeper.GetBalance(ctx, lpAddress, types.NativeSymbol)
 	require.Equal(t, lpCoinsBefore, lpCoinsAfter)
 	require.Equal(t, pool.RewardPeriodNativeDistributed.String(), sdk.ZeroInt().String())
 
@@ -246,7 +247,7 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	moduleBalance := app.ClpKeeper.GetModuleRowan(ctx)
 	require.Equal(t, startBalance, moduleBalance)
 
-	failedEvent := createFailedEvent(lpAddr)
+	failedEvent := createFailedEvent(lpAddress)
 	require.Subset(t, ctx.EventManager().Events(), failedEvent)
 }
 
