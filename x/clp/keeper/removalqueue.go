@@ -8,7 +8,7 @@ import (
 )
 
 func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity, rowanValue sdk.Uint) {
-	queue := k.GetRemovalQueue(ctx)
+	queue := k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol)
 	request := types.RemovalRequest{
 		Id:    queue.Id + 1,
 		Msg:   msg,
@@ -24,12 +24,12 @@ func (k Keeper) QueueRemoval(ctx sdk.Context, msg *types.MsgRemoveLiquidity, row
 	if queue.Count == 1 {
 		queue.StartHeight = ctx.BlockHeight()
 	}
-	k.SetRemovalQueue(ctx, queue)
+	k.SetRemovalQueue(ctx, queue, msg.ExternalAsset.Symbol)
 
 	emitQueueRemoval(ctx, &request, &queue)
 }
 
-func (k Keeper) GetRemovalQueue(ctx sdk.Context) types.RemovalQueue {
+func (k Keeper) GetRemovalQueue(ctx sdk.Context, symbol string) types.RemovalQueue {
 	queue := types.RemovalQueue{
 		Count:       0,
 		Id:          0,
@@ -42,9 +42,9 @@ func (k Keeper) GetRemovalQueue(ctx sdk.Context) types.RemovalQueue {
 	return queue
 }
 
-func (k Keeper) SetRemovalQueue(ctx sdk.Context, queue types.RemovalQueue) {
+func (k Keeper) SetRemovalQueue(ctx sdk.Context, queue types.RemovalQueue, symbol string) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.RemovalQueuePrefix, k.cdc.MustMarshal(&queue))
+	store.Set(types.GetRemovalQueueKey(symbol), k.cdc.MustMarshal(&queue))
 }
 
 func (k Keeper) GetRemovalQueueIterator(ctx sdk.Context) sdk.Iterator {
@@ -53,7 +53,8 @@ func (k Keeper) GetRemovalQueueIterator(ctx sdk.Context) sdk.Iterator {
 }
 
 func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity, unitsToDistribute sdk.Uint) {
-	perRequestUnits := unitsToDistribute.Quo(sdk.NewUint(uint64(k.GetRemovalQueue(ctx).Count)))
+	queue := k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol)
+	perRequestUnits := unitsToDistribute.Quo(sdk.NewUint(uint64(queue.Count)))
 
 	it := k.GetRemovalQueueIterator(ctx)
 	defer it.Close()
@@ -103,9 +104,9 @@ func (k Keeper) SetProcessedRemovalRequest(ctx sdk.Context, request types.Remova
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetRemovalRequestKey(request), k.cdc.MustMarshal(&request))
 
-	queue := k.GetRemovalQueue(ctx)
+	queue := k.GetRemovalQueue(ctx, request.Msg.ExternalAsset.Symbol)
 	queue.TotalValue = queue.TotalValue.Sub(rowanRemoved)
-	k.SetRemovalQueue(ctx, queue)
+	k.SetRemovalQueue(ctx, queue, request.Msg.ExternalAsset.Symbol)
 
 	if request.Msg.WBasisPoints.LTE(sdk.ZeroInt()) {
 		k.DequeueRemovalRequest(ctx, request)
@@ -116,9 +117,9 @@ func (k Keeper) SetProcessedRemovalRequest(ctx sdk.Context, request types.Remova
 
 func (k Keeper) DequeueRemovalRequest(ctx sdk.Context, request types.RemovalRequest) {
 	ctx.KVStore(k.storeKey).Delete(types.GetRemovalRequestKey(request))
-	queue := k.GetRemovalQueue(ctx)
+	queue := k.GetRemovalQueue(ctx, request.Msg.ExternalAsset.Symbol)
 	queue.Count--
-	k.SetRemovalQueue(ctx, queue)
+	k.SetRemovalQueue(ctx, queue, request.Msg.ExternalAsset.Symbol)
 
 	emitDequeueRemoval(ctx, &request, &queue)
 }

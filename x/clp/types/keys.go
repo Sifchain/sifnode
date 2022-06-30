@@ -67,6 +67,11 @@ func GetRemovalRequestLPPrefix(lpaddress string) []byte {
 	return append(RemovalRequestPrefix, key...)
 }
 
+func GetRemovalQueueKey(symbol string) []byte {
+	key := []byte(fmt.Sprintf("_%s", symbol))
+	return append(RemovalRequestPrefix, key...)
+}
+
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
 		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
