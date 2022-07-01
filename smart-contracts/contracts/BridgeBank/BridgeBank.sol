@@ -155,10 +155,9 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   /**
    * @dev Set or update the rowanTokenAddress Only the operator can call this function
    * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
-   * @notice Cannot set RowanTokenAddress to the zero address
+   * @notice Can be set to null address if Rowan on this network is a standard BridgeToken
    */
    function setRowanTokenAddress(address _rowanTokenAddress) public onlyOperator {
-    require(_rowanTokenAddress != address(0), "invalid address");
     rowanTokenAddress = _rowanTokenAddress;
    }
 

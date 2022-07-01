@@ -1,34 +1,34 @@
-const Web3Utils = require("web3-utils");
-const web3 = require("web3");
-const BigNumber = web3.BigNumber;
+import Web3Utils from "web3-utils";
+import web3 from "web3";
 
-const { ethers } = require("hardhat");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
-const { setup, getValidClaim } = require("./helpers/testFixture");
-
-require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
+import { ethers, network } from "hardhat";
+import { use, expect } from "chai";
+import { solidity } from "ethereum-waffle";
+import { setup, getValidClaim, TestFixtureState } from "./helpers/testFixture";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Signer } from "ethers";
 
 use(solidity);
 
-const getBalance = async function (address) {
+const getBalance = async function (address: string) {
   return await network.provider.send("eth_getBalance", [address]);
 };
 
 describe("Test Bridge Bank", function () {
-  let userOne;
-  let userTwo;
-  let userThree;
-  let userFour;
-  let accounts;
-  let signerAccounts;
-  let operator;
-  let owner;
+  let userTwo: SignerWithAddress;
+  let userOne: SignerWithAddress;
+  let userThree: SignerWithAddress;
+  let userFour: SignerWithAddress;
+  let accounts: SignerWithAddress[];
+  let signerAccounts: String[];
+  let operator: SignerWithAddress;
+  let owner: SignerWithAddress;
+  let pauser: SignerWithAddress;
   const consensusThreshold = 75;
-  let initialPowers;
-  let initialValidators;
-  let networkDescriptor;
-  let state;
+  let initialPowers: number[];
+  let initialValidators: String[];
+  let networkDescriptor: number;
+  let state: TestFixtureState;
 
   before(async function () {
     accounts = await ethers.getSigners();
@@ -53,18 +53,18 @@ describe("Test Bridge Bank", function () {
   });
 
   beforeEach(async function () {
-    state = await setup({
+    state = await setup(
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      user: userOne,
-      recipient: userThree,
+      userOne,
+      userThree,
       pauser,
       networkDescriptor,
-      lockTokensOnBridgeBank: true,
-    });
+      true,
+    );
   });
 
   describe("BridgeBank single lock burn transactions", function () {
@@ -79,7 +79,7 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(await state.token.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(0);
+      afterUserBalance.should.be.equal(0);
 
       // check if BridgeBank now owns the tokens
       const bridgeBankBalanceAfter = await state.token.balanceOf(state.bridgeBank.address);
@@ -103,13 +103,13 @@ describe("Test Bridge Bank", function () {
         .connect(userOne)
         .lock(state.sender, state.constants.zeroAddress, state.weiAmount, {
           value: state.weiAmount,
-        }).should.be.fulfilled;
+        });
       await tx.wait();
 
       const contractBalanceWei = await getBalance(state.bridgeBank.address);
       const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
 
-      contractBalance.should.be.bignumber.equal(
+      contractBalance.should.be.equal(
         Web3Utils.fromWei((+state.weiAmount + +state.amount).toString(), "ether")
       );
     });
@@ -153,7 +153,7 @@ describe("Test Bridge Bank", function () {
       await state.bridgeBank.connect(userOne).burn(state.sender, bridgeToken.address, state.amount);
 
       const afterUserBalance = Number(await bridgeToken.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(0);
+      afterUserBalance.should.equal(0);
     });
 
     it("should allow a user to burn tokens twice from the bridge bank", async function () {
@@ -175,18 +175,18 @@ describe("Test Bridge Bank", function () {
       await state.bridgeBank.connect(userOne).burn(state.sender, bridgeToken.address, state.amount);
 
       let afterUserBalance = Number(await bridgeToken.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       // Do it again
       await state.bridgeBank.connect(userOne).burn(state.sender, bridgeToken.address, state.amount);
 
       afterUserBalance = Number(await bridgeToken.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(0);
+      afterUserBalance.should.equal(0);
     });
 
-    it("should allow a user to burn a token that doesn't have a denom", async function () {
+    it("should NOT allow a user to burn a token that doesn't have a denom", async function () {
       const oldTokenFactory = await ethers.getContractFactory("Erowan");
-      const oldToken = await oldTokenFactory.deploy("OLD");
+      const oldToken = await oldTokenFactory.deploy("");
 
       await oldToken.mint(userOne.address, state.amount);
       await oldToken.connect(userOne).approve(state.bridgeBank.address, state.amount);
@@ -195,33 +195,33 @@ describe("Test Bridge Bank", function () {
       await state.bridgeBank.connect(userOne).burn(state.sender, oldToken.address, state.amount);
 
       let afterUserBalance = Number(await oldToken.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(0);
+      afterUserBalance.should.equal(0);
     });
   });
 
   describe("BridgeBank administration of Bridgetokens", function () {
     it("should allow the operator to set a BridgeToken's denom", async function () {
       // expect the token to NOT have a defined denom on BridgeBank
-      let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      let registeredDenom = await state.bridgeBank.contractDenom(state.token.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.none);
 
       // expect the token itself to have a denom
-      let registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
-      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+      let registeredDenomInBridgeToken = await state.token.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
 
       // set a new denom
       await expect(
         state.bridgeBank
           .connect(owner)
-          .setBridgeTokenDenom(state.rowan.address, state.constants.denom.one)
-      ).to.be.fulfilled;
+          .setBridgeTokenDenom(state.token.address, state.constants.denom.one)
+      ).to.not.be.reverted;
 
       // check the denom saved on BridgeBank
-      registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      registeredDenom = await state.bridgeBank.contractDenom(state.token.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.one);
 
       // check the denom saved on the BridgeToken itself
-      registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      registeredDenomInBridgeToken = await state.token.cosmosDenom();
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
     });
 
@@ -249,7 +249,7 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(owner)
           .setBridgeTokenDenom(erowanToken.address, state.constants.denom.one)
-      ).to.be.rejectedWith(
+      ).to.be.revertedWith(
         "Transaction reverted: function selector was not recognized and there's no fallback function"
       );
 
@@ -259,13 +259,13 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should allow the owner to set many BridgeTokens' denom in a batch", async function () {
-      // expect rowan to NOT have a defined denom on BridgeBank
-      let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      // expect bridgeToken to NOT have a defined denom on BridgeBank
+      let registeredDenom = await state.bridgeBank.contractDenom(state.token.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.none);
 
-      // expect rowan itself to have a denom
-      let registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
-      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+      // expect bridgeToken itself to have a denom
+      let registeredDenomInBridgeToken = await state.token.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
 
       // transfer ownership of state.token_noDenom to the BridgeBank
       await state.token_noDenom
@@ -285,17 +285,17 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(owner)
           .batchSetBridgeTokenDenom(
-            [state.rowan.address, state.token_noDenom.address],
+            [state.token.address, state.token_noDenom.address],
             [state.constants.denom.one, state.constants.denom.two]
           )
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;
 
       // check the denom saved on BridgeBank
-      registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      registeredDenom = await state.bridgeBank.contractDenom(state.token.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.one);
 
-      // check the denom saved on Rowan itself
-      registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      // check the denom saved on BridgeToken 1 itself
+      registeredDenomInBridgeToken = await state.token.cosmosDenom();
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
 
       // check the denom saved on BridgeBank
@@ -308,12 +308,12 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should NOT allow a user to set many BridgeTokens' denom in a batch", async function () {
-      // expect rowan to NOT have a defined denom on BridgeBank
-      let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      // expect BridgeToken to NOT have a defined denom on BridgeBank
+      let registeredDenom = await state.bridgeBank.contractDenom(state.token.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.none);
 
-      // expect rowan itself to have a denom
-      let registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      // expect Bridge Token 1 itself to have a denom
+      let registeredDenomInBridgeToken = await state.token.cosmosDenom();
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
 
       // transfer ownership of state.token_noDenom to the BridgeBank
@@ -334,18 +334,18 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(userOne)
           .batchSetBridgeTokenDenom(
-            [state.rowan.address, state.token_noDenom.address],
+            [state.token.address, state.token_noDenom.address],
             [state.constants.denom.one, state.constants.denom.two]
           )
       ).to.be.revertedWith("!owner");
 
       // check the denom saved on BridgeBank (shouldn't have changed)
-      registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      registeredDenom = await state.bridgeBank.contractDenom(state.token.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.none);
 
-      // check the denom saved on Rowan itself (shouldn't have changed)
-      registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
-      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+      // check the denom saved on Bridge Token 1 itself (shouldn't have changed)
+      registeredDenomInBridgeToken = await state.token.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
 
       // check the denom saved on BridgeBank (shouldn't have changed)
       registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);
@@ -384,7 +384,7 @@ describe("Test Bridge Bank", function () {
             state.token2.address,
             state.token3.address,
           ])
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;
 
       // check if the tokens are now correctly registered
       // expect token1 to be registered as a BridgeToken
@@ -439,7 +439,7 @@ describe("Test Bridge Bank", function () {
             state.token2.address,
             state.token3.address,
           ])
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;
 
       // check if the tokens are now correctly registered
       // expect token1 to be registered as a BridgeToken
@@ -472,10 +472,10 @@ describe("Test Bridge Bank", function () {
             [state.token1.address, state.token2.address, state.token3.address],
             [state.constants.denom.one, state.constants.denom.two, state.constants.denom.three]
           )
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;
 
       // check the denom saved on BridgeBank
-      registeredDenom = await state.bridgeBank.contractDenom(state.token1.address);
+      const registeredDenom = await state.bridgeBank.contractDenom(state.token1.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.one);
 
       // check the denom saved on token1 itself
@@ -483,7 +483,7 @@ describe("Test Bridge Bank", function () {
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
 
       // check the denom saved on BridgeBank
-      registeredDenom2 = await state.bridgeBank.contractDenom(state.token2.address);
+      const registeredDenom2 = await state.bridgeBank.contractDenom(state.token2.address);
       expect(registeredDenom2).to.be.equal(state.constants.denom.two);
 
       // check the denom saved on token2 itself
@@ -491,7 +491,7 @@ describe("Test Bridge Bank", function () {
       expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.two);
 
       // check the denom saved on BridgeBank
-      registeredDenom3 = await state.bridgeBank.contractDenom(state.token3.address);
+      const registeredDenom3 = await state.bridgeBank.contractDenom(state.token3.address);
       expect(registeredDenom3).to.be.equal(state.constants.denom.three);
 
       // check the denom saved on token3 itself
@@ -553,7 +553,7 @@ describe("Test Bridge Bank", function () {
 
       // userOne calls forceSetBridgeTokenDenom
       await expect(state.bridgeBank.connect(userOne).forceSetBridgeTokenDenom(state.token2.address))
-        .to.be.fulfilled;
+        .to.not.be.revertedWith;
 
       // expect token2's denom to be registered in BridgeBank
       denomInBridgeBank = await state.bridgeBank.contractDenom(state.token2.address);
@@ -568,7 +568,7 @@ describe("Test Bridge Bank", function () {
       // userOne calls forceSetBridgeTokenDenom
       await expect(
         state.bridgeBank.connect(userOne).forceSetBridgeTokenDenom(state.token2.address)
-      ).to.be.rejectedWith("Token is not in Cosmos whitelist");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
 
       // expect token2's denom to NOT be registered in BridgeBank
       denomInBridgeBank = await state.bridgeBank.contractDenom(state.token2.address);
@@ -594,7 +594,7 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(userOne)
           .batchForceSetBridgeTokenDenom([state.token2.address, state.token3.address])
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;
 
       // expect token2's denom to be registered in BridgeBank
       denomInBridgeBank2 = await state.bridgeBank.contractDenom(state.token2.address);
@@ -622,7 +622,7 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(userOne)
           .batchForceSetBridgeTokenDenom([state.token2.address, state.token3.address])
-      ).to.be.rejectedWith("Token is not in Cosmos whitelist");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
 
       // expect token2's denom to NOT be registered in BridgeBank
       denomInBridgeBank2 = await state.bridgeBank.contractDenom(state.token2.address);
