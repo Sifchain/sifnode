@@ -23,3 +23,8 @@ func GetRemovalRequestLPPrefix(lpaddress string) []byte {
 	key := []byte(fmt.Sprintf("%s", lpaddress))
 	return append(RemovalRequestPrefix, key...)
 }
+
+func GetRemovalQueueKey(symbol string) []byte {
+	key := []byte(fmt.Sprintf("_%s", symbol))
+	return append(RemovalRequestPrefix, key...)
+}

@@ -354,6 +354,10 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
 	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
 
+	if ExternalAssetBalance.Add(ExternalLiabilities).IsZero() || NativeAssetBalance.Add(NativeLiabilities).IsZero() {
+		return sdk.ZeroDec()
+	}
+
 	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities))
 	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities))
 
