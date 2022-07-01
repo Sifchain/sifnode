@@ -30,6 +30,8 @@ type CLPKeeper interface {
 	GetMinLen(inputs []sdk.Uint) int64
 
 	GetPmtpRateParams(ctx sdk.Context) clptypes.PmtpRateParams
+
+	GetRemovalQueue(ctx sdk.Context, symbol string) clptypes.RemovalQueue
 }
 
 type Keeper interface {

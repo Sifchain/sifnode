@@ -40,7 +40,7 @@ func (k Keeper) GetRemovalQueue(ctx sdk.Context, symbol string) types.RemovalQue
 		TotalValue:  sdk.ZeroUint(),
 	}
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.RemovalQueuePrefix)
+	bz := store.Get(types.GetRemovalQueueKey(symbol))
 	k.cdc.MustUnmarshal(bz, &queue)
 	return queue
 }
