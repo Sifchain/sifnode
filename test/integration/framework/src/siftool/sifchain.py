@@ -38,6 +38,8 @@ def is_cosmos_native_denom(denom: str) -> bool:
     return not str.startswith(denom, "sifBridge")
 
 def import_generated_protobuf_sources():
+    global cosmos_pb
+    global cosmos_pb_grpc
     import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
     import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
