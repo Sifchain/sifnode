@@ -70,7 +70,7 @@ interface TestFixtureStateConstants {
 }
 
 interface TestFixtureAccounts {
-  initialValidators: string[] | String[];
+  initialValidators: string[];
   initialPowers: number[];
   operator: SignerWithAddress;
   consensusThreshold: number;
@@ -144,7 +144,7 @@ async function signHash(signers: SignerWithAddress[], hash: BytesLike): Promise<
 }
 
 async function setup(
-  initialValidators: string[] | String[],
+  initialValidators: string[],
   initialPowers: number[],
   operator: SignerWithAddress,
   consensusThreshold: number,
@@ -185,7 +185,7 @@ async function setup(
 }
 
 async function initState(
-  initialValidators: string[] | String[],
+  initialValidators: string[],
   initialPowers: number[],
   operator: SignerWithAddress,
   consensusThreshold: number,
@@ -291,9 +291,10 @@ async function deployBaseContracts(accounts: TestFixtureAccounts, constants: Tes
       accounts.owner.address,
       accounts.pauser.address,
       tokenInfo.networkDescriptorMismatch ? tokenInfo.networkDescriptor + 2 : tokenInfo.networkDescriptor,
+      constants.zeroAddress
     ],
     {
-      initializer: "initialize(address,address,address,address,int32)",
+      initializer: "initialize(address,address,address,address,int32,address)",
       unsafeAllow: ["delegatecall"],
     }
   ) as BridgeBank;
@@ -303,37 +304,37 @@ async function deployBaseContracts(accounts: TestFixtureAccounts, constants: Tes
   await cosmosBridge.connect(accounts.operator).setBridgeBank(bridgeBank.address);
 
   // Deploy BridgeTokens
-  const token = await BridgeToken.deploy(
+  const token = await BridgeToken.connect(accounts.operator).deploy(
     tokenInfo.name,
     tokenInfo.symbol,
     tokenInfo.decimals,
     constants.denom.one
   );
-  const token1 = await BridgeToken.deploy(
+  const token1 = await BridgeToken.connect(accounts.operator).deploy(
     tokenInfo.name,
     tokenInfo.symbol,
     tokenInfo.decimals,
     constants.denom.two
   );
-  const token2 = await BridgeToken.deploy(
+  const token2 = await BridgeToken.connect(accounts.operator).deploy(
     tokenInfo.name,
     tokenInfo.symbol,
     tokenInfo.decimals,
     constants.denom.three
   );
-  const token3 = await BridgeToken.deploy(
+  const token3 = await BridgeToken.connect(accounts.operator).deploy(
     tokenInfo.name,
     tokenInfo.symbol,
     tokenInfo.decimals,
     constants.denom.four
   );
-  const token_noDenom = await BridgeToken.deploy(
+  const token_noDenom = await BridgeToken.connect(accounts.operator).deploy(
     tokenInfo.name,
     tokenInfo.symbol,
     tokenInfo.decimals,
     constants.denom.none
   );
-  const token_ibc = await BridgeToken.deploy(
+  const token_ibc = await BridgeToken.connect(accounts.operator).deploy(
     tokenInfo.name,
     tokenInfo.symbol,
     tokenInfo.decimals,
@@ -347,41 +348,21 @@ async function deployBaseContracts(accounts: TestFixtureAccounts, constants: Tes
   await token_noDenom.deployed();
   await token_ibc.deployed();
 
-  // Grant the MINTER role to the operator:
-  await token
-    .connect(accounts.operator)
-    .grantRole(constants.roles.minter, accounts.operator.address);
-  await token1
-    .connect(accounts.operator)
-    .grantRole(constants.roles.minter, accounts.operator.address);
-  await token2
-    .connect(accounts.operator)
-    .grantRole(constants.roles.minter, accounts.operator.address);
-  await token3
-    .connect(accounts.operator)
-    .grantRole(constants.roles.minter, accounts.operator.address);
-  await token_noDenom
-    .connect(accounts.operator)
-    .grantRole(constants.roles.minter, accounts.operator.address);
-  await token_ibc
-    .connect(accounts.operator)
-    .grantRole(constants.roles.minter, accounts.operator.address);
+  const tokens = [token, token1, token2, token3, token_noDenom, token_ibc];
 
-  // Load user account with ERC20 tokens for testing
-  await token.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
-  await token1.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
-  await token2.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
-  await token3.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
-  await token_noDenom.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
-  await token_ibc.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
+  for (const currentToken of tokens) {
+    // Grant the MINTER and ADMIN roles to the Bridgebank
+    await currentToken.connect(accounts.operator)
+      .grantRole(constants.roles.minter, bridgeBank.address)
+    await currentToken.connect(accounts.operator)
+      .grantRole(constants.roles.admin, bridgeBank.address)
 
-  // Approve BridgeBank
-  await token.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
-  await token1.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
-  await token2.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
-  await token3.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
-  await token_noDenom.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
-  await token_ibc.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
+    // Load user account with ERC20 tokens for testing
+    await currentToken.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
+
+    // Approve BridgeBank
+    await currentToken.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
+  }
 
   // Deploy the Blocklist
   const blocklist = await Blocklist.deploy();
@@ -416,8 +397,6 @@ async function deployRowan(contracts: TestFixtureContracts, tokenInfo: TestFixtu
   await rowan.deployed();
 
   // mint tokens
-  await rowan
-    .addMinter(accounts.operator.address);
   await rowan.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
 
   // add bridgebank as admin and minter of the rowan contract
@@ -432,7 +411,7 @@ async function deployRowan(contracts: TestFixtureContracts, tokenInfo: TestFixtu
   await contracts.bridgeBank.connect(accounts.owner).addExistingBridgeToken(rowan.address);
 
   // Set Rowan as the Rowan special account
-  await contracts.bridgeBank.connect(accounts.owner).setRowanTokenAddress(rowan.address);
+  await contracts.bridgeBank.connect(accounts.operator).setRowanTokenAddress(rowan.address);
   
   return rowan;
 }

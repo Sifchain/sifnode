@@ -1,35 +1,33 @@
 const Web3Utils = require("web3-utils");
-const web3 = require("web3");
-const BigNumber = web3.BigNumber;
 
-const { ethers } = require("hardhat");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
-const { setup, deployCommissionToken } = require("./helpers/testFixture");
-
-require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
+import { ethers, network } from "hardhat";
+import { use, expect } from "chai";
+import { solidity } from "ethereum-waffle";
+import { setup, deployCommissionToken, TestFixtureState } from "./helpers/testFixture";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 use(solidity);
 
-const getBalance = async function (address) {
+const getBalance = async function (address: string) {
   return await network.provider.send("eth_getBalance", [address]);
 };
 
 describe("Test Bridge Bank", function () {
-  let userOne;
-  let userTwo;
-  let userThree;
-  let userFour;
-  let accounts;
-  let signerAccounts;
-  let operator;
-  let owner;
+  let userOne: SignerWithAddress;
+  let userTwo: SignerWithAddress;
+  let userThree: SignerWithAddress;
+  let userFour: SignerWithAddress;
+  let accounts: SignerWithAddress[];
+  let signerAccounts: string[];
+  let operator: SignerWithAddress;
+  let owner: SignerWithAddress;
+  let pauser: SignerWithAddress;
   const consensusThreshold = 75;
-  let initialPowers;
-  let initialValidators;
-  let networkDescriptor;
+  let initialPowers: number[];
+  let initialValidators: string[];
+  let networkDescriptor: number;
   // track the state of the deployed contracts
-  let state;
+  let state: TestFixtureState;
 
   before(async function () {
     accounts = await ethers.getSigners();
@@ -42,7 +40,7 @@ describe("Test Bridge Bank", function () {
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[7].address;
+    userThree = accounts[7];
 
     owner = accounts[5];
     pauser = accounts[6];
@@ -54,17 +52,17 @@ describe("Test Bridge Bank", function () {
   });
 
   beforeEach(async function () {
-    state = await setup({
+    state = await setup(
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      user: userOne,
-      recipient: userThree,
+      userOne,
+      userThree,
       pauser,
       networkDescriptor,
-    });
+    );
   });
 
   describe("BridgeBank", function () {
@@ -92,11 +90,11 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the tokens have left the user's wallet
       const afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       // Confirm that bridgeBank now owns the tokens:
       const afterBridgeBankBalance = Number(await state.token1.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.bignumber.equal(state.amount);
+      afterBridgeBankBalance.should.equal(state.amount);
     });
 
     it("should allow user to lock Commission Charging ERC20 tokens", async function () { 
@@ -137,7 +135,7 @@ describe("Test Bridge Bank", function () {
         .connect(userOne)
         .lock(state.sender, state.constants.zeroAddress, state.weiAmount, {
           value: state.weiAmount,
-        }).should.be.fulfilled;
+        });
       await tx.wait();
 
       const contractBalanceWei = await getBalance(state.bridgeBank.address);
@@ -150,8 +148,7 @@ describe("Test Bridge Bank", function () {
 
     it("should NOT allow a blocklisted user to lock ERC20 tokens", async function () {
       // Add userOne to the blocklist:
-      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.be
-        .fulfilled;
+      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
       // Get balances before locking
       const beforeBridgeBankBalance = Number(
@@ -165,21 +162,20 @@ describe("Test Bridge Bank", function () {
       // Attempt to lock tokens and fail
       await expect(
         state.bridgeBank.connect(userOne).lock(state.sender, state.token1.address, state.amount)
-      ).to.be.rejectedWith("Address is blocklisted");
+      ).to.be.revertedWith("Address is blocklisted");
 
       // Confirm that the tokens have NOT left the user's wallet
       const afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(beforeUserBalance);
+      afterUserBalance.should.equal(beforeUserBalance);
 
       // Confirm that bridgeBank did not receive the tokens:
       const afterBridgeBankBalance = Number(await state.token1.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.bignumber.equal(beforeBridgeBankBalance);
+      afterBridgeBankBalance.should.equal(beforeBridgeBankBalance);
     });
 
     it("should NOT allow a blocklisted user to lock Ethereum in the bridge bank", async function () {
       // Add userOne to the blocklist:
-      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.be
-        .fulfilled;
+      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
       await expect(
         state.bridgeBank
@@ -187,7 +183,7 @@ describe("Test Bridge Bank", function () {
           .lock(state.sender, state.constants.zeroAddress, state.weiAmount, {
             value: state.weiAmount,
           })
-      ).to.be.rejectedWith("Address is blocklisted");
+      ).to.be.revertedWith("Address is blocklisted");
 
       const contractBalanceWei = await getBalance(state.bridgeBank.address);
       const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
@@ -214,13 +210,13 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the user has been minted the correct token
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
     });
 
      it("should allow user to multi-lock ERC20 tokens including commission tokens", async function () {
@@ -253,27 +249,26 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the user has been minted the correct token
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       // Confirm that the commission tokens have left the user's wallet
       afterUserBalance = Number(await token.balanceOf(user.address));
-      afterUserBalance.should.be.bignumber.equal(remaining);
+      afterUserBalance.should.equal(remaining);
 
       // Confirm that bridgeBank now owns the commission tokens:
       const afterBridgeBankBalance = Number(await token.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.bignumber.equal(afterTransfer);
+      afterBridgeBankBalance.should.equal(afterTransfer);
     });
 
     it("should NOT allow a blocklisted user to multi-lock ERC20 tokens", async function () {
       // Add userOne to the blocklist:
-      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.be
-        .fulfilled;
+      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
       // Attempt to lock tokens and fail
       await expect(
@@ -285,26 +280,26 @@ describe("Test Bridge Bank", function () {
             [state.amount, state.amount, state.amount],
             [false, false, false]
           )
-      ).to.be.rejectedWith("Address is blocklisted");
+      ).to.be.revertedWith("Address is blocklisted");
 
       // Confirm that the tokens have not left the user's wallet
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       let afterBridgeBankBalance = Number(await state.token1.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.equal(0);
+      afterBridgeBankBalance.should.equal(0);
 
       afterBridgeBankBalance = Number(await state.token2.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.equal(0);
+      afterBridgeBankBalance.should.equal(0);
 
       afterBridgeBankBalance = Number(await state.token3.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.equal(0);
+      afterBridgeBankBalance.should.equal(0);
     });
 
     it("should allow user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
@@ -320,19 +315,18 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the user has been minted the correct token
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
     });
 
     it("should NOT allow a blocklisted user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
       // Add userOne to the blocklist:
-      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.be
-        .fulfilled;
+      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
       // Attempt to lock tokens
       await expect(
@@ -344,17 +338,17 @@ describe("Test Bridge Bank", function () {
             [state.amount, state.amount, state.amount],
             [false, false, false]
           )
-      ).to.be.rejectedWith("Address is blocklisted");
+      ).to.be.revertedWith("Address is blocklisted");
 
       // Confirm that the user has been minted the correct token
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       let afterBridgeBankBalance = Number(await state.token1.balanceOf(state.bridgeBank.address));
       afterBridgeBankBalance.should.be.equal(0);
@@ -398,19 +392,18 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that the user has the proper balance after the multiLockBurn
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
 
       afterUserBalance = Number(await state.rowan.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      afterUserBalance.should.equal(state.amount);
     });
 
     it("should NOT allow a blocklisted user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
       // Add userOne to the blocklist:
-      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.be
-        .fulfilled;
+      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
       // approve bridgebank to spend rowan
       await state.rowan.connect(userOne).approve(state.bridgeBank.address, state.amount);
@@ -425,26 +418,26 @@ describe("Test Bridge Bank", function () {
             [state.amount, state.amount, state.amount],
             [false, false, true]
           )
-      ).to.be.rejectedWith("Address is blocklisted");
+      ).to.be.revertedWith("Address is blocklisted");
 
       // Confirm that the user has the proper balance after the multiLockBurn
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.rowan.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       let afterBridgeBankBalance = Number(await state.token1.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.equal(0);
+      afterBridgeBankBalance.should.equal(0);
 
       afterBridgeBankBalance = Number(await state.token2.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.equal(0);
+      afterBridgeBankBalance.should.equal(0);
 
       afterBridgeBankBalance = Number(await state.rowan.balanceOf(state.bridgeBank.address));
-      afterBridgeBankBalance.should.be.equal(0);
+      afterBridgeBankBalance.should.equal(0);
     });
 
     it("should NOT allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
@@ -465,13 +458,13 @@ describe("Test Bridge Bank", function () {
 
       // Confirm that user token balances have stayed the same
       let afterUserBalance = Number(await state.token1.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token2.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
 
       afterUserBalance = Number(await state.token3.balanceOf(userOne.address));
-      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+      afterUserBalance.should.equal(state.amount * 2);
     });
 
     it("should NOT allow user to multi-lock when parameters are malformed, not enough token amounts", async function () {
@@ -559,9 +552,9 @@ describe("Test Bridge Bank", function () {
               state.constants.zeroAddress,
             ],
             [state.amount, state.amount, state.amount, state.amount],
-            [false, false, false, false]
+            [false, false, false, false],
+            { value: 100 } as any // Typescript and typechain are smart enough to know this is a non-payable function so we must override that for this check
           ),
-        { value: 100 }
       ).to.be.revertedWith("function call to a non-contract account");
     });
 

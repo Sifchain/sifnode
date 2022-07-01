@@ -7,8 +7,6 @@ const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
 const { setup, getValidClaim, assertTokensMinted } = require("./helpers/testFixture");
 
-require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
-
 use(solidity);
 
 const getBalance = async function (address, fromWei = false) {

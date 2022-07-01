@@ -1,12 +1,10 @@
 import Web3Utils from "web3-utils";
-import web3 from "web3";
 
 import { ethers, network } from "hardhat";
 import { use, expect } from "chai";
 import { solidity } from "ethereum-waffle";
-import { setup, getValidClaim, TestFixtureState } from "./helpers/testFixture";
+import { setup, TestFixtureState } from "./helpers/testFixture";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Signer } from "ethers";
 
 use(solidity);
 
@@ -20,13 +18,13 @@ describe("Test Bridge Bank", function () {
   let userThree: SignerWithAddress;
   let userFour: SignerWithAddress;
   let accounts: SignerWithAddress[];
-  let signerAccounts: String[];
+  let signerAccounts: string[];
   let operator: SignerWithAddress;
   let owner: SignerWithAddress;
   let pauser: SignerWithAddress;
   const consensusThreshold = 75;
   let initialPowers: number[];
-  let initialValidators: String[];
+  let initialValidators: string[];
   let networkDescriptor: number;
   let state: TestFixtureState;
 
