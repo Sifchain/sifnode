@@ -4,7 +4,7 @@ set -x
 
 sifnoded tx margin close \
   --from $SIF_ACT \
-  --id 2 \
+  --id 7 \
   --keyring-backend test \
   --fees 100000000000000000rowan \
   --node ${SIFNODE_NODE} \

@@ -294,7 +294,7 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 	return X, XL, x, Y, YL, toRowan
 }
 
-func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, leverage sdk.Uint) error {
+func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, eta sdk.Uint) error {
 	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
 	if err != nil {
 		return err
@@ -306,9 +306,12 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	}
 
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
-	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage))
+	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(eta))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
-	mtp.Leverage = leverage
+	mtp.Leverage = eta.Add(sdk.OneUint())
+
+	// print mtp.CustodyAmount
+	ctx.Logger().Info(fmt.Sprintf("mtp.CustodyAmount: %s", mtp.CustodyAmount.String()))
 
 	h, err := k.UpdateMTPHealth(ctx, *mtp, *pool) // set mtp in func or return h?
 	if err != nil {
@@ -325,10 +328,10 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(collateralAmount.Mul(leverage))
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(collateralAmount.Mul(eta))
 		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
 	} else { // collateral is external
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(collateralAmount.Mul(leverage))
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(collateralAmount.Mul(eta))
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
 	}
 	err = k.ClpKeeper().SetPool(ctx, pool)

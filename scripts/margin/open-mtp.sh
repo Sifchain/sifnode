@@ -7,7 +7,7 @@ sifnoded tx margin open \
   --keyring-backend test \
   --borrow_asset cusdc \
   --collateral_asset rowan \
-  --collateral_amount 1000 \
+  --collateral_amount 1000000000000000000000 \
   --position long \
   --fees 100000000000000000rowan \
   --node ${SIFNODE_NODE} \

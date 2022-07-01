@@ -127,7 +127,8 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 }
 
 func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, error) {
-	leverage := k.GetLeverageParam(ctx).Sub(sdk.OneUint())
+	leverage := k.GetLeverageParam(ctx)
+	eta := leverage.Sub(sdk.OneUint())
 
 	collateralAmount := msg.CollateralAmount
 
@@ -153,12 +154,16 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 
 	leveragedAmount := collateralAmount.Mul(leverage)
 
+	ctx.Logger().Info(fmt.Sprintf("leveragedAmount: %s", leveragedAmount.String()))
+
 	borrowAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
 	if err != nil {
 		return nil, err
 	}
 
-	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, &pool, leverage)
+	ctx.Logger().Info(fmt.Sprintf("borrowAmount: %s", borrowAmount.String()))
+
+	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, &pool, eta)
 	if err != nil {
 		return nil, err
 	}

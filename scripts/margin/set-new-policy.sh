@@ -3,10 +3,10 @@
 set -x
 
 sifnoded tx clp pmtp-params \
-  --pmtp_start=171 \
-  --pmtp_end=1170 \
-  --epochLength=100 \
-  --rGov=0.10 \
+  --pmtp_start=22811 \
+  --pmtp_end=224410 \
+  --epochLength=14400 \
+  --rGov=0.05 \
   --from=$SIF_ACT \
   --keyring-backend=test \
   --fees 100000000000000000rowan \
