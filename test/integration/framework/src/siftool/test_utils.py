@@ -288,7 +288,6 @@ class EnvCtx:
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
 
-    # TODO Redirect callers and remove
     def advance_blocks(self, number=50):
         return self.eth.advance_block_w3(number)
 

@@ -1,15 +1,13 @@
 package keeper
 
 import (
-	"bytes"
 	"fmt"
-
 	"github.com/tendermint/tendermint/libs/log"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -17,44 +15,29 @@ import (
 )
 
 type keeper struct {
-	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	cdc         codec.BinaryCodec
+	storeKey    sdk.StoreKey
+	adminKeeper adminkeeper.Keeper
 }
 
-func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
+func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, adminKeeper adminkeeper.Keeper) types.Keeper {
 	return keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
+		cdc:         cdc,
+		storeKey:    storeKey,
+		adminKeeper: adminKeeper,
 	}
 }
 
-// Logger returns a module-specific logger.
 func (k keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.AdminAccountStorePrefix
-	store.Set(key, k.cdc.MustMarshal(&gogotypes.BytesValue{Value: adminAccount}))
+func (k keeper) StoreKey() sdk.StoreKey {
+	return k.storeKey
 }
 
-func (k keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
-	account := k.GetAdminAccount(ctx)
-	if account == nil {
-		return false
-	}
-	return bytes.Equal(account, adminAccount)
-}
-
-func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.AdminAccountStorePrefix
-	bz := store.Get(key)
-	acc := gogotypes.BytesValue{}
-	k.cdc.MustUnmarshal(bz, &acc)
-	adminAccount = sdk.AccAddress(acc.Value)
-	return adminAccount
+func (k keeper) GetAdminKeeper() adminkeeper.Keeper {
+	return k.adminKeeper
 }
 
 func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {

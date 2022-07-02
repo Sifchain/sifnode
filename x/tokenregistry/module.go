@@ -50,8 +50,8 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 // DefaultGenesis returns default genesis state as raw bytes.
-func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONCodec) json.RawMessage {
-	return marshaler.MustMarshalJSON(&types.GenesisState{})
+func (b AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	return cdc.MustMarshalJSON(&types.GenesisState{})
 }
 
 // ValidateGenesis performs genesis state validation.
@@ -105,7 +105,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
 	m := keeper.NewMigrator(am.Keeper)
-	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer2)
+	err := cfg.RegisterMigration(types.ModuleName, 3, m.MigrateToVer4)
 	if err != nil {
 		panic(err)
 	}
@@ -171,4 +171,4 @@ func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 	return nil
 }
 
-func (AppModule) ConsensusVersion() uint64 { return 2 }
+func (AppModule) ConsensusVersion() uint64 { return 4 }

@@ -4,7 +4,7 @@ import re
 import time
 from typing import List, Tuple, TextIO, Any
 
-from siftool import eth, cosmos, command
+from siftool import eth, cosmos
 from siftool.hardhat import Hardhat, default_accounts as hardhat_default_accounts
 from siftool.geth import Geth
 from siftool.truffle import Ganache

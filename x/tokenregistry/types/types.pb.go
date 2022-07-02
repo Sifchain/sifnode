@@ -28,10 +28,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type Permission int32
 
 const (
-	Permission_UNSPECIFIED Permission = 0
-	Permission_CLP         Permission = 1
-	Permission_IBCEXPORT   Permission = 2
-	Permission_IBCIMPORT   Permission = 3
+	Permission_UNSPECIFIED  Permission = 0
+	Permission_CLP          Permission = 1
+	Permission_IBCEXPORT    Permission = 2
+	Permission_IBCIMPORT    Permission = 3
+	Permission_DISABLE_BUY  Permission = 4
+	Permission_DISABLE_SELL Permission = 5
 )
 
 var Permission_name = map[int32]string{
@@ -39,13 +41,17 @@ var Permission_name = map[int32]string{
 	1: "CLP",
 	2: "IBCEXPORT",
 	3: "IBCIMPORT",
+	4: "DISABLE_BUY",
+	5: "DISABLE_SELL",
 }
 
 var Permission_value = map[string]int32{
-	"UNSPECIFIED": 0,
-	"CLP":         1,
-	"IBCEXPORT":   2,
-	"IBCIMPORT":   3,
+	"UNSPECIFIED":  0,
+	"CLP":          1,
+	"IBCEXPORT":    2,
+	"IBCIMPORT":    3,
+	"DISABLE_BUY":  4,
+	"DISABLE_SELL": 5,
 }
 
 func (x Permission) String() string {
@@ -57,8 +63,7 @@ func (Permission) EnumDescriptor() ([]byte, []int) {
 }
 
 type GenesisState struct {
-	AdminAccount string    `protobuf:"bytes,1,opt,name=admin_account,json=adminAccount,proto3" json:"admin_account,omitempty"`
-	Registry     *Registry `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
+	Registry *Registry `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -93,13 +98,6 @@ func (m *GenesisState) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_GenesisState proto.InternalMessageInfo
-
-func (m *GenesisState) GetAdminAccount() string {
-	if m != nil {
-		return m.AdminAccount
-	}
-	return ""
-}
 
 func (m *GenesisState) GetRegistry() *Registry {
 	if m != nil {
@@ -520,13 +518,6 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.AdminAccount) > 0 {
-		i -= len(m.AdminAccount)
-		copy(dAtA[i:], m.AdminAccount)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.AdminAccount)))
-		i--
-		dAtA[i] = 0xa
-	}
 	return len(dAtA) - i, nil
 }
 
@@ -808,10 +799,6 @@ func (m *GenesisState) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.AdminAccount)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
 	if m.Registry != nil {
 		l = m.Registry.Size()
 		n += 1 + l + sovTypes(uint64(l))
@@ -978,38 +965,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: GenesisState: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AdminAccount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AdminAccount = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Registry", wireType)

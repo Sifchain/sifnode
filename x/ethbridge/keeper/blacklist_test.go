@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -42,14 +44,19 @@ func TestIsBlacklisted(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-		keeper.GetTokenRegistryKeeper().SetAdminAccount(ctx, adminAddress)
-		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		app, ctx := test.CreateTestApp(false)
+		admin := admintypes.AdminAccount{
+			AdminType:    admintypes.AdminType_ETHBRIDGE,
+			AdminAddress: adminAddress.String(),
+		}
+		app.AdminKeeper.SetAdminAccount(ctx, &admin)
+		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
 		})
 		require.NoError(t, err)
-		got := keeper.IsBlacklisted(ctx, tc.check)
+
+		got := app.EthbridgeKeeper.IsBlacklisted(ctx, tc.check)
 		require.Equal(t, tc.expected, got)
 	}
 }
@@ -102,23 +109,27 @@ func TestSetBlacklist(t *testing.T) {
 
 	for _, tc := range tt {
 		tc := tc
-		var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-		keeper.GetTokenRegistryKeeper().SetAdminAccount(ctx, adminAddress)
-		err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		app, ctx := test.CreateTestApp(false)
+		admin := admintypes.AdminAccount{
+			AdminType:    admintypes.AdminType_ETHBRIDGE,
+			AdminAddress: adminAddress.String(),
+		}
+		app.AdminKeeper.SetAdminAccount(ctx, &admin)
+		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
 		})
 		require.NoError(t, err)
-		err = keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		err = app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.updated,
 		})
 		require.NoError(t, err)
 		for _, address := range tc.expectTrue {
-			require.True(t, keeper.IsBlacklisted(ctx, address))
+			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
 		for _, address := range tc.expectFalse {
-			require.False(t, keeper.IsBlacklisted(ctx, address))
+			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
 	}
 }
