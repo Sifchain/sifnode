@@ -115,7 +115,7 @@ def test(ctx: test_utils.EnvCtx):
 
 
 def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample_loop_size: int = 20,
-    report_lines: Optional[List[str]] = None,
+    report_lines: Optional[List[str]] = None
 ):
     report_lines = [] if report_lines is None else report_lines
     assert number_of_erc20_tokens > 1
@@ -190,6 +190,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
 
     setup_time = time.time() - setup_start_time
 
+    check_and_reopen_web3_connection_due_to_possible_timeout(ctx)
+
     eth_balance_after = ctx.eth.get_eth_balance(eth_sender)
     report(report_lines, "Cost of approve+lock: {:.2f} gwei".format(
         (eth_balance_before - eth_balance_after) / number_of_erc20_tokens / eth.GWEI))
@@ -235,6 +237,17 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
 
     test_total_time = time.time() - test_start_time
     report(report_lines, "Total test time: {:.2f} s".format(test_total_time))
+
+
+# Workaround for web3 connections that don't work for 30+ hours of the test duration
+def check_and_reopen_web3_connection_due_to_possible_timeout(ctx: test_utils.EnvCtx):
+    try:
+        ctx.eth.get_eth_balance(ctx.operator)
+    except:
+        log.warning("w3_conn appears to be closed, forcing reassing")
+        uri = ctx.eth.w3_conn.provider.endpoint_uri
+        w3_conn = eth.web3_connect(uri)
+        ctx.eth.w3_conn = w3_conn
 
 
 # Enable running directly, i.e. without pytest
