@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math/big"
 	"strconv"
-	"strings"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -321,11 +320,6 @@ func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
 
 	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.TokenContractAddress) {
 		return ErrInvalidEthAddress
-	}
-
-	if strings.ToLower(msg.EthBridgeClaim.Symbol) == "eth" &&
-		NewEthereumAddress(msg.EthBridgeClaim.TokenContractAddress) != NewEthereumAddress("0x0000000000000000000000000000000000000000") {
-		return ErrInvalidEthSymbol
 	}
 
 	return nil

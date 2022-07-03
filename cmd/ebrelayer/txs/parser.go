@@ -47,12 +47,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 
 	// Symbol formatted to lowercase
 	symbol := strings.ToLower(event.Symbol)
-	switch event.ClaimType {
-	case ethbridge.ClaimType_CLAIM_TYPE_LOCK:
-		if symbol == "eth" && !isZeroAddress(event.Token) {
-			return ethBridgeClaim, errors.New("symbol \"eth\" must have null address set as token address")
-		}
-	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
+	if event.ClaimType == ethbridge.ClaimType_CLAIM_TYPE_BURN {
 		symbol = symbolTranslator.EthereumToSifchain(symbol)
 	}
 

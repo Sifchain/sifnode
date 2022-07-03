@@ -1,10 +1,11 @@
 package instrumentation
 
 import (
-	"github.com/tendermint/tendermint/libs/log"
-	"go.uber.org/zap"
 	"os"
 	"strings"
+
+	"github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 )
 
 const (
@@ -12,11 +13,10 @@ const (
 	peggyTestMarker = "peggytest"
 	kindMarker      = "kind"
 
-	Startup       = "Startup"
-	EthereumEvent = "EthereumEvent"
-	CosmosEvent   = "CosmosEvent"
-	// TODO: rename, there isnt ethereumprophecyclaim, is there?
-	EthereumProphecyClaim          = "EthereumProphecyClaim"
+	Startup                        = "Startup"
+	EthereumEvent                  = "EthereumEvent"
+	CosmosEvent                    = "CosmosEvent"
+	EthereumBridgeClaim            = "EthereumBridgeClaim"
 	SetGlobalSequenceToBlockNumber = "SetGlobalSequenceToBlockNumber"
 	SendCoinsFromAccountToModule   = "SendCoinsFromAccountToModule"
 	BurnCoins                      = "BurnCoins"
@@ -42,8 +42,7 @@ const (
 	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"
 	ReceiveCosmosBurnMessage       = "ReceiveCosmosBurnMessage"
 	WitnessSignProphecy            = "WitnessSignProphecy"
-	// TODO: Ambiguous naming
-	ProphecyClaimSubmitted = "ProphecyClaimSubmitted"
+	ProphecyClaimSubmitted         = "ProphecyClaimSubmitted"
 )
 
 func PeggyCheckpoint(logger log.Logger, kind string, keysAndValues ...interface{}) {
