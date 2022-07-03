@@ -273,7 +273,7 @@ class SifnodeClient:
 
         args = [
             "tx", "ethbridge", "sign",
-            str(eth.ethereum_network_descriptor),
+            eth.ethereum_network_descriptor,
             prophecy_id, to_eth_addr, signature,
             "--from", from_sif_addr,
             "--output", "json", "-y", "--generate-only"
@@ -286,8 +286,8 @@ class SifnodeClient:
         return result
 
     def send_sign_prophecy_with_wrong_signature_grpc(self, from_sif_addr: cosmos.Address, from_val_addr: cosmos.Address,
-                                                     wrong_from_sif_addr: cosmos.Address,
-        prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str):
+        wrong_from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str):
+        
         tx = self.generate_sign_prophecy_tx(from_sif_addr, to_eth_addr, prophecy_id, signature_for_sign_prophecy)
 
         # need update cosmos sender according to prophecy message

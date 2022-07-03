@@ -18,7 +18,6 @@ def test_sign_prophecy_with_wrong_signature_grpc(ctx):
 
     # create other one for wrong cosmos sender
     moniker = "temp-moniker-2"
-    # test_sif_account_2 = ctx.create_sifchain_addr(moniker=moniker, fund_amounts=[[fund_amount_sif, "rowan"]])
     val_address_2 = ctx.sifnode.get_val_address(moniker)
 
     # parameter for sign prophecy tx
