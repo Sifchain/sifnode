@@ -641,7 +641,7 @@ describe("Test Cosmos Bridge", function () {
         state.cosmosBridge
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(digest, claimData, outOfOrderSignatures)
-      ).to.be.revertedWith("custom error 'OutOfOrderSigner(0)'"); // TODO: Assert on the error itself
+      ).to.be.revertedWith("custom error 'OutOfOrderSigner(0)'"); 
     });
   });
 });
