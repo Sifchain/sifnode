@@ -17,6 +17,8 @@ Prerequisite
   sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt-get update
   sudo apt-get install ethereum
+- Install Python development libraries (recommended; required if you are compiling Python from source, i.e. using pyenv)
+  sudo apt-get install -y libbz2-dev libncurses-dev libffi-dev libssl-dev libreadline-dev libsqlite3-dev liblzma-dev
 - Install Docker (for peggy2):
   sudo apt-get install ca-certificates curl gnupg lsb-release
   sudo mkdir -p /etc/apt/keyrings
