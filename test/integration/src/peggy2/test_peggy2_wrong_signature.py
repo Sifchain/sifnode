@@ -12,16 +12,20 @@ def test_sign_prophecy_with_wrong_signature_grpc(ctx):
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
     # create/retrieve a test sifchain account
-    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+    moniker = "temp-moniker"
+    test_sif_account = ctx.create_sifchain_addr(moniker=moniker, fund_amounts=[[fund_amount_sif, "rowan"]])
+    val_address = ctx.sifnode.get_val_address(moniker)
 
     # create other one for wrong cosmos sender
-    test_sif_account_2 = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+    moniker = "temp-moniker-2"
+    # test_sif_account_2 = ctx.create_sifchain_addr(moniker=moniker, fund_amounts=[[fund_amount_sif, "rowan"]])
+    val_address_2 = ctx.sifnode.get_val_address(moniker)
 
     # parameter for sign prophecy tx
     prophecy_id = "1"
-    signature_for_sign_prophecy = ""
-    ctx.sifnode_client.send_sign_prophecy_with_wrong_signature_grpc(
-        test_sif_account, test_sif_account_2, test_eth_account, prophecy_id, signature_for_sign_prophecy)
+    signature_for_sign_prophecy = "1"
+    result = ctx.sifnode_client.send_sign_prophecy_with_wrong_signature_grpc(
+        test_sif_account, val_address, val_address_2, test_eth_account, prophecy_id, signature_for_sign_prophecy)
 
     # Verify failed tx
-
+    assert result == False

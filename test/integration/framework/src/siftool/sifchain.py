@@ -251,31 +251,62 @@ class SifnodeClient:
         result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
         return result
 
+    # query is a tx exists or not
+    def query_tx(self, tx_hash: str) -> bool:
+        args = [
+            "q", "tx", tx_hash,
+        ] + self._home_args() + \
+            self._chain_id_and_node_args()
+
+        try:
+            self.sifnoded_exec(args)
+        except Exception as e:
+            # if tx not exists, return false
+            return False
+
+        return True
+
     def generate_sign_prophecy_tx(self, from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature: str) -> Mapping:
         assert on_peggy2_branch, "Only for Peggy2.0"
         assert self.ctx.eth
         eth = self.ctx.eth
 
         args = [
-            "tx", "ethbridge", "sign signature",
-            str(eth.ethereum_network_descriptor),  # Mandatory
+            "tx", "ethbridge", "sign",
+            str(eth.ethereum_network_descriptor),
             prophecy_id, to_eth_addr, signature,
-            "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+            "--from", from_sif_addr,
             "--output", "json", "-y", "--generate-only"
-        ]
+        ] + self._gas_prices_args() + \
+            self._home_args() + \
+            self._chain_id_and_node_args()
+
         res = self.sifnoded_exec(args)
         result = json.loads(stdout(res))
         return result
 
-    def send_sign_prophecy_with_wrong_signature_grpc(self, from_sif_addr: cosmos.Address, wrong_from_sif_addr: cosmos.Address,
-        to_eth_addr: str, prophecy_id: str, signature_for_sign_prophecy: str):
+    def send_sign_prophecy_with_wrong_signature_grpc(self, from_sif_addr: cosmos.Address, from_val_addr: cosmos.Address,
+                                                     wrong_from_sif_addr: cosmos.Address,
+        prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str):
         tx = self.generate_sign_prophecy_tx(from_sif_addr, to_eth_addr, prophecy_id, signature_for_sign_prophecy)
-        signed_tx = self.sign_transaction(tx, from_sif_addr)
 
+        # need update cosmos sender according to prophecy message
+        tx['body']['messages'][0]['cosmos_sender'] = from_val_addr
+
+        signed_tx = self.sign_transaction(tx, from_sif_addr)
         # replace the cosmos sender to simulate wrong signature for cosmos tx
         signed_tx['body']['messages'][0]['cosmos_sender'] = wrong_from_sif_addr
         encoded_tx = self.encode_transaction(signed_tx)
-        result = self.broadcast_tx(encoded_tx)
+        result = str(self.broadcast_tx(encoded_tx))
+
+        # tx_response {txhash: "C4CDD532E73F3D12335FA30C306452808BEFAC4A4226803585E738EC24D77320"}
+        l = result.find("\"")
+        r = result.rfind("\"")
+
+       # get the tx hash from result
+        tx_hash = result[l+1:r]
+
+        result = self.query_tx(tx_hash)
         return result
 
     def send_from_sifchain_to_ethereum(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int, denom: str,
@@ -309,6 +340,7 @@ class SifnodeClient:
         denom: str
     ):
         tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
+
         signed_tx = self.sign_transaction(tx, from_sif_addr)
         encoded_tx = self.encode_transaction(signed_tx)
         result = self.broadcast_tx(encoded_tx)
