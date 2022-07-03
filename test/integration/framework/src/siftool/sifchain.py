@@ -340,7 +340,6 @@ class SifnodeClient:
         denom: str
     ):
         tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
-
         signed_tx = self.sign_transaction(tx, from_sif_addr)
         encoded_tx = self.encode_transaction(signed_tx)
         result = self.broadcast_tx(encoded_tx)
