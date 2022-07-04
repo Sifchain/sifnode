@@ -175,7 +175,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 			msg := types.MsgUpdateParams{
 				Signer: clientCtx.GetFromAddress().String(),
 				Params: &types.Params{
-					LeverageMax:           sdk.NewUintFromString(viper.GetString("leverage-max")),
+					LeverageMax:           sdk.MustNewDecFromStr(viper.GetString("leverage-max")),
 					InterestRateMax:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
 					InterestRateMin:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
 					InterestRateIncrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),

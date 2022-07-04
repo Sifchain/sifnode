@@ -285,7 +285,7 @@ func TestKeeper_Borrow(t *testing.T) {
 		address          string
 		collateralAmount sdk.Uint
 		borrowAmount     sdk.Uint
-		leverage         sdk.Uint
+		leverage         sdk.Dec
 		health           sdk.Dec
 		fundedAccount    bool
 		err              error
@@ -299,7 +299,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(10000),
 			borrowAmount:     sdk.NewUint(1000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
@@ -311,7 +311,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
 			borrowAmount:     sdk.NewUint(1000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("user does not have enough balance of the required coin"),
 		},
@@ -323,7 +323,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
 			borrowAmount:     sdk.NewUint(1000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			fundedAccount:    true,
 			err:              tokenregistrytypes.ErrNotFound,
@@ -336,7 +336,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(1000000000000000),
 			borrowAmount:     sdk.NewUint(1000000000000000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("user does not have enough balance of the required coin"),
 		},
@@ -348,7 +348,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(10000),
 			borrowAmount:     sdk.NewUint(1000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
@@ -360,7 +360,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
 			borrowAmount:     sdk.NewUint(1000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("user does not have enough balance of the required coin"),
 		},
@@ -372,7 +372,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(1000),
 			borrowAmount:     sdk.NewUint(1000),
-			leverage:         sdk.NewUint(1),
+			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			fundedAccount:    true,
 			err:              nil,
@@ -857,7 +857,7 @@ func TestKeeper_UpdateMTPInterestLiabilitiesOverflow(t *testing.T) {
 		LiabilitiesI:     sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
 		CustodyAsset:     "ceth",
 		CustodyAmount:    sdk.Uint{},
-		Leverage:         sdk.Uint{},
+		Leverage:         sdk.Dec{},
 		MtpHealth:        sdk.Dec{},
 		Position:         types.Position_LONG,
 		Id:               1,
@@ -923,7 +923,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 			})
 
 			data := types.GenesisState{Params: &types.Params{
-				LeverageMax:          sdk.NewUint(10),
+				LeverageMax:          sdk.NewDec(10),
 				InterestRateMax:      tt.interestRateMax,
 				InterestRateMin:      sdk.NewDec(1),
 				InterestRateIncrease: tt.interestRateIncrease,
@@ -983,7 +983,7 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 		CollateralAmount: sdk.NewUint(1000),
 		CustodyAsset:     custodyAsset,
 		CustodyAmount:    sdk.NewUint(1000),
-		Leverage:         sdk.NewUint(10),
+		Leverage:         sdk.NewDec(10),
 		MtpHealth:        sdk.NewDec(20),
 		Position:         position}
 
