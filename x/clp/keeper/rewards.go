@@ -297,7 +297,7 @@ func (k Keeper) GetBlockDistributionAccu(ctx sdk.Context) sdk.Uint {
 		return blockDistribution
 	}
 
-	blockDistribution.Unmarshal(bytes)
+	_ = blockDistribution.Unmarshal(bytes)
 
 	return blockDistribution
 }
