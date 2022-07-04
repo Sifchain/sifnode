@@ -26,11 +26,17 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 
 		isDistributionBlock := kpr.IsDistributionBlockPure(ctx.BlockHeight(), currentPeriod.RewardPeriodStartBlock, currentPeriod.RewardPeriodMod)
 
+		currentBlockDistribution := kpr.CalcBlockDistribution(currentPeriod)
+		blockDistributionAccu := keeper.GetBlockDistributionAccu(ctx)
+		blockDistribution := blockDistributionAccu.Add(currentBlockDistribution)
 		if isDistributionBlock {
-			err := keeper.DistributeDepthRewards(ctx, currentPeriod, pools)
+			err := keeper.DistributeDepthRewards(ctx, blockDistribution, currentPeriod, pools)
+			keeper.SetBlockDistributionAccu(ctx, sdk.ZeroUint())
 			if err != nil {
 				keeper.Logger(ctx).Error(fmt.Sprintf("Rewards policy run error %s", err.Error()))
 			}
+		} else {
+			keeper.SetBlockDistributionAccu(ctx, blockDistribution)
 		}
 	}
 
