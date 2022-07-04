@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -179,7 +180,8 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 
 	lpCoinsBefore := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	// Disitribute coins to the LP
-	err := app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
+	blockDistribution := keeper.CalcBlockDistribution(&period)
+	err := app.ClpKeeper.DistributeDepthRewards(ctx, blockDistribution, &period, pools)
 	require.Nil(t, err)
 	lpCoinsAfter1 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	require.True(t, lpCoinsBefore.IsLT(lpCoinsAfter1))
@@ -194,7 +196,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	period.RewardPeriodDistribute = false
 	// reset to easier keep track of it
 	pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
-	err = app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
+	err = app.ClpKeeper.DistributeDepthRewards(ctx, blockDistribution, &period, pools)
 	require.Nil(t, err)
 	distributed2 := pool.RewardPeriodNativeDistributed
 	require.Equal(t, distributed1, distributed2)
@@ -235,7 +237,8 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 
 	lpCoinsBefore := app.BankKeeper.GetBalance(ctx, lpAddress, types.NativeSymbol)
 	// Distribute coins to the LP
-	err := app.ClpKeeper.DistributeDepthRewards(ctx, &period, pools)
+	blockDistribution := keeper.CalcBlockDistribution(&period)
+	err := app.ClpKeeper.DistributeDepthRewards(ctx, blockDistribution, &period, pools)
 	require.Nil(t, err)
 
 	// Nope, distribution failed
