@@ -64,12 +64,19 @@ func GetOpenCmd() *cobra.Command {
 			}
 			positionEnum := types.GetPositionFromString(position)
 
+			leverage, err := cmd.Flags().GetString("leverage")
+			if err != nil {
+				return err
+			}
+			leverageDec := sdk.MustNewDecFromStr(leverage)
+
 			msg := types.MsgOpen{
 				Signer:           clientCtx.GetFromAddress().String(),
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: sdk.NewUintFromString(collateralAmount),
 				BorrowAsset:      borrowAsset,
 				Position:         positionEnum,
+				Leverage:         leverageDec,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
