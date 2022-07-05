@@ -99,6 +99,7 @@ func (k keeper) GetRegistryEntry(ctx sdk.Context, denom string) (*types.Registry
 
 // Iterate over the entire token registry by slicing the query over many transactions
 // Limits of 100 or less only
+// Pagination Starts at page=1
 func (k keeper) GetRegistryPaginated(ctx sdk.Context, page uint, limit uint) (types.Registry, error) {
 	var entries []*types.RegistryEntry
 	store := ctx.KVStore(k.storeKey)
