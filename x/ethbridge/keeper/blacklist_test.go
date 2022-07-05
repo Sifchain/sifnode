@@ -134,10 +134,20 @@ func TestSetBlacklist(t *testing.T) {
 	}
 }
 
-func TestKeeper_SetBlacklist_Nonadmin(t *testing.T) {
-	var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-	err := keeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
-		From: types.TestAddress,
+func TestKeeper_SetBlacklist_NonEthBridgeAdmin(t *testing.T) {
+	adminAddress, _ := sdk.AccAddressFromBech32(types.TestAddress)
+	admin := admintypes.AdminAccount{
+		AdminType:    admintypes.AdminType_ETHBRIDGE,
+		AdminAddress: adminAddress.String(),
+	}
+	app, ctx := test.CreateTestApp(false)
+	app.AdminKeeper.SetAdminAccount(ctx, &admin)
+
+	testAddrs, _ := test.CreateTestAddrs(1)
+
+	err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
+		From:      testAddrs[0].String(),
+		Addresses: make([]string, 0),
 	})
 	require.ErrorIs(t, err, oracletypes.ErrNotAdminAccount)
 }
