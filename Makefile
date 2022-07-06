@@ -45,7 +45,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file} .proto-gen
+install: go.sum ${smart_contract_file} proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 install-bin: go.sum
@@ -73,8 +73,11 @@ coverage:
 test-peggy:
 	make -C smart-contracts tests
 
-tests: test-peggy
+test-bin:
 	@go test -v -coverprofile .testCoverage.txt ./...
+
+tests: test-peggy test-bin
+.PHONY tests
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
@@ -143,4 +146,4 @@ proto-check-breaking:
 .PHONY: proto-check-breaking
 
 ${smart_contract_file}:
-	cd smart-contracts && make
+	make -C smart-contracts
