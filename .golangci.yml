@@ -12,18 +12,19 @@ linters:
 #    - gocritic
 #    - gofmt
 #    - goimports
-    # - golint
+    - golint
     - gosec
     - govet
     - ineffassign
 #    - interfacer
-    # - fieldalignment
+    - maligned
     - misspell
     - nakedret
     - prealloc
-    # - scopelint
-    # - staticcheck
+    - scopelint
+    - staticcheck
     - structcheck
+    - stylecheck
     - typecheck
     - unconvert
     - unused
@@ -31,8 +32,6 @@ linters:
     - errcheck
   disable:
     - gosimple
-    - staticcheck
-    - stylecheck
 
 issues:
   exclude-rules:
@@ -53,7 +52,7 @@ linters-settings:
   goconst:
     min-occurrences: 4
   dogsled:
-    max-blank-identifiers: 8
+    max-blank-identifiers: 7
   maligned:
     # print struct with more effective memory layout or not, false by default
     suggest-new: true
