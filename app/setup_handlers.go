@@ -28,7 +28,9 @@ func SetupHandlers(app *SifchainApp) {
 		panic(err)
 	}
 	if upgradeInfo.Name == releaseVersion && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{}
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{"admin"},
+		}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,
 		// so that new stores start with the correct version (the current height of chain),
