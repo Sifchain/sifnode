@@ -343,12 +343,20 @@ func buildZapLogger(cmd *cobra.Command) (*zap.Logger, func(), error) {
 		return nil, nil, err
 	}
 
-	var logConfig zap.Config
+	logConfig := zap.NewProductionConfig()
 	switch logLevelFlag {
 	case "debug", "trace":
 		logConfig = zap.NewDevelopmentConfig()
-	default:
-		logConfig = zap.NewProductionConfig()
+	case "info":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	case "warn":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
+	case "error":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
+	case "fatal":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.FatalLevel)
+	case "panic":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.PanicLevel)
 	}
 	logConfig.Sampling = nil // neither production nor development use log sampling
 	logConfig.Encoding = "json"
