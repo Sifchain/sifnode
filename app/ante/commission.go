@@ -7,7 +7,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-var minCommission = sdk.NewDecWithPrec(5, 2) // 5%
+var minCommission = sdk.NewDecWithPrec(30, 2) // 30%
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
 
