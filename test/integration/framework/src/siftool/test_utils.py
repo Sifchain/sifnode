@@ -599,20 +599,6 @@ class EnvCtx:
                 raise Exception(raw_log)
         return retval
 
-    def _get_sifchain_balance_old(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
-        offset: Optional[int] = None, disable_log: bool = False
-    ) -> cosmos.Balance:
-        args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
-            (["--limit", str(limit)] if limit is not None else []) + \
-            (["--offset", str(offset)] if offset is not None else []) + \
-            self.sifnode_client._chain_id_args() + \
-            self.sifnode_client._node_args()
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
-        res = json.loads(stdout(res))
-        if res["pagination"]["next_key"] is not None:
-            raise Exception("More than {} results in balances".format(limit))
-        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
-
     def get_sifchain_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
         disable_log: bool = False, retries_on_error: int = 3, delay_on_error: int = 3
     ) -> cosmos.Balance:
