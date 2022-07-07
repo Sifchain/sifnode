@@ -16,8 +16,12 @@ def buildcmd(args: List[str], cwd: Optional[str] = None, env: Optional[Mapping[s
 
 
 class Command:
-    def execst(self, args: Sequence[str], cwd: str = None, env: Mapping[str, str] = None, stdin: Optional[AnyStr] = None,
-        binary: bool = False, pipe: bool = True, check_exit: bool = True, disable_log: bool = False
+    def __init__(self):
+        self._tmpdir: Optional[str] = None
+
+    def execst(self, args: Sequence[str], cwd: str = None, env: Mapping[str, str] = None,
+        stdin: Union[str, bytes, List[str], None] = None, binary: bool = False, pipe: bool = True,
+        check_exit: bool = True, disable_log: bool = False
     ) -> ExecResult:
         fd_stdout = subprocess.PIPE if pipe else None
         fd_stderr = subprocess.PIPE if pipe else None
@@ -36,7 +40,7 @@ class Command:
         return proc.returncode, stdout_data, stderr_data
 
     # Default implementation of popen for environemnts to start long-lived processes
-    def popen(self, args, log_file=None, **kwargs) -> subprocess.Popen:
+    def popen(self, args, log_file: Optional[IO] = None, **kwargs) -> subprocess.Popen:
         stdout = log_file or None
         stderr = log_file or None
         return popen(args, stdout=stdout, stderr=stderr, **kwargs)
@@ -101,19 +105,35 @@ class Command:
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
-    def mktempdir(self, parent_dir=None):
-        args = ["mktemp", "-d"] + (["-p", parent_dir] if parent_dir else [])
+    def tmpdir(self, *paths: str) -> str:
+        if self._tmpdir is not None:
+            path = self._tmpdir
+        elif "TMP" in os.environ:
+            path = os.environ["TMP"]
+        elif "TMPDIR" in os.environ:
+            path = os.environ["TMPDIR"]
+        else:
+            path = "/tmp"
+        return os.path.join(path, *paths)
+
+    def set_tmpdir(self, value: str):
+        self._tmpdir = value
+
+    def mktempdir(self, parent_dir: Optional[str] = None) -> str:
+        parent_dir = parent_dir or self.tmpdir()
+        args = ["mktemp", "-d", "-p", parent_dir]
         return exactly_one(stdout_lines(self.execst(args)))
 
-    def mktempfile(self, parent_dir=None):
-        args = ["mktemp"] + (["-p", parent_dir] if parent_dir else [])
+    def mktempfile(self, parent_dir: Optional[str] = None) -> str:
+        parent_dir = parent_dir or self.tmpdir()
+        args = ["mktemp", "-p", parent_dir]
         return exactly_one(stdout_lines(self.execst(args)))
 
-    def chmod(self, path, mode_str, recursive=False):
+    def chmod(self, path: str, mode_str: str, recursive: bool = False):
         args = ["chmod"] + (["-r"] if recursive else []) + [mode_str, path]
         self.execst(args)
 
-    def pwd(self):
+    def pwd(self) -> str:
         return exactly_one(stdout_lines(self.execst(["pwd"])))
 
     def __tar_compression_option(self, tarfile):

@@ -8,4 +8,4 @@ src_dir = os.path.join(base_dir, "src")
 build_generated_dir = os.path.join(base_dir, "build", "generated")
 paths = [src_dir, build_generated_dir]
 paths_to_add = [p for p in paths if not any(os.path.realpath(p) == os.path.realpath(s) for s in sys.path)]
-sys.path.extend(paths_to_add)
+sys.path[:0] = paths_to_add
