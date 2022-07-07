@@ -113,10 +113,6 @@ def basic_logging_setup():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s")
     # logging.getLogger(__name__).setLevel(logging.DEBUG)
     disable_noisy_loggers()
-    logging.getLogger("eth").setLevel(logging.WARNING)
-    logging.getLogger("websockets").setLevel(logging.WARNING)
-    logging.getLogger("web3").setLevel(logging.WARNING)
-    logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
