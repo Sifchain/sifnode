@@ -112,13 +112,13 @@ rollback:
 # if the list of .proto files changes
 proto_files=$(file <Makefile.protofiles)
 
-proto-all: proto-format proto-lint .proto-gen
+proto-all: proto-format proto-lint proto-gen
 
-.proto-gen: $(proto_files)
+proto-gen: $(proto_files)
 	@echo ${DOCKER}
 	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh -x ./scripts/protocgen.sh
 	touch $@
-.PHONY: .proto-gen
+.PHONY: proto-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
