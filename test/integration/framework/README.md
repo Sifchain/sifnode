@@ -17,6 +17,8 @@ Prerequisite
   sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt-get update
   sudo apt-get install ethereum
+
+Additional requirements (depending on your use case):
 - Install Python development libraries (recommended; required if you are compiling Python from source, i.e. using pyenv)
   sudo apt-get install -y libbz2-dev libncurses-dev libffi-dev libssl-dev libreadline-dev libsqlite3-dev liblzma-dev
 - Install Docker (for peggy2):
@@ -27,8 +29,7 @@ Prerequisite
   sudo apt-get update
   sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
   sudo usermod -aG docker $USER
-
-To start the local environment:
+- sudo install apt-get install -y jq (required for building sifnode binaries/smart contracts for peggy2)
 
 siftool run-env
 
