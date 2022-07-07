@@ -289,6 +289,11 @@ class EnvCtx:
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
 
+        # Defaults
+        self.wait_for_sif_balance_change_default_timeout = 90
+        self.wait_for_sif_balance_change_default_change_timeout = None
+        self.wait_for_sif_balance_change_default_polling_time = 2
+
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
 
@@ -673,9 +678,13 @@ class EnvCtx:
     # - if neither min_changes nor expected_balance are given: when anything changes.
     # You cannot use min_changes and expected_balance at the same time.
     def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
-        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
-        timeout: Optional[int] = 90, change_timeout: int = None, disable_log: bool = True
+        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None,
+        polling_time: Optional[int] = None, timeout: Optional[int] = None, change_timeout: Optional[int] = None,
+        disable_log: bool = True
     ) -> cosmos.Balance:
+        polling_time = polling_time if polling_time is not None else self.wait_for_sif_balance_change_default_polling_time
+        timeout = timeout if timeout is not None else self.wait_for_sif_balance_change_default_timeout
+        change_timeout = change_timeout if change_timeout is not None else self.wait_for_sif_balance_change_default_timeout
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         log.debug("Waiting for balance to change for account {}...".format(sif_addr))
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
@@ -695,7 +704,7 @@ class EnvCtx:
             if should_return:
                 return new_balance
             now = time.time()
-            if (timeout is not None) and (now - start_time > timeout):
+            if (timeout is not None) and (timeout > 0) and (now - start_time > timeout):
                 raise Exception("Timeout waiting for sif balance to change")
             if last_change_time is None:
                 last_changed_balance = new_balance
@@ -706,7 +715,7 @@ class EnvCtx:
                     last_changed_balance = new_balance
                     last_change_time = now
                     log.debug("New state detected ({} denoms changed)".format(len(delta)))
-                if (change_timeout is not None) and (now - last_change_time > change_timeout):
+                if (change_timeout is not None) and (change_timeout > 0) and (now - last_change_time > change_timeout):
                     raise Exception("Timeout waiting for sif balance to change")
             time.sleep(polling_time)
 

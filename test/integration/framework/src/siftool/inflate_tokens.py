@@ -175,7 +175,7 @@ class InflateTokens:
         self.ctx.advance_blocks()
         log.info("Ethereum blocks advanced by {}".format(self.ctx.eth.w3_conn.eth.block_number - previous_block))
         self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
-            polling_time=5, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+            polling_time=5, timeout=0, change_timeout=self.wait_for_account_change_timeout)
 
     # Distributes from intermediate_sif_account to each individual account
     def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):
@@ -195,7 +195,7 @@ class InflateTokens:
                 sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
                 self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, batch)
                 self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=batch,
-                    polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+                    polling_time=2, timeout=0, change_timeout=self.wait_for_account_change_timeout)
                 progress_current += batch_size
                 log.debug("Distributing tokens to wallets: {:0.0f}% done".format((progress_current/progress_total) * 100))
 
