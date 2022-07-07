@@ -70,14 +70,14 @@ clean: clean-config clean-peggy clean-ebrelayer
 coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
+.PHONY: tests test-peggy test-bin feature-tests
 test-peggy:
-	make -C smart-contracts tests
+	$(MAKE) -C smart-contracts tests
 
 test-bin:
 	@go test -v -coverprofile .testCoverage.txt ./...
 
 tests: test-peggy test-bin
-.PHONY tests
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
@@ -146,4 +146,4 @@ proto-check-breaking:
 .PHONY: proto-check-breaking
 
 ${smart_contract_file}:
-	make -C smart-contracts
+	$(MAKE) -C smart-contracts
