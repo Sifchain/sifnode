@@ -294,7 +294,6 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 	return X, XL, x, Y, YL, toRowan
 }
 
-
 func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, eta sdk.Dec) error {
 	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
 	if err != nil {
@@ -338,7 +337,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	} else { // collateral is external
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(collateralAmount)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
-
+	}
 	err = k.ClpKeeper().SetPool(ctx, pool)
 	if err != nil {
 		return err
