@@ -52,6 +52,9 @@ install: go.sum ${smart_contract_file} proto-gen
 install-bin: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+install-smart-contracts:
+	make -C smart-contracts install
+
 build-sifd: go.sum
 	go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
@@ -86,7 +89,7 @@ feature-tests:
 run:
 	go run ./cmd/sifnoded start
 
-build-image:
+build-image: install-smart-contracts
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
 
 run-image: build-image
