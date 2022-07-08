@@ -45,7 +45,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file} .proto-gen
+install: go.sum ${smart_contract_file} proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 install-bin: go.sum
@@ -70,11 +70,14 @@ clean: clean-config clean-peggy clean-ebrelayer
 coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
+.PHONY: tests test-peggy test-bin feature-tests
 test-peggy:
-	make -C smart-contracts tests
+	$(MAKE) -C smart-contracts tests
 
-tests: test-peggy
+test-bin:
 	@go test -v -coverprofile .testCoverage.txt ./...
+
+tests: test-peggy test-bin
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
@@ -109,13 +112,13 @@ rollback:
 # if the list of .proto files changes
 proto_files=$(file <Makefile.protofiles)
 
-proto-all: proto-format proto-lint .proto-gen
+proto-all: proto-format proto-lint proto-gen
 
-.proto-gen: $(proto_files)
+proto-gen: $(proto_files)
 	@echo ${DOCKER}
 	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh -x ./scripts/protocgen.sh
 	touch $@
-.PHONY: .proto-gen
+.PHONY: proto-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
@@ -143,4 +146,4 @@ proto-check-breaking:
 .PHONY: proto-check-breaking
 
 ${smart_contract_file}:
-	cd smart-contracts && make
+	$(MAKE) -C smart-contracts
