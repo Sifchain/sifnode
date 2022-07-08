@@ -298,17 +298,3 @@ func TestKeeper_SetFirstLockDoublePeg(t *testing.T) {
 	assert.False(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, denom, networkDescriptor))
 
 }
-
-// TODO: This test should be safe to remove. The functionality is tested in admin module
-// func TestKeeper_SetAdminAccount(t *testing.T) {
-// 	app, ctx, admin := test.CreateTestApp(false)
-// 	address, _ := sdk.AccAddressFromBech32(admin)
-// 	newAddress, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-
-// 	assert.True(t, app.TokenRegistryKeeper.GetAdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_TOKENREGISTRY, address))
-// 	assert.False(t, app.TokenRegistryKeeper.GetAdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_TOKENREGISTRY, newAddress))
-// 	app.TokenRegistryKeeper.GetAdminKeeper().SetAdminAccount(ctx, admintypes.AdminType_TOKENREGISTRY, newAddress.String())
-
-// 	// assert.True(t, app.TokenRegistryKeeper.IsAdminAccount(ctx, newAddress))
-// 	assert.True(t, app.TokenRegistryKeeper.GetAdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_TOKENREGISTRY, newAddress))
-// }

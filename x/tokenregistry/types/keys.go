@@ -2,5 +2,5 @@ package types
 
 var WhitelistStorePrefix = []byte{0x01}
 
-// TODO: This is added back, i think we need this?
+// We skip 0x02 because it was used by a prefix that has been deprecated
 var TokenDenomPrefix = []byte{0x03}
