@@ -1472,7 +1472,7 @@ func TestMsgServer_AddProviderDistribution(t *testing.T) {
 	// check correct events fired
 	require.Equal(t, len(ctx.EventManager().Events()), 2)
 	expectedEvents := []sdk.Event{sdk.NewEvent("lppd_new_policy",
-		sdk.NewAttribute("lppd_params", "distribution_periods:<distribution_period_block_rate:\"10000000000000000\" distribution_period_start_block:10 distribution_period_end_block:10 > "),
+		sdk.NewAttribute("lppd_params", "distribution_periods:<distribution_period_block_rate:\"10000000000000000\" distribution_period_start_block:10 distribution_period_end_block:10 distribution_period_mod:1 > "),
 		sdk.NewAttribute("height", "0"),
 	),
 		sdk.NewEvent("message",
