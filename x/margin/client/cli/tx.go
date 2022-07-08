@@ -64,12 +64,19 @@ func GetOpenCmd() *cobra.Command {
 			}
 			positionEnum := types.GetPositionFromString(position)
 
+			leverage, err := cmd.Flags().GetString("leverage")
+			if err != nil {
+				return err
+			}
+			leverageDec := sdk.MustNewDecFromStr(leverage)
+
 			msg := types.MsgOpen{
 				Signer:           clientCtx.GetFromAddress().String(),
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: sdk.NewUintFromString(collateralAmount),
 				BorrowAsset:      borrowAsset,
 				Position:         positionEnum,
+				Leverage:         leverageDec,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -175,7 +182,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 			msg := types.MsgUpdateParams{
 				Signer: clientCtx.GetFromAddress().String(),
 				Params: &types.Params{
-					LeverageMax:           sdk.NewUintFromString(viper.GetString("leverage-max")),
+					LeverageMax:           sdk.MustNewDecFromStr(viper.GetString("leverage-max")),
 					InterestRateMax:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
 					InterestRateMin:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
 					InterestRateIncrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),

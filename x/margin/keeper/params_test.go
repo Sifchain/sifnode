@@ -18,7 +18,7 @@ func TestKeeper_ParamGetter(t *testing.T) {
 	marginKeeper := app.MarginKeeper
 
 	data := types.GenesisState{Params: &types.Params{
-		LeverageMax:          sdk.NewUint(10),
+		LeverageMax:          sdk.NewDec(10),
 		InterestRateMax:      sdk.NewDec(5),
 		InterestRateMin:      sdk.NewDec(1),
 		InterestRateIncrease: sdk.NewDec(1),
@@ -37,7 +37,7 @@ func TestKeeper_ParamGetter(t *testing.T) {
 		{
 			name:   "LeverageMax",
 			want:   data.Params.LeverageMax.String(),
-			method: func(ctx sdk.Context) string { return marginKeeper.GetLeverageParam(ctx).String() },
+			method: func(ctx sdk.Context) string { return marginKeeper.GetMaxLeverageParam(ctx).String() },
 		},
 		{
 			name:   "InterestRateMax",

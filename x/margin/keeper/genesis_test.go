@@ -22,7 +22,7 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		state := marginKeeper.ExportGenesis(ctx)
 		require.NotNil(t, state)
 
-		require.Equal(t, state.Params.LeverageMax, marginKeeper.GetLeverageParam(ctx))
+		require.Equal(t, state.Params.LeverageMax, marginKeeper.GetMaxLeverageParam(ctx))
 		require.Equal(t, state.Params.InterestRateMax, marginKeeper.GetInterestRateMax(ctx))
 		require.Equal(t, state.Params.InterestRateMin, marginKeeper.GetInterestRateMin(ctx))
 		require.Equal(t, state.Params.InterestRateIncrease, marginKeeper.GetInterestRateIncrease(ctx))
@@ -38,7 +38,7 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:           sdk.NewUint(10),
+			LeverageMax:           sdk.NewDec(10),
 			InterestRateMax:       sdk.NewDec(5),
 			InterestRateMin:       sdk.NewDec(1),
 			InterestRateIncrease:  sdk.NewDec(1),
@@ -71,7 +71,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 
 		got := marginKeeper.ExportGenesis(ctx)
 
-		require.Equal(t, got.Params.LeverageMax, marginKeeper.GetLeverageParam(ctx))
+		require.Equal(t, got.Params.LeverageMax, marginKeeper.GetMaxLeverageParam(ctx))
 		require.Equal(t, got.Params.InterestRateMax, marginKeeper.GetInterestRateMax(ctx))
 		require.Equal(t, got.Params.InterestRateMin, marginKeeper.GetInterestRateMin(ctx))
 		require.Equal(t, got.Params.InterestRateIncrease, marginKeeper.GetInterestRateIncrease(ctx))
@@ -87,7 +87,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:           sdk.NewUint(10),
+			LeverageMax:           sdk.NewDec(10),
 			InterestRateMax:       sdk.NewDec(5),
 			InterestRateMin:       sdk.NewDec(1),
 			InterestRateIncrease:  sdk.NewDec(1),

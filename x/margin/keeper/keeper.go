@@ -294,7 +294,8 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 	return X, XL, x, Y, YL, toRowan
 }
 
-func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, eta sdk.Uint) error {
+
+func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, eta sdk.Dec) error {
 	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
 	if err != nil {
 		return err
@@ -305,10 +306,14 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 		return clptypes.ErrBalanceNotAvailable
 	}
 
+	collateralAmountDec := sdk.NewDecFromBigInt(collateralAmount.BigInt())
+	liabilitiesPDec := collateralAmountDec.Mul(eta)
+
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
-	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(eta))
+
+	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(sdk.NewUintFromBigInt(liabilitiesPDec.TruncateInt().BigInt()))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(custodyAmount)
-	mtp.Leverage = eta.Add(sdk.OneUint())
+	mtp.Leverage = eta.Add(sdk.OneDec())
 
 	// print mtp.CustodyAmount
 	ctx.Logger().Info(fmt.Sprintf("mtp.CustodyAmount: %s", mtp.CustodyAmount.String()))
@@ -329,11 +334,11 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(collateralAmount)
-		pool.NativeLiabilities = pool.NativeLiabilities.Add(collateralAmount.Mul(eta))
+		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
 	} else { // collateral is external
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(collateralAmount)
-		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(collateralAmount.Mul(eta))
-	}
+		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
+
 	err = k.ClpKeeper().SetPool(ctx, pool)
 	if err != nil {
 		return err
@@ -543,7 +548,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQ(ctx, pool))
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
@@ -566,4 +571,22 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	}
 
 	return newInterestRate, nil
+}
+
+func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+	q := k.ClpKeeper().GetRemovalQueue(ctx, pool.ExternalAsset.Symbol)
+	if q.Count == 0 {
+		return sdk.ZeroDec()
+	}
+
+	value := sdk.NewDecFromBigInt(q.TotalValue.BigInt())
+	blocks := sdk.NewDec(ctx.BlockHeight() - q.StartHeight)
+	modifier, err := sdk.NewDecFromStr("10000000000000000000000000")
+	if err != nil {
+		panic(err)
+	}
+
+	sq := value.Quo(blocks).Quo(modifier)
+
+	return sq
 }
