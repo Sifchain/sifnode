@@ -8,7 +8,7 @@ message GenesisState { Params params = 1; }
 
 message Params {
   string leverage_max = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
   string interest_rate_max = 2 [
@@ -70,7 +70,7 @@ message MTP {
     (gogoproto.nullable) = false
   ];
   string leverage = 8 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
   string mtp_health = 9 [

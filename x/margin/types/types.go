@@ -21,7 +21,7 @@ const (
 	RouterKey = ModuleName
 )
 
-func NewMTP(signer string, collateralAsset string, borrowAsset string, position Position) *MTP {
+func NewMTP(signer string, collateralAsset string, borrowAsset string, position Position, leverage sdk.Dec) *MTP {
 	return &MTP{
 		Address:          signer,
 		CollateralAsset:  collateralAsset,
@@ -30,7 +30,7 @@ func NewMTP(signer string, collateralAsset string, borrowAsset string, position 
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     borrowAsset,
 		CustodyAmount:    sdk.ZeroUint(),
-		Leverage:         sdk.ZeroUint(),
+		Leverage:         leverage,
 		MtpHealth:        sdk.ZeroDec(),
 		Position:         position,
 	}

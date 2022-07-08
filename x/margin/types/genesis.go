@@ -8,7 +8,7 @@ import sdk "github.com/cosmos/cosmos-sdk/types"
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params: &Params{
-			LeverageMax:           sdk.NewUint(2),
+			LeverageMax:           sdk.NewDec(2),
 			HealthGainFactor:      sdk.NewDec(1),
 			InterestRateMin:       sdk.NewDecWithPrec(5, 3),
 			InterestRateMax:       sdk.NewDec(3),

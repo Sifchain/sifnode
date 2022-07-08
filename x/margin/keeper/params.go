@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetLeverageParam(ctx sdk.Context) sdk.Uint {
+func (k Keeper) GetMaxLeverageParam(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).LeverageMax
 }
 
