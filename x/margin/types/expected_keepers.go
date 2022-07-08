@@ -85,4 +85,6 @@ type Keeper interface {
 	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
 
 	EmitForceClose(ctx sdk.Context, mtp *MTP, closer string)
+
+	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }
