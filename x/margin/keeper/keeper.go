@@ -543,7 +543,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQ(ctx, pool))
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
@@ -566,4 +566,22 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	}
 
 	return newInterestRate, nil
+}
+
+func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+	q := k.ClpKeeper().GetRemovalQueue(ctx, pool.ExternalAsset.Symbol)
+	if q.Count == 0 {
+		return sdk.ZeroDec()
+	}
+
+	value := sdk.NewDecFromBigInt(q.TotalValue.BigInt())
+	blocks := sdk.NewDec(ctx.BlockHeight() - q.StartHeight)
+	modifier, err := sdk.NewDecFromStr("10000000000000000000000000")
+	if err != nil {
+		panic(err)
+	}
+
+	sq := value.Quo(blocks).Quo(modifier)
+
+	return sq
 }
