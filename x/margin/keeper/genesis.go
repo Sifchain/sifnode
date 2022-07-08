@@ -18,7 +18,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data types.GenesisState) []abci.Val
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	return &types.GenesisState{
 		Params: &types.Params{
-			LeverageMax:           k.GetLeverageParam(ctx),
+			LeverageMax:           k.GetMaxLeverageParam(ctx),
 			InterestRateMax:       k.GetInterestRateMax(ctx),
 			InterestRateMin:       k.GetInterestRateMin(ctx),
 			InterestRateIncrease:  k.GetInterestRateIncrease(ctx),

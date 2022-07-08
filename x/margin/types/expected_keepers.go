@@ -30,6 +30,8 @@ type CLPKeeper interface {
 	GetMinLen(inputs []sdk.Uint) int64
 
 	GetPmtpRateParams(ctx sdk.Context) clptypes.PmtpRateParams
+
+	GetRemovalQueue(ctx sdk.Context, symbol string) clptypes.RemovalQueue
 }
 
 type Keeper interface {
@@ -54,7 +56,7 @@ type Keeper interface {
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
 	DestroyMTP(sdk.Context, string, uint64) error
 
-	GetLeverageParam(sdk.Context) sdk.Uint
+	GetMaxLeverageParam(sdk.Context) sdk.Dec
 	GetInterestRateMax(sdk.Context) sdk.Dec
 	GetInterestRateMin(ctx sdk.Context) sdk.Dec
 	GetInterestRateIncrease(ctx sdk.Context) sdk.Dec
@@ -68,7 +70,7 @@ type Keeper interface {
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
 
 	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
-	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, leverage sdk.Uint) error
+	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint) error

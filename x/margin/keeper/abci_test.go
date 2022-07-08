@@ -19,7 +19,7 @@ func TestKeeper_BeginBlocker(t *testing.T) {
 		marginKeeper := app.MarginKeeper
 
 		params := types.Params{
-			LeverageMax:          sdk.NewUint(10),
+			LeverageMax:          sdk.NewDec(10),
 			InterestRateMax:      sdk.NewDec(5),
 			InterestRateMin:      sdk.NewDec(1),
 			InterestRateIncrease: sdk.NewDec(1),

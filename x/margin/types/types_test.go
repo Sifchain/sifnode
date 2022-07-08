@@ -7,17 +7,19 @@ import (
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTypes_NewMTP(t *testing.T) {
-	got := types.NewMTP("signer", "collateralAsset", "borrowAsset", types.Position_LONG)
+	got := types.NewMTP("signer", "collateralAsset", "borrowAsset", types.Position_LONG, sdk.OneDec())
 
 	require.Equal(t, got.Address, "signer")
 	require.Equal(t, got.CollateralAsset, "collateralAsset")
 	require.Equal(t, got.CustodyAsset, "borrowAsset")
 	require.Equal(t, got.Position, types.Position_LONG)
+	require.Equal(t, got.Leverage, sdk.OneDec())
 }
 
 func TestTypes_MtpValidate(t *testing.T) {

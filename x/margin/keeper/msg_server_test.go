@@ -654,7 +654,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 				gs3 := &types.GenesisState{
 					Params: &types.Params{
-						LeverageMax:           sdk.NewUint(2),
+						LeverageMax:           sdk.NewDec(2),
 						InterestRateMax:       sdk.NewDec(1),
 						InterestRateMin:       sdk.ZeroDec(),
 						InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
@@ -808,7 +808,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 			})
 
 			params := types.Params{
-				LeverageMax:           sdk.NewUint(2),
+				LeverageMax:           sdk.NewDec(2),
 				InterestRateMax:       sdk.NewDec(1),
 				InterestRateMin:       sdk.ZeroDec(),
 				InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
@@ -906,7 +906,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				LiabilitiesI:     sdk.ZeroUint(),
 				CustodyAsset:     tt.externalAsset,
 				CustodyAmount:    sdk.NewUint(2000),
-				Leverage:         sdk.NewUint(1),
+				Leverage:         sdk.NewDec(1),
 				MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 				Position:         types.Position_LONG,
 			}
@@ -981,7 +981,7 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 
 		gs3 := &types.GenesisState{
 			Params: &types.Params{
-				LeverageMax:          sdk.NewUint(2),
+				LeverageMax:          sdk.NewDec(2),
 				HealthGainFactor:     sdk.NewDec(2),
 				InterestRateMin:      sdk.NewDecWithPrec(5, 3),
 				InterestRateMax:      sdk.NewDec(3),
@@ -1068,7 +1068,7 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 		LiabilitiesI:     sdk.NewUintFromString("0"),
 		CustodyAsset:     externalAsset,
 		CustodyAmount:    sdk.NewUintFromString("20000"),
-		Leverage:         sdk.NewUintFromString("1"),
+		Leverage:         sdk.NewDec(1),
 		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               1,
@@ -1662,7 +1662,7 @@ func TestKeeper_EC(t *testing.T) {
 
 				gs3 := &types.GenesisState{
 					Params: &types.Params{
-						LeverageMax:           sdk.NewUint(2),
+						LeverageMax:           sdk.NewDec(2),
 						HealthGainFactor:      sdk.NewDec(1),
 						InterestRateMin:       sdk.NewDecWithPrec(5, 3),
 						InterestRateMax:       sdk.NewDec(3),
@@ -1781,7 +1781,7 @@ func TestKeeper_EC(t *testing.T) {
 						LiabilitiesI:     sdk.ZeroUint(),
 						CustodyAsset:     ec.externalAsset,
 						CustodyAmount:    chunkItem.mtpCustodyAmount,
-						Leverage:         sdk.NewUint(2),
+						Leverage:         sdk.NewDec(2),
 						MtpHealth:        chunkItem.mtpHealth,
 						Position:         types.Position_LONG,
 					}
@@ -1921,7 +1921,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     externalAsset.Symbol,
 		CustodyAmount:    sdk.NewUint(2000),
-		Leverage:         sdk.NewUint(1),
+		Leverage:         sdk.NewDec(1),
 		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               1,
@@ -1948,7 +1948,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     externalAsset.Symbol,
 		CustodyAmount:    sdk.NewUint(2000),
-		Leverage:         sdk.NewUint(1),
+		Leverage:         sdk.NewDec(1),
 		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               1,
@@ -1964,7 +1964,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		LiabilitiesI:     sdk.ZeroUint(),
 		CustodyAsset:     externalAsset.Symbol,
 		CustodyAmount:    sdk.NewUint(1000),
-		Leverage:         sdk.NewUint(1),
+		Leverage:         sdk.NewDec(1),
 		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
 		Position:         types.Position_LONG,
 		Id:               2,

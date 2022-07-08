@@ -127,12 +127,14 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 }
 
 func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, error) {
-	leverage := k.GetLeverageParam(ctx)
-	eta := leverage.Sub(sdk.OneUint())
+	maxLeverage := k.GetMaxLeverageParam(ctx)
+	leverage := sdk.MinDec(msg.Leverage, maxLeverage)
+	eta := leverage.Sub(sdk.OneDec())
 
 	collateralAmount := msg.CollateralAmount
+	collateralAmountDec := sdk.NewDecFromBigInt(msg.CollateralAmount.BigInt())
 
-	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, msg.Position)
+	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, msg.Position, leverage)
 
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
@@ -152,7 +154,9 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
 	}
 
-	leveragedAmount := collateralAmount.Mul(leverage)
+	leveragedAmountDec := collateralAmountDec.Mul(leverage)
+
+	leveragedAmount := sdk.NewUintFromBigInt(leveragedAmountDec.TruncateInt().BigInt())
 
 	ctx.Logger().Info(fmt.Sprintf("leveragedAmount: %s", leveragedAmount.String()))
 
