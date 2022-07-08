@@ -156,14 +156,14 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 
 	ctx.Logger().Info(fmt.Sprintf("leveragedAmount: %s", leveragedAmount.String()))
 
-	borrowAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
+	custodyAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.Logger().Info(fmt.Sprintf("borrowAmount: %s", borrowAmount.String()))
+	ctx.Logger().Info(fmt.Sprintf("custodyAmount: %s", custodyAmount.String()))
 
-	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, &pool, eta)
+	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, custodyAmount, mtp, &pool, eta)
 	if err != nil {
 		return nil, err
 	}
