@@ -141,8 +141,8 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier { //nolint
-	return keeper.NewLegacyQuerier(am.Keeper)
+func (am AppModule) LegacyQuerierHandler(aminoCodec *codec.LegacyAmino) sdk.Querier { //nolint
+	return keeper.NewLegacyQuerier(am.Keeper, aminoCodec)
 }
 
 // InitGenesis performs genesis initialization. It returns
