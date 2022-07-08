@@ -856,8 +856,8 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 func fireCreatePoolEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, pool *types.Pool) {
 	eventMsg := CreateEventMsg(signer)
 
-	createLiquidityAttribute := sdk.NewAttribute(types.EventTypeCreateLiquidityProvider, lp.String())
-	createLiquidityEvent := CreateEventBlockHeight(ctx, types.AttributeKeyLiquidityProvider, createLiquidityAttribute)
+	createLiquidityAttribute := sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String())
+	createLiquidityEvent := CreateEventBlockHeight(ctx, types.EventTypeCreateLiquidityProvider, createLiquidityAttribute)
 
 	createPoolAttribute := sdk.NewAttribute(types.AttributeKeyPool, pool.String())
 	createPoolEvent := CreateEventBlockHeight(ctx, types.EventTypeCreatePool, createPoolAttribute)
