@@ -388,6 +388,26 @@ func CalcSwapResult(toRowan bool,
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
+func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
+	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
+	if err != nil {
+		return sdk.ZeroUint(), err
+	}
+	value := spotPrice.Mul(sdk.NewDecFromBigInt(rowanAmount.BigInt()))
+	return sdk.NewUintFromBigInt(value.RoundInt().BigInt()), nil
+}
+
+// Calculates spot price of Rowan accounting for PMTP
+func CalcRowanSpotPrice(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+	rowanBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+	if rowanBalance.Equal(sdk.ZeroDec()) {
+		return sdk.ZeroDec(), types.ErrInValidAmount
+	}
+	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	unadjusted := externalAssetBalance.Quo(rowanBalance)
+	return unadjusted.Mul(pmtpCurrentRunningRate.Add(sdk.OneDec())), nil
+}
+
 func CalcSwapPriceResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,

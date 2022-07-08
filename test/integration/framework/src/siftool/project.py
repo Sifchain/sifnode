@@ -1,6 +1,10 @@
 import os
 import json
+from siftool.command import Command, ExecResult
 from siftool.common import *
+
+
+log = siftool_logger(__name__)
 
 
 def force_kill_processes(cmd):
@@ -19,7 +23,7 @@ def killall(processes):
 class Project:
     """Represents a checked out copy of a project in a particular directory."""
 
-    def __init__(self, cmd, base_dir):
+    def __init__(self, cmd: Command, base_dir: str):
         self.cmd = cmd
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
@@ -43,13 +47,8 @@ class Project:
         else:
             log.debug("Nothing to delete for '{}'".format(path))
 
-    def __rm_files_develop(self):
-        self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
-
     def __rm_files(self, level):
         if level >= 0:
-            # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-            self.__rm_files_develop()
             self.__rm(self.project_dir("smart-contracts", "build"))  # truffle deploy
             self.__rm(self.project_dir("test", "integration", "vagrant", "data"))
             self.__rm(self.project_dir("test", "integration", "src", ".pytest_cache"))
@@ -61,17 +60,8 @@ class Project:
             # Peggy/devenv/hardhat cleanup
             # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
             # TODO Difference between yarn vs. npm install?
-            # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
-            # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-            self.__rm(self.project_dir("smart-contracts", "build"))             # (1)
-            self.__rm(self.project_dir("smart-contracts", "artifacts"))         # (1)
-            self.__rm(self.project_dir("smart-contracts", "cache"))             # (1)
-            self.__rm(self.project_dir("smart-contracts", ".openzeppelin"))     # (1)
-            self.__rm(self.project_dir("smart-contracts", "relayerdb"))         # (2)
-            self.__rm(self.project_dir("smart-contracts", "environment.json"))  # (2)
-            self.__rm(self.project_dir("smart-contracts", "env.json"))          # (2)
-            self.__rm(self.project_dir("smart-contracts", ".env"))              # (2)
-            self.__rm(self.project_dir("smart-contracts", "venv"))
+            self.__rm_hardhat_compiled_files()
+            self.__rm_run_env_files()
 
             # Additional cleanup (not neccessary to make it work)
             # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
@@ -97,12 +87,11 @@ class Project:
             self.__rm(self.cmd.get_user_home(".npm"))
             self.__rm(self.cmd.get_user_home(".npm-global"))
             self.__rm(self.cmd.get_user_home(".cache/yarn"))
-            self.__rm(self.cmd.get_user_home(".sifnoded"))
+            self.__rm_run_env_files()
             self.__rm(self.cmd.get_user_home(".sifnode-integration"))
 
             # Peggy2
-            # Generated Go stubs (by smart-contracts/Makefile)
-            self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+            self.__rm_peggy2_compiled_go_stubs()
             self.__rm(self.project_dir("smart-contracts", ".hardhat-compile"))
 
             # Remove go dependencies and re-download them (GOPATH=~/go)
@@ -122,9 +111,11 @@ class Project:
     def yarn(self, args, cwd=None, env=None):
         return self.cmd.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
 
-    def npx(self, args, env=None, cwd=None, pipe=True):
+    def npx(self, args: Sequence[str], env: Optional[Mapping[str, str]] = None, cwd: Optional[str] = None,
+        pipe: bool = True
+    ) -> ExecResult:
         # Typically we want any npx commands to inherit stdout and strerr
-        return self.cmd.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
+        return self.cmd.execst(["npx"] + list(args), env=env, cwd=cwd, pipe=pipe)
 
     def run_peggy2_js_tests(self):
         # See smart-contracts/TEST.md:
@@ -160,37 +151,6 @@ class Project:
         self.npm_install(self.smart_contracts_dir)
 
     def write_vagrantenv_sh(self, state_vars, data_dir, ethereum_websocket_address, chainnet):
-        # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
-        #
-        # BASEDIR (required), value=/home/jurez/work/projects/sif/sifnode/local
-        # BRIDGE_BANK_ADDRESS (optional), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-        # BRIDGE_BANK_ADDRESS (required), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-        # BRIDGE_REGISTRY_ADDRESS (required), value=0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
-        # BRIDGE_TOKEN_ADDRESS (optional), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-        # BRIDGE_TOKEN_ADDRESS (required), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-        # CHAINDIR (required), 3x value
-        # CHAINNET (required), value=localnet
-        # DEPLOYMENT_NAME (optional), value=None
-        # ETHEREUM_ADDRESS (optional), value=None
-        # ETHEREUM_NETWORK (optional), value=None
-        # ETHEREUM_NETWORK_ID (optional), value=None
-        # GANACHE_KEYS_FILE (optional), value=None
-        # HOME (required), value=/home/jurez
-        # MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
-        # MONIKER (required), value=wandering-flower
-        # OPERATOR_ADDRESS (optional), value=None
-        # OPERATOR_PRIVATE_KEY (optional), value=None
-        # OPERATOR_PRIVATE_KEY (optional), value=c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
-        # ROWAN_SOURCE (optional), value=None
-        # ROWAN_SOURCE_KEY (optional), value=None
-        # SIFCHAIN_ADMIN_ACCOUNT (required), value=sif1896ner48vrg8m05k48ykc6yydlxc4yvm23hp5m
-        # SIFNODE (optional), value=None
-        # SMART_CONTRACTS_DIR (required), 2x value
-        # SMART_CONTRACT_ARTIFACT_DIR (optional), value=None
-        # SOLIDITY_JSON_PATH (optional), value=None
-        # TEST_INTEGRATION_DIR (required), value=/home/jurez/work/projects/sif/sifnode/local/test/integration
-        # VALIDATOR1_ADDR (optional), 3x value
-        # VALIDATOR1_PASSWORD (optional), 3x value
         env = dict_merge(state_vars, {
             # For running test/integration/execute_integration_tests_against_*.sh
             "TEST_INTEGRATION_DIR": project_dir("test/integration"),
@@ -225,6 +185,33 @@ class Project:
         self.make_go_binaries_2()
         self.install_smart_contracts_dependencies()
 
+    def __rm_sifnode_binaries(self):
+        for filename in ["sifnoded", "ebrelayer", "sifgen"]:
+            self.__rm(os.path.join(self.go_bin_dir, filename))
+
+    # Removes hardhat-compiled smart contract files that are result of running
+    # cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
+    def __rm_hardhat_compiled_files(self):
+        for path in ["build", "artifacts", "cache", ".openzeppelin", ".hardhat-compile"]:
+            self.__rm(os.path.join(self.smart_contracts_dir, path))
+
+    def __rm_peggy2_compiled_go_stubs(self):
+        # Peggy2: generated Go stubs (by smart-contracts/Makefile)
+        self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+        self.__rm(project_dir(".proto-gen"))
+
+    def __rm_run_env_files(self):
+        self.__rm(self.cmd.get_user_home(".sifnoded"))
+
+        # Created by npx hardhat run scripts/devenv.ts and/or siftool run-env
+        self.__rm(self.project_dir("smart-contracts", "relayerdb"))  # peggy1 only
+        self.__rm(self.project_dir("test", "integration", "sifchainrelayerdb"))  # Probably obsolete on peggy2 TODO move to /tmp
+        self.__rm(self.project_dir("smart-contracts", "environment.json"))
+        self.__rm(self.project_dir("smart-contracts", "env.json"))
+        self.__rm(self.project_dir("smart-contracts", ".env"))
+        self.__rm(self.project_dir("smart-contracts", "venv"))
+        self.__rm(self.project_dir(".run"))
+
     def clean(self):
         self.cmd.rmf(self.project_dir("smart-contracts", "node_modules"))
         self.cmd.rmf(os.path.join(self.siftool_dir, "build"))
@@ -238,8 +225,7 @@ class Project:
             self.cmd.rmf(self.project_dir("smart-contracts", "cache"))
             self.cmd.rmf(self.project_dir("smart-contracts", "artifacts"))
 
-            for filename in ["sifnoded", "ebrelayer", "sifgen"]:
-                self.cmd.rmf(os.path.join(self.go_bin_dir, filename))
+            self.__rm_sifnode_binaries()
 
     # Use this between run-env.
     def old_clean(self, level=None):
@@ -268,7 +254,7 @@ class Project:
         self.install_smart_contracts_dependencies()
         self.cmd.execst(["make", "install"], cwd=self.project_dir(), pipe=False)
 
-    def npm_install(self, path):
+    def npm_install(self, path: str, disable_cache: bool = False):
         # TODO Add package-lock.json also on future/peggy2 branch?
         package_lock_json = os.path.join(path, "package.json" if on_peggy2_branch else "package-lock.json")
         sha1 = self.cmd.sha1_of_file(package_lock_json)
@@ -394,7 +380,7 @@ class Project:
             os.path.join(cosmos_proto_proto_dir, "cosmos_proto/cosmos.proto"),
         ]
 
-        args = [self.project_python(), "-m", "grpc_tools.protoc"] + flatten_list([["-I", i] for i in includes]) + [
+        args = [self.project_python(), "-m", "grpc_tools.protoc"] + flatten(["-I", i] for i in includes) + [
             "--python_out", generated_dir, "--grpc_python_out", generated_dir] + proto_files
         self.cmd.execst(args, pipe=True)
 
@@ -405,3 +391,27 @@ class Project:
         self.cmd.execst(["git", "clone", "-q"] + (["--depth", "1"] if shallow else []) + [url, path])
         if checkout_commit:
             self.cmd.execst(["git", "checkout", checkout_commit], cwd=path)
+
+    def reset(self):
+        self.__rm(os.path.join(self.smart_contracts_dir, "node_modules"))
+        self.__rm_hardhat_compiled_files()
+        self.__rm_sifnode_binaries()
+        self.__rm(os.path.join(self.cmd.get_user_home(), ".sifnoded"))
+        self.__rm_peggy2_compiled_go_stubs()
+        self.npm_install(self.smart_contracts_dir)
+        self.make_go_binaries_2()
+
+    # Convenience wrapper
+    def test(self, path: str, function: Optional[str] = None):
+        test_arg = os.path.realpath(path)
+        if function:
+            test_arg += "::" + function
+        args = [self.project_python(), "-m", "pytest", "-olog_cli=true", "-olog_cli_level=DEBUG", test_arg]
+        self.cmd.execst(args, pipe=False)
+
+    def pkill(self):
+        for proc_name in ["node", "ebrelayer", "sifnoded", "geth"]:
+            self.cmd.execst(["pkill", "--signal", "SIGTERM", proc_name], check_exit=False)
+
+    def clean_run_env_state(self):
+        self.__rm_run_env_files()

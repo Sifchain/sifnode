@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +29,7 @@ func (k msgServer) SetSymmetryThreshold(goCtx context.Context, threshold *types.
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_CLPDEX, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", threshold.Signer))
 	}
 
@@ -67,7 +68,7 @@ func (k msgServer) CancelUnlockLiquidity(goCtx context.Context, request *types.M
 }
 
 func fireCancelUnlockEvents(ctx sdk.Context, request *types.MsgCancelUnlock, lp *types.LiquidityProvider) {
-	eventMsg := createEventMsg(request.Signer)
+	eventMsg := CreateEventMsg(request.Signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCancelUnlock,
@@ -85,7 +86,7 @@ func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.M
 	if err != nil {
 		return nil, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	if !(msg.Minter.AnnualProvisions.IsZero() && msg.Minter.Inflation.IsZero()) {
@@ -104,7 +105,7 @@ func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpda
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetRewardsParams(ctx)
@@ -121,7 +122,7 @@ func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewar
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetRewardsParams(ctx)
@@ -148,7 +149,7 @@ func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *typ
 		return response, err
 	}
 
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
@@ -161,9 +162,9 @@ func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *typ
 	return response, nil
 }
 func fireAddProviderDistributionEvents(ctx sdk.Context, signer string, params *types.ProviderDistributionParams) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
-	providerDistributionPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
+	providerDistributionPolicyEvent := CreateEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
 
 	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
 }
@@ -175,7 +176,7 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
@@ -206,9 +207,9 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 }
 
 func fireUpdatePmtpEvents(ctx sdk.Context, signer string, params *types.PmtpParams) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	attribute := sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String())
-	newPmtpPolicyEvent := createEventBlockHeight(ctx, types.EventTypeAddNewPmtpPolicy, attribute)
+	newPmtpPolicyEvent := CreateEventBlockHeight(ctx, types.EventTypeAddNewPmtpPolicy, attribute)
 
 	ctx.EventManager().EmitEvents(sdk.Events{newPmtpPolicyEvent, eventMsg})
 }
@@ -220,7 +221,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	if err != nil {
 		return response, err
 	}
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_PMTPREWARDS, signer) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetPmtpParams(ctx)
@@ -264,7 +265,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 }
 
 func fireModifyPmtpEvents(ctx sdk.Context, signer string, params *types.PmtpParams, rateParams *types.PmtpRateParams) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	pmtpEvent := sdk.NewEvent(
 		types.EventTypeEndPmtpPolicy,
 		sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
@@ -302,7 +303,7 @@ func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlo
 }
 
 func fireUnlockLiquidityEvents(ctx sdk.Context, request *types.MsgUnlockLiquidityRequest, lp *types.LiquidityProvider) {
-	eventMsg := createEventMsg(request.Signer)
+	eventMsg := CreateEventMsg(request.Signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeRequestUnlock,
@@ -381,9 +382,9 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 }
 
 func fireDecommissionPoolEvents(ctx sdk.Context, signer string, pool *types.Pool) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	attribute := sdk.NewAttribute(types.AttributeKeyPool, pool.String())
-	decomissionPoolEvent := createEventBlockHeight(ctx, types.EventTypeDecommissionPool, attribute)
+	decomissionPoolEvent := CreateEventBlockHeight(ctx, types.EventTypeDecommissionPool, attribute)
 
 	ctx.EventManager().EmitEvents(sdk.Events{decomissionPoolEvent, eventMsg})
 }
@@ -408,7 +409,44 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
+	if k.tokenRegistryKeeper.CheckEntryPermissions(sAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_SELL}) {
+		return nil, tokenregistrytypes.ErrNotAllowedToSellAsset
+	}
+	if k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_BUY}) {
+		return nil, tokenregistrytypes.ErrNotAllowedToBuyAsset
+	}
+
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+
+	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
+	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
+	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
+	currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+	var (
+		sentValue sdk.Uint
+	)
+
+	// if liquidity protection is active and selling rowan
+	if liquidityProtectionParams.IsActive && strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
+		if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+			sentValue = msg.SentAmount
+		} else {
+			pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+			if err != nil {
+				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+			}
+			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount)
+
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if currentRowanLiquidityThreshold.LT(sentValue) {
+			return nil, types.ErrReachedMaxRowanLiquidityThreshold
+		}
+	}
+
 	decimals := sAsset.Decimals
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
@@ -500,11 +538,49 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	pmtpBlockRate := k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate
 	fireSwapSuccessEvents(ctx, msg.Signer, emitAmount, totalLiquidityFee, priceImpact, &inPool, &outPool, pmtpBlockRate, pmtpCurrentRunningRate)
 
+	if liquidityProtectionParams.IsActive {
+		// if sell rowan
+		if strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
+			// we know that sentValue < currentRowanLiquidityThreshold so we can do the
+			// substitution knowing it won't panic
+			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Sub(sentValue)
+			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+		}
+
+		// if buy rowan
+		if strings.EqualFold(rAsset.Denom, types.NativeSymbol) {
+			var emitValue sdk.Uint
+			if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+				emitValue = emitAmount
+			} else {
+				pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+				if err != nil {
+					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+				}
+				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount)
+
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			// This is equivalent to currentRowanLiquidityThreshold := sdk.MinUint(currentRowanLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
+			// except it prevents any overflows when adding the emitValue
+			if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(emitValue) {
+				currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
+			} else {
+				currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(emitValue)
+			}
+
+			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+		}
+	}
+
 	return &types.MsgSwapResponse{}, nil
 }
 
 func fireSwapSuccessEvents(ctx sdk.Context, signer string, emitAmount, totalLiquidityFee, priceImpact sdk.Uint, inPool, outPool *types.Pool, pmtpBlockRate, pmtpCurrentRunningRate sdk.Dec) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
@@ -522,7 +598,7 @@ func fireSwapSuccessEvents(ctx sdk.Context, signer string, emitAmount, totalLiqu
 }
 
 func fireSwapFailedEvents(ctx sdk.Context, signer string, emitAmount, minReceivingAmount sdk.Uint, inPool, outPool *types.Pool) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwapFailed,
@@ -652,7 +728,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 }
 
 func fireRemoveLiquidityEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, lpUnitsLeft sdk.Uint, pmtpPeriodBlockRate, pmtpCurrentRunningRate sdk.Dec) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeRemoveLiquidity,
@@ -778,13 +854,13 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 }
 
 func fireCreatePoolEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, pool *types.Pool) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 
 	createLiquidityAttribute := sdk.NewAttribute(types.EventTypeCreateLiquidityProvider, lp.String())
-	createLiquidityEvent := createEventBlockHeight(ctx, types.AttributeKeyLiquidityProvider, createLiquidityAttribute)
+	createLiquidityEvent := CreateEventBlockHeight(ctx, types.AttributeKeyLiquidityProvider, createLiquidityAttribute)
 
 	createPoolAttribute := sdk.NewAttribute(types.AttributeKeyPool, pool.String())
-	createPoolEvent := createEventBlockHeight(ctx, types.EventTypeCreatePool, createPoolAttribute)
+	createPoolEvent := CreateEventBlockHeight(ctx, types.EventTypeCreatePool, createPoolAttribute)
 
 	ctx.EventManager().EmitEvents(sdk.Events{createPoolEvent, createLiquidityEvent, eventMsg})
 }
@@ -839,7 +915,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 }
 
 func fireAddLiquidityEvents(ctx sdk.Context, signer string, lp *types.LiquidityProvider, lpUnits sdk.Uint) {
-	eventMsg := createEventMsg(signer)
+	eventMsg := CreateEventMsg(signer)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeAddLiquidity,
@@ -850,17 +926,64 @@ func fireAddLiquidityEvents(ctx sdk.Context, signer string, lp *types.LiquidityP
 	})
 }
 
-func createEventMsg(signer string) sdk.Event {
-	return sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, signer))
+func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *types.MsgUpdateLiquidityProtectionParams) (*types.MsgUpdateLiquidityProtectionParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	response := &types.MsgUpdateLiquidityProtectionParamsResponse{}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetLiquidityProtectionParams(ctx)
+	params.MaxRowanLiquidityThreshold = msg.MaxRowanLiquidityThreshold
+	params.MaxRowanLiquidityThresholdAsset = msg.MaxRowanLiquidityThresholdAsset
+	params.EpochLength = msg.EpochLength
+	params.IsActive = msg.IsActive
+	k.SetLiquidityProtectionParams(ctx, params)
+	k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, params.MaxRowanLiquidityThreshold)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeUpdateLiquidityProtectionParams,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProtectionParams, params.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+	return &types.MsgUpdateLiquidityProtectionParamsResponse{}, nil
 }
 
-func createEventBlockHeight(ctx sdk.Context, eventType string, attribute sdk.Attribute) sdk.Event {
-	return sdk.NewEvent(
-		eventType,
-		attribute,
-		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-	)
+func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *types.MsgModifyLiquidityProtectionRates) (*types.MsgModifyLiquidityProtectionRatesResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	response := &types.MsgModifyLiquidityProtectionRatesResponse{}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	rateParams := k.GetLiquidityProtectionRateParams(ctx)
+	rateParams.CurrentRowanLiquidityThreshold = msg.CurrentRowanLiquidityThreshold
+	k.SetLiquidityProtectionRateParams(ctx, rateParams)
+	events := sdk.EmptyEvents()
+	events = events.AppendEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeEndPmtpPolicy,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProtectionRateParams, rateParams.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+	ctx.EventManager().EmitEvents(events)
+	return response, nil
 }

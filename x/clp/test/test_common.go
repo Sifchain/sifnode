@@ -39,10 +39,13 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
-
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
+	return CreateTestAppClpWithBlacklist(isCheckTx, []sdk.AccAddress{})
+}
+
+func CreateTestAppClpWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) (sdk.Context, *sifapp.SifchainApp) {
 	sifapp.SetConfig(false)
-	app := sifapp.Setup(isCheckTx)
+	app := sifapp.SetupWithBlacklist(isCheckTx, blacklist)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.TokenRegistryKeeper.SetRegistry(ctx, tokenregistrytypes.Registry{
 		Entries: []*tokenregistrytypes.RegistryEntry{
@@ -74,6 +77,9 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
+	liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
+	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
+	app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
 		DistributionPeriods: nil,
 	})
@@ -315,21 +321,4 @@ func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Po
 
 	}
 	return poolList.Pools
-}
-
-func GetAdmins(address string) *tokenregistrytypes.AdminAccounts {
-	return &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
-		{
-			AdminType:    tokenregistrytypes.AdminType_CLPDEX,
-			AdminAddress: address,
-		},
-		{
-			AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
-			AdminAddress: address,
-		},
-		{
-			AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
-			AdminAddress: address,
-		},
-	}}
 }

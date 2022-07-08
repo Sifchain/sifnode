@@ -24,6 +24,8 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
+	_ sdk.Msg = &MsgUpdateLiquidityProtectionParams{}
+	_ sdk.Msg = &MsgModifyLiquidityProtectionRates{}
 	_ sdk.Msg = &MsgAddProviderDistributionPeriodRequest{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
@@ -540,6 +542,65 @@ func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
+func (m *MsgUpdateLiquidityProtectionParams) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	if m.EpochLength <= 0 {
+		return fmt.Errorf("liquidity protection epoch length must be greated than zero: %d", m.EpochLength)
+	}
+	return nil
+}
+
+func (m *MsgUpdateLiquidityProtectionParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateLiquidityProtectionParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateLiquidityProtectionParams) Type() string {
+	return "update_liquidity_protection_params"
+}
+
+func (m MsgUpdateLiquidityProtectionParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m *MsgModifyLiquidityProtectionRates) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MsgModifyLiquidityProtectionRates) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgModifyLiquidityProtectionRates) Route() string {
+	return RouterKey
+}
+
+func (m MsgModifyLiquidityProtectionRates) Type() string {
+	return "modify_liquidity_protection_rates"
+}
+
+func (m MsgModifyLiquidityProtectionRates) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
 func (m MsgAddProviderDistributionPeriodRequest) Route() string {
 	return RouterKey
 }
@@ -560,7 +621,11 @@ func (m MsgAddProviderDistributionPeriodRequest) ValidateBasic() error {
 
 		if period.DistributionPeriodBlockRate.LT(sdk.NewDec(0)) ||
 			period.DistributionPeriodBlockRate.GT(sdk.NewDec(1)) {
-			return fmt.Errorf("provider distribution period block rate must be >= 0 and <= 1 but is: %s d", period.DistributionPeriodBlockRate.String())
+			return fmt.Errorf("provider distribution period block rate must be >= 0 and <= 1 but is: %s", period.DistributionPeriodBlockRate.String())
+		}
+
+		if period.DistributionPeriodMod == 0 {
+			return fmt.Errorf("provider distribution period modulo must be > 0")
 		}
 	}
 
