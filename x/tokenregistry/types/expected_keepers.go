@@ -4,14 +4,15 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 type Keeper interface {
-	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
-	SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress)
+	StoreKey() sdk.StoreKey
+	GetAdminKeeper() adminkeeper.Keeper
 	CheckEntryPermissions(entry *RegistryEntry, permissions []Permission) bool
 	SetToken(ctx sdk.Context, entry *RegistryEntry)
 	RemoveToken(ctx sdk.Context, denom string)

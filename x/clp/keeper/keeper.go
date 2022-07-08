@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,11 +21,14 @@ type Keeper struct {
 	bankKeeper          types.BankKeeper
 	authKeeper          types.AuthKeeper
 	tokenRegistryKeeper types.TokenRegistryKeeper
+	adminKeeper         types.AdminKeeper
+	mintKeeper          mintkeeper.Keeper
 	paramstore          paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper,
+	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -35,6 +39,8 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		bankKeeper:          bankkeeper,
 		authKeeper:          accountKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
+		adminKeeper:         adminKeeper,
+		mintKeeper:          mintKeeper,
 		paramstore:          ps,
 	}
 	return keeper
@@ -85,4 +91,40 @@ func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
 	return normalizationFactor, adjustExternalToken
+}
+
+func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Asset) (sdk.Dec, bool) {
+	registryEntry, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, asset.Symbol)
+	if err != nil {
+		return sdk.Dec{}, false
+	}
+	return k.GetNormalizationFactor(registryEntry.Decimals)
+}
+
+func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.SymmetryThresholdPrefix)
+	if bz == nil {
+		return sdk.NewDecWithPrec(5, 5)
+	}
+	var setThreshold types.MsgSetSymmetryThreshold
+	k.cdc.MustUnmarshal(bz, &setThreshold)
+	return setThreshold.Threshold
+}
+
+func (k Keeper) GetSymmetryRatio(ctx sdk.Context) sdk.Dec {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.SymmetryThresholdPrefix)
+	if bz == nil {
+		return sdk.NewDecWithPrec(5, 4)
+	}
+	var setThreshold types.MsgSetSymmetryThreshold
+	k.cdc.MustUnmarshal(bz, &setThreshold)
+	return setThreshold.Ratio
+}
+
+func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSetSymmetryThreshold) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(setThreshold)
+	store.Set(types.SymmetryThresholdPrefix, bz)
 }

@@ -3,6 +3,7 @@ name: Golang CI
 on: push
 
 jobs:
+
   test:
     runs-on: ubuntu-latest
     steps:

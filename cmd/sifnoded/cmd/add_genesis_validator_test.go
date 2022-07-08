@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -29,9 +28,7 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	require.NoError(t, err)
 	defer func(path string) {
 		err := os.RemoveAll(path)
-		if err != nil {
-			fmt.Println(err)
-		}
+		require.NoError(t, err)
 	}(homeDir)
 	initCmd, _ := NewRootCmd()
 	initBuf := new(bytes.Buffer)

@@ -31,7 +31,7 @@ func SetTokenRegistryAdminCmd(defaultNodeHome string) *cobra.Command {
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
-			addr, err := sdk.AccAddressFromBech32(args[0])
+			_, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
 				inBuf := bufio.NewReader(cmd.InOrStdin())
 				keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
@@ -47,7 +47,7 @@ func SetTokenRegistryAdminCmd(defaultNodeHome string) *cobra.Command {
 				if err != nil {
 					return fmt.Errorf("failed to get address from Keybase: %w", err)
 				}
-				addr = info.GetAddress()
+				_ = info.GetAddress()
 			}
 			genFile := config.GenesisFile()
 			appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)
@@ -55,7 +55,7 @@ func SetTokenRegistryAdminCmd(defaultNodeHome string) *cobra.Command {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 			tokenregistryGenState := tokenregistrytypes.GetGenesisStateFromAppState(cdc, appState)
-			tokenregistryGenState.AdminAccount = addr.String()
+			// tokenregistryGenState.AdminAccount = addr.String()
 			tokenregistryGenStateBz, err := json.Marshal(tokenregistryGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
