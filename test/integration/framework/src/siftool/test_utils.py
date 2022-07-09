@@ -350,6 +350,7 @@ class EnvCtx:
         self.wait_for_sif_balance_change_default_timeout = 90
         self.wait_for_sif_balance_change_default_change_timeout = None
         self.wait_for_sif_balance_change_default_polling_time = 2
+        self.get_sifchain_balance_default_retries = 0
 
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
@@ -657,8 +658,9 @@ class EnvCtx:
         return retval
 
     def get_sifchain_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
-        disable_log: bool = False, retries_on_error: int = 3, delay_on_error: int = 3
+        disable_log: bool = False, retries_on_error: Optional[int] = None, delay_on_error: int = 3
     ) -> cosmos.Balance:
+        retries_on_error = retries_on_error if retries_on_error is not None else self.get_sifchain_balance_default_retries
         all_balances = {}
         # The actual limit might be capped to a lower value (100), in this case everything will still work but we'll get
         # fewer results
@@ -677,12 +679,12 @@ class EnvCtx:
                     res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
                     break
                 except Exception as e:
-                    retries_left -= 1
-                    log.error("Error reading balances, retries left: {}".format(retries_left))
-                    if retries_left > 0:
-                        time.sleep(delay_on_error)
-                    else:
+                    if retries_left == 0:
                         raise e
+                    else:
+                        retries_left -= 1
+                        log.error("Error reading balances, retries left: {}".format(retries_left))
+                        time.sleep(delay_on_error)
             res = json.loads(stdout(res))
             balances = res["balances"]
             next_key = res["pagination"]["next_key"]

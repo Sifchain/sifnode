@@ -253,6 +253,7 @@ if __name__ == "__main__":
     ctx.wait_for_sif_balance_change_default_timeout = 0
     ctx.wait_for_sif_balance_change_default_change_timeout = 600
     ctx.wait_for_sif_balance_change_default_polling_time = 60
+    ctx.get_sifchain_balance_default_retries = 3
     parser = argparse.ArgumentParser()
     parser.add_argument("--count", type=int, default=2)
     parser.add_argument("--sample-loop-size", type=int, default=10)
