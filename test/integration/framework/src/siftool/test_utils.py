@@ -64,46 +64,101 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
 
 def get_env_ctx_peggy2():
     cmd = run_env.Integrator()
-    dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
-    environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
 
-    deployed_contract_address_overrides = get_overrides_for_smart_contract_addresses(dot_env_vars)
-    tmp = environment_vars["contractResults"]["contractAddresses"]
-    deployed_contract_addresses = dict_merge({
-        "BridgeBank": tmp["bridgeBank"],
-        "CosmosBridge": tmp["cosmosBridge"],
-        "BridgeRegistry": tmp["bridgeRegistry"],
-        "Rowan": tmp["rowanContract"],
-        "Blocklist": tmp["blocklist"],
-    }, deployed_contract_address_overrides)
-    abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
+    if "SIFTOOL_ENV_FILE" in os.environ:
+        # New-style format (hopefully unified)
+        # This is for connecting to peggy2-tempnet etc.
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
+        env_vars = json.loads(cmd.read_text_file(env_file))
+        global_mnemonic = env_vars.get("mnemonic", None)
 
-    # TODO We're mixing "OPERATOR" vs. "OWNER"
-    # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
-    # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
-    # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
-    owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
-    owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
-    if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
-        owner_private_key = owner_private_key[2:]  # TODO Remove
-    owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+        sifchain_config = env_vars["sifchain"]
+        sifnode_url = sifchain_config["rpc_url"]
+        sifnode_chain_id = sifchain_config["chain_id"]
+        sifnoded_home = sifchain_config.get("home")
 
-    rowan_source = dot_env_vars["ROWAN_SOURCE"]
+        # Supported scenarios regarding rowan_source:
+        # (1) no rowan_source, no mnemonic => set rowan_source to None and assume it will not be used
+        # (1) rowan_source without mnemonic => assume private key is already in keystore
+        # (2) mnemonic without rowan source => create it if it doesn't exist yet
+        rowan_source = sifchain_config.get("rowan_source")
+        if not rowan_source:
+            if "rowan_source_mnemonic" in sifchain_config:
+                rowan_source_mnemonic = sifchain_config["rowan_source_mnemonic"]
+            elif global_mnemonic:
+                rowan_source_mnemonic = global_mnemonic
+            else:
+                rowan_source_mnemonic = None
+            if rowan_source_mnemonic:
+                rowan_source_mnemonic = rowan_source_mnemonic.split(" ")
+                rowan_source = sifchain.mnemonic_to_address(cmd, rowan_source_mnemonic)
+                sifnoded = sifchain.Sifnoded(cmd, sifnoded_home)
+                if not [x for x in sifnoded.keys_list() if x["address"] == rowan_source]:
+                    sifnoded.keys_add(None, rowan_source_mnemonic)
 
-    w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
+        eth_config = env_vars["ethereum"]
+        smart_contract_addresses = {k: eth.validate_address_and_private_key(v, None)[0] for k, v in eth_config["smart_contract_addresses"].items()}
+        w3_url = eth_config["url"]
+        ethereum_network_descriptor = eth_config["chain_id"]
+        eth_node_is_local = eth_config.get("is_local", False)
+
+        if "owner" in eth_config:
+            owner_address, owner_private_key = eth.validate_address_and_private_key(eth_config["owner"], eth_config["owner_private_key"])
+        elif global_mnemonic:
+            owner_address, owner_private_key = eth.validate_address_and_private_key(None, eth._mnemonic_to_private_key(global_mnemonic))
+        else:
+            raise ValueError("Missing ethereum.owner (and/or corresponding private key/mnemonic)")
+    else:
+        # For either `siftool run-env` or `devenv`
+        # TODO Transition to unified format (above) and remove this block
+        dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
+        environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
+
+        # Note the inconsistency in obtaining deployed smart contract addresses: first we read one set of variables from
+        # env.json, then we override them with another set of variables from environment.json. Those two files do not
+        # use the same names, they contain typos and they don't match 1:1. These inconsistencies were copied over from
+        # devenv intentionally to preserve compatibility with devenv users. The source of variables is however just one:
+        # the output from deploy_contracts_dev.ts script (that being bridgeBank, bridgeRegistry, cosmosBridge,
+        # rowanContract and blocklist). TODO Refactor to unified format (above)
+        smart_contract_address_overrides = _get_overrides_for_smart_contract_addresses(dot_env_vars)
+        tmp = environment_vars["contractResults"]["contractAddresses"]
+        smart_contract_addresses = dict_merge({
+            "BridgeBank": tmp["bridgeBank"],
+            "CosmosBridge": tmp["cosmosBridge"],
+            "BridgeRegistry": tmp["bridgeRegistry"],
+            "Rowan": tmp["rowanContract"],
+            "Blocklist": tmp["blocklist"],
+        }, smart_contract_address_overrides)
+
+        # TODO We're mixing "OPERATOR" vs. "OWNER"
+        # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
+        # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
+        # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
+        owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
+        owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
+        if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
+            owner_private_key = owner_private_key[2:]  # TODO Remove
+        owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+
+        rowan_source = dot_env_vars["ROWAN_SOURCE"]
+
+        w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
+
+        sifnode_url = dot_env_vars["TCP_URL"]
+        sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
+        assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
+        sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
+        ethereum_network_descriptor = int(dot_env_vars["ETH_CHAIN_ID"])
+
+        eth_node_is_local = True
+
     w3_conn = eth.web3_connect(w3_url)
 
-    sifnode_url = dot_env_vars["TCP_URL"]
-    sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
-    assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
-    sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
-    ethereum_network_descriptor = int(dot_env_vars["ETH_CHAIN_ID"])
-
-    eth_node_is_local = True
     generic_erc20_contract = "BridgeToken"
     ceth_symbol = sifchain.sifchain_denom_hash(ethereum_network_descriptor, eth.NULL_ADDRESS)
-    assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
 
+    abi_files_root = cmd.project.project_dir("smart-contracts/artifacts/contracts")
+    abi_provider = hardhat.HardhatAbiProvider(cmd, abi_files_root, smart_contract_addresses)
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
         rowan_source, ceth_symbol, generic_erc20_contract)
@@ -133,8 +188,8 @@ def get_env_ctx_peggy2():
 def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     cmd = cmd or run_env.Integrator()
 
-    if "ENV_FILE" in os.environ:
-        env_file = os.environ["ENV_FILE"]
+    if "SIFTOOL_ENV_FILE" in os.environ:
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         env_vars = json.loads(cmd.read_text_file(env_file))
     else:
         env_file = cmd.project.project_dir("test/integration/vagraneenv.json")
@@ -207,7 +262,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
-    deployed_smart_contract_address_overrides = get_overrides_for_smart_contract_addresses(env_vars)
+    deployed_smart_contract_address_overrides = _get_overrides_for_smart_contract_addresses(env_vars)
 
     w3_conn = eth.web3_connect(w3_url)
 
@@ -255,13 +310,15 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     return ctx
 
 
-def get_overrides_for_smart_contract_addresses(env_vars):
+# This is called from both get_env_ctx_peggy1() and get_env_ctx_peggy2()
+def _get_overrides_for_smart_contract_addresses(env_vars):
     mappings = {
         "BridgeBank": "BRIDGE_BANK_ADDRESS",
         "BridgeRegistry": "BRIDGE_REGISTRY_ADDRESS",
         "CosmosBridge": "COSMOS_BRIDGE_ADDRESS",  # Peggy2 only?
         "Rowan": "ROWAN_ADDRESS",  # Peggy2 only?
         "BridgeToken": "BRIDGE_TOKEN_ADDRESS",  # Peggy1 only
+        # Missing "Blocklist" missing (Peggy2 only)
     }
     return dict(((k, web3.Web3.toChecksumAddress(env_vars[v])) for k, v in mappings.items() if v in env_vars))
 
@@ -293,6 +350,7 @@ class EnvCtx:
         self.wait_for_sif_balance_change_default_timeout = 90
         self.wait_for_sif_balance_change_default_change_timeout = None
         self.wait_for_sif_balance_change_default_polling_time = 2
+        self.get_sifchain_balance_default_retries = 0
 
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
@@ -600,8 +658,9 @@ class EnvCtx:
         return retval
 
     def get_sifchain_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
-        disable_log: bool = False, retries_on_error: int = 3, delay_on_error: int = 3
+        disable_log: bool = False, retries_on_error: Optional[int] = None, delay_on_error: int = 3
     ) -> cosmos.Balance:
+        retries_on_error = retries_on_error if retries_on_error is not None else self.get_sifchain_balance_default_retries
         all_balances = {}
         # The actual limit might be capped to a lower value (100), in this case everything will still work but we'll get
         # fewer results
@@ -620,12 +679,12 @@ class EnvCtx:
                     res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
                     break
                 except Exception as e:
-                    retries_left -= 1
-                    log.error("Error reading balances, retries left: {}".format(retries_left))
-                    if retries_left > 0:
-                        time.sleep(delay_on_error)
-                    else:
+                    if retries_left == 0:
                         raise e
+                    else:
+                        retries_left -= 1
+                        log.error("Error reading balances, retries left: {}".format(retries_left))
+                        time.sleep(delay_on_error)
             res = json.loads(stdout(res))
             balances = res["balances"]
             next_key = res["pagination"]["next_key"]
@@ -902,7 +961,7 @@ class EnvCtx:
         assert bridge_bank_sc.functions.owner().call() == self.operator, \
             "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
-        assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
+        assert operator_balance >= 1, "Insufficient operator balance {} ETH, should be at least 1 ETH".format(operator_balance)
 
         available_accounts = self.sifnode.keys_list()
         rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
