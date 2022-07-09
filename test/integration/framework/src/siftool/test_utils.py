@@ -65,10 +65,10 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
 def get_env_ctx_peggy2():
     cmd = run_env.Integrator()
 
-    if "ENV_FILE" in os.environ:
+    if "SIFTOOL_ENV_FILE" in os.environ:
         # New-style format (hopefully unified)
         # This is for connecting to peggy2-tempnet etc.
-        env_file = os.environ["ENV_FILE"]
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         env_vars = json.loads(cmd.read_text_file(env_file))
         global_mnemonic = env_vars.get("mnemonic", None)
 
@@ -188,8 +188,8 @@ def get_env_ctx_peggy2():
 def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     cmd = cmd or run_env.Integrator()
 
-    if "ENV_FILE" in os.environ:
-        env_file = os.environ["ENV_FILE"]
+    if "SIFTOOL_ENV_FILE" in os.environ:
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         env_vars = json.loads(cmd.read_text_file(env_file))
     else:
         env_file = cmd.project.project_dir("test/integration/vagraneenv.json")

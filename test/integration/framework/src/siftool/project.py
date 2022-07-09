@@ -169,7 +169,7 @@ class Project:
         return self.cmd.get_user_home(".config", "siftool")
 
     def get_user_env_vars(self):
-        env_file = os.environ["ENV_FILE"]
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         return json.loads(self.cmd.read_text_file(env_file))
 
     def read_peruser_config_file(self, name):
