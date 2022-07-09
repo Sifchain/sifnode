@@ -961,7 +961,7 @@ class EnvCtx:
         assert bridge_bank_sc.functions.owner().call() == self.operator, \
             "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
-        assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
+        assert operator_balance >= 1, "Insufficient operator balance {} ETH, should be at least 1 ETH".format(operator_balance)
 
         available_accounts = self.sifnode.keys_list()
         rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
