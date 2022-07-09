@@ -52,6 +52,14 @@ def ondemand_import_generated_protobuf_sources():
     import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
     import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
+def mnemonic_to_address(cmd: command.Command, mnemonic: Iterable[str]):
+    tmpdir = cmd.mktempdir()
+    sifnode = Sifnoded(cmd, tmpdir)
+    try:
+       return sifnode.keys_add("tmp", mnemonic)["address"]
+    finally:
+        cmd.rmdir(tmpdir)
+
 
 class Sifnoded:
     def __init__(self, cmd, home: Optional[str] = None):
@@ -85,7 +93,9 @@ class Sifnoded:
         assert result == expected
         return result
 
-    def keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Mapping[str, Any]:
+    def keys_add(self, moniker: Optional[str], mnemonic: Optional[Iterable[str]] = None) -> Mapping[str, Any]:
+        if moniker is None:
+            moniker = "temp-{}".format(random_string(10))
         if mnemonic is None:
             res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend=self.keyring_backend,
                  sifnoded_home=self.home, stdin=["y"])
