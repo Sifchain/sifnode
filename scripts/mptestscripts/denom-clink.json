@@ -1,0 +1,14 @@
+{
+    "entries": [
+        {
+            "decimals":18,
+            "denom": "clink",
+            "base_denom": "clink",
+            "permissions": [
+                "CLP",
+                "IBCEXPORT",
+                "IBCIMPORT"
+            ]
+        }
+    ]
+}
