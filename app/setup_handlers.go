@@ -10,12 +10,14 @@ import (
 
 const releaseVersion = "0.13.5"
 
+var minCommissionRate = sdk.NewDecWithPrec(5, 2) //5%
+
 func SetupHandlers(app *SifchainApp) {
 
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 
 		validators := app.StakingKeeper.GetAllValidators(ctx)
-		minCommissionRate := sdk.NewDecWithPrec(30, 2)
+
 		for _, v := range validators {
 			if v.Commission.Rate.LT(minCommissionRate) {
 				comm, err := MustUpdateValidatorCommission(

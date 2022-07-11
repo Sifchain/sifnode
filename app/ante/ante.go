@@ -18,9 +18,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if options.BankKeeper == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
 	}
-	if options.StakingKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "staking keeper is required for ante builder")
-	}
 	if options.SignModeHandler == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}

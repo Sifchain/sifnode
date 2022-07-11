@@ -4,21 +4,23 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-var minCommission = sdk.NewDecWithPrec(30, 2) // 30%
+var minCommission = sdk.NewDecWithPrec(5, 2)    // 5%
+var maxVotingPower = sdk.NewDecWithPrec(100, 2) // 100%
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
 
 // ValidateMinCommissionDecorator validates that the validator commission is always
 // greater than or equal to the min commission rate
 type ValidateMinCommissionDecorator struct {
-	sk disttypes.StakingKeeper
+	sk stakingkeeper.Keeper
 }
 
 // ValidateMinCommissionDecorator creates a new ValidateMinCommissionDecorator
-func NewValidateMinCommissionDecorator(sk disttypes.StakingKeeper) ValidateMinCommissionDecorator {
+func NewValidateMinCommissionDecorator(sk stakingkeeper.Keeper) ValidateMinCommissionDecorator {
 	return ValidateMinCommissionDecorator{
 		sk: sk,
 	}
@@ -76,6 +78,18 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 				sdkerrors.ErrInvalidRequest,
 				"cannot delegate to validator with commission lower than minimum of %s", minCommission)
 		}
+
+		validatorTokens := sdk.NewDecFromInt(val.GetTokens())
+		stakingSupply := sdk.NewDecFromInt(vcd.sk.StakingTokenSupply(ctx))
+		var votingPower = validatorTokens.Quo(stakingSupply).Mul(sdk.NewDec(100))
+		if err != nil {
+			return err
+		}
+		if votingPower.GTE(maxVotingPower) {
+			return sdkerrors.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"Cannot delegate to a validator with %s or higher voting power, please choose another validator", maxVotingPower)
+		}
 	case *stakingtypes.MsgBeginRedelegate:
 		val, err := vcd.getValidator(ctx, msg.ValidatorDstAddress)
 		if err != nil {
@@ -85,6 +99,18 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
 				"cannot redelegate to validator with commission lower than minimum of %s", minCommission)
+		}
+
+		validatorTokens := sdk.NewDecFromInt(val.GetTokens())
+		stakingSupply := sdk.NewDecFromInt(vcd.sk.StakingTokenSupply(ctx))
+		var votingPower = validatorTokens.Quo(stakingSupply).Mul(sdk.NewDec(100))
+		if err != nil {
+			return err
+		}
+		if votingPower.GTE(maxVotingPower) {
+			return sdkerrors.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"Cannot delegate to a validator with %s or higher voting power, please choose another validator", maxVotingPower)
 		}
 	}
 	return nil
