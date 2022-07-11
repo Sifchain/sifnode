@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"fmt"
+
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -19,7 +20,7 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	}
 
 	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_ETHBRIDGE, from) {
-		return oracletypes.ErrNotAdminAccount
+		return fmt.Errorf("%s %s", from.String(), "not an admin account")
 	}
 
 	store := ctx.KVStore(k.storeKey)
