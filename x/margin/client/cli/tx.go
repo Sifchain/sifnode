@@ -91,6 +91,7 @@ func GetOpenCmd() *cobra.Command {
 	cmd.Flags().String("collateral_asset", "", "symbol of asset")
 	cmd.Flags().String("borrow_asset", "", "symbol of asset")
 	cmd.Flags().String("position", "", "type of position")
+	cmd.Flags().String("leverage", "", "leverage of position")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 
