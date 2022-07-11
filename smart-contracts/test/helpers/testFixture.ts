@@ -356,12 +356,6 @@ async function deployBaseContracts(accounts: TestFixtureAccounts, constants: Tes
       .grantRole(constants.roles.minter, bridgeBank.address)
     await currentToken.connect(accounts.operator)
       .grantRole(constants.roles.admin, bridgeBank.address)
-
-    // Load user account with ERC20 tokens for testing
-    await currentToken.connect(accounts.operator).mint(accounts.user.address, tokenInfo.amount * 2);
-
-    // Approve BridgeBank
-    await currentToken.connect(accounts.user).approve(bridgeBank.address, tokenInfo.amount * 2);
   }
 
   // Deploy the Blocklist
