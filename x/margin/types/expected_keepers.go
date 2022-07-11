@@ -70,7 +70,7 @@ type Keeper interface {
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
 
 	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
-	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
+	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
@@ -85,4 +85,6 @@ type Keeper interface {
 	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
 
 	EmitForceClose(ctx sdk.Context, mtp *MTP, closer string)
+
+	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }

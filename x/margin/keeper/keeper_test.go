@@ -284,7 +284,7 @@ func TestKeeper_Borrow(t *testing.T) {
 		to               string
 		address          string
 		collateralAmount sdk.Uint
-		borrowAmount     sdk.Uint
+		custodyAmount    sdk.Uint
 		leverage         sdk.Dec
 		health           sdk.Dec
 		fundedAccount    bool
@@ -298,7 +298,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "rowan",
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(10000),
-			borrowAmount:     sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
@@ -310,7 +310,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "rowan",
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
-			borrowAmount:     sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("user does not have enough balance of the required coin"),
@@ -322,7 +322,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "rowan",
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
-			borrowAmount:     sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			fundedAccount:    true,
@@ -335,7 +335,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "rowan",
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(1000000000000000),
-			borrowAmount:     sdk.NewUint(1000000000000000),
+			custodyAmount:    sdk.NewUint(1000000000000000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("user does not have enough balance of the required coin"),
@@ -347,7 +347,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "xxx",
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(10000),
-			borrowAmount:     sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
@@ -359,7 +359,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "xxx",
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
-			borrowAmount:     sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			errString:        errors.New("user does not have enough balance of the required coin"),
@@ -371,7 +371,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			to:               "rowan",
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(1000),
-			borrowAmount:     sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			fundedAccount:    true,
@@ -404,7 +404,7 @@ func TestKeeper_Borrow(t *testing.T) {
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", address, types.Position_LONG, 1)
 
-			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.borrowAmount, &mtp, &pool, tt.leverage)
+			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.custodyAmount, &mtp, &pool, tt.leverage)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
