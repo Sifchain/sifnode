@@ -44,9 +44,9 @@ func TestValidateGenesis(t *testing.T) {
 	ctx, keeper := test.CreateTestAppEthBridge(false)
 	// export genesis but receiver not set
 	state := ethbridge.ExportGenesis(ctx, keeper)
-	// return err since receiver is empty, not valid cosmos address
+	// return nil since receiver is empty
 	err := ethbridge.ValidateGenesis(*state)
-	assert.NotEqual(t, err, nil)
+	assert.Equal(t, err, nil)
 
 	state.CrosschainFeeReceiveAccount = "invalid"
 	// return err since receiver is invalid cosmos address

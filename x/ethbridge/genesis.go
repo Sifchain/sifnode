@@ -35,6 +35,9 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 
 // ValidateGenesis check all values in genesis are valid
 func ValidateGenesis(data types.GenesisState) error {
+	if data.CrosschainFeeReceiveAccount == "" {
+		return nil
+	}
 	_, err := sdk.AccAddressFromBech32(data.CrosschainFeeReceiveAccount)
 	return err
 }
