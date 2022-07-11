@@ -5,14 +5,21 @@ package keeper
 
 import (
 	"github.com/Sifchain/sifnode/x/margin/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func NewLegacyQuerier(k types.Keeper) sdk.Querier {
+func NewLegacyQuerier(k types.Keeper, cdc *codec.LegacyAmino) sdk.Querier {
+	querier := queryServer{k}
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
-		return nil, sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request")
+		switch path[0] {
+		case types.QueryMTPsForAddress:
+			return queryMtpsForAddress(ctx, req, cdc, querier)
+		default:
+			return nil, sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request")
+		}
 	}
 }
 
@@ -40,4 +47,21 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized margin message type: %T", msg)
 		}
 	}
+}
+
+func queryMtpsForAddress(ctx sdk.Context, req abci.RequestQuery, cdc *codec.LegacyAmino, querier queryServer) ([]byte, error) {
+	params := types.PositionsForAddressRequest{}
+	err := cdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	res, err := querier.GetPositionsForAddress(sdk.WrapSDKContext(ctx), &params)
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(cdc, res)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
 }
