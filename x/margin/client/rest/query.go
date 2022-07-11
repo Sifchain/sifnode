@@ -16,6 +16,7 @@ import (
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc("/margin/mtps-by-address", getMTPsForAddress(cliCtx))
+	r.HandleFunc("/margin/params", getParams(cliCtx))
 }
 
 func getMTPsForAddress(cliCtx client.Context) http.HandlerFunc {
@@ -40,6 +41,25 @@ func getMTPsForAddress(cliCtx client.Context) http.HandlerFunc {
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryMTPsForAddress)
 		res, height, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getParams(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParams)
+		res, height, err := cliCtx.Query(route)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return

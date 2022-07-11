@@ -17,6 +17,8 @@ func NewLegacyQuerier(k types.Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 		switch path[0] {
 		case types.QueryMTPsForAddress:
 			return queryMtpsForAddress(ctx, req, cdc, querier)
+		case types.QueryParams:
+			return queryParams(ctx, req, cdc, querier)
 		default:
 			return nil, sdkerrors.Wrap(types.ErrUnknownRequest, "unknown request")
 		}
@@ -56,6 +58,18 @@ func queryMtpsForAddress(ctx sdk.Context, req abci.RequestQuery, cdc *codec.Lega
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 	res, err := querier.GetPositionsForAddress(sdk.WrapSDKContext(ctx), &params)
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(cdc, res)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
+}
+
+func queryParams(ctx sdk.Context, req abci.RequestQuery, cdc *codec.LegacyAmino, querier queryServer) ([]byte, error) {
+	res, err := querier.GetParams(sdk.WrapSDKContext(ctx), &types.ParamsRequest{})
 	if err != nil {
 		return nil, err
 	}
