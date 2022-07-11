@@ -47,6 +47,11 @@ func TestValidateGenesis(t *testing.T) {
 	// return err since receiver is empty, not valid cosmos address
 	err := ethbridge.ValidateGenesis(*state)
 	assert.NotEqual(t, err, nil)
+
+	state.CrosschainFeeReceiveAccount = "invalid"
+	// return err since receiver is invalid cosmos address
+	err = ethbridge.ValidateGenesis(*state)
+	assert.NotEqual(t, err, nil)
 }
 
 func CreateState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) string {
