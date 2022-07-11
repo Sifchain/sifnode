@@ -106,3 +106,15 @@ sifnoded q tokenregistry generate \
 	--token_permission_ibc_import=true -o json | jq > $SIFCHAIN_ID/cinj.json
 
 echo "\n\ngenerated entry for cinj"
+
+sifnoded q tokenregistry generate \
+	--token_denom=ccudos \
+	--token_base_denom=ccudos \
+	--token_decimals=18 \
+	--token_display_name="Cudos" \
+	--token_external_symbol="CUDOS" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true -o json | jq > $SIFCHAIN_ID/ccudos.json
+
+echo "\n\ngenerated entry for ccudos"

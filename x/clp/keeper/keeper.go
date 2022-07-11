@@ -21,12 +21,14 @@ type Keeper struct {
 	bankKeeper          types.BankKeeper
 	authKeeper          types.AuthKeeper
 	tokenRegistryKeeper types.TokenRegistryKeeper
+	adminKeeper         types.AdminKeeper
 	mintKeeper          mintkeeper.Keeper
 	paramstore          paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper,
+	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -37,6 +39,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		bankKeeper:          bankkeeper,
 		authKeeper:          accountKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
+		adminKeeper:         adminKeeper,
 		mintKeeper:          mintKeeper,
 		paramstore:          ps,
 	}
@@ -108,6 +111,17 @@ func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {
 	var setThreshold types.MsgSetSymmetryThreshold
 	k.cdc.MustUnmarshal(bz, &setThreshold)
 	return setThreshold.Threshold
+}
+
+func (k Keeper) GetSymmetryRatio(ctx sdk.Context) sdk.Dec {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.SymmetryThresholdPrefix)
+	if bz == nil {
+		return sdk.NewDecWithPrec(5, 4)
+	}
+	var setThreshold types.MsgSetSymmetryThreshold
+	k.cdc.MustUnmarshal(bz, &setThreshold)
+	return setThreshold.Ratio
 }
 
 func (k Keeper) SetSymmetryThreshold(ctx sdk.Context, setThreshold *types.MsgSetSymmetryThreshold) {
