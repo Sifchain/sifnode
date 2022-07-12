@@ -22,7 +22,7 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorFromAsset(sdk.Context, clptypes.Asset) (sdk.Dec, bool, error)
+	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
 	ValidateZero(inputs []sdk.Uint) bool
 	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
@@ -35,7 +35,7 @@ type CLPKeeper interface {
 }
 
 type Keeper interface {
-	InitGenesis(sdk.Context, GenesisState) []types.ValidatorUpdate
+	InitGenesis(ctx sdk.Context, data GenesisState) []types.ValidatorUpdate
 	ExportGenesis(sdk.Context) *GenesisState
 	BeginBlocker(sdk.Context)
 
@@ -46,15 +46,16 @@ type Keeper interface {
 	GetParams(sdk.Context) Params
 	SetParams(sdk.Context, *Params)
 
+	GetMTPCount(ctx sdk.Context) uint64
 	SetMTP(ctx sdk.Context, mtp *MTP) error
-	GetMTP(ctx sdk.Context, address string, id uint64) (MTP, error)
+	GetMTP(ctx sdk.Context, mtpAddress string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
 	GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*MTP
 	GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
-	DestroyMTP(sdk.Context, string, uint64) error
+	DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error
 
 	GetMaxLeverageParam(sdk.Context) sdk.Dec
 	GetInterestRateMax(sdk.Context) sdk.Dec
@@ -76,7 +77,7 @@ type Keeper interface {
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 
-	CalculatePoolHealth(*clptypes.Pool) sdk.Dec
+	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
 	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error

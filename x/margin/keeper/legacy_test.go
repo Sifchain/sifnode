@@ -21,7 +21,7 @@ func TestKeeper_NewLegacyQuerier(t *testing.T) {
 	ctx, app := test.CreateTestAppMargin(false)
 	marginKeeper := app.MarginKeeper
 
-	got := keeper.NewLegacyQuerier(marginKeeper)
+	got := keeper.NewLegacyQuerier(marginKeeper, app.LegacyAmino())
 
 	require.NotNil(t, got)
 	require.Equal(t, reflect.TypeOf(got).String(), "func(types.Context, []string, types.RequestQuery) ([]uint8, error)")
