@@ -1,15 +1,15 @@
-const Web3Utils = require("web3-utils");
-const web3 = require("web3");
-const BigNumber = web3.BigNumber;
-
-const { ethers } = require("hardhat");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
-const { setup, getValidClaim, assertTokensMinted } = require("./helpers/testFixture");
+import Web3Utils from "web3-utils";
+import web3 from "web3";
+import { ethers, network } from "hardhat";
+import { use, expect } from "chai";
+import { solidity } from "ethereum-waffle";
+import { setup, getValidClaim, TestFixtureState, SignedData } from "./helpers/testFixture";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 use(solidity);
+const BigNumber = ethers.BigNumber;
 
-const getBalance = async function (address, fromWei = false) {
+const getBalance = async function (address: string, fromWei = false): Promise<string> {
   let balance = await network.provider.send("eth_getBalance", [address]);
 
   if (fromWei) {
@@ -20,19 +20,20 @@ const getBalance = async function (address, fromWei = false) {
 };
 
 describe("Test Cosmos Bridge", function () {
-  let userOne;
-  let userTwo;
-  let userThree;
-  let userFour;
-  let accounts;
-  let signerAccounts;
-  let operator;
-  let owner;
+  let userOne: SignerWithAddress;
+  let userTwo: SignerWithAddress;
+  let userThree: SignerWithAddress;
+  let userFour: SignerWithAddress;
+  let accounts: SignerWithAddress[];
+  let signerAccounts: string[];
+  let operator: SignerWithAddress;
+  let owner: SignerWithAddress;
+  let pauser: SignerWithAddress;
   const consensusThreshold = 75;
-  let initialPowers;
-  let initialValidators;
-  let networkDescriptor;
-  let state;
+  let initialPowers: number[];
+  let initialValidators: string[];
+  let networkDescriptor: number;
+  let state: TestFixtureState;
 
   before(async function () {
     accounts = await ethers.getSigners();
@@ -57,18 +58,18 @@ describe("Test Cosmos Bridge", function () {
   });
 
   beforeEach(async function () {
-    state = await setup({
+    state = await setup(
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      user: userOne,
-      recipient: userThree,
+      userOne,
+      userThree,
       pauser,
       networkDescriptor,
-      lockTokensOnBridgeBank: true,
-    });
+      false,
+    );
   });
 
   describe("CosmosBridge:Oracle", function () {
@@ -96,21 +97,21 @@ describe("Test Cosmos Bridge", function () {
   describe("CosmosBridge", function () {
     it("Can update the valset", async function () {
       // Operator resets the valset
-      await state.cosmosBridge
+      await expect(state.cosmosBridge
         .connect(operator)
-        .updateValset([userOne.address, userTwo.address], [50, 50]).should.be.fulfilled;
+        .updateValset([userOne.address, userTwo.address], [50, 50])).not.to.be.reverted;
 
       // Confirm that both initial validators are now active validators
       const isUserOneValidator = await state.cosmosBridge.isActiveValidator(userOne.address);
-      isUserOneValidator.should.be.equal(true);
+      expect(isUserOneValidator).to.equal(true);
       const isUserTwoValidator = await state.cosmosBridge.isActiveValidator(userTwo.address);
-      isUserTwoValidator.should.be.equal(true);
+      expect(isUserTwoValidator).to.equal(true);
 
       // Confirm that all both secondary validators are not active validators
       const isUserThreeValidator = await state.cosmosBridge.isActiveValidator(userThree.address);
-      isUserThreeValidator.should.be.equal(false);
+      expect(isUserThreeValidator).to.equal(false);
       const isUserFourValidator = await state.cosmosBridge.isActiveValidator(userFour.address);
-      isUserFourValidator.should.be.equal(false);
+      expect(isUserFourValidator).to.equal(false);
     });
 
     it("Can change the operator", async function () {
@@ -119,8 +120,7 @@ describe("Test Cosmos Bridge", function () {
       expect(originalOperator).to.be.equal(operator.address);
 
       // Operator resets the valset
-      await state.cosmosBridge.connect(operator).changeOperator(userOne.address).should.be
-        .fulfilled;
+      await expect(state.cosmosBridge.connect(operator).changeOperator(userOne.address)).not.to.be.reverted;
 
       // Confirm that the operator has changed
       const newOperator = await state.cosmosBridge.operator();
@@ -135,7 +135,7 @@ describe("Test Cosmos Bridge", function () {
       // Operator resets the valset
       await expect(
         state.cosmosBridge.connect(operator).changeOperator(state.constants.zeroAddress)
-      ).to.be.rejectedWith("invalid address");
+      ).to.be.revertedWith("invalid address");
 
       // Confirm that the operator has NOT changed
       const newOperator = await state.cosmosBridge.operator();
@@ -145,39 +145,39 @@ describe("Test Cosmos Bridge", function () {
     it("Can update the validator set", async function () {
       // Also make sure everything runs fourth time after switching validators a second time.
       // Operator resets the valset
-      await state.cosmosBridge
+      await expect(state.cosmosBridge
         .connect(operator)
-        .updateValset([userThree.address, userFour.address], [50, 50]).should.be.fulfilled;
+        .updateValset([userThree.address, userFour.address], [50, 50])).not.to.be.reverted;
 
       // Confirm that both initial validators are no longer an active validators
       const isUserOneValidator2 = await state.cosmosBridge.isActiveValidator(userOne.address);
-      isUserOneValidator2.should.be.equal(false);
+      expect(isUserOneValidator2).to.equal(false);
       const isUserTwoValidator2 = await state.cosmosBridge.isActiveValidator(userTwo.address);
-      isUserTwoValidator2.should.be.equal(false);
+      expect(isUserTwoValidator2).to.equal(false);
 
       // Confirm that both secondary validators are now active validators
       const isUserThreeValidator2 = await state.cosmosBridge.isActiveValidator(userThree.address);
-      isUserThreeValidator2.should.be.equal(true);
+      expect(isUserThreeValidator2).to.equal(true);
       const isUserFourValidator2 = await state.cosmosBridge.isActiveValidator(userFour.address);
-      isUserFourValidator2.should.be.equal(true);
+      expect(isUserFourValidator2).to.equal(true);
     });
 
     it("should return true if a sifchain address prefix is correct", async function () {
-      (await state.bridgeBank.VSA(state.sender)).should.be.equal(true);
+      expect(await state.bridgeBank.VSA(state.sender)).to.equal(true);
     });
 
     it("should return false if a sifchain address length is incorrect", async function () {
       const incorrectSifAddress = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpaceee"
       );
-      (await state.bridgeBank.VSA(incorrectSifAddress)).should.be.equal(false);
+      expect(await state.bridgeBank.VSA(incorrectSifAddress)).to.equal(false);
     });
 
     it("should return false if a sifchain address has an incorrect `sif` prefix", async function () {
       const incorrectSifAddress = web3.utils.utf8ToHex(
         "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
-      (await state.bridgeBank.VSA(incorrectSifAddress)).should.be.equal(false);
+      expect(await state.bridgeBank.VSA(incorrectSifAddress)).to.equal(false);
     });
 
     it("should deploy cosmos bridge and bridge bank", async function () {
@@ -206,49 +206,52 @@ describe("Test Cosmos Bridge", function () {
     });
 
     it("should unlock tokens upon the successful processing of a burn prophecy claim", async function () {
+      // Bridgebank should have a balance of tokens that would be unlocked when processing the claim
+      await state.token.connect(operator).mint(state.bridgeBank.address, state.amount);
+      
       const beforeUserBalance = Number(await state.token.balanceOf(state.recipient.address));
-      beforeUserBalance.should.be.bignumber.equal(Number(0));
+      expect(beforeUserBalance).to.equal(Number(0));
 
       // Last nonce should be 0
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
-      expect(lastNonceSubmitted).to.be.equal(0);
+      expect(lastNonceSubmitted).to.equal(0);
 
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: false,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
-      await state.cosmosBridge
+      await expect(state.cosmosBridge
         .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)).not.to.be.reverted;
 
       // Last nonce should now be 1
       lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
-      expect(lastNonceSubmitted).to.be.equal(1);
+      expect(lastNonceSubmitted).to.equal(1);
 
-      balance = Number(await state.token.balanceOf(state.recipient.address));
-      expect(balance).to.be.equal(state.amount);
+      let balance = Number(await state.token.balanceOf(state.recipient.address));
+      expect(balance).to.equal(state.amount);
     });
 
     it("should NOT unlock tokens upon the successful processing of a burn prophecy claim if the recipient is blocklisted", async function () {
       // Add recipient to the blocklist
-      await expect(state.blocklist.addToBlocklist(state.recipient.address)).to.be.fulfilled;
+      await expect(state.blocklist.addToBlocklist(state.recipient.address)).to.be.not.be.reverted;
 
       const beforeUserBalance = Number(await state.token.balanceOf(state.recipient.address));
-      beforeUserBalance.should.be.bignumber.equal(Number(0));
+      expect(beforeUserBalance).to.equal(Number(0));
 
       // Last nonce should be 0
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
@@ -256,21 +259,21 @@ describe("Test Cosmos Bridge", function () {
 
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: false,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
       await state.cosmosBridge
         .connect(userOne)
@@ -281,31 +284,41 @@ describe("Test Cosmos Bridge", function () {
       expect(lastNonceSubmitted).to.be.equal(1);
 
       // Balance should still be 0; tokens should not be unlocked
-      balance = Number(await state.token.balanceOf(state.recipient.address));
+      const balance = Number(await state.token.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(0);
     });
 
     it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
+      // Send balance that can be unlocked first
+      const seedEtherBalance = ethers.utils.parseEther("1");
+      await state.bridgeBank.connect(operator)
+        .lock(
+          state.sender, 
+          state.constants.zeroAddress, 
+          seedEtherBalance, 
+          {value: seedEtherBalance}
+        )
+
       // assert recipient balance before receiving proceeds from newProphecyClaim is correct
       const startingBalance = await getBalance(state.recipient.address, true);
       expect(startingBalance).to.be.equal("10000");
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.constants.zeroAddress,
-        amount: state.amount,
-        bridgeToken: false,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: "Ether",
-        tokenSymbol: "ETH",
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.ether,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.constants.zeroAddress,
+        state.amount,
+        "Ether",
+        "ETH",
+        state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
+        state.constants.denom.ether,
+        [userOne, userTwo, userFour],
+      );
 
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
       await state.cosmosBridge
@@ -313,33 +326,33 @@ describe("Test Cosmos Bridge", function () {
         .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
 
       const endingBalance = await getBalance(state.recipient.address, true);
-      expectedEndingBalance = "10000.0000000000000001"; // added 100 weis
-      expect(endingBalance).to.be.equal(expectedEndingBalance);
+      const expectedEndingBalance = "10000.0000000000000001"; // added 100 weis
+      expect(endingBalance).to.equal(expectedEndingBalance);
     });
 
     it("should NOT unlock eth upon the successful processing of a burn prophecy claim if the recipient is blocklisted", async function () {
       // Add recipient to the blocklist
-      await expect(state.blocklist.addToBlocklist(state.recipient.address)).to.be.fulfilled;
+      await expect(state.blocklist.addToBlocklist(state.recipient.address)).to.not.be.reverted;
 
       // assert recipient balance before receiving proceeds from newProphecyClaim is correct
       const startingBalance = await getBalance(state.recipient.address, true);
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.constants.zeroAddress,
-        amount: state.amount,
-        bridgeToken: false,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: "Ether",
-        tokenSymbol: "ETH",
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.ether,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.constants.zeroAddress,
+        state.amount,
+        "Ether",
+        "ETH",
+        state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
+        state.constants.denom.ether,
+        [userOne, userTwo, userFour],
+      );
 
       // get the prophecyID:
       const prophecyID = await state.cosmosBridge.getProphecyID(
@@ -367,28 +380,28 @@ describe("Test Cosmos Bridge", function () {
         .withArgs(prophecyID, false); // the second argument here is 'success'
 
       // Make sure the balance didn't change
-      const endingBalance = await getBalance(state.recipient.address, true);
+      const endingBalance = await getBalance(state.recipient.address, true); 
       expect(endingBalance).to.be.equal(startingBalance);
     });
 
     it("should deploy a new token upon the successful processing of a double-pegged burn prophecy claim", async function () {
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: true,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        true,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
       const expectedAddress = ethers.utils.getContractAddress({
         from: state.bridgeBank.address,
@@ -428,25 +441,25 @@ describe("Test Cosmos Bridge", function () {
 
     it("should deploy a new token upon the successful processing of a double-pegged burn prophecy claim if user is blocklisted, but should not mint", async function () {
       // Add recipient to the blocklist
-      await expect(state.blocklist.addToBlocklist(state.recipient.address)).to.be.fulfilled;
+      await expect(state.blocklist.addToBlocklist(state.recipient.address)).to.be.not.be.reverted;
 
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: true,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        true,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
       // get the prophecyID:
       const prophecyID = await state.cosmosBridge.getProphecyID(
@@ -491,26 +504,29 @@ describe("Test Cosmos Bridge", function () {
     });
 
     it("should NOT deploy a new token upon the successful processing of a normal burn prophecy claim", async function () {
+      // Bridgebank should have an initial balance of token
+      await state.token.connect(operator).mint(state.bridgeBank.address, state.amount);
+
       state.nonce = 1;
 
       const beforeUserBalance = Number(await state.token.balanceOf(state.recipient.address));
-      beforeUserBalance.should.be.bignumber.equal(Number(0));
+      expect(beforeUserBalance).to.equal(Number(0));
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: false,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
       await state.cosmosBridge
         .connect(userOne)
@@ -522,28 +538,28 @@ describe("Test Cosmos Bridge", function () {
       expect(newlyCreatedTokenAddress).to.be.equal(state.constants.zeroAddress);
 
       // assert that the recipient's balance of the token went up by the amount we specified in the claim
-      balance = Number(await state.token.balanceOf(state.recipient.address));
-      expect(balance).to.be.equal(state.amount);
+      const balance = Number(await state.token.balanceOf(state.recipient.address));
+      expect(balance).to.equal(state.amount);
     });
 
     it("should NOT deploy a new token upon the successful processing of a double-pegged burn prophecy claim for an already managed token", async function () {
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: true,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        true,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
       const expectedAddress = ethers.utils.getContractAddress({
         from: state.bridgeBank.address,
@@ -575,21 +591,21 @@ describe("Test Cosmos Bridge", function () {
         digest: digest2,
         claimData: claimData2,
         signatures: signatures2,
-      } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence + 1,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: true,
-        nonce: state.nonce + 1,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      } = await getValidClaim(
+        state.sender,
+        state.senderSequence + 1,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        true,
+        state.nonce + 1,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
       await expect(
         state.cosmosBridge
@@ -606,7 +622,7 @@ describe("Test Cosmos Bridge", function () {
 
     it("should get an signer out of order exception", async function () {
       const beforeUserBalance = Number(await state.token.balanceOf(state.recipient.address));
-      beforeUserBalance.should.be.bignumber.equal(Number(0));
+      expect(beforeUserBalance).to.equal(Number(0));
 
       // Last nonce should be 0
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
@@ -614,23 +630,23 @@ describe("Test Cosmos Bridge", function () {
 
       state.nonce = 1;
 
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token.address,
-        amount: state.amount,
-        bridgeToken: false,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
+      const { digest, claimData, signatures } = await getValidClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient.address,
+        state.token.address,
+        state.amount,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
+        state.constants.denom.one,
+        [userOne, userTwo, userFour],
+      );
 
-      outOfOrderSignatures = []
+      const outOfOrderSignatures: SignedData[] = []
       outOfOrderSignatures.push(signatures[2])
       outOfOrderSignatures.push(signatures[1])
       outOfOrderSignatures.push(signatures[0])

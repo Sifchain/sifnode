@@ -44,7 +44,7 @@ function getDigestNewProphecyClaim(data: unknown[]) {
   return digest;
 }
 
-interface SignedData {
+export interface SignedData {
   signer: string;
   _v: number;
   _r: string;
@@ -122,6 +122,7 @@ export interface TestFixtureState extends
   TestFixtureTokens {
   constants: TestFixtureStateConstants;
   rowan: Erowan;
+  nonce?: number;
 }
 async function signHash(signers: SignerWithAddress[], hash: BytesLike): Promise<SignedData[]> {
   let sigData: SignedData[] = [];
