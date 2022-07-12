@@ -585,7 +585,7 @@ func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 		panic(err)
 	}
 
-	sq := value.Quo(blocks).Quo(modifier)
+	sq := value.Mul(blocks).Quo(modifier)
 
 	return sq
 }
