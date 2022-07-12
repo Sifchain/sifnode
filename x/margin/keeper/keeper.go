@@ -52,7 +52,18 @@ func (k Keeper) GetMTPCount(ctx sdk.Context) uint64 {
 	if countBz == nil {
 		count = 0
 	} else {
-		count = types.GetIDFromBytes(countBz)
+		count = types.GetUint64FromBytes(countBz)
+	}
+	return count
+}
+
+func (k Keeper) GetOpenMTPCount(ctx sdk.Context) uint64 {
+	var count uint64
+	countBz := ctx.KVStore(k.storeKey).Get(types.OpenMTPCountPrefix)
+	if countBz == nil {
+		count = 0
+	} else {
+		count = types.GetUint64FromBytes(countBz)
 	}
 	return count
 }
@@ -60,11 +71,16 @@ func (k Keeper) GetMTPCount(ctx sdk.Context) uint64 {
 func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
 	store := ctx.KVStore(k.storeKey)
 	count := k.GetMTPCount(ctx)
+	openCount := k.GetOpenMTPCount(ctx)
 
 	if mtp.Id == 0 {
+		// increment global id count
 		count++
 		mtp.Id = count
-		store.Set(types.MTPCountPrefix, types.GetIDBytes(count))
+		store.Set(types.MTPCountPrefix, types.GetUint64Bytes(count))
+		// increment open mtp count
+		openCount++
+		store.Set(types.OpenMTPCountPrefix, types.GetUint64Bytes(openCount))
 	}
 
 	if err := mtp.Validate(); err != nil {
@@ -172,6 +188,10 @@ func (k Keeper) DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error 
 		return types.ErrMTPDoesNotExist
 	}
 	store.Delete(key)
+	// decrement open mtp count
+	openCount := k.GetOpenMTPCount(ctx)
+	openCount--
+	store.Set(types.OpenMTPCountPrefix, types.GetUint64Bytes(openCount))
 	return nil
 }
 

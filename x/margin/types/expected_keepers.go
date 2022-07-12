@@ -47,6 +47,7 @@ type Keeper interface {
 	SetParams(sdk.Context, *Params)
 
 	GetMTPCount(ctx sdk.Context) uint64
+	GetOpenMTPCount(ctx sdk.Context) uint64
 	SetMTP(ctx sdk.Context, mtp *MTP) error
 	GetMTP(ctx sdk.Context, mtpAddress string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
@@ -66,6 +67,7 @@ type Keeper interface {
 	GetEpochLength(ctx sdk.Context) int64
 	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
 	GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec
+	GetMaxOpenPositions(ctx sdk.Context) uint64
 	GetEnabledPools(ctx sdk.Context) []string
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
