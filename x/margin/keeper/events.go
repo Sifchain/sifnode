@@ -4,12 +4,15 @@
 package keeper
 
 import (
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, closer string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
+		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
 		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
