@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/json"
 	"strconv"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -33,7 +34,7 @@ func (k Keeper) doProviderDistribution(ctx sdk.Context) (PoolRowanMap, LpRowanMa
 }
 
 func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
-	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd_liquidity_provider_payout_error")
+	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd/liquidity_provider_payout_error", "lppd/distribution")
 
 	for pool, sub := range poolRowanMap {
 		// will never fail
@@ -41,7 +42,7 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 	}
 }
 
-func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, typeStr string) {
+func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, typeStr string, successEventType string) {
 	for lpAddress, totalRowan := range lpRowanMap {
 		addr, _ := sdk.AccAddressFromBech32(lpAddress) // We know this can't fail as we previously filtered out invalid strings
 		coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(totalRowan.BigInt()))
@@ -55,7 +56,37 @@ func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMa
 				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
 			}
 		}
+
+		fireDistributeSuccessEvent(ctx, lpAddress, lpPoolMap[lpAddress], totalRowan, successEventType)
 	}
+}
+
+func fireDistributeSuccessEvent(ctx sdk.Context, lpAddress string, pools []LPPool, totalDistributed sdk.Uint, typeStr string) {
+	data := printPools(pools)
+	successEvent := sdk.NewEvent(
+		typeStr,
+		sdk.NewAttribute("recipient", lpAddress),
+		sdk.NewAttribute("total_amount", totalDistributed.String()),
+		sdk.NewAttribute("amounts", data),
+	)
+
+	ctx.EventManager().EmitEvents(sdk.Events{successEvent})
+}
+
+type PrintPool struct {
+	Pool   string   `json:"pool"`
+	Amount sdk.Uint `json:"amount"`
+}
+
+func printPools(pools []LPPool) string {
+	var res = make([]PrintPool, len(pools))
+
+	for i, pool := range pools {
+		res[i] = PrintPool{Pool: pool.Pool.ExternalAsset.Symbol, Amount: pool.Amount}
+	}
+
+	data, _ := json.Marshal(res)
+	return string(data)
 }
 
 func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr string, err error) {
@@ -147,7 +178,7 @@ func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvid
 
 func fireLPPGetLPsErrorEvent(ctx sdk.Context, asset types.Asset, err error) {
 	failureEvent := sdk.NewEvent(
-		"lppd_get_liquidity_providers_error",
+		"lppd/get_liquidity_providers_error",
 		sdk.NewAttribute("asset", asset.Symbol),
 		sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
@@ -188,7 +219,7 @@ func CollectProviderDistribution(ctx sdk.Context, pool *types.Pool, poolDepthRow
 
 func fireLPAddressErrorEvent(ctx sdk.Context, address string, err error) {
 	failureEvent := sdk.NewEvent(
-		"lppd_liquidity_provider_address_error",
+		"lppd/liquidity_provider_address_error",
 		sdk.NewAttribute("liquidity_provider", address),
 		sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),

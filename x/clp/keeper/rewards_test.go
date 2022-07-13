@@ -255,7 +255,7 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 }
 
 func createFailedEvent(receiver sdk.AccAddress) []sdk.Event {
-	return []sdk.Event{sdk.NewEvent("rewards_distribution_error",
+	return []sdk.Event{sdk.NewEvent("rewards/distribution_error",
 		sdk.NewAttribute("liquidity_provider", receiver.String()),
 		sdk.NewAttribute("error", fmt.Sprint(receiver.String(), " is not allowed to receive funds: unauthorized")),
 		sdk.NewAttribute("height", "0")),
