@@ -1,5 +1,5 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
+//go:build FEATURE_TOGGLE_SDK_045
+// +build FEATURE_TOGGLE_SDK_045
 
 package app
 
@@ -490,6 +490,7 @@ func NewSifApp(
 		ibchost.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
+		vestingtypes.ModuleName,
 		clptypes.ModuleName,
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
