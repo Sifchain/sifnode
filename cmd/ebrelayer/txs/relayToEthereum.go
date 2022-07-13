@@ -202,13 +202,16 @@ func RelayBatchProphecyCompletedToEthereum(
 	sugaredLogger.Infow("get SubmitProphecyClaimAggregatedSigs tx hash:", "TransactionHash", tx.Hash().Hex())
 
 	var receipt *ethereumtypes.Receipt
-	maxRetries := 60
+
+	// set the max as 5, it is about 2 min according to exponential backoff querying
+	maxRetries := 5
 	i := 0
+	sleepDuration := time.Duration(2)
 
 	// if there is an error getting the tx, or if the tx fails, retry 60 times
 	for i < maxRetries {
-		// sleep 2 seconds to wait for tx to go through before querying.
-		sleepThread(2)
+		// sleep to wait for tx to go through before querying.
+		sleepThread(sleepDuration)
 
 		// Get the transaction receipt
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
@@ -217,10 +220,11 @@ func RelayBatchProphecyCompletedToEthereum(
 
 		if err != nil {
 			sugaredLogger.Errorw("Failed to submit to ethereum client", "error", err)
-			sleepThread(1)
 		} else {
 			break
 		}
+		// exponential backoff
+		sleepDuration *= sleepDuration
 		i++
 	}
 
