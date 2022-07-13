@@ -203,16 +203,13 @@ func RelayBatchProphecyCompletedToEthereum(
 
 	var receipt *ethereumtypes.Receipt
 
-	// set the max as 5, it is about 2 min according to exponential backoff querying
-	maxRetries := 5
+	// set the max as 4, it is about 4 min according to exponential backoff querying
+	maxRetries := 4
 	i := 0
 	sleepDuration := time.Duration(2)
 
 	// if there is an error getting the tx, or if the tx fails, retry 60 times
 	for i < maxRetries {
-		// sleep to wait for tx to go through before querying.
-		sleepThread(sleepDuration)
-
 		// Get the transaction receipt
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
 
@@ -223,6 +220,9 @@ func RelayBatchProphecyCompletedToEthereum(
 		} else {
 			break
 		}
+		// sleep to wait for tx to go through before querying.
+		sleepThread(sleepDuration)
+
 		// exponential backoff
 		sleepDuration *= sleepDuration
 		i++
