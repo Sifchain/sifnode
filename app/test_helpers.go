@@ -40,10 +40,10 @@ var DefaultConsensusParams = &abci.ConsensusParams{
 	},
 }
 
-func setup(withGenesis bool, invCheckPeriod uint) (*SifchainApp, GenesisState) {
+func setup(withGenesis bool, invCheckPeriod uint, blacklist []sdk.AccAddress) (*SifchainApp, GenesisState) {
 	db := dbm.NewMemDB()
 	encCdc := MakeTestEncodingConfig()
-	app := NewSifApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{})
+	app := NewSifAppWithBlacklist(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{}, blacklist)
 	if withGenesis {
 		return app, NewDefaultGenesisState(encCdc.Marshaler)
 	}
@@ -52,7 +52,36 @@ func setup(withGenesis bool, invCheckPeriod uint) (*SifchainApp, GenesisState) {
 
 // Setup initializes a new SimApp. A Nop logger is set in SimApp.
 func Setup(isCheckTx bool) *SifchainApp {
-	app, genesisState := setup(!isCheckTx, 5)
+	return SetupWithBlacklist(isCheckTx, []sdk.AccAddress{})
+}
+
+// Setup initializes a new SimApp. A Nop logger is set in SimApp.
+func SetupWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) *SifchainApp {
+	app, genesisState := setup(!isCheckTx, 5, blacklist)
+
+	if !isCheckTx {
+		// init chain must be called to stop deliverState from being nil
+		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+		if err != nil {
+			panic(err)
+		}
+		// Initialize the chain
+		app.InitChain(
+			abci.RequestInitChain{
+				Validators:      []abci.ValidatorUpdate{},
+				ConsensusParams: DefaultConsensusParams,
+				AppStateBytes:   stateBytes,
+			},
+		)
+	}
+	return app
+}
+
+func SetupFromGenesis(isCheckTx bool, genesisTransformer func(*SifchainApp, GenesisState) GenesisState) *SifchainApp {
+	app, genesisState := setup(!isCheckTx, 5, []sdk.AccAddress{})
+
+	genesisState = genesisTransformer(app, genesisState)
+
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
 		stateBytes, err := json.MarshalIndent(genesisState, "", " ")

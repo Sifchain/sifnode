@@ -6,9 +6,8 @@ import string
 import random
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union
+from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List
 
-log = logging.getLogger(__name__)
 
 ANY_ADDR = "0.0.0.0"
 
@@ -55,7 +54,8 @@ def yaml_load(s):
     return yaml.load(s, Loader=yaml.SafeLoader)
 
 # TODO Move to sifchain.py
-def sif_format_amount(amount, denom):
+# TODO Refactoring in progress. This should be moved to sifchain.py and only used for gas (float amount) + renamed
+def sif_format_amount(amount: Union[int, float], denom: str) -> str:
     return "{}{}".format(amount, denom)
 
 def http_get(url):
@@ -83,7 +83,7 @@ def popen(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Mapping[
     if env:
         env = dict_merge(os.environ, env)
     if not disable_log:
-        log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+        __log.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 def dict_merge(*dicts, override=True):
@@ -94,8 +94,8 @@ def dict_merge(*dicts, override=True):
                 result[k] = v
     return result
 
-def flatten_list(l):
-    return [item for sublist in l for item in sublist]
+def flatten(items: Iterable[Iterable]) -> List:
+    return [item for sublist in items for item in sublist]
 
 def format_as_shell_env_vars(env, export=True):
     # TODO escaping/quoting, e.g. shlex.quote(v)
@@ -114,6 +114,12 @@ def basic_logging_setup():
     # logging.getLogger(__name__).setLevel(logging.DEBUG)
     disable_noisy_loggers()
 
+def siftool_logger(name: Optional[str] = None):
+    # Shortening "siftool.eth" to "eth" results in a name clash with "eth" dependencies for which we want to disable logging...
+    # if name is not None:
+    #     name = name[name.rfind(".") + 1:]
+    return logging.getLogger(name)
+
 # Recursively transforms template strings containing "${VALUE}". Example:
 # >>> template_transform("You are ${what}!", {"what": "${how} late", "how": "very"})
 # 'You are very late!'
@@ -130,3 +136,6 @@ def template_transform(s, d):
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
 
 in_github_ci = (os.environ.get("CI") == "true") and os.environ.get("GITHUB_REPOSITORY") and os.environ.get("GITHUB_RUN_ID")
+
+# Make log variable private since it's this module is commonly imported as "*"
+__log = siftool_logger(__name__)

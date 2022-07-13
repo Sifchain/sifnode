@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/57BB0CFF9782730595988FD330AA41605B0628E11507BABC1207B830A23493B9",
+      "base_denom": "aevmos",
+      "path": "transfer/channel-55",
+      "ibc_channel_id": "channel-55",
+      "ibc_counterparty_channel_id": "channel-7",
+      "display_name": "Evmos",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "evmos_9001-2"
+    }
+  ]
+}

@@ -12,6 +12,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const MessagesInBatch = 5
+
 var (
 	errorMessageKey = "errorMessage"
 )
@@ -41,12 +43,31 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 			continue
 		} else {
 			messages = append(messages, &msg)
+			// to avoid too many data in single transaction, send out by batch
+			if len(messages) == MessagesInBatch {
+				err = SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
+				if err != nil {
+					return err
+				}
+				messages = messages[:0]
+			}
 		}
 	}
 
-	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
+	// send out the last batch message
+	if len(messages) > 0 {
+		err := SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
+		return err
+	}
 
+	return nil
+}
+
+// Send the messages to sifnode via broadcast transaction
+func SendMessagesToCosmos(factory tx.Factory, cliCtx client.Context, messages []sdk.Msg, sugaredLogger *zap.SugaredLogger) error {
+	// TODO this WithGas isn't correct
+	// TODO we need to investigate retries
+	// TODO we need to investigate what happens when the transaction has already been completed
 	err := tx.BroadcastTx(
 		cliCtx,
 		factory.
@@ -54,6 +75,9 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 			WithFees("500000000000000000rowan"),
 		messages...,
 	)
+
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+	instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
@@ -71,33 +95,9 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 }
 
 // SignProphecyToCosmos broadcasts the signed prophecy message to cosmos
-func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProphecy, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) {
+func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProphecy, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	messages = append(messages, &signProphecy)
-
-	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	// TODO this WithGas isn't correct
-	// TODO we need to investigate retries
-	// TODO we need to investigate what happens when the transaction has already been completed
-	err := tx.BroadcastTx(
-		cliCtx,
-		factory.
-			WithGas(1000000000000000000).
-			WithFees("500000000000000000rowan"),
-		messages...,
-	)
-
-	// Broadcast to a Tendermint node
-	// open question as to how we handle this situation.
-	//    do we retry,
-	//        if so, how many times do we try?
-	if err == nil {
-		sugaredLogger.Infow("Broadcast SignProphecyToCosmos tx without error")
-	} else {
-		sugaredLogger.Errorw(
-			"failed to broadcast tx to sifchain.",
-			errorMessageKey, err.Error(),
-		)
-	}
+	return SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
 }

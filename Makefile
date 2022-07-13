@@ -1,12 +1,13 @@
 CHAINNET?=betanet
 BINARY?=sifnoded
+GOPATH?=$(shell go env GOPATH)
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 IMAGE_TAG?=latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
-DOCKER:=$(shell which docker)
+DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
@@ -45,11 +46,14 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file} .proto-gen
+install: go.sum ${smart_contract_file} proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 install-bin: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
+
+install-smart-contracts:
+	make -C smart-contracts install
 
 build-sifd: go.sum
 	go build  ${BUILD_FLAGS} ./cmd/sifnoded
@@ -70,11 +74,14 @@ clean: clean-config clean-peggy clean-ebrelayer
 coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
+.PHONY: tests test-peggy test-bin feature-tests
 test-peggy:
-	make -C smart-contracts tests
+	$(MAKE) -C smart-contracts tests
 
-tests: test-peggy
+test-bin:
 	@go test -v -coverprofile .testCoverage.txt ./...
+
+tests: test-peggy test-bin
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
@@ -82,7 +89,7 @@ feature-tests:
 run:
 	go run ./cmd/sifnoded start
 
-build-image:
+build-image: install-smart-contracts
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
 
 run-image: build-image
@@ -104,29 +111,26 @@ rollback:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-# You can regenerate Makefile.protofiles with
-#     find . -name *.proto | sort | grep -v node_mo | paste -s -d " " > Makefile.protofiles
-# if the list of .proto files changes
-proto_files=$(file <Makefile.protofiles)
+protoVer=v0.3
+protoImageName=tendermintdev/sdk-proto-gen:$(protoVer)
 
-proto-all: proto-format proto-lint .proto-gen
+proto-all: proto-format proto-lint proto-gen
 
-.proto-gen: $(proto_files)
-	@echo ${DOCKER}
-	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh -x ./scripts/protocgen.sh
-	touch $@
-.PHONY: .proto-gen
+proto-gen:
+	@echo "Generating Protobuf files"
+	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protocgen.sh
+.PHONY: proto-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
 	$(DOCKER) run --rm -v $(CURDIR):/workspace \
-	--workdir /workspace tendermintdev/docker-build-proto \
+	--workdir /workspace $(protoImageName) \
 	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
 .PHONY: proto-format
 
 # This generates the SDK's custom wrapper for google.protobuf.Any. It should only be run manually when needed
 proto-gen-any:
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen-any.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protocgen-any.sh
 .PHONY: proto-gen-any
 
 proto-swagger-gen:
@@ -143,4 +147,4 @@ proto-check-breaking:
 .PHONY: proto-check-breaking
 
 ${smart_contract_file}:
-	cd smart-contracts && make
+	$(MAKE) -C smart-contracts

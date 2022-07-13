@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 
@@ -99,7 +100,7 @@ func (k keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadat
 		return ""
 	}
 
-	if !k.IsAdminAccount(ctx, cosmosSender) {
+	if !k.GetAdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_TOKENREGISTRY, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return ""
 	}
