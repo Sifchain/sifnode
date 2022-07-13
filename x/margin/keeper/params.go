@@ -46,6 +46,10 @@ func (k Keeper) GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).RemovalQueueThreshold
 }
 
+func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
+	return k.GetParams(ctx).MaxOpenPositions
+}
+
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	return k.GetParams(ctx).Pools
 }

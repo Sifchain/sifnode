@@ -17,6 +17,7 @@ func DefaultGenesis() *GenesisState {
 			ForceCloseThreshold:   sdk.NewDecWithPrec(1, 1),
 			RemovalQueueThreshold: sdk.NewDecWithPrec(1, 1),
 			EpochLength:           1,
+			MaxOpenPositions:      10000,
 			Pools:                 []string{},
 		},
 	}

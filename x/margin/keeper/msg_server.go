@@ -31,6 +31,10 @@ func NewMsgServerImpl(k types.Keeper) types.MsgServer {
 func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOpenResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if k.GetOpenMTPCount(ctx) >= k.GetMaxOpenPositions(ctx) {
+		return nil, sdkerrors.Wrap(types.ErrMaxOpenPositions, "cannot open new positions")
+	}
+
 	var mtp *types.MTP
 	var err error
 
