@@ -6,9 +6,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ sdk.Msg = &MsgRegister{}
-var _ sdk.Msg = &MsgDeregister{}
-var _ sdk.Msg = &MsgSetRegistry{}
+var (
+	_ sdk.Msg = &MsgRegister{}
+	_ sdk.Msg = &MsgDeregister{}
+	_ sdk.Msg = &MsgSetRegistry{}
+)
 
 // MsgRegister
 
@@ -106,6 +108,7 @@ func (m *MsgSetRegistry) GetSigners() []sdk.AccAddress {
 	}
 	return []sdk.AccAddress{addr}
 }
+
 // MsgDeregister
 
 func (m *MsgDeregister) Route() string {

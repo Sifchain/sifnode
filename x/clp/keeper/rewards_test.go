@@ -91,7 +91,8 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 			height:   1,
 			use:      sdk.NewUint(1000),
 			expected: types.ErrBalanceNotAvailable,
-		}, {
+		},
+		{
 			name:     "Unlock not ready",
 			height:   5,
 			use:      sdk.NewUint(1000),

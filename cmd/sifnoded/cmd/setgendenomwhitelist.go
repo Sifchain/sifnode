@@ -41,7 +41,7 @@ func SetGenesisDenomWhitelist(defaultNodeHome string) *cobra.Command {
 			}
 			whitelistGenState := tokenregistrytypes.GetGenesisStateFromAppState(cdc, appState)
 			// TODO :Append New Entries to existing list
-			//whitelistGenState.Registry.Entries = append(whitelistGenState.Registry.Entries, whitelist.Entries...)
+			// whitelistGenState.Registry.Entries = append(whitelistGenState.Registry.Entries, whitelist.Entries...)
 			whitelistGenState.Registry = &whitelist
 			whitelistGenStateBz, err := json.Marshal(whitelistGenState)
 			if err != nil {

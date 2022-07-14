@@ -62,7 +62,7 @@ func TestKeeper_CheckBalances(t *testing.T) {
 func TestKeeper_SwapOne(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")
@@ -861,7 +861,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 func TestKeeper_SetInputs(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")
@@ -882,7 +882,7 @@ func TestKeeper_SetInputs(t *testing.T) {
 func TestKeeper_GetSwapFee(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")

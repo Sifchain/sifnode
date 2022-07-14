@@ -20,8 +20,10 @@ type Params struct {
 	MinCreatePoolThreshold uint `json:"min_create_pool_threshold"`
 }
 
-type Pools []Pool
-type LiquidityProviders []LiquidityProvider
+type (
+	Pools              []Pool
+	LiquidityProviders []LiquidityProvider
+)
 
 type Pool struct {
 	ExternalAsset        Asset    `json:"external_asset"`

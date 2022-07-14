@@ -14,19 +14,23 @@ const (
 
 var (
 	// BaseABIBINGenCmd is the base command for contract compilation to ABI and BIN
-	BaseABIBINGenCmd = strings.Join([]string{"solc ",
+	BaseABIBINGenCmd = strings.Join([]string{
+		"solc ",
 		fmt.Sprintf("--%s ./contracts/%s%s.sol ", SolcCmdText, DirectoryText, ContractText),
 		fmt.Sprintf("-o ../cmd/ebrelayer/contract/generated/%s/%s ", SolcCmdText, ContractText),
 		"--overwrite ",
-		"--allow-paths *,"},
+		"--allow-paths *,",
+	},
 		"")
 	// BaseBindingGenCmd is the base command for contract binding generation
-	BaseBindingGenCmd = strings.Join([]string{"abigen ",
+	BaseBindingGenCmd = strings.Join([]string{
+		"abigen ",
 		fmt.Sprintf("--bin ../cmd/ebrelayer/contract/generated/bin/%s/%s.bin ", ContractText, ContractText),
 		fmt.Sprintf("--abi ../cmd/ebrelayer/contract/generated/abi/%s/%s.abi ", ContractText, ContractText),
 		fmt.Sprintf("--pkg %s ", ContractText),
 		fmt.Sprintf("--type %s ", ContractText),
-		fmt.Sprintf("--out ../cmd/ebrelayer/contract/generated/bindings/%s/%s.go", ContractText, ContractText)},
+		fmt.Sprintf("--out ../cmd/ebrelayer/contract/generated/bindings/%s/%s.go", ContractText, ContractText),
+	},
 		"")
 )
 

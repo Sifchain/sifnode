@@ -348,7 +348,6 @@ func TestMsgServer_Swap(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
-
 				trGs := &tokenregistrytypes.GenesisState{
 					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
@@ -424,7 +423,7 @@ func TestMsgServer_Swap(t *testing.T) {
 				require.ErrorIs(t, err, tc.err)
 				return
 			}
-			//require.NoError(t, err)
+			// require.NoError(t, err)
 		})
 	}
 }

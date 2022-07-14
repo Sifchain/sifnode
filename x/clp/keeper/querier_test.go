@@ -39,10 +39,10 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { 
 func TestQueryErrorPool(t *testing.T) {
 	cdc, app, ctx := createTestInput()
 	keeper := app.ClpKeeper
-	//Set Data
+	// Set Data
 	pool, _, _ := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-	//Test Pool
+	// Test Pool
 	queryPool := types.PoolReq{
 		Symbol: pool.ExternalAsset.Symbol,
 	}
@@ -72,10 +72,10 @@ func TestQueryGetPool(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+	// Set Data
 	pool, _, _ := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-	//Test Pool
+	// Test Pool
 	queryPool := types.PoolReq{
 		Symbol: pool.ExternalAsset.Symbol,
 	}
@@ -100,7 +100,7 @@ func TestQueryEmptyPools(t *testing.T) {
 	querier := clpkeeper.NewQuerier(app.ClpKeeper, cdc)
 	query.Path = ""
 	query.Data = nil
-	//Test Pools
+	// Test Pools
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
 	var poolsRes types.PoolsRes
@@ -115,12 +115,12 @@ func TestQueryGetPools(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+	// Set Data
 	_, pools, _ := SetData(app.ClpKeeper, ctx)
 	querier := clpkeeper.NewQuerier(app.ClpKeeper, cdc)
 	query.Path = ""
 	query.Data = nil
-	//Test Pools
+	// Test Pools
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
 	var poolsRes types.PoolsRes
@@ -140,13 +140,13 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	_, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.Error(t, err)
-	//Set Data
+	// Set Data
 	_, _, lp := SetData(keeper, ctx)
-	//Test Get Liquidity Provider
+	// Test Get Liquidity Provider
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	assert.NoError(t, err)
 	queryLp := types.LiquidityProviderReq{
-		Symbol:    "", //lp.Asset.Ticker,
+		Symbol:    "", // lp.Asset.Ticker,
 		LpAddress: addr.String(),
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
@@ -164,10 +164,10 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+	// Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-	//Test Get Liquidity Provider
+	// Test Get Liquidity Provider
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	assert.NoError(t, err)
 	queryLp := types.LiquidityProviderReq{
@@ -260,7 +260,7 @@ func TestQueryAssetList(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+	// Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	req := types.AssetListReq{
@@ -308,7 +308,7 @@ func TestQueryAllLPs(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+	// Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	query.Path = ""
@@ -328,7 +328,7 @@ func TestQueryPmtpParams(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+	// Set Data
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	query.Path = ""
 	query.Data = nil

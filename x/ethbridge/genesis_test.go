@@ -38,7 +38,6 @@ func TestInitGenesis(t *testing.T) {
 	assert.Equal(t, len(tokenslist.Tokens), tokenscount)
 	actualReceiver := keeper2.GetCethReceiverAccount(ctx2)
 	assert.Equal(t, receiver, actualReceiver.String())
-
 }
 
 func CreateState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) (int, string) {
@@ -53,7 +52,7 @@ func CreateState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) (int, s
 
 	tokenscount := len(gettokens.Tokens)
 
-	//Setting Receiver account
+	// Setting Receiver account
 	receiver := test.GenerateAddress("")
 	keeper.SetCethReceiverAccount(ctx, receiver)
 	set := keeper.IsCethReceiverAccount(ctx, receiver)

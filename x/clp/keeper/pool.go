@@ -29,6 +29,7 @@ func (k Keeper) ValidatePool(pool types.Pool) bool {
 	_, err := types.GetPoolKey(pool.ExternalAsset.Symbol, types.GetSettlementAsset().Symbol)
 	return err == nil
 }
+
 func (k Keeper) GetPool(ctx sdk.Context, symbol string) (types.Pool, error) {
 	var pool types.Pool
 	store := ctx.KVStore(k.storeKey)

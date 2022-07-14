@@ -25,8 +25,8 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 var _ types.MsgServer = msgServer{}
 
 func (srv msgServer) CreateDistribution(ctx context.Context,
-	msg *types.MsgCreateDistribution) (*types.MsgCreateDistributionResponse, error) {
-
+	msg *types.MsgCreateDistribution,
+) (*types.MsgCreateDistributionResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	distributionName := fmt.Sprintf("%d_%s", sdkCtx.BlockHeight(), msg.Distributor)
 	// Verify if distribution already exists
@@ -39,13 +39,13 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	if err != nil {
 		return nil, errors.Wrap(err, "Error calculating required amount from outputs")
 	}
-	//Accumulate all Drops into the ModuleAccount
+	// Accumulate all Drops into the ModuleAccount
 	err = srv.Keeper.AccumulateDrops(sdkCtx, msg.Distributor, totalOutput)
 	if err != nil {
 		return nil, err
 	}
 
-	//Create drops and Store Historical Data
+	// Create drops and Store Historical Data
 	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, distributionName, msg.DistributionType, msg.AuthorizedRunner)
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 }
 
 func (srv msgServer) CreateUserClaim(ctx context.Context,
-	claim *types.MsgCreateUserClaim) (*types.MsgCreateClaimResponse, error) {
-
+	claim *types.MsgCreateUserClaim,
+) (*types.MsgCreateClaimResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if srv.Keeper.ExistsClaim(sdkCtx, claim.UserClaimAddress, claim.UserClaimType) {
 		sdkCtx.Logger().Info("Claim already exists for user :", claim.UserClaimAddress)

@@ -20,7 +20,7 @@ func (k Keeper) PolicyStart(ctx sdk.Context) {
 	// compute number of epochs in policy period
 	numEpochsInPolicyPeriod := numBlocksInPolicyPeriod / pmtpPeriodEpochLength
 	// compute pmtp period block rate
-	//pmtpPeriodBlockRate = (1 + pmtpPeriodGovernanceRate).Pow(numEpochsInPolicyPeriod / numBlocksInPolicyPeriod) - 1
+	// pmtpPeriodBlockRate = (1 + pmtpPeriodGovernanceRate).Pow(numEpochsInPolicyPeriod / numBlocksInPolicyPeriod) - 1
 	// set block rate
 	base := sdk.NewDec(1).Add(pmtpPeriodGovernanceRate).MustFloat64()
 	pow := float64(numEpochsInPolicyPeriod) / float64(numBlocksInPolicyPeriod)

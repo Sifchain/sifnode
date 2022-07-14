@@ -1,9 +1,10 @@
 package bimap_with_default
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/vishalkuo/bimap"
-	"testing"
 )
 
 func TestNewBiMapWithDefault(t *testing.T) {

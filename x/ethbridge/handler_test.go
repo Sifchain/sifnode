@@ -30,20 +30,18 @@ const (
 	senderString = "sender"
 )
 
-var (
-	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
-)
+var UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
 
 func TestBasicMsgs(t *testing.T) {
-	//Setup
+	// Setup
 	ctx, _, _, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{3, 7})
 	valAddress := validatorAddresses[0]
-	//Unrecognized type
+	// Unrecognized type
 	res, err := handler(ctx, testdata.NewTestMsg())
 	require.Error(t, err)
 	require.Nil(t, res)
 	require.True(t, strings.Contains(err.Error(), "unrecognized ethbridge message type: "))
-	//Normal Creation
+	// Normal Creation
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
@@ -79,7 +77,7 @@ func TestBasicMsgs(t *testing.T) {
 			}
 		}
 	}
-	//Bad Creation
+	// Bad Creation
 	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	badCreateMsg.EthBridgeClaim.Nonce = -1
 	err = badCreateMsg.ValidateBasic()
@@ -101,7 +99,7 @@ func TestDuplicateMsgs(t *testing.T) {
 			}
 		}
 	}
-	//Duplicate message from same validator
+	// Duplicate message from same validator
 	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -109,17 +107,17 @@ func TestDuplicateMsgs(t *testing.T) {
 }
 
 func TestMintSuccess(t *testing.T) {
-	//Setup
+	// Setup
 	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 	valAddressVal1Pow2 := validatorAddresses[0]
 	valAddressVal2Pow7 := validatorAddresses[1]
 	valAddressVal3Pow1 := validatorAddresses[2]
-	//Initial message
+	// Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddressVal1Pow2, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err := handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	//Message from second validator succeeds and mints new tokens
+	// Message from second validator succeeds and mints new tokens
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal2Pow7, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
@@ -137,7 +135,7 @@ func TestMintSuccess(t *testing.T) {
 			}
 		}
 	}
-	//Additional message from third validator fails and does not mint
+	// Additional message from third validator fails and does not mint
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
@@ -149,7 +147,7 @@ func TestMintSuccess(t *testing.T) {
 }
 
 func TestNoMintFail(t *testing.T) {
-	//Setup
+	// Setup
 	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
 	valAddressVal1Pow3 := validatorAddresses[0]
 	valAddressVal2Pow4 := validatorAddresses[1]
@@ -168,7 +166,7 @@ func TestNoMintFail(t *testing.T) {
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg3 := types.NewMsgCreateEthBridgeClaim(ethClaim3)
-	//Initial message
+	// Initial message
 	res, err := handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -180,7 +178,7 @@ func TestNoMintFail(t *testing.T) {
 			}
 		}
 	}
-	//Different message from second validator succeeds
+	// Different message from second validator succeeds
 	res, err = handler(ctx, &ethMsg2)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -192,7 +190,7 @@ func TestNoMintFail(t *testing.T) {
 			}
 		}
 	}
-	//Different message from third validator succeeds but results in failed prophecy with no minting
+	// Different message from third validator succeeds but results in failed prophecy with no minting
 	res, err = handler(ctx, &ethMsg3)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -211,9 +209,9 @@ func TestNoMintFail(t *testing.T) {
 }
 
 func TestLockFail(t *testing.T) {
-	//Setup
+	// Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
-	//Initial message
+	// Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err := handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
@@ -222,9 +220,9 @@ func TestLockFail(t *testing.T) {
 }
 
 func TestBurnFail(t *testing.T) {
-	//Setup
+	// Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
-	//Initial message
+	// Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_BURN)
 	res, err := handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
@@ -233,7 +231,6 @@ func TestBurnFail(t *testing.T) {
 }
 
 func TestBurnEthFail(t *testing.T) {
-
 }
 
 func TestBurnEthSuccess(t *testing.T) {
@@ -500,7 +497,8 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 }
 
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context, ethbridgekeeper.Keeper,
-	bankkeeper.Keeper, authkeeper.AccountKeeper, sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {
+	bankkeeper.Keeper, authkeeper.AccountKeeper, sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper,
+) {
 	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, validatorAddresses := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
 	cethReceiverAccount, _ := sdk.AccAddressFromBech32(types.TestAddress)
 	keeper.SetCethReceiverAccount(ctx, cethReceiverAccount)

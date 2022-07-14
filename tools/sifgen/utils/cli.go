@@ -22,9 +22,7 @@ const (
 	AppTOML     = "app.toml"
 )
 
-var (
-	DefaultNodeHome = app.DefaultNodeHome
-)
+var DefaultNodeHome = app.DefaultNodeHome
 
 type CLIUtils interface {
 	Reset([]string) error
@@ -91,7 +89,7 @@ func (c CLI) ResetState(nodeDir string) (*string, error) {
 }
 
 func (c CLI) CreateDir(path string) error {
-	return os.MkdirAll(path, 0755)
+	return os.MkdirAll(path, 0o755)
 }
 
 func (c CLI) MoveFile(src, dest string) (*string, error) {

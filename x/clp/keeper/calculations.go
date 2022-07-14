@@ -18,8 +18,8 @@ func SwapOne(from types.Asset,
 	pool types.Pool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
-
+	pmtpCurrentRunningRate sdk.Dec,
+) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	liquidityFee, err := CalcLiquidityFee(toRowan, normalizationFactor, adjustExternalToken, X, x, Y)
 	if err != nil {
@@ -56,8 +56,8 @@ func CalcSwapPrice(from types.Asset,
 	pool types.Pool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
-
+	pmtpCurrentRunningRate sdk.Dec,
+) sdk.Dec {
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 
 	swapResult := CalcSwapPriceResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
@@ -101,7 +101,8 @@ func GetSwapFee(sentAmount sdk.Uint,
 	pool types.Pool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate sdk.Dec,
+) sdk.Uint {
 	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	swapResult, err := CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
 	if err != nil {
@@ -118,7 +119,8 @@ func GetSwapFee(sentAmount sdk.Uint,
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int,
+) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
 	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
@@ -147,18 +149,18 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
 
 	swapAmount := sdk.NewDec(0)
-	//if asymmetry is positive we need to swap from native to external
+	// if asymmetry is positive we need to swap from native to external
 	if asymmetry.IsPositive() {
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
 		swapAmount = nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
-	//if asymmetry is negative we need to swap from external to native
+	// if asymmetry is negative we need to swap from external to native
 	if asymmetry.IsNegative() {
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
 		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 
-	//if asymmetry is 0 we don't need to swap
+	// if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
 
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
@@ -170,7 +172,8 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, withdrawUnits sdk.Uint) (sdk.Uint, sdk.Uint, sdk.Uint) {
+	externalAssetBalance string, lpUnits string, withdrawUnits sdk.Uint,
+) (sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
 	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
@@ -193,7 +196,7 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
 	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
 
-	//if asymmetry is 0 we don't need to swap
+	// if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(withdrawUnitsF)
 
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
@@ -204,10 +207,10 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 
-//native asset balance  : currently in pool before adding
-//external asset balance : currently in pool before adding
-//native asset to added  : the amount the user sends
-//external asset amount to be added : the amount the user sends
+// native asset balance  : currently in pool before adding
+// external asset balance : currently in pool before adding
+// native asset to added  : the amount the user sends
+// external asset amount to be added : the amount the user sends
 
 // R = native Balance (before)
 // A = external Balance (before)
@@ -218,7 +221,8 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool, symmetryThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
+	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool, symmetryThreshold sdk.Dec,
+) (sdk.Uint, sdk.Uint, error) {
 	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 
 	if adjustExternalToken {
@@ -343,7 +347,8 @@ func CalcSwapResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
 	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, error) {
+	pmtpCurrentRunningRate sdk.Dec,
+) (sdk.Uint, error) {
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
@@ -385,7 +390,8 @@ func CalcSwapPriceResult(toRowan bool,
 	normalizationFactor sdk.Dec,
 	adjustExternalToken bool,
 	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
+	pmtpCurrentRunningRate sdk.Dec,
+) sdk.Dec {
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroDec()
 	}

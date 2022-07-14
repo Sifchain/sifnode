@@ -13,19 +13,22 @@ func (p Pool) Validate() bool {
 
 // NewPool returns a new Pool
 func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) Pool {
-	pool := Pool{ExternalAsset: externalAsset,
+	pool := Pool{
+		ExternalAsset:        externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
-		PoolUnits:            poolUnits}
+		PoolUnits:            poolUnits,
+	}
 
 	return pool
 }
 
-type Pools []Pool
-type LiquidityProviders []LiquidityProvider
+type (
+	Pools              []Pool
+	LiquidityProviders []LiquidityProvider
+)
 
 func (l LiquidityProvider) Validate() bool {
-
 	if !l.Asset.Validate() {
 		return false
 	}

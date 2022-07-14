@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-
 	"fmt"
 	"math"
 	"strconv"
@@ -91,7 +90,6 @@ func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.M
 	k.mintKeeper.SetParams(ctx, msg.Params)
 
 	return &types.MsgUpdateStakingRewardParamsResponse{}, err
-
 }
 
 func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpdateRewardsParamsRequest) (*types.MsgUpdateRewardsParamsResponse, error) {
@@ -349,9 +347,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	var (
-		priceImpact sdk.Uint
-	)
+	var priceImpact sdk.Uint
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	sAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.SentAsset.Symbol)
 	if err != nil {
@@ -503,7 +499,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	//Get LP
+	// Get LP
 	lp, err := k.Keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
@@ -519,7 +515,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, types.ErrAsymmetricRemove
 	}
 
-	//Calculate amount to withdraw
+	// Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
@@ -629,7 +625,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	//Get LP
+	// Get LP
 	lp, err := k.Keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
@@ -646,7 +642,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 
-	//Calculate amount to withdraw
+	// Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := CalculateWithdrawalFromUnits(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WithdrawUnits)

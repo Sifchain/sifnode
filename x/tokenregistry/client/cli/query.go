@@ -55,21 +55,21 @@ func GetCmdQueryEntries() *cobra.Command {
 }
 
 func GetCmdGenerateEntry() *cobra.Command {
-	var flagDenom = "token_denom"
-	var flagBaseDenom = "token_base_denom"
-	var flagUnitDenom = "token_unit_denom"
-	var flagIbcChannelID = "token_ibc_channel_id"
-	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
-	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
-	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
-	var flagDecimals = "token_decimals"
-	var flagDisplayName = "token_display_name"
-	var flagDisplaySymbol = "token_display_symbol"
-	var flagExternalSymbol = "token_external_symbol"
-	var flagTransferLimit = "token_transfer_limit"
-	var flagNetwork = "token_network"
-	var flagAddress = "token_address"
-	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
+	flagDenom := "token_denom"
+	flagBaseDenom := "token_base_denom"
+	flagUnitDenom := "token_unit_denom"
+	flagIbcChannelID := "token_ibc_channel_id"
+	flagIbcCounterpartyChannelID := "token_ibc_counterparty_channel_id"
+	flagIbcCounterpartyChainID := "token_ibc_counterparty_chain_id"
+	flagIbcCounterpartyDenom := "token_ibc_counterparty_denom"
+	flagDecimals := "token_decimals"
+	flagDisplayName := "token_display_name"
+	flagDisplaySymbol := "token_display_symbol"
+	flagExternalSymbol := "token_external_symbol"
+	flagTransferLimit := "token_transfer_limit"
+	flagNetwork := "token_network"
+	flagAddress := "token_address"
+	flagsPermission := []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "generate JSON for a token registration",

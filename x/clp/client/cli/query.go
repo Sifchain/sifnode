@@ -61,7 +61,6 @@ $ %s pool ETH ROWAN`,
 			params := types.NewQueryReqGetPool(ticker)
 
 			result, err := queryClient.GetPool(context.Background(), &params)
-
 			if err != nil {
 				return err
 			}
@@ -95,7 +94,6 @@ func GetCmdPools(queryRoute string) *cobra.Command {
 			result, err := queryClient.GetPools(context.Background(), &types.PoolsReq{
 				Pagination: pageReq,
 			})
-
 			if err != nil {
 				return err
 			}

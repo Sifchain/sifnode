@@ -18,6 +18,7 @@ func NewLegacyQuerier(keeper types.Keeper) sdk.Querier {
 		}
 	}
 }
+
 func queryDenoms(ctx sdk.Context, querier Querier) ([]byte, error) {
 	res, err := querier.Entries(sdk.WrapSDKContext(ctx), &types.QueryEntriesRequest{})
 	if err != nil {

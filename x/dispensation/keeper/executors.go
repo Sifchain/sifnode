@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
+// CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
 func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType, authorizedRunner string) error {
 	for _, receiver := range output {
@@ -36,7 +36,8 @@ func (k Keeper) DistributeDrops(ctx sdk.Context,
 	distributionName string,
 	authorizedRunner string,
 	distributionType types.DistributionType,
-	distributionCount int64) (*types.DistributionRecords, error) {
+	distributionCount int64,
+) (*types.DistributionRecords, error) {
 	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorizedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionCount)
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
@@ -100,7 +101,6 @@ func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName strin
 	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName, authorizedRunner))
 	if err != nil {
 		return errors.Wrapf(types.ErrDistribution, "unable to set airdrop :  %s ", distributionName)
-
 	}
 	return nil
 }

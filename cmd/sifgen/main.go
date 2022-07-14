@@ -76,7 +76,7 @@ func networkCreateCmd() *cobra.Command {
 				log.Fatal(err)
 			}
 
-			if err = ioutil.WriteFile(args[4], []byte(*summary), 0600); err != nil {
+			if err = ioutil.WriteFile(args[4], []byte(*summary), 0o600); err != nil {
 				log.Fatal(err)
 			}
 		},

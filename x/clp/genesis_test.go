@@ -22,7 +22,6 @@ func TestExportGenesis(t *testing.T) {
 	state := clp.ExportGenesis(ctx, app.ClpKeeper)
 	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
-
 }
 
 func TestInitGenesis(t *testing.T) {
@@ -59,7 +58,6 @@ func TestValidateGenesis(t *testing.T) {
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 	err := clp.ValidateGenesis(state)
 	assert.NoError(t, err)
-
 }
 
 func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int) {
