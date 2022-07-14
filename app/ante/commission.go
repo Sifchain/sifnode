@@ -8,8 +8,8 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-var minCommission = sdk.NewDecWithPrec(5, 2)    // 5%
-var maxVotingPower = sdk.NewDecWithPrec(100, 2) // 100%
+var minCommission = sdk.NewDecWithPrec(5, 2)   // 5%
+var maxVotingPower = sdk.NewDecWithPrec(10, 2) // 10%
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
 
@@ -80,15 +80,15 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		}
 
 		validatorTokens := sdk.NewDecFromInt(val.GetTokens())
-		stakingSupply := sdk.NewDecFromInt(vcd.sk.StakingTokenSupply(ctx))
-		var votingPower = validatorTokens.Quo(stakingSupply).Mul(sdk.NewDec(100))
+		totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
+		votingPower := validatorTokens.Quo(totalBondedTokens)
 		if err != nil {
 			return err
 		}
 		if votingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"Cannot delegate to a validator with %s or higher voting power, please choose another validator", maxVotingPower)
+				"validator has %s voting power, cannot delegate to a validator with %s or higher voting power, please choose another validator", votingPower, maxVotingPower)
 		}
 	case *stakingtypes.MsgBeginRedelegate:
 		val, err := vcd.getValidator(ctx, msg.ValidatorDstAddress)
@@ -102,15 +102,15 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		}
 
 		validatorTokens := sdk.NewDecFromInt(val.GetTokens())
-		stakingSupply := sdk.NewDecFromInt(vcd.sk.StakingTokenSupply(ctx))
-		var votingPower = validatorTokens.Quo(stakingSupply).Mul(sdk.NewDec(100))
+		totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
+		votingPower := validatorTokens.Quo(totalBondedTokens).Mul(sdk.NewDec(100))
 		if err != nil {
 			return err
 		}
 		if votingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"Cannot delegate to a validator with %s or higher voting power, please choose another validator", maxVotingPower)
+				"validator has %s voting power, cannot redelegate to a validator with %s or higher voting power, please choose another validator", votingPower, maxVotingPower)
 		}
 	}
 	return nil
