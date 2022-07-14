@@ -169,7 +169,7 @@ class Project:
         return self.cmd.get_user_home(".config", "siftool")
 
     def get_user_env_vars(self):
-        env_file = os.environ["ENV_FILE"]
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         return json.loads(self.cmd.read_text_file(env_file))
 
     def read_peruser_config_file(self, name):
@@ -197,7 +197,8 @@ class Project:
 
     def __rm_peggy2_compiled_go_stubs(self):
         # Peggy2: generated Go stubs (by smart-contracts/Makefile)
-        self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+        if on_peggy2_branch:
+            self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
         self.__rm(project_dir(".proto-gen"))
 
     def __rm_run_env_files(self):
