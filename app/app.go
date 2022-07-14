@@ -517,6 +517,7 @@ func NewSifAppWithBlacklist(
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		dispensation.ModuleName,
+		admintypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
@@ -541,6 +542,7 @@ func NewSifAppWithBlacklist(
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
+		admintypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
