@@ -218,7 +218,8 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool, symmetryThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
+	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool,
+	symmetryThreshold, ratioThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
 	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 
 	if adjustExternalToken {
@@ -284,6 +285,12 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 
 	if sdk.OneDec().Sub(slipAdjustment).GT(symmetryThreshold) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
+	}
+
+	ratioDiff := A.Quo(R).Sub(a.Quo(r)).Abs()
+
+	if ratioDiff.GT(ratioThreshold) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
@@ -379,6 +386,26 @@ func CalcSwapResult(toRowan bool,
 	}
 	y = CalcSwapPmtp(toRowan, y, pmtpCurrentRunningRate)
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
+}
+
+func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
+	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
+	if err != nil {
+		return sdk.ZeroUint(), err
+	}
+	value := spotPrice.Mul(sdk.NewDecFromBigInt(rowanAmount.BigInt()))
+	return sdk.NewUintFromBigInt(value.RoundInt().BigInt()), nil
+}
+
+// Calculates spot price of Rowan accounting for PMTP
+func CalcRowanSpotPrice(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+	rowanBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+	if rowanBalance.Equal(sdk.ZeroDec()) {
+		return sdk.ZeroDec(), types.ErrInValidAmount
+	}
+	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	unadjusted := externalAssetBalance.Quo(rowanBalance)
+	return unadjusted.Mul(pmtpCurrentRunningRate.Add(sdk.OneDec())), nil
 }
 
 func CalcSwapPriceResult(toRowan bool,
