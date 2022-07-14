@@ -729,7 +729,7 @@ class EnvCtx:
     ) -> cosmos.Balance:
         polling_time = polling_time if polling_time is not None else self.wait_for_sif_balance_change_default_polling_time
         timeout = timeout if timeout is not None else self.wait_for_sif_balance_change_default_timeout
-        change_timeout = change_timeout if change_timeout is not None else self.wait_for_sif_balance_change_default_timeout
+        change_timeout = change_timeout if change_timeout is not None else self.wait_for_sif_balance_change_default_change_timeout
         assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
         log.debug("Waiting for balance to change for account {}...".format(sif_addr))
         min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
@@ -750,7 +750,7 @@ class EnvCtx:
                 return new_balance
             now = time.time()
             if (timeout is not None) and (timeout > 0) and (now - start_time > timeout):
-                raise Exception("Timeout waiting for sif balance to change")
+                raise Exception("Timeout waiting for sif balance to change ({}s)".format(timeout))
             if last_change_time is None:
                 last_changed_balance = new_balance
                 last_change_time = now
@@ -761,7 +761,7 @@ class EnvCtx:
                     last_change_time = now
                     log.debug("New state detected ({} denoms changed)".format(len(delta)))
                 if (change_timeout is not None) and (change_timeout > 0) and (now - last_change_time > change_timeout):
-                    raise Exception("Timeout waiting for sif balance to change")
+                    raise Exception("Timeout waiting for sif balance to change ({}s)".format(change_timeout))
             time.sleep(polling_time)
 
     def eth_symbol_to_sif_symbol(self, eth_token_symbol):
