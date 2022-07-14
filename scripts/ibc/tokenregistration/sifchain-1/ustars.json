@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/53378390DC8B3C32454887D6C9E7EDCE7F0DB2305C3D96AE5F4D1557B3068F59",
+      "denom": "ibc/37AE3DD9177BAD68DC2E39BD43FB1E70C3BB719FAEBAB42F0D03132A2E23A7BF",
       "base_denom": "ustars",
-      "path": "transfer/channel-38",
-      "ibc_channel_id": "channel-38",
-      "ibc_counterparty_channel_id": "channel-12",
+      "path": "transfer/channel-71",
+      "ibc_channel_id": "channel-71",
+      "ibc_counterparty_channel_id": "channel-45",
       "display_name": "Stargaze",
       "display_symbol": "",
       "network": "",

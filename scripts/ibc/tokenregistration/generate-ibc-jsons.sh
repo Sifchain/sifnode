@@ -334,22 +334,22 @@ echo "\n\ngenerated entry for SECRET $SECRET_CHAIN_ID"
 cat $SIFCHAIN_ID/scrt.json | jq
 
 sifnoded q tokenregistry generate -o json \
-	--token_base_denom=cdmx \
+	--token_base_denom=ucmdx \
 	--token_ibc_counterparty_chain_id=$COMDEX_CHAIN_ID \
   --token_ibc_channel_id=$COMDEX_CHANNEL_ID \
   --token_ibc_counterparty_channel_id=$COMDEX_COUNTERPARTY_CHANNEL_ID \
 	--token_ibc_counterparty_denom="" \
 	--token_unit_denom="" \
-	--token_decimals=18 \
+	--token_decimals=6 \
 	--token_display_name="Comdex" \
 	--token_external_symbol="" \
 	--token_permission_clp=true \
 	--token_permission_ibc_export=true \
-	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/cdmx.json
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/ucmdx.json
 
 echo "\n\ngenerated entry for $COMDEX_CHAIN_ID"
 
-cat $SIFCHAIN_ID/cmdx.json | jq
+cat $SIFCHAIN_ID/ucmdx.json | jq
 
 sifnoded q tokenregistry generate -o json \
 	--token_base_denom=uhuahua \
