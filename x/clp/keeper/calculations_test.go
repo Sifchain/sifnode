@@ -923,310 +923,310 @@ func TestKeeper_CalculateAssetsForLP(t *testing.T) {
 	assert.Equal(t, "1000", native.String())
 }
 
-func TestKeeper_CalculatePoolUnits(t *testing.T) {
-	testcases := []struct {
-		name                 string
-		oldPoolUnits         sdk.Uint
-		nativeAssetBalance   sdk.Uint
-		externalAssetBalance sdk.Uint
-		nativeAssetAmount    sdk.Uint
-		externalAssetAmount  sdk.Uint
-		normalizationFactor  sdk.Dec
-		adjustExternalToken  bool
-		poolUnits            sdk.Uint
-		lpunits              sdk.Uint
-		err                  error
-		errString            error
-		panicErr             string
-	}{
-		{
-			name:                 "tx amount too low throws error",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.ZeroUint(),
-			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.ZeroUint(),
-			externalAssetAmount:  sdk.ZeroUint(),
-			normalizationFactor:  sdk.ZeroDec(),
-			adjustExternalToken:  true,
-			errString:            errors.New("Tx amount is too low"),
-		},
-		{
-			name:                 "tx amount too low with no adjustment throws error",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.ZeroUint(),
-			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.ZeroUint(),
-			externalAssetAmount:  sdk.ZeroUint(),
-			normalizationFactor:  sdk.ZeroDec(),
-			adjustExternalToken:  false,
-			errString:            errors.New("Tx amount is too low"),
-		},
-		{
-			name:                 "insufficient native funds throws error",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.ZeroUint(),
-			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.ZeroDec(),
-			adjustExternalToken:  false,
-			errString:            errors.New("0: insufficient funds"),
-		},
-		{
-			name:                 "insufficient external funds throws error",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.ZeroUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			errString:            errors.New("0: insufficient funds"),
-		},
-		{
-			name:                 "as native asset balance zero then returns native asset amount",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.ZeroUint(),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-		},
-		{
-			name:                 "fail to convert oldPoolUnits to Dec",
-			oldPoolUnits:         sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert nativeAssetBalance to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert externalAssetBalance to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert nativeAssetAmount to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert externalAssetAmount to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "successful",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.ZeroUint(),
-			lpunits:              sdk.ZeroUint(),
-		},
-		{
-			name:                 "fail asymmetric",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(10000),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.ZeroUint(),
-			lpunits:              sdk.ZeroUint(),
-			errString:            errors.New("Cannot add liquidity asymmetrically"),
-		},
-	}
+//func TestKeeper_CalculatePoolUnits(t *testing.T) {
+//	testcases := []struct {
+//		name                 string
+//		oldPoolUnits         sdk.Uint
+//		nativeAssetBalance   sdk.Uint
+//		externalAssetBalance sdk.Uint
+//		nativeAssetAmount    sdk.Uint
+//		externalAssetAmount  sdk.Uint
+//		normalizationFactor  sdk.Dec
+//		adjustExternalToken  bool
+//		poolUnits            sdk.Uint
+//		lpunits              sdk.Uint
+//		err                  error
+//		errString            error
+//		panicErr             string
+//	}{
+//		{
+//			name:                 "tx amount too low throws error",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.ZeroUint(),
+//			externalAssetBalance: sdk.ZeroUint(),
+//			nativeAssetAmount:    sdk.ZeroUint(),
+//			externalAssetAmount:  sdk.ZeroUint(),
+//			normalizationFactor:  sdk.ZeroDec(),
+//			adjustExternalToken:  true,
+//			errString:            errors.New("Tx amount is too low"),
+//		},
+//		{
+//			name:                 "tx amount too low with no adjustment throws error",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.ZeroUint(),
+//			externalAssetBalance: sdk.ZeroUint(),
+//			nativeAssetAmount:    sdk.ZeroUint(),
+//			externalAssetAmount:  sdk.ZeroUint(),
+//			normalizationFactor:  sdk.ZeroDec(),
+//			adjustExternalToken:  false,
+//			errString:            errors.New("Tx amount is too low"),
+//		},
+//		{
+//			name:                 "insufficient native funds throws error",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.ZeroUint(),
+//			externalAssetBalance: sdk.ZeroUint(),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.ZeroDec(),
+//			adjustExternalToken:  false,
+//			errString:            errors.New("0: insufficient funds"),
+//		},
+//		{
+//			name:                 "insufficient external funds throws error",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUint(100),
+//			externalAssetBalance: sdk.ZeroUint(),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.ZeroUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			errString:            errors.New("0: insufficient funds"),
+//		},
+//		{
+//			name:                 "as native asset balance zero then returns native asset amount",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.ZeroUint(),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.OneUint(),
+//			lpunits:              sdk.OneUint(),
+//		},
+//		{
+//			name:                 "fail to convert oldPoolUnits to Dec",
+//			oldPoolUnits:         sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+//			nativeAssetBalance:   sdk.NewUint(100),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.OneUint(),
+//			lpunits:              sdk.OneUint(),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert nativeAssetBalance to Dec",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.OneUint(),
+//			lpunits:              sdk.OneUint(),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert externalAssetBalance to Dec",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUint(100),
+//			externalAssetBalance: sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.OneUint(),
+//			lpunits:              sdk.OneUint(),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert nativeAssetAmount to Dec",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUint(100),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.OneUint(),
+//			lpunits:              sdk.OneUint(),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert externalAssetAmount to Dec",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUint(100),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.OneUint(),
+//			lpunits:              sdk.OneUint(),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "successful",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUint(100),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.ZeroUint(),
+//			lpunits:              sdk.ZeroUint(),
+//		},
+//		{
+//			name:                 "fail asymmetric",
+//			oldPoolUnits:         sdk.ZeroUint(),
+//			nativeAssetBalance:   sdk.NewUint(10000),
+//			externalAssetBalance: sdk.NewUint(100),
+//			nativeAssetAmount:    sdk.OneUint(),
+//			externalAssetAmount:  sdk.OneUint(),
+//			normalizationFactor:  sdk.OneDec(),
+//			adjustExternalToken:  false,
+//			poolUnits:            sdk.ZeroUint(),
+//			lpunits:              sdk.ZeroUint(),
+//			errString:            errors.New("Cannot add liquidity asymmetrically"),
+//		},
+//	}
+//
+//	for _, tc := range testcases {
+//		tc := tc
+//		t.Run(tc.name, func(t *testing.T) {
+//			if tc.panicErr != "" {
+//				// nolint:errcheck
+//				require.PanicsWithError(t, tc.panicErr, func() {
+//					clpkeeper.CalculatePoolUnits(
+//						tc.oldPoolUnits,
+//						tc.nativeAssetBalance,
+//						tc.externalAssetBalance,
+//						tc.nativeAssetAmount,
+//						tc.externalAssetAmount,
+//						tc.normalizationFactor,
+//						tc.adjustExternalToken,
+//						sdk.NewDecWithPrec(1, 4),
+//						sdk.NewDecWithPrec(1, 4),
+//					)
+//				})
+//				return
+//			}
+//
+//			poolUnits, lpunits, err := clpkeeper.CalculatePoolUnits(
+//				tc.oldPoolUnits,
+//				tc.nativeAssetBalance,
+//				tc.externalAssetBalance,
+//				tc.nativeAssetAmount,
+//				tc.externalAssetAmount,
+//				tc.normalizationFactor,
+//				tc.adjustExternalToken,
+//				sdk.NewDecWithPrec(1, 4),
+//				sdk.NewDecWithPrec(1, 4),
+//			)
+//
+//			if tc.errString != nil {
+//				require.EqualError(t, err, tc.errString.Error())
+//				return
+//			}
+//			if tc.err != nil {
+//				require.ErrorIs(t, err, tc.err)
+//				return
+//			}
+//
+//			require.NoError(t, err)
+//			require.Equal(t, poolUnits, tc.poolUnits)
+//			require.Equal(t, lpunits, tc.lpunits)
+//		})
+//	}
+//}
 
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.panicErr != "" {
-				// nolint:errcheck
-				require.PanicsWithError(t, tc.panicErr, func() {
-					clpkeeper.CalculatePoolUnits(
-						tc.oldPoolUnits,
-						tc.nativeAssetBalance,
-						tc.externalAssetBalance,
-						tc.nativeAssetAmount,
-						tc.externalAssetAmount,
-						tc.normalizationFactor,
-						tc.adjustExternalToken,
-						sdk.NewDecWithPrec(1, 4),
-						sdk.NewDecWithPrec(1, 4),
-					)
-				})
-				return
-			}
-
-			poolUnits, lpunits, err := clpkeeper.CalculatePoolUnits(
-				tc.oldPoolUnits,
-				tc.nativeAssetBalance,
-				tc.externalAssetBalance,
-				tc.nativeAssetAmount,
-				tc.externalAssetAmount,
-				tc.normalizationFactor,
-				tc.adjustExternalToken,
-				sdk.NewDecWithPrec(1, 4),
-				sdk.NewDecWithPrec(1, 4),
-			)
-
-			if tc.errString != nil {
-				require.EqualError(t, err, tc.errString.Error())
-				return
-			}
-			if tc.err != nil {
-				require.ErrorIs(t, err, tc.err)
-				return
-			}
-
-			require.NoError(t, err)
-			require.Equal(t, poolUnits, tc.poolUnits)
-			require.Equal(t, lpunits, tc.lpunits)
-		})
-	}
-}
-
-func TestKeeper_CalculateWithdrawal(t *testing.T) {
-	testcases := []struct {
-		name                 string
-		poolUnits            sdk.Uint
-		nativeAssetBalance   string
-		externalAssetBalance string
-		lpUnits              string
-		wBasisPoints         string
-		asymmetry            sdk.Int
-		panicErr             string
-	}{
-		{
-			name:                 "fail to convert nativeAssetBalance to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert externalAssetBalance to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert lpUnits to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert wBasisPoints to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "10000000000000000000000000000000000000000000000000000000000000000000000000",
-			asymmetry:            sdk.NewInt(1),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert asymmetry to Dec",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.Int(sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000")),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "asymmetric value negative",
-			poolUnits:            sdk.NewUint(1),
-			nativeAssetBalance:   "1",
-			externalAssetBalance: "1",
-			lpUnits:              "1",
-			wBasisPoints:         "1",
-			asymmetry:            sdk.NewInt(-1000),
-		},
-	}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.panicErr != "" {
-				require.PanicsWithError(t, tc.panicErr, func() {
-					clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
-				})
-				return
-			}
-
-			w, x, y, z := clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
-
-			require.NotNil(t, w)
-			require.NotNil(t, x)
-			require.NotNil(t, y)
-			require.NotNil(t, z)
-		})
-	}
-}
+//func TestKeeper_CalculateWithdrawal(t *testing.T) {
+//	testcases := []struct {
+//		name                 string
+//		poolUnits            sdk.Uint
+//		nativeAssetBalance   string
+//		externalAssetBalance string
+//		lpUnits              string
+//		wBasisPoints         string
+//		asymmetry            sdk.Int
+//		panicErr             string
+//	}{
+//		{
+//			name:                 "fail to convert nativeAssetBalance to Dec",
+//			poolUnits:            sdk.NewUint(1),
+//			nativeAssetBalance:   "10000000000000000000000000000000000000000000000000000000000000000000000000",
+//			externalAssetBalance: "1",
+//			lpUnits:              "1",
+//			wBasisPoints:         "1",
+//			asymmetry:            sdk.NewInt(1),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert externalAssetBalance to Dec",
+//			poolUnits:            sdk.NewUint(1),
+//			nativeAssetBalance:   "1",
+//			externalAssetBalance: "10000000000000000000000000000000000000000000000000000000000000000000000000",
+//			lpUnits:              "1",
+//			wBasisPoints:         "1",
+//			asymmetry:            sdk.NewInt(1),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert lpUnits to Dec",
+//			poolUnits:            sdk.NewUint(1),
+//			nativeAssetBalance:   "1",
+//			externalAssetBalance: "1",
+//			lpUnits:              "10000000000000000000000000000000000000000000000000000000000000000000000000",
+//			wBasisPoints:         "1",
+//			asymmetry:            sdk.NewInt(1),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert wBasisPoints to Dec",
+//			poolUnits:            sdk.NewUint(1),
+//			nativeAssetBalance:   "1",
+//			externalAssetBalance: "1",
+//			lpUnits:              "1",
+//			wBasisPoints:         "10000000000000000000000000000000000000000000000000000000000000000000000000",
+//			asymmetry:            sdk.NewInt(1),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "fail to convert asymmetry to Dec",
+//			poolUnits:            sdk.NewUint(1),
+//			nativeAssetBalance:   "1",
+//			externalAssetBalance: "1",
+//			lpUnits:              "1",
+//			wBasisPoints:         "1",
+//			asymmetry:            sdk.Int(sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000")),
+//			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
+//		},
+//		{
+//			name:                 "asymmetric value negative",
+//			poolUnits:            sdk.NewUint(1),
+//			nativeAssetBalance:   "1",
+//			externalAssetBalance: "1",
+//			lpUnits:              "1",
+//			wBasisPoints:         "1",
+//			asymmetry:            sdk.NewInt(-1000),
+//		},
+//	}
+//
+//	for _, tc := range testcases {
+//		tc := tc
+//		t.Run(tc.name, func(t *testing.T) {
+//			if tc.panicErr != "" {
+//				require.PanicsWithError(t, tc.panicErr, func() {
+//					clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
+//				})
+//				return
+//			}
+//
+//			w, x, y, z := clpkeeper.CalculateWithdrawal(tc.poolUnits, tc.nativeAssetBalance, tc.externalAssetBalance, tc.lpUnits, tc.wBasisPoints, tc.asymmetry)
+//
+//			require.NotNil(t, w)
+//			require.NotNil(t, x)
+//			require.NotNil(t, y)
+//			require.NotNil(t, z)
+//		})
+//	}
+//}
 
 func TestKeeper_CalcLiquidityFee(t *testing.T) {
 	testcases := []struct {
