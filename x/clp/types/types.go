@@ -12,7 +12,7 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) (Pool) {
+func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) Pool {
 	pool := Pool{ExternalAsset: externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
@@ -50,4 +50,8 @@ func NewLiquidityProviderDataResponse(liquidityProviderData []*LiquidityProvider
 
 func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance string, externalBalance string) LiquidityProviderData {
 	return LiquidityProviderData{LiquidityProvider: &liquidityProvider, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
+}
+
+func NewPmtpParamsResponse(params *PmtpParams, pmtpRateParams PmtpRateParams, pmtpEpoch PmtpEpoch, height int64) PmtpParamsRes {
+	return PmtpParamsRes{Params: params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
 }

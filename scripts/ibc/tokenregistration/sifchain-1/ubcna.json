@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/7876FB1D317D993F1F54185DF6E405C7FE070B71E3A53AE0CEA5A86AC878EB7A",
+      "base_denom": "ubcna",
+      "path": "transfer/channel-25",
+      "ibc_channel_id": "channel-25",
+      "ibc_counterparty_channel_id": "channel-2",
+      "display_name": "Bitcanna",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bitcanna-1"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-PyYAML==5.4.1
+grpcio-tools==1.44.0
 pytest==6.2.5
+PyYAML==6.0
 rusty-rlp==0.2.1
 web3==5.25.0

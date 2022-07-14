@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "8",
+      "denom": "cwbtc",
+      "base_denom": "cwbtc",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "WBTC",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "WBTC",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+	"IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    }
+  ]
+}

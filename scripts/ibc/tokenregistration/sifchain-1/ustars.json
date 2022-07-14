@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/53378390DC8B3C32454887D6C9E7EDCE7F0DB2305C3D96AE5F4D1557B3068F59",
+      "base_denom": "ustars",
+      "path": "transfer/channel-38",
+      "ibc_channel_id": "channel-38",
+      "ibc_counterparty_channel_id": "channel-12",
+      "display_name": "Stargaze",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "stargaze-1"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
+import "@nomiclabs/hardhat-etherscan"
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat";
 
@@ -21,9 +22,10 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
+      chainId: 1,
       forking: {
         url: mainnetUrl,
-        blockNumber: 13691103,
+        blockNumber: 14258314,
       },
     },
     ropsten: {
@@ -66,6 +68,11 @@ const config: HardhatUserConfig = {
   mocha: {
     timeout: 200000,
   },
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: process.env['ETHERSCAN_API_KEY']
+  }
 };
 
 export default config;

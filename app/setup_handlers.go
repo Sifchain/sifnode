@@ -1,59 +1,46 @@
 package app
 
 import (
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 )
 
-const upgradeName = "0.10.0"
+const releaseVersion = "0.13.2"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		app.Logger().Info("Running upgrade handler for " + upgradeName)
-		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
-		fromVM := make(map[string]uint64)
-		// Old Modules can execute Migrations if needed .
-		// State migration logic should be added to a migrator function
-		// Migrating modules should increment the ConsensusVersion
-		// FromVersion NotEqual to ConsensusVersion is required to trigger a migration.
-		for moduleName := range app.mm.Modules {
-			fromVM[moduleName] = 1
+	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+		amt, ok := sdk.NewIntFromString("150000000000000000000000000")
+		if !ok {
+			panic("error converting mint amount")
 		}
-		delete(fromVM, feegrant.ModuleName)
-		delete(fromVM, crisistypes.ModuleName)
-		// Set to 2 , which is the same as the ConsensusVersion to disable migrate function
-		fromVM[authtypes.ModuleName] = 2
-		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		mintCoins := sdk.NewCoins(sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, amt))
+		err := app.BankKeeper.MintCoins(ctx, dispensationtypes.ModuleName, mintCoins)
 		if err != nil {
 			panic(err)
 		}
-		// Set it back to 1 to run only auth migration
-		newVM[authtypes.ModuleName] = 1
-		// This is to make sure auth module migrates after staking
-		return app.mm.RunMigrations(ctx, app.configurator, newVM)
-	})
-	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.4", func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		delete(vm, feegrant.ModuleName)
-		delete(vm, crisistypes.ModuleName)
+		address, err := sdk.AccAddressFromBech32("sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3")
+		if err != nil {
+			panic(err)
+		}
+		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins)
+		if err != nil {
+			panic(err)
+		}
+
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
-	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.5", func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		return app.mm.RunMigrations(ctx, app.configurator, vm)
-	})
+
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		panic(err)
 	}
-	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{feegrant.ModuleName, crisistypes.ModuleName},
-		}
+	if upgradeInfo.Name == releaseVersion && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,
 		// so that new stores start with the correct version (the current height of chain),

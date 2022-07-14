@@ -1,0 +1,27 @@
+{
+    "title": "proposal",
+    "description": "something",
+    "changes": [
+        {
+            "subspace": "clp",
+            "key": "PmtpPeriodGovernanceRate",
+            "value": "0.10"
+        },
+        {
+            "subspace": "clp",
+            "key": "PmtpEpochLength",
+            "value": "14400"
+        },
+        {
+            "subspace": "clp",
+            "key": "PmtpStartBlock",
+            "value": "301"
+        },
+        {
+            "subspace": "clp",
+            "key": "PmtpEndBlock",
+            "value": "72300"
+        }
+    ],
+    "deposit": "10000000rowan"
+}

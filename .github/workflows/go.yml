@@ -11,7 +11,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2.5.2
         with:
-          version: v1.41
+          version: v1.45.2
   test:
     runs-on: ubuntu-latest
     steps:
@@ -42,8 +42,7 @@ jobs:
         done
 
     - name: Upload coverage report
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.txt
         verbose: true

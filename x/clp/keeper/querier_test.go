@@ -30,6 +30,7 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { 
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.MintKeeper,
 		app.GetSubspace(types.ModuleName),
 	)
 	return app.LegacyAmino(), app, ctx
@@ -318,6 +319,24 @@ func TestQueryAllLPs(t *testing.T) {
 	err = cdc.UnmarshalJSON(resBz, &lpRes.LiquidityProviders)
 	assert.NoError(t, err)
 	assert.Equal(t, []*types.LiquidityProvider{&lp}, lpRes.LiquidityProviders)
+}
+
+func TestQueryPmtpParams(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+	keeper := app.ClpKeeper
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+	query.Path = ""
+	query.Data = nil
+	resBz, err := querier(ctx, []string{types.QueryPmtpParams}, query)
+	assert.NoError(t, err)
+	var pmtpParamsRes types.PmtpParamsRes
+	err = cdc.UnmarshalJSON(resBz, &pmtpParamsRes)
+	assert.NoError(t, err)
 }
 
 func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
