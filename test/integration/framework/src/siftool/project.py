@@ -399,6 +399,7 @@ class Project:
         self.__rm_sifnode_binaries()
         self.__rm(os.path.join(self.cmd.get_user_home(), ".sifnoded"))
         self.__rm_peggy2_compiled_go_stubs()
+        self.__rm_run_env_files()
         self.npm_install(self.smart_contracts_dir)
         self.make_go_binaries_2()
 

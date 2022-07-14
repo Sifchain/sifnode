@@ -4,7 +4,6 @@ import os
 import threading
 
 import pytest
-import siftool_path
 
 import test_utilities
 from burn_lock_functions import decrease_log_level, force_log_level
@@ -349,6 +348,14 @@ def restore_default_rescue_location(
     )
 
 
+import siftool_path
+import siftool.test_utils
+
+
+@pytest.fixture(autouse=True)
+def test_wrapper_fixture():
+    siftool.test_utils.pytest_test_wrapper_fixture()
+
 @pytest.fixture(scope="function")
 def ctx(request):
     # To pass the "snapshot_name" as a parameter with value "foo" from test, annotate the test function like this:
@@ -357,7 +364,6 @@ def ctx(request):
     if snapshot_name is not None:
         snapshot_name = snapshot_name.args[0]
         logging.debug("Context setup: snapshot_name={}".format(repr(snapshot_name)))
-    from siftool import test_utils
-    with test_utils.get_test_env_ctx() as ctx:
+    with siftool.test_utils.get_test_env_ctx() as ctx:
         yield ctx
         logging.debug("Test context cleanup")

@@ -10,7 +10,7 @@ from web3.eth import Contract
 from hexbytes import HexBytes
 from web3.types import TxReceipt
 
-from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos
+from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos, command
 from siftool.common import *
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
@@ -108,6 +108,7 @@ def get_env_ctx_peggy2():
             owner_address, owner_private_key = eth.validate_address_and_private_key(None, eth._mnemonic_to_private_key(global_mnemonic))
         else:
             raise ValueError("Missing ethereum.owner (and/or corresponding private key/mnemonic)")
+        eth_faucet = eth.validate_address_and_private_key(eth_config.get("faucet", None), None)[0] or owner_address
     else:
         # For either `siftool run-env` or `devenv`
         # TODO Transition to unified format (above) and remove this block
@@ -139,6 +140,7 @@ def get_env_ctx_peggy2():
         if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
             owner_private_key = owner_private_key[2:]  # TODO Remove
         owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+        eth_faucet = owner_address
 
         rowan_source = dot_env_vars["ROWAN_SOURCE"]
 
@@ -161,7 +163,7 @@ def get_env_ctx_peggy2():
     abi_provider = hardhat.HardhatAbiProvider(cmd, abi_files_root, smart_contract_addresses)
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, ceth_symbol, generic_erc20_contract)
+        rowan_source, ceth_symbol, generic_erc20_contract, eth_faucet)
     if owner_private_key:
         ctx.eth.set_private_key(owner_address, owner_private_key)
 
@@ -277,7 +279,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id, deployed_smart_contract_address_overrides)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, CETH, generic_erc20_contract_name)
+        rowan_source, CETH, generic_erc20_contract_name, operator_address)
     if operator_private_key:
         ctx.eth.set_private_key(operator_address, operator_private_key)
 
@@ -328,8 +330,9 @@ def sif_addr_to_evm_arg(sif_address):
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn: web3.Web3, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, ceth_symbol, generic_erc20_contract
+    def __init__(self, cmd: command.Command, w3_conn: web3.Web3, ctx_eth: eth.EthereumTxWrapper, abi_provider,
+        operator: eth.Address, sifnoded_home: str, sifnode_url: Optional[str], sifnode_chain_id: str,
+        rowan_source: cosmos.Address, ceth_symbol: str, generic_erc20_contract: str, eth_faucet: eth.Address
     ):
         self.cmd = cmd
         self.w3_conn = w3_conn
@@ -345,6 +348,7 @@ class EnvCtx:
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
+        self.eth_faucet = eth_faucet
 
         # Defaults
         self.wait_for_sif_balance_change_default_timeout = 90
@@ -878,7 +882,8 @@ class EnvCtx:
             self.eth.set_private_key(address, key)
             assert self.eth.get_eth_balance(address) == 0
         if fund_amount is not None:
-            fund_from = fund_from or self.operator
+            fund_from = fund_from or self.eth_faucet
+            assert fund_from
             funder_balance_before = self.eth.get_eth_balance(fund_from)
             assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: {} needs {}, but has {}" \
                 .format(fund_from, fund_amount, funder_balance_before)
