@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardParams) *types.RewardPeriod {
@@ -41,7 +42,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 			pool.RewardPeriodNativeDistributed = sdk.ZeroUint()
 			err := k.SetPool(ctx, pool)
 			if err != nil {
-				return err
+				ctx.Logger().Error(errors.Wrap(err, "error setting reward period native distributed").Error())
 			}
 		}
 	}
@@ -62,14 +63,17 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, period *types.RewardPeri
 			rewardCoins := sdk.NewCoins(sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromBigInt(poolDistribution.BigInt())))
 			err := k.bankKeeper.MintCoins(ctx, types.ModuleName, rewardCoins)
 			if err != nil {
-				return err
+				ctx.Logger().Error(errors.Wrap(err, "error minting").Error(), map[string]string{
+					"pool":   pool.ExternalAsset.String(),
+					"amount": poolDistribution.String(),
+				})
 			}
 			pool.NativeAssetBalance = pool.NativeAssetBalance.Add(poolDistribution)
 			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(poolDistribution)
 			remaining = remaining.Sub(poolDistribution)
 			err = k.SetPool(ctx, pool)
 			if err != nil {
-				return err
+				ctx.Logger().Error(errors.Wrap(err, "error updating pool after minting").Error())
 			}
 		}
 	}
