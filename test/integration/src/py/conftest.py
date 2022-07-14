@@ -4,8 +4,6 @@ import os
 import threading
 
 import pytest
-import siftool_path
-import siftool.test_utils
 
 import test_utilities
 from burn_lock_functions import decrease_log_level, force_log_level
@@ -354,6 +352,10 @@ def restore_default_rescue_location(
         transfer_request=basic_transfer_request,
         credentials=sifchain_admin_account_credentials
     )
+
+
+import siftool_path
+import siftool.test_utils
 
 
 @pytest.fixture(autouse=True)
