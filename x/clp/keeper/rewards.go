@@ -109,7 +109,7 @@ func (k Keeper) BurnRowan(ctx sdk.Context, amount sdk.Int) error {
 }
 
 func (k Keeper) TransferRewards(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
-	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "rewards_distribution_error")
+	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "rewards/distribution_error", "rewards/distribution")
 }
 
 type PoolReward struct {

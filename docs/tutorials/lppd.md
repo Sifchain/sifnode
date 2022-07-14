@@ -38,9 +38,15 @@ sifnoded tx clp set-lppd-params \
    --path <( echo '[
     {
         "distribution_period_block_rate": "0.01",
-        "distribution_period_start_block": 1000,
-        "distribution_period_mod": 10,
+        "distribution_period_start_block": 1,
+        "distribution_period_mod": 1,
         "distribution_period_end_block": 433000
     }
 ]' )
+```
+
+5. Query block results and observe the lppd success event:
+
+```
+curl http://localhost:26657/block_results
 ```
