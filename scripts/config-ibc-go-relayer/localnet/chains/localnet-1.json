@@ -1,0 +1,9 @@
+{
+  "key": "akasha",
+  "chain-id": "localnet-1",
+  "rpc-addr": "http://localhost:27665",
+  "account-prefix": "sif",
+  "gas-adjustment": 1.3,
+  "gas-prices": "0.025urowan",
+  "trusting-period": "336h"
+}
