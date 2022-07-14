@@ -197,7 +197,8 @@ class Project:
 
     def __rm_peggy2_compiled_go_stubs(self):
         # Peggy2: generated Go stubs (by smart-contracts/Makefile)
-        self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+        if on_peggy2_branch:
+            self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
         self.__rm(project_dir(".proto-gen"))
 
     def __rm_run_env_files(self):

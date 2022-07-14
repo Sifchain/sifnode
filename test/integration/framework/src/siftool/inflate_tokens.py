@@ -292,7 +292,7 @@ class InflateTokens:
 
 
 def run(*args):
-    # This script should be run with ENV_FILE set to a file containing definitions for OPERATOR_ADDRESS,
+    # This script should be run with SIFTOOL_ENV_FILE set to a file containing definitions for OPERATOR_ADDRESS,
     # ROWAN_SOURCE eth. Depending on if you're running it on Peggy1 or Peggy2 the format might be different.
     # See get_env_ctx() for details.
     assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
