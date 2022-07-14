@@ -55,9 +55,9 @@ func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMa
 			for _, lpPool := range lpPoolMap[lpAddress] {
 				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
 			}
+		} else {
+			fireDistributeSuccessEvent(ctx, lpAddress, lpPoolMap[lpAddress], totalRowan, successEventType)
 		}
-
-		fireDistributeSuccessEvent(ctx, lpAddress, lpPoolMap[lpAddress], totalRowan, successEventType)
 	}
 }
 
@@ -73,19 +73,19 @@ func fireDistributeSuccessEvent(ctx sdk.Context, lpAddress string, pools []LPPoo
 	ctx.EventManager().EmitEvents(sdk.Events{successEvent})
 }
 
-type PrintPool struct {
+type FormattedPool struct {
 	Pool   string   `json:"pool"`
 	Amount sdk.Uint `json:"amount"`
 }
 
 func printPools(pools []LPPool) string {
-	var res = make([]PrintPool, len(pools))
+	var formattedPools = make([]FormattedPool, len(pools))
 
 	for i, pool := range pools {
-		res[i] = PrintPool{Pool: pool.Pool.ExternalAsset.Symbol, Amount: pool.Amount}
+		formattedPools[i] = FormattedPool{Pool: pool.Pool.ExternalAsset.Symbol, Amount: pool.Amount}
 	}
 
-	data, _ := json.Marshal(res)
+	data, _ := json.Marshal(formattedPools) // as used, this should never return an error
 	return string(data)
 }
 

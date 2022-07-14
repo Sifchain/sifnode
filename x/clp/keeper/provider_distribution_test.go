@@ -62,7 +62,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	totalProviderDistributioned := sdk.NewUint(628) // blockRate * poolDepthRowan
 	// only used for events collection
 	ctx, app := test.CreateTestAppClp(false)
-	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.NativeSymbol, sdk.NewInt(2*628))))
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.NativeSymbol, sdk.NewInt(2*628)))) //x2 since there's 2 pools
 	// clear MintCoins events
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 
@@ -78,7 +78,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Equal(t, totalProviderDistributioned, providerSum)
 
 	lps := test.GenerateRandomLPWithUnits(poolUnitss)
-	assetStr := "kevin"
+	assetStr := "cusdc"
 	asset := types.NewAsset(assetStr)
 	pool := types.NewPool(&asset, totalProviderDistributioned, sdk.ZeroUint(), sdk.ZeroUint())
 
@@ -105,7 +105,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	}
 
 	// repeat for a second pool
-	assetStr2 := "alex"
+	assetStr2 := "ceth"
 	asset2 := types.NewAsset(assetStr2)
 	pool2 := types.NewPool(&asset2, totalProviderDistributioned, sdk.ZeroUint(), sdk.ZeroUint())
 	rowanToDistribute2 := keeper.CollectProviderDistribution(ctx, &pool2, poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lpsFiltered, lpRowanMap, lpPoolMap)
@@ -125,7 +125,7 @@ func createDistributeEvent(address string) []sdk.Event {
 	return []sdk.Event{sdk.NewEvent("lppd/distribution",
 		sdk.NewAttribute("recipient", address),
 		sdk.NewAttribute("total_amount", "502"),
-		sdk.NewAttribute("amounts", "[{\"pool\":\"kevin\",\"amount\":\"251\"},{\"pool\":\"alex\",\"amount\":\"251\"}]")),
+		sdk.NewAttribute("amounts", "[{\"pool\":\"cusdc\",\"amount\":\"251\"},{\"pool\":\"ceth\",\"amount\":\"251\"}]")),
 	}
 }
 
