@@ -77,6 +77,16 @@ async function main() : Promise<DeployedContractAddresses> {
   const blocklistFactory = await ethers.getContractFactory("Blocklist");
   const blocklist = await blocklistFactory.connect(accounts.operatorAccount).deploy();
   print("success", `blocklist deployed successfully at address: ${blocklist.address}`);
+  
+  print("white", "Setting up ERowan ERC20 bridge token contract");
+  const rowanFactory = await ethers.getContractFactory("BridgeToken");
+  const rowan = await rowanFactory.deploy(
+    "erowan",
+    "erowan",
+    18,
+    "rowan"
+  );
+  print("success", `ERowan BridgeToken setup at address ${rowan.address}`);
 
   print("white", "Deploying and setting up bridgebank contract");
   const bridgeBankFactory = await ethers.getContractFactory("BridgeBank");
@@ -101,7 +111,8 @@ async function main() : Promise<DeployedContractAddresses> {
     cosmosBridge.address, 
     accounts.ownerAccount.address,
     accounts.pauserAccount.address,
-    NETWORK_DESCRIPTOR
+    NETWORK_DESCRIPTOR,
+    rowan.address
   );
 
   await bridgeBank.connect(accounts.operatorAccount).setBlocklist(blocklist.address);
@@ -120,16 +131,6 @@ async function main() : Promise<DeployedContractAddresses> {
     bridgeBank.address
   ]);
   print("success",`BridgeRegistry setup at address: ${bridgeRegistry.address}`);
-
-  print("white", "Setting up ERowan ERC20 bridge token contract");
-  const rowanFactory = await ethers.getContractFactory("BridgeToken");
-  const rowan = await rowanFactory.deploy(
-    "erowan",
-    "erowan",
-    18,
-    "rowan"
-  );
-  print("success", `ERowan BridgeToken setup at address ${rowan.address}`);
 
   // We must give bridgebank authority over rowan and revoke are admin rights over it
   print("white", "Attempting to grant BridgeBank Admin and Minting roles to Rowan");
