@@ -26,6 +26,10 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
 		removeLiquidityHandler(cliCtx),
 	).Methods("POST")
 	r.HandleFunc(
+		"/clp/removeLiquidityUnits",
+		removeLiquidityUnitsHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
 		"/clp/swap",
 		swapHandler(cliCtx),
 	).Methods("POST")
@@ -50,6 +54,14 @@ type (
 		ExternalAsset types.Asset  `json:"external_asset"` // ExternalAsset in the pool pair (ex rwn:ceth)
 		WBasisPoints  sdk.Int      `json:"w_basis_points"` // WBasisPoints determines the amount of asset being withdrawn
 		Asymmetry     sdk.Int      `json:"asymmetry"`      // Asymmetry decides the type of asset being withdrawn asymmetry means equal amounts of native and external
+
+	}
+
+	RemoveLiquidityUnitsReq struct {
+		BaseReq       rest.BaseReq `json:"base_req"`
+		Signer        string       `json:"signer"`         // User who is trying to remove liquidity to the pool
+		ExternalAsset types.Asset  `json:"external_asset"` // ExternalAsset in the pool pair (ex rwn:ceth)
+		WithdrawUnits sdk.Uint     `json:"withdraw_units"` // WithdrawUnits determines the amount of asset being withdrawn
 
 	}
 	CreatePoolReq struct {
@@ -188,6 +200,36 @@ func removeLiquidityHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.NewMsgRemoveLiquidity(signer, req.ExternalAsset, req.WBasisPoints, req.Asymmetry)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, &msg)
+	}
+}
+
+func removeLiquidityUnitsHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req RemoveLiquidityUnitsReq
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+
+		req.BaseReq = req.BaseReq.Sanitize()
+		if !req.BaseReq.ValidateBasic(w) {
+			return
+		}
+
+		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		msg := types.NewMsgRemoveLiquidityUnits(signer, req.ExternalAsset, req.WithdrawUnits)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

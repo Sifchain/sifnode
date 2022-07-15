@@ -29,6 +29,7 @@ type Keeper struct {
 	bankKeeper          types.BankKeeper
 	oracleKeeper        types.OracleKeeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
+	adminKeeper         types.AdminKeeper
 	storeKey            sdk.StoreKey
 }
 
@@ -42,12 +43,13 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
-// NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryCodec,
+func NewKeeper(
+	cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
 	accountKeeper types.AccountKeeper,
 	tokenRegistryKeeper tokenregistrytypes.Keeper,
+	adminKeeper types.AdminKeeper,
 	storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:                 cdc,
@@ -55,6 +57,7 @@ func NewKeeper(cdc codec.BinaryCodec,
 		bankKeeper:          bankKeeper,
 		oracleKeeper:        oracleKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
+		adminKeeper:         adminKeeper,
 		storeKey:            storeKey,
 	}
 }

@@ -4,6 +4,9 @@ from siftool.command import Command, ExecResult
 from siftool.common import *
 
 
+log = siftool_logger(__name__)
+
+
 def force_kill_processes(cmd):
     cmd.execst(["pkill", "node"], check_exit=False)
     cmd.execst(["pkill", "ebrelayer"], check_exit=False)
@@ -377,7 +380,7 @@ class Project:
             os.path.join(cosmos_proto_proto_dir, "cosmos_proto/cosmos.proto"),
         ]
 
-        args = [self.project_python(), "-m", "grpc_tools.protoc"] + flatten_list([["-I", i] for i in includes]) + [
+        args = [self.project_python(), "-m", "grpc_tools.protoc"] + flatten(["-I", i] for i in includes) + [
             "--python_out", generated_dir, "--grpc_python_out", generated_dir] + proto_files
         self.cmd.execst(args, pipe=True)
 
@@ -408,7 +411,7 @@ class Project:
 
     def pkill(self):
         for proc_name in ["node", "ebrelayer", "sifnoded", "geth"]:
-            self.cmd.execst(["pkill", proc_name], check_exit=False)
+            self.cmd.execst(["pkill", "--signal", "SIGTERM", proc_name], check_exit=False)
 
     def clean_run_env_state(self):
         self.__rm_run_env_files()

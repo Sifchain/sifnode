@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -30,6 +31,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+
+	_ "net/http/pprof" // nolint:gosec, G108
 )
 
 const (
@@ -340,12 +343,20 @@ func buildZapLogger(cmd *cobra.Command) (*zap.Logger, func(), error) {
 		return nil, nil, err
 	}
 
-	var logConfig zap.Config
+	logConfig := zap.NewProductionConfig()
 	switch logLevelFlag {
 	case "debug", "trace":
 		logConfig = zap.NewDevelopmentConfig()
-	default:
-		logConfig = zap.NewProductionConfig()
+	case "info":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	case "warn":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
+	case "error":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
+	case "fatal":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.FatalLevel)
+	case "panic":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.PanicLevel)
 	}
 	logConfig.Sampling = nil // neither production nor development use log sampling
 	logConfig.Encoding = "json"
@@ -580,6 +591,10 @@ func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTransl
 }
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	if err := svrcmd.Execute(buildRootCmd(), sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:

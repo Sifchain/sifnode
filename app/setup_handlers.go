@@ -7,11 +7,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "0.12.1"
+const releaseVersion = "0.13.4"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
