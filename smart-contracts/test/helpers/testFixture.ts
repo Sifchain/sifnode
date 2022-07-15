@@ -349,7 +349,9 @@ async function deployBaseContracts(accounts: TestFixtureAccounts, constants: Tes
   await token_noDenom.deployed();
   await token_ibc.deployed();
 
-  const tokens = [token, token1, token2, token3, token_noDenom, token_ibc];
+  // TODO: Only have IBC and noDenom tokens in this array update the 
+  //       unit tests to only use ibc and rowan tokens as bridgetokens
+  const tokens = [token_noDenom, token_ibc, token, token1, token2, token3];
 
   for (const currentToken of tokens) {
     // Grant the MINTER and ADMIN roles to the Bridgebank

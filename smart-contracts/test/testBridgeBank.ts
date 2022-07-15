@@ -3,8 +3,9 @@ import Web3Utils from "web3-utils";
 import { ethers, network } from "hardhat";
 import { use, expect } from "chai";
 import { solidity } from "ethereum-waffle";
-import { setup, TestFixtureState } from "./helpers/testFixture";
+import { preApproveAccount, prefundAccount, setup, TestFixtureState } from "./helpers/testFixture";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BridgeToken } from "../build";
 
 use(solidity);
 const BigNumber = ethers.BigNumber;
@@ -69,7 +70,8 @@ describe("Test Bridge Bank", function () {
   describe("BridgeBank single lock burn transactions", function () {
     it("should allow user to lock ERC20 tokens", async function () {
       // Set balance to user
-      await state.token.connect(operator).mint(userOne.address, state.amount);
+      // await state.token.connect(operator).mint(userOne.address, state.amount);
+      // TODO: Investigate why user is starting with balance of 100
 
       const bridgeBankBalanceBefore = await state.token.balanceOf(state.bridgeBank.address);
 
@@ -77,7 +79,8 @@ describe("Test Bridge Bank", function () {
       await state.token.connect(userOne).approve(state.bridgeBank.address, state.amount);
 
       // Attempt to lock tokens
-      await state.bridgeBank.connect(userOne).lock(state.sender, state.token.address, state.amount);
+      await expect(state.bridgeBank.connect(userOne).lock(state.sender, state.token.address, state.amount))
+        .to.not.be.reverted;
 
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(await state.token.balanceOf(userOne.address));
@@ -633,5 +636,95 @@ describe("Test Bridge Bank", function () {
       denomInBridgeBank3 = await state.bridgeBank.contractDenom(state.token3.address);
       expect(denomInBridgeBank3).to.be.equal("");
     });
+  });
+  describe("Bridgebank should let operators set and change the rowan address", () => {
+    it("should NOT allow a standard user to change the rowanAddress", async () => {
+      const startingRowanAddress = await state.bridgeBank.rowanTokenAddress();
+      await expect(state.bridgeBank.connect(userOne).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userTwo).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userThree).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userFour).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
+      expect(startingRowanAddress).to.equal(endingRowanAddress);
+    });
+    it("should allow the operator to change the rowanAddress", async () => {
+      const startingRowanAddress = await state.bridgeBank.rowanTokenAddress();
+      const rowanAddress = state.rowan.address;
+      const newRowanAddress = state.token.address;
+      expect(startingRowanAddress).to.equal(rowanAddress); // Assert at the start of the test the rowan address is set
+      await expect(state.bridgeBank.connect(operator).setRowanTokenAddress(newRowanAddress)).to.not.be.reverted;
+      const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
+      expect(endingRowanAddress).to.not.equal(startingRowanAddress);
+      expect(endingRowanAddress).to.equal(newRowanAddress);
+    });
+    it("should allow the operator to change the rowanAddress to the null address", async () => {
+      const startingRowanAddress = await state.bridgeBank.rowanTokenAddress();
+      const rowanAddress = state.rowan.address;
+      expect(startingRowanAddress).to.equal(rowanAddress); // Assert at the start of the test the rowan address is set
+      await expect(state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress)).to.not.be.reverted;
+      const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
+      expect(endingRowanAddress).to.equal(state.constants.zeroAddress); // The address should now be null 
+    });
+  });
+  describe("Bridgebank should treat rowan differently from other bridgetokens or ERC20 tokens", () => {
+    this.beforeEach(async () => {
+      // Set Rowan token address on bridgebank and then mint some rowan and other tokens for each user
+      await state.bridgeBank.connect(operator).setRowanTokenAddress(state.rowan.address);
+      const tokens = [state.token, state.token1, state.token2, state.token3, state.token_ibc, state.rowan as unknown as BridgeToken];
+      await prefundAccount(userOne, state.amount, state.operator, tokens);
+      await preApproveAccount(state.bridgeBank, userOne, state.amount, tokens);
+    });
+    it("should override the rowan token denom on a single burn", async () => {
+      const nonce = await state.bridgeBank.lockBurnNonce()
+      const amount = (state.amount / 2) - 1 // burn slightly less then half
+      // Should return a event emitting "rowan" as the correct denom 
+      await expect(state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount))
+        .to.emit(state.bridgeBank, 'LogBurn').withArgs(
+          userOne.address,
+          state.sender,
+          state.rowan.address,
+          amount,
+          nonce.add(1), // Increment nonce by one for this transaction
+          await state.rowan.decimals(),
+          networkDescriptor + 2, // Mismatched network descriptor was set to true for setup so its off by two...
+          "rowan" // overridden from default
+        );
+
+        // Should revert a burn on rowan if the rowanAddress is not set since it does not have a valid denom
+        // otherwise
+        await state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress);
+        await expect(state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount))
+          .to.be.revertedWith("INV_DENOM");
+    });
+    it("should override the rowan token denom on a multiburn", async () => {
+      const nonce = await state.bridgeBank.lockBurnNonce()
+      const amount = (state.amount / 2) - 1 // burn slightly less then half
+      // Should return a event emitting "rowan" as the correct denom 
+      await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [amount], [true]))
+        .to.emit(state.bridgeBank, 'LogBurn').withArgs(
+          userOne.address,
+          state.sender,
+          state.rowan.address,
+          amount,
+          nonce.add(1), // Increment nonce by one for this transaction
+          await state.rowan.decimals(),
+          networkDescriptor + 2, // Mismatched network descriptor was set to true for setup so its off by two...
+          "rowan" // overridden from default
+        );
+
+        // Should revert a burn on rowan if the rowanAddress is not set since it does not have a valid denom
+        // otherwise
+        await state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress);
+        await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [amount], [true]))
+          .to.be.revertedWith("INV_DENOM");
+    });
+    it("should still refuse to lock rowan tokens", async () => {
+      await expect(state.bridgeBank.connect(userOne).lock(state.sender, state.rowan.address, state.amount))
+        .to.be.revertedWith("Only token not in cosmos whitelist can be locked");
+    });
+    it("should still refuse to multilock rowan tokens", async () => {
+      await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [state.amount], [false]))
+        .to.be.revertedWith("Only token not in cosmos whitelist can be locked");
+    })
   });
 });
