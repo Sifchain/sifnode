@@ -133,7 +133,7 @@ class Integrator(Ganache, Command):
         # TODO script is no longer there!
         self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
 
-    # @TODO Merge
+    # Peggy1 only
     def sifchain_init_integration(self, sifnode, validator_moniker, validator_mnemonic, denom_whitelist_file):
         # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
         sifnode0 = Sifnoded(self)
@@ -145,7 +145,16 @@ class Integrator(Ganache, Command):
         # it was not working. But we assume that we want to keep it.
         sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnode.home)
 
-        adminuser_addr = self.sifchain_init_common(sifnode, denom_whitelist_file)
+        # Add sifnodeadmin to ~/.sifnoded
+        sifnode0 = Sifnoded(self)
+        adminuser_addr = sifnode0.keys_add("sifnodeadmin")["address"]
+        tokens = {ROWAN: 10 ** 28}
+        # Original from peggy:
+        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
+        sifnode.add_genesis_account(adminuser_addr, tokens)
+        sifnode.set_genesis_oracle_admin(adminuser_addr)
+        sifnode.set_gen_denom_whitelist(denom_whitelist_file)
+
         return adminuser_addr
 
     def sifnoded_peggy2_init_validator(self, sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base):
@@ -168,20 +177,6 @@ class Integrator(Ganache, Command):
         # TODO We're using default home here instead of sifnoded_home above. Does this even work?
         _whitelisted_validator = sifnode.get_val_address(validator_moniker)
         assert valoper == _whitelisted_validator
-
-    # TODO Not any longer shared between IntegrationEnvironment and PeggyEnvironment
-    # Peggy2Environment calls sifnoded_peggy2_add_account
-    def sifchain_init_common(self, sifnode, denom_whitelist_file):
-        # Add sifnodeadmin to ~/.sifnoded
-        sifnode0 = Sifnoded(self)
-        sifnodeadmin_addr = sifnode0.keys_add("sifnodeadmin")["address"]
-        tokens = {ROWAN: 10**20}
-        # Original from peggy:
-        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
-        sifnode.add_genesis_account(sifnodeadmin_addr, tokens)
-        sifnode.set_genesis_oracle_admin(sifnodeadmin_addr)
-        sifnode.set_gen_denom_whitelist(denom_whitelist_file)
-        return sifnodeadmin_addr
 
     # @TODO Move to Sifgen class
     def sifgen_create_network(self, chain_id: str, validator_count: int, networks_dir: str, network_definition_file: str,
@@ -510,6 +505,8 @@ class IntegrationTestsEnvironment:
             "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": 137 * 10**16
         }
 
+        self.ganache_executable = self.project.project_dir("smart-contracts", "node_modules", ".bin", "ganache-cli")
+
     def prepare(self):
         self.project.make_go_binaries()
         self.project.install_smart_contracts_dependencies()
@@ -538,20 +535,19 @@ class IntegrationTestsEnvironment:
         block_time = None  # TODO
         account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
         ganache_db_path = self.cmd.mktempdir()
-        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
-            mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, executable=self.ganache_executable, block_time=block_time,
+            host=ANY_ADDR, mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
             account_keys_path=account_keys_path, log_file=ganache_log_file)
 
         self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
         time.sleep(2)
 
+        # Pick an account for ebrelayer from 10 hardcoded ganache_keys. In theory, it shouldn't matter which one we pick
+        # but since other parts of the code might have some hidden assumptions we just pick a fixed one for now.
         ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
-        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+        ebrelayer_ethereum_addr = "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+        assert ebrelayer_ethereum_addr in ganache_keys["private_keys"]
         ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
-        # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
-        # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
-        assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
-        assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
 
         env_file = project_dir("test/integration/.env.ciExample")
         env_vars = self.cmd.primitive_parse_env_file(env_file)
@@ -662,6 +658,8 @@ class IntegrationTestsEnvironment:
         }
         self.project.write_vagrantenv_sh(self.state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
 
+        log.debug("Admin account address (rowan source): {}".format(adminuser_addr))
+
         from siftool import localnet
         localnet.run_localnet_hook()
 
@@ -750,8 +748,8 @@ class IntegrationTestsEnvironment:
         ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
         account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")  # TODO this is in test/integration/vagrant/data, which is supposed to be cleared
 
-        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
-            mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, executable=self.ganache_executable, block_time=block_time,
+            host=ANY_ADDR, mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
             account_keys_path=account_keys_path)  # TODO log_file
 
         self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
@@ -1344,6 +1342,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 "tcpurl": tcp_url,
             }
         }
+
+        # TODO Inconsistent format of deployed smart contract addresses (this was intentionally carried over from
+        #      devenv to preserve compatibility with devenv users)
+        # TODO Convert to out "unified" json file format
 
         # TODO Do we want "0x" prefixes here for private keys?
         dot_env = dict_merge({
