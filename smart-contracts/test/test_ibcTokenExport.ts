@@ -1,32 +1,32 @@
-const Web3Utils = require("web3-utils");
-const web3 = require("web3");
-const BigNumber = web3.BigNumber;
+import Web3Utils from "web3-utils";
+import web3 from "web3";
 
-const { ethers } = require("hardhat");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
-const { setup, getValidClaim } = require("./helpers/testFixture");
+import { ethers } from "hardhat";
+import { use, expect } from "chai";
+import { solidity } from "ethereum-waffle";
+import { setup, getValidClaim, TestFixtureState } from "./helpers/testFixture";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
+const BigNumber = ethers.BigNumber;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-
-require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 use(solidity);
 
 describe("Test Cosmos Bridge", function () {
-  let userOne;
-  let userTwo;
-  let userThree;
-  let userFour;
-  let accounts;
-  let signerAccounts;
-  let operator;
-  let owner;
+  let userOne: SignerWithAddress;
+  let userTwo: SignerWithAddress;
+  let userThree: SignerWithAddress;
+  let userFour: SignerWithAddress;
+  let accounts: SignerWithAddress[];
+  let signerAccounts: string[];
+  let operator: SignerWithAddress;
+  let owner: SignerWithAddress;
+  let pauser: SignerWithAddress;
   const consensusThreshold = 75;
-  let initialPowers;
-  let initialValidators;
-  let networkDescriptor;
-  let state;
+  let initialPowers: number[];
+  let initialValidators: string[];
+  let networkDescriptor: number;
+  let state: TestFixtureState;
 
   before(async function () {
     accounts = await ethers.getSigners();
@@ -51,39 +51,39 @@ describe("Test Cosmos Bridge", function () {
   });
 
   beforeEach(async function () {
-    state = await setup({
+    state = await setup(
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      user: userOne,
-      recipient: userThree,
+      userOne,
+      userThree,
       pauser,
       networkDescriptor,
-      lockTokensOnBridgeBank: true,
-    });
+      true,
+    );
   });
 
 
   it("should deploy a new token upon the successful processing of a ibc token burn prophecy claim just for first time", async function () {
     state.nonce = 1;
 
-    const { digest, claimData, signatures } = await getValidClaim({
-      sender: state.sender,
-      senderSequence: state.senderSequence,
-      recipientAddress: state.recipient.address,
-      tokenAddress: ZERO_ADDRESS,
-      amount: state.amount,
-      bridgeToken: true,
-      nonce: state.nonce,
-      networkDescriptor: state.networkDescriptor,
-      tokenName: state.name,
-      tokenSymbol: state.symbol,
-      tokenDecimals: state.decimals,
-      cosmosDenom: state.constants.denom.ibc,
-      validators: [userOne, userTwo, userFour],
-    });
+    const { digest, claimData, signatures } = await getValidClaim(
+      state.sender,
+      state.senderSequence,
+      state.recipient.address,
+      ZERO_ADDRESS,
+      state.amount,
+      state.name,
+      state.symbol,
+      state.decimals,
+      state.networkDescriptor,
+      true,
+      state.nonce,
+      state.constants.denom.ibc,
+      [userOne, userTwo, userFour],
+    );
 
     const expectedAddress = ethers.utils.getContractAddress({
       from: state.bridgeBank.address,
@@ -115,21 +115,21 @@ describe("Test Cosmos Bridge", function () {
       digest: digest2,
       claimData: claimData2,
       signatures: signatures2,
-    } = await getValidClaim({
-      sender: state.sender,
-      senderSequence: state.senderSequence + 1,
-      recipientAddress: state.recipient.address,
-      tokenAddress: ZERO_ADDRESS,
-      amount: state.amount,
-      bridgeToken: true,
-      nonce: state.nonce + 1,
-      networkDescriptor: state.networkDescriptor,
-      tokenName: state.name,
-      tokenSymbol: state.symbol,
-      tokenDecimals: state.decimals,
-      cosmosDenom: state.constants.denom.ibc,
-      validators: [userOne, userTwo, userFour],
-    });
+    } = await getValidClaim(
+      state.sender,
+      state.senderSequence + 1,
+      state.recipient.address,
+      ZERO_ADDRESS,
+      state.amount,
+      state.name,
+      state.symbol,
+      state.decimals,
+      state.networkDescriptor,
+      true,
+      state.nonce + 1,
+      state.constants.denom.ibc,
+      [userOne, userTwo, userFour],
+    );
 
     await expect(
       state.cosmosBridge
