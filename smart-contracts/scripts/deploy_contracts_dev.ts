@@ -95,12 +95,13 @@ async function main() : Promise<DeployedContractAddresses> {
     cosmosBridge.address, // _cosmosBridgeAddress
     accounts.ownerAccount.address, // _owner
     accounts.pauserAccount.address, // _pauser
-    NETWORK_DESCRIPTOR
+    NETWORK_DESCRIPTOR,
+    rowan.address
   ], {
     // Required because openZepplin Address library has a function that uses delegatecall 
     // delegate call is never used by our code and this library function is unused
     unsafeAllow: ["delegatecall"],
-    initializer: "initialize(address,address,address,address,int32)"
+    initializer: "initialize(address,address,address,address,int32,address)"
 
   })) as BridgeBank;
   print("success", `Bridgebank deployed at address: ${bridgeBank.address}, must now finish setting up`);
