@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
+import { BigNumber, BigNumberish, BytesLike, Contract, ContractTransaction } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import web3 from "web3";
 import { Blocklist, Blocklist__factory, BridgeBank, BridgeBank__factory, BridgeToken, BridgeToken__factory, CosmosBridge, CosmosBridge__factory, Erowan, Erowan__factory } from "../../build";
@@ -503,6 +503,38 @@ async function getValidClaim(
   return result;
 }
 
+/**
+ * This utility function will prefund the given account with amount quantity requested 
+ * in tokens by minting tokens. The operator that deployed the tokens or has mint privilege
+ * must be provided.
+ * @param user The SignerWithAddress that is to be funded
+ * @param amount The quantity to fund the account by
+ * @param operator The account with mint privlages on all tokens listed
+ * @param tokens An array of tokens to mint on
+ */
+async function prefundAccount(user: SignerWithAddress | Contract, amount: BigNumberish, operator: SignerWithAddress, tokens: BridgeToken[]) {
+   let tokenPromises: Promise<ContractTransaction>[] = [];
+    for (const token of tokens) {
+      tokenPromises.push(token.connect(operator).mint(user.address, amount));
+    }
+    await Promise.all(tokenPromises);
+}
+
+/**
+ * This utility function will preapprove the given user from the approvers balance on all tokens listed.
+ * @param user The account to be approved to spend approvers funds
+ * @param approver The account which is approving the the user passed to be funded from approvers funds
+ * @param amount The amount of tokens that the user is approved for
+ * @param tokens An array of tokens to approve the account on
+ */
+async function preApproveAccount(user: SignerWithAddress | Contract, approver: SignerWithAddress, amount: BigNumberish, tokens: BridgeToken[]) {
+    let tokenPromises: Promise<ContractTransaction>[] = [];
+    for (const token of tokens) {
+      tokenPromises.push(token.connect(approver).approve(user.address, amount));
+    }
+    await Promise.all(tokenPromises);
+}
+
 export {
   setup,
   deployTrollToken,
@@ -510,4 +542,6 @@ export {
   signHash,
   getDigestNewProphecyClaim,
   getValidClaim,
+  prefundAccount,
+  preApproveAccount
 };

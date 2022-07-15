@@ -1,4 +1,6 @@
-function fixSignature(signature) {
+import web3 from "web3";
+
+export function fixSignature(signature: string) {
   // in geth its always 27/28, in ganache its 0/1. Change to 27/28 to prevent
   // signature malleability if version is 0/1
   // see https://github.com/ethereum/go-ethereum/blob/v1.8.23/internal/ethapi/api.go#L465
@@ -10,10 +12,10 @@ function fixSignature(signature) {
   return signature.slice(0, 130) + vHex;
 }
 
-function toEthSignedMessageHash(messageHex) {
+export function toEthSignedMessageHash(messageHex: string) {
   const messageBuffer = Buffer.from(messageHex.substring(2), "hex");
   const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${messageBuffer.length}`);
-  return web3.utils.sha3(Buffer.concat([prefix, messageBuffer]));
+  return web3.utils.sha3(Buffer.concat([prefix, messageBuffer]).toString());
 }
 
 /**
@@ -33,16 +35,13 @@ const colors = {
   close: "\x1b[0m",
 };
 
+export type Colors = keyof typeof colors;
+
+
 /**
  * Colorizes and prints logs without using libs
  * @dev Example: colorLog('green', message);
  */
-function colorLog(colorName, message) {
+export function colorLog(colorName: Colors, message: string) {
   console.log(`${colors[colorName]}${message}${colors.close}`);
 }
-
-module.exports = {
-  toEthSignedMessageHash,
-  fixSignature,
-  colorLog,
-};
