@@ -7,6 +7,8 @@ LegacyBalance = List[List[Union[int, str]]]  # e.g. [[3, "rowan"], [2, "ibc/xxxx
 Balance = Mapping[str, int]
 CompatBalance = Union[LegacyBalance, Balance]
 Address = str
+BechAddress = str
+KeyName = str  # Name of key in the keyring
 
 
 def balance_normalize(bal: CompatBalance = None) -> Balance:
