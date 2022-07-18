@@ -53,7 +53,7 @@ def bridge_token_to_eth_and_back_to_sifnode_transfer_valid(ctx, cosmos_denom: st
     ctx.send_from_ethereum_to_sifchain(test_eth_account, test_sif_account, fund_amount, token_sc=cosmos_denom_sc, isLock=False)
     ctx.advance_blocks()
 
-    test_sif_account_after_receive = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_before_receive, [[fund_amount, cosmos_denom]])
+    test_sif_account_after_receive = ctx.sifnode.wait_for_balance_change(test_sif_account, test_sif_account_before_receive, [[fund_amount, cosmos_denom]])
     # check the bridge token back to sifnode side
     assert sifchain.balance_delta(test_sif_account_before_receive, test_sif_account_after_receive)[cosmos_denom] == fund_amount
 

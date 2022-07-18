@@ -99,7 +99,7 @@ def test_load_burn_rowan(ctx: test_utils.EnvCtx):
 
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, rowan_contract_address, False)
     expected_change = {ROWAN: amount_to_send * threads_num}
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
+    ctx.sifnoded.wait_for_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
     test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
     assert balance_equal(test_sif_account_final_balance, balance_add(test_sif_account_initial_balance, expected_change))
@@ -119,7 +119,7 @@ def test_load_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     run_multi_thread(ctx, test_sif_account, test_eth_accounts, erc20_sc_address, True)
 
     expected_change = {erc20_cosmos_denom: amount_to_send * threads_num}
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
+    ctx.sifnode.wait_for_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
     test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
     assert balance_equal(test_sif_account_final_balance, balance_add(test_sif_account_initial_balance, expected_change))
@@ -144,7 +144,7 @@ def test_load_multiple_erc20_to_sifnode(ctx: test_utils.EnvCtx):
     for i in range(threads_num):
         expected_changes = balance_add(expected_changes, {erc20_cosmos_denoms[i]: amount_to_send})
 
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_changes)
+    ctx.sifnode.wait_for_balance_change(test_sif_account, test_sif_account_initial_balance, expected_changes)
     test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
     assert balance_equal(test_sif_account_final_balance, balance_add(test_sif_account_initial_balance, expected_changes))
 
@@ -159,7 +159,7 @@ def test_load_tx_eth(ctx: test_utils.EnvCtx):
     
     # Verify final balance
     expected_change = {ctx.ceth_symbol: amount_to_send * threads_num}
-    ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
+    ctx.sifnodewait_for_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 
     test_sif_account_final_balance = ctx.get_sifchain_balance(test_sif_account)
     assert balance_equal(balance_add(expected_change, test_sif_account_initial_balance), test_sif_account_final_balance)

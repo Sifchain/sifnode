@@ -174,15 +174,15 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     report(report_lines, "batch_approve_and_lock_erc20_tokens(): {:.2f} s, {:.2f} items/s".format(approve_and_lock_time,
         number_of_erc20_tokens / approve_and_lock_time if approve_and_lock_time > 0 else 0))
 
-    log.info("Current phase: wait for sif balance to change (wait_for_sif_balance_change)")
+    log.info("Current phase: wait for sif balance to change (Sifnoded.wait_for_balance_change)")
 
     fat_balance = {denom: amount for denom in sif_denoms}
     time_before = time.time()
-    ctx.wait_for_sif_balance_change(fat_sif_wallet, sif_balance_before, expected_balance=fat_balance)
+    ctx.sifnode.wait_for_balance_change(fat_sif_wallet, sif_balance_before, expected_balance=fat_balance)
     balance_change_time = time.time() - time_before
     assert balance_equal(ctx.get_sifchain_balance(fat_sif_wallet), fat_balance)
 
-    report(report_lines, "wait_for_sif_balance_change(): {:.2f} s, {:.2f} items/s".format(balance_change_time,
+    report(report_lines, "Sifnoded.wait_for_balance_change(): {:.2f} s, {:.2f} items/s".format(balance_change_time,
         number_of_erc20_tokens / balance_change_time if balance_change_time > 0 else 0))
 
     setup_time = time.time() - setup_start_time
@@ -204,7 +204,7 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample
     slim_balance_before = ctx.get_sifchain_balance(slim_sif_wallet)
     batch_mint_erc20_tokens(ctx, owner, eth_sender, amount, [token0])
     batch_approve_and_lock_erc20_tokens(ctx, eth_sender, slim_sif_wallet, [token0], amount)
-    ctx.wait_for_sif_balance_change(slim_sif_wallet, sif_balance_before, expected_balance=expected_slim_balance)
+    ctx.sifnode.wait_for_balance_change(slim_sif_wallet, sif_balance_before, expected_balance=expected_slim_balance)
     assert cosmos.balance_equal(ctx.get_sifchain_balance(slim_sif_wallet), expected_slim_balance)
 
     log.info("Current phase: timing send and burn operations for fat vs. slim wallet")
@@ -250,10 +250,10 @@ def check_and_reopen_web3_connection_due_to_possible_timeout(ctx: test_utils.Env
 if __name__ == "__main__":
     basic_logging_setup()
     ctx = test_utils.get_env_ctx()
-    ctx.wait_for_sif_balance_change_default_timeout = 0
-    ctx.wait_for_sif_balance_change_default_change_timeout = 600
-    ctx.wait_for_sif_balance_change_default_polling_time = 60
-    ctx.get_sifchain_balance_default_retries = 3
+    ctx.sifnode.wait_for_balance_change_default_timeout = 0
+    ctx.sifnode.wait_for_balance_change_default_change_timeout = 600
+    ctx.sifnode.wait_for_balance_change_default_polling_time = 60
+    ctx.sifnode.get_balance_default_retries = 3
     parser = argparse.ArgumentParser()
     parser.add_argument("--count", type=int, default=2)
     parser.add_argument("--sample-loop-size", type=int, default=10)

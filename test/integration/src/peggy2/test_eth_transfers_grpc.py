@@ -25,7 +25,7 @@ def test_eth_to_ceth_and_back_grpc(ctx):
     ctx.advance_blocks()
 
     # Verify final balance
-    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    test_sif_account_final_balance = ctx.sifnode.wait_for_balance_change(test_sif_account, test_sif_account_initial_balance)
     balance_diff = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
     assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
     assert balance_diff[ctx.ceth_symbol] == amount_to_send

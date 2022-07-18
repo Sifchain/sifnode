@@ -164,13 +164,13 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
         lock_eth_amount += amount_per_tx
     ctx.bridge_bank_lock_eth(ctx.operator, dispensation_sif_acct, sum_all * lock_eth_amount)
     ctx.advance_blocks()
-    old_balances = ctx.wait_for_sif_balance_change(dispensation_sif_acct, old_balances)
+    old_balances = ctx.sifnode.wait_for_balance_change(dispensation_sif_acct, old_balances)
 
     # just for erc20 token
     if token_address is not None and not isRowan:
         token_sc = ctx.get_generic_erc20_sc(token_address)
         ctx.send_from_ethereum_to_sifchain(ctx.operator, dispensation_sif_acct, sum_all * amount_per_tx, token_sc=token_sc, isLock=True)
-        ctx.wait_for_sif_balance_change(dispensation_sif_acct, old_balances)
+        ctx.sifnode.wait_for_balance_change(dispensation_sif_acct, old_balances)
 
     # Dispense from sif_dispensation_acct to sif_accts
     for i, sif_acct in enumerate(sif_accts):
@@ -181,16 +181,16 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
         if token_address is None:
             amount = sum_sif[i] * (amount_per_tx + sif_tx_burn_fee_in_ceth)
             ctx.send_from_sifchain_to_sifchain(dispensation_sif_acct, sif_acct, {ctx.ceth_symbol: amount})
-            b_sif_acct_after = ctx.wait_for_sif_balance_change(sif_acct, b_sif_acct_before)
+            b_sif_acct_after = ctx.sifnode.wait_for_balance_change(sif_acct, b_sif_acct_before)
 
         else:
             ctx.send_from_sifchain_to_sifchain(dispensation_sif_acct, sif_acct, {ctx.ceth_symbol: sum_sif[i] * sif_tx_burn_fee_in_ceth})
             # rowan got when the sif account init
             # if token_denom != rowan:
-            b_sif_acct_before = ctx.wait_for_sif_balance_change(sif_acct, b_sif_acct_before)
+            b_sif_acct_before = ctx.sifnode.wait_for_balance_change(sif_acct, b_sif_acct_before)
             ctx.send_from_sifchain_to_sifchain(dispensation_sif_acct, sif_acct, {token_denom: sum_sif[i] * amount_per_tx})
 
-            b_sif_acct_after = ctx.wait_for_sif_balance_change(sif_acct, b_sif_acct_before)
+            b_sif_acct_after = ctx.sifnode.wait_for_balance_change(sif_acct, b_sif_acct_before)
         b_disp_acct_after = ctx.get_sifchain_balance(dispensation_sif_acct)
 
     # Get sif account info (for account_number and sequence)

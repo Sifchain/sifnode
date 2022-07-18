@@ -30,7 +30,7 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx: EnvCtx):
     ctx.advance_blocks()
 
     # Verify final balance
-    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    test_sif_account_final_balance = ctx.sifnode.wait_for_balance_change(test_sif_account, test_sif_account_initial_balance)
     balance_diff = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
     assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
     assert balance_diff[ctx.ceth_symbol] == amount_to_send
@@ -81,7 +81,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
     ctx.bridge_bank_lock_eth(test_eth_acct_0, test_sif_account, amount_to_send)
     ctx.advance_blocks()
-    test_sif_account_final_balance = ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance)
+    test_sif_account_final_balance = ctx.sifnode.wait_for_balance_change(test_sif_account, test_sif_account_initial_balance)
     sif_balance_delta = sifchain.balance_delta(test_sif_account_initial_balance, test_sif_account_final_balance)
     assert len(sif_balance_delta) == 1
     assert sif_balance_delta[ctx.ceth_symbol] == amount_to_send
@@ -103,7 +103,7 @@ def transfer_erc20_to_sifnode_and_back(ctx: EnvCtx, token_sc, token_decimals, nu
         sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
         ctx.send_from_ethereum_to_sifchain(test_eth_acct_0, test_sif_account, send_amount_0, token_sc=token_sc)
         ctx.advance_blocks()
-        sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
+        sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before)
         eth_balance_after_0 = ctx.get_erc20_token_balance(token_addr, test_eth_acct_0)
         sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
 
@@ -164,7 +164,7 @@ def test_failhard_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
     ctx.advance_blocks()
 
     # Group these into 1 func
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before)
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
@@ -184,7 +184,7 @@ def test_failhard_token_to_sifnode_and_back_does_not_halt_bridge(ctx: EnvCtx):
 
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
 
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes={"rowan": -1, ctx.ceth_symbol: -1, sif_denom_hash: -1})
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before, min_changes={"rowan": -1, ctx.ceth_symbol: -1, sif_denom_hash: -1})
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
     assert "rowan" in sif_balance_delta, "User should see change in rowan balance"
@@ -220,7 +220,7 @@ def test_unicodeToken_token_to_sifnode_and_back_succeed_and_does_not_halt_bridge
     ctx.advance_blocks()
 
     # Group these into 1 func
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before)
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
@@ -241,7 +241,7 @@ def test_unicodeToken_token_to_sifnode_and_back_succeed_and_does_not_halt_bridge
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
     ctx.advance_blocks()
 
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes={"rowan": -1, ctx.ceth_symbol: -1, sif_denom_hash: -1})
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before, min_changes={"rowan": -1, ctx.ceth_symbol: -1, sif_denom_hash: -1})
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
     assert "rowan" in sif_balance_delta, "User should see change in rowan balance"
@@ -282,7 +282,7 @@ def test_commission_token_to_sifnode_and_back_succeed_and_does_not_halt_bridge(c
     ctx.send_from_ethereum_to_sifchain(test_eth_acct, test_sif_account, test_account_token_balance, token_sc)
     ctx.advance_blocks()
 
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before)
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
@@ -299,7 +299,7 @@ def test_commission_token_to_sifnode_and_back_succeed_and_does_not_halt_bridge(c
     eth_token_balance_before = ctx.get_erc20_token_balance(token_addr, test_eth_acct)
     ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_acct, test_send_amount_back, sif_denom_hash)
 
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before, min_changes={"rowan": -1, ctx.ceth_symbol: -1, sif_denom_hash: -1})
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before, min_changes={"rowan": -1, ctx.ceth_symbol: -1, sif_denom_hash: -1})
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 3, "User should only have changes in token balance. Delta: {}".format(sif_balance_delta)
     assert "rowan" in sif_balance_delta, "User should see rowan decreased for cross chain fee"
@@ -333,7 +333,7 @@ def test_randomtroll_token_to_sifnode_does_not_halt_bridge(ctx: EnvCtx):
     ctx.send_from_ethereum_to_sifchain(test_eth_acct, test_sif_account, test_account_token_balance, token_sc)
     ctx.advance_blocks()
 
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before)
     sif_balance_delta = sifchain.balance_delta(sif_balance_before, sif_balance_after)
     assert len(sif_balance_delta) == 1, "User should only have changes in token balance. Received {}".format(sif_balance_delta)
     assert sif_denom_hash in sif_balance_delta, "User should see changes in the bridged token"
