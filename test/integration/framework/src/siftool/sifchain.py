@@ -77,7 +77,7 @@ def sifnoded_parse_output_lines(stdout: str) -> Mapping:
 
 
 class Sifnoded:
-    def __init__(self, cmd, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None):
+    def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None):
         self.cmd = cmd
         self.binary = "sifnoded"
         self.home = home
