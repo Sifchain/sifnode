@@ -42,7 +42,7 @@ def send_from_sifchain_to_sifchain(ctx: test_utils.EnvCtx, from_addr: cosmos.Add
     ctx.send_from_sifchain_to_sifchain(from_addr, to_addr, amounts)
     from_expected_balance = cosmos.balance_sub(from_balance_before, amounts)
     to_expected_balance = cosmos.balance_add(to_balance_before, amounts)
-    to_balance_after = ctx.wait_for_sif_balance_change(to_addr, to_balance_before, expected_balance=to_expected_balance)
+    to_balance_after = ctx.sifnode.wait_for_balance_change(to_addr, to_balance_before, expected_balance=to_expected_balance)
     from_balance_after = cosmos.balance_sub(from_balance_before, amounts)
     assert to_balance_after == ctx.get_sifchain_balance(to_addr)
     assert cosmos.balance_equal(from_balance_after, from_expected_balance)

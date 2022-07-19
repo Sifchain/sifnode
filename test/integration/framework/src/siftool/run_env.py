@@ -143,7 +143,7 @@ class Integrator(Ganache, Command):
 
         # This was deleted in commit f00242302dd226bc9c3060fb78b3de771e3ff429 from sifchain_start_daemon.sh because
         # it was not working. But we assume that we want to keep it.
-        sifnode.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnode.home)
+        sifnode.sifnoded_exec(["add-genesis-validators", valoper] + sifnode._home_args())
 
         # Add sifnodeadmin to ~/.sifnoded
         sifnode0 = Sifnoded(self)
@@ -157,7 +157,7 @@ class Integrator(Ganache, Command):
 
         return adminuser_addr
 
-    def sifnoded_peggy2_init_validator(self, sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base):
+    def sifnoded_peggy2_init_validator(self, sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power):
         # Add validator key to test keyring
         # This effectively copies key for validator_moniker from what sifgen creates in /tmp/sifnodedNetwork/validators
         # to ~/.sifnoded (note absence of explicit sifnoded_home, therefore it's ~/.sifnoded)
@@ -171,12 +171,6 @@ class Integrator(Ganache, Command):
 
         # Add genesis validator
         sifnode.add_genesis_validators_peggy(evm_network_descriptor, valoper, validator_power)
-
-        # Get whitelisted validator
-        # TODO Value is not being used
-        # TODO We're using default home here instead of sifnoded_home above. Does this even work?
-        _whitelisted_validator = sifnode.get_val_address(validator_moniker)
-        assert valoper == _whitelisted_validator
 
     # @TODO Move to Sifgen class
     def sifgen_create_network(self, chain_id: str, validator_count: int, networks_dir: str, network_definition_file: str,
@@ -194,12 +188,13 @@ class Integrator(Ganache, Command):
             (["--mint-amount", cosmos.balance_format(mint_amount)] if mint_amount else [])
         self.execst(args)
 
-    def wait_for_sif_account(self, netdef_json, validator1_address):
-        # TODO Replace with test_utilities.wait_for_sif_account / wait_for_sif_account_up
-        return self.execst(["python3", os.path.join(self.project.test_integration_dir, "src/py/wait_for_sif_account.py"),
-            netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
+    # def wait_for_sif_account(self, netdef_json, validator1_address):
+    #     # TODO Replace with test_utilities.wait_for_sif_account / wait_for_sif_account_up
+    #     return self.execst(["python3", os.path.join(self.project.test_integration_dir, "src/py/wait_for_sif_account.py"),
+    #         netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
 
     def wait_for_sif_account_up(self, address: cosmos.Address, tcp_url: str = None, timeout: int = 90):
+        # TODO Move to Sifnoded class
         # TODO Deduplicate: this is also in run_ebrelayer()
         # netdef_json is path to file containing json_dump(netdef)
         # while not self.cmd.tcp_probe_connect("localhost", tendermint_port):
@@ -319,7 +314,7 @@ class UIStackEnvironment:
         self.cmd.execst(["sifnoded", "validate-genesis"])
 
         log.info("Starting test chain...")
-        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, ROWAN])  # TODO sifnoded_home=???
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=(0.5, ROWAN))  # TODO sifnoded_home=???
 
         # sifnoded must be up before continuing
         self.cmd.sif_wait_up("localhost", 1317)
@@ -608,7 +603,7 @@ class IntegrationTestsEnvironment:
 
         # Start sifnoded
         sifnoded_proc = sifnode.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=(0.5, ROWAN),
-            log_file=sifnoded_log_file)
+            log_file=sifnoded_log_file, trace=True)
 
         # TODO: wait for sifnoded to come up before continuing
         # in sifchain_start_daemon.sh: "sleep 10"
@@ -690,7 +685,8 @@ class IntegrationTestsEnvironment:
         # TODO Deduplicate
         while not self.cmd.tcp_probe_connect("localhost", 26657):
             time.sleep(1)
-        self.cmd.wait_for_sif_account(netdef_json, validator1_address)
+        # self.cmd.wait_for_sif_account(netdef_json, validator1_address)
+        self.cmd.wait_for_sif_account_up(validator1_address)
         time.sleep(10)
         self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)  # Creates ~/.sifnoded/keyring-tests/xxxx.address
         ebrelayer_proc = Ebrelayer(self.cmd).init(self.tcp_url, self.ethereum_websocket_address, bridge_registry_sc_addr,
@@ -759,7 +755,8 @@ class IntegrationTestsEnvironment:
         networks_dir = project_dir("deploy/networks")
         chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
         sifnoded_home = os.path.join(chaindir, ".sifnoded")
-        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, ROWAN], sifnoded_home=sifnoded_home)
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=(0.5, ROWAN),
+            sifnoded_home=sifnoded_home, trace=True)
 
         bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
             self.cmd.get_bridge_smart_contract_addresses(self.network_id)
@@ -1117,7 +1114,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             evm_network_descriptor = 1  # TODO Why not hardhat_chain_id?
             sifnoded_home = os.path.join(chain_dir_base, validator_moniker, ".sifnoded")
             sifnode = Sifnoded(self.cmd, home=sifnoded_home)
-            self.cmd.sifnoded_peggy2_init_validator(sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power, chain_dir_base)
+            self.cmd.sifnoded_peggy2_init_validator(sifnode, validator_moniker, validator_mnemonic, evm_network_descriptor, validator_power)
 
         # TODO Needs to be fixed when we support more than 1 validator
         validator0 = exactly_one(validators)
@@ -1125,7 +1122,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         validator0_address = validator0["address"]
         chain_dir = os.path.join(chain_dir_base, validator0["moniker"])
 
-        sifnode = Sifnoded(self.cmd, home=validator0_home)
+        sifnode = Sifnoded(self.cmd, home=validator0_home, chain_id=self.chain_id)
 
         # Create an ADMIN account on sifnode with name admin_account_name (e.g. "sifnodeadmin")
         admin_account_address = sifnode.peggy2_add_account(admin_account_name, admin_account_mint_amounts, is_admin=True)
@@ -1188,12 +1185,12 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         gas_adjustment = 1.5
         sifnode.peggy2_set_cross_chain_fee(admin_account_address, self.ethereum_chain_id,
             ethereum_cross_chain_fee_token, cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee,
-            admin_account_name, self.chain_id, gas_prices, gas_adjustment)
+            admin_account_name, gas_prices, gas_adjustment)
 
         # We need wait for last tx wrapped up in block, otherwise we could get a wrong sequence, resulting in invalid
         # signatures. This delay waits for block production. (See commit 5854d8b6f3970c1254cac0eca0e3817354151853)
         sifnode.wait_for_last_transaction_to_be_mined()
-        sifnode.peggy2_update_consensus_needed(admin_account_address, self.ethereum_chain_id, self.chain_id, self.consensus_threshold)
+        sifnode.peggy2_update_consensus_needed(admin_account_address, self.ethereum_chain_id, self.consensus_threshold)
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
@@ -1345,7 +1342,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         # TODO Inconsistent format of deployed smart contract addresses (this was intentionally carried over from
         #      devenv to preserve compatibility with devenv users)
-        # TODO Convert to out "unified" json file format
+        # TODO Convert to our "unified" json file format
 
         # TODO Do we want "0x" prefixes here for private keys?
         dot_env = dict_merge({
