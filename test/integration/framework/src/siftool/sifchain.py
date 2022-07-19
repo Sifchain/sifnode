@@ -121,7 +121,7 @@ class Sifnoded:
         assert result == expected
         return result
 
-    def keys_add(self, moniker: Optional[str], mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
+    def keys_add(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
         moniker = self.__fill_in_moniker(moniker)
         if mnemonic is None:
             args = ["keys", "add", moniker] + self._home_args() + self._keyring_backend_args()
@@ -132,6 +132,9 @@ class Sifnoded:
             res = self.sifnoded_exec(args, stdin=[" ".join(mnemonic)])
         account = exactly_one(yaml_load(stdout(res)))
         return account
+
+    def create_addr(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> cosmos.Address:
+        return self.keys_add(moniker=moniker, mnemonic=mnemonic)["address"]
 
     def keys_add_multisig(self, moniker: Optional[str], signers: Iterable[cosmos.KeyName], multisig_threshold: int):
         moniker = self.__fill_in_moniker(moniker)
@@ -209,6 +212,8 @@ class Sifnoded:
     # from_sif_addr has to be the address which was used at genesis time for "set-genesis-whitelister-admin".
     # You need to have its private key in the test keyring.
     # This is needed when creating pools for the token or when doing IBC transfers.
+    # If you are calling this for several tokens, you need to call it synchronously
+    # (i.e. wait_for_current_block_to_be_mined(), or broadcast_mode="block"). Otherwise this will silently fail.
     # This is used in test_many_pools_and_liquidity_providers.py
     def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address) -> JsonDict:
         # Check that we have the private key in test keyring. This will throw an exception if we don't.
@@ -228,6 +233,11 @@ class Sifnoded:
             if res["raw_log"].startswith("failed to execute message"):
                 raise Exception(res["raw_log"])
             return res
+
+    def query_tokenregistry_entries(self):
+        args = ["query", "tokenregistry", "entries"]
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))["entries"]
 
     def gentx(self, name: str, stake: cosmos.Balance):
         # TODO Make chain_id an attribute
@@ -483,6 +493,13 @@ class Sifnoded:
                 break
             page_key = next_key
         return all_pools
+
+    def query_clp_liquidity_providers(self, denom):
+        args = ["query", "clp", "lplist", denom] + self._chain_id_args() + self._node_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        assert res["pagination"]["next_key"] is None, "Pagination requested, but not implemented yet"  # TODO
+        return res["liquidity_providers"]
 
     def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
     ) -> JsonDict:
