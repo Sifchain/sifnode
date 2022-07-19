@@ -159,6 +159,17 @@ class Sifnoded:
         self.cmd.execst(["sifnoded", "keys", "delete", name] + self._home_args() + self._keyring_backend_args(),
             stdin=["y"], check_exit=False)
 
+    def query_account(self, addr: cosmos.Address) -> JsonDict:
+        args = ["query", "auth", "account", addr, "--output", "json"] + self._node_args() + self._chain_id_args()
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))
+
+    def get_acct_seq(self, addr: cosmos.Address) -> Tuple[int, int]:
+        account = self.query_account(addr)
+        account_number = account["account_number"]
+        account_sequence = int(account["sequence"])
+        return account_number, account_sequence
+
     def add_genesis_account(self, sifnodeadmin_addr: cosmos.Address, tokens: cosmos.Balance):
         tokens_str = cosmos.balance_format(tokens)
         self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str] + self._home_args() + self._keyring_backend_args())
@@ -519,12 +530,14 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
-    def tx_clp_add_liquidity(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
+    def tx_clp_add_liquidity(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int, /,
+        account_seq: Optional[Tuple[int, int]] = None
     ) -> JsonDict:
         args = ["tx", "clp", "add-liquidity", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
             str(native_amount), "--externalAmount", str(external_amount)] + self._home_args() + \
             self._keyring_backend_args() + self._chain_id_args() + self._node_args() + self._fees_args() + \
-            self._broadcast_mode_args() + self._yes_args()
+            self._account_number_and_sequence_args(account_seq) + self._broadcast_mode_args() + \
+            self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
@@ -681,35 +694,38 @@ class Sifnoded:
             except URLError:
                 time.sleep(1)
 
-    def _home_args(self):
+    def _home_args(self) -> Optional[List[str]]:
         return ["--home", self.home] if self.home else []
 
-    def _keyring_backend_args(self):
+    def _keyring_backend_args(self) -> Optional[List[str]]:
         return ["--keyring-backend", self.keyring_backend] if self.keyring_backend else []
 
-    def _gas_prices_args(self):
+    def _gas_prices_args(self) -> List[str]:
         return ["--gas-prices", "0.5rowan", "--gas-adjustment", "1.5"]
 
-    def _fees_args(self):
+    def _fees_args(self) -> List[str]:
         sifnode_tx_fees = [10 ** 17, "rowan"]
         return [
             # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
             # "--gas-prices", "0.5rowan", "--gas-adjustment", "1.5",
             "--fees", sif_format_amount(*sifnode_tx_fees)]
 
-    def _chain_id_args(self):
+    def _chain_id_args(self) -> List[str]:
         assert self.chain_id
         return ["--chain-id", self.chain_id]
 
-    def _node_args(self):
+    def _node_args(self) -> Optional[List[str]]:
         return ["--node", self.node] if self.node else []
 
+    def _account_number_and_sequence_args(self, account_seq: Optional[Tuple[int, int]] = None) -> Optional[List[str]]:
+            return ["--account-number", str(account_seq[0]), "--sequence", str(account_seq[1])] if account_seq is not None else []
+
     # One of sync|async|block; block will actually get us raw_message
-    def _broadcast_mode_args(self, broadcast_mode=None):
+    def _broadcast_mode_args(self, broadcast_mode: Optional[str] = None) -> Optional[List[str]]:
         broadcast_mode = broadcast_mode if broadcast_mode is not None else self.broadcast_mode
         return ["--broadcast-mode", broadcast_mode] if broadcast_mode is not None else []
 
-    def _yes_args(self):
+    def _yes_args(self) -> List[str]:
         return ["--yes"]
 
 
