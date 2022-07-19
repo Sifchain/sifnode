@@ -535,6 +535,60 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
+    # TODO
+    #
+    # CANCEL-UNBOND-LIQUIDITY
+    # ===========================
+    # sifnoded tx clp cancel-unbond\
+    #   --from $SIF_ACT \
+    #   --keyring-backend test \
+    #   --symbol cusdc \
+    #   --units 77971121144444445014456057 \
+    #   --fees 100000000000000000rowan \
+    #   --chain-id $SIFNODE_CHAIN_ID \
+    #   --broadcast-mode block \
+    #   -y
+
+    # REMOVE-LIQUIDITY
+    # ===========================
+    # sifnoded tx clp remove-liquidity-units \
+    #   --from $SIF_ACT \
+    #   --keyring-backend test \
+    #   --symbol cusdc \
+    #   --withdrawUnits 77971121144444445014456057 \
+    #   --fees 100000000000000000rowan \
+    #   --chain-id $SIFNODE_CHAIN_ID \
+    #   --broadcast-mode block \
+    #   -y
+
+    # SWAP-IN
+    # ============================
+    # sifnoded tx clp swap \
+    #   --from $SIF_ACT \
+    #   --keyring-backend test \
+    #   --sentSymbol cusdc \
+    #   --receivedSymbol rowan \
+    #   --sentAmount 184515000000 \
+    #   --minReceivingAmount 0 \
+    #   --fees 100000000000000000rowan \
+    #   --chain-id $SIFNODE_CHAIN_ID \
+    #   --broadcast-mode block \
+    #   -y
+
+    # SWAP-OUT
+    # ============================
+    # sifnoded tx clp swap \
+    #   --from $SIF_ACT \
+    #   --keyring-backend test \
+    #   --sentSymbol rowan \
+    #   --receivedSymbol cusdc \
+    #   --sentAmount 77971121000000000000000000 \
+    #   --minReceivingAmount 0 \
+    #   --fees 100000000000000000rowan \
+    #   --chain-id $SIFNODE_CHAIN_ID \
+    #   --broadcast-mode block \
+    #   -y
+
     def tx_clp_cancel_unbound(self):
         assert False, "Not implemented yet"  # TODO
 
