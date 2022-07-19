@@ -84,7 +84,15 @@ class Sifnoded:
         self.node = node
         self.chain_id = chain_id
         self.keyring_backend = "test"
-        self.max_send_batch_size = 3
+
+        # Firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
+        # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
+        # Instead, we take advantage of batching multiple denoms to single account with single send command (amounts
+        # separated by by comma: "sifnoded tx bank send ... 100denoma,100denomb,100denomc") and wait for destination
+        # account to show changes for all denoms after each send. But also batches don't work reliably if they are too
+        # big, so we limit the maximum batch size here.
+        self.max_send_batch_size = 5
+
         self.broadcast_mode = None
         # self.sifnoded_burn_gas_cost = 16 * 10**10 * 393000  # see x/ethbridge/types/msgs.go for gas
         # self.sifnoded_lock_gas_cost = 16 * 10**10 * 393000
