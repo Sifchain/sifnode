@@ -5,6 +5,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
@@ -43,6 +44,11 @@ func GetOpenCmd() *cobra.Command {
 				return err
 			}
 
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
 			collateralAsset, err := cmd.Flags().GetString("collateral_asset")
 			if err != nil {
 				return err
@@ -71,7 +77,7 @@ func GetOpenCmd() *cobra.Command {
 			leverageDec := sdk.MustNewDecFromStr(leverage)
 
 			msg := types.MsgOpen{
-				Signer:           clientCtx.GetFromAddress().String(),
+				Signer:           signer.String(),
 				CollateralAsset:  collateralAsset,
 				CollateralAmount: sdk.NewUintFromString(collateralAmount),
 				BorrowAsset:      borrowAsset,
@@ -92,6 +98,11 @@ func GetOpenCmd() *cobra.Command {
 	cmd.Flags().String("borrow_asset", "", "symbol of asset")
 	cmd.Flags().String("position", "", "type of position")
 	cmd.Flags().String("leverage", "", "leverage of position")
+	_ = cmd.MarkFlagRequired("collateral_amount")
+	_ = cmd.MarkFlagRequired("collateral_asset")
+	_ = cmd.MarkFlagRequired("borrow_asset")
+	_ = cmd.MarkFlagRequired("position")
+	_ = cmd.MarkFlagRequired("leverage")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 
@@ -107,13 +118,18 @@ func GetCloseCmd() *cobra.Command {
 				return err
 			}
 
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
 			id, err := cmd.Flags().GetUint64("id")
 			if err != nil {
 				return err
 			}
 
 			msg := types.MsgClose{
-				Signer: clientCtx.GetFromAddress().String(),
+				Signer: signer.String(),
 				Id:     id,
 			}
 
@@ -126,9 +142,9 @@ func GetCloseCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().Uint64("id", 0, "id of the position")
+	_ = cmd.MarkFlagRequired("id")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
-
 }
 
 func GetForceCloseCmd() *cobra.Command {
@@ -139,6 +155,11 @@ func GetForceCloseCmd() *cobra.Command {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
 			}
 
 			MtpAddress, err := cmd.Flags().GetString("mtp_address")
@@ -152,7 +173,7 @@ func GetForceCloseCmd() *cobra.Command {
 			}
 
 			msg := types.MsgForceClose{
-				Signer:     clientCtx.GetFromAddress().String(),
+				Signer:     signer.String(),
 				MtpAddress: MtpAddress,
 				Id:         id,
 			}
@@ -165,7 +186,10 @@ func GetForceCloseCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().String("mtp_address", "", "mtp address")
 	cmd.Flags().Uint64("id", 0, "id of the position")
+	_ = cmd.MarkFlagRequired("mtp_address")
+	_ = cmd.MarkFlagRequired("id")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -180,8 +204,13 @@ func GetUpdateParamsCmd() *cobra.Command {
 				return err
 			}
 
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
 			msg := types.MsgUpdateParams{
-				Signer: clientCtx.GetFromAddress().String(),
+				Signer: signer.String(),
 				Params: &types.Params{
 					LeverageMax:           sdk.MustNewDecFromStr(viper.GetString("leverage-max")),
 					InterestRateMax:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
@@ -239,13 +268,18 @@ func GetUpdatePoolsCmd() *cobra.Command {
 				return err
 			}
 
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
 			pools, err := readPoolsJSON(args[0])
 			if err != nil {
 				return err
 			}
 
 			msg := types.MsgUpdatePools{
-				Signer: clientCtx.GetFromAddress().String(),
+				Signer: signer.String(),
 				Pools:  pools,
 			}
 

@@ -84,7 +84,7 @@ func (s *IntegrationTestSuite) TestA1_MarginParams() {
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &res), out.String())
 
 	s.Require().Equal(res.Params, &margintypes.Params{
-		LeverageMax:           sdk.NewUintFromString("2"),
+		LeverageMax:           sdk.MustNewDecFromStr("2.0"),
 		HealthGainFactor:      sdk.MustNewDecFromStr("1.0"),
 		InterestRateMin:       sdk.MustNewDecFromStr("0.005"),
 		InterestRateMax:       sdk.MustNewDecFromStr("3.0"),
@@ -93,6 +93,7 @@ func (s *IntegrationTestSuite) TestA1_MarginParams() {
 		ForceCloseThreshold:   sdk.MustNewDecFromStr("0.01"),
 		RemovalQueueThreshold: sdk.MustNewDecFromStr("0.1"),
 		EpochLength:           1,
+		MaxOpenPositions:      10000,
 		Pools:                 []string{"cusdt"},
 	})
 }
@@ -119,13 +120,17 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	collateralAmount := sdk.NewUintFromString("10000000000000000000000") // 10000 rowan
 	borrowAsset := "cusdt"
 	position := "long"
+	leverage := sdk.MustNewDecFromStr("2.0")
 
-	out, err := MsgMarginOpenExec(clientCtx, from, collateralAsset, collateralAmount, borrowAsset, position)
+	out, err := MsgMarginOpenExec(clientCtx, from, collateralAsset, collateralAmount, borrowAsset, position, leverage)
 	s.Require().NoError(err)
 
 	var respType proto.Message = &sdk.TxResponse{}
 	s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), respType), out.String())
 	txResp := respType.(*sdk.TxResponse)
+
+	// fmt.Println("txResp:", txResp)
+
 	s.Require().Equal(uint32(0), txResp.Code)
 
 	testCases := []struct {
@@ -161,7 +166,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				LiabilitiesI:     sdk.NewUintFromString("72759593488"),
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("2226145389"),
-				Leverage:         sdk.NewUintFromString("1"),
+				Leverage:         sdk.MustNewDecFromStr("2.0"),
 				MtpHealth:        sdk.MustNewDecFromStr("0.168454370237483891"),
 				Position:         margintypes.Position_LONG,
 				Id:               uint64(1),
@@ -192,7 +197,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				LiabilitiesI:     sdk.NewUintFromString("72760009820"),
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("2226145389"),
-				Leverage:         sdk.NewUintFromString("1"),
+				Leverage:         sdk.MustNewDecFromStr("2.0"),
 				MtpHealth:        sdk.MustNewDecFromStr("0.168454370237277422"),
 				Position:         margintypes.Position_LONG,
 				Id:               uint64(1),
@@ -223,7 +228,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				LiabilitiesI:     sdk.NewUintFromString("72760703708"),
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("2226145389"),
-				Leverage:         sdk.NewUintFromString("1"),
+				Leverage:         sdk.MustNewDecFromStr("2.0"),
 				MtpHealth:        sdk.MustNewDecFromStr("0.168454370237277420"),
 				Position:         margintypes.Position_LONG,
 				Id:               uint64(1),
@@ -254,7 +259,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				LiabilitiesI:     sdk.NewUintFromString("72761397596"),
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("2226145389"),
-				Leverage:         sdk.NewUintFromString("1"),
+				Leverage:         sdk.MustNewDecFromStr("2.0"),
 				MtpHealth:        sdk.MustNewDecFromStr("0.168454370237277418"),
 				Position:         margintypes.Position_LONG,
 				Id:               uint64(1),
@@ -285,7 +290,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 				LiabilitiesI:     sdk.NewUintFromString("72761987401"),
 				CustodyAsset:     borrowAsset,
 				CustodyAmount:    sdk.NewUintFromString("2226145389"),
-				Leverage:         sdk.NewUintFromString("1"),
+				Leverage:         sdk.MustNewDecFromStr("2.0"),
 				MtpHealth:        sdk.MustNewDecFromStr("0.168454370237277416"),
 				Position:         margintypes.Position_LONG,
 				Id:               uint64(1),

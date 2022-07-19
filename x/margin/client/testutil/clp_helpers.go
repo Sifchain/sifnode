@@ -117,12 +117,13 @@ func MsgClpModifyPmtpRatesExec(clientCtx client.Context, from, blockRate, runnin
 	return clitestutil.ExecTestCLICmd(clientCtx, clpcli.GetCmdModifyPmtpRates(), args)
 }
 
-func MsgMarginOpenExec(clientCtx client.Context, from fmt.Stringer, collateralAsset string, collateralAmount fmt.Stringer, borrowAsset, position string, extraArgs ...string) (testutil.BufferWriter, error) {
+func MsgMarginOpenExec(clientCtx client.Context, from fmt.Stringer, collateralAsset string, collateralAmount fmt.Stringer, borrowAsset, position string, leverage fmt.Stringer, extraArgs ...string) (testutil.BufferWriter, error) {
 	viper.Set(flags.FlagFrom, from.String())
 	viper.Set("collateral_asset", collateralAsset)
 	viper.Set("collateral_amount", collateralAmount.String())
 	viper.Set("borrow_asset", borrowAsset)
 	viper.Set("position", position)
+	viper.Set("leverage", leverage)
 
 	args := []string{
 		fmt.Sprintf("--%s=%s", flags.FlagFrom, viper.Get(flags.FlagFrom)),
@@ -130,6 +131,7 @@ func MsgMarginOpenExec(clientCtx client.Context, from fmt.Stringer, collateralAs
 		fmt.Sprintf("--%s=%s", "collateral_amount", viper.Get("collateral_amount")),
 		fmt.Sprintf("--%s=%s", "borrow_asset", viper.Get("borrow_asset")),
 		fmt.Sprintf("--%s=%s", "position", viper.Get("position")),
+		fmt.Sprintf("--%s=%s", "leverage", viper.Get("leverage")),
 	}
 	args = append(args, extraArgs...)
 	args = append(args, commonArgs...)
