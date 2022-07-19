@@ -15,9 +15,11 @@ from siftool.sifchain import ROWAN, STAKE
 log = siftool_logger(__name__)
 
 
-def create_rewards_descriptor(start_block: int, end_block: int, multipliers: Iterable[Tuple[str, int]], allocation: int) -> sifchain.RewardsParams:
+def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
+    multipliers: Iterable[Tuple[str, int]], allocation: int
+) -> sifchain.RewardsParams:
     return {
-        "reward_period_id": "RP_1",
+        "reward_period_id": rewards_period_id,
         "reward_period_start_block": start_block,
         "reward_period_end_block": end_block,
         "reward_period_allocation": str(allocation),
@@ -45,8 +47,6 @@ class Test:
         self.rnd = random.Random(5646067977921730044)  # Use a fixed random seed for repeatable results
         self.sifnoded = sifchain.Sifnoded(cmd, home=sifnoded_home, chain_id="localnet")
 
-        # Note: pools need to be symmetrical (down to certain decimals)!
-
         # Number of pools == number of tokens.
         # We create this many tokens, and create a pool for each token.
         self.number_of_liquidity_pools = 10
@@ -67,7 +67,7 @@ class Test:
         #                          |<--------------rewards-------------->|
         #                                             ]<---------------lppd---------------->|
         #
-        #       |<----neither----->|<--rewards only-->|<--rewards+lppd-->|<--rewards only-->|
+        #       |<----neither----->|<--rewards only-->|<--rewards+lppd-->|<----lppd only--->|
         #       ^-- time0          ^-- time1          ^-- time2          ^-- time3          ^-- time4
         #
         # The timing starts with the next block after setup. The accuracty of the test is limited by polling for the
@@ -90,7 +90,7 @@ class Test:
         # This means that each liquidity provider uses `native_amount == external_amount`.
         # The ratio `native_amount/external_amount` has to be the same as defined per liquidity pool
         # (withing a certain threshold).
-        # We use 1000/1000 for pool and 500/500 for liquidity provider.
+        # We use 1000/1000 for pools and 500/500 for liquidity providers.
         self.amount_of_denom_per_wallet = 1000 * self.token_unit
         self.amount_of_liquidity_added_by_wallet = 500 * self.token_unit
 
@@ -165,21 +165,28 @@ class Test:
 
         # Set up liquidity providers. We create them symmetrically (`native_amount == externam_amount`). The ratio of
         # native vs. external amount has to be the same as for corresponding pool (within certain rounding tolerance).
-        # TODO This is too slow (1 operation per block, we need at least 10000)
+        # Calling `tx_clp_add_liquidity` to add multiple liquidity providers within the same block does not work (only
+        # the first call gets through). To avoid `--broadcast-mode block` or waiting for new block, we need to use
+        # account sequence numbers.
         for addr, denoms in wallets.items():
+            account_number, account_sequence = sifnoded.get_acct_seq(addr)
             for denom in denoms:
-                sifnoded.tx_clp_add_liquidity(addr, denom, self.amount_of_liquidity_added_by_wallet, self.amount_of_liquidity_added_by_wallet)
-                sifnoded.wait_for_last_transaction_to_be_mined()
-        lp_providers_check = {}
+                sifnoded.tx_clp_add_liquidity(addr, denom, self.amount_of_liquidity_added_by_wallet,
+                    self.amount_of_liquidity_added_by_wallet, account_seq=(account_number, account_sequence))
+                account_sequence += 1
+        sifnoded.wait_for_last_transaction_to_be_mined()
+        actual_lp_providers = {}
         for denom in self.tokens:
             for lp in sifnoded.query_clp_liquidity_providers(denom):
                 addr = lp["liquidity_provider_address"]
                 symbol = lp["asset"]["symbol"]
-                if addr not in lp_providers_check:
-                    lp_providers_check[addr] = set()
-                lp_providers_check[addr].add(symbol)
-        # Note: "sif" address will have all of them
-        assert lp_providers_check
+                if addr not in actual_lp_providers:
+                    actual_lp_providers[addr] = set()
+                actual_lp_providers[addr].add(symbol)
+        # Note: "sif" address will automatically be a liquidity provider for all => remove "sif" before asserting
+        actual_lp_providers.pop(sif)
+        assert set(actual_lp_providers) == set(wallets)  # Keys
+        assert all(set(actual_lp_providers[addr]) == set(wallets[addr]) for addr in wallets)  # Values
 
         # Determine start and end blocks for rewards and LPPD
         current_block = sifnoded.get_current_block()
@@ -190,7 +197,7 @@ class Test:
         lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks
 
         # Set up rewards
-        reward_params = create_rewards_descriptor(rewards_start_block, rewards_end_block,
+        reward_params = create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
             [(token, 1) for token in self.tokens], 100000 * self.token_unit)
         sifnoded.clp_reward_period(sif, reward_params)
         sifnoded.wait_for_last_transaction_to_be_mined()
@@ -217,7 +224,7 @@ class Test:
         return sifnoded_proc, sifnoded_log_file
 
     # TODO Refactor - move to Sifnoded
-    def wait_for_block(self, block_number):
+    def wait_for_block(self, block_number: int) -> float:
         current_block = self.sifnoded.get_current_block()
         assert current_block < block_number
         while current_block < block_number:
@@ -236,19 +243,28 @@ class Test:
 
 
 def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_providers_per_wallet: int,
-    test_duration_blocks
+    test_duration_blocks: int
 ):
     cmd = command.Command()
     prj = project.Project(cmd, project_dir())
     sifnoded_home = cmd.tmpdir("siftool-test.tmp")
+
+    log.info("sifnoded_home: {}".format(sifnoded_home))
+    log.info("number_of_liquidity_pools: {}".format(number_of_liquidity_pools))
+    log.info("number_of_wallets: {}".format(number_of_wallets))
+    log.info("liquidity_providers_per_wallet: {}".format(liquidity_providers_per_wallet))
+    log.info("test_duration_blocks: {}".format(test_duration_blocks))
+
     cmd.rmdir(sifnoded_home)
     test = Test(cmd, prj, sifnoded_home=sifnoded_home)
     test.number_of_liquidity_pools = number_of_liquidity_pools
     test.number_of_wallets = number_of_wallets
     test.liquidity_providers_per_wallet = liquidity_providers_per_wallet
     test.test_duration_blocks = test_duration_blocks
+    test_start_time = time.time()
     test.run_test()
-    log.info("Finished successfully")
+    test_finish_time = time.time()
+    log.info("Finished successfully io {:.2f}s".format(test_finish_time - test_start_time))
 
 def main(argv: List[str]):
     basic_logging_setup()
