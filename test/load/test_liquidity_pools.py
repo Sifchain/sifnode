@@ -118,8 +118,8 @@ def test_liquidity_pools(ctx: test_utils.EnvCtx, example_param: int):
     symbol = "test1"
     test_sif_addr = ctx.create_sifchain_addr(fund_amounts={ROWAN: 10**20, symbol: 10**18})
     assert ctx.get_sifchain_balance(test_sif_addr)[symbol] == 10**18
-    ctx.sifnode_client.tx_clp_create_pool(test_sif_addr, symbol, 25990373000000000000000000, 123010000000)
-    pools = ctx.sifnode_client.query_pools()
+    ctx.sifnode.tx_clp_create_pool(test_sif_addr, symbol, 25990373000000000000000000, 123010000000)
+    pools = ctx.sifnode.query_pools()
 
     # Test execution
     for i in range(example_param):

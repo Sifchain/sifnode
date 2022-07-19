@@ -92,7 +92,7 @@ def get_env_ctx_peggy2():
             if rowan_source_mnemonic:
                 rowan_source_mnemonic = rowan_source_mnemonic.split(" ")
                 rowan_source = sifchain.mnemonic_to_address(cmd, rowan_source_mnemonic)
-                sifnoded = sifchain.Sifnoded(cmd, sifnoded_home)
+                sifnoded = sifchain.Sifnoded(cmd, home=sifnoded_home)
                 if not [x for x in sifnoded.keys_list() if x["address"] == rowan_source]:
                     sifnoded.keys_add(None, rowan_source_mnemonic)
 
@@ -339,22 +339,14 @@ class EnvCtx:
         self.eth: eth.EthereumTxWrapper = ctx_eth
         self.abi_provider: hardhat.HardhatAbiProvider = abi_provider
         self.operator = operator
-        self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
-        self.sifnode_url = sifnode_url
-        self.sifnode_chain_id = sifnode_chain_id
+        self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home, node=sifnode_url, chain_id=sifnode_chain_id)
         # Refactoring in progress: moving stuff into separate client that encapsulates things like url, home and chain_id
-        self.sifnode_client = sifchain.SifnodeClient(self.cmd, self, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
+        self.sifnode_client = sifchain.SifnodeClient(self, self.sifnode, grpc_port=9090)
         self.rowan_source = rowan_source
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
         self.eth_faucet = eth_faucet
-
-        # Defaults
-        self.wait_for_sif_balance_change_default_timeout = 90
-        self.wait_for_sif_balance_change_default_change_timeout = None
-        self.wait_for_sif_balance_change_default_polling_time = 2
-        self.get_sifchain_balance_default_retries = 0
 
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
@@ -620,7 +612,10 @@ class EnvCtx:
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
 
-    def create_sifchain_addr(self, moniker: str = None, fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance] = None):
+    # TODO Decouple; we want to use this with just "sifnoded" running, move to Sifnoded class?
+    def create_sifchain_addr(self, moniker: str = None,
+        fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance, None] = None
+    ) -> cosmos.Address:
         """
         Generates a new sifchain address in test keyring. If moniker is given, uses it, otherwise
         generates a random one 'test-xxx'. If fund_amounts is given, the sifchain funds are transferred
@@ -638,194 +633,40 @@ class EnvCtx:
                     self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
-            self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
+            self.sifnode.wait_for_balance_change(sif_address, old_balances, min_changes=fund_amounts)
             new_balances = self.get_sifchain_balance(sif_address)
             assert cosmos.balance_zero(cosmos.balance_sub(new_balances, fund_amounts))
         return sif_address
 
+    # TODO Clean up
     def send_from_sifchain_to_sifchain(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address,
         amounts: cosmos.Balance
-    ):
-        amounts = cosmos.balance_normalize(amounts)
-        amounts_string = cosmos.balance_format(amounts)
-        args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
-            self.sifnode_client._chain_id_args() + \
-            self.sifnode_client._node_args() + \
-            self.sifnode_client._fees_args() + \
-            ["--yes", "--output", "json"]
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
-        retval = json.loads(stdout(res))
-        raw_log = retval["raw_log"]
-        for bad_thing in ["insufficient funds", "signature verification failed"]:
-            if bad_thing in raw_log:
-                raise Exception(raw_log)
-        return retval
+    ) -> Mapping:
+        return self.sifnode.send(from_sif_addr, to_sif_addr, amounts)
 
+    # TODO Clean up
     def get_sifchain_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
         disable_log: bool = False, retries_on_error: Optional[int] = None, delay_on_error: int = 3
     ) -> cosmos.Balance:
-        retries_on_error = retries_on_error if retries_on_error is not None else self.get_sifchain_balance_default_retries
-        all_balances = {}
-        # The actual limit might be capped to a lower value (100), in this case everything will still work but we'll get
-        # fewer results
-        desired_page_size = 5000
-        page_key = None
-        while True:
-            args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
-                (["--height", str(height)] if height is not None else []) + \
-                (["--limit", str(desired_page_size)] if desired_page_size is not None else []) + \
-                (["--page-key", page_key] if page_key is not None else []) + \
-                self.sifnode_client._chain_id_args() + \
-                self.sifnode_client._node_args()
-            retries_left = retries_on_error
-            while True:
-                try:
-                    res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
-                    break
-                except Exception as e:
-                    if retries_left == 0:
-                        raise e
-                    else:
-                        retries_left -= 1
-                        log.error("Error reading balances, retries left: {}".format(retries_left))
-                        time.sleep(delay_on_error)
-            res = json.loads(stdout(res))
-            balances = res["balances"]
-            next_key = res["pagination"]["next_key"]
-            if next_key is not None:
-                if height is None:
-                    # There are more results than fit on a page. To ensure we get all balances as a consistent
-                    # snapshot, retry with "--height" fised to the current block. This wastes one request.
-                    # We could optimize this by starting with explicit "--height" in the first place, but the current
-                    # assumption is that most of results will fit on one page and that this will be faster without
-                    # "--height".
-                    height = self.get_current_block()
-                    log.debug("Large balance result, switching to paged mode using height of {}.".format(height))
-                    continue
-                page_key = base64.b64decode(next_key).decode("UTF-8")
-            for bal in balances:
-                denom, amount = bal["denom"], int(bal["amount"])
-                assert denom not in all_balances
-                all_balances[denom] = amount
-            log.debug("Read {} balances, all={}, first='{}', next_key={}".format(len(balances), len(all_balances),
-                balances[0]["denom"] if len(balances) > 0 else None, next_key))
-            if next_key is None:
-                break
-        return all_balances
+        return self.sifnode.get_balance(sif_addr, height=height, disable_log=disable_log,
+            retries_on_error=retries_on_error, delay_on_error=delay_on_error)
 
+    # TODO Clean up
     def get_current_block(self):
-        return int(self.status()["SyncInfo"]["latest_block_height"])
+        return self.sifnode.get_current_block()
 
+    # TODO Clean up
     def status(self):
-        args = ["status"] + self.sifnode_client._node_args()
-        res = self.sifnode.sifnoded_exec(args)
-        return json.loads(stderr(res))
-
-    # Unless timed out, this function will exit:
-    # - if min_changes are given: when changes are greater.
-    # - if expected_balance is given: when balances are equal to that.
-    # - if neither min_changes nor expected_balance are given: when anything changes.
-    # You cannot use min_changes and expected_balance at the same time.
-    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
-        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None,
-        polling_time: Optional[int] = None, timeout: Optional[int] = None, change_timeout: Optional[int] = None,
-        disable_log: bool = True
-    ) -> cosmos.Balance:
-        polling_time = polling_time if polling_time is not None else self.wait_for_sif_balance_change_default_polling_time
-        timeout = timeout if timeout is not None else self.wait_for_sif_balance_change_default_timeout
-        change_timeout = change_timeout if change_timeout is not None else self.wait_for_sif_balance_change_default_change_timeout
-        assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
-        log.debug("Waiting for balance to change for account {}...".format(sif_addr))
-        min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
-        expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
-        start_time = time.time()
-        last_change_time = None
-        last_changed_balance = None
-        while True:
-            new_balance = self.get_sifchain_balance(sif_addr, disable_log=disable_log)
-            delta = cosmos.balance_sub(new_balance, old_balance)
-            if expected_balance is not None:
-                should_return = cosmos.balance_equal(expected_balance, new_balance)
-            elif min_changes is not None:
-                should_return = cosmos.balance_exceeds(delta, min_changes)
-            else:
-                should_return = not cosmos.balance_zero(delta)
-            if should_return:
-                return new_balance
-            now = time.time()
-            if (timeout is not None) and (timeout > 0) and (now - start_time > timeout):
-                raise Exception("Timeout waiting for sif balance to change ({}s)".format(timeout))
-            if last_change_time is None:
-                last_changed_balance = new_balance
-                last_change_time = now
-            else:
-                delta = cosmos.balance_sub(new_balance, last_changed_balance)
-                if not cosmos.balance_zero(delta):
-                    last_changed_balance = new_balance
-                    last_change_time = now
-                    log.debug("New state detected ({} denoms changed)".format(len(delta)))
-                if (change_timeout is not None) and (change_timeout > 0) and (now - last_change_time > change_timeout):
-                    raise Exception("Timeout waiting for sif balance to change ({}s)".format(change_timeout))
-            time.sleep(polling_time)
+        return self.sifnode.status()
 
     def eth_symbol_to_sif_symbol(self, eth_token_symbol):
+        assert not on_peggy2_branch
         # TODO sifchain.use sifchain_denom_hash() if on_peggy2_branch
         # E.g. "usdt" -> "cusdt"
         if eth_token_symbol == "erowan":
             return ROWAN
         else:
             return "c" + eth_token_symbol.lower()
-
-    # from_sif_addr has to be the address which was used at genesis time for "set-genesis-whitelister-admin".
-    # You need to have its private key in the test keyring.
-    # This is needed when creating pools for the token or when doing IBC transfers.
-    def token_registry_register(self, address, symbol, token_name, decimals, from_sif_addr):
-        # Check that we have the private key in test keyring. This will throw an exception if we don't.
-        self.cmd.sifnoded_keys_show(from_sif_addr)
-        sifchain_symbol = self.eth_symbol_to_sif_symbol(symbol)
-        upper_symbol = symbol.upper()  # Like "USDT"
-        # See scripts/ibc/tokenregistration for more information and examples.
-        # JSON file can be generated with "sifnoded q tokenregistry generate"
-        token_data = {"entries": [{
-            "decimals": str(decimals),
-            "denom": sifchain_symbol,
-            "base_denom": sifchain_symbol,
-            "path": "",
-            "ibc_channel_id": "",
-            "ibc_counterparty_channel_id": "",
-            "display_name": upper_symbol,
-            "display_symbol": "",
-            "network": "",
-            "address": "",
-            "external_symbol": upper_symbol,
-            "transfer_limit": "",
-            "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
-            "unit_denom": "",
-            "ibc_counterparty_denom": "",
-            "ibc_counterparty_chain_id": "",
-        }]}
-        tmp_registry_json = self.cmd.mktempfile()
-        try:
-            self.cmd.write_text_file(tmp_registry_json, json.dumps(token_data, indent=4))
-            args = ["tx", "tokenregistry", "register", tmp_registry_json] + \
-                self.sifnode_client._chain_id_args() + \
-                self.sifnode_client._node_args() + \
-                self.sifnode_client._fees_args() + [
-                "--from", from_sif_addr,
-                "--output", "json",
-                "--broadcast-mode", "block",  # One of sync|async|block; block will actually get us raw_message
-                "--yes"
-            ]
-            res = self.cmd.sifnoded_exec(args, keyring_backend="test")
-            res = json.loads(stdout(res))
-            # Example of successful output: {"height":"196804","txhash":"C8252E77BCD441A005666A4F3D76C99BD35F9CB49AA1BE44CBE2FFCC6AD6ADF4","codespace":"","code":0,"data":"0A270A252F7369666E6F64652E746F6B656E72656769737472792E76312E4D73675265676973746572","raw_log":"[{\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/sifnode.tokenregistry.v1.MsgRegister\"}]}]}]","logs":[{"msg_index":0,"log":"","events":[{"type":"message","attributes":[{"key":"action","value":"/sifnode.tokenregistry.v1.MsgRegister"}]}]}],"info":"","gas_wanted":"200000","gas_used":"115149","tx":null,"timestamp":""}
-            if res["raw_log"].startswith("signature verification failed"):
-                raise Exception(res["raw_log"])
-            if res["raw_log"].startswith("failed to execute message"):
-                raise Exception(res["raw_log"])
-            return res
-        finally:
-            self.cmd.rm(tmp_registry_json)
 
     # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
     # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
@@ -960,9 +801,9 @@ class EnvCtx:
         if on_peggy2_branch:
             pass
         else:
-            assert (self.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
-            assert (self.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
-            assert (self.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
+            assert (self.sifnode.chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
+            assert (self.sifnode.chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
+            assert (self.sifnode.chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
         assert bridge_bank_sc.functions.owner().call() == self.operator, \
             "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
@@ -1003,14 +844,6 @@ def recover_eth_from_test_accounts():
             total_recovered += to_recover
     log.info("Total recovered: {} ETH".format(total_recovered/eth.ETH))
 
-
-def sifnoded_parse_output_lines(stdout):
-    pat = re.compile("^(.*?): (.*)$")
-    result = {}
-    for line in stdout.splitlines():
-        m = pat.match(line)
-        result[m[1]] = m[2]
-    return result
 
 # Generalized version of "grep -B _ -A _". Can be used as iterator on long streams without loading everything to memory.
 def generalized_grep(items: Iterable, match_fn: Callable, before: int = 0, after: int = 0):

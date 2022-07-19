@@ -6,10 +6,12 @@ import string
 import random
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List
+from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any
 
 
 ANY_ADDR = "0.0.0.0"
+JsonObj = Any
+JsonDict = Mapping[str, JsonObj]
 
 
 def stdout(res):
@@ -46,6 +48,16 @@ def find_by_value(list_of_dicts, field, value):
 def random_string(length):
     chars = string.ascii_letters + string.digits
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
+
+def random_choice(m: int, n: int, rnd: Optional[random.Random] = None):
+    rnd = rnd if rnd is not None else random
+    a = [x for x in range(n)]
+    result = []
+    for i in range(m):
+        idx = rnd.randrange(len(a))
+        result.append(a[idx])
+        a.pop(idx)
+    return result
 
 def project_dir(*paths):
     return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*5))), *paths))
