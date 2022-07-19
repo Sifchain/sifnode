@@ -16,13 +16,15 @@ var maxVotingPower = sdk.NewDecWithPrec(10, 2) // 10%
 // ValidateMinCommissionDecorator validates that the validator commission is always
 // greater than or equal to the min commission rate
 type ValidateMinCommissionDecorator struct {
-	sk stakingkeeper.Keeper
+	sk         stakingkeeper.Keeper
+	bankKeeper stakingtypes.BankKeeper
 }
 
 // ValidateMinCommissionDecorator creates a new ValidateMinCommissionDecorator
-func NewValidateMinCommissionDecorator(sk stakingkeeper.Keeper) ValidateMinCommissionDecorator {
+func NewValidateMinCommissionDecorator(sk stakingkeeper.Keeper, bk stakingtypes.BankKeeper) ValidateMinCommissionDecorator {
 	return ValidateMinCommissionDecorator{
-		sk: sk,
+		sk:         sk,
+		bankKeeper: bk,
 	}
 }
 
@@ -51,9 +53,6 @@ func (vcd ValidateMinCommissionDecorator) getValidator(ctx sdk.Context, bech32Va
 	return val, nil
 }
 
-// validateMsg checks if the tx contains one of the following msg types & errors if the validator's commission rate is below the min threshold
-// For validators: create validator or edit validator
-// For delegators: delegate to validator or withdraw delegator rewards
 func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.Msg) error {
 	switch msg := msg.(type) {
 	case *stakingtypes.MsgCreateValidator:
@@ -73,18 +72,8 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		if err != nil {
 			return err
 		}
-		if val.GetCommission().LT(minCommission) {
-			return sdkerrors.Wrapf(
-				sdkerrors.ErrInvalidRequest,
-				"cannot delegate to validator with commission lower than minimum of %s", minCommission)
-		}
 
-		validatorTokens := sdk.NewDecFromInt(val.GetTokens())
-		totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
-		votingPower := validatorTokens.Quo(totalBondedTokens)
-		if err != nil {
-			return err
-		}
+		votingPower := vcd.calculateProvisionalVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
 		if votingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
@@ -95,18 +84,8 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		if err != nil {
 			return err
 		}
-		if val.GetCommission().LT(minCommission) {
-			return sdkerrors.Wrapf(
-				sdkerrors.ErrInvalidRequest,
-				"cannot redelegate to validator with commission lower than minimum of %s", minCommission)
-		}
 
-		validatorTokens := sdk.NewDecFromInt(val.GetTokens())
-		totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
-		votingPower := validatorTokens.Quo(totalBondedTokens).Mul(sdk.NewDec(100))
-		if err != nil {
-			return err
-		}
+		votingPower := vcd.calculateProvisionalVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
 		if votingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
@@ -114,4 +93,44 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		}
 	}
 	return nil
+}
+
+func (vcd ValidateMinCommissionDecorator) calculateProvisionalVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
+	// TODO: watch for divide by zero?
+	validatorTokens := sdk.NewDecFromInt(validator.GetTokens())
+	provisionalValidatorTokens := validatorTokens.Add(delegateAmount)
+	totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
+
+	//return validatorTokens.Quo(totalBondedTokens)
+
+	provisionalTotalBondedTokens := sdk.ZeroDec()
+	if validator.IsBonded() {
+		provisionalTotalBondedTokens = totalBondedTokens.Add(delegateAmount)
+	} else {
+		bondedValidators := vcd.sk.GetBondedValidatorsByPower(ctx)
+		weakestValidatorTokens := sdk.Dec(bondedValidators[len(bondedValidators)-1].Tokens)
+
+		if weakestValidatorTokens.LT(provisionalValidatorTokens) {
+			//validator will still not be bonded so will have no voting power
+			return sdk.ZeroDec()
+		}
+
+		// validator will become bonded
+		provisionalTotalBondedTokens = totalBondedTokens.Add(delegateAmount).Sub(weakestValidatorTokens)
+	}
+
+	return provisionalValidatorTokens.Quo(provisionalTotalBondedTokens)
+}
+
+func (vcd ValidateMinCommissionDecorator) getDelegatedTokens(ctx sdk.Context) sdk.Int {
+
+	bondDenom := vcd.sk.BondDenom(ctx)
+	bondedPool := vcd.sk.GetBondedPool(ctx)
+	notBondedPool := vcd.sk.GetNotBondedPool(ctx)
+
+	bondedTokens := vcd.bankKeeper.GetBalance(ctx, notBondedPool.GetAddress(), bondDenom).Amount
+	notBondedTokens := vcd.bankKeeper.GetBalance(ctx, bondedPool.GetAddress(), bondDenom).Amount
+
+	return bondedTokens.Add(notBondedTokens)
+
 }
