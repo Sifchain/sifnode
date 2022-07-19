@@ -66,6 +66,7 @@ type Keeper interface {
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
 	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
+	GetPoolOpenThreshold(ctx sdk.Context) sdk.Dec
 	GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec
 	GetMaxOpenPositions(ctx sdk.Context) uint64
 	GetEnabledPools(ctx sdk.Context) []string

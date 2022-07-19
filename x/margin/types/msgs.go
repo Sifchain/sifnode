@@ -72,6 +72,10 @@ func (m MsgOpen) ValidateBasic() error {
 	if m.CollateralAmount.IsZero() {
 		return sdkerrors.Wrap(clptypes.ErrInValidAmount, m.CollateralAmount.String())
 	}
+	// Avoid eta (leverage - 1) going below zero.
+	if m.Leverage.LT(sdk.NewDec(1)) {
+		return sdkerrors.Wrap(clptypes.ErrInValidAmount, m.Leverage.String())
+	}
 
 	ok := IsValidPosition(m.Position)
 	if !ok {

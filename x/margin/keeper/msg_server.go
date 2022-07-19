@@ -35,8 +35,25 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 		return nil, sdkerrors.Wrap(types.ErrMaxOpenPositions, "cannot open new positions")
 	}
 
+	var externalAsset string
+	nativeAsset := types.GetSettlementAsset()
+
+	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+		externalAsset = msg.BorrowAsset
+	} else {
+		externalAsset = msg.CollateralAsset
+	}
+
+	pool, err := k.ClpKeeper().GetPool(ctx, externalAsset)
+	if err != nil {
+		return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, externalAsset)
+	}
+
+	if pool.Health.LTE(k.GetPoolOpenThreshold(ctx)) {
+		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, "pool health too low to open new positions")
+	}
+
 	var mtp *types.MTP
-	var err error
 
 	switch msg.Position {
 	case types.Position_LONG:

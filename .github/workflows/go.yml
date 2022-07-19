@@ -33,7 +33,7 @@ jobs:
 
     - name: Test
       run: |
-        go test -v ./... -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list ./... | grep -v test | tr "\n" ",")
+        go test -v -tags FEATURE_TOGGLE_MARGIN_CLI_ALPHA ./... -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list ./... | grep -v test | tr "\n" ",")
         excludelist="$(find ./ -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
         for filename in ${excludelist}; do
           filename=$(echo $filename | sed 's/^../github.com\/Sifchain\/sifnode/g')
