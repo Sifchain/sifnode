@@ -15,6 +15,7 @@ func DefaultGenesis() *GenesisState {
 			InterestRateDecrease:  sdk.NewDecWithPrec(1, 1),
 			InterestRateIncrease:  sdk.NewDecWithPrec(1, 1),
 			ForceCloseThreshold:   sdk.NewDecWithPrec(1, 1),
+			PoolOpenThreshold:     sdk.NewDecWithPrec(1, 1),
 			RemovalQueueThreshold: sdk.NewDecWithPrec(1, 1),
 			EpochLength:           1,
 			MaxOpenPositions:      10000,

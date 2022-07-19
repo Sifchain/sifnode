@@ -1662,6 +1662,7 @@ func TestKeeper_EC(t *testing.T) {
 
 				gs3 := &types.GenesisState{
 					Params: &types.Params{
+						MaxOpenPositions:      10000,
 						LeverageMax:           sdk.NewDec(2),
 						HealthGainFactor:      sdk.NewDec(1),
 						InterestRateMin:       sdk.NewDecWithPrec(5, 3),

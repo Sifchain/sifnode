@@ -26,6 +26,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 			HealthGainFactor:      k.GetHealthGainFactor(ctx),
 			EpochLength:           k.GetEpochLength(ctx),
 			ForceCloseThreshold:   k.GetForceCloseThreshold(ctx),
+			PoolOpenThreshold:     k.GetPoolOpenThreshold(ctx),
 			RemovalQueueThreshold: k.GetRemovalQueueThreshold(ctx),
 			MaxOpenPositions:      k.GetMaxOpenPositions(ctx),
 		},

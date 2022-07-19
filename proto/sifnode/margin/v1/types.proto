@@ -42,6 +42,10 @@ message Params {
     (gogoproto.nullable) = false
   ];
   uint64 max_open_positions = 11;
+  string pool_open_threshold = 12 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 enum Position {
