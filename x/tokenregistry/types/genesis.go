@@ -11,14 +11,17 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) (res []abci.ValidatorUpdate) {
-
-	if len(strings.TrimSpace(data.AdminAccount)) != 0 {
-		adminAddress, err := sdk.AccAddressFromBech32(data.AdminAccount)
-		if err != nil {
-			panic(err)
-		}
-		keeper.SetAdminAccount(ctx, adminAddress)
-	}
+	/**
+	TODO: This is commented out because it no longer works after merging release/13.4.
+	This code might not be needed
+	*/
+	// if len(strings.TrimSpace(data.AdminAccount)) != 0 {
+	// 	adminAddress, err := sdk.AccAddressFromBech32(data.AdminAccount)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	keeper.SetAdminAccount(ctx, adminAddress)
+	// }
 
 	return []abci.ValidatorUpdate{}
 }
@@ -33,6 +36,11 @@ func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisS
 	}
 	return genesisState
 }
+func DefaultGenesisState() *GenesisState {
+	return &GenesisState{
+		Registry: InitialRegistry(),
+	}
+}
 
 func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
@@ -45,7 +53,7 @@ func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]
 	return genesisState
 }
 
-func InitialRegistry() Registry {
+func InitialRegistry() *Registry {
 	entries := Registry{
 		Entries: []*RegistryEntry{
 			{Denom: "rowan", Decimals: 18, Permissions: []Permission{Permission_CLP}},
@@ -113,5 +121,5 @@ func InitialRegistry() Registry {
 			entries.Entries[i].BaseDenom = entries.Entries[i].Denom
 		}
 	}
-	return entries
+	return &entries
 }

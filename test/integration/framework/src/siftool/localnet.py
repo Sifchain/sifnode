@@ -1,11 +1,10 @@
 import os
 import json
 from siftool.command import Command
-from siftool.common import project_dir
-import logging
+from siftool.common import project_dir, siftool_logger
 
 
-log = logging.getLogger(__name__)
+log = siftool_logger(__name__)
 
 
 # This is called from run_env as a hook to run additional IBC chains defined in LOCALNET variable.

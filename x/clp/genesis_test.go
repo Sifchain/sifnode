@@ -46,8 +46,8 @@ func TestInitGenesis(t *testing.T) {
 	lpList, _, err := app2.ClpKeeper.GetAllLiquidityProvidersPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
 	assert.NoError(t, err)
 	assert.Equal(t, len(lpList), lpCount)
-	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
-	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, app1.ClpKeeper.GetParams(ctx1).MinCreatePoolThreshold)
+	assert.Equal(t, types.DefaultMinCreatePoolThreshold, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold)
+	assert.Equal(t, app1.ClpKeeper.GetParams(ctx1).MinCreatePoolThreshold, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold)
 }
 
 func TestValidateGenesis(t *testing.T) {

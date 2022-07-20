@@ -1,0 +1,64 @@
+{
+    "pools": [
+      {
+        "external_asset": {
+          "symbol": "ceth"
+        },
+        "native_asset_balance": "49352380611368792060339203",
+        "external_asset_balance": "1576369012576526264262",
+        "pool_units": "49352380611368792060339203",
+        "swap_price_native": "0.000031941094000000",
+        "swap_price_external": "31307.631790289925000000"
+      },
+      {
+        "external_asset": {
+          "symbol": "cusdc"
+        },
+        "native_asset_balance": "52798591956187184978275830",
+        "external_asset_balance": "5940239555604",
+        "pool_units": "52798591956187184978275830",
+        "swap_price_native": "0.112507537332000000",
+        "swap_price_external": "8.888293386477892504"
+      },
+      {
+        "external_asset": {
+          "symbol": "cusdt"
+        },
+        "native_asset_balance": "1550459183129248235861408",
+        "external_asset_balance": "174248776094",
+        "pool_units": "1550459183129248235861408",
+        "swap_price_native": "0.112385271402000000",
+        "swap_price_external": "8.897963118404021251"
+      },
+      {
+        "external_asset": {
+          "symbol": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2"
+        },
+        "native_asset_balance": "200501596725333601567765449",
+        "external_asset_balance": "708998027178",
+        "pool_units": "200501596725333601567765449",
+        "swap_price_native": "0.003536121601000000",
+        "swap_price_external": "282.795704697257746702"
+      },
+      {
+        "external_asset": {
+          "symbol": "ibc/F141935FF02B74BDC6B8A0BD6FE86A23EE25D10E89AA0CD9158B3D92B63FDF4D"
+        },
+        "native_asset_balance": "29315228314524379224549414",
+        "external_asset_balance": "29441954962",
+        "pool_units": "29315228314524379224549414",
+        "swap_price_native": "0.001004322895000000",
+        "swap_price_external": "995.695712134925308505"
+      },
+      {
+        "external_asset": {
+          "symbol": "ibc/F279AB967042CAC10BFF70FAECB179DCE37AAAE4CD4C1BC4565C2BBC383BC0FA"
+        },
+        "native_asset_balance": "32788415426458039601937058",
+        "external_asset_balance": "139140831718",
+        "pool_units": "32788415426458039601937058",
+        "swap_price_native": "0.004243597317000000",
+        "swap_price_external": "235.649126292703172595"
+      }
+    ]
+}

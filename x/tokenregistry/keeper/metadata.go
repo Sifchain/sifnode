@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 
@@ -33,16 +34,8 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		return types.TokenMetadata{}, false
 	}
 	if err != nil {
-		panic("Unahandled Registry Error")
+		panic("Unhandled Registry Error")
 	}
-
-	// This is commented out because it is superceded by whats in develop, this change makes testing easier
-	// if !entry.IsWhitelisted {
-	// 	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "It is not whitelisted", zap.Reflect("entry", entry))
-	// 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrument)
-
-	// 	return types.TokenMetadata{}, false
-	// }
 
 	metadata := types.TokenMetadata{
 		Decimals:          entry.Decimals,
@@ -99,7 +92,7 @@ func (k keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadat
 		return ""
 	}
 
-	if !k.IsAdminAccount(ctx, cosmosSender) {
+	if !k.GetAdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_TOKENREGISTRY, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return ""
 	}
