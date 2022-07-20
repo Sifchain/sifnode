@@ -4,9 +4,10 @@ import logging
 import subprocess
 import string
 import random
+import time
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any
+from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any, Callable
 
 
 ANY_ADDR = "0.0.0.0"
@@ -143,6 +144,35 @@ def template_transform(s, d):
         if not m:
             return s
         s = s[0:m.start(2)] + d[m[3]] + s[m.end(2):]
+
+def wait_for_enter_key_pressed():
+    try:
+        input("Press ENTER to exit...")
+    except EOFError:
+        log = logging.getLogger(__name__)
+        log.error("Cannot wait for ENTER keypress since standard input is closed. Instead, this program will now wait "
+            "for 100 years and you will have to kill it manually. If you get this message when running in recent "
+            "versions of pycharm, enable 'Emulate terminal in output console' in run configuration.")
+        time.sleep(3155760000)
+
+def retry(function: Callable, sleep_time: Optional[int] = 5, retries: Optional[int] = 0,
+    log: Optional[logging.Logger] = None
+) -> Callable:
+    def wrapper(*args, **kwargs):
+        retries_left = retries
+        while True:
+            try:
+                return function(*args, **kwargs)
+            except Exception as e:
+                if retries_left == 0:
+                    raise e
+                if log is not None:
+                    log.debug("Retriable exception for {}({}): {}".format(repr(function), repr(args), repr(kwargs), repr(e)))
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+                    retries_left -= 1
+                continue
+    return wrapper
 
 
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
