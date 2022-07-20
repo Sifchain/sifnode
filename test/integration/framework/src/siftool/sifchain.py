@@ -256,7 +256,7 @@ class SifnodeClient:
         args = [
             "q", "tx", tx_hash,
         ] + self._home_args() + \
-            self._chain_id_and_node_args()
+            self._chain_id_args()
 
         try:
             self.sifnoded_exec(args)
@@ -279,7 +279,7 @@ class SifnodeClient:
             "--output", "json", "-y", "--generate-only"
         ] + self._gas_prices_args() + \
             self._home_args() + \
-            self._chain_id_and_node_args()
+            self._chain_id_args()
 
         res = self.sifnoded_exec(args)
         result = json.loads(stdout(res))
