@@ -102,6 +102,8 @@ class Test:
             fund_amounts[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
         sifnoded.add_genesis_account_directly_to_existing_genesis_json(fund_amounts)
 
+        self._debug_fund_amounts = fund_amounts
+
         sifnoded.add_genesis_account(sif, tokens_sif)
         sifnoded.add_genesis_clp_admin(sif)
         sifnoded.set_genesis_oracle_admin(sif_name)
@@ -251,6 +253,12 @@ def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_provid
         log.info("Finished successfully io {:.2f}s".format(test_finish_time - test_start_time))
     except Exception as e:
         log.error("Test failed", e)
+        try:
+            log.error("Checking some balances to see if the thing is dead or alive...")
+            for addr in list(test._debug_fund_amounts)[5:]:
+                log.debug("Balance of {}: {}".format(addr, cosmos.balance_format(test.sifnoded.get_balance(addr))))
+        except Exception as e:
+            log.error("Balance check failed", e)
         wait_for_enter_key_pressed()
 
 
