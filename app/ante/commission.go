@@ -16,15 +16,13 @@ var maxVotingPower = sdk.NewDecWithPrec(10, 2) // 10%
 // ValidateMinCommissionDecorator validates that the validator commission is always
 // greater than or equal to the min commission rate
 type ValidateMinCommissionDecorator struct {
-	sk         stakingkeeper.Keeper
-	bankKeeper stakingtypes.BankKeeper
+	sk stakingkeeper.Keeper
 }
 
 // ValidateMinCommissionDecorator creates a new ValidateMinCommissionDecorator
-func NewValidateMinCommissionDecorator(sk stakingkeeper.Keeper, bk stakingtypes.BankKeeper) ValidateMinCommissionDecorator {
+func NewValidateMinCommissionDecorator(sk stakingkeeper.Keeper) ValidateMinCommissionDecorator {
 	return ValidateMinCommissionDecorator{
-		sk:         sk,
-		bankKeeper: bk,
+		sk: sk,
 	}
 }
 
@@ -73,11 +71,11 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 			return err
 		}
 
-		votingPower := vcd.calculateProvisionalVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
-		if votingPower.GTE(maxVotingPower) {
+		projectedVotingPower := vcd.CalculateProjectedVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
+		if projectedVotingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"validator has %s voting power, cannot delegate to a validator with %s or higher voting power, please choose another validator", votingPower, maxVotingPower)
+				"validator would have %s voting power, cannot delegate to a validator with %s or higher voting power", projectedVotingPower, maxVotingPower)
 		}
 	case *stakingtypes.MsgBeginRedelegate:
 		val, err := vcd.getValidator(ctx, msg.ValidatorDstAddress)
@@ -85,52 +83,41 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 			return err
 		}
 
-		votingPower := vcd.calculateProvisionalVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
-		if votingPower.GTE(maxVotingPower) {
+		projectedVotingPower := vcd.CalculateProjectedVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
+		if projectedVotingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"validator has %s voting power, cannot redelegate to a validator with %s or higher voting power, please choose another validator", votingPower, maxVotingPower)
+				"validator would have %s voting power, cannot redelegate to a validator with %s or higher voting power", projectedVotingPower, maxVotingPower)
 		}
 	}
 	return nil
 }
 
-func (vcd ValidateMinCommissionDecorator) calculateProvisionalVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
-	// TODO: watch for divide by zero?
+func (vcd ValidateMinCommissionDecorator) CalculateProjectedVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
 	validatorTokens := sdk.NewDecFromInt(validator.GetTokens())
-	provisionalValidatorTokens := validatorTokens.Add(delegateAmount)
+	projectedValidatorTokens := validatorTokens.Add(delegateAmount)
 	totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
 
-	//return validatorTokens.Quo(totalBondedTokens)
-
-	provisionalTotalBondedTokens := sdk.ZeroDec()
+	projectedTotalBondedTokens := sdk.ZeroDec()
 	if validator.IsBonded() {
-		provisionalTotalBondedTokens = totalBondedTokens.Add(delegateAmount)
+		projectedTotalBondedTokens = totalBondedTokens.Add(delegateAmount)
 	} else {
 		bondedValidators := vcd.sk.GetBondedValidatorsByPower(ctx)
 		weakestValidatorTokens := sdk.Dec(bondedValidators[len(bondedValidators)-1].Tokens)
 
-		if weakestValidatorTokens.LT(provisionalValidatorTokens) {
+		if projectedValidatorTokens.LT(weakestValidatorTokens) {
 			//validator will still not be bonded so will have no voting power
 			return sdk.ZeroDec()
 		}
 
-		// validator will become bonded
-		provisionalTotalBondedTokens = totalBondedTokens.Add(delegateAmount).Sub(weakestValidatorTokens)
+		// validator will become bonded - replace the weakest validator with this validator
+		projectedTotalBondedTokens = totalBondedTokens.Add(projectedValidatorTokens).Sub(weakestValidatorTokens)
 	}
 
-	return provisionalValidatorTokens.Quo(provisionalTotalBondedTokens)
-}
+	if projectedTotalBondedTokens == sdk.ZeroDec() {
+		// Not sure bonded token amount can be zero but if it ever is, avoid divide by zero panic
+		return sdk.ZeroDec()
+	}
 
-func (vcd ValidateMinCommissionDecorator) getDelegatedTokens(ctx sdk.Context) sdk.Int {
-
-	bondDenom := vcd.sk.BondDenom(ctx)
-	bondedPool := vcd.sk.GetBondedPool(ctx)
-	notBondedPool := vcd.sk.GetNotBondedPool(ctx)
-
-	bondedTokens := vcd.bankKeeper.GetBalance(ctx, notBondedPool.GetAddress(), bondDenom).Amount
-	notBondedTokens := vcd.bankKeeper.GetBalance(ctx, bondedPool.GetAddress(), bondDenom).Amount
-
-	return bondedTokens.Add(notBondedTokens)
-
+	return projectedValidatorTokens.Quo(projectedTotalBondedTokens)
 }
