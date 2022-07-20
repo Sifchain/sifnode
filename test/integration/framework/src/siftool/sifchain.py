@@ -552,7 +552,7 @@ class Sifnoded:
 
     def query_clp_liquidity_providers(self, denom: str, height: Optional[int] = None) -> List[JsonDict]:
         # Note: this paged result is slightly different than `query bank balances`. Here we always get "height"
-        return self._paged_read(["query", "clp", "lplist"], "liquidity_providers", height)
+        return self._paged_read(["query", "clp", "lplist", denom], "liquidity_providers", height)
 
     def _paged_read(self, base_args: List[str], result_key: str, height: Optional[int]) -> List[JsonDict]:
         # Note: this paged result is slightly different than `query bank balances`. Here we always get "height"
