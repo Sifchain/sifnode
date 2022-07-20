@@ -75,6 +75,31 @@ def sifnoded_parse_output_lines(stdout: str) -> Mapping:
         result[m[1]] = m[2]
     return result
 
+def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
+    multipliers: Iterable[Tuple[str, int]], allocation: int
+) -> RewardsParams:
+    return {
+        "reward_period_id": rewards_period_id,
+        "reward_period_start_block": start_block,
+        "reward_period_end_block": end_block,
+        "reward_period_allocation": str(allocation),
+        "reward_period_pool_multipliers": [{
+            "pool_multiplier_asset": denom,
+            "multiplier": str(multiplier)
+        } for denom, multiplier in multipliers],
+        "reward_period_default_multiplier": "0.0",
+        "reward_period_distribute": False,
+        "reward_period_mod": 1
+    }
+
+def create_lppd_params(start_block, end_block, rate) -> LPPDParams:
+    return {
+        "distribution_period_block_rate": str(rate),
+        "distribution_period_start_block": start_block,
+        "distribution_period_end_block": end_block,
+        "distribution_period_mod": 1
+    }
+
 
 class Sifnoded:
     def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None):
@@ -173,6 +198,37 @@ class Sifnoded:
     def add_genesis_account(self, sifnodeadmin_addr: cosmos.Address, tokens: cosmos.Balance):
         tokens_str = cosmos.balance_format(tokens)
         self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str] + self._home_args() + self._keyring_backend_args())
+
+    def add_genesis_account_directly_to_existing_genesis_json(self,
+        extra_balances: Mapping[cosmos.Address, cosmos.Balance], genesis_json_path: Optional[str] = None
+    ):
+        genesis_json_path = os.path.join(genesis_json_path or self.get_effective_home(), "config", "genesis.json")
+        genesis = json.loads(self.cmd.read_text_file(genesis_json_path))
+        bank = genesis["app_state"]["bank"]
+        # genesis.json uses a bit different structure for balances so we need to conevrt to and from our balances.
+        # Whatever is in extra_balances will be added to the existing amounts.
+        # We must also update supply which must be the sum of all balances. We assume that it initially already is.
+        # Cosmos SDK wants coins to be sorted or it will panic during chain initialization.
+        balances = {b["address"]: {c["denom"]: int(c["amount"]) for c in b["coins"]} for b in bank["balances"]}
+        supply = {b["denom"]: int(b["amount"]) for b in bank["supply"]}
+        accounts = genesis["app_state"]["auth"]["accounts"]
+        for addr, bal in extra_balances.items():
+            b = cosmos.balance_add(balances.get(addr, {}), bal)
+            balances[addr] = b
+            supply = cosmos.balance_add(supply, bal)
+        accounts.extend([{
+          "@type": "/cosmos.auth.v1beta1.BaseAccount",
+          "address": addr,
+          "pub_key": None,
+          "account_number": "0",
+          "sequence": "0"
+        } for addr in balances])
+        bank["balances"] = [{"address": a, "coins": [{"denom": d, "amount": str(c[d])} for d in sorted(c)]} for a, c in balances.items()]
+        bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
+        self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
+
+    def get_effective_home(self) -> str:
+        return self.home if self.home is not None else self.cmd.get_user_home(".siufnoded")
 
     def add_genesis_clp_admin(self, address: cosmos.Address):
         args = ["add-genesis-clp-admin", address] + self._home_args() + self._keyring_backend_args()

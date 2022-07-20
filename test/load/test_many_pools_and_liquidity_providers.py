@@ -5,40 +5,14 @@ import argparse
 import random
 import sys
 import time
-from typing import Tuple, Iterable
 import siftool_path
 from siftool.common import *
-from siftool import test_utils, command, sifchain, project, cosmos
+from siftool import command, sifchain, project, cosmos
 from siftool.sifchain import ROWAN, STAKE
 
 
 log = siftool_logger(__name__)
 
-
-def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
-    multipliers: Iterable[Tuple[str, int]], allocation: int
-) -> sifchain.RewardsParams:
-    return {
-        "reward_period_id": rewards_period_id,
-        "reward_period_start_block": start_block,
-        "reward_period_end_block": end_block,
-        "reward_period_allocation": str(allocation),
-        "reward_period_pool_multipliers": [{
-            "pool_multiplier_asset": denom,
-            "multiplier": str(multiplier)
-        } for denom, multiplier in multipliers],
-        "reward_period_default_multiplier": "0.0",
-        "reward_period_distribute": False,
-        "reward_period_mod": 1
-    }
-
-def create_lppd_params(start_block, end_block, rate) -> sifchain.LPPDParams:
-    return {
-        "distribution_period_block_rate": str(rate),
-        "distribution_period_start_block": start_block,
-        "distribution_period_end_block": end_block,
-        "distribution_period_mod": 1
-    }
 
 class Test:
     def __init__(self, cmd: command.Command, prj: project.Project, sifnoded_home: str = None):
@@ -119,13 +93,14 @@ class Test:
         # Set up test wallets with test tokens. We do this in genesis for performance reasons. For each wallet we choose
         # number_of_denoms_per_wallet` random denoms.
         wallets = {}
+        fund_amounts = {}
         for i in range(self.number_of_wallets):
             chosen_tokens = [self.tokens[i] for i in random_choice(self.liquidity_providers_per_wallet, len(self.tokens), rnd=self.rnd)]
             balances = {denom: self.amount_of_denom_per_wallet for denom in chosen_tokens}
-            fund_amounts = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
             addr = sifnoded.create_addr()
             wallets[addr] = chosen_tokens
-            sifnoded.add_genesis_account(addr, fund_amounts)
+            fund_amounts[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
+        sifnoded.add_genesis_account_directly_to_existing_genesis_json(fund_amounts)
 
         sifnoded.add_genesis_account(sif, tokens_sif)
         sifnoded.add_genesis_clp_admin(sif)
@@ -144,6 +119,10 @@ class Test:
         time.sleep(5)
         sifnoded.wait_for_last_transaction_to_be_mined()
         self.wait_for_block(sifnoded.get_current_block() + 3)
+
+        # Check balances
+        assert all(cosmos.balance_equal(sifnoded.get_balance(addr), fund_amounts[addr]) for addr in fund_amounts)
+        assert all(sifnoded.get_acct_seq(addr)[1] == 0 for addr in wallets)
 
         # Add tokens to token registry. The minimum required permissions are  CLP.
         # TODO Might want to use `tx tokenregistry set-registry` to do it in one step (faster)
@@ -197,13 +176,13 @@ class Test:
         lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks
 
         # Set up rewards
-        reward_params = create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
+        reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
             [(token, 1) for token in self.tokens], 100000 * self.token_unit)
         sifnoded.clp_reward_period(sif, reward_params)
         sifnoded.wait_for_last_transaction_to_be_mined()
 
         # Set up LPPD policies
-        lppd_params = create_lppd_params(lppd_start_block, lppd_end_block, 0.00045)
+        lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045)
         sifnoded.clp_set_lppd_params(sif, lppd_params)
         sifnoded.wait_for_last_transaction_to_be_mined()
 
