@@ -1128,8 +1128,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         admin_account_address = sifnode.peggy2_add_account(admin_account_name, admin_account_mint_amounts, is_admin=True)
 
         if self.extra_balances_for_admin_account:
-            genesis_json_path = os.path.join(validator0_home, "config", "genesis.json")
-            self.add_genesis_account_directly_to_existing_genesis_json(genesis_json_path, {admin_account_address: self.extra_balances_for_admin_account})
+            sifnode.add_genesis_account_directly_to_existing_genesis_json({admin_account_address: self.extra_balances_for_admin_account})
 
         # TODO Check if sifnoded_peggy2_add_relayer_witness_account can be executed offline (without sifnoded running)
         # TODO Check if sifnoded_peggy2_set_cross_chain_fee can be executed offline (without sifnoded running)
@@ -1194,25 +1193,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
 
         return network_config_file, sifnoded_exec_args, sifnoded_proc, tcp_url, admin_account_address, validators, \
             relayers, witnesses, validator0_home, chain_dir
-
-    def add_genesis_account_directly_to_existing_genesis_json(self, genesis_json_path: str,
-        extra_balances: Mapping[cosmos.Address, cosmos.Balance]
-    ):
-        genesis = json.loads(self.cmd.read_text_file(genesis_json_path))
-        bank = genesis["app_state"]["bank"]
-        # genesis.json uses a bit different structure for balances so we need to conevrt to and from our balances.
-        # Whatever is in extra_balances will be added to the existing amounts.
-        # We must also update supply which must be the sum of all balances. We assume that it initially already is.
-        # Cosmos SDK wants coins to be sorted or it will panic during chain initialization.
-        balances = {b["address"]: {c["denom"]: int(c["amount"]) for c in b["coins"]} for b in bank["balances"]}
-        supply = {b["denom"]: int(b["amount"]) for b in bank["supply"]}
-        for addr, bal in extra_balances.items():
-            b = cosmos.balance_add(balances.get(addr, {}), bal)
-            balances[addr] = b
-            supply = cosmos.balance_add(supply, bal)
-        bank["balances"] = [{"address": a, "coins": [{"denom": d, "amount": str(c[d])} for d in sorted(c)]} for a, c in balances.items()]
-        bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
-        self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
 
     def start_witnesses_and_relayers(self, web3_websocket_address: str, hardhat_chain_id: int, tcp_url: str,
         chain_id: str, peggy_sc_addrs: Mapping[str, eth.Address], evm_validator_accounts: List,
