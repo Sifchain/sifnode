@@ -8,17 +8,6 @@ from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
 
 
-def wait_for_enter_key_pressed():
-    try:
-        input("Press ENTER to exit...")
-    except EOFError:
-        log = logging.getLogger(__name__)
-        log.error("Cannot wait for ENTER keypress since standard input is closed. Instead, this program will now wait "
-            "for 100 years and you will have to kill it manually. If you get this message when running in recent "
-            "versions of pycharm, enable 'Emulate terminal in output console' in run configuration.")
-        time.sleep(3155760000)
-
-
 def main(argv):
     # tmux usage:
     # tmux new-session -d -s env1

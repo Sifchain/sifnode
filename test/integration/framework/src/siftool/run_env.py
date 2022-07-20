@@ -1156,7 +1156,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         gas_prices = (0.5, ROWAN)
         # @TODO Detect if sifnoded is already running, for now it fails silently and we wait forever in wait_for_sif_account_up
         sifnoded_exec_args = sifnode.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=gas_prices,
-            log_format_json=True)
+            log_format_json=True, log_level="debug")
         sifnoded_proc = self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=sifnoded_log_file)
 
         time_before = time.time()

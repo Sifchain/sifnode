@@ -112,8 +112,8 @@ class Test:
         sifnoded.validate_genesis()
 
         # Start process
-        sifnoded_log_file = open("/tmp/sifnoded.log", "w")
-        sifnoded_proc = sifnoded.sifnoded_start(log_file=sifnoded_log_file, trace=True)
+        sifnoded_log_file = open(self.cmd.tmpdir("sifnoded.log"), "w")
+        sifnoded_proc = sifnoded.sifnoded_start(log_file=sifnoded_log_file, log_level="debug", trace=True)
         # Currently returning 404
         # sifnoded.wait_up("localhost", 26657)
         time.sleep(5)
@@ -187,15 +187,19 @@ class Test:
         sifnoded.wait_for_last_transaction_to_be_mined()
 
         time0 = self.wait_for_block(start_block)
+        log.info("In phase 'neither'")
         time1 = self.wait_for_block(rewards_start_block)
+        log.info("In phase 'rewards only'")
         time2 = self.wait_for_block(lppd_start_block)
+        log.info("In phase 'rewards + LPPD'")
         time3 = self.wait_for_block(rewards_end_block)
+        log.info("In phase 'LPPD only'")
         time4 = self.wait_for_block(lppd_end_block)
 
-        print("Neither:       {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks))
-        print("Rewards only:  {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks))
-        print("Reards + LPPD: {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks))
-        print("LPPD only:     {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks))
+        log.info("Neither:       {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks))
+        log.info("Rewards only:  {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks))
+        log.info("Reards + LPPD: {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks))
+        log.info("LPPD only:     {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks))
 
         # TODO LPPD and rewards assertions
         # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
@@ -207,7 +211,7 @@ class Test:
         current_block = self.sifnoded.get_current_block()
         assert current_block < block_number
         while current_block < block_number:
-            blk = self.sifnoded.get_block_results()
+            blk = retry(self.sifnoded.get_block_results, log=log)()
             begin_block_events = blk["begin_block_events"]
             histogram = {}
             for e in begin_block_events:
@@ -240,10 +244,15 @@ def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_provid
     test.number_of_wallets = number_of_wallets
     test.liquidity_providers_per_wallet = liquidity_providers_per_wallet
     test.test_duration_blocks = test_duration_blocks
-    test_start_time = time.time()
-    test.run_test()
-    test_finish_time = time.time()
-    log.info("Finished successfully io {:.2f}s".format(test_finish_time - test_start_time))
+    try:
+        test_start_time = time.time()
+        test.run_test()
+        test_finish_time = time.time()
+        log.info("Finished successfully io {:.2f}s".format(test_finish_time - test_start_time))
+    except Exception as e:
+        log.error("Test failed", e)
+        wait_for_enter_key_pressed()
+
 
 def main(argv: List[str]):
     basic_logging_setup()
