@@ -501,20 +501,37 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	fmt.Println("returnAmount:", returnAmount)
 
 	if !returnAmount.IsZero() {
-		var coins sdk.Coins
-		returnCoin := sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(returnAmount.BigInt()))
-		returnCoins := coins.Add(returnCoin)
-		addr, err := sdk.AccAddressFromBech32(mtp.Address)
-		if err != nil {
-			return err
+		takePercentage := k.GetForceCloseFundPercentage(ctx)
+		returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
+		takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
+		actualReturnAmount := returnAmount.Sub(takeAmount)
+
+		if !takeAmount.IsZero() {
+			takeCoins := sdk.NewCoins(sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
+			fundAddr := k.GetInsuranceFundAddress(ctx)
+			err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
+			if err != nil {
+				return err
+			}
+			k.EmitRepayInsuranceFund(ctx, mtp, takeAmount)
 		}
-		err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
-		if err != nil {
-			return err
-		}
-		err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, addr, returnCoins)
-		if err != nil {
-			return err
+
+		if !actualReturnAmount.IsZero() {
+			var coins sdk.Coins
+			returnCoin := sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(actualReturnAmount.BigInt()))
+			returnCoins := coins.Add(returnCoin)
+			addr, err := sdk.AccAddressFromBech32(mtp.Address)
+			if err != nil {
+				return err
+			}
+			err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
+			if err != nil {
+				return err
+			}
+			err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, addr, returnCoins)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

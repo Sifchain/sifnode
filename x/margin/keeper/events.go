@@ -26,3 +26,10 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, closer string) {
 		sdk.NewAttribute("closer", closer),
 	))
 }
+
+func (k Keeper) EmitRepayInsuranceFund(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventRepayInsuranceFund,
+		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("takeAmount", takeAmount.String()),
+	))
+}
