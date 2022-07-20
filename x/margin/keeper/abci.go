@@ -25,9 +25,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				pool.InterestRate = rate
 				_ = k.UpdatePoolHealth(ctx, pool)
 				_ = k.clpKeeper.SetPool(ctx, pool)
-				//mtps := k.GetMTPsForPool(ctx, pool) // TODO define
-				mtps := k.GetMTPsForCustodyAsset(ctx, pool.ExternalAsset.Symbol)
-				ctx.Logger().Info("Number of MTPs", "mtps", len(mtps))
+				mtps := k.GetMTPsForPool(ctx, pool.ExternalAsset.Symbol)
 				for _, mtp := range mtps {
 					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
