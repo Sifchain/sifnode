@@ -382,20 +382,21 @@ class Sifnoded:
         return self.sifnoded_exec(args)
 
     def sifnoded_start(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
-        log_format_json: bool = False, log_file: Optional[IO] = None, trace: bool = False
+        log_format_json: bool = False, log_file: Optional[IO] = None, log_level: Optional[str] = None,
+        trace: bool = False
     ):
         sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=minimum_gas_prices,
-            log_format_json=log_format_json, trace=trace)
+            log_format_json=log_format_json, log_level=log_level, trace=trace)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
     def build_start_cmd(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
-        log_format_json: bool = False, trace: bool = False
+        log_format_json: bool = False, log_level: Optional[str] = None, trace: bool = False
     ):
         args = [self.binary, "start"] + \
             (["--trace"] if trace else []) + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
-            (["--log_level", "debug"] if log_format_json else []) + \
+            (["--log_level", log_level] if log_level else []) + \
             (["--log_format", "json"] if log_format_json else []) + \
             self._home_args()
         return command.buildcmd(args)
