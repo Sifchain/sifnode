@@ -569,12 +569,25 @@ class Sifnoded:
             page_key = next_key
         return all_pools
 
-    def query_clp_liquidity_providers(self, denom):
-        args = ["query", "clp", "lplist", denom] + self._chain_id_args() + self._node_args()
-        res = self.sifnoded_exec(args)
-        res = yaml_load(stdout(res))
-        assert res["pagination"]["next_key"] is None, "Pagination requested, but not implemented yet"  # TODO
-        return res["liquidity_providers"]
+    def query_clp_liquidity_providers(self, denom: str, height: Optional[int] = None) -> List[JsonDict]:
+        # Note: this paged result is slightly different than `query bank balances`. Here we always get "height"
+        all_results = []
+        page_key = None
+        while True:
+            args = ["query", "clp", "lplist", denom] + \
+                (["--height", str(height)] if height is not None else []) + \
+                (["--page-key", page_key] if page_key is not None else []) + \
+               self._chain_id_args() + self._node_args()
+            res = self.sifnoded_exec(args)
+            res = yaml_load(stdout(res))
+            all_results.extend(res["liquidity_providers"])
+            next_key = res["pagination"]["next_key"]
+            if next_key is None:
+                break
+            page_key = base64.b64decode(next_key)
+            if height is None:
+                height = int(res["height"])
+        return all_results
 
     def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
     ) -> JsonDict:
