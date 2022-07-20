@@ -39,7 +39,7 @@ jobs:
         run: |
           source ~/.bash_profile
           sleep 30
-          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py
+          pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py src/peggy2/test_peggy2_wrong_signature.py
 
       - name: Archive logs from test
         uses: actions/upload-artifact@v2
