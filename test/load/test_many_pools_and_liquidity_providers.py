@@ -213,15 +213,19 @@ class Test:
         current_block = self.sifnoded.get_current_block()
         assert current_block < block_number
         while current_block < block_number:
-            blk = retry(self.sifnoded.get_block_results, log=log)()
-            begin_block_events = blk["begin_block_events"]
-            histogram = {}
-            for e in begin_block_events:
-                type = e["type"]
-                if type not in histogram:
-                    histogram[type] = 0
-                histogram[type] += 1
-            log.debug("Block events: {}".format(repr(histogram)))
+            try:
+                # This is just for collecting statistics, the test result does not depend on it
+                blk = self.sifnoded.get_block_results()
+                begin_block_events = blk["begin_block_events"]
+                histogram = {}
+                for e in begin_block_events:
+                    type = e["type"]
+                    if type not in histogram:
+                        histogram[type] = 0
+                    histogram[type] += 1
+                log.debug("Block events: {}".format(repr(histogram)))
+            except Exception as e:
+                log.error("HTTP request to block_results failed", e)
             time.sleep(1)
             current_block = self.sifnoded.get_current_block()
         return time.time()
