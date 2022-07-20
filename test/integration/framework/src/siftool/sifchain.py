@@ -279,7 +279,8 @@ class SifnodeClient:
             "--output", "json", "-y", "--generate-only"
         ] + self._gas_prices_args() + \
             self._home_args() + \
-            self._chain_id_args()
+            self._chain_id_args() + \
+            self._node_args()
 
         res = self.sifnoded_exec(args)
         result = json.loads(stdout(res))
