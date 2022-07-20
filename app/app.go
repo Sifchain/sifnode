@@ -239,6 +239,14 @@ func NewSifApp(
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
 ) *SifchainApp {
+	return NewSifAppWithBlacklist(logger, db, traceStore, loadLatest, skipUpgradeHeights, homePath, invCheckPeriod, encodingConfig, appOpts, []sdk.AccAddress{}, baseAppOptions...)
+}
+
+func NewSifAppWithBlacklist(
+	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
+	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
+	appOpts servertypes.AppOptions, blackListedAddresses []sdk.AccAddress, baseAppOptions ...func(*baseapp.BaseApp),
+) *SifchainApp {
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -306,11 +314,16 @@ func NewSifApp(
 		maccPerms,
 	)
 
+	addrs := app.ModuleAccountAddrs()
+	for _, addr := range blackListedAddresses {
+		addrs[addr.String()] = true
+	}
+
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.GetSubspace(banktypes.ModuleName),
-		app.ModuleAccountAddrs(),
+		addrs,
 	)
 
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
