@@ -9,9 +9,12 @@ import time
 import toml
 import socket
 from faker import Faker
+from siftool import command, project, common
 
 #definite variables.
-home_directory_path = "/Users/brendazukel/"
+home_directory_path = os.environ["HOME"]
+if not home_directory_path.endswith("/"):
+    home_directory_path += "/"
 go_path = home_directory_path + "go/bin"
 sifnode_repo_url = "https://github.com/Sifchain/sifnode.git"
 branch = "develop"
@@ -22,6 +25,9 @@ sifnode_log_level = "info"
 #pip install gitpython
 #pip install mnemonic
 #pip install requests
+
+cmd = command.Command()
+prj = project.Project(cmd, common.project_dir())
 
 def background_cli_command(command, gopath):
     command_eddition = "export PATH={go_path}:$PATH && ".format(go_path=gopath)
@@ -45,6 +51,10 @@ def clean_up_old_installation(home_directory_path):
     for directory in home_directory_list:
         if ".sifnode" in directory:
             shutil.rmtree(home_directory_path + directory)
+    # for dirname in [".sifnode"]:
+    #     path = os.path.join(home_directory_path, dirname)
+    #     if cmd.exists(path):
+    #         shutil.rmtree(path)
 
 def clean_up_old_clone(directory_path):
     try:
@@ -222,24 +232,24 @@ for node_number in range(number_of_nodes):
 print("Cleanup old installs of sifnoded.")
 clean_up_old_installation(home_directory_path)
 
-print("Cleanup old clone of sifnoded repo")
-clean_up_old_clone("./sifnoded")
-
-print("Clone fresh sifnoded repo.")
-repo = clone_sifnode_repo(sifnode_repo_url)
-
-print("Checkout branch for sifnoded repo.")
-repo.git.checkout(branch)
-
-print("Build sifnoded for the branch specified.")
-result = cli_command("cd sifnoded/ && make clean install", go_path)
-print(result)
-
-print("Check sifnoded installed")
-if not cli_command("sifnoded keys list --keyring-backend test --output json", go_path):
-    print("Sifnode not installed")
-else:
-    print("Successfully Installed")
+# print("Cleanup old clone of sifnoded repo")
+# clean_up_old_clone("./sifnoded")
+#
+# print("Clone fresh sifnoded repo.")
+# repo = clone_sifnode_repo(sifnode_repo_url)
+#
+# print("Checkout branch for sifnoded repo.")
+# repo.git.checkout(branch)
+#
+# print("Build sifnoded for the branch specified.")
+# result = cli_command("cd sifnoded/ && make clean install", go_path)
+# print(result)
+#
+# print("Check sifnoded installed")
+# if not cli_command("sifnoded keys list --keyring-backend test --output json", go_path):
+#     print("Sifnode not installed")
+# else:
+#     print("Successfully Installed")
 
 print("Loop and setup local configs for the number of desired nodes.")
 first = True
@@ -273,6 +283,7 @@ for node_number in range(number_of_nodes):
     print("ChainID: ", chain_id)
 
     if first:
+        # For the first validator we setup the genesis
         print("Init Chain")
 
         init_chain(sifnode_home_directory_name, chain_id)
@@ -328,7 +339,8 @@ for node_number in range(number_of_nodes):
             sys.exit(1)
 
         print("Set Whitelist from sifnode/scripts/denoms.json")
-        if not set_whitelist(home_directory_path, sifnode_home_directory_name, "./sifnoded/scripts/denoms.json"):
+        denoms_json_path = prj.project_dir("scripts/denoms.json")
+        if not set_whitelist(home_directory_path, sifnode_home_directory_name, denoms_json_path):
             print("Whitelist failed to be set.")
             sys.exit(1)
 
@@ -386,6 +398,7 @@ for node_number in range(number_of_nodes):
         print("----\n\n\n\n\n")
         first = False
     else:
+        # For every other validateor we call "sifnoded init" and overwrite the genesis file with the one from the first validator
         print("Init Node: ", node_number)
         init_chain(sifnode_home_directory_name, chain_id)
 
@@ -399,6 +412,7 @@ for node_number in range(number_of_nodes):
         print("Copy Genesis File from Node-0")
         shutil.copyfile(genesis_file_location,genesis_file_destination)
 
+        # For every other validateor we call "sifnoded init" and overwrite the genesis file with the one from the first validator
         print("Load Node Account")
         dynamic_gen_account_address = generate_key(account_mnemonics[str(node_number)]["name"], sifnode_home_directory_name, account_mnemonics[str(node_number)]["mnemonic"],home_directory_path)
         account_mnemonics[str(node_number)]["account_address"] = dynamic_gen_account_address
@@ -600,5 +614,3 @@ node_information_log.close()
 while True:
     print("Keeping Process Alive to Keep the Sifnode Simulator Alive, if you want it to run without this script running simply open node_information_log.log and run the start commands for each node in the log.")
     time.sleep(10)
-
-
