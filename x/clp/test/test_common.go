@@ -133,7 +133,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 func GenerateRandomLPWithUnitsAndAsset(poolUnitss []uint64, asset types.Asset) []*types.LiquidityProvider {
 	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
 	for i, poolUnits := range poolUnitss {
-		address := GenerateAddress(fmt.Sprintf("%d", i))
+		address := generateAddress2(fmt.Sprintf("%d%d%d%d", i, i, i, i))
 		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
 		lpList[i] = &lp
 	}
@@ -258,6 +258,16 @@ func TrimFirstRune(s string) string {
 	return strings.ToLower(s[i:])
 }
 
+func generateAddress2(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(key)
+
+	return genAddressInternal(buffer)
+}
+
 func GenerateAddress(key string) sdk.AccAddress {
 	if key == "" {
 		key = AddressKey1
@@ -265,6 +275,11 @@ func GenerateAddress(key string) sdk.AccAddress {
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
+
+	return genAddressInternal(buffer)
+}
+
+func genAddressInternal(buffer bytes.Buffer) sdk.AccAddress {
 	res, _ := sdk.AccAddressFromHex(buffer.String())
 	bech := res.String()
 	addr := buffer.String()
