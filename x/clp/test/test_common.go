@@ -163,7 +163,7 @@ func genTokens(n int) []string {
 
 	for len(set) != n {
 		token := make([]rune, 6)
-		for i, _ := range token {
+		for i := range token {
 			token[i] = runes[rand.Intn(len(runes))]
 		}
 		set[string(token)] = true
@@ -171,7 +171,7 @@ func genTokens(n int) []string {
 
 	var strings = make([]string, n)
 	i := 0
-	for str, _ := range set {
+	for str := range set {
 		strings[i] = str
 		i++
 	}
