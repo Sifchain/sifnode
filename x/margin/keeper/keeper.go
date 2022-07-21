@@ -461,7 +461,7 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
-func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error {
 	// nolint:ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	CollateralAmount := mtp.CollateralAmount
@@ -501,19 +501,22 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	fmt.Println("returnAmount:", returnAmount)
 
 	if !returnAmount.IsZero() {
-		takePercentage := k.GetForceCloseFundPercentage(ctx)
-		returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
-		takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
-		actualReturnAmount := returnAmount.Sub(takeAmount)
+		actualReturnAmount := returnAmount
+		if takeInsurance {
+			takePercentage := k.GetForceCloseFundPercentage(ctx)
+			returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
+			takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
+			actualReturnAmount = returnAmount.Sub(takeAmount)
 
-		if !takeAmount.IsZero() {
-			takeCoins := sdk.NewCoins(sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
-			fundAddr := k.GetInsuranceFundAddress(ctx)
-			err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
-			if err != nil {
-				return err
+			if !takeAmount.IsZero() {
+				takeCoins := sdk.NewCoins(sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
+				fundAddr := k.GetInsuranceFundAddress(ctx)
+				err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
+				if err != nil {
+					return err
+				}
+				k.EmitRepayInsuranceFund(ctx, mtp, takeAmount)
 			}
-			k.EmitRepayInsuranceFund(ctx, mtp, takeAmount)
 		}
 
 		if !actualReturnAmount.IsZero() {

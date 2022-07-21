@@ -253,7 +253,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		return nil, sdk.ZeroUint(), err
 	}
 
-	err = k.Repay(ctx, &mtp, pool, repayAmount)
+	err = k.Repay(ctx, &mtp, pool, repayAmount, false)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
@@ -314,7 +314,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 		return nil, sdk.ZeroUint(), err
 	}
 
-	err = k.Repay(ctx, &mtp, pool, repayAmount)
+	err = k.Repay(ctx, &mtp, pool, repayAmount, true)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
