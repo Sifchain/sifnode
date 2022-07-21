@@ -24,6 +24,7 @@ type CLPKeeper interface {
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
 	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
+	CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to clptypes.Asset, pool clptypes.Pool) (sdk.Uint, error)
 	ValidateZero(inputs []sdk.Uint) bool
 	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
 	IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec
@@ -73,7 +74,7 @@ type Keeper interface {
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
 
-	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
+	CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error

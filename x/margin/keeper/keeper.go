@@ -207,111 +207,17 @@ func (k Keeper) AdminKeeper() adminkeeper.Keeper {
 	return k.adminKeeper
 }
 
-func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error) {
-	/*
-	   calculate swap fee based on math spec
-	   lambda_L = (0,1)
-	   Notice this is NOT a simple hybrid of uniswap model and Thorchain slippaged based model
-	   But a upgraded version that include swap, updating bouding curve (to be inside the old one)
-	   One can think about this as a state jump:
-	*/
+func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error) {
+	toAsset := ToAsset(to)
+	// add liabilities? and custody to pool depth
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Add(pool.NativeCustody).Add(pool.NativeLiabilities)
+	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(pool.ExternalCustody).Add(pool.ExternalLiabilities)
 
-	normalizationFactor, adjustExternalToken, err := k.ClpKeeper().GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
+	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool)
 	if err != nil {
-		return sdk.ZeroUint(), err
+		return sdk.Uint{}, err
 	}
-
-	X, XL, x, Y, YL, toRowan := SetInputs(sentAmount, to, pool)
-
-	if !k.clpKeeper.ValidateZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint(), nil
-	}
-
-	pmtpCurrentRunningRate := k.clpKeeper.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-
-	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
-	if adjustExternalToken {
-		if toRowan {
-			X = X.Mul(nf)
-			XL = XL.Mul(nf)
-			x = x.Mul(nf)
-		} else {
-			Y = Y.Mul(nf)
-			YL = YL.Mul(nf)
-		}
-	} else {
-		if toRowan {
-			Y = Y.Mul(nf)
-			YL = YL.Mul(nf)
-		} else {
-			X = X.Mul(nf)
-			XL = XL.Mul(nf)
-			x = x.Mul(nf)
-		}
-	}
-
-	minLen := k.clpKeeper.GetMinLen([]sdk.Uint{X, x, Y})
-	Xd := k.clpKeeper.ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
-	XLd := k.clpKeeper.ReducePrecision(sdk.NewDecFromBigInt(XL.BigInt()), minLen)
-	xd := k.clpKeeper.ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
-	Yd := k.clpKeeper.ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
-	YLd := k.clpKeeper.ReducePrecision(sdk.NewDecFromBigInt(YL.BigInt()), minLen)
-
-	numerator1 := xd.Mul(Yd.Add(YLd))
-	denominator1 := xd.Add(Xd.Add(XLd))
-	quotient1 := numerator1.Quo(denominator1)
-
-	numerator2 := xd.Mul(Yd.Add(YLd)).Mul(Xd.Add(XLd))
-	denominator2 := xd.Add(Xd.Add(XLd))
-	denominator2 = denominator2.Mul(denominator2)
-	quotient2 := numerator2.Quo(denominator2)
-
-	y := quotient1.Add(quotient2)
-	y = k.clpKeeper.IncreasePrecision(y, minLen)
-	if !toRowan {
-		y = y.Quo(normalizationFactor)
-	}
-
-	y = CalcCustodySwapPmtp(toRowan, y, pmtpCurrentRunningRate)
-
-	swapResult := sdk.NewUintFromBigInt(y.RoundInt().BigInt())
-
-	if swapResult.GTE(Y) {
-		return sdk.ZeroUint(), clptypes.ErrNotEnoughAssetTokens
-	}
-
 	return swapResult, nil
-}
-
-func CalcCustodySwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
-	if toRowan {
-		return y.Quo(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
-	}
-	return y.Mul(sdk.NewDec(1).Add(pmtpCurrentRunningRate))
-}
-
-func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint, bool) {
-	var X sdk.Uint
-	var XL sdk.Uint
-	var Y sdk.Uint
-	var YL sdk.Uint
-	var x sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		YL = pool.NativeLiabilities
-		X = pool.ExternalAssetBalance
-		XL = pool.ExternalLiabilities
-	} else {
-		X = pool.NativeAssetBalance
-		XL = pool.NativeLiabilities
-		Y = pool.ExternalAssetBalance
-		YL = pool.ExternalLiabilities
-		toRowan = false
-	}
-	x = sentAmount
-
-	return X, XL, x, Y, YL, toRowan
 }
 
 func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *types.MTP, pool *clptypes.Pool, eta sdk.Dec) error {
@@ -397,7 +303,8 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 
 	var normalizedCollateral, normalizedLiabilitiesP, normalizedLiabilitiesI, normalizedCustody sdk.Dec
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-		normalizedCustodyInt, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+
+		normalizedCustodyInt, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
@@ -406,21 +313,24 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		normalizedLiabilitiesP = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
 		normalizedLiabilitiesI = sdk.NewDecFromBigInt(mtp.LiabilitiesI.BigInt())
 	} else { // collateral is external
-		normalizedCollateralInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.CollateralAmount)
+		normalizedCollateralInt, err := k.CLPSwap(ctx, mtp.CollateralAmount, mtp.CustodyAsset, pool)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
 		normalizedCollateral = sdk.NewDecFromBigInt(normalizedCollateralInt.BigInt())
-		normalizedLiabilitiesPInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesP)
+
+		normalizedLiabilitiesPInt, err := k.CLPSwap(ctx, mtp.LiabilitiesP, mtp.CustodyAsset, pool)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
 		normalizedLiabilitiesP = sdk.NewDecFromBigInt(normalizedLiabilitiesPInt.BigInt())
-		normalizedLiabilitiesIInt, err := k.CustodySwap(ctx, pool, mtp.CustodyAsset, mtp.LiabilitiesI)
+
+		normalizedLiabilitiesIInt, err := k.CLPSwap(ctx, mtp.LiabilitiesI, mtp.CustodyAsset, pool)
 		if err != nil {
 			return sdk.Dec{}, err
 		}
 		normalizedLiabilitiesI = sdk.NewDecFromBigInt(normalizedLiabilitiesIInt.BigInt())
+
 		normalizedCustody = sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	}
 
@@ -608,4 +518,10 @@ func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 	sq := value.Mul(blocks).Quo(modifier)
 
 	return sq
+}
+
+func ToAsset(asset string) clptypes.Asset {
+	return clptypes.Asset{
+		Symbol: asset,
+	}
 }
