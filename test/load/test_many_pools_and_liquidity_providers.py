@@ -211,21 +211,26 @@ class Test:
     # TODO Refactor - move to Sifnoded
     def wait_for_block(self, block_number: int) -> float:
         current_block = self.sifnoded.get_current_block()
+        prev_block = None
         assert current_block < block_number
         while current_block < block_number:
-            try:
-                # This is just for collecting statistics, the test result does not depend on it
-                blk = self.sifnoded.get_block_results()
-                begin_block_events = blk["begin_block_events"]
-                histogram = {}
-                for e in begin_block_events:
-                    type = e["type"]
-                    if type not in histogram:
-                        histogram[type] = 0
-                    histogram[type] += 1
-                log.debug("Block events: {}".format(repr(histogram)))
-            except Exception as e:
-                log.error("HTTP request to block_results failed", e)
+            if (prev_block is None) or (current_block != prev_block):
+                # This is just for collecting statistics while we wait, the test result does not depend on it.
+                try:
+                    blk = self.sifnoded.get_block_results()
+                    histogram = {}
+                    for key in ["begin_block_events", "end_block_events"]:
+                        items = blk[key]
+                        if items is not None:
+                            for evt in items:
+                                evt_type = evt["type"]
+                                if evt_type not in histogram:
+                                    histogram[evt_type] = 0
+                                histogram[evt_type] += 1
+                    log.debug("Block events for block {}: {}".format(current_block, repr(histogram)))
+                    prev_block = current_block
+                except Exception as e:
+                    log.error("HTTP request for block_results failed: {}".format(repr(e)))
             time.sleep(1)
             current_block = self.sifnoded.get_current_block()
         return time.time()

@@ -167,7 +167,7 @@ def retry(function: Callable, sleep_time: Optional[int] = 5, retries: Optional[i
                 if retries_left == 0:
                     raise e
                 if log is not None:
-                    log.debug("Retriable exception for {}({}): {}".format(repr(function), repr(args), repr(kwargs), repr(e)))
+                    log.debug("Retriable exception for {}: args: {}, kwargs: {}, exception: {}".format(repr(function), repr(args), repr(kwargs), repr(e)))
                 if sleep_time > 0:
                     time.sleep(sleep_time)
                     retries_left -= 1
