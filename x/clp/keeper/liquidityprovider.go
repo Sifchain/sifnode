@@ -79,11 +79,38 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddre
 }
 
 func (k Keeper) GetAllLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset) ([]*types.LiquidityProvider, error) {
-	lps, _, err := k.GetLiquidityProvidersForAssetPaginated(ctx, asset, &query.PageRequest{
+	query := query.PageRequest{
 		Limit: uint64(math.MaxUint64 - 1), // minus one because of SDK bug
-	})
+	}
+
+	lps, _, err := k.GetLiquidityProvidersForAssetPaginated(ctx, asset, &query)
 
 	return lps, err
+}
+
+func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) ([]*types.LiquidityProvider, error) {
+	pagination := query.PageRequest{Limit: uint64(math.MaxUint64 - 1)} // minus one because of SDK bug
+	var lpList []*types.LiquidityProvider
+	store := ctx.KVStore(k.storeKey)
+	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
+	_, err := query.FilteredPaginate(lpStore, &pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var lp types.LiquidityProvider
+		if len(value) <= 0 {
+			return false, nil
+		}
+		err := k.cdc.Unmarshal(value, &lp)
+		if err != nil {
+			return false, err
+		}
+		if accumulate {
+			lpList = append(lpList, &lp)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return lpList, nil
 }
 
 func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset,
