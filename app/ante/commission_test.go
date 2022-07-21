@@ -17,7 +17,7 @@ import (
 )
 
 func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
-	testcases := []struct {
+	testcases := []struct { //nolint
 		name                   string
 		delegateAmount         sdk.Int
 		validatorTokens        sdk.Int
