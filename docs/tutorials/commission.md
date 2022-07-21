@@ -28,7 +28,7 @@ make run
 
 ## Create Validator
 
-This section demonstrate the `CreateValidator` behaviour.
+This section demonstrate the limitation on `MsgCreateValidator`.
 
 ### Success
 
@@ -97,11 +97,11 @@ Which fails with the message `validator commission 0.030000000000000000 cannot b
 
 ## Edit Validator
 
-This section demonstrates the `EditValidator` behaviour.
+This section demonstrates the limitations on `MsgEditValidator` edit validator.
 
 ### Success
 
-If editing the `commission-rate` to a value above 5% edit succeeds.
+If editing the `commission-rate` to a value above 5% the edit succeeds.
 
 1. The commission rate can only be updated once within 24hrs, so wait 24 hrs then edit the `akasha_val` validator to set the commission-rate to 7%:
 
@@ -150,7 +150,7 @@ pre the upgrade with a `commission-rate` below `minCommission`.
 git checkout v0.13.5
 ```
 
-2. Initialize
+2. Initialize the chain
 
 ```
 make init
@@ -207,9 +207,10 @@ sifnoded tx gov submit-proposal software-upgrade 0.13.6 \
 sifnoded tx gov vote 1 yes --from sif --chain-id localnet --keyring-backend test -y --broadcast-mode block
 ```
 
-The node will have a consensus failure when it reaches the "upgrade-height"
+The node will have a consensus failure when it reaches the `upgrade-height` set in the upgrade proposal.
+Hit `ctrl-c` to kill the stuck node.
 
-9. Checkout the release with the min-commission upgrade handler
+9. Checkout the release with the min-commission upgrade handler:
 
 ```
 git checkout v0.13.6
@@ -226,4 +227,195 @@ make run
 ```
 sifnoded query staking validators --output=json | jq .validators[0].commission.commission_rates
 ```
+
+
+
+END ###############################################################################################
+
+
+
+
+
+
+
+
+
+
+2. Delegate tokens to the address found in step 1
+
+```
+sifnoded tx staking delegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100stake --from sif --keyring-backend test --chain-id localnet --broadcast-mode block -y
+```
+
+# Min commission upgrade handler
+
+# Max voting power
+
+1. Initialize the chain then start a node
+
+```
+make init
+make run
+```
+
+3. Create a new validator
+
+```
+sifnoded tx staking create-validator \
+  --amount=92000000000000000000000stake \
+  --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
+  --moniker="akasha_val" \
+  --chain-id=localnet \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.01" \
+  --min-self-delegation="1000000" \
+  --from=akasha \
+  --keyring-backend=test \
+  --broadcast-mode block \
+  -y
+```
+
+The pubkey used here was found by running this command against a running node:
+
+```
+sifnoded tendermint show-validator
+```
+
+3. Confirm that the "akasha_val" validator has been added to the list of staking validators:
+
+```
+sifnoded query staking validators
+```
+
+Not that "akasha_val" has 92000000000000000000000 tokens and "sif_val" has 1000000000000000000000000 tokens. So "akasha_val" has 0.08424908424908428 of the voting power and "sif_val" has 0.9157509157509157 of the voting power.
+
+2. Attempt to delegate tokens to "sif_val":
+
+```
+sifnoded tx staking delegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100stake --from sif --keyring-backend test --chain-id localnet --broadcast-mode block -y
+```
+
+"sif_val" has > 10% of the voting power so the attempt to delegate fails:
+
+"validator has 0.915750915750915751 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power, please choose another validator: invalid request"
+
+3. Delegate tokens to "akasha_val"
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake --from sif --keyring-backend test --chain-id localnet --broadcast-mode block -y
+```
+
+This is successful as can be seen by checking the amount of tokens delegated to "akasha_val" now equals 92000000000000000000100:
+
+```
+sifnoded query staking validators
+```
+
+#######################
+
+
+2. Get validator address:
+
+```
+sifnoded query staking validators
+```
+
+Which returns (amongst other things), the validator address, which we'll need later:
+
+sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna
+
+
+## Delegate
+
+### Success
+
+1. Query validators and observe that `akash_val` has `tokens: "92000000000000000000000"`:
+
+```
+sifnoded query staking validators
+```
+
+2. Delegate to `akasha_val`:
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+3. Query validators and observe that `akash_val` now has `tokens: "92000000000000000000100"`:
+
+```
+sifnoded query staking validators
+```
+
+### Failure
+
+1. Attempt to delegate to `sif_val` which has over 10% of the voting power:
+####################################################################################################################
+TODO: should be based on commission not voting power
+############################################################
+```
+sifnoded tx staking delegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+Which fails with the message `validator has 0.915750915750915751 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power, please choose another validator: invalid request`
+
+## Redelegate
+
+### Success
+
+Redelegate from `sif_val` to `akasha_val`
+
+1. Query validators and observe that `sif_val` has `tokens: "1000000000000000000000000"` and `akash_val` has `tokens: "92000000000000000000100"`:
+
+```
+sifnoded query staking validators
+```
+
+2. Redelegate from `sif_val` to `akasha_val`
+
+```
+sifnoded tx staking redelegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 50stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --gas="auto" \
+  --broadcast-mode block -y
+```
+
+3. Query validators and observe that `sif_val` has `tokens: "999999999999999999999950"` and `akash_val` has `tokens: "92000000000000000000150"`. Which confirms that 50stake has been redelegated from `sif_val` to `akasha_val`:
+
+```
+sifnoded query staking validators
+```
+
+### Failure
+
+####################################################################################################################
+TODO: should be based on commission not voting power
+############################################################
+
+Attempt to redelegate from `akasha_val` to `sif_val`. `sif_val` commission rate is 3% which is
+below the minimum of 5% so the redelegation will fail
+
+1. Attempt to redelegate from `akasha_val` to `sif_val`:
+
+```
+sifnoded tx staking redelegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 50stake \
+  --from akasha \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+Which fails with the message `validator has 0.915750915750915751 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power, please choose another validator: invalid request`
+
 
