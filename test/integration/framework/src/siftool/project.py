@@ -124,6 +124,7 @@ class Project:
         pass
 
     # Top-level "make install" should build everything, such as after git clone. If it does not, it's a bug.
+    # "Official" way is "make clean install"
     def make_all(self):
         self.cmd.execst(["make"], cwd=project_dir(), pipe=False)
 
