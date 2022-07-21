@@ -12,6 +12,7 @@ sifnoded tx margin update-params \
   --leverage-max=2 \
   --epoch-length=1 \
   --removal-queue-threshold=0.1 \
+  --max-open-positions=10000 \
   --from=$SIF_ACT \
   --keyring-backend=test \
   --fees 100000000000000000rowan \

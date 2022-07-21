@@ -63,7 +63,7 @@ def load_main_module():
         os.path.join(venv_lib_dir, "site-packages"),
     ]
     paths_to_add = [p for p in paths if not any(os.path.realpath(p) == os.path.realpath(s) for s in sys.path)]
-    sys.path.extend(paths_to_add)
+    sys.path[:0] = paths_to_add
     import siftool.main as siftool_main
     return siftool_main
 

@@ -23,10 +23,16 @@ service Msg {
   rpc AddRewardPeriod(MsgAddRewardPeriodRequest)
       returns (MsgAddRewardPeriodResponse);
   rpc ModifyPmtpRates(MsgModifyPmtpRates) returns (MsgModifyPmtpRatesResponse);
-  rpc UpdatePmtpParams(MsgUpdatePmtpParams) returns (MsgUpdatePmtpParamsResponse);
-  rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams) returns (MsgUpdateStakingRewardParamsResponse);
-  rpc SetSymmetryThreshold(MsgSetSymmetryThreshold) returns (MsgSetSymmetryThresholdResponse);
+  rpc UpdatePmtpParams(MsgUpdatePmtpParams)
+      returns (MsgUpdatePmtpParamsResponse);
+  rpc UpdateStakingRewardParams(MsgUpdateStakingRewardParams)
+      returns (MsgUpdateStakingRewardParamsResponse);
+  rpc SetSymmetryThreshold(MsgSetSymmetryThreshold)
+      returns (MsgSetSymmetryThresholdResponse);
   rpc CancelUnlockLiquidity(MsgCancelUnlock) returns (MsgCancelUnlockResponse);
+  rpc UpdateLiquidityProtectionParams(MsgUpdateLiquidityProtectionParams) returns (MsgUpdateLiquidityProtectionParamsResponse);
+  rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
+  rpc AddProviderDistributionPeriod(MsgAddProviderDistributionPeriodRequest) returns (MsgAddProviderDistributionPeriodResponse);
 }
 
 // message MsgUpdateStakingRewardParams{
@@ -219,7 +225,7 @@ message MsgSetSymmetryThresholdResponse {}
 message MsgCancelUnlock {
   string signer = 1;
   sifnode.clp.v1.Asset external_asset = 2
-  [ (gogoproto.moretags) = "yaml:\"external_asset\"" ];
+      [ (gogoproto.moretags) = "yaml:\"external_asset\"" ];
   string units = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
@@ -236,3 +242,30 @@ message RemovalRequest {
   ];
   MsgRemoveLiquidity msg = 3;
 }
+message MsgModifyLiquidityProtectionRates {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string current_rowan_liquidity_threshold = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgModifyLiquidityProtectionRatesResponse {}
+
+message MsgUpdateLiquidityProtectionParams {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string max_rowan_liquidity_threshold = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string max_rowan_liquidity_threshold_asset = 4;
+  uint64 epoch_length = 3;
+  bool is_active = 5;
+}
+message MsgUpdateLiquidityProtectionParamsResponse {}
+message MsgAddProviderDistributionPeriodRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  repeated ProviderDistributionPeriod distribution_periods = 2;
+}
+
+message MsgAddProviderDistributionPeriodResponse {}

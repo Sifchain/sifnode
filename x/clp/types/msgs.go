@@ -24,6 +24,9 @@ var (
 	_ sdk.Msg = &MsgUpdateStakingRewardParams{}
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
+	_ sdk.Msg = &MsgUpdateLiquidityProtectionParams{}
+	_ sdk.Msg = &MsgModifyLiquidityProtectionRates{}
+	_ sdk.Msg = &MsgAddProviderDistributionPeriodRequest{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -39,6 +42,7 @@ var (
 	_ legacytx.LegacyMsg = &MsgUpdateStakingRewardParams{}
 	_ legacytx.LegacyMsg = &MsgSetSymmetryThreshold{}
 	_ legacytx.LegacyMsg = &MsgCancelUnlock{}
+	_ legacytx.LegacyMsg = &MsgAddProviderDistributionPeriodRequest{}
 )
 
 func (m MsgCancelUnlock) Route() string {
@@ -531,6 +535,108 @@ func (m MsgSetSymmetryThreshold) GetSignBytes() []byte {
 }
 
 func (m MsgSetSymmetryThreshold) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m *MsgUpdateLiquidityProtectionParams) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	if m.EpochLength <= 0 {
+		return fmt.Errorf("liquidity protection epoch length must be greated than zero: %d", m.EpochLength)
+	}
+	return nil
+}
+
+func (m *MsgUpdateLiquidityProtectionParams) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateLiquidityProtectionParams) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateLiquidityProtectionParams) Type() string {
+	return "update_liquidity_protection_params"
+}
+
+func (m MsgUpdateLiquidityProtectionParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m *MsgModifyLiquidityProtectionRates) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MsgModifyLiquidityProtectionRates) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgModifyLiquidityProtectionRates) Route() string {
+	return RouterKey
+}
+
+func (m MsgModifyLiquidityProtectionRates) Type() string {
+	return "modify_liquidity_protection_rates"
+}
+
+func (m MsgModifyLiquidityProtectionRates) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddProviderDistributionPeriodRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgAddProviderDistributionPeriodRequest) Type() string {
+	return "add_provider_distribution_period"
+}
+
+func (m MsgAddProviderDistributionPeriodRequest) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	for _, period := range m.DistributionPeriods {
+		if period.DistributionPeriodStartBlock > period.DistributionPeriodEndBlock {
+			return fmt.Errorf("provider distribution period start block must be < end block: %d %d", period.DistributionPeriodStartBlock, period.DistributionPeriodEndBlock)
+		}
+
+		if period.DistributionPeriodBlockRate.LT(sdk.NewDec(0)) ||
+			period.DistributionPeriodBlockRate.GT(sdk.NewDec(1)) {
+			return fmt.Errorf("provider distribution period block rate must be >= 0 and <= 1 but is: %s", period.DistributionPeriodBlockRate.String())
+		}
+
+		if period.DistributionPeriodMod == 0 {
+			return fmt.Errorf("provider distribution period modulo must be > 0")
+		}
+	}
+
+	return nil
+}
+
+func (m MsgAddProviderDistributionPeriodRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAddProviderDistributionPeriodRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

@@ -245,6 +245,8 @@ type RewardPeriod struct {
 	RewardPeriodAllocation        *github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,4,opt,name=reward_period_allocation,json=rewardPeriodAllocation,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"reward_period_allocation,omitempty"`
 	RewardPeriodPoolMultipliers   []*PoolMultiplier                        `protobuf:"bytes,5,rep,name=reward_period_pool_multipliers,json=rewardPeriodPoolMultipliers,proto3" json:"reward_period_pool_multipliers,omitempty"`
 	RewardPeriodDefaultMultiplier *github_com_cosmos_cosmos_sdk_types.Dec  `protobuf:"bytes,6,opt,name=reward_period_default_multiplier,json=rewardPeriodDefaultMultiplier,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"reward_period_default_multiplier,omitempty"`
+	RewardPeriodDistribute        bool                                     `protobuf:"varint,7,opt,name=reward_period_distribute,json=rewardPeriodDistribute,proto3" json:"reward_period_distribute,omitempty"`
+	RewardPeriodMod               uint64                                   `protobuf:"varint,8,opt,name=reward_period_mod,json=rewardPeriodMod,proto3" json:"reward_period_mod,omitempty"`
 }
 
 func (m *RewardPeriod) Reset()         { *m = RewardPeriod{} }
@@ -308,6 +310,20 @@ func (m *RewardPeriod) GetRewardPeriodPoolMultipliers() []*PoolMultiplier {
 	return nil
 }
 
+func (m *RewardPeriod) GetRewardPeriodDistribute() bool {
+	if m != nil {
+		return m.RewardPeriodDistribute
+	}
+	return false
+}
+
+func (m *RewardPeriod) GetRewardPeriodMod() uint64 {
+	if m != nil {
+		return m.RewardPeriodMod
+	}
+	return 0
+}
+
 type PoolMultiplier struct {
 	PoolMultiplierAsset string                                  `protobuf:"bytes,1,opt,name=pool_multiplier_asset,json=poolMultiplierAsset,proto3" json:"pool_multiplier_asset,omitempty"`
 	Multiplier          *github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=multiplier,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"multiplier,omitempty"`
@@ -353,6 +369,209 @@ func (m *PoolMultiplier) GetPoolMultiplierAsset() string {
 	return ""
 }
 
+type LiquidityProtectionParams struct {
+	MaxRowanLiquidityThreshold      github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,1,opt,name=max_rowan_liquidity_threshold,json=maxRowanLiquidityThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"max_rowan_liquidity_threshold"`
+	MaxRowanLiquidityThresholdAsset string                                  `protobuf:"bytes,2,opt,name=max_rowan_liquidity_threshold_asset,json=maxRowanLiquidityThresholdAsset,proto3" json:"max_rowan_liquidity_threshold_asset,omitempty"`
+	EpochLength                     uint64                                  `protobuf:"varint,3,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	IsActive                        bool                                    `protobuf:"varint,4,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+}
+
+func (m *LiquidityProtectionParams) Reset()         { *m = LiquidityProtectionParams{} }
+func (m *LiquidityProtectionParams) String() string { return proto.CompactTextString(m) }
+func (*LiquidityProtectionParams) ProtoMessage()    {}
+func (*LiquidityProtectionParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61de66e331088d04, []int{6}
+}
+func (m *LiquidityProtectionParams) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LiquidityProtectionParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LiquidityProtectionParams.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LiquidityProtectionParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LiquidityProtectionParams.Merge(m, src)
+}
+func (m *LiquidityProtectionParams) XXX_Size() int {
+	return m.Size()
+}
+func (m *LiquidityProtectionParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_LiquidityProtectionParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LiquidityProtectionParams proto.InternalMessageInfo
+
+func (m *LiquidityProtectionParams) GetMaxRowanLiquidityThresholdAsset() string {
+	if m != nil {
+		return m.MaxRowanLiquidityThresholdAsset
+	}
+	return ""
+}
+
+func (m *LiquidityProtectionParams) GetEpochLength() uint64 {
+	if m != nil {
+		return m.EpochLength
+	}
+	return 0
+}
+
+func (m *LiquidityProtectionParams) GetIsActive() bool {
+	if m != nil {
+		return m.IsActive
+	}
+	return false
+}
+
+type LiquidityProtectionRateParams struct {
+	CurrentRowanLiquidityThreshold github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,1,opt,name=current_rowan_liquidity_threshold,json=currentRowanLiquidityThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"current_rowan_liquidity_threshold"`
+}
+
+func (m *LiquidityProtectionRateParams) Reset()         { *m = LiquidityProtectionRateParams{} }
+func (m *LiquidityProtectionRateParams) String() string { return proto.CompactTextString(m) }
+func (*LiquidityProtectionRateParams) ProtoMessage()    {}
+func (*LiquidityProtectionRateParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61de66e331088d04, []int{7}
+}
+func (m *LiquidityProtectionRateParams) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LiquidityProtectionRateParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LiquidityProtectionRateParams.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LiquidityProtectionRateParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LiquidityProtectionRateParams.Merge(m, src)
+}
+func (m *LiquidityProtectionRateParams) XXX_Size() int {
+	return m.Size()
+}
+func (m *LiquidityProtectionRateParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_LiquidityProtectionRateParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LiquidityProtectionRateParams proto.InternalMessageInfo
+
+type ProviderDistributionPeriod struct {
+	DistributionPeriodBlockRate  github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=distribution_period_block_rate,json=distributionPeriodBlockRate,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"distribution_period_block_rate"`
+	DistributionPeriodStartBlock uint64                                 `protobuf:"varint,2,opt,name=distribution_period_start_block,json=distributionPeriodStartBlock,proto3" json:"distribution_period_start_block,omitempty"`
+	DistributionPeriodEndBlock   uint64                                 `protobuf:"varint,3,opt,name=distribution_period_end_block,json=distributionPeriodEndBlock,proto3" json:"distribution_period_end_block,omitempty"`
+	DistributionPeriodMod        uint64                                 `protobuf:"varint,4,opt,name=distribution_period_mod,json=distributionPeriodMod,proto3" json:"distribution_period_mod,omitempty"`
+}
+
+func (m *ProviderDistributionPeriod) Reset()         { *m = ProviderDistributionPeriod{} }
+func (m *ProviderDistributionPeriod) String() string { return proto.CompactTextString(m) }
+func (*ProviderDistributionPeriod) ProtoMessage()    {}
+func (*ProviderDistributionPeriod) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61de66e331088d04, []int{8}
+}
+func (m *ProviderDistributionPeriod) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProviderDistributionPeriod) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProviderDistributionPeriod.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProviderDistributionPeriod) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProviderDistributionPeriod.Merge(m, src)
+}
+func (m *ProviderDistributionPeriod) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProviderDistributionPeriod) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProviderDistributionPeriod.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProviderDistributionPeriod proto.InternalMessageInfo
+
+func (m *ProviderDistributionPeriod) GetDistributionPeriodStartBlock() uint64 {
+	if m != nil {
+		return m.DistributionPeriodStartBlock
+	}
+	return 0
+}
+
+func (m *ProviderDistributionPeriod) GetDistributionPeriodEndBlock() uint64 {
+	if m != nil {
+		return m.DistributionPeriodEndBlock
+	}
+	return 0
+}
+
+func (m *ProviderDistributionPeriod) GetDistributionPeriodMod() uint64 {
+	if m != nil {
+		return m.DistributionPeriodMod
+	}
+	return 0
+}
+
+type ProviderDistributionParams struct {
+	DistributionPeriods []*ProviderDistributionPeriod `protobuf:"bytes,1,rep,name=distribution_periods,json=distributionPeriods,proto3" json:"distribution_periods,omitempty"`
+}
+
+func (m *ProviderDistributionParams) Reset()         { *m = ProviderDistributionParams{} }
+func (m *ProviderDistributionParams) String() string { return proto.CompactTextString(m) }
+func (*ProviderDistributionParams) ProtoMessage()    {}
+func (*ProviderDistributionParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61de66e331088d04, []int{9}
+}
+func (m *ProviderDistributionParams) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProviderDistributionParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProviderDistributionParams.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProviderDistributionParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProviderDistributionParams.Merge(m, src)
+}
+func (m *ProviderDistributionParams) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProviderDistributionParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProviderDistributionParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProviderDistributionParams proto.InternalMessageInfo
+
+func (m *ProviderDistributionParams) GetDistributionPeriods() []*ProviderDistributionPeriod {
+	if m != nil {
+		return m.DistributionPeriods
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Params)(nil), "sifnode.clp.v1.Params")
 	proto.RegisterType((*RewardParams)(nil), "sifnode.clp.v1.RewardParams")
@@ -360,59 +579,80 @@ func init() {
 	proto.RegisterType((*PmtpParams)(nil), "sifnode.clp.v1.PmtpParams")
 	proto.RegisterType((*RewardPeriod)(nil), "sifnode.clp.v1.RewardPeriod")
 	proto.RegisterType((*PoolMultiplier)(nil), "sifnode.clp.v1.PoolMultiplier")
+	proto.RegisterType((*LiquidityProtectionParams)(nil), "sifnode.clp.v1.LiquidityProtectionParams")
+	proto.RegisterType((*LiquidityProtectionRateParams)(nil), "sifnode.clp.v1.LiquidityProtectionRateParams")
+	proto.RegisterType((*ProviderDistributionPeriod)(nil), "sifnode.clp.v1.ProviderDistributionPeriod")
+	proto.RegisterType((*ProviderDistributionParams)(nil), "sifnode.clp.v1.ProviderDistributionParams")
 }
 
 func init() { proto.RegisterFile("sifnode/clp/v1/params.proto", fileDescriptor_61de66e331088d04) }
 
 var fileDescriptor_61de66e331088d04 = []byte{
-	// 741 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x95, 0xcf, 0x4f, 0xdb, 0x30,
-	0x14, 0xc7, 0x9b, 0x16, 0x90, 0xf0, 0xb6, 0x6a, 0x0a, 0x14, 0xc2, 0xaf, 0xb4, 0xea, 0x61, 0xab,
-	0x36, 0x2d, 0x15, 0x4c, 0x08, 0xed, 0x58, 0x0a, 0x9a, 0x98, 0x98, 0x54, 0x05, 0x76, 0xd9, 0x25,
-	0x0a, 0xae, 0x69, 0x2d, 0x1c, 0x3b, 0xb3, 0xdd, 0x6e, 0xfc, 0x17, 0x9c, 0x76, 0xdc, 0x7f, 0x33,
-	0x89, 0x23, 0xc7, 0x89, 0x03, 0x9a, 0xe0, 0xb8, 0x7f, 0x62, 0xca, 0x73, 0xda, 0x26, 0x65, 0x87,
-	0xc1, 0xa9, 0x8d, 0xde, 0x7b, 0x9f, 0xef, 0xfb, 0x65, 0x1b, 0xad, 0x29, 0x7a, 0xca, 0x45, 0x97,
-	0x34, 0x31, 0x8b, 0x9b, 0xc3, 0xcd, 0x66, 0x1c, 0xca, 0x30, 0x52, 0x5e, 0x2c, 0x85, 0x16, 0x76,
-	0x39, 0x35, 0x7a, 0x98, 0xc5, 0xde, 0x70, 0x73, 0x75, 0xb1, 0x27, 0x7a, 0x02, 0x4c, 0xcd, 0xe4,
-	0x9f, 0xf1, 0xaa, 0xb7, 0xd1, 0x5c, 0x07, 0xa2, 0xec, 0x77, 0x68, 0x25, 0xa2, 0x3c, 0xc0, 0x92,
-	0x84, 0x9a, 0x04, 0xb1, 0x10, 0x2c, 0xd0, 0x7d, 0x49, 0x54, 0x5f, 0xb0, 0xae, 0x63, 0xd5, 0xac,
-	0xc6, 0x8c, 0xbf, 0x14, 0x51, 0xde, 0x06, 0x7b, 0x47, 0x08, 0x76, 0x3c, 0xb2, 0xd6, 0xbf, 0x17,
-	0xd1, 0x53, 0x9f, 0x7c, 0x0d, 0x65, 0x37, 0x65, 0xb5, 0xd0, 0x06, 0xa3, 0x5f, 0x06, 0xb4, 0x4b,
-	0xf5, 0x79, 0x20, 0x49, 0x24, 0x86, 0x21, 0x0b, 0x98, 0xc0, 0x67, 0x41, 0x4c, 0x24, 0x15, 0x23,
-	0xde, 0xea, 0xd8, 0xc9, 0x37, 0x3e, 0x87, 0x02, 0x9f, 0x75, 0xc0, 0xc3, 0xde, 0x47, 0xd5, 0xfb,
-	0x08, 0x1c, 0x72, 0x4c, 0xd8, 0x08, 0x52, 0x04, 0xc8, 0xfa, 0x34, 0xa4, 0x0d, 0x4e, 0x29, 0xa6,
-	0x8d, 0xca, 0x12, 0x32, 0x4b, 0x83, 0x94, 0x33, 0x53, 0x2b, 0x35, 0x9e, 0x6c, 0xad, 0x7b, 0xf9,
-	0xf6, 0x78, 0x69, 0xfe, 0xe0, 0xe4, 0x3f, 0x93, 0x99, 0x2f, 0x65, 0xef, 0x20, 0x27, 0x07, 0x09,
-	0x94, 0x0e, 0xa5, 0x0e, 0x34, 0x8d, 0x88, 0x33, 0x5b, 0xb3, 0x1a, 0xf3, 0x7e, 0x25, 0x1b, 0x70,
-	0x94, 0x58, 0x8f, 0x69, 0x44, 0xea, 0x3f, 0x8b, 0xa8, 0xdc, 0x89, 0x74, 0xec, 0x27, 0x2d, 0x33,
-	0xad, 0xc1, 0x68, 0x29, 0x8e, 0x74, 0x3c, 0x22, 0x9d, 0x40, 0x57, 0x64, 0xa8, 0x09, 0x94, 0x33,
-	0xbf, 0xeb, 0x5d, 0xde, 0x54, 0x0b, 0xd7, 0x37, 0xd5, 0x17, 0x3d, 0xaa, 0xfb, 0x83, 0x13, 0x0f,
-	0x8b, 0xa8, 0x89, 0x85, 0x8a, 0x84, 0x4a, 0x7f, 0xde, 0xa8, 0xee, 0x59, 0x53, 0x9f, 0xc7, 0x44,
-	0x79, 0x7b, 0x04, 0xfb, 0x0b, 0x09, 0xcd, 0xe8, 0xee, 0x26, 0xac, 0x44, 0xca, 0xa6, 0x68, 0x05,
-	0x44, 0xf0, 0x40, 0x4a, 0xc2, 0x75, 0x20, 0x07, 0x9c, 0x53, 0xde, 0x33, 0x3a, 0xa5, 0x47, 0xe9,
-	0x40, 0xd6, 0x6d, 0xc3, 0xf3, 0x0d, 0x0e, 0xa4, 0x46, 0xf5, 0x50, 0xae, 0x89, 0x0c, 0x62, 0xc1,
-	0x28, 0x3e, 0x37, 0x3a, 0x33, 0x8f, 0xaf, 0xe7, 0x20, 0x81, 0x75, 0x80, 0x95, 0x88, 0xd4, 0x7f,
-	0x14, 0x11, 0x4a, 0xfa, 0x98, 0xf6, 0x30, 0x42, 0x6b, 0xd9, 0x1e, 0xf6, 0xc4, 0x90, 0x48, 0x9e,
-	0x4c, 0xdd, 0x08, 0x5b, 0x8f, 0x12, 0x76, 0x26, 0x8d, 0x7c, 0x3f, 0x06, 0x42, 0x89, 0x3b, 0xc8,
-	0xc9, 0xca, 0x91, 0x58, 0xe0, 0x7e, 0xc0, 0x08, 0xef, 0xe9, 0x3e, 0x0c, 0xad, 0xe4, 0x57, 0x26,
-	0xb1, 0xfb, 0x89, 0xf5, 0x10, 0x8c, 0xf6, 0x36, 0x5a, 0xce, 0x06, 0x9a, 0xad, 0x81, 0x89, 0xc3,
-	0x10, 0x4a, 0xfe, 0xe2, 0x24, 0x0e, 0x96, 0x06, 0x26, 0x68, 0x6f, 0xa2, 0x4a, 0x4e, 0x8f, 0xa7,
-	0x6b, 0x02, 0x1d, 0x2d, 0xf9, 0x76, 0x46, 0x8c, 0x9b, 0xa1, 0xd7, 0xff, 0x94, 0xc6, 0x27, 0xd0,
-	0xec, 0x7d, 0x03, 0x3d, 0xcf, 0xaf, 0x2c, 0x35, 0x87, 0x6e, 0xde, 0x2f, 0x67, 0x57, 0xf5, 0xa0,
-	0x9b, 0x9c, 0xfb, 0x7f, 0x2d, 0xb7, 0x51, 0x34, 0x47, 0x6c, 0xe9, 0xde, 0x76, 0x9b, 0x44, 0xb7,
-	0xd1, 0x72, 0x3e, 0x74, 0x92, 0x6a, 0x09, 0x02, 0x17, 0xb3, 0x81, 0xa3, 0x64, 0x6d, 0x32, 0x7d,
-	0x9c, 0x42, 0xc6, 0x04, 0x0e, 0x35, 0x15, 0x3c, 0x5d, 0x9a, 0xd7, 0xd7, 0x37, 0xd5, 0x97, 0xff,
-	0x31, 0xb7, 0x4f, 0x94, 0xeb, 0x7c, 0x76, 0xad, 0x31, 0xca, 0xc6, 0xc8, 0xcd, 0xcb, 0xc0, 0x9d,
-	0x16, 0x0d, 0x98, 0xa6, 0x31, 0xa3, 0x44, 0x2a, 0x67, 0x16, 0xae, 0x02, 0x77, 0xfa, 0x2a, 0x48,
-	0x2e, 0xb7, 0x8f, 0x63, 0x37, 0x7f, 0x2d, 0xcb, 0xcf, 0xdb, 0x94, 0xad, 0x50, 0x2d, 0x2f, 0xd2,
-	0x25, 0xa7, 0xe1, 0x80, 0xe9, 0x8c, 0x8e, 0x33, 0x07, 0x35, 0xbd, 0x7a, 0xc0, 0x2e, 0x6e, 0x64,
-	0x25, 0xf7, 0x0c, 0x71, 0xa2, 0x5a, 0xbf, 0xb0, 0x50, 0x39, 0x9f, 0x88, 0xbd, 0x85, 0x2a, 0x53,
-	0xe5, 0x05, 0xa1, 0x52, 0x44, 0xa7, 0x43, 0x5f, 0x88, 0x73, 0xee, 0xad, 0xc4, 0x64, 0x7f, 0x40,
-	0x28, 0x93, 0x65, 0xf1, 0xc1, 0x59, 0x66, 0xa2, 0x77, 0x5b, 0x97, 0xb7, 0xae, 0x75, 0x75, 0xeb,
-	0x5a, 0xbf, 0x6f, 0x5d, 0xeb, 0xe2, 0xce, 0x2d, 0x5c, 0xdd, 0xb9, 0x85, 0x5f, 0x77, 0x6e, 0xe1,
-	0x73, 0x76, 0x8e, 0x47, 0xf4, 0x14, 0xf7, 0x43, 0xca, 0x9b, 0xa3, 0x87, 0xeb, 0x1b, 0x3c, 0x5d,
-	0x80, 0x3c, 0x99, 0x83, 0x17, 0xe9, 0xed, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xc2, 0xa5, 0x67,
-	0xa2, 0xd6, 0x06, 0x00, 0x00,
+	// 1010 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0x41, 0x6f, 0x1b, 0x45,
+	0x14, 0xce, 0xda, 0x6e, 0x89, 0x5f, 0x8b, 0x81, 0x4d, 0x9c, 0x6c, 0xec, 0x78, 0xed, 0x1a, 0x09,
+	0xac, 0x20, 0x6c, 0xa5, 0xa8, 0x14, 0x8e, 0x8e, 0x13, 0xa1, 0xa2, 0x54, 0xb2, 0xb6, 0xe5, 0x82,
+	0x84, 0x56, 0x9b, 0xdd, 0x89, 0x3d, 0xca, 0xee, 0xce, 0x32, 0x33, 0x76, 0x13, 0xf8, 0x13, 0x3d,
+	0x71, 0x41, 0xf0, 0x6f, 0x90, 0x7a, 0x2c, 0xe2, 0x82, 0x7a, 0x88, 0x50, 0xf2, 0x47, 0xd0, 0xcc,
+	0xac, 0xd7, 0xb3, 0xb6, 0x83, 0xda, 0x88, 0x53, 0xeb, 0xbc, 0x79, 0xdf, 0x37, 0xef, 0x7b, 0xef,
+	0x7d, 0xb3, 0x50, 0x67, 0xf8, 0x34, 0x26, 0x01, 0xea, 0xf9, 0x61, 0xd2, 0x9b, 0xee, 0xf7, 0x12,
+	0x8f, 0x7a, 0x11, 0xeb, 0x26, 0x94, 0x70, 0x62, 0x56, 0xd2, 0x60, 0xd7, 0x0f, 0x93, 0xee, 0x74,
+	0xbf, 0xb6, 0x39, 0x22, 0x23, 0x22, 0x43, 0x3d, 0xf1, 0x3f, 0x75, 0xaa, 0x3d, 0x80, 0xbb, 0x43,
+	0x99, 0x65, 0x7e, 0x0d, 0x3b, 0x11, 0x8e, 0x5d, 0x9f, 0x22, 0x8f, 0x23, 0x37, 0x21, 0x24, 0x74,
+	0xf9, 0x98, 0x22, 0x36, 0x26, 0x61, 0x60, 0x19, 0x2d, 0xa3, 0x53, 0x72, 0xb6, 0x22, 0x1c, 0x0f,
+	0x64, 0x7c, 0x48, 0x48, 0xf8, 0x7c, 0x16, 0x6d, 0xff, 0x52, 0x80, 0xfb, 0x0e, 0x7a, 0xe1, 0xd1,
+	0x20, 0xc5, 0xea, 0x43, 0x23, 0xc4, 0x3f, 0x4e, 0x70, 0x80, 0xf9, 0x85, 0x4b, 0x51, 0x44, 0xa6,
+	0x5e, 0xe8, 0x86, 0xc4, 0x3f, 0x73, 0x13, 0x44, 0x31, 0x99, 0xe1, 0xd5, 0xb2, 0x43, 0x8e, 0x3a,
+	0x73, 0x4c, 0xfc, 0xb3, 0xa1, 0x3c, 0x61, 0x1e, 0x41, 0x73, 0x19, 0xc2, 0xf7, 0x62, 0x1f, 0x85,
+	0x33, 0x90, 0x82, 0x04, 0xd9, 0x5d, 0x04, 0x19, 0xc8, 0x43, 0x29, 0xcc, 0x00, 0x2a, 0x54, 0xde,
+	0x2c, 0x4d, 0x62, 0x56, 0xa9, 0x55, 0xec, 0xdc, 0x7b, 0xb8, 0xdb, 0xcd, 0xcb, 0xd3, 0x4d, 0xef,
+	0x2f, 0x0f, 0x39, 0xef, 0x53, 0xed, 0x17, 0x33, 0x1f, 0x83, 0x95, 0x03, 0x71, 0x19, 0xf7, 0x28,
+	0x77, 0x39, 0x8e, 0x90, 0x75, 0xa7, 0x65, 0x74, 0xca, 0x4e, 0x55, 0x4f, 0x78, 0x26, 0xa2, 0xcf,
+	0x71, 0x84, 0xda, 0x7f, 0x14, 0xa0, 0x32, 0x8c, 0x78, 0xe2, 0x08, 0xc9, 0x94, 0x34, 0x3e, 0x6c,
+	0x25, 0x11, 0x4f, 0x66, 0x48, 0x27, 0x52, 0x15, 0xea, 0x71, 0x24, 0xcb, 0x29, 0x1f, 0x74, 0x5f,
+	0x5d, 0x36, 0xd7, 0xde, 0x5c, 0x36, 0x3f, 0x19, 0x61, 0x3e, 0x9e, 0x9c, 0x74, 0x7d, 0x12, 0xf5,
+	0x7c, 0xc2, 0x22, 0xc2, 0xd2, 0x7f, 0x3e, 0x67, 0xc1, 0x59, 0x8f, 0x5f, 0x24, 0x88, 0x75, 0x0f,
+	0x91, 0xef, 0x6c, 0x08, 0x34, 0xc5, 0x7b, 0x20, 0xb0, 0x04, 0x95, 0x89, 0x61, 0x47, 0x92, 0xf8,
+	0x13, 0x4a, 0x51, 0xcc, 0x5d, 0x3a, 0x89, 0x63, 0x1c, 0x8f, 0x14, 0x4f, 0xf1, 0x56, 0x3c, 0xf2,
+	0xd6, 0x03, 0x85, 0xe7, 0x28, 0x38, 0x49, 0x35, 0xab, 0x07, 0xc7, 0x1c, 0x51, 0x37, 0x21, 0x21,
+	0xf6, 0x2f, 0x14, 0x4f, 0xe9, 0xf6, 0xf5, 0x3c, 0x11, 0x60, 0x43, 0x89, 0x25, 0x48, 0xda, 0xbf,
+	0x17, 0x00, 0x84, 0x8e, 0xa9, 0x86, 0x11, 0xd4, 0x75, 0x0d, 0x47, 0x64, 0x8a, 0x68, 0x2c, 0xba,
+	0xae, 0x88, 0x8d, 0x5b, 0x11, 0x5b, 0x73, 0x21, 0xbf, 0xc9, 0x00, 0x65, 0x89, 0x8f, 0xc1, 0xd2,
+	0xe9, 0x50, 0x42, 0xfc, 0xb1, 0x1b, 0xa2, 0x78, 0xc4, 0xc7, 0xb2, 0x69, 0x45, 0xa7, 0x3a, 0xcf,
+	0x3d, 0x12, 0xd1, 0x63, 0x19, 0x34, 0x1f, 0xc1, 0xb6, 0x9e, 0xa8, 0xa6, 0x46, 0x76, 0x5c, 0x36,
+	0xa1, 0xe8, 0x6c, 0xce, 0xf3, 0xe4, 0xd0, 0xc8, 0x0e, 0x9a, 0xfb, 0x50, 0xcd, 0xf1, 0xc5, 0xe9,
+	0x98, 0x48, 0x45, 0x8b, 0x8e, 0xa9, 0x91, 0xc5, 0xaa, 0xe9, 0xed, 0x3f, 0x4b, 0xd9, 0x06, 0xaa,
+	0xb9, 0xef, 0xc0, 0x87, 0xf9, 0x91, 0xc5, 0x6a, 0xe9, 0xca, 0x4e, 0x45, 0x1f, 0xd5, 0x27, 0x81,
+	0xd8, 0xfb, 0x55, 0xc3, 0xad, 0x18, 0xd5, 0x8a, 0x6d, 0x2d, 0x4d, 0xb7, 0xba, 0xe8, 0x23, 0xd8,
+	0xce, 0xa7, 0xce, 0xaf, 0x5a, 0x94, 0x89, 0x9b, 0x7a, 0xe2, 0xec, 0xb2, 0x26, 0x5a, 0x5c, 0x27,
+	0x2f, 0x0c, 0x89, 0xef, 0x71, 0x4c, 0xe2, 0x74, 0x68, 0x3e, 0x7b, 0x73, 0xd9, 0xfc, 0xf4, 0x2d,
+	0xfa, 0xf6, 0x1d, 0x8e, 0x79, 0xfe, 0x76, 0xfd, 0x0c, 0xca, 0xf4, 0xc1, 0xce, 0xd3, 0x48, 0x4f,
+	0x8b, 0x26, 0x21, 0xc7, 0x49, 0x88, 0x11, 0x65, 0xd6, 0x1d, 0x69, 0x05, 0xf6, 0xa2, 0x15, 0x08,
+	0x73, 0x7b, 0x9a, 0x1d, 0x73, 0xea, 0x3a, 0x7e, 0x3e, 0xc6, 0x4c, 0x06, 0xad, 0x3c, 0x49, 0x80,
+	0x4e, 0xbd, 0x49, 0xc8, 0x35, 0x1e, 0xeb, 0xae, 0xac, 0x69, 0xef, 0x1d, 0x66, 0xb1, 0xa1, 0x53,
+	0x1e, 0x2a, 0xc4, 0x39, 0xab, 0xf9, 0xd5, 0xa2, 0x80, 0x01, 0x66, 0x9c, 0xe2, 0x93, 0x09, 0x47,
+	0xd6, 0x7b, 0x2d, 0xa3, 0xb3, 0x9e, 0xd7, 0xe4, 0x30, 0x8b, 0x9a, 0x7b, 0xf0, 0x51, 0x3e, 0x33,
+	0x22, 0x81, 0xb5, 0x2e, 0x7b, 0xf5, 0x81, 0x9e, 0xf2, 0x94, 0x04, 0xed, 0x97, 0x06, 0x54, 0xf2,
+	0xe5, 0x9a, 0x0f, 0xa1, 0xba, 0x20, 0xa2, 0xeb, 0x31, 0x86, 0x78, 0x3a, 0x5a, 0x1b, 0x49, 0xee,
+	0x78, 0x5f, 0x84, 0xcc, 0x6f, 0x01, 0x34, 0x2d, 0x0a, 0xef, 0xac, 0x85, 0x96, 0xdd, 0xfe, 0xad,
+	0x00, 0x3b, 0xc7, 0x33, 0xbb, 0x1f, 0x52, 0xc2, 0x91, 0x2f, 0x5a, 0x9d, 0xda, 0x02, 0x85, 0x46,
+	0xe4, 0x9d, 0xbb, 0x94, 0xbc, 0xf0, 0x62, 0x77, 0xfe, 0x78, 0xe4, 0x5f, 0xb1, 0xf2, 0x41, 0x2f,
+	0x35, 0x86, 0xb7, 0x1e, 0xb0, 0x5a, 0xe4, 0x9d, 0x3b, 0x02, 0x34, 0xa3, 0xce, 0x9e, 0x3e, 0xf3,
+	0x18, 0x3e, 0xfe, 0x4f, 0xce, 0x54, 0x1f, 0x59, 0xb6, 0xd3, 0xbc, 0x19, 0x48, 0x69, 0xf5, 0x00,
+	0xee, 0xe7, 0xdc, 0x45, 0x6d, 0xd1, 0x3d, 0xa4, 0x79, 0x4a, 0x1d, 0xca, 0x98, 0xb9, 0x9e, 0xcf,
+	0xf1, 0x54, 0x59, 0xec, 0xba, 0xb3, 0x8e, 0x59, 0x5f, 0xfe, 0x6e, 0xff, 0x6a, 0x40, 0x63, 0x85,
+	0x3e, 0xda, 0xf3, 0xf3, 0x13, 0x3c, 0xc8, 0x1e, 0x85, 0xff, 0x5b, 0x27, 0x3b, 0x45, 0xbe, 0xa1,
+	0xc4, 0xf6, 0x5f, 0x05, 0xa8, 0x0d, 0x29, 0x99, 0xe2, 0x00, 0xd1, 0x6c, 0x26, 0x45, 0xfb, 0x94,
+	0x65, 0x31, 0xb0, 0x03, 0xed, 0xaf, 0x2b, 0x5e, 0xc8, 0xdb, 0x19, 0x7b, 0x3d, 0x58, 0xe2, 0x9a,
+	0xbf, 0x94, 0x47, 0xd0, 0x5c, 0x45, 0xba, 0xec, 0x81, 0xbb, 0xcb, 0x28, 0x9a, 0x13, 0xf6, 0xa1,
+	0xb1, 0x0a, 0x66, 0xd1, 0x0f, 0x6b, 0xcb, 0x20, 0x99, 0x2b, 0x7e, 0x09, 0xdb, 0xab, 0x20, 0xc4,
+	0x82, 0x96, 0x64, 0x72, 0x75, 0x39, 0x59, 0xac, 0xe9, 0xcf, 0x37, 0x88, 0xaa, 0xfa, 0xfd, 0x03,
+	0x6c, 0xae, 0x40, 0x65, 0x96, 0x21, 0xad, 0x6f, 0x6f, 0xc9, 0xfa, 0x6e, 0x6c, 0x8f, 0xb3, 0xb1,
+	0x4c, 0xcf, 0x0e, 0xfa, 0xaf, 0xae, 0x6c, 0xe3, 0xf5, 0x95, 0x6d, 0xfc, 0x73, 0x65, 0x1b, 0x2f,
+	0xaf, 0xed, 0xb5, 0xd7, 0xd7, 0xf6, 0xda, 0xdf, 0xd7, 0xf6, 0xda, 0xf7, 0xfa, 0xd4, 0x3c, 0xc3,
+	0xa7, 0xfe, 0xd8, 0xc3, 0x71, 0x6f, 0xf6, 0xbd, 0x7a, 0x2e, 0xbf, 0x58, 0x65, 0x8b, 0x4e, 0xee,
+	0xca, 0x0f, 0xd1, 0x2f, 0xfe, 0x0d, 0x00, 0x00, 0xff, 0xff, 0x94, 0x93, 0x68, 0xaa, 0xcd, 0x0a,
+	0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -618,6 +858,21 @@ func (m *RewardPeriod) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.RewardPeriodMod != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.RewardPeriodMod))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.RewardPeriodDistribute {
+		i--
+		if m.RewardPeriodDistribute {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x38
+	}
 	if m.RewardPeriodDefaultMultiplier != nil {
 		{
 			size := m.RewardPeriodDefaultMultiplier.Size()
@@ -714,6 +969,179 @@ func (m *PoolMultiplier) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintParams(dAtA, i, uint64(len(m.PoolMultiplierAsset)))
 		i--
 		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *LiquidityProtectionParams) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LiquidityProtectionParams) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LiquidityProtectionParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsActive {
+		i--
+		if m.IsActive {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.EpochLength != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.EpochLength))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.MaxRowanLiquidityThresholdAsset) > 0 {
+		i -= len(m.MaxRowanLiquidityThresholdAsset)
+		copy(dAtA[i:], m.MaxRowanLiquidityThresholdAsset)
+		i = encodeVarintParams(dAtA, i, uint64(len(m.MaxRowanLiquidityThresholdAsset)))
+		i--
+		dAtA[i] = 0x12
+	}
+	{
+		size := m.MaxRowanLiquidityThreshold.Size()
+		i -= size
+		if _, err := m.MaxRowanLiquidityThreshold.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *LiquidityProtectionRateParams) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LiquidityProtectionRateParams) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LiquidityProtectionRateParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.CurrentRowanLiquidityThreshold.Size()
+		i -= size
+		if _, err := m.CurrentRowanLiquidityThreshold.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *ProviderDistributionPeriod) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProviderDistributionPeriod) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProviderDistributionPeriod) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.DistributionPeriodMod != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.DistributionPeriodMod))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.DistributionPeriodEndBlock != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.DistributionPeriodEndBlock))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.DistributionPeriodStartBlock != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.DistributionPeriodStartBlock))
+		i--
+		dAtA[i] = 0x10
+	}
+	{
+		size := m.DistributionPeriodBlockRate.Size()
+		i -= size
+		if _, err := m.DistributionPeriodBlockRate.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *ProviderDistributionParams) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProviderDistributionParams) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProviderDistributionParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.DistributionPeriods) > 0 {
+		for iNdEx := len(m.DistributionPeriods) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.DistributionPeriods[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintParams(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -831,6 +1259,12 @@ func (m *RewardPeriod) Size() (n int) {
 		l = m.RewardPeriodDefaultMultiplier.Size()
 		n += 1 + l + sovParams(uint64(l))
 	}
+	if m.RewardPeriodDistribute {
+		n += 2
+	}
+	if m.RewardPeriodMod != 0 {
+		n += 1 + sovParams(uint64(m.RewardPeriodMod))
+	}
 	return n
 }
 
@@ -847,6 +1281,73 @@ func (m *PoolMultiplier) Size() (n int) {
 	if m.Multiplier != nil {
 		l = m.Multiplier.Size()
 		n += 1 + l + sovParams(uint64(l))
+	}
+	return n
+}
+
+func (m *LiquidityProtectionParams) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.MaxRowanLiquidityThreshold.Size()
+	n += 1 + l + sovParams(uint64(l))
+	l = len(m.MaxRowanLiquidityThresholdAsset)
+	if l > 0 {
+		n += 1 + l + sovParams(uint64(l))
+	}
+	if m.EpochLength != 0 {
+		n += 1 + sovParams(uint64(m.EpochLength))
+	}
+	if m.IsActive {
+		n += 2
+	}
+	return n
+}
+
+func (m *LiquidityProtectionRateParams) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.CurrentRowanLiquidityThreshold.Size()
+	n += 1 + l + sovParams(uint64(l))
+	return n
+}
+
+func (m *ProviderDistributionPeriod) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.DistributionPeriodBlockRate.Size()
+	n += 1 + l + sovParams(uint64(l))
+	if m.DistributionPeriodStartBlock != 0 {
+		n += 1 + sovParams(uint64(m.DistributionPeriodStartBlock))
+	}
+	if m.DistributionPeriodEndBlock != 0 {
+		n += 1 + sovParams(uint64(m.DistributionPeriodEndBlock))
+	}
+	if m.DistributionPeriodMod != 0 {
+		n += 1 + sovParams(uint64(m.DistributionPeriodMod))
+	}
+	return n
+}
+
+func (m *ProviderDistributionParams) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.DistributionPeriods) > 0 {
+		for _, e := range m.DistributionPeriods {
+			l = e.Size()
+			n += 1 + l + sovParams(uint64(l))
+		}
 	}
 	return n
 }
@@ -1578,6 +2079,45 @@ func (m *RewardPeriod) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardPeriodDistribute", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.RewardPeriodDistribute = bool(v != 0)
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardPeriodMod", wireType)
+			}
+			m.RewardPeriodMod = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RewardPeriodMod |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])
@@ -1693,6 +2233,470 @@ func (m *PoolMultiplier) Unmarshal(dAtA []byte) error {
 			var v github_com_cosmos_cosmos_sdk_types.Dec
 			m.Multiplier = &v
 			if err := m.Multiplier.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LiquidityProtectionParams) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LiquidityProtectionParams: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LiquidityProtectionParams: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxRowanLiquidityThreshold", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MaxRowanLiquidityThreshold.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxRowanLiquidityThresholdAsset", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.MaxRowanLiquidityThresholdAsset = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpochLength", wireType)
+			}
+			m.EpochLength = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EpochLength |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsActive", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsActive = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LiquidityProtectionRateParams) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LiquidityProtectionRateParams: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LiquidityProtectionRateParams: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CurrentRowanLiquidityThreshold", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CurrentRowanLiquidityThreshold.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProviderDistributionPeriod) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProviderDistributionPeriod: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProviderDistributionPeriod: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionPeriodBlockRate", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.DistributionPeriodBlockRate.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionPeriodStartBlock", wireType)
+			}
+			m.DistributionPeriodStartBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DistributionPeriodStartBlock |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionPeriodEndBlock", wireType)
+			}
+			m.DistributionPeriodEndBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DistributionPeriodEndBlock |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionPeriodMod", wireType)
+			}
+			m.DistributionPeriodMod = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DistributionPeriodMod |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProviderDistributionParams) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProviderDistributionParams: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProviderDistributionParams: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionPeriods", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DistributionPeriods = append(m.DistributionPeriods, &ProviderDistributionPeriod{})
+			if err := m.DistributionPeriods[len(m.DistributionPeriods)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
