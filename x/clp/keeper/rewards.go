@@ -56,15 +56,20 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		return err
 	}
 
+	partitions, err := k.GetAllLiquidityProvidersPartitions(ctx)
+	if err != nil {
+		fireLPPGetLPsErrorEvent(ctx, err)
+	}
+
 	shouldDistribute := period.RewardPeriodDistribute
 	poolRowanMap := make(PoolRowanMap)
 	lpRowanMap := make(LpRowanMap)
 	lpPoolMap := make(LpPoolMap)
 	for _, e := range tuples {
 		if shouldDistribute {
-			lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *e.Pool.ExternalAsset)
-			if err != nil {
-				k.Logger(ctx).Error(fmt.Sprintf("Getting liquidity providers for asset %s error %s", e.Pool.ExternalAsset.Symbol, err.Error()))
+			lps, exists := partitions[*e.Pool.ExternalAsset]
+			if !exists { // TODO: fire event
+				k.Logger(ctx).Error(fmt.Sprintf("No liquidity providers for asset %s ", e.Pool.ExternalAsset.Symbol))
 
 				// if this fails, we add rewards to pool instead
 				k.addRewardsToPool(ctx, e.Pool, e.Reward)

@@ -213,7 +213,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	sifapp.SetConfig(false) // needed for GenerateAddress to generate a proper address
 	// We cheat here to get the first LP's address in order to add it to the blacklist
-	lpAddress := test.GenerateAddress(fmt.Sprintf("%d", 0))
+	lpAddress := test.GenerateAddress2(fmt.Sprintf("%d%d%d%d", 0, 0, 0, 0))
 	blacklist := []sdk.AccAddress{lpAddress}
 	startBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewInt(42))
 
