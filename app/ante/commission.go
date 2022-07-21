@@ -103,16 +103,22 @@ func (vcd ValidateMinCommissionDecorator) CalculateProjectedVotingPower(ctx sdk.
 		projectedTotalBondedTokens = totalBondedTokens.Add(delegateAmount)
 	} else {
 		bondedValidators := vcd.sk.GetBondedValidatorsByPower(ctx)
-		weakestValidatorTokens := sdk.NewDecFromInt(bondedValidators[len(bondedValidators)-1].Tokens)
+		numBondedValidators := len(bondedValidators)
+		maxValidators := vcd.sk.GetParams(ctx).MaxValidators
 
-		if projectedValidatorTokens.LT(weakestValidatorTokens) {
-			//validator will still not be bonded so will have no voting power
-			return sdk.ZeroDec()
+		if maxValidators > uint32(numBondedValidators) {
+			// the validator is not bonded but could become part of the validator set without replacing
+			// a validator currently in the validator set
+			projectedTotalBondedTokens = totalBondedTokens.Add(projectedValidatorTokens)
+		} else {
+			weakestValidatorTokens := sdk.NewDecFromInt(bondedValidators[len(bondedValidators)-1].Tokens)
+			if projectedValidatorTokens.LT(weakestValidatorTokens) {
+				//validator will not make it into the validator set so will have no voting power
+				return sdk.ZeroDec()
+			}
+			// validator could make it into the validator set, replacing the weakest validator
+			projectedTotalBondedTokens = totalBondedTokens.Add(projectedValidatorTokens).Sub(weakestValidatorTokens)
 		}
-
-		// validator will become bonded - replace the weakest validator with this validator
-		projectedTotalBondedTokens = totalBondedTokens.Add(projectedValidatorTokens).Sub(weakestValidatorTokens)
-
 	}
 
 	if projectedTotalBondedTokens == sdk.ZeroDec() {

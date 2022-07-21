@@ -23,14 +23,25 @@ func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
 		validatorTokens        sdk.Int
 		validatorBondStatus    stakingtypes.BondStatus
 		weakestValidatorTokens sdk.Int
+		maxValidators          uint32
 		expectedVotingPower    sdk.Dec
 	}{
+		{
+			name:                   "not bonded, spare validator slot",
+			delegateAmount:         sdk.NewIntFromUint64(100),
+			validatorTokens:        sdk.NewIntFromUint64(1000),
+			validatorBondStatus:    stakingtypes.Unbonded,
+			weakestValidatorTokens: sdk.NewIntFromUint64(1050),
+			maxValidators:          2,
+			expectedVotingPower:    sdk.MustNewDecFromStr("0.511627906976744186"),
+		},
 		{
 			name:                   "not bonded, projected to be more powerful than weakest",
 			delegateAmount:         sdk.NewIntFromUint64(100),
 			validatorTokens:        sdk.NewIntFromUint64(1000),
 			validatorBondStatus:    stakingtypes.Unbonded,
 			weakestValidatorTokens: sdk.NewIntFromUint64(1050),
+			maxValidators:          1,
 			expectedVotingPower:    sdk.MustNewDecFromStr("1.0000000000000"),
 		},
 		{
@@ -39,6 +50,7 @@ func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
 			validatorTokens:        sdk.NewIntFromUint64(1000),
 			validatorBondStatus:    stakingtypes.Unbonded,
 			weakestValidatorTokens: sdk.NewIntFromUint64(2000),
+			maxValidators:          1,
 			expectedVotingPower:    sdk.MustNewDecFromStr("0.0000000"),
 		},
 		{
@@ -47,6 +59,7 @@ func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
 			validatorTokens:        sdk.NewIntFromUint64(1000),
 			validatorBondStatus:    stakingtypes.Bonded,
 			weakestValidatorTokens: sdk.NewIntFromUint64(2000),
+			maxValidators:          1,
 			expectedVotingPower:    sdk.MustNewDecFromStr("0.354838709677419355"),
 		},
 	}
@@ -56,6 +69,10 @@ func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			app := sifapp.Setup(false)
 			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+			params := stakingtypes.DefaultParams()
+			params.MaxValidators = tc.maxValidators
+			app.StakingKeeper.SetParams(ctx, params)
+
 			vcd := sifAnte.NewValidateMinCommissionDecorator(app.StakingKeeper)
 
 			delegatorAddresses := sifapp.AddTestAddrs(app, ctx, 1, tc.weakestValidatorTokens.Add(tc.validatorTokens))
@@ -74,8 +91,6 @@ func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
 		})
 	}
 }
-
-//TODO: edge case if num validators < max validators
 
 func createValidator(app *sifapp.SifchainApp, ctx sdk.Context, delegateAmount sdk.Int, status stakingtypes.BondStatus, delegatorAddress sdk.AccAddress, valPubKey cryptotypes.PubKey) sdk.ValAddress {
 	pkAny, err := codectypes.NewAnyWithValue(valPubKey)
