@@ -133,7 +133,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 func GenerateRandomLPWithUnitsAndAsset(poolUnitss []uint64, asset types.Asset) []*types.LiquidityProvider {
 	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
 	for i, poolUnits := range poolUnitss {
-		address := generateAddress2(fmt.Sprintf("%d%d%d%d", i, i, i, i))
+		address := GenerateAddress2(fmt.Sprintf("%d%d%d%d", i, i, i, i))
 		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
 		lpList[i] = &lp
 	}
@@ -258,7 +258,7 @@ func TrimFirstRune(s string) string {
 	return strings.ToLower(s[i:])
 }
 
-func generateAddress2(key string) sdk.AccAddress {
+func GenerateAddress2(key string) sdk.AccAddress {
 	if key == "" {
 		key = AddressKey1
 	}
