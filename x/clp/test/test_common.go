@@ -157,12 +157,30 @@ func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
 
 	return lpList
 }
+func genTokens(n int) []string {
+	var runes = []rune("abcdefghijklmnopqrstuvwxyz")
+	set := make(map[string]bool, n)
+
+	for len(set) != n {
+		token := make([]rune, 6)
+		for i, _ := range token {
+			token[i] = runes[rand.Intn(len(runes))]
+		}
+		set[string(token)] = true
+	}
+
+	var strings = make([]string, n)
+	i := 0
+	for str, _ := range set {
+		strings[i] = str
+		i++
+	}
+
+	return strings
+}
 
 func GeneratePoolsSetLPs(keeper clpkeeper.Keeper, ctx sdk.Context, nPools, nLPs int) []*types.Pool {
-	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
-	if nPools > len(tokens) {
-		panic("nPools is too high")
-	}
+	tokens := genTokens(nPools)
 
 	rand.Seed(time.Now().Unix())
 	poolList := make([]*types.Pool, nPools)
