@@ -77,7 +77,7 @@ type Keeper interface {
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
-	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
+	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
@@ -86,9 +86,9 @@ type Keeper interface {
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
+	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, sdk.Uint, error)
 
-	EmitForceClose(ctx sdk.Context, mtp *MTP, closer string)
+	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
 	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }
