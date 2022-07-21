@@ -113,6 +113,32 @@ func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) ([]*types.LiquidityPro
 	return lpList, nil
 }
 
+func (k Keeper) GetAllLiquidityProvidersPartitions(ctx sdk.Context) (map[types.Asset][]*types.LiquidityProvider, error) {
+	all, err := k.GetAllLiquidityProviders(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return partitionLPsbyAsset(all), nil
+}
+
+func partitionLPsbyAsset(lps []*types.LiquidityProvider) map[types.Asset][]*types.LiquidityProvider {
+	mapping := make(map[types.Asset][]*types.LiquidityProvider)
+
+	for _, lp := range lps {
+		arr, exists := mapping[*lp.Asset]
+		if exists {
+			arr = append(arr, lp)
+			mapping[*lp.Asset] = arr
+		} else {
+			arr := []*types.LiquidityProvider{lp}
+			mapping[*lp.Asset] = arr
+		}
+	}
+
+	return mapping
+}
+
 func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset,
 	pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
 	var lpList []*types.LiquidityProvider
