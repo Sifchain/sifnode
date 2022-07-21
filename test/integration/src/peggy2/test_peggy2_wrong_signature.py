@@ -1,3 +1,4 @@
+import pytest
 import siftool_path
 from siftool import eth, test_utils, sifchain
 from siftool.common import *

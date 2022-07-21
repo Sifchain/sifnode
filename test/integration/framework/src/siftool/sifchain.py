@@ -273,7 +273,7 @@ class SifnodeClient:
 
         args = [
             "tx", "ethbridge", "sign",
-            eth.ethereum_network_descriptor,
+            str(eth.ethereum_network_descriptor),
             prophecy_id, to_eth_addr, signature,
             "--from", from_sif_addr,
             "--output", "json", "-y", "--generate-only"
