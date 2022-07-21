@@ -135,9 +135,10 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	}
 
 	var mtp *types.MTP
+	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, err = k.Keeper.ForceCloseLong(ctx, msg)
+		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +146,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
 
-	k.EmitForceClose(ctx, mtp, msg.Signer)
+	k.EmitForceClose(ctx, mtp, repayAmount, msg.Signer)
 
 	return &types.MsgForceCloseResponse{}, nil
 }
@@ -258,10 +259,10 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	return &mtp, nil
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
 	var pool clptypes.Pool
@@ -270,12 +271,12 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
 		}
 	} else {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
 		if err != nil {
-			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
 		}
 	}
 
@@ -284,39 +285,39 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 
 	interestRate, err := k.InterestRateComputation(ctx, pool)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
 	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
 	mtpHealth, err := k.UpdateMTPHealth(ctx, mtp, pool)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
 	if mtpHealth.GT(forceCloseThreshold) {
-		return nil, sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
+		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
 
 	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
 	repayAmount, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
 	err = k.Repay(ctx, &mtp, pool, repayAmount)
 	if err != nil {
-		return nil, err
+		return nil, sdk.ZeroUint(), err
 	}
 
-	return &mtp, nil
+	return &mtp, repayAmount, nil
 }
 
 func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {

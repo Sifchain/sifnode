@@ -86,9 +86,9 @@ type Keeper interface {
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, error)
+	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, sdk.Uint, error)
 
-	EmitForceClose(ctx sdk.Context, mtp *MTP, closer string)
+	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
 	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }
