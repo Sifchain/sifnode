@@ -198,10 +198,10 @@ class Test:
         log.info("In phase 'LPPD only'")
         time4 = self.wait_for_block(lppd_end_block)
 
-        log.info("Neither:       {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks))
-        log.info("Rewards only:  {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks))
-        log.info("Reards + LPPD: {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks))
-        log.info("LPPD only:     {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks))
+        log.info("Neither: {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks))
+        log.info("Rewards only: {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks))
+        log.info("Rewards + LPPD: {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks))
+        log.info("LPPD only: {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks))
 
         # TODO LPPD and rewards assertions
         # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
