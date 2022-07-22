@@ -97,7 +97,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		moduleBalancePostTransfer := k.GetModuleRowan(ctx)
 		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
 		if !diff.IsZero() {
-			k.BurnRowan(ctx, diff)
+			k.BurnRowan(ctx, diff) // nolint:errcheck
 		}
 
 		coinsMinted := sdk.NewIntFromBigInt(coinsToMint.BigInt()).Sub(diff)
