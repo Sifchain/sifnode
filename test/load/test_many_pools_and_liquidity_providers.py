@@ -267,6 +267,7 @@ def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_provid
     log.info("reward_period_mod: {}".format(reward_period_mod))
     log.info("reward_period_pool_count: {}".format(reward_period_pool_count))
     log.info("test_duration_blocks: {}".format(test_duration_blocks))
+    log.info("number_of_nodes: {}".format(1))
 
     test.number_of_liquidity_pools = number_of_liquidity_pools
     test.number_of_wallets = number_of_wallets
