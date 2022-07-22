@@ -76,7 +76,8 @@ def sifnoded_parse_output_lines(stdout: str) -> Mapping:
     return result
 
 def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
-    multipliers: Iterable[Tuple[str, int]], allocation: int
+    multipliers: Iterable[Tuple[str, int]], allocation: int, reward_period_default_multiplier: float,
+    reward_period_distribute: bool, reward_period_mod: int
 ) -> RewardsParams:
     return {
         "reward_period_id": rewards_period_id,
@@ -87,9 +88,9 @@ def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_bloc
             "pool_multiplier_asset": denom,
             "multiplier": str(multiplier)
         } for denom, multiplier in multipliers],
-        "reward_period_default_multiplier": "0.0",
-        "reward_period_distribute": False,
-        "reward_period_mod": 1
+        "reward_period_default_multiplier": str(reward_period_default_multiplier),
+        "reward_period_distribute": reward_period_distribute,
+        "reward_period_mod": reward_period_mod
     }
 
 def create_lppd_params(start_block, end_block, rate) -> LPPDParams:
@@ -730,7 +731,9 @@ class Sifnoded:
 
     def _rpc_get(self, host, port, relative_url):
         url = "http://{}:{}/{}".format(host, port, relative_url)
-        return json.loads(http_get(url).decode("UTF-8"))
+        http_result_payload = http_get(url)
+        log.debug("Result for {}: {} bytes".format(url, len(http_result_payload)))
+        return json.loads(http_result_payload.decode("UTF-8"))
 
     def wait_for_last_transaction_to_be_mined(self, count: int = 1, disable_log: bool = True, timeout: int = 90):
         log.debug("Waiting for last sifnode transaction to be mined...")
