@@ -11,7 +11,7 @@ from siftool import command, sifchain, project, cosmos
 from siftool.sifchain import ROWAN, STAKE
 
 
-log = siftool_logger(__name__)
+log = siftool_logger()
 
 
 class Test:
@@ -57,8 +57,11 @@ class Test:
         # all `number_of_liquidity_pools`. This is also the same of number of different tokens per wallet (not counting
         # rowan).
         self.liquidity_providers_per_wallet = 5
-        assert self.liquidity_providers_per_wallet > 0
-        assert self.liquidity_providers_per_wallet <= self.number_of_liquidity_pools
+
+        self.reward_period_default_multiplier = 1.0
+        self.reward_period_distribute = True
+        self.reward_period_mod = 1
+        self.reward_period_pool_count = 10
 
         # We are only dealing with symmetrical liquidity pools here.
         # This means that each liquidity provider uses `native_amount == external_amount`.
@@ -71,6 +74,11 @@ class Test:
         self.amount_of_rowan_per_wallet = 10000 * 10**18  # TODO How much?
 
     def run_test(self):
+        assert self.liquidity_providers_per_wallet > 0
+        assert self.liquidity_providers_per_wallet <= self.number_of_liquidity_pools
+        assert self.reward_period_pool_count <= self.number_of_liquidity_pools
+        assert self.test_duration_blocks > 0
+
         sifnoded = self.sifnoded
 
         self.prj.pkill()
@@ -179,7 +187,8 @@ class Test:
 
         # Set up rewards
         reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
-            [(token, 1) for token in self.tokens], 100000 * self.token_unit)
+            [(token, 1) for token in self.tokens][:self.reward_period_pool_count], 100000 * self.token_unit,
+            self.reward_period_default_multiplier, self.reward_period_distribute, self.reward_period_mod)
         sifnoded.clp_reward_period(sif, reward_params)
         sifnoded.wait_for_last_transaction_to_be_mined()
 
@@ -216,6 +225,7 @@ class Test:
         while current_block < block_number:
             if (prev_block is None) or (current_block != prev_block):
                 # This is just for collecting statistics while we wait, the test result does not depend on it.
+                # Check also https://github.com/cosmos/cosmos-sdk/issues/6105
                 try:
                     blk = self.sifnoded.get_block_results()
                     histogram = {}
@@ -237,24 +247,34 @@ class Test:
 
 
 def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_providers_per_wallet: int,
-    test_duration_blocks: int
+    reward_period_default_multiplier: float, reward_period_distribute: bool, reward_period_mod: int,
+    reward_period_pool_count: int, test_duration_blocks: int
 ):
     cmd = command.Command()
     prj = project.Project(cmd, project_dir())
     sifnoded_home = cmd.tmpdir("siftool-test.tmp")
+    cmd.rmdir(sifnoded_home)
+    test = Test(cmd, prj, sifnoded_home=sifnoded_home)
 
     log.info("sifnoded_home: {}".format(sifnoded_home))
     log.info("number_of_liquidity_pools: {}".format(number_of_liquidity_pools))
     log.info("number_of_wallets: {}".format(number_of_wallets))
     log.info("liquidity_providers_per_wallet: {}".format(liquidity_providers_per_wallet))
+    log.info("reward_period_default_multiplier: {}".format(reward_period_default_multiplier))
+    log.info("reward_period_distribute: {}".format(reward_period_distribute))
+    log.info("reward_period_mod: {}".format(reward_period_mod))
+    log.info("reward_period_pool_count: {}".format(reward_period_pool_count))
     log.info("test_duration_blocks: {}".format(test_duration_blocks))
 
-    cmd.rmdir(sifnoded_home)
-    test = Test(cmd, prj, sifnoded_home=sifnoded_home)
     test.number_of_liquidity_pools = number_of_liquidity_pools
     test.number_of_wallets = number_of_wallets
     test.liquidity_providers_per_wallet = liquidity_providers_per_wallet
+    test.reward_period_default_multiplier = reward_period_default_multiplier
+    test.reward_period_distribute = reward_period_distribute
+    test.reward_period_mod = reward_period_mod
+    test.reward_period_pool_count = reward_period_pool_count
     test.test_duration_blocks = test_duration_blocks
+
     try:
         test_start_time = time.time()
         test.run_test()
@@ -277,9 +297,15 @@ def main(argv: List[str]):
     parser.add_argument("--number-of-liquidity-pools", type=int, default=10)
     parser.add_argument("--number-of-wallets", type=int, default=10)
     parser.add_argument("--liquidity-providers-per-wallet", type=int, default=5)
+    parser.add_argument("--reward-period-default-multiplier", type=float, default=0.0)
+    parser.add_argument("--reward-period-distribute", action="store_true")
+    parser.add_argument("--reward-period-mod", type=int, default=1)
+    parser.add_argument("--reward-period-pool-count", type=int, default=10)
     parser.add_argument("--test-duration-blocks", type=int, default=5)
     args = parser.parse_args(argv[1:])
-    run(args.number_of_liquidity_pools, args.number_of_wallets, args.liquidity_providers_per_wallet, args.test_duration_blocks)
+    run(args.number_of_liquidity_pools, args.number_of_wallets, args.liquidity_providers_per_wallet,
+        args.reward_period_default_multiplier, args.reward_period_distribute, args.reward_period_mod,
+        args.reward_period_pool_count, args.test_duration_blocks)
 
 if __name__ == "__main__":
     main(sys.argv)
