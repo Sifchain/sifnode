@@ -131,8 +131,8 @@ func createDistributeEvent(address string) []sdk.Event {
 
 func TestKeeper_CollectProviderDistributions(t *testing.T) {
 	blockRate := sdk.MustNewDecFromStr("0.003141590000000000")
-	nPools := 5
-	nLPs := 3
+	nPools := 100
+	nLPs := 800
 	ctx, app := test.CreateTestAppClp(false)
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, nPools, nLPs)
 	poolRowanMap, lpRowanMap, lpPoolMap := app.ClpKeeper.CollectProviderDistributions(ctx, pools, blockRate)
