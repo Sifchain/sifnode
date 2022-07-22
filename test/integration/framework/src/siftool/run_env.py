@@ -1523,7 +1523,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "-olog_level=DEBUG",
                         "-olog_file=/tmp/pytest.out",
                         "-v",
-                        "test/integration/src/py/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth"
+                        "test/integration/src/peggy2/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth_transfer_valid"
                     ],
                     "cwd": "${workspaceRoot}",
                     "env": dot_env,
