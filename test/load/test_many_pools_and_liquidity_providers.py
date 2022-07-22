@@ -182,9 +182,9 @@ class Test:
         current_block = sifnoded.get_current_block()
         start_block = current_block + 5
         rewards_start_block = start_block + self.test_duration_blocks
-        rewards_end_block = rewards_start_block + 2 * self.test_duration_blocks - 1
+        rewards_end_block = rewards_start_block + 2 * self.test_duration_blocks
         lppd_start_block = start_block + 2 * self.test_duration_blocks
-        lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks - 1
+        lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks
 
         # Set up rewards
         reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
@@ -199,13 +199,13 @@ class Test:
         sifnoded.wait_for_last_transaction_to_be_mined()
 
         time0 = self.wait_for_block(start_block)
-        log.info("In phase 'neither'")
+        log.info("In phase 'neither' (blocks {} - {})".format(start_block, rewards_start_block))
         time1 = self.wait_for_block(rewards_start_block)
-        log.info("In phase 'rewards only'")
+        log.info("In phase 'rewards only' (blocks {} - {})".format(rewards_start_block, lppd_start_block))
         time2 = self.wait_for_block(lppd_start_block)
-        log.info("In phase 'rewards + LPPD'")
+        log.info("In phase 'rewards + LPPD' (blocks {} - {})".format(lppd_start_block, rewards_end_block))
         time3 = self.wait_for_block(rewards_end_block)
-        log.info("In phase 'LPPD only'")
+        log.info("In phase 'LPPD only' (blocks {} - {})".format(rewards_end_block, lppd_end_block))
         time4 = self.wait_for_block(lppd_end_block)
 
         accuracy = 1.0 / self.test_duration_blocks
