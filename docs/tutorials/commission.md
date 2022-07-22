@@ -26,13 +26,11 @@ make init
 make run
 ```
 
-## Create Validator
+## Blocking `MsgCreateValidator` messages
 
-This section demonstrate the limitation on `MsgCreateValidator`.
+This section demonstrates the blocking behaviour on `MsgCreateValidator` messages.
 
 ### Success
-
-#### Explicit commission-rate
 
 If the `commission-rate` is set above 5% creating a validator succeeds.
 
@@ -63,7 +61,7 @@ sifnoded tx staking create-validator \
 NOTE: The pubkey used in this example was found by running the `sifnoded tendermint show-validator` command
 on a different localnet instance.
 
-NOTe: Each validator must have a unique public key.
+NOTE: Each validator must have a unique public key.
 
 2. Query the list of validators and confirm that `akasha_val` has been added and there are now two validators:
 
@@ -95,9 +93,9 @@ sifnoded tx staking create-validator \
 
 Which fails with the message `validator commission 0.030000000000000000 cannot be lower than minimum of 0.050000000000000000: invalid request`
 
-## Edit Validator
+## Blocking `MsgEditValidator` messages
 
-This section demonstrates the limitations on `MsgEditValidator` edit validator.
+This section demonstrates the blocking behaviour on `MsgEditValidator` messages.
 
 ### Success
 
@@ -498,7 +496,7 @@ sifnoded query staking validators --output=json  | jq '.validators[] | select(.d
 ### Failure
 
 Since the `akasha_val` has `projectedValidatorTokens` < `weakestValidatorTokens` in these tests, it never makes it into the validator
-set and so always has 0% voting power. In which case it's not not possible to fail under these conditions.
+set and so always has 0% voting power. In which case it's not not possible to fail to delegate to this validator under these conditions.
 
 ## Validator not Bonded & numValidators == maxValidators & projectedValidatorTokens > weakestValidatorTokens
 

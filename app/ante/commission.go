@@ -71,7 +71,7 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 			return err
 		}
 
-		projectedVotingPower := vcd.CalculateProjectedVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
+		projectedVotingPower := vcd.CalculateDelegateProjectedVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
 		if projectedVotingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
@@ -83,7 +83,7 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 			return err
 		}
 
-		projectedVotingPower := vcd.CalculateProjectedVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
+		projectedVotingPower := vcd.CalculateRedelegateProjectedVotingPower(ctx, val, sdk.NewDecFromInt(msg.Amount.Amount))
 		if projectedVotingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
@@ -93,7 +93,11 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 	return nil
 }
 
-func (vcd ValidateMinCommissionDecorator) CalculateProjectedVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
+func (vcd ValidateMinCommissionDecorator) CalculateRedelegateProjectedVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
+	panic("TODO")
+}
+
+func (vcd ValidateMinCommissionDecorator) CalculateDelegateProjectedVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
 	validatorTokens := sdk.NewDecFromInt(validator.GetTokens())
 	projectedValidatorTokens := validatorTokens.Add(delegateAmount)
 	totalBondedTokens := sdk.NewDecFromInt(vcd.sk.TotalBondedTokens(ctx))
