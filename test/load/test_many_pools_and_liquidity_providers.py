@@ -181,9 +181,9 @@ class Test:
         current_block = sifnoded.get_current_block()
         start_block = current_block + 5
         rewards_start_block = start_block + self.test_duration_blocks
-        rewards_end_block = rewards_start_block + 2 * self.test_duration_blocks
+        rewards_end_block = rewards_start_block + 2 * self.test_duration_blocks - 1
         lppd_start_block = start_block + 2 * self.test_duration_blocks
-        lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks
+        lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks - 1
 
         # Set up rewards
         reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
@@ -207,10 +207,12 @@ class Test:
         log.info("In phase 'LPPD only'")
         time4 = self.wait_for_block(lppd_end_block)
 
-        log.info("Neither: {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks))
-        log.info("Rewards only: {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks))
-        log.info("Rewards + LPPD: {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks))
-        log.info("LPPD only: {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks))
+        accuracy = 1.0 / self.test_duration_blocks
+
+        log.info("Neither: {:.2f} +/- {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks, accuracy))
+        log.info("Rewards only: {:.2f} +/- {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks, accuracy))
+        log.info("Rewards + LPPD: {:.2f} +/- {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks, accuracy))
+        log.info("LPPD only: {:.2f} +/- {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks, accuracy))
 
         # TODO LPPD and rewards assertions
         # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
