@@ -186,6 +186,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	lpCoinsAfter1 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	require.True(t, lpCoinsBefore.IsLT(lpCoinsAfter1))
 	require.Equal(t, lpCoinsAfter1, totalCoinsDistribution)
+	require.Subset(t, ctx.EventManager().Events(), createRewardsDistributeEvent(totalCoinsDistribution))
 
 	distributed1 := pool.RewardPeriodNativeDistributed
 	moduleBalance1 := app.ClpKeeper.GetModuleRowan(ctx)
@@ -200,6 +201,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	require.Nil(t, err)
 	distributed2 := pool.RewardPeriodNativeDistributed
 	require.Equal(t, distributed1, distributed2)
+	require.Subset(t, ctx.EventManager().Events(), createRewardsAccumEvent(totalCoinsDistribution))
 
 	lpCoinsAfter2 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	require.Equal(t, lpCoinsAfter1, lpCoinsAfter2)
@@ -208,6 +210,21 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	diffBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(distributed2.BigInt()))
 	// we did not distribute the newly minted coins
 	require.Equal(t, startBalance.Add(diffBalance).String(), moduleBalance2.String())
+}
+
+//nolint
+func createRewardsDistributeEvent(totalCoinsDistribution sdk.Coin) []sdk.Event {
+	return []sdk.Event{sdk.NewEvent("rewards/distribution",
+		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+		sdk.NewAttribute("amounts", "[{\"pool\":\"vlbzg\",\"amount\":\"200000000000000000000000000\"}]")),
+	}
+}
+
+func createRewardsAccumEvent(totalCoinsDistribution sdk.Coin) []sdk.Event {
+	return []sdk.Event{sdk.NewEvent("rewards/accumulation",
+		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+		sdk.NewAttribute("amounts", "[{\"pool\":\"vlbzg\",\"amount\":\"200000000000000000000000000\"}]")),
+	}
 }
 
 func TestKeeper_RewardsDistributionFailure(t *testing.T) {

@@ -97,11 +97,36 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		moduleBalancePostTransfer := k.GetModuleRowan(ctx)
 		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
 		if !diff.IsZero() {
-			return k.BurnRowan(ctx, diff)
+			k.BurnRowan(ctx, diff)
 		}
+
+		coinsMinted := sdk.NewIntFromBigInt(coinsToMint.BigInt()).Sub(diff)
+		fireRewardsEvent(ctx, "rewards/distribution", coinsMinted, PoolRowanMapToLPPools(poolRowanMap))
+	} else {
+		fireRewardsEvent(ctx, "rewards/accumulation", sdk.NewIntFromBigInt(coinsToMint.BigInt()), poolRewardsToLPPools(tuples))
 	}
 
 	return nil
+}
+
+func fireRewardsEvent(ctx sdk.Context, typeStr string, coinsMinted sdk.Int, lpPools []LPPool) {
+	data := PrintPools(lpPools)
+	successEvent := sdk.NewEvent(
+		typeStr,
+		sdk.NewAttribute("total_amount", coinsMinted.String()),
+		sdk.NewAttribute("amounts", data),
+	)
+
+	ctx.EventManager().EmitEvents(sdk.Events{successEvent})
+}
+
+func poolRewardsToLPPools(poolRewards []PoolReward) []LPPool {
+	arr := make([]LPPool, 0, len(poolRewards))
+	for _, poolReward := range poolRewards {
+		arr = append(arr, LPPool{Pool: poolReward.Pool, Amount: poolReward.Reward})
+	}
+
+	return arr
 }
 
 func (k Keeper) GetModuleRowan(ctx sdk.Context) sdk.Coin {
