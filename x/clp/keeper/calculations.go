@@ -388,12 +388,10 @@ func CalcSwapResult(toRowan bool,
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
-func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
-	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
-	if err != nil {
-		return sdk.ZeroUint(), err
-	}
-	value := spotPrice.Mul(sdk.NewDecFromBigInt(rowanAmount.BigInt()))
+func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool, decimals int64) (sdk.Uint, error) {
+	swapPriceNative := CalcSwapPrice(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+	adjustedRowanAmount := ReducePrecision(sdk.NewDecFromBigInt(rowanAmount.BigInt()), decimals)
+	value := swapPriceNative.Mul(adjustedRowanAmount)
 	return sdk.NewUintFromBigInt(value.RoundInt().BigInt()), nil
 }
 

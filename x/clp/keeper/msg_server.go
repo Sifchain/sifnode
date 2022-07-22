@@ -428,8 +428,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 			if err != nil {
 				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
 			}
-			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount)
-
+			normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
+			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount, normalizationFactor, adjustExternalToken, sAsset.Decimals)
 			if err != nil {
 				return nil, err
 			}
@@ -578,7 +578,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 				if err != nil {
 					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
 				}
-				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount)
+				normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
+				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount, normalizationFactor, adjustExternalToken, rAsset.Decimals)
 
 				if err != nil {
 					return nil, err
