@@ -8,7 +8,7 @@ from typing import Iterable
 
 # TODO for PR: Remove all print outs
 
-fund_amount_eth = 10 * eth.ETH
+fund_amount_eth = 0.1 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
 fund_amount_ceth_cross_chain_fee = 10 * eth.GWEI
 
