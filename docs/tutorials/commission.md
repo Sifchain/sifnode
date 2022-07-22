@@ -138,7 +138,7 @@ sifnoded tx staking edit-validator \
 Which fails with the message `validator commission 0.030000000000000000 cannot be lower than minimum of 0.050000000000000000: invalid request`
 
 
-# Min commission upgrade handler
+## Min commission upgrade handler
 
 Demonstrating the upgrade handler, will require running the previous release then upgrading to the
 release which introduces the min-commission feature. It also requires that there's a validator
@@ -335,7 +335,7 @@ sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 1
   --broadcast-mode block -y
 ```
 
-2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 91000000000000000000000 tokens)
+2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 92000000000000000000000 tokens)
 
 ```
 sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
@@ -418,7 +418,7 @@ sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 1
   --broadcast-mode block -y
 ```
 
-2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 91000000000000000000000 tokens)
+2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 92000000000000000000000 tokens)
 
 ```
 sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
@@ -489,7 +489,7 @@ sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 1
   --broadcast-mode block -y
 ```
 
-2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 91000000000000000000000 tokens)
+2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 92000000000000000000000 tokens)
 
 ```
 sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
