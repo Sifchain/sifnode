@@ -4,6 +4,7 @@ import json
 import time
 import grpc
 import re
+import toml
 import web3  # TODO Remove dependency
 from typing import Mapping, Any, Tuple, AnyStr
 from siftool import command, cosmos, eth
@@ -27,6 +28,13 @@ GasFees = Tuple[float, str]  # Special case of cosmos.Balance with only one deno
 TokenRegistryParams = JsonDict
 RewardsParams = JsonDict
 LPPDParams = JsonDict
+
+
+# Default ports
+SIFNODED_DEFAULT_RPC_PORT = 26657  # In config/config.toml; can be queried using curl http://...
+SIFNODED_DEFAULT_P2P_PORT = 26656  # In config/config.toml
+SIFNODED_DEFAULT_API_PORT = 1317   # In config/app.toml, section [api], disabled by default
+
 
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
@@ -129,6 +137,7 @@ class Sifnoded:
         self.wait_for_balance_change_default_change_timeout = None
         self.wait_for_balance_change_default_polling_time = 2
 
+    # Returns what looks like genesis file data
     def init(self, moniker):
         args = [self.binary, "init", moniker] + self._home_args() + self._chain_id_args()
         res = self.cmd.execst(args)
@@ -227,6 +236,22 @@ class Sifnoded:
         bank["balances"] = [{"address": a, "coins": [{"denom": d, "amount": str(c[d])} for d in sorted(c)]} for a, c in balances.items()]
         bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
         self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
+
+    def load_app_toml(self) -> JsonDict:
+        app_toml_path = os.path.join(self.get_effective_home(), "config", "app.toml")
+        with open(app_toml_path, "r") as app_toml_file:
+            return toml.load(app_toml_path)
+
+    def save_app_toml(self, data: JsonDict):
+        app_toml_path = os.path.join(self.get_effective_home(), "config", "app.toml")
+        with open(app_toml_path, "w") as app_toml_file:
+            app_toml_file.write(toml.dumps(data))
+
+    def enable_rpc_port(self):
+        app_toml = self.load_app_toml()
+        app_toml["api"]["enable"] = True
+        app_toml["api"]["address"] = "tcp://{}:{}".format(ANY_ADDR, SIFNODED_DEFAULT_API_PORT)
+        self.save_app_toml(app_toml)
 
     def get_effective_home(self) -> str:
         return self.home if self.home is not None else self.cmd.get_user_home(".siufnoded")

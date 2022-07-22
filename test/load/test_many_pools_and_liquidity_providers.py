@@ -89,6 +89,7 @@ class Test:
 
         sifnode_moniker = "test"
         sifnoded.init(sifnode_moniker)
+        sifnoded.enable_rpc_port()
         sif_name = "sif"
         sif_mnemonic = "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow".split()
         sif = sifnoded.keys_add(sif_name, sif_mnemonic)["address"]
