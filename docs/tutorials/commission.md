@@ -255,29 +255,354 @@ flowchart
 ```
 
 This tutorial demonstrates the max voting power restriction in action on four scenarios corresponding to the four projected voting power
-calculations in the flow chart
+calculations in the flow chart.
 
 ## Validator Bonded
 
-### Success
+1. Initialize and start the chain
+
+```
+make init
+make run
+```
+
+2. Confirm that there`s one validator, with 1000000000000000000000000 tokens:
+
+```
+sifnoded query staking validators
+```
+
+3. Create a second validator with 92000000000000000000000 tokens, this will give it ~8.424% of the voting power:
+
+```
+sifnoded tx staking create-validator \
+  --amount=92000000000000000000000stake \
+  --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
+  --moniker="akasha_val" \
+  --chain-id=localnet \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.1" \
+  --min-self-delegation="1000000" \
+  --from=akasha \
+  --keyring-backend=test \
+  --broadcast-mode block \
+  -y
+```
 
 ### Failure
+
+1. Try to delegate to `sif_val`:
+
+```
+sifnoded tx staking delegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+Which fails with the message:
+
+'validator would have 0.915750915750915751 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power: invalid request'
+
+### Failure
+
+1. Try to delegate 100000000000000000000000 tokens to `akasha_val`. This would give `akasha_val` a projected voting power
+of (92000000000000000000000 + 100000000000000000000000) / (92000000000000000000000 + 1000000000000000000000000 + 100000000000000000000000) = 16.10738255033557% of the voting power:
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100000000000000000000000stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+Which fails with the message:
+
+`validator would have 0.161073825503355705 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power: invalid request`
+
+### Success
+
+1. Delegate to `akasha_val`
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 91000000000000000000000 tokens)
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
+```
 
 ## Validator not Bonded & numValidators < maxValidators
 
-### Success
+This is a hard edge case to reproduce.
+
+1. Initialize and start the chain
+
+```
+make init
+make run
+```
+
+2. Confirm that there`s one validator, with 1000000000000000000000000 tokens:
+
+```
+sifnoded query staking validators
+```
+
+3. Create a second validator with 92000000000000000000000 tokens, this will give it ~8.424% of the voting power:
+
+```
+sifnoded tx staking create-validator \
+  --amount=92000000000000000000000stake \
+  --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
+  --moniker="akasha_val" \
+  --chain-id=localnet \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.1" \
+  --min-self-delegation="1000000" \
+  --from=akasha \
+  --keyring-backend=test \
+  --broadcast-mode block \
+  -y
+```
+
+Both validators are bonded. It's not possible to directly unbond either validator however if we wait some time `akasha_val` will
+be jailed/unbonded (since they're not participating in consensus) and numValidators < maxValidators - meeting the
+test criteria.
+
+4. Query the bond status of `akasha_val`:
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").status'
+```
+
+After ~10 mins this will transition from `BOND_STATUS_BONDED` => `BOND_STATUS_UNBONDING`. At which point the test can start.
 
 ### Failure
 
-## Validator not Bonded & numValidators > maxValidators & projectedValidatorTokens < weakestValidatorTokens
+1. Try to delegate 100000000000000000000000 tokens to `akasha_val`. This would give `akasha_val` a projected voting power
+of (92000000000000000000000 + 100000000000000000000000) / (92000000000000000000000 + 1000000000000000000000000 + 100000000000000000000000) = 16.10738255033557% of the voting power:
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100000000000000000000000stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+Which fails with the message:
+
+`validator would have 0.161073825503355705 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power: invalid request`
 
 ### Success
 
+
+1. Delegate to `akasha_val`
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 91000000000000000000000 tokens)
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
+```
+
+## Validator not Bonded & numValidators == maxValidators & projectedValidatorTokens < weakestValidatorTokens
+
+
+1. Initialize the chain
+
+```
+make init
+```
+
+3. Set the max number of validators to one:
+
+```
+echo "$(jq '.app_state.staking.params.max_validators = 1' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json
+```
+
+4. Start the chain:
+
+```
+make run
+```
+
+5. Confirm `max_validators` is equal to one:
+
+```
+sifnoded q staking params
+```
+
+5. Create a second validator with 92000000000000000000000 tokens, this will give it ~8.424% of the voting power:
+
+```
+sifnoded tx staking create-validator \
+  --amount=92000000000000000000000stake \
+  --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
+  --moniker="akasha_val" \
+  --chain-id=localnet \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.1" \
+  --min-self-delegation="1000000" \
+  --from=akasha \
+  --keyring-backend=test \
+  --broadcast-mode block \
+  -y
+```
+
+5. `akasha_val` is not part of the validator set since max validators is one:
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").status'
+```
+
+returns `BOND_STATUS_UNBONDED`
+
+### Success
+
+1. Delegate to `akasha_val`
+
+```
+sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 91000000000000000000000 tokens)
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
+```
+
 ### Failure
 
-Not possible
+Since the `akasha_val` has `projectedValidatorTokens` < `weakestValidatorTokens` in these tests, it never makes it into the validator
+set and so always has 0% voting power. In which case it's not not possible to fail under these conditions.
 
 ## Validator not Bonded & numValidators == maxValidators & projectedValidatorTokens > weakestValidatorTokens
 
-### Success
+
+1. Initialize the chain
+
+```
+make init
+```
+
+3. Set the max number of validators to two:
+
+```
+echo "$(jq '.app_state.staking.params.max_validators = 2' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json
+```
+
+4. Start the chain:
+
+```
+make run
+```
+
+5. Confirm `max_validators` is equal to two:
+
+```
+sifnoded q staking params
+```
+
+5. Create a second validator with 92000000000000000000000 tokens, this will give it ~8.424% of the voting power:
+
+```
+sifnoded tx staking create-validator \
+  --amount=92000000000000000000000stake \
+  --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
+  --moniker="akasha_val" \
+  --chain-id=localnet \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.1" \
+  --min-self-delegation="1000000" \
+  --from=akasha \
+  --keyring-backend=test \
+  --broadcast-mode block \
+  -y
+```
+
+5. Create a third validator with 90000000000000000000000 tokens, this will mean it`s not part of the validator set:
+
+```
+sifnoded tx staking create-validator \
+  --amount=90000000000000000000000stake \
+  --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"/7LUsFhIdP0jj36wToOwY3zWC75YXxVd1vxp7YAc1Gs="}' \
+  --moniker="alice_val" \
+  --chain-id=localnet \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.1" \
+  --min-self-delegation="1000000" \
+  --from=alice \
+  --keyring-backend=test \
+  --broadcast-mode block \
+  -y
+```
+
+6. Confirm tha `alice_val` is not bonded:
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="alice_val").status'
+```
+
+returns `BOND_STATUS_UNBONDED`
+
 ### Failure
+
+1. Try to delegate 100000000000000000000000 tokens to `alice_val`. This would give `alice_val` more token than `akasha_val` so that
+`alice_val` would replace `akasha_val` in the validator set. However `alice_val` projected voting power
+is (90000000000000000000000 + 100000000000000000000000) / ((1000000000000000000000000 + 92000000000000000000000) + 90000000000000000000000 + 100000000000000000000000 - 92000000000000000000000) = 15.966386554621848% of the voting power:
+
+```
+sifnoded tx staking delegate sifvaloper1ryt87gjvnn8ph0lqac8k2x2kdek0sgh8s83u48 100000000000000000000000stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+Which fails with the message:
+
+`validator would have 0.159663865546218487 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power: invalid request`
+
+### Success
+
+1. Delegate a smaller amount to `alice_val`
+
+```
+sifnoded tx staking delegate sifvaloper1ryt87gjvnn8ph0lqac8k2x2kdek0sgh8s83u48 100stake \
+  --from sif \
+  --keyring-backend test \
+  --chain-id localnet \
+  --broadcast-mode block -y
+```
+
+2. Confirm that `alice_val` now has 90000000000000000000100 tokens (previously they had 90000000000000000000000 tokens)
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="alice_val").tokens'
+```
