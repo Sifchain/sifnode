@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -95,7 +96,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
-		Short: "get a list of all distribution records Status : [Completed/Pending/All]",
+		Short: "get a list of all distribution records Status : [Completed/Pending/Failed]",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
