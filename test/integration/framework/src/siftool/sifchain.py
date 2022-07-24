@@ -251,20 +251,27 @@ class SifnodeClient:
         result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
         return result
 
-    # query is a tx exists or not
-    def query_tx(self, tx_hash: str) -> bool:
+    def query_tx(self, tx_hash: str) -> Optional[str]:
+        time.sleep(6)
         args = [
             "q", "tx", tx_hash,
         ] + self._home_args() + \
             self._chain_id_args()
 
         try:
-            self.sifnoded_exec(args)
+            tx = self.sifnoded_exec(args)
         except Exception as e:
-            # if tx not exists, return false
-            return False
+            not_found = re.findall(".*(.*tx \(" + tx_hash + "\) not found).*", str(e))
+            
+            if len(not_found) > 0:
+                return None
+            else:
+                raise e
 
-        return True
+        return tx
+
+    def query_tx_exists(self, tx_hash: str) -> bool:
+        return self.query_tx(tx_hash) is not None
 
     def generate_sign_prophecy_tx(self, from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature: str) -> Mapping:
         assert on_peggy2_branch, "Only for Peggy2.0"
@@ -287,7 +294,7 @@ class SifnodeClient:
         return result
 
     def send_sign_prophecy_with_wrong_signature_grpc(self, from_sif_addr: cosmos.Address, from_val_addr: cosmos.Address,
-        wrong_from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str):
+        wrong_from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str) -> bool:
         
         tx = self.generate_sign_prophecy_tx(from_sif_addr, to_eth_addr, prophecy_id, signature_for_sign_prophecy)
 
@@ -301,14 +308,15 @@ class SifnodeClient:
         result = str(self.broadcast_tx(encoded_tx))
 
         # tx_response {txhash: "C4CDD532E73F3D12335FA30C306452808BEFAC4A4226803585E738EC24D77320"}
-        l = result.find("\"")
-        r = result.rfind("\"")
+        find_txhash = re.findall(".*\"(.*)\"", result)
+        if len(find_txhash) > 0:
+            # get the tx hash from result
+            tx_hash = find_txhash[0]
 
-       # get the tx hash from result
-        tx_hash = result[l+1:r]
-
-        result = self.query_tx(tx_hash)
-        return result
+            result = self.query_tx_exists(tx_hash)
+            return result
+        else:
+            return False
 
     def send_from_sifchain_to_ethereum(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int, denom: str,
         generate_only: bool = False

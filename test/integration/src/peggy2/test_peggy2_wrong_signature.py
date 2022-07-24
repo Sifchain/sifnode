@@ -29,4 +29,4 @@ def test_sign_prophecy_with_wrong_signature_grpc(ctx):
         test_sif_account, val_address, val_address_2, test_eth_account, prophecy_id, signature_for_sign_prophecy)
 
     # Verify failed tx
-    assert result == False
+    assert not result
