@@ -3,7 +3,7 @@ package types
 // clp module event types
 
 const (
-	EventTypeCreatePool                       = "created_new_pool"
+	EventTypeCreatePool                       = "sif/" + ModuleName + "/created_new_pool"
 	EventTypeDecommissionPool                 = "decommission_pool"
 	EventTypeAddNewPmtpPolicy                 = "pmtp_new_policy"
 	EventTypeEndPmtpPolicy                    = "pmtp_end_policy"
