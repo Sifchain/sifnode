@@ -43,9 +43,15 @@ func GetCmdQueryPositionsForAddress() *cobra.Command {
 				return err
 			}
 
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.GetPositionsForAddress(context.Background(), &types.PositionsForAddressRequest{
-				Address: addr.String(),
+				Address:    addr.String(),
+				Pagination: pageReq,
 			})
 			if err != nil {
 				return err
@@ -55,6 +61,7 @@ func GetCmdQueryPositionsForAddress() *cobra.Command {
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "positions-for-address")
 	return cmd
 }
 
