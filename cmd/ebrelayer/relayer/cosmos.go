@@ -40,7 +40,7 @@ import (
 
 const (
 	errorMessageKey      = "errorMessage"
-	cosmosSleepDuration  = 1
+	cosmosSleepDuration  = 30
 	maxCosmosQueryBlocks = 5000
 	// ProphecyLifeTime signature info life time on chain
 	blockTimeInSecond = 5
@@ -358,7 +358,7 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	}
 	defer gRpcClientConn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(gRpcClientConn)
 

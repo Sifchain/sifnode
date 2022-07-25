@@ -163,7 +163,7 @@ func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryPropheciesCompletedRequest{
