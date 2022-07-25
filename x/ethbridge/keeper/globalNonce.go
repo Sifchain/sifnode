@@ -114,7 +114,7 @@ func (k Keeper) GetGlobalSequences(ctx sdk.Context) map[uint32]uint64 {
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 		value := iterator.Value()
-		sequences[binary.BigEndian.Uint32(key[1:])] = binary.BigEndian.Uint64(value)
+		sequences[binary.BigEndian.Uint32(key[len(types.GlobalNoncePrefix):])] = binary.BigEndian.Uint64(value)
 	}
 	return sequences
 }
@@ -123,7 +123,6 @@ func (k Keeper) GetGlobalSequences(ctx sdk.Context) map[uint32]uint64 {
 func (k Keeper) SetGlobalSequenceViaRawKey(ctx sdk.Context, networkDescriptor uint32, sequence uint64) {
 	store := ctx.KVStore(k.storeKey)
 	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, oracletypes.NetworkDescriptor(networkDescriptor), sequence)
-	// binary.BigEndian.PutUint32(key, network_descriptor)
 
 	bs := make([]byte, 8)
 	binary.BigEndian.PutUint64(bs, sequence)
@@ -136,9 +135,9 @@ func (k Keeper) getGlobalSequenceToBlockNumberIterator(ctx sdk.Context) sdk.Iter
 	return sdk.KVStorePrefixIterator(store, types.GlobalNonceToBlockNumberPrefix)
 }
 
-// GetGlobalSequences get all sequences from keeper
+// GetGlobalSequenceToBlockNumbers get all data from keeper
 func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) map[string]uint64 {
-	sequences := make(map[string]uint64)
+	blockNumbers := make(map[string]uint64)
 	iterator := k.getGlobalSequenceToBlockNumberIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -149,12 +148,12 @@ func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) map[string]uint
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 		value := iterator.Value()
-		sequences[string(key)] = binary.BigEndian.Uint64(value)
+		blockNumbers[string(key)] = binary.BigEndian.Uint64(value)
 	}
-	return sequences
+	return blockNumbers
 }
 
-// SetGlobalSequenceViaRawKey used in import sequence from genesis
+// SetGlobalSequenceToBlockNumberViaRawKey used in import data from genesis
 func (k Keeper) SetGlobalSequenceToBlockNumberViaRawKey(ctx sdk.Context, key string, blockNumber uint64) {
 	store := ctx.KVStore(k.storeKey)
 	bs := make([]byte, 8)
