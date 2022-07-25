@@ -8,5 +8,5 @@ import (
 )
 
 var (
-	ErrQueued = sdkerrors.Register(ModuleName, 38, "Cannot process immediately, request has been queued")
+	ErrQueued = sdkerrors.Register(ModuleName, 40, "Cannot process immediately, request has been queued")
 )
