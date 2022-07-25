@@ -374,7 +374,6 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error {
 	// nolint:ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
-	CollateralAmount := mtp.CollateralAmount
 	LiabilitiesP := mtp.LiabilitiesP
 	LiabilitiesI := mtp.LiabilitiesI
 
@@ -384,7 +383,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		return err
 	}
 
-	have := repayAmount.Add(CollateralAmount)
+	have := repayAmount
 	owe := LiabilitiesP.Add(LiabilitiesI)
 
 	fmt.Println("have:", have)
