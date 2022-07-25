@@ -42,7 +42,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 		TestName, TestDecimals)
 
 	// Create test ethereum event
-	ethereumEvent := CreateTestLogEthereumEvent(t)
+	ethereumEvent := CreateTestLogEthereumEvent()
 
 	symbolTranslator := symbol_translator.NewSymbolTranslator()
 	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent, symbolTranslator, sugaredLogger)
@@ -62,7 +62,7 @@ func TestEthereumEventToEthBridgeClaimAcceptsEthSymbolNonNullAddress(t *testing.
 	testRawCosmosValidatorAddress, _ := sdk.AccAddressFromBech32(TestCosmosAddress2)
 	testCosmosValidatorBech32Address := sdk.ValAddress(testRawCosmosValidatorAddress)
 
-	ethereumEvent := CreateTestLogEthereumEvent(t)
+	ethereumEvent := CreateTestLogEthereumEvent()
 	ethereumEvent.Symbol = "eth"
 	ethereumEvent.Token = common.Address(testTokenContractAddress)
 
