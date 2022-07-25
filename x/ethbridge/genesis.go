@@ -22,6 +22,17 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetCrossChainFeeReceiverAccount(ctx, receiveAccount)
 	}
 
+	for key, value := range data.EthereumLockBurnSequence {
+		keeper.SetSequenceViaRawKey(ctx, []byte(key), value)
+	}
+
+	for key, value := range data.GlobalNonce {
+		keeper.SetGlobalSequenceViaRawKey(ctx, key, value)
+	}
+
+	for key, value := range data.GlobalNonceBlockNumber {
+		keeper.SetGlobalSequenceToBlockNumberViaRawKey(ctx, key, value)
+	}
 	return []abci.ValidatorUpdate{}
 }
 
@@ -30,6 +41,9 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 
 	return &types.GenesisState{
 		CrosschainFeeReceiveAccount: receiveAccount.String(),
+		EthereumLockBurnSequence:    keeper.GetEthereumLockBurnSequences(ctx),
+		GlobalNonce:                 keeper.GetGlobalSequences(ctx),
+		GlobalNonceBlockNumber:      keeper.GetGlobalSequenceToBlockNumbers(ctx),
 	}
 }
 

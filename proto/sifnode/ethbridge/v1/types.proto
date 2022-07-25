@@ -62,4 +62,9 @@ enum ClaimType {
 }
 
 // GenesisState for ethbridge
-message GenesisState { string crosschain_fee_receive_account = 1; }
+message GenesisState { 
+    string crosschain_fee_receive_account = 1; 
+    map<string, uint64> ethereum_lock_burn_sequence = 2;
+    map<uint32, uint64> global_nonce = 3;
+    map<string, uint64> global_nonce_block_number = 4;
+}

@@ -11,12 +11,12 @@ import (
 )
 
 // SetEthereumLockBurnSequence set the ethereum lock burn nonce for each relayer
-func (k Keeper) SetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress, newNonce uint64) {
+func (k Keeper) SetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress, newSequence uint64) {
 	store := ctx.KVStore(k.storeKey)
-	key := k.getEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
+	key := k.GetEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
 
 	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newNonce)
+	binary.BigEndian.PutUint64(bs, newSequence)
 
 	store.Set(key, bs)
 }
@@ -24,7 +24,7 @@ func (k Keeper) SetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 // GetEthereumLockBurnSequence return ethereum lock burn nonce
 func (k Keeper) GetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) uint64 {
 	store := ctx.KVStore(k.storeKey)
-	key := k.getEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
+	key := k.GetEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
 
 	// nonces start from 0, and the first ethereum transaction
 	// should have a nonce of 1
@@ -36,10 +36,42 @@ func (k Keeper) GetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	return binary.BigEndian.Uint64(bz)
 }
 
-// getEthereumLockBurnSequencePrefix return storage prefix
-func (k Keeper) getEthereumLockBurnSequencePrefix(networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
+// GetEthereumLockBurnSequencePrefix return storage prefix
+func (k Keeper) GetEthereumLockBurnSequencePrefix(networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	_ = binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
 	tmpKey := append(types.EthereumLockBurnSequencePrefix, bytebuf.Bytes()...)
 	return append(tmpKey, valAccount...)
+}
+
+func (k Keeper) getEthereumLockBurnSequenceIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.EthereumLockBurnSequencePrefix)
+}
+
+// GetEthereumLockBurnSequences get all sequences from keeper
+func (k Keeper) GetEthereumLockBurnSequences(ctx sdk.Context) map[string]uint64 {
+	sequences := make(map[string]uint64)
+	iterator := k.getEthereumLockBurnSequenceIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+		sequences[string(key)] = binary.BigEndian.Uint64(value)
+	}
+	return sequences
+}
+
+// SetSequenceViaRawKey used in import sequence from genesis
+func (k Keeper) SetSequenceViaRawKey(ctx sdk.Context, key []byte, newSequence uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bs := make([]byte, 8)
+	binary.BigEndian.PutUint64(bs, newSequence)
+
+	store.Set(key, bs)
 }

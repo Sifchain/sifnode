@@ -12,7 +12,7 @@ import (
 
 // GetGlobalSequence get current sequence.  Default is 1 if there's no existing value stored.
 func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) uint64 {
-	prefix := k.getGlobalSequencePrefix(ctx, networkDescriptor)
+	prefix := k.GetGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
 	if !k.Exists(ctx, prefix) {
@@ -21,7 +21,7 @@ func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes
 	}
 
 	value := store.Get(prefix)
-	globalNonce := binary.LittleEndian.Uint64(value)
+	globalNonce := binary.BigEndian.Uint64(value)
 
 	return globalNonce
 }
@@ -30,21 +30,21 @@ func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes
 func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
 	blockNumber uint64) {
-	prefix := k.getGlobalSequencePrefix(ctx, networkDescriptor)
+	prefix := k.GetGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
 	globalNonce := k.GetGlobalSequence(ctx, networkDescriptor)
 
 	bs := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, globalNonce+1)
+	binary.BigEndian.PutUint64(bs, globalNonce+1)
 	store.Set(prefix, bs)
 	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonce, blockNumber)
 }
 
 // getGlobalSequencePrefix compute the prefix
-func (k Keeper) getGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
+func (k Keeper) GetGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
+	binary.BigEndian.PutUint32(bs, uint32(networkDescriptor))
 
 	return append(types.GlobalNoncePrefix, bs[:]...)
 }
@@ -56,14 +56,14 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 	globalSequence uint64) uint64 {
 
 	store := ctx.KVStore(k.storeKey)
-	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalSequence)
+	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalSequence)
 
 	if !k.Exists(ctx, prefix) {
 		return uint64(0)
 	}
 
 	value := store.Get(prefix)
-	return binary.LittleEndian.Uint64(value)
+	return binary.BigEndian.Uint64(value)
 }
 
 // SetGlobalSequenceToBlockNumber
@@ -74,24 +74,91 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 	blockNumber uint64) {
 
 	store := ctx.KVStore(k.storeKey)
-	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
+	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
 
 	bs := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, blockNumber)
+	binary.BigEndian.PutUint64(bs, blockNumber)
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetGlobalSequenceToBlockNumber, "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
 
 	store.Set(prefix, bs)
 }
 
-// getGlobalSequenceToBlockNumberPrefix
-func (k Keeper) getGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
+// GetGlobalSequenceToBlockNumberPrefix
+func (k Keeper) GetGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
 	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
+	binary.BigEndian.PutUint32(bs, uint32(networkDescriptor))
 	tmpKey := append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
 
 	bs = make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, globalNonce)
+	binary.BigEndian.PutUint64(bs, globalNonce)
 
 	return append(tmpKey, bs[:]...)
+}
+
+func (k Keeper) getGlobalSequenceIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.GlobalNoncePrefix)
+}
+
+// GetGlobalSequences get all sequences from keeper
+func (k Keeper) GetGlobalSequences(ctx sdk.Context) map[uint32]uint64 {
+	sequences := make(map[uint32]uint64)
+	iterator := k.getGlobalSequenceIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+		sequences[binary.BigEndian.Uint32(key[1:])] = binary.BigEndian.Uint64(value)
+	}
+	return sequences
+}
+
+// SetGlobalSequenceViaRawKey used in import sequence from genesis
+func (k Keeper) SetGlobalSequenceViaRawKey(ctx sdk.Context, networkDescriptor uint32, sequence uint64) {
+	store := ctx.KVStore(k.storeKey)
+	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, oracletypes.NetworkDescriptor(networkDescriptor), sequence)
+	// binary.BigEndian.PutUint32(key, network_descriptor)
+
+	bs := make([]byte, 8)
+	binary.BigEndian.PutUint64(bs, sequence)
+
+	store.Set(prefix, bs)
+}
+
+func (k Keeper) getGlobalSequenceToBlockNumberIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.GlobalNonceToBlockNumberPrefix)
+}
+
+// GetGlobalSequences get all sequences from keeper
+func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) map[string]uint64 {
+	sequences := make(map[string]uint64)
+	iterator := k.getGlobalSequenceToBlockNumberIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+		sequences[string(key)] = binary.BigEndian.Uint64(value)
+	}
+	return sequences
+}
+
+// SetGlobalSequenceViaRawKey used in import sequence from genesis
+func (k Keeper) SetGlobalSequenceToBlockNumberViaRawKey(ctx sdk.Context, key string, blockNumber uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bs := make([]byte, 8)
+	binary.BigEndian.PutUint64(bs, blockNumber)
+
+	store.Set([]byte(key), bs)
 }
