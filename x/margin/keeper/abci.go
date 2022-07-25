@@ -4,6 +4,8 @@
 package keeper
 
 import (
+	"strconv"
+
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,6 +16,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	currentHeight := ctx.BlockHeight()
 	epochLength := k.GetEpochLength(ctx)
 	if currentHeight%epochLength == 0 { // if epoch has passed
+		events := sdk.EmptyEvents()
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
 			if k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol) {
@@ -31,9 +34,17 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				for _, mtp := range mtps {
 					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
+				events = events.AppendEvents(sdk.Events{
+					sdk.NewEvent(
+						types.EventInterestRateComputation,
+						sdk.NewAttribute(clptypes.AttributeKeyPool, pool.ExternalAsset.Symbol),
+						sdk.NewAttribute(types.AttributeKeyPoolInterestRate, rate.String()),
+						sdk.NewAttribute(clptypes.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+					),
+				})
 			}
 		}
-
+		ctx.EventManager().EmitEvents(events)
 	}
 
 }

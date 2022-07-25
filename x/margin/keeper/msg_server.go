@@ -335,6 +335,11 @@ func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 	msg.Params.Pools = params.Pools
 	k.SetParams(ctx, msg.Params)
 
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMarginUpdateParams,
+		sdk.NewAttribute(types.AttributeKeyMarginParams, params.String()),
+		sdk.NewAttribute(clptypes.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+	))
+
 	return &types.MsgUpdateParamsResponse{}, nil
 }
 
