@@ -480,7 +480,7 @@ func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	queryClient := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryEthereumLockBurnSequenceRequest{
