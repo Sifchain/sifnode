@@ -187,7 +187,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 
 	ctx.Logger().Info(fmt.Sprintf("leveragedAmount: %s", leveragedAmount.String()))
 
-	custodyAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
+	custodyAmount, err := k.CLPSwap(ctx, leveragedAmount, msg.BorrowAsset, pool)
 	if err != nil {
 		return nil, err
 	}
@@ -237,8 +237,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
-
-	repayAmount, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
@@ -309,7 +308,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 		return nil, sdk.ZeroUint(), err
 	}
 
-	repayAmount, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}

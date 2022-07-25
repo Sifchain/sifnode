@@ -169,7 +169,7 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	require.NotNil(t, bank)
 }
 
-func TestKeeper_CustodySwap(t *testing.T) {
+func TestKeeper_CLPSwap(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{
 		ExternalAsset:        &asset,
@@ -252,7 +252,7 @@ func TestKeeper_CustodySwap(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			_, got := marginKeeper.CustodySwap(ctx, pool, tt.to, tt.sentAmount)
+			_, got := marginKeeper.CLPSwap(ctx, tt.sentAmount, tt.to, pool)
 
 			if tt.err == nil {
 				require.NoError(t, got)
