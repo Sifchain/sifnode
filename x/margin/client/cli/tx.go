@@ -219,6 +219,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 					InterestRateDecrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
 					HealthGainFactor:      sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
 					ForceCloseThreshold:   sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
+					PoolOpenThreshold:     sdk.MustNewDecFromStr(viper.GetString("pool-open-threshold")),
 					EpochLength:           viper.GetInt64("epoch-length"),
 					MaxOpenPositions:      viper.GetUint64("max-open-positions"),
 					RemovalQueueThreshold: sdk.MustNewDecFromStr(viper.GetString("removal-queue-threshold")),
@@ -244,6 +245,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().Int64("epoch-length", 1, "epoch length in blocks (integer)")
 	cmd.Flags().Uint64("max-open-positions", 10000, "max open positions")
 	cmd.Flags().String("removal-queue-threshold", "", "removal queue threshold (decimal range 0-1)")
+	cmd.Flags().String("pool-open-threshold", "", "threshold to prevent new positions (decimal range 0-1)")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
@@ -253,6 +255,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("force-close-threshold")
 	_ = cmd.MarkFlagRequired("removal-queue-threshold")
 	_ = cmd.MarkFlagRequired("max-open-positions")
+	_ = cmd.MarkFlagRequired("pool-open-threshold")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

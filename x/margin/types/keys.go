@@ -16,6 +16,10 @@ func GetMTPKey(address string, id uint64) []byte {
 	return append(MTPPrefix, append([]byte(address), GetUint64Bytes(id)...)...)
 }
 
+func GetMTPPrefixForAddress(address string) []byte {
+	return append(MTPPrefix, []byte(address)...)
+}
+
 // GetUint64Bytes returns the byte representation of the ID
 func GetUint64Bytes(ID uint64) []byte {
 	IDBz := make([]byte, 8)

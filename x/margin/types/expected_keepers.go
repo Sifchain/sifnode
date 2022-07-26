@@ -7,6 +7,7 @@ import (
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/tendermint/tendermint/abci/types"
 )
 
@@ -56,7 +57,7 @@ type Keeper interface {
 	GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*MTP
 	GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
-	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*MTP
+	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
 	DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error
 
 	GetMaxLeverageParam(sdk.Context) sdk.Dec

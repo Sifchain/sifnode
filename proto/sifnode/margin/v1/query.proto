@@ -3,6 +3,7 @@ package sifnode.margin.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "sifnode/margin/v1/types.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/margin/types";
@@ -10,7 +11,9 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 service Query {
   rpc GetMTP(MTPRequest) returns (MTPResponse) {}
   rpc GetPositionsForAddress(PositionsForAddressRequest)
-      returns (PositionsForAddressResponse) {}
+      returns (PositionsForAddressResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/mtps-for-address/{address}/{pagination.offset}/{pagination.limit}";
+  }
   rpc GetParams(ParamsRequest) returns (ParamsResponse) {}
 }
 
@@ -21,9 +24,15 @@ message MTPRequest {
 
 message MTPResponse { MTP mtp = 1; }
 
-message PositionsForAddressRequest { string address = 1; }
+message PositionsForAddressRequest {
+  string address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
 
-message PositionsForAddressResponse { repeated MTP mtps = 1; }
+message PositionsForAddressResponse {
+  repeated MTP mtps = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
 
 message ParamsRequest {}
 

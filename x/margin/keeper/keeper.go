@@ -12,9 +12,15 @@ import (
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+const MaxPageLimit = 100
 
 type Keeper struct {
 	storeKey    sdk.StoreKey
@@ -166,19 +172,33 @@ func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []strin
 	return assetList
 }
 
-func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address) []*types.MTP {
+func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
 	var mtps []*types.MTP
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if mtpAddress.String() == mtp.Address {
-			mtps = append(mtps, &mtp)
+
+	store := ctx.KVStore(k.storeKey)
+	mtpStore := prefix.NewStore(store, types.GetMTPPrefixForAddress(mtpAddress.String()))
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
 		}
 	}
-	return mtps
+
+	if pagination.Limit > MaxPageLimit {
+		return nil, nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	pageRes, err := query.Paginate(mtpStore, pagination, func(key []byte, value []byte) error {
+		var mtp types.MTP
+		k.cdc.MustUnmarshal(value, &mtp)
+		mtps = append(mtps, &mtp)
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return mtps, pageRes, nil
 }
 
 func (k Keeper) DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error {

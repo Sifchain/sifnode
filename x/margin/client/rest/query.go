@@ -6,10 +6,12 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 )
@@ -32,7 +34,35 @@ func getMTPsForAddress(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		params := types.PositionsForAddressRequest{Address: address.String()}
+		var limit, offset uint64
+
+		if r.URL.Query().Get("limit") != "" {
+			limit, err = strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		if r.URL.Query().Get("offset") != "" {
+			offset, err = strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		params := types.PositionsForAddressRequest{
+			Address: address.String(),
+			Pagination: &query.PageRequest{
+				Key:        []byte(r.URL.Query().Get("key")),
+				Offset:     offset,
+				Limit:      limit,
+				CountTotal: false,
+				Reverse:    false,
+			},
+		}
+
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())

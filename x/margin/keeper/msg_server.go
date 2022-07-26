@@ -49,7 +49,7 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 		return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, externalAsset)
 	}
 
-	if pool.Health.LTE(k.GetPoolOpenThreshold(ctx)) {
+	if !pool.Health.IsNil() && pool.Health.LTE(k.GetPoolOpenThreshold(ctx)) {
 		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, "pool health too low to open new positions")
 	}
 
