@@ -19,7 +19,7 @@ class Test:
         self.cmd = cmd
         self.prj = prj
         self.rnd = random.Random(5646067977921730044)  # Use a fixed random seed for repeatable results
-        self.sifnoded = sifchain.Sifnoded(cmd, home=sifnoded_home, chain_id="localnet")
+        self.sifnoded = sifchain.Sifnoded(cmd, home=sifnoded_home, chain_id="sifchain-testnet-1")
 
         # Number of pools == number of tokens.
         # We create this many tokens, and create a pool for each token.
@@ -123,7 +123,8 @@ class Test:
 
         # Start process
         sifnoded_log_file = open(self.cmd.tmpdir("sifnoded.log"), "w")
-        sifnoded_proc = sifnoded.sifnoded_start(log_file=sifnoded_log_file, log_level="debug", trace=True)
+        sifnoded_proc = sifnoded.sifnoded_start(log_file=sifnoded_log_file, log_level="debug", trace=True,
+            tcp_url="tcp://0.0.0.0:26657")
         # Currently returning 404
         # sifnoded.wait_up("localhost", 26657)
         time.sleep(5)
@@ -290,7 +291,7 @@ def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_provid
                 log.debug("Balance of {}: {}".format(addr, cosmos.balance_format(test.sifnoded.get_balance(addr))))
         except Exception as e:
             log.error("Balance check failed", e)
-        wait_for_enter_key_pressed()
+    wait_for_enter_key_pressed()
 
 
 def main(argv: List[str]):
