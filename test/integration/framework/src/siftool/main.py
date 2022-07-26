@@ -22,7 +22,9 @@ def main(argv):
     project = cmd.project
     log = siftool_logger(__name__)
     argparser = argparse.ArgumentParser()
-    if what == "project-init":
+    if what == "venv":
+        log.info("Successfully initialized Python virtual environment")
+    elif what == "project-init":
         project.init()
     elif what == "clean":
         project.clean()
