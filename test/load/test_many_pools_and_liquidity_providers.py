@@ -93,10 +93,10 @@ class Test:
         sif_mnemonic = "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow".split()
         sif = sifnoded.keys_add(sif_name, sif_mnemonic)["address"]
         sif_bech = sifnoded.get_val_address(sif)
-        tokens_sif = {
+        tokens_sif = cosmos.balance_add({
             ROWAN: 999 * 10**30,
             STAKE: 999 * 10**30,
-        } | {denom: denom_total_supply for denom in self.tokens}
+        }, {denom: denom_total_supply for denom in self.tokens})
 
         # Set up test wallets with test tokens. We do this in genesis for performance reasons. For each wallet we choose
         # number_of_denoms_per_wallet` random denoms.
