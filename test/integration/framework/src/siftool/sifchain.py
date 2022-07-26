@@ -16,13 +16,14 @@ log = siftool_logger(__name__)
 
 ROWAN = "rowan"
 STAKE = "stake"
+ROWAN_DECIMALS = 18
 
 # Sifchain public network endpoints
 BETANET = {"node": "https://rpc.sifchain.finance", "chain_id": "sifchain-1"}
 TESTNET = {"node": "https://rpc-testnet.sifchain.finance", "chain_id": "sifchain-testnet-1"}
 DEVNET = {"node": "https://rpc-devnet.sifchain.finance", "chain_id": "sifchain-devnet-1"}
 
-GasFees = Tuple[float, str]  # Special case of cosmos.Balance with only one denom and float amount
+GasFees = Tuple[float, str]  # Special case of cosmos.Balance with only one denom and float amount  # TODO Rename to something more neutral such as Amount
 
 # Format of a single "entry" of output of "sifnoded q tokenregistry generate"; used for "sifnoded tx tokenregistry register"
 TokenRegistryParams = JsonDict
@@ -31,9 +32,11 @@ LPPDParams = JsonDict
 
 
 # Default ports
-SIFNODED_DEFAULT_RPC_PORT = 26657  # In config/config.toml; can be queried using curl http://...
+SIFNODED_DEFAULT_RPC_PORT = 26657  # In config/config.toml; used for --node, can be queried using curl http://...
 SIFNODED_DEFAULT_P2P_PORT = 26656  # In config/config.toml
-SIFNODED_DEFAULT_API_PORT = 1317   # In config/app.toml, section [api], disabled by default
+SIFNODED_DEFAULT_API_PORT = 1317  # In config/app.toml, section [api], disabled by default
+SIFNODED_DEFAULT_GRPC_PORT = 9090  # In config/app.toml, section [grpc]
+SIFNODED_DEFAULT_GRPC_WEB_PORT = 9091  # In config/app.toml, section [grpc-web]
 
 
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
@@ -76,12 +79,22 @@ def mnemonic_to_address(cmd: command.Command, mnemonic: Iterable[str]):
         cmd.rmdir(tmpdir)
 
 def sifnoded_parse_output_lines(stdout: str) -> Mapping:
+    # TODO Some values are like '""'
     pat = re.compile("^(.*?): (.*)$")
     result = {}
     for line in stdout.splitlines():
         m = pat.match(line)
         result[m[1]] = m[2]
     return result
+
+def format_pubkey(pubkey: JsonDict) -> str:
+    return "{{\"@type\":\"{}\",\"key\":\"{}\"}}".format(pubkey["@type"], pubkey["key"])
+
+def format_peer_address(node_id: str, hostname: str, p2p_port: int) -> str:
+    return "{}@{}:{}".format(node_id, hostname, p2p_port)
+
+def format_node_url(hostname: str, p2p_port: int) -> str:
+    return "tcp://{}:{}".format(hostname, p2p_port)
 
 def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
     multipliers: Iterable[Tuple[str, int]], allocation: int, reward_period_default_multiplier: float,
@@ -176,6 +189,11 @@ class Sifnoded:
         account = exactly_one(yaml_load(stdout(res)))
         return account
 
+    def generate_mnemonic(self) -> List[str]:
+        args = ["keys", "mnemonic"] + self._home_args() + self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
+        return exactly_one(stderr(res).splitlines()).split(" ")
+
     def create_addr(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> cosmos.Address:
         return self.keys_add(moniker=moniker, mnemonic=mnemonic)["address"]
 
@@ -209,13 +227,17 @@ class Sifnoded:
         tokens_str = cosmos.balance_format(tokens)
         self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str] + self._home_args() + self._keyring_backend_args())
 
+    # TODO Obsolete
     def add_genesis_account_directly_to_existing_genesis_json(self,
-        extra_balances: Mapping[cosmos.Address, cosmos.Balance], genesis_json_path: Optional[str] = None
+        extra_balances: Mapping[cosmos.Address, cosmos.Balance]
     ):
-        genesis_json_path = os.path.join(genesis_json_path or self.get_effective_home(), "config", "genesis.json")
-        genesis = json.loads(self.cmd.read_text_file(genesis_json_path))
+        genesis = self.load_genesis_json()
+        self.add_accounts_to_existing_genesis(genesis, extra_balances)
+        self.save_genesis_json(genesis)
+
+    def add_accounts_to_existing_genesis(self, genesis: JsonDict, extra_balances: Mapping[cosmos.Address, cosmos.Balance]):
         bank = genesis["app_state"]["bank"]
-        # genesis.json uses a bit different structure for balances so we need to conevrt to and from our balances.
+        # genesis.json uses a bit different structure for balances so we need to convert to and from our balances.
         # Whatever is in extra_balances will be added to the existing amounts.
         # We must also update supply which must be the sum of all balances. We assume that it initially already is.
         # Cosmos SDK wants coins to be sorted or it will panic during chain initialization.
@@ -232,25 +254,42 @@ class Sifnoded:
           "pub_key": None,
           "account_number": "0",
           "sequence": "0"
-        } for addr in balances])
+        } for addr in set(balances).difference(set(x["address"] for x in accounts))])
         bank["balances"] = [{"address": a, "coins": [{"denom": d, "amount": str(c[d])} for d in sorted(c)]} for a, c in balances.items()]
         bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
+
+    def load_genesis_json(self) -> JsonDict:
+        genesis_json_path = os.path.join(self.get_effective_home(), "config", "genesis.json")
+        return json.loads(self.cmd.read_text_file(genesis_json_path))
+
+    def save_genesis_json(self, genesis: JsonDict):
+        genesis_json_path = os.path.join(self.get_effective_home(), "config", "genesis.json")
         self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
 
     def load_app_toml(self) -> JsonDict:
         app_toml_path = os.path.join(self.get_effective_home(), "config", "app.toml")
         with open(app_toml_path, "r") as app_toml_file:
-            return toml.load(app_toml_path)
+            return toml.load(app_toml_file)
 
     def save_app_toml(self, data: JsonDict):
         app_toml_path = os.path.join(self.get_effective_home(), "config", "app.toml")
         with open(app_toml_path, "w") as app_toml_file:
             app_toml_file.write(toml.dumps(data))
 
+    def load_config_toml(self) -> JsonDict:
+        config_toml_path = os.path.join(self.get_effective_home(), "config", "config.toml")
+        with open(config_toml_path, "r") as config_toml_file:
+            return toml.load(config_toml_file)
+
+    def save_config_toml(self, data: JsonDict):
+        config_toml_path = os.path.join(self.get_effective_home(), "config", "config.toml")
+        with open(config_toml_path, "w") as config_toml_file:
+            config_toml_file.write(toml.dumps(data))
+
     def enable_rpc_port(self):
         app_toml = self.load_app_toml()
         app_toml["api"]["enable"] = True
-        app_toml["api"]["address"] = "tcp://{}:{}".format(ANY_ADDR, SIFNODED_DEFAULT_API_PORT)
+        app_toml["api"]["address"] = format_node_url(ANY_ADDR, SIFNODED_DEFAULT_API_PORT)
         self.save_app_toml(app_toml)
 
     def get_effective_home(self) -> str:
@@ -283,6 +322,56 @@ class Sifnoded:
 
     def set_gen_denom_whitelist(self, denom_whitelist_file):
         self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file] + self._home_args())
+
+    def tendermint_show_node_id(self) -> str:
+        args = ["tendermint", "show-node-id"] + self._home_args()
+        res = self.sifnoded_exec(args)
+        return exactly_one(stdout(res).splitlines())
+
+    def tendermint_show_validator(self):
+        args = ["tendermint", "show-validator"] + self._home_args()
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))
+
+    def staking_create_validator(self, amount: GasFees, pubkey: JsonDict, moniker: str, commission_rate: float,
+        commission_max_rate: float, commission_max_change_rate: float, min_self_delegation: int,
+        from_acct: cosmos.Address
+    ):
+        #
+        #         sifnoded tx staking create-validator \
+        #         --amount=1000000000000000000000000rowan \
+        #         --pubkey=$(sifnoded tendermint show-validator --home /home/jurez/.sifnode-1) \
+        #         --moniker=Jodi \
+        #         --chain-id=local-sifnode-1 \
+        #         --commission-rate="0.10" \
+        #         --commission-max-rate="0.20" \
+        #         --commission-max-change-rate="0.01" \
+        #         --min-self-delegation="1000000" \
+        #         --node=tcp://127.0.0.1:2860 \
+        #         --fees 1000000000000000000rowan \
+        #         --keyring-backend test \
+        #         --from=sif-1 \
+        #         -y \
+        #         --home /home/jurez/.sifnode-1
+        # TODO --node points to validator0
+        # TODO Node needs to be up
+        args = ["tx", "staking", "create-validator", "--amount", sif_format_amount(*amount), "--pubkey",
+            format_pubkey(pubkey), "--moniker", moniker, "--commission-rate", str(commission_rate),
+            "--commission-max-rate", str(commission_max_rate), "--commission-max-change-rate",
+            str(commission_max_change_rate), "--min-self-delegation", str(min_self_delegation), "--from", from_acct] + \
+            self._home_args() + self._chain_id_args() + self._node_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._yes_args()
+        res = self.sifnoded_exec(args)
+        return sifnoded_parse_output_lines(stdout(res))
+
+    def query_staking_validators(self) -> JsonObj:
+        args = ["query", "staking", "validators", "--output", "json"] + self._home_args() + self._node_args()
+        res = self.sifnoded_exec(args)
+        res = json.loads(stdout(res))
+        # TODO Implement paging (here we don't have "block" so we can't use self._paged_read())
+        #      But probably have to go the same way as self.get_balance()
+        assert res["pagination"]["next_key"] is None, "TODO: Implement pagination"
+        return res["validators"]
 
     # See scripts/ibc/tokenregistration for more information and examples.
     # JSON file can be generated with "sifnoded q tokenregistry generate"
@@ -336,7 +425,7 @@ class Sifnoded:
             return res
 
     def query_tokenregistry_entries(self):
-        args = ["query", "tokenregistry", "entries"]
+        args = ["query", "tokenregistry", "entries"] + self._node_args() + self._chain_id_args()
         res = self.sifnoded_exec(args)
         return json.loads(stdout(res))["entries"]
 
@@ -407,21 +496,31 @@ class Sifnoded:
                self._keyring_backend_args() + self._gas_prices_args() + self._chain_id_args() + self._yes_args()
         return self.sifnoded_exec(args)
 
+    # TODO Rename tcp_url to rpc_laddr + remove dependency on self.node
     def sifnoded_start(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
         log_format_json: bool = False, log_file: Optional[IO] = None, log_level: Optional[str] = None,
-        trace: bool = False
+        trace: bool = False, p2p_laddr: Optional[str] = None, grpc_address: Optional[str] = None,
+        grpc_web_address: Optional[str] = None, address: Optional[str] = None
     ):
-        sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=minimum_gas_prices,
+        sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, p2p_laddr=p2p_laddr, grpc_address=grpc_address,
+            grpc_web_address=grpc_web_address, address=address, minimum_gas_prices=minimum_gas_prices,
             log_format_json=log_format_json, log_level=log_level, trace=trace)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
-    def build_start_cmd(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
-        log_format_json: bool = False, log_level: Optional[str] = None, trace: bool = False
+    # TODO Rename tcp_url to rpc_laddr + remove dependency on self.node
+    def build_start_cmd(self, tcp_url: Optional[str] = None, p2p_laddr: Optional[str] = None,
+        grpc_address: Optional[str] = None, grpc_web_address: Optional[str] = None, address: Optional[str] = None,
+        minimum_gas_prices: Optional[GasFees] = None, log_format_json: bool = False, log_level: Optional[str] = None,
+        trace: bool = False
     ):
         args = [self.binary, "start"] + \
             (["--trace"] if trace else []) + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
+            (["--p2p.laddr", p2p_laddr] if p2p_laddr else []) + \
+            (["--grpc.address", grpc_address] if grpc_address else []) + \
+            (["--grpc-web.address", grpc_web_address] if grpc_web_address else []) + \
+            (["--address", address] if address else []) + \
             (["--log_level", log_level] if log_level else []) + \
             (["--log_format", "json"] if log_format_json else []) + \
             self._home_args()
@@ -565,6 +664,7 @@ class Sifnoded:
         return int(self.status()["SyncInfo"]["latest_block_height"])
 
     # TODO Deduplicate
+    # TODO The /node_info URL does not exist any more, use /status?
     def get_status(self, host, port):
         return self._rpc_get(host, port, "node_info")
 
@@ -748,11 +848,18 @@ class Sifnoded:
         return self._rpc_get(host, port, path)["result"]
 
     def _get_host_and_port(self) -> Tuple[str, int]:
+        # TODO HACK
+        # TODO Refactor ports
+        # TODO Better store self.host and self.port and make self.node a calculated property
         if self.node is None:
-            return "127.0.0.1", 26657
+            return LOCALHOST, SIFNODED_DEFAULT_RPC_PORT
         else:
-            # TODO Better store self.host and self.port and make self.node a calculated property
-            assert False, "Not implemented"
+            m = re.compile("^tcp://(.+):(.+)$").match(self.node)
+            assert m, "Not implemented"
+            host, port = m[1], int(m[2])
+            if host == ANY_ADDR:
+                host = LOCALHOST
+            return host, port
 
     def _rpc_get(self, host, port, relative_url):
         url = "http://{}:{}/{}".format(host, port, relative_url)
@@ -769,11 +876,24 @@ class Sifnoded:
             if time.time() - start_time > timeout:
                 raise Exception("Timeout expired while waiting for last sifnode transaction to be mined")
 
+    # TODO Refactor wait_up() / _wait_up()
     def wait_up(self, host, port):
         from urllib.error import URLError
         while True:
             try:
                 return self.get_status(host, port)
+            except URLError:
+                time.sleep(1)
+
+    # TODO Refactor wait_up() / _wait_up()
+    def _wait_up(self):
+        host, port = self._get_host_and_port()
+        from urllib.error import URLError
+        while True:
+            try:
+                response = self._rpc_get(host, port, "status")
+                result = response["result"]
+                return result
             except URLError:
                 time.sleep(1)
 

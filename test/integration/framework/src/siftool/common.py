@@ -7,12 +7,13 @@ import random
 import time
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any, Callable
+from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any, Callable, Dict
 
 
 ANY_ADDR = "0.0.0.0"
+LOCALHOST = "127.0.0.1"
 JsonObj = Any
-JsonDict = Mapping[str, JsonObj]
+JsonDict = Dict[str, JsonObj]
 
 
 def stdout(res):
