@@ -299,6 +299,7 @@ class Sifnoded:
         args = ["add-genesis-clp-admin", address] + self._home_args() + self._keyring_backend_args()
         self.sifnoded_exec(args)
 
+    # Modifies genesis.json and adds the address to .oracle.address_whitelist array.
     def add_genesis_validators(self, address: cosmos.BechAddress):
         args = ["add-genesis-validators", address] + self._home_args() + self._keyring_backend_args()
         res = self.sifnoded_exec(args)
@@ -429,6 +430,7 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return json.loads(stdout(res))["entries"]
 
+    # Creates file config/gentx/gentx-*.json
     def gentx(self, name: str, stake: cosmos.Balance):
         # TODO Make chain_id an attribute
         args = ["gentx", name, cosmos.balance_format(stake)] + self._home_args() + self._keyring_backend_args() + \
@@ -436,6 +438,7 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return exactly_one(stderr(res).splitlines())
 
+    # Modifies genesis.json and adds .genutil.gen_txs (presumably from config/gentx/gentx-*.json)
     def collect_gentx(self) -> JsonDict:
         args = ["collect-gentxs"] + self._home_args()  # Must not use --keyring-backend
         res = self.sifnoded_exec(args)

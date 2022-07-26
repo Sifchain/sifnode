@@ -47,9 +47,11 @@
 #   }
 # }
 #
-# (2) Exceptions / printing of _debug...
+# (2) use rocksb, see https://raw.githubusercontent.com/Sifchain/sifchain-devops/1218ff79b22ab2a6bd22b81d6aa4385a247cafc9/scripts/sifnode/testing/sifnode_n_node_network_simulator.py?token=GHSAT0AAAAAABLH7LII5AAWD6YDWG7THBHGYW7DSVA
 #
-# (3) Use parameter rpc.laddr for sifnoded start instead of self.node
+# (3) Exceptions / printing of _debug...
+#
+# (4) Use parameter rpc.laddr for sifnoded start instead of self.node
 
 
 import argparse
@@ -63,6 +65,59 @@ from siftool.sifchain import ROWAN, STAKE, ROWAN_DECIMALS
 
 
 log = siftool_logger()
+
+
+class SifnodedEnvironment:
+    def __init__(self, cmd: command.Command):
+        self.cmd = cmd
+
+        self.chain_id = None
+        self.number_of_nodes = None
+        self.sifnoded_home_root = None
+        self.validator0_mnemonic = None
+
+        self.node_info = None
+        self.sifnoded = None
+        self.running_processes = None
+        self.open_log_files = None
+
+    def setup(self):
+        self.sifnoded = []
+        self.node_info = []
+        for i in range(self.number_of_nodes):
+            ports = self.ports_for_node(i)
+            home = os.path.join(self.sifnoded_home_root, "sifnoded-{}".format(i))
+            sifnoded_i = sifchain.Sifnoded(self.cmd, node=sifchain.format_node_url(ANY_ADDR, ports["rpc"]),
+                home=home, chain_id=self.chain_id)
+            moniker = "sifnode-{}".format(i)
+            acct_name = "sif-{}".format(i)
+            acct_addr = sifnoded_i.create_addr(acct_name, mnemonic=self.validator0_mnemonic if i == 0 else None)
+            sifnoded_i.init(moniker)
+            node_id = sifnoded_i.tendermint_show_node_id()  # Taken from ${sifnoded_home}/config/node_key.json
+            pubkey = sifnoded_i.tendermint_show_validator()  # Taken from ${sifnoded_home}/config/priv_validator_key.json
+            node_info = {
+                "moniker": moniker,
+                "home": home,
+                "node_id": node_id,
+                "pubkey": pubkey,
+                "acct_name": acct_name,
+                "acct_addr": acct_addr,
+                "ports": ports,
+                "external_address": sifchain.format_node_url(LOCALHOST, ports["rpc"])  # For --node
+            }
+            self.sifnoded.append(sifnoded_i)
+            self.node_info.append(node_info)
+
+    def ports_for_node(self, i: int) -> JsonDict:
+        return {
+            "p2p": 10276 + i,
+            "grpc": 10909 + i,
+            "grpc_web": 10919 + i,
+            "address": 10276 + i,
+            "rpc": 10286 + i,
+            "api": 10131 + i,
+            "pprof": 10606 + i,
+        }
 
 
 class Test:
@@ -81,7 +136,6 @@ class Test:
         # of unique liquidity providers.
         self.number_of_wallets = 10
 
-
         # The number of liquidity pools to which each wallet provides liquidity. The pools are chosen randomly from
         # all `number_of_liquidity_pools`. This is also the same of number of different tokens per wallet (not counting
         # rowan).
@@ -99,8 +153,9 @@ class Test:
 
         self.sifnoded_home_root = sifnoded_home_root
 
+        self.env = None
+
         self.chain_id = "localnet"
-        self.sifnoded: Optional[List[sifchain.Sifnoded]] = None
         self.sifnoded = []
         self.node_info = None
 
@@ -148,31 +203,17 @@ class Test:
         hostname = socket.gethostname()
         ip_address = socket.gethostbyname(hostname)
 
-        self.sifnoded = []
-        self.node_info = []
-        for i in range(self.number_of_nodes):
-            ports = self.ports_for_node(i)
-            home = os.path.join(self.sifnoded_home_root, "sifnoded-{}".format(i))
-            sifnoded_i = sifchain.Sifnoded(self.cmd, node=sifchain.format_node_url(ANY_ADDR, ports["rpc"]),
-                home=home, chain_id=self.chain_id)
-            moniker = "sifnode-{}".format(i)
-            acct_name = "sif-{}".format(i)
-            acct_addr = sifnoded_i.create_addr(acct_name, mnemonic=self.validator0_mnemonic if i == 0 else None)
-            sifnoded_i.init(moniker)
-            node_id = sifnoded_i.tendermint_show_node_id()  # Taken from ${sifnoded_home}/config/node_key.json
-            pubkey = sifnoded_i.tendermint_show_validator()  # Taken from ${sifnoded_home}/config/priv_validator_key.json
-            node_info = {
-                "moniker": moniker,
-                "home": home,
-                "node_id": node_id,
-                "pubkey": pubkey,
-                "acct_name": acct_name,
-                "acct_addr": acct_addr,
-                "ports": ports,
-                "external_address": sifchain.format_node_url(LOCALHOST, ports["rpc"])  # For --node
-            }
-            self.sifnoded.append(sifnoded_i)
-            self.node_info.append(node_info)
+        self.env = SifnodedEnvironment(self.cmd)
+        env = self.env
+        env.chain_id = self.chain_id
+        env.number_of_nodes = self.number_of_nodes
+        env.sifnoded_home_root = self.sifnoded_home_root
+        env.validator0_mnemonic = self.validator0_mnemonic
+
+        env.setup()
+
+        self.node_info = env.node_info
+        self.sifnoded = env.sifnoded
 
         # Set up admin account balances. We add these with "add-genesis-account"
         # TODO It is not clear if we really need to fund all of them (and how much).
@@ -226,7 +267,6 @@ class Test:
         app_state["mint"]["params"]["mint_denom"] = ROWAN
         sifnoded0.save_genesis_json(genesis)
 
-        # sifnoded0.gentx(admin0_name, {STAKE: 10**24})
         sifnoded0.gentx(admin0_name, {ROWAN: 10**24})
         sifnoded0.collect_gentx()
         sifnoded0.validate_genesis()
@@ -422,17 +462,6 @@ class Test:
             time.sleep(1)
             current_block = sifnoded.get_current_block()
         return time.time()
-
-    def ports_for_node(self, i: int) -> JsonDict:
-        return {
-            "p2p": 10276 + i,
-            "grpc": 10909 + i,
-            "grpc_web": 10919 + i,
-            "address": 10276 + i,
-            "rpc": 10286 + i,
-            "api": 10131 + i,
-            "pprof": 10606 + i,
-        }
 
 
 def main(argv: List[str]):
