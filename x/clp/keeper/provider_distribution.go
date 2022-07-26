@@ -132,14 +132,16 @@ func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Poo
 	lpMap := make(LpRowanMap, 0)
 	lpPoolMap := make(LpPoolMap, 0)
 
+	partitions, err := k.GetAllLiquidityProvidersPartitions(ctx)
+	if err != nil {
+		fireLPPGetLPsErrorEvent(ctx, err)
+	}
+
 	for _, pool := range pools {
-		lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
-		if err != nil {
-			//k.Logger(ctx).Error(fmt.Sprintf("Getting liquidity providers for asset %s error %s", pool.ExternalAsset.Symbol, err.Error()))
-			fireLPPGetLPsErrorEvent(ctx, *pool.ExternalAsset, err)
+		lps, exists := partitions[*pool.ExternalAsset]
+		if !exists { // TODO: fire event
 			continue
 		}
-
 		lpsFiltered := FilterValidLiquidityProviders(ctx, lps)
 		rowanToDistribute := CollectProviderDistribution(ctx, pool, sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
 			blockRate, pool.PoolUnits, lpsFiltered, lpMap, lpPoolMap)
@@ -176,10 +178,9 @@ func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvid
 	return valid
 }
 
-func fireLPPGetLPsErrorEvent(ctx sdk.Context, asset types.Asset, err error) {
+func fireLPPGetLPsErrorEvent(ctx sdk.Context, err error) {
 	failureEvent := sdk.NewEvent(
 		"lppd/get_liquidity_providers_error",
-		sdk.NewAttribute("asset", asset.Symbol),
 		sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 	)
