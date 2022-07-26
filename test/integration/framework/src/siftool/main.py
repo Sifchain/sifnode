@@ -23,7 +23,10 @@ def main(argv):
     log = siftool_logger(__name__)
     argparser = argparse.ArgumentParser()
     if what == "venv":
-        log.info("Successfully initialized Python virtual environment")
+        log.info("Using Python {}.{}.{}".format(sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
+        log.info("sys.path={}".format(repr(sys.path)))
+        log.info("Project root: {}".format(project.project_dir()))
+        log.info("Project virtual environment location: {}".format(project.get_project_venv_dir()))
     elif what == "project-init":
         project.init()
     elif what == "clean":
