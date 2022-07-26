@@ -983,7 +983,7 @@ func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *ty
 	events := sdk.EmptyEvents()
 	events = events.AppendEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeEndPmtpPolicy,
+			types.EventTypeUpdateLiquidityProtectionRateParams,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProtectionRateParams, rateParams.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
