@@ -1,9 +1,14 @@
 # Scenarion description: https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5
 # Ticket: https://app.zenhub.com/workspaces/current-sprint---engineering-615a2e9fe2abd5001befc7f9/issues/sifchain/sifnode/3020
+# How to run a validator in multi-node setup:
+# - https://docs.sifchain.finance/network-security/validators/running-sifnode-and-becoming-a-validator
+# - https://docs.sifchain.finance/developers/tutorials/setup-standalone-validator-node-manually
+#
+# Requirements: Python (3.9 is best, 3.8 and 3.10 should also work, support for other versions is currently unknownn)
 #
 # Example usage:
 # cd test/load
-# ../integration/framework/siftool venv-init
+# ../integration/framework/siftool venv
 # ../integration/framework/venv/bin/python3 test_many_pools_and_liquidity_providers.py \
 #     --number-of-liquidity-pools 5 \
 #     --number-of-wallets 10 \
