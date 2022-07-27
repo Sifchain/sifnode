@@ -25,8 +25,11 @@ const (
 func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator, sugaredLogger *zap.SugaredLogger) (ethbridge.EthBridgeClaim, error) {
 	ethBridgeClaim := ethbridge.EthBridgeClaim{}
 
-	// chainID type casting (*big.Int -> int)
 	networkDescriptor := oracletypes.NetworkDescriptor(event.NetworkDescriptor)
+
+	if err := ethbridge.ValidateNetworkDescriptor(networkDescriptor); err != nil {
+		return ethBridgeClaim, err
+	}
 
 	bridgeContractAddress := ethbridge.NewEthereumAddress(event.BridgeContractAddress.Hex())
 
@@ -47,12 +50,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 
 	// Symbol formatted to lowercase
 	symbol := strings.ToLower(event.Symbol)
-	switch event.ClaimType {
-	case ethbridge.ClaimType_CLAIM_TYPE_LOCK:
-		if symbol == "eth" && !isZeroAddress(event.Token) {
-			return ethBridgeClaim, errors.New("symbol \"eth\" must have null address set as token address")
-		}
-	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
+	if event.ClaimType == ethbridge.ClaimType_CLAIM_TYPE_BURN {
 		symbol = symbolTranslator.EthereumToSifchain(symbol)
 	}
 

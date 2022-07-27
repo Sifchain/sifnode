@@ -2,7 +2,7 @@ import argparse
 import sys
 import time
 
-from siftool import test_utils
+from siftool import test_utils, run_env, cosmos
 from siftool.run_env import Integrator, UIStackEnvironment, Peggy2Environment, IBCEnvironment, IntegrationTestsEnvironment
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
@@ -31,6 +31,7 @@ def main(argv):
     what = argv[0] if argv else None
     cmd = Integrator()
     project = cmd.project
+    log = siftool_logger(__name__)
     argparser = argparse.ArgumentParser()
     if what == "project-init":
         project.init()
@@ -48,30 +49,51 @@ def main(argv):
         e.stack_push()
     elif what == "run-env":
         project.clean_run_env_state()
-        if on_peggy2_branch:
+        argparser.add_argument("--type")
+        args, remaining_args = argparser.parse_known_args(argv[1:])
+        if args.type:
+            class_name = args.type
+        else:
+            if on_peggy2_branch:
+                class_name = "Peggy2Environment"
+            else:
+                class_name = "IntegrationTestsEnvironment"
+        class_to_use = getattr(run_env, class_name)
+        env = class_to_use(cmd)
+        argparser = argparse.ArgumentParser()
+        if class_to_use == Peggy2Environment:
             argparser.add_argument("--test-denom-count", type=int)
             argparser.add_argument("--geth", action="store_true", default=False)
             argparser.add_argument("--witness-count", type=int)
+            argparser.add_argument("--ebrelayer-log-level")
             argparser.add_argument("--consensus-threshold", type=int)
-            args = argparser.parse_args(argv[1:])
-            # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
-            # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-            env = Peggy2Environment(cmd)
-            witness_count = args.witness_count if args.witness_count is not None else os.getenv("WITNESS_COUNT")
-            if witness_count is not None:
-                env.witness_count = witness_count
-            consensus_threshold = args.consensus_threshold if args.consensus_threshold is not None \
-                else os.getenv("CONSENSUS_THRESHOLD")
-            if consensus_threshold is not None:
-                env.consensus_threshold = consensus_threshold
-            if args.test_denom_count is not None:
-                env.extra_balances_for_admin_account = {"test" + "verylong"*10 + "{}".format(i): 10**27 for i in range(args.test_denom_count)}
+            argparser.add_argument("--pkill", action="store_true", default=False)
+            args = argparser.parse_args(remaining_args)
+            if args.pkill:
+                project.pkill()
+            if args.witness_count is not None:
+                env.witness_count = args.witness_count
+            else:
+                env.witness_count = int(os.getenv("WITNESS_COUNT", 2))
+            if args.consensus_threshold is not None:
+                env.consensus_threshold = args.consensus_threshold
+            elif "CONSENSUS_THRESHOLD" in os.environ:
+                env.consensus_threshold = int(os.getenv("CONSENSUS_THRESHOLD"))
+            if args.ebrelayer_log_level:
+                env.log_level_witness = env.log_level_relayer = args.ebrelayer_log_level
             env.use_geth_instead_of_hardhat = args.geth
-            processes = env.run()
-        else:
-            env = IntegrationTestsEnvironment(cmd)
+            if args.test_denom_count:
+                env.extra_balances_for_admin_account = {"test{}".format(i): 10**27 for i in range(args.test_denom_count)}
+            hardhat_proc, sifnoded_proc, relayer0_proc, witness_procs = env.run()
+            processes = [hardhat_proc, sifnoded_proc, relayer0_proc] + witness_procs
+        elif class_to_use == IntegrationTestsEnvironment:
             project.clean()
             # deploy/networks already included in run()
+            argparser.add_argument("--test-denom-count", type=int)
+            args = argparser.parse_args(remaining_args)
+            if args.test_denom_count:
+                extra_balances = {"test{}".format(i): 10**27 for i in range(args.test_denom_count)}
+                env.mint_amount = cosmos.balance_add(env.mint_amount, extra_balances)
             processes = env.run()
             # TODO Cleanup:
             # - rm -rf test/integration/sifnoderelayerdb
@@ -128,20 +150,6 @@ def main(argv):
         ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
         res = stdout_lines(cmd.execst(**ls_cmd))
         print(ls_cmd)
-    elif what == "poc-geth":
-        import geth
-        g = geth.Geth(cmd)
-        with open(cmd.mktempfile(), "w") as geth_log_file:
-            datadir_for_running = cmd.mktempdir()
-            datadir_for_keys = cmd.mktempdir()
-            args = g.geth_cmd__test_integration_geth_branch(datadir=datadir_for_running)
-            geth_proc = cmd.popen(args, log_file=geth_log_file)
-            import hardhat
-            for expected_addr, private_key in hardhat.default_accounts():
-                addr = g.create_account("password", private_key, datadir=datadir_for_keys)
-                assert addr == expected_addr
-            wait_for_enter_key_pressed()
-            killall((geth_proc,))
     elif what == "inflate-tokens":
         from siftool import inflate_tokens
         inflate_tokens.run(*argv[1:])

@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/AB71F94BB809FB05FB4547C471A92C3F9826BA24E660BB4782B5ED61FB9AB867",
+      "denom": "ibc/345D30E8ED06B47FC538ED131D99D16126F07CD6F8B35DE96AAF4C1E445AF466",
       "base_denom": "uscrt",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-4",
+      "path": "transfer/channel-65",
+      "ibc_channel_id": "channel-65",
+      "ibc_counterparty_channel_id": "channel-15",
       "display_name": "Secret",
       "display_symbol": "",
       "network": "",

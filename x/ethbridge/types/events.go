@@ -1,7 +1,7 @@
 package types
 
 // Ethbridge module event types
-var (
+const (
 	EventTypeCreateClaim              = "create_claim"
 	EventTypeProphecyStatus           = "prophecy_status"
 	EventTypeBurn                     = "sif_burn"

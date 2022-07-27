@@ -18,7 +18,6 @@ def geth_proof_of_concept():
     geth = mod_geth.Geth(cmd)
     geth_datadir = cmd.mktempdir()
     geth_ipcpath = cmd.mktempfile()
-    # geth.run_dev(3, datadir=geth_datadir, ipcpath=geth_ipcpath)
     geth_ipcpath = "/tmp/geth.ipc"
     f = geth.attach_eval_fn(geth_ipcpath)
     coinbase_addr = f.coinbase_addr

@@ -6,6 +6,9 @@ import (
 	"math/rand"
 	"time"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+
 	"strconv"
 	"testing"
 
@@ -73,6 +76,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
 	keyTokenRegistry := sdk.NewKVStoreKey(tokenregistrytypes.StoreKey)
 
+	adminKey := sdk.NewKVStoreKey(admintypes.StoreKey)
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 	ms.MountStoreWithDB(tkeyStaking, sdk.StoreTypeTransient, nil)
@@ -129,13 +133,14 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		paramsKeeper.Subspace(banktypes.ModuleName),
 		blacklistedAddrs,
 	)
+	adminKeeper := adminkeeper.NewKeeper(encCfg.Marshaler, adminKey)
 	initTokens := sdk.TokensFromConsensusPower(10000, sdk.DefaultPowerReduction)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(100))))
 	// bankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
 	stakingKeeper := stakingkeeper.NewKeeper(encCfg.Marshaler, keyStaking, accountKeeper, bankKeeper, paramsKeeper.Subspace(stakingtypes.ModuleName))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oraclekeeper.NewKeeper(encCfg.Marshaler, keyOracle, stakingKeeper, consensusNeeded)
-	tokenRegistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keyTokenRegistry)
+	tokenRegistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keyTokenRegistry, adminKeeper)
 
 	// set module accounts
 	accountKeeper.SetModuleAccount(ctx, bridgeAccount)
@@ -146,9 +151,17 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	require.NoError(t, err)
 	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
 	require.NoError(t, err)
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenRegistryKeeper, keyEthBridge)
+
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler,
+		bankKeeper,
+		oracleKeeper,
+		accountKeeper,
+		tokenRegistryKeeper,
+		adminKeeper,
+		keyEthBridge)
 	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
 	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
+
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
 	valAddrs := make(map[string]uint32)

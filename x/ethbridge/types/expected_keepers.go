@@ -1,6 +1,7 @@
 package types
 
 import (
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	types "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,6 +47,6 @@ type OracleKeeper interface {
 	ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor types.NetworkDescriptor, ConsensusNeeded uint32) error
 }
 
-type TokenRegistryKeeper interface {
-	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
+type AdminKeeper interface {
+	IsAdminAccount(ctx sdk.Context, moduleName admintypes.AdminType, adminAccount sdk.AccAddress) bool
 }

@@ -53,7 +53,6 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 			return
 
 		case <-t.C:
-			sub.SugaredLogger.Info("timer triggered, start to check cosmos message")
 			sub.handleNewProphecyCompleted(client)
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -30,6 +31,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+
+	_ "net/http/pprof" // nolint:gosec, G108
 )
 
 const (
@@ -270,27 +273,18 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		sifnodeGrpc = defaultSifnodeGrpc
 	}
 
-	logConfig := zap.NewDevelopmentConfig()
-	logConfig.Sampling = nil
-	logConfig.Encoding = "json"
-	logger, err := logConfig.Build()
-
+	logger, loggerCleanup, err := buildZapLogger(cmd)
 	if err != nil {
-		log.Fatalln("failed to init zap logging")
+		log.Fatalln("failed to init zap logging: {}", err)
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Println("failed to sync zap logging")
-		}
-	}()
-
-	sugaredLogger := logger.Sugar()
-	zap.RedirectStdLog(sugaredLogger.Desugar())
+	defer loggerCleanup()
 
 	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
 	if err != nil {
 		return err
 	}
+
+	sugaredLogger := logger.Sugar()
 
 	instrumentation.PeggyCheckpointZap(
 		sugaredLogger,
@@ -336,6 +330,52 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll.Wait()
 
 	return nil
+}
+
+// buildZapLogger creates a zap logger based on the flags.FlagLogLevel
+// setting.  At debug or trace, it configures the logger with NewDevelopmentConfig,
+// otherwise NewProductionConfig.
+//
+// You must call loggerCleanup in a defer after calling buildZapLogger.
+func buildZapLogger(cmd *cobra.Command) (*zap.Logger, func(), error) {
+	logLevelFlag, err := cmd.Flags().GetString(flags.FlagLogLevel)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logConfig := zap.NewProductionConfig()
+	switch logLevelFlag {
+	case "debug", "trace":
+		logConfig = zap.NewDevelopmentConfig()
+	case "info":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	case "warn":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
+	case "error":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
+	case "fatal":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.FatalLevel)
+	case "panic":
+		logConfig.Level = zap.NewAtomicLevelAt(zap.PanicLevel)
+	}
+	logConfig.Sampling = nil // neither production nor development use log sampling
+	logConfig.Encoding = "json"
+	logger, err := logConfig.Build()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	sugaredLogger := logger.Sugar()
+	cleanupLogRedirection := zap.RedirectStdLog(sugaredLogger.Desugar())
+
+	loggerCleanup := func() {
+		if err := logger.Sync(); err != nil {
+			log.Println("failed to sync zap logging")
+		}
+		cleanupLogRedirection()
+	}
+
+	return logger, loggerCleanup, nil
 }
 
 // RunInitWitnessCmd executes initWitnessCmd
@@ -433,19 +473,11 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		sifnodeGrpc = defaultSifnodeGrpc
 	}
 
-	logConfig := zap.NewDevelopmentConfig()
-	logConfig.Encoding = "json"
-	logConfig.Sampling = nil
-	logger, err := logConfig.Build()
-
+	logger, loggerCleanup, err := buildZapLogger(cmd)
 	if err != nil {
-		log.Fatalln("failed to init zap logging")
+		log.Fatalln("failed to init zap logging: {}", err)
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Println("failed to sync zap logging")
-		}
-	}()
+	defer loggerCleanup()
 
 	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
 	if err != nil {
@@ -453,7 +485,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	sugaredLogger := logger.Sugar()
-	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
@@ -560,6 +591,10 @@ func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTransl
 }
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	if err := svrcmd.Execute(buildRootCmd(), sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
