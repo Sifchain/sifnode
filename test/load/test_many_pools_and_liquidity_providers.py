@@ -28,7 +28,7 @@ class Test:
         # Define one token per liquidity pool.
         self.token_decimals = 18
         self.token_unit = 10**self.token_decimals
-        self.tokens = ["test{}".format(i) for i in range(self.number_of_liquidity_pools)]
+        self.tokens = None
 
         # The test runs, in sequence:
         # 1. test_duration_blocks of neither rewards nor lppd
@@ -83,6 +83,8 @@ class Test:
 
         self.prj.pkill()
         time.sleep(1)
+
+        self.tokens = ["test{}".format(i) for i in range(self.number_of_liquidity_pools)]
 
         # Admin balances per denom. This has to cover any rewards and lppd distribution.
         denom_total_supply = 10000 * self.number_of_wallets * self.amount_of_denom_per_wallet
