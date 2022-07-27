@@ -334,28 +334,11 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return json.loads(stdout(res))
 
+    # "--node" points to existing validator (i.e. node 0) and needs to be up.
     def staking_create_validator(self, amount: GasFees, pubkey: JsonDict, moniker: str, commission_rate: float,
         commission_max_rate: float, commission_max_change_rate: float, min_self_delegation: int,
         from_acct: cosmos.Address
     ):
-        #
-        #         sifnoded tx staking create-validator \
-        #         --amount=1000000000000000000000000rowan \
-        #         --pubkey=$(sifnoded tendermint show-validator --home /home/jurez/.sifnode-1) \
-        #         --moniker=Jodi \
-        #         --chain-id=local-sifnode-1 \
-        #         --commission-rate="0.10" \
-        #         --commission-max-rate="0.20" \
-        #         --commission-max-change-rate="0.01" \
-        #         --min-self-delegation="1000000" \
-        #         --node=tcp://127.0.0.1:2860 \
-        #         --fees 1000000000000000000rowan \
-        #         --keyring-backend test \
-        #         --from=sif-1 \
-        #         -y \
-        #         --home /home/jurez/.sifnode-1
-        # TODO --node points to validator0
-        # TODO Node needs to be up
         args = ["tx", "staking", "create-validator", "--amount", sif_format_amount(*amount), "--pubkey",
             format_pubkey(pubkey), "--moniker", moniker, "--commission-rate", str(commission_rate),
             "--commission-max-rate", str(commission_max_rate), "--commission-max-change-rate",
