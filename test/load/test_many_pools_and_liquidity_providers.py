@@ -162,6 +162,7 @@ class Test:
 
         self.chain_id = "localnet"
         self.sifnoded = []
+        self.sifnoded_client = None
         self.node_info = None
 
     def setup(self):
@@ -200,7 +201,6 @@ class Test:
         self.log_level = "debug"
         self.validator0_mnemonic = "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow".split()
 
-    def run(self):
         self.prj.pkill()
         time.sleep(1)
 
@@ -252,6 +252,7 @@ class Test:
         client_home = os.path.join(self.sifnoded_home_root, "sifnoded-client")
         sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.node_info[0]["external_address"],
             chain_id=self.chain_id)
+        self.sifnoded_client = sifnoded_client
 
         wallets = {}
         for i in range(self.number_of_wallets):
@@ -303,14 +304,14 @@ class Test:
             sifnoded_i.save_config_toml(config_toml)
 
         # Start processes
-        processes = []
-        log_files = []
+        env.running_processes = []
+        env.open_log_files = []
         for i, sifnoded_i in enumerate(self.sifnoded):
             node_info = self.node_info[i]
             ports = node_info["ports"]
             log_file_path = os.path.join(sifnoded_i.home, "sifnoded.log")
             log_file = open(log_file_path, "w")
-            log_files.append(log_file)
+            env.open_log_files.append(log_file)
             process = sifnoded_i.sifnoded_start(log_file=log_file, log_level="debug", trace=True,
                 tcp_url="tcp://{}:{}".format(ANY_ADDR, ports["rpc"]), p2p_laddr="{}:{}".format(ANY_ADDR, ports["p2p"]),
                 grpc_address="{}:{}".format(ANY_ADDR, ports["grpc"]),
@@ -318,7 +319,7 @@ class Test:
                 address="tcp://{}:{}".format(ANY_ADDR, ports["address"])
             )
             sifnoded_i._wait_up()
-            processes.append(process)
+            env.running_processes.append(process)
 
         # Wait for some time so that nodes are fully booted
         sifnoded0.wait_for_last_transaction_to_be_mined()
@@ -396,6 +397,11 @@ class Test:
         assert set(actual_lp_providers) == set(wallets)  # Keys
         assert all(set(actual_lp_providers[addr]) == set(wallets[addr]) for addr in wallets)  # Values
 
+    def run(self):
+        sifnoded = self.sifnoded[0]
+        sifnoded_client = self.sifnoded_client
+        sif = self.node_info[0]["acct_addr"]
+
         # Determine start and end blocks for rewards and LPPD
         # TODO start and end blocks are both inclusive, adjust
         current_block = sifnoded_client.get_current_block()
@@ -436,8 +442,6 @@ class Test:
 
         # TODO LPPD and rewards assertions
         # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
-
-        return processes, log_files
 
     # TODO Refactor - move to Sifnoded
     def wait_for_block(self, block_number: int) -> float:
@@ -499,19 +503,22 @@ def main(argv: List[str]):
     test.reward_period_pool_count = args.reward_period_pool_count
     test.test_duration_blocks = args.test_duration_blocks
 
+    test_start_time = time.time()
     test.setup()
+    run_start_time = time.time()
 
     try:
-        test_start_time = time.time()
         test.run()
         test_finish_time = time.time()
-        log.info("Finished successfully io {:.2f}s".format(test_finish_time - test_start_time))
+        log.info("Finished successfully, setup: {:.2f}s, total {:.2f}s".format(run_start_time - test_start_time,
+            test_finish_time - run_start_time))
     except Exception as e:
         log.error("Test failed", e)
         try:
             log.error("Checking some balances to see if the thing is dead or alive...")
-            for addr in list(test._debug_fund_amounts)[5:]:
-                log.debug("Balance of {}: {}".format(addr, cosmos.balance_format(test.sifnoded.get_balance(addr))))
+            addr = test.node_info[0]["acct_addr"]
+            balance = cosmos.balance_format(test.sifnoded.get_balance(addr))
+            log.debug("Balance of {}: {}".format(addr, balance))
         except Exception as e:
             log.error("Balance check failed", e)
         wait_for_enter_key_pressed()
