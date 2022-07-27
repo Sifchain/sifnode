@@ -106,7 +106,8 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 
 	if err != nil {
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
-			errorMessageKey, err.Error())
+			errorMessageKey, err.Error(),
+			"EthProvider", sub.EthProvider)
 
 		completionEvent.Add(1)
 		go sub.Start(txFactory, completionEvent, symbolTranslator)
