@@ -230,7 +230,7 @@ class Test:
                 # This is just for collecting statistics while we wait, the test result does not depend on it.
                 # Check also https://github.com/cosmos/cosmos-sdk/issues/6105
                 try:
-                    blk = self.sifnoded.get_block_results()
+                    blk = self.sifnoded.get_block_results(height=current_block - 1)
                     histogram = {}
                     for key in ["begin_block_events", "end_block_events"]:
                         items = blk[key]
