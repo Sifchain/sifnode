@@ -927,9 +927,6 @@ class SifnodeClient:
     ):
         self.sifnode = sifnode
         self.ctx = ctx  # TODO Remove (currently needed for cross-chain fees for Peggy2)
-        self.binary = "sifnoded"
-        self.node = node
-        self.chain_id = chain_id
         self.grpc_port = grpc_port
 
     def query_account(self, sif_addr):
@@ -978,7 +975,8 @@ class SifnodeClient:
         # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
         # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
         # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
-        return grpc.insecure_channel("127.0.0.1:9090")
+        return grpc.insecure_channel("{}:{}".format(LOCALHOST,
+            self.grpc_port if self.grpc_port is not None else SIFNODED_DEFAULT_GRPC_PORT))
 
     def broadcast_tx(self, encoded_tx: bytes):
         ondemand_import_generated_protobuf_sources()
