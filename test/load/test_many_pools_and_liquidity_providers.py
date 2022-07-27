@@ -156,6 +156,8 @@ class Test:
         # 4 * 6s = 24s for one unit of test_duration_blocks.
         self.test_duration_blocks = 5
 
+        self.block_results_offset = 0
+
         self.sifnoded_home_root = sifnoded_home_root
 
         self.env = None
@@ -454,7 +456,7 @@ class Test:
                 # This is just for collecting statistics while we wait, the test result does not depend on it.
                 # Check also https://github.com/cosmos/cosmos-sdk/issues/6105
                 try:
-                    blk = sifnoded.get_block_results()
+                    blk = sifnoded.get_block_results(height=self.block_results_offset or None)
                     histogram = {}
                     for key in ["begin_block_events", "end_block_events"]:
                         items = blk[key]
@@ -485,6 +487,8 @@ def main(argv: List[str]):
     parser.add_argument("--reward-period-mod", type=int, default=1)
     parser.add_argument("--reward-period-pool-count", type=int, default=10)
     parser.add_argument("--test-duration-blocks", type=int, default=5)
+    parser.add_argument("--block-results-offset", type=int, default=0)
+    parser.add_argument("--wait-for-enter", action="store_true")
     args = parser.parse_args(argv[1:])
 
     cmd = command.Command()
@@ -502,6 +506,7 @@ def main(argv: List[str]):
     test.reward_period_mod = args.reward_period_mod
     test.reward_period_pool_count = args.reward_period_pool_count
     test.test_duration_blocks = args.test_duration_blocks
+    test.block_results_offset = args.block_results_offset
 
     test_start_time = time.time()
     test.setup()
@@ -521,6 +526,7 @@ def main(argv: List[str]):
             log.debug("Balance of {}: {}".format(addr, balance))
         except Exception as e:
             log.error("Balance check failed", e)
+    if args.wait_for_enter:
         wait_for_enter_key_pressed()
 
 
