@@ -14,6 +14,10 @@ import (
 )
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_ProcessRemovelQueue(ctx sdk.Context, k msgServer, msg *types.MsgAddLiquidity, newPoolUnits sdk.Uint) {
+	// Skip when queueing is disabled, and for pools that are not margin enabled.
+	if !k.GetMarginKeeper().IsPoolEnabled(ctx, msg.ExternalAsset.Symbol) || !k.IsRemovalQueueEnabled(ctx) {
+		return
+	}
 	if k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol).Count > 0 {
 		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
 	}
@@ -39,6 +43,10 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_VerifyEnoughWBasisPointsAvailableForLP(ctx 
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx sdk.Context, k msgServer, msg *types.MsgRemoveLiquidityUnits, lp types.LiquidityProvider, pool types.Pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount sdk.Uint, eAsset *tokenregistrytypes.RegistryEntry, pmtpCurrentRunningRate sdk.Dec) error {
+	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
+	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) || !k.IsRemovalQueueEnabled(ctx) {
+		return nil
+	}
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 	if err != nil {
@@ -60,6 +68,10 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx sdk.Conte
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx sdk.Context, k msgServer, msg *types.MsgRemoveLiquidity, lp types.LiquidityProvider, pool types.Pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount sdk.Uint, eAsset *tokenregistrytypes.RegistryEntry, pmtpCurrentRunningRate sdk.Dec) error {
+	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
+	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) || !k.IsRemovalQueueEnabled(ctx) {
+		return nil
+	}
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 	if err != nil {
