@@ -652,7 +652,7 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(owner)
           .addExistingBridgeToken(state.token1.address)
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;
 
       inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
       expect(inWhiteList).to.be.equal(true);
@@ -671,7 +671,7 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(owner)
           .batchAddExistingBridgeTokens([state.token2.address])
-      ).to.be.fulfilled;
+      ).to.not.be.reverted;;
 
       inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
       expect(inWhiteList).to.be.equal(true);
