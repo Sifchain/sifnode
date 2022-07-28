@@ -518,14 +518,14 @@ def main(argv: List[str]):
         log.info("Finished successfully, setup: {:.2f}s, total {:.2f}s".format(run_start_time - test_start_time,
             test_finish_time - run_start_time))
     except Exception as e:
-        log.error("Test failed", e)
+        log.error("Test failed", exc_info=True)
         try:
             log.error("Checking some balances to see if the thing is dead or alive...")
             addr = test.node_info[0]["acct_addr"]
             balance = cosmos.balance_format(test.sifnoded.get_balance(addr))
             log.debug("Balance of {}: {}".format(addr, balance))
         except Exception as e:
-            log.error("Balance check failed", e)
+            log.error("Balance check failed", exc_info=True)
     if args.wait_for_enter:
         wait_for_enter_key_pressed()
 
