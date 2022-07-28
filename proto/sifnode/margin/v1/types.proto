@@ -51,6 +51,10 @@ message Params {
     (gogoproto.nullable) = false
   ];
   string insurance_fund_address = 14;
+  string sq_modifier = 15 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 enum Position {
