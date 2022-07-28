@@ -549,11 +549,7 @@ func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 
 	value := sdk.NewDecFromBigInt(q.TotalValue.BigInt())
 	blocks := sdk.NewDec(ctx.BlockHeight() - q.StartHeight)
-	modifier, err := sdk.NewDecFromStr("10000000000000000000000000")
-	if err != nil {
-		panic(err)
-	}
-
+	modifier := k.GetSqModifier(ctx)
 	sq := value.Mul(blocks).Quo(modifier)
 
 	return sq
