@@ -285,6 +285,10 @@ func (msg TokenMetadataAddRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.TokenAddress)
 	}
 
+	if !msg.Metadata.NetworkDescriptor.IsValid() {
+		return ErrInvalidNetworkDescriptor
+	}
+
 	return nil
 }
 

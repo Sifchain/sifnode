@@ -9,4 +9,5 @@ var (
 	ErrNotAllowedToBuyAsset  = sdkerrors.Register(ModuleName, 5, "Unable to swap, not allowed to buy selected asset")
 	ErrInvalidMetadataName   = sdkerrors.Register(ModuleName, 6, "name in token metadata is not valid")
 	ErrInvalidMetadataSymbol = sdkerrors.Register(ModuleName, 7, "symbol in token metadata is not valid")
+	ErrInvalidNetworkDescriptor   = sdkerrors.Register(ModuleName, 8, "network descriptor in metadata is not valid")
 )
