@@ -516,7 +516,7 @@ def main(argv: List[str]):
         test.run()
         test_finish_time = time.time()
         log.info("Finished successfully, setup: {:.2f}s, total {:.2f}s".format(run_start_time - test_start_time,
-            test_finish_time - run_start_time))
+            test_finish_time - test_start_time))
     except Exception as e:
         log.error("Test failed", exc_info=True)
         try:
