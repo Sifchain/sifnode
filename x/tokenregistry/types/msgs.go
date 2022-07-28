@@ -274,15 +274,19 @@ func (msg TokenMetadataAddRequest) ValidateBasic() error {
 	}
 
 	if msg.Metadata.Name == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.Name)
+		return ErrInvalidMetadataName
 	}
 
 	if msg.Metadata.Symbol == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.Symbol)
+		return ErrInvalidMetadataSymbol
 	}
 
 	if msg.Metadata.TokenAddress == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.TokenAddress)
+	}
+
+	if !msg.Metadata.NetworkDescriptor.IsValid() {
+		return ErrInvalidNetworkDescriptor
 	}
 
 	return nil
