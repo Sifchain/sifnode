@@ -286,13 +286,13 @@ def run(number_of_liquidity_pools: int, number_of_wallets: int, liquidity_provid
         test_finish_time = time.time()
         log.info("Finished successfully io {:.2f}s".format(test_finish_time - test_start_time))
     except Exception as e:
-        log.error("Test failed", e)
+        log.error("Test failed", exc_info=True)
         try:
             log.error("Checking some balances to see if the thing is dead or alive...")
-            for addr in list(test._debug_fund_amounts)[5:]:
+            for addr in list(test._debug_fund_amounts)[:1]:
                 log.debug("Balance of {}: {}".format(addr, cosmos.balance_format(test.sifnoded.get_balance(addr))))
         except Exception as e:
-            log.error("Balance check failed", e)
+            log.error("Balance check failed", exc_info=True)
     wait_for_enter_key_pressed()
 
 
