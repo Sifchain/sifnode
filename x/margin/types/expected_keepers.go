@@ -54,8 +54,7 @@ type Keeper interface {
 	GetMTP(ctx sdk.Context, mtpAddress string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
-	GetMTPsForCollateralAsset(ctx sdk.Context, asset string) []*MTP
-	GetMTPsForCustodyAsset(ctx sdk.Context, asset string) []*MTP
+	GetMTPsForPool(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
 	DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error
