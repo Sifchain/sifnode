@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -149,5 +150,5 @@ func TestKeeper_SetBlacklist_NonEthBridgeAdmin(t *testing.T) {
 		From:      testAddrs[0].String(),
 		Addresses: make([]string, 0),
 	})
-	require.ErrorIs(t, err, oracletypes.ErrNotAdminAccount)
+	require.ErrorIs(t, err, sdkerrors.Wrapf(oracletypes.ErrNotAdminAccount, "%s", testAddrs[0].String()))
 }
