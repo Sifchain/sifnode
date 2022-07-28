@@ -88,6 +88,10 @@ func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 	return false
 }
 
+func (k Keeper) GetSqModifier(ctx sdk.Context) sdk.Dec {
+	return k.GetParams(ctx).SqModifier
+}
+
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.ParamsPrefix, k.cdc.MustMarshal(params))
