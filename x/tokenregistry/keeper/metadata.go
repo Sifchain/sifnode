@@ -34,16 +34,8 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		return types.TokenMetadata{}, false
 	}
 	if err != nil {
-		panic("Unahandled Registry Error")
+		panic("Unhandled Registry Error")
 	}
-
-	// This is commented out because it is superceded by whats in develop, this change makes testing easier
-	// if !entry.IsWhitelisted {
-	// 	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "It is not whitelisted", zap.Reflect("entry", entry))
-	// 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrument)
-
-	// 	return types.TokenMetadata{}, false
-	// }
 
 	metadata := types.TokenMetadata{
 		Decimals:          entry.Decimals,
