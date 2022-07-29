@@ -88,10 +88,23 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 	}
 
 	if shouldDistribute {
+		poolRowanMapSum := sdk.ZeroUint()
+		for _, rowan := range poolRowanMap {
+			poolRowanMapSum = poolRowanMapSum.Add(rowan)
+		}
+
+		if !coinsToMint.Equal(poolRowanMapSum) {
+			k.Logger(ctx).Error(fmt.Sprintln("coinsToMint", coinsToMint.String(), " != poolRowanMapSum", poolRowanMapSum.String()))
+		}
+
 		// this updates poolRowanMap in case coin tranfers fails
 		k.TransferRewards(ctx, poolRowanMap, lpRowanMap, lpPoolMap)
 
 		for pool, rowan := range poolRowanMap {
+			if rowan.Equal(sdk.ZeroUint()) {
+				continue
+			}
+
 			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(rowan)
 			k.SetPool(ctx, pool) // nolint:errcheck
 		}
@@ -100,6 +113,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		// If not, burn what we could not distribute
 		moduleBalancePostTransfer := k.GetModuleRowan(ctx)
 		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
+
 		if !diff.IsZero() {
 			k.BurnRowan(ctx, diff) // nolint:errcheck
 		}
