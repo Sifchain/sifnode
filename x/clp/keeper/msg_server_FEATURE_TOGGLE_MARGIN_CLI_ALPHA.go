@@ -44,9 +44,10 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_VerifyEnoughWBasisPointsAvailableForLP(ctx 
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx sdk.Context, k msgServer, msg *types.MsgRemoveLiquidityUnits, lp types.LiquidityProvider, pool types.Pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount sdk.Uint, eAsset *tokenregistrytypes.RegistryEntry, pmtpCurrentRunningRate sdk.Dec) error {
 	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
-	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) || !k.IsRemovalQueueEnabled(ctx) {
+	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
 		return nil
 	}
+
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
 	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 	if err != nil {
@@ -56,20 +57,24 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx sdk.Conte
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
-		k.QueueRemoval(ctx, &types.MsgRemoveLiquidity{
-			Signer:        msg.Signer,
-			ExternalAsset: msg.ExternalAsset,
-			WBasisPoints:  ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, msg.WithdrawUnits),
-			Asymmetry:     sdk.ZeroInt(),
-		}, extRowanValue.Add(withdrawNativeAssetAmount))
-		return types.ErrQueued
+		if k.IsRemovalQueueEnabled(ctx) {
+			k.QueueRemoval(ctx, &types.MsgRemoveLiquidity{
+				Signer:        msg.Signer,
+				ExternalAsset: msg.ExternalAsset,
+				WBasisPoints:  ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, msg.WithdrawUnits),
+				Asymmetry:     sdk.ZeroInt(),
+			}, extRowanValue.Add(withdrawNativeAssetAmount))
+			return types.ErrQueued
+		} else {
+			return types.ErrRemovalsBlockedByHealth
+		}
 	}
 	return nil
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx sdk.Context, k msgServer, msg *types.MsgRemoveLiquidity, lp types.LiquidityProvider, pool types.Pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount sdk.Uint, eAsset *tokenregistrytypes.RegistryEntry, pmtpCurrentRunningRate sdk.Dec) error {
 	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
-	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) || !k.IsRemovalQueueEnabled(ctx) {
+	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
 		return nil
 	}
 	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
@@ -81,8 +86,12 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx sdk.Contex
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
-		k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
-		return types.ErrQueued
+		if k.IsRemovalQueueEnabled(ctx) {
+			k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
+			return types.ErrQueued
+		} else {
+			return types.ErrRemovalsBlockedByHealth
+		}
 	}
 
 	return nil
