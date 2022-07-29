@@ -8,7 +8,10 @@ import { getEntries } from "./helpers/getEntries.mjs";
 import { getPools } from "./helpers/getPools.mjs";
 import { pickRandomPools } from "./helpers/pickRandomPools.mjs";
 
-const quantity = 8000;
+// const nAccounts = 8000; // testnet
+// const nPools = 10; // testnet
+const nAccounts = 5; // localnet
+const nPools = 2; // localnet
 
 const entries = await getEntries();
 const pools = await getPools();
@@ -19,10 +22,10 @@ const accounts = await spinner(
     within(async () => {
       // $.verbose = true;
       return Promise.all(
-        [...Array(quantity).keys()].map(async (id) => ({
+        [...Array(nAccounts).keys()].map(async (id) => ({
           key: `account-${id + 1}`,
           mnemonic: (await $`${binary} keys mnemonic`).toString().trim(),
-          pools: pickRandomPools(pools, entries),
+          pools: pickRandomPools(pools, entries, nPools),
         }))
       );
     })

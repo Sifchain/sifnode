@@ -23,6 +23,9 @@ await spinner("fund accounts                              ", () =>
     // $.verbose = true;
     let seq = sequence;
     for (let { key, pools } of accounts) {
+      // if (key === "account-1500") {
+      //   break;
+      // }
       for (let { symbol, decimals } of pools) {
         await $`\
 ${binary} tx bank send \

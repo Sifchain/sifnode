@@ -11,11 +11,17 @@ const accounts = await getAccounts();
 
 await spinner("accounts add liquidity                              ", () =>
   within(async () => {
-    $.verbose = true;
+    // $.verbose = true;
     for (let { key, pools } of accounts) {
+      // process.stdout.write(`     ${key}`);
+      // if (key === "account-2358") {
+      // if (key === "account-1500") {
+      //   break;
+      // }
       const { accountNumber, sequence } = await getAccountNumber(key);
       let seq = sequence;
       for (let { symbol, decimals, swapPriceExternal } of pools) {
+        // process.stdout.write(`.`);
         await $`\
 ${binary} tx clp add-liquidity \
   --symbol=${symbol} \
@@ -29,6 +35,7 @@ ${binary} tx clp add-liquidity \
   --sequence=${seq}`;
         seq++;
       }
+      // process.stdout.write(`\r`);
     }
   })
 );

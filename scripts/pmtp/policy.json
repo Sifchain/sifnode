@@ -1,0 +1,8 @@
+[
+    {
+        "distribution_period_block_rate": "0.0000034",
+        "distribution_period_start_block": 250,
+        "distribution_period_end_block": 433000,
+        "distribution_period_mod": 10
+    }
+]

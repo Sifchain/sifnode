@@ -7,6 +7,7 @@ import { binary, keyringFlags } from "./helpers/constants.mjs";
 import { getEntries } from "./helpers/getEntries.mjs";
 import { getFunds } from "./helpers/getFunds.mjs";
 import { getTokens } from "./helpers/getTokens.mjs";
+import { checkEnv } from "./helpers/checkEnv.mjs";
 
 const {
   HOME,
@@ -17,6 +18,8 @@ const {
   USER_MNEMONIC,
   USER_KEY,
 } = process.env;
+
+checkEnv();
 
 await spinner("build binary                              ", () =>
   within(async () => {
