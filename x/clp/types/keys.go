@@ -22,7 +22,7 @@ const (
 	NativeSymbol = "rowan"
 	PoolThrehold = "1000000000000000000"
 
-	MaxSymbolLength = 71
+	MaxSymbolLength = 70
 	MaxWbasis       = 10000
 )
 
