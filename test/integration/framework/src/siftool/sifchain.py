@@ -114,12 +114,12 @@ def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_bloc
         "reward_period_mod": reward_period_mod
     }
 
-def create_lppd_params(start_block, end_block, rate) -> LPPDParams:
+def create_lppd_params(start_block: int, end_block: int, rate: float, mod: int) -> LPPDParams:
     return {
         "distribution_period_block_rate": str(rate),
         "distribution_period_start_block": start_block,
         "distribution_period_end_block": end_block,
-        "distribution_period_mod": 1
+        "distribution_period_mod": mod
     }
 
 
