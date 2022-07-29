@@ -155,6 +155,12 @@ class Test:
 
         self.phase_offset_blocks = 100
         self.phase_duration_blocks = 100
+
+        self.rewards_offset_blocks = 100
+        self.rewards_duration_blocks = 200
+        self.lpd_offset_blocks = 200
+        self.lpd_duration_blocks = 200
+
         self.run_forever = False
 
         # The timing starts with the next block after setup. The accuracty of the test is limited by polling for the
@@ -415,22 +421,24 @@ class Test:
         # TODO start and end blocks are both inclusive, adjust
         current_block = sifnoded_client.get_current_block()
         start_block = current_block + 5
-        rewards_start_block = start_block
-        rewards_end_block = rewards_start_block + self.phase_duration_blocks
-        lppd_start_block = start_block + self.phase_offset_blocks
-        lppd_end_block = lppd_start_block + self.phase_duration_blocks
+        rewards_start_block = start_block + self.rewards_offset_blocks
+        rewards_end_block = rewards_start_block + self.rewards_duration_blocks
+        lppd_start_block = start_block + self.lpd_offset_blocks
+        lppd_end_block = lppd_start_block + self.lpd_duration_blocks
 
         # Set up rewards
-        reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
-            [(token, 1) for token in self.tokens][:self.reward_period_pool_count], 100000 * self.token_unit,
-            self.reward_period_default_multiplier, self.reward_period_distribute, self.reward_period_mod)
-        sifnoded.clp_reward_period(sif, reward_params)
-        sifnoded.wait_for_last_transaction_to_be_mined()
+        if self.rewards_duration_blocks > 0:
+            reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
+                [(token, 1) for token in self.tokens][:self.reward_period_pool_count], 100000 * self.token_unit,
+                self.reward_period_default_multiplier, self.reward_period_distribute, self.reward_period_mod)
+            sifnoded.clp_reward_period(sif, reward_params)
+            sifnoded.wait_for_last_transaction_to_be_mined()
 
         # Set up LPD policies
-        lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045, self.lpd_period_mod)
-        sifnoded.clp_set_lppd_params(sif, lppd_params)
-        sifnoded.wait_for_last_transaction_to_be_mined()
+        if self.lpd_duration_blocks > 0:
+            lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045, self.lpd_period_mod)
+            sifnoded.clp_set_lppd_params(sif, lppd_params)
+            sifnoded.wait_for_last_transaction_to_be_mined()
 
         if not self.run_forever:
             # run_forever means we're not interested in average block times but want to run this
@@ -502,9 +510,11 @@ def main(argv: List[str]):
     parser.add_argument("--reward-period-distribute", action="store_true")
     parser.add_argument("--reward-period-mod", type=int, default=1)
     parser.add_argument("--reward-period-pool-count", type=int, default=10)
+    parser.add_argument("--rewards-offset-blocks", type=int, default=100)
+    parser.add_argument("--rewards-duration-blocks", type=int, default=200)
     parser.add_argument("--lpd-period-mod", type=int, default=1)
-    parser.add_argument("--phase-offset-blocks", type=int, default=100)
-    parser.add_argument("--phase-duration-blocks", type=int, default=100)
+    parser.add_argument("--lpd-offset-blocks", type=int, default=200)
+    parser.add_argument("--lpd-duration-blocks", type=int, default=200)
     parser.add_argument("--block-results-offset", type=int, default=0)
     parser.add_argument("--run-forever", action="store_true")
     args = parser.parse_args(argv[1:])
@@ -523,9 +533,11 @@ def main(argv: List[str]):
     test.reward_period_distribute = args.reward_period_distribute
     test.reward_period_mod = args.reward_period_mod
     test.reward_period_pool_count = args.reward_period_pool_count
+    test.rewards_offset_blocks = args.rewards_offset_blocks
+    test.rewards_duration_blocks = args.rewards_duration_blocks
     test.lpd_period_mod = args.lpd_period_mod
-    test.phase_offset_blocks = args.phase_offset_blocks
-    test.phase_duration_blocks = args.phase_duration_blocks
+    test.lpd_offset_blocks = args.lpd_offset_blocks
+    test.lpd_duration_blocks = args.lpd_duration_blocks
     test.block_results_offset = args.block_results_offset
     test.run_forever = args.run_forever
 
