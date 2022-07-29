@@ -157,7 +157,7 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 	if !ok {
 		panic("Unable to generate rowan amount")
 	}
-	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("cusdc", amount))
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("cusdc", amount), sdk.NewCoin("cwbtc", amount))
 
 	keeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
 		PmtpPeriodBlockRate:    sdk.OneDec(),
