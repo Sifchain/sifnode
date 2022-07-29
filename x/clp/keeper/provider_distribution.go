@@ -193,9 +193,17 @@ func CollectProviderDistribution(ctx sdk.Context, pool *types.Pool, poolDepthRow
 
 	//	rowan_provider_distribution = r_block * pool_depth_rowan
 	rowanPd := blockRate.Mul(poolDepthRowan)
+	rowanPdUint := sdk.NewUintFromBigInt(rowanPd.RoundInt().BigInt())
 	for _, lp := range lps {
 		providerRowan := CalcProviderDistributionAmount(rowanPd, poolUnits, lp.LP.LiquidityProviderUnits)
 		totalRowanDistribute = totalRowanDistribute.Add(providerRowan)
+
+		// TODO: find a proper solution
+		if totalRowanDistribute.GT(rowanPdUint) {
+			providerRowan = rowanPdUint.Sub(totalRowanDistribute.Sub(providerRowan))
+			totalRowanDistribute = rowanPdUint
+		}
+
 		addr := lp.Address.String()
 
 		globalLpRowan := globalLpRowanMap[addr]
