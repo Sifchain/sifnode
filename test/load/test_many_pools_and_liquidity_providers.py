@@ -151,6 +151,12 @@ class Test:
         self.reward_period_mod = 1
         self.reward_period_pool_count = 10
 
+        self.lpd_period_mod = 1
+
+        self.phase_offset_blocks = 100
+        self.phase_duration_blocks = 100
+        self.run_forever = False
+
         # The timing starts with the next block after setup. The accuracty of the test is limited by polling for the
         # current block number (1s). The total time will be 4 * test_duration_blocks * block_time, i.e.
         # 4 * 6s = 24s for one unit of test_duration_blocks.
@@ -183,6 +189,7 @@ class Test:
         log.info("reward_period_distribute: {}".format(self.reward_period_distribute))
         log.info("reward_period_mod: {}".format(self.reward_period_mod))
         log.info("reward_period_pool_count: {}".format(self.reward_period_pool_count))
+        log.info("lpd_period_mod: {}".format(self.lpd_period_mod))
         log.info("test_duration_blocks: {}".format(self.test_duration_blocks))
 
         # Define one token per liquidity pool.
@@ -408,10 +415,10 @@ class Test:
         # TODO start and end blocks are both inclusive, adjust
         current_block = sifnoded_client.get_current_block()
         start_block = current_block + 5
-        rewards_start_block = start_block + self.test_duration_blocks
-        rewards_end_block = rewards_start_block + 2 * self.test_duration_blocks
-        lppd_start_block = start_block + 2 * self.test_duration_blocks
-        lppd_end_block = lppd_start_block + 2 * self.test_duration_blocks
+        rewards_start_block = start_block
+        rewards_end_block = rewards_start_block + self.phase_duration_blocks
+        lppd_start_block = start_block + self.phase_offset_blocks
+        lppd_end_block = lppd_start_block + self.phase_duration_blocks
 
         # Set up rewards
         reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
@@ -420,30 +427,33 @@ class Test:
         sifnoded.clp_reward_period(sif, reward_params)
         sifnoded.wait_for_last_transaction_to_be_mined()
 
-        # Set up LPPD policies
-        lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045)
+        # Set up LPD policies
+        lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045, self.lpd_period_mod)
         sifnoded.clp_set_lppd_params(sif, lppd_params)
         sifnoded.wait_for_last_transaction_to_be_mined()
 
-        time0 = self.wait_for_block(start_block)
-        log.info("In phase 'neither' (blocks {} - {})".format(start_block, rewards_start_block))
-        time1 = self.wait_for_block(rewards_start_block)
-        log.info("In phase 'rewards only' (blocks {} - {})".format(rewards_start_block, lppd_start_block))
-        time2 = self.wait_for_block(lppd_start_block)
-        log.info("In phase 'rewards + LPPD' (blocks {} - {})".format(lppd_start_block, rewards_end_block))
-        time3 = self.wait_for_block(rewards_end_block)
-        log.info("In phase 'LPPD only' (blocks {} - {})".format(rewards_end_block, lppd_end_block))
-        time4 = self.wait_for_block(lppd_end_block)
+        if not self.run_forever:
+            # run_forever means we're not interested in average block times but want to run this
+            # as an environment
+            time0 = self.wait_for_block(start_block)
+            log.info("In phase 'neither' (blocks {} - {})".format(start_block, rewards_start_block))
+            time1 = self.wait_for_block(rewards_start_block)
+            log.info("In phase 'rewards only' (blocks {} - {})".format(rewards_start_block, lppd_start_block))
+            time2 = self.wait_for_block(lppd_start_block)
+            log.info("In phase 'rewards + LPD' (blocks {} - {})".format(lppd_start_block, rewards_end_block))
+            time3 = self.wait_for_block(rewards_end_block)
+            log.info("In phase 'LPD only' (blocks {} - {})".format(rewards_end_block, lppd_end_block))
+            time4 = self.wait_for_block(lppd_end_block)
 
-        accuracy = 1.0 / self.test_duration_blocks
+            accuracy = 1.0 / self.test_duration_blocks
 
-        log.info("Neither: {:.2f} +/- {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks, accuracy))
-        log.info("Rewards only: {:.2f} +/- {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks, accuracy))
-        log.info("Rewards + LPPD: {:.2f} +/- {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks, accuracy))
-        log.info("LPPD only: {:.2f} +/- {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks, accuracy))
+            log.info("Neither: {:.2f} +/- {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks, accuracy))
+            log.info("Rewards only: {:.2f} +/- {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks, accuracy))
+            log.info("Rewards + LPD: {:.2f} +/- {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks, accuracy))
+            log.info("LPD only: {:.2f} +/- {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks, accuracy))
 
-        # TODO LPPD and rewards assertions
-        # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
+            # TODO LPD and rewards assertions
+            # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
 
     # TODO Refactor - move to Sifnoded
     def wait_for_block(self, block_number: int) -> float:
@@ -456,7 +466,8 @@ class Test:
                 # This is just for collecting statistics while we wait, the test result does not depend on it.
                 # Check also https://github.com/cosmos/cosmos-sdk/issues/6105
                 try:
-                    blk = sifnoded.get_block_results(height=self.block_results_offset or None)
+                    height = current_block - self.block_results_offset if self.block_results_offset is not None else None
+                    blk = sifnoded.get_block_results(height=height)
                     histogram = {}
                     for key in ["begin_block_events", "end_block_events"]:
                         items = blk[key]
@@ -486,9 +497,11 @@ def main(argv: List[str]):
     parser.add_argument("--reward-period-distribute", action="store_true")
     parser.add_argument("--reward-period-mod", type=int, default=1)
     parser.add_argument("--reward-period-pool-count", type=int, default=10)
-    parser.add_argument("--test-duration-blocks", type=int, default=5)
+    parser.add_argument("--lpd-period-mod", type=int, default=1)
+    parser.add_argument("--phase-offset-blocks", type=int, default=100)
+    parser.add_argument("--phase-duration-blocks", type=int, default=100)
     parser.add_argument("--block-results-offset", type=int, default=0)
-    parser.add_argument("--wait-for-enter", action="store_true")
+    parser.add_argument("--run-forever", action="store_true")
     args = parser.parse_args(argv[1:])
 
     cmd = command.Command()
@@ -505,8 +518,11 @@ def main(argv: List[str]):
     test.reward_period_distribute = args.reward_period_distribute
     test.reward_period_mod = args.reward_period_mod
     test.reward_period_pool_count = args.reward_period_pool_count
-    test.test_duration_blocks = args.test_duration_blocks
+    test.lpd_period_mod = args.lpd_period_mod
+    test.phase_offset_blocks = args.phase_offset_blocks
+    test.phase_duration_blocks = args.phase_duration_blocks
     test.block_results_offset = args.block_results_offset
+    test.run_forever = args.run_forever
 
     test_start_time = time.time()
     test.setup()
@@ -522,11 +538,11 @@ def main(argv: List[str]):
         try:
             log.error("Checking some balances to see if the thing is dead or alive...")
             addr = test.node_info[0]["acct_addr"]
-            balance = cosmos.balance_format(test.sifnoded.get_balance(addr))
+            balance = cosmos.balance_format(test.sifnoded[0].get_balance(addr))
             log.debug("Balance of {}: {}".format(addr, balance))
         except Exception as e:
             log.error("Balance check failed", exc_info=True)
-    if args.wait_for_enter:
+    if args.run_forever:
         wait_for_enter_key_pressed()
 
 
