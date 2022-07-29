@@ -454,6 +454,11 @@ class Test:
 
             # TODO LPD and rewards assertions
             # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
+        else:
+            log.info("Phase 'neither': blocks {} - {}".format(start_block, rewards_start_block))
+            log.info("Phase 'rewards only' blocks {} - {}".format(rewards_start_block, lppd_start_block))
+            log.info("Phase 'rewards + LPD': blocks {} - {}".format(lppd_start_block, rewards_end_block))
+            log.info("Phase 'LPD only': blocks {} - {}".format(rewards_end_block, lppd_end_block))
 
     # TODO Refactor - move to Sifnoded
     def wait_for_block(self, block_number: int) -> float:
