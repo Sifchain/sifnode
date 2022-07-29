@@ -172,11 +172,22 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 		PmtpPeriodStartBlock:     1,
 		PmtpPeriodEndBlock:       2,
 	})
+	allocation := sdk.NewUintFromString("100000000000000000000000000000")
+	defautMultiplier := sdk.NewDec(1)
 	keeper.SetRewardParams(ctx, &types.RewardParams{
 		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 2,
 		RewardPeriodStartTime:        "",
-		RewardPeriods:                nil,
+		RewardPeriods: []*types.RewardPeriod{{
+			RewardPeriodId:                "1",
+			RewardPeriodStartBlock:        1,
+			RewardPeriodEndBlock:          10000000,
+			RewardPeriodAllocation:        &allocation,
+			RewardPeriodPoolMultipliers:   nil,
+			RewardPeriodDefaultMultiplier: &defautMultiplier,
+			RewardPeriodDistribute:        true,
+			RewardPeriodMod:               1,
+		}},
 	})
 	liquidityProtectionParam := keeper.GetLiquidityProtectionParams(ctx)
 	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
@@ -221,9 +232,19 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 	if err != nil {
 		panic(err)
 	}
+	bigAmount, ok := sdk.NewIntFromString("9999999999999999990000000000000000000000000000000000")
+	if !ok {
+		panic("unable to get big rowan")
+	}
+
 	for i := 0; i < 8000; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
-		err := keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, coin)
+
+		err := keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", bigAmount)))
+		if err != nil {
+			panic(err)
+		}
+		err = keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, coin)
 		if err != nil {
 			panic(err)
 		}
