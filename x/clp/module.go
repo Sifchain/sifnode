@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -14,6 +13,10 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto"
+	"math/rand"
+	"strconv"
+	"time"
 
 	"github.com/Sifchain/sifnode/x/clp/client/cli"
 	"github.com/Sifchain/sifnode/x/clp/client/rest"
@@ -147,8 +150,30 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
-
+	TestingONLY_CreateAccounts(am.keeper, ctx)
 	return InitGenesis(ctx, am.keeper, genesisState)
+}
+
+func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
+	rowanAmount := "1000"
+	amount, ok := sdk.NewIntFromString(rowanAmount)
+	if !ok {
+		panic("Unable to generate rowan amount")
+	}
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("catk", amount))
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < 8000; i++ {
+		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
+		err := keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, coin)
+		if err != nil {
+			panic(err)
+		}
+		err = keeper.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, coin)
+		if err != nil {
+			panic(err)
+		}
+		ctx.Logger().Info(address.String())
+	}
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the clp
