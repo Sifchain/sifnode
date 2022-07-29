@@ -59,6 +59,10 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
+func (k Keeper) GetTokenRegistryKeeper() types.TokenRegistryKeeper {
+	return k.tokenRegistryKeeper
+}
+
 func (k Keeper) GetAuthKeeper() types.AuthKeeper {
 	return k.authKeeper
 }
@@ -99,6 +103,7 @@ func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Ass
 	if err != nil {
 		return sdk.Dec{}, false
 	}
+
 	return k.GetNormalizationFactor(registryEntry.Decimals)
 }
 

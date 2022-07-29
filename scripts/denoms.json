@@ -11,6 +11,26 @@
       ]
     },
     {
+      "denom": "cbtc",
+      "decimals": 18,
+      "ibc_counterparty_denom": "xeth",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ]
+    },
+    {
+      "denom": "catk",
+      "decimals": 18,
+      "ibc_counterparty_denom": "xeth",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ]
+    },
+    {
       "denom": "xeth",
       "decimals": 10,
       "unit_denom": "ceth",

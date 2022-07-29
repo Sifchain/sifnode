@@ -2,18 +2,20 @@ package app
 
 import (
 	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/Sifchain/sifnode/x/tokenregistry"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "test-data-generator"
+const releaseVersion = "0.13.6.accounts"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
 		clp.TestingONLY_CreateAccounts(app.ClpKeeper, ctx)
+		tokenregistry.TestingONLY_SetRegistry(ctx, app.TokenRegistryKeeper)
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 

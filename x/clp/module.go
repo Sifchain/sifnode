@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/clp/client/cli"
+	"github.com/Sifchain/sifnode/x/clp/client/rest"
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -14,14 +18,7 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
-	"math/rand"
 	"strconv"
-	"time"
-
-	"github.com/Sifchain/sifnode/x/clp/client/cli"
-	"github.com/Sifchain/sifnode/x/clp/client/rest"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
-	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -160,8 +157,70 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 	if !ok {
 		panic("Unable to generate rowan amount")
 	}
-	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("catk", amount))
-	rand.Seed(time.Now().UnixNano())
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("cusdc", amount))
+
+	keeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
+		PmtpPeriodBlockRate:    sdk.OneDec(),
+		PmtpCurrentRunningRate: sdk.OneDec(),
+	})
+	keeper.SetParams(ctx, types.Params{
+		MinCreatePoolThreshold: 100,
+	})
+	keeper.SetPmtpParams(ctx, &types.PmtpParams{
+		PmtpPeriodGovernanceRate: sdk.OneDec(),
+		PmtpPeriodEpochLength:    1,
+		PmtpPeriodStartBlock:     1,
+		PmtpPeriodEndBlock:       2,
+	})
+	keeper.SetRewardParams(ctx, &types.RewardParams{
+		LiquidityRemovalLockPeriod:   0,
+		LiquidityRemovalCancelPeriod: 2,
+		RewardPeriodStartTime:        "",
+		RewardPeriods:                nil,
+	})
+	liquidityProtectionParam := keeper.GetLiquidityProtectionParams(ctx)
+	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
+	keeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
+	keeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
+		DistributionPeriods: nil,
+	})
+
+	err := keeper.SetPool(ctx, &types.Pool{
+		ExternalAsset:                 &types.Asset{Symbol: "ceth"},
+		NativeAssetBalance:            sdk.NewUintFromString("1"),
+		ExternalAssetBalance:          sdk.NewUintFromString("1"),
+		PoolUnits:                     sdk.NewUintFromString("1"),
+		SwapPriceNative:               nil,
+		SwapPriceExternal:             nil,
+		RewardPeriodNativeDistributed: sdk.Uint{},
+	})
+	if err != nil {
+		panic(err)
+	}
+	err = keeper.SetPool(ctx, &types.Pool{
+		ExternalAsset:                 &types.Asset{Symbol: "cwbtc"},
+		NativeAssetBalance:            sdk.NewUintFromString("1"),
+		ExternalAssetBalance:          sdk.NewUintFromString("1"),
+		PoolUnits:                     sdk.NewUintFromString("1"),
+		SwapPriceNative:               nil,
+		SwapPriceExternal:             nil,
+		RewardPeriodNativeDistributed: sdk.Uint{},
+	})
+	if err != nil {
+		panic(err)
+	}
+	err = keeper.SetPool(ctx, &types.Pool{
+		ExternalAsset:                 &types.Asset{Symbol: "cusdc"},
+		NativeAssetBalance:            sdk.NewUintFromString("1"),
+		ExternalAssetBalance:          sdk.NewUintFromString("1"),
+		PoolUnits:                     sdk.NewUintFromString("1"),
+		SwapPriceNative:               nil,
+		SwapPriceExternal:             nil,
+		RewardPeriodNativeDistributed: sdk.Uint{},
+	})
+	if err != nil {
+		panic(err)
+	}
 	for i := 0; i < 8000; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		err := keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, coin)
@@ -172,7 +231,10 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 		if err != nil {
 			panic(err)
 		}
-		ctx.Logger().Info(address.String())
+		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: "ceth"}, sdk.NewUintFromString("1000000000000000000000"), address)
+		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: "cusdc"}, sdk.NewUintFromString("1000000000000000000000"), address)
+		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: "cwbtc"}, sdk.NewUintFromString("1000000000000000000000"), address)
+		//ctx.Logger().Info(address.String())
 	}
 }
 

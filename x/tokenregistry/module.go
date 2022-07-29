@@ -154,7 +154,12 @@ func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier { //n
 func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	marshaler.MustUnmarshalJSON(data, &genesisState)
+	TestingONLY_SetRegistry(ctx, am.Keeper)
 	return am.Keeper.InitGenesis(ctx, genesisState)
+}
+
+func TestingONLY_SetRegistry(ctx sdk.Context, keeper types.Keeper) {
+	keeper.SetRegistry(ctx, *types.InitialRegistry())
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes.
