@@ -99,9 +99,11 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		// As we have already minted all coins we wanted to distribute, check if we could distribute them all.
 		// If not, burn what we could not distribute
 		moduleBalancePostTransfer := k.GetModuleRowan(ctx)
-		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
-		if !diff.IsZero() {
-			return k.BurnRowan(ctx, diff)
+		if moduleBalancePostTransfer.IsGTE(moduleBalancePreMinting) {
+			diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
+			if !diff.IsZero() {
+				return k.BurnRowan(ctx, diff)
+			}
 		}
 	}
 
