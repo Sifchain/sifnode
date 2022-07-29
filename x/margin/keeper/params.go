@@ -4,10 +4,12 @@
 package keeper
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) GetMaxLeverageParam(ctx sdk.Context) sdk.Dec {
@@ -93,6 +95,10 @@ func (k Keeper) GetSqModifier(ctx sdk.Context) sdk.Dec {
 }
 
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
+	err := ValidateParams(params)
+	if err != nil {
+		panic(err)
+	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.ParamsPrefix, k.cdc.MustMarshal(params))
 }
@@ -106,4 +112,16 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	var params types.Params
 	k.cdc.MustUnmarshal(bz, &params)
 	return params
+}
+
+func ValidateParams(params *types.Params) error {
+	if params.SqModifier.IsNil() || params.SqModifier.IsZero() {
+		return sdkerrors.Wrap(errors.New("invalid valid"), "sq modifier must be > 0")
+	}
+
+	if params.LeverageMax.IsNegative() {
+		return sdkerrors.Wrap(errors.New("invalid value"), "leverage max must be >= 0")
+	}
+
+	return nil
 }
