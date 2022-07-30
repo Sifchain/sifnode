@@ -1,13 +1,14 @@
 package clp
 
 import (
+	"math/rand"
+	"strconv"
+	"time"
+
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
-	"math/rand"
-	"strconv"
-	"time"
 )
 
 func ReadPoolData() types.Pools {
@@ -116,15 +117,22 @@ func SetParams(keeper keeper.Keeper, ctx sdk.Context) {
 			RewardPeriodAllocation:        &allocation,
 			RewardPeriodPoolMultipliers:   nil,
 			RewardPeriodDefaultMultiplier: &defautMultiplier,
-			RewardPeriodDistribute:        true,
-			RewardPeriodMod:               1,
+			RewardPeriodDistribute:        false,
+			RewardPeriodMod:               100,
 		}},
 	})
 	liquidityProtectionParam := keeper.GetLiquidityProtectionParams(ctx)
 	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
 	keeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 	keeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
-		DistributionPeriods: nil,
+		DistributionPeriods: []*types.ProviderDistributionPeriod{
+			{
+				DistributionPeriodBlockRate:  sdk.MustNewDecFromStr("0.0000034"),
+				DistributionPeriodStartBlock: 1,
+				DistributionPeriodEndBlock:   10000000,
+				DistributionPeriodMod:        100,
+			},
+		},
 	})
 
 }
