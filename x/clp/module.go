@@ -17,8 +17,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto"
-	"strconv"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -149,114 +147,6 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	cdc.MustUnmarshalJSON(data, &genesisState)
 	TestingONLY_CreateAccounts(am.keeper, ctx)
 	return InitGenesis(ctx, am.keeper, genesisState)
-}
-
-func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
-	rowanAmount := "1000"
-	amount, ok := sdk.NewIntFromString(rowanAmount)
-	if !ok {
-		panic("Unable to generate rowan amount")
-	}
-	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("cusdc", amount), sdk.NewCoin("cwbtc", amount))
-
-	keeper.SetPmtpRateParams(ctx, types.PmtpRateParams{
-		PmtpPeriodBlockRate:    sdk.OneDec(),
-		PmtpCurrentRunningRate: sdk.OneDec(),
-	})
-	keeper.SetParams(ctx, types.Params{
-		MinCreatePoolThreshold: 100,
-	})
-	keeper.SetPmtpParams(ctx, &types.PmtpParams{
-		PmtpPeriodGovernanceRate: sdk.OneDec(),
-		PmtpPeriodEpochLength:    1,
-		PmtpPeriodStartBlock:     1,
-		PmtpPeriodEndBlock:       2,
-	})
-	allocation := sdk.NewUintFromString("100000000000000000000000000000")
-	defautMultiplier := sdk.NewDec(1)
-	keeper.SetRewardParams(ctx, &types.RewardParams{
-		LiquidityRemovalLockPeriod:   0,
-		LiquidityRemovalCancelPeriod: 2,
-		RewardPeriodStartTime:        "",
-		RewardPeriods: []*types.RewardPeriod{{
-			RewardPeriodId:                "1",
-			RewardPeriodStartBlock:        1,
-			RewardPeriodEndBlock:          10000000,
-			RewardPeriodAllocation:        &allocation,
-			RewardPeriodPoolMultipliers:   nil,
-			RewardPeriodDefaultMultiplier: &defautMultiplier,
-			RewardPeriodDistribute:        true,
-			RewardPeriodMod:               1,
-		}},
-	})
-	liquidityProtectionParam := keeper.GetLiquidityProtectionParams(ctx)
-	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
-	keeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
-	keeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
-		DistributionPeriods: nil,
-	})
-
-	err := keeper.SetPool(ctx, &types.Pool{
-		ExternalAsset:                 &types.Asset{Symbol: "ceth"},
-		NativeAssetBalance:            sdk.NewUintFromString("1"),
-		ExternalAssetBalance:          sdk.NewUintFromString("1"),
-		PoolUnits:                     sdk.NewUintFromString("1"),
-		SwapPriceNative:               nil,
-		SwapPriceExternal:             nil,
-		RewardPeriodNativeDistributed: sdk.Uint{},
-	})
-	if err != nil {
-		panic(err)
-	}
-	err = keeper.SetPool(ctx, &types.Pool{
-		ExternalAsset:                 &types.Asset{Symbol: "cwbtc"},
-		NativeAssetBalance:            sdk.NewUintFromString("1"),
-		ExternalAssetBalance:          sdk.NewUintFromString("1"),
-		PoolUnits:                     sdk.NewUintFromString("1"),
-		SwapPriceNative:               nil,
-		SwapPriceExternal:             nil,
-		RewardPeriodNativeDistributed: sdk.Uint{},
-	})
-	if err != nil {
-		panic(err)
-	}
-	err = keeper.SetPool(ctx, &types.Pool{
-		ExternalAsset:                 &types.Asset{Symbol: "cusdc"},
-		NativeAssetBalance:            sdk.NewUintFromString("1"),
-		ExternalAssetBalance:          sdk.NewUintFromString("1"),
-		PoolUnits:                     sdk.NewUintFromString("1"),
-		SwapPriceNative:               nil,
-		SwapPriceExternal:             nil,
-		RewardPeriodNativeDistributed: sdk.Uint{},
-	})
-	if err != nil {
-		panic(err)
-	}
-	bigAmount, ok := sdk.NewIntFromString("9999999999999999990000000000000000000000000000000000")
-	if !ok {
-		panic("unable to get big rowan")
-	}
-
-	for i := 0; i < 8000; i++ {
-		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
-
-		err := keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", bigAmount)))
-		if err != nil {
-			panic(err)
-		}
-		err = keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, coin)
-		if err != nil {
-			panic(err)
-		}
-		err = keeper.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, coin)
-		if err != nil {
-			panic(err)
-		}
-		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: "ceth"}, sdk.NewUintFromString("1000000000000000000000"), address)
-		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: "cusdc"}, sdk.NewUintFromString("1000000000000000000000"), address)
-		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: "cwbtc"}, sdk.NewUintFromString("1000000000000000000000"), address)
-		//ctx.Logger().Info(address.String())
-	}
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the clp
