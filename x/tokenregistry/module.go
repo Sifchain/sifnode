@@ -158,10 +158,6 @@ func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, data
 	return am.Keeper.InitGenesis(ctx, genesisState)
 }
 
-func TestingONLY_SetRegistry(ctx sdk.Context, keeper types.Keeper) {
-	keeper.SetRegistry(ctx, *types.InitialRegistry())
-}
-
 // ExportGenesis returns the exported genesis state as raw bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONCodec) json.RawMessage {
 	return marshaler.MustMarshalJSON(am.Keeper.ExportGenesis(ctx))
