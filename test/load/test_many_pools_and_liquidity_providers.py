@@ -162,6 +162,7 @@ class Test:
         self.lpd_duration_blocks = 200
 
         self.run_forever = False
+        self.disable_assertions = False
 
         # The timing starts with the next block after setup. The accuracty of the test is limited by polling for the
         # current block number (1s). The total time will be 4 * test_duration_blocks * block_time, i.e.
@@ -379,25 +380,37 @@ class Test:
             entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
             sifnoded.token_registry_register(entry, sif)
             sifnoded.wait_for_last_transaction_to_be_mined()  # Must be run synchronously! (if not, only the first will work)
-        assert set(e["denom"] for e in sifnoded.query_tokenregistry_entries()) == set(self.tokens)
+        if self.disable_assertions:
+            act = set(e["denom"] for e in sifnoded.query_tokenregistry_entries())
+            exp = set(self.tokens)
+            self.assert_set_equal("token registry entries mismatch", act, exp)
+        else:
+            assert set(e["denom"] for e in sifnoded.query_tokenregistry_entries()) == set(self.tokens)
 
         # Set up liquidity pools. We create them symmetrically (`native_amount == externam_amount`).
         for denom in self.tokens:
             sifnoded.tx_clp_create_pool(sif, denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet)
             sifnoded.wait_for_last_transaction_to_be_mined()
-        assert set(p["external_asset"]["symbol"] for p in sifnoded.query_pools()) == set(self.tokens)
+        if self.disable_assertions:
+            act = set(p["external_asset"]["symbol"] for p in sifnoded.query_pools())
+            exp = set(self.tokens)
+            self.assert_set_equal("liquidity pool mismatch", act, exp)
+        else:
+            assert set(p["external_asset"]["symbol"] for p in sifnoded.query_pools()) == set(self.tokens)
 
         # Set up liquidity providers. We create them symmetrically (`native_amount == externam_amount`). The ratio of
         # native vs. external amount has to be the same as for corresponding pool (within certain rounding tolerance).
         # Calling `tx_clp_add_liquidity` to add multiple liquidity providers within the same block does not work (only
         # the first call gets through). To avoid `--broadcast-mode block` or waiting for new block, we need to use
         # account sequence numbers.
+        limiter = RateLimiter(sifnoded_client, 0)
         for addr, denoms in wallets.items():
             account_number, account_sequence = sifnoded.get_acct_seq(addr)
             for denom in denoms:
                 sifnoded_client.tx_clp_add_liquidity(addr, denom, self.amount_of_liquidity_added_by_wallet,
                     self.amount_of_liquidity_added_by_wallet, account_seq=(account_number, account_sequence))
                 account_sequence += 1
+                limiter.limit()
         sifnoded_client.wait_for_last_transaction_to_be_mined()
         actual_lp_providers = {}
         for denom in self.tokens:
@@ -409,8 +422,17 @@ class Test:
                 actual_lp_providers[addr].add(symbol)
         # Note: "sif" address will automatically be a liquidity provider for all => remove "sif" before asserting
         actual_lp_providers.pop(sif)
-        assert set(actual_lp_providers) == set(wallets)  # Keys
-        assert all(set(actual_lp_providers[addr]) == set(wallets[addr]) for addr in wallets)  # Values
+        if self.disable_assertions:
+            act = set(actual_lp_providers)
+            exp = set(wallets)
+            self.assert_set_equal("LP providers mismatch", act, exp)
+            for addr in wallets:
+                act = set(actual_lp_providers[addr])
+                exp = set(wallets[addr])
+                self.assert_set_equal("LP mismatch for wallet {}".format(addr), act, exp)
+        else:
+            assert set(actual_lp_providers) == set(wallets)  # Keys
+            assert all(set(actual_lp_providers[addr]) == set(wallets[addr]) for addr in wallets)  # Values
 
     def run(self):
         sifnoded = self.sifnoded[0]
@@ -498,6 +520,14 @@ class Test:
             current_block = sifnoded.get_current_block()
         return time.time()
 
+    def assert_set_equal(self, message: str, actual: set, expected: set):
+        if actual != expected:
+            actual_only = actual.difference(expected)
+            expected_only = expected.difference(actual)
+            log.error("Assertion failed: {}: actual={}".format(message, repr(actual)))
+            log.error("Assertion failed: {}: expected={}".format(message, repr(expected)))
+            log.error("Assertion failed: {}: actual_only={}".format(message, repr(actual_only)))
+            log.error("Assertion failed: {}: expected_only={}".format(message, repr(expected_only)))
 
 def main(argv: List[str]):
     basic_logging_setup()
@@ -517,6 +547,7 @@ def main(argv: List[str]):
     parser.add_argument("--lpd-duration-blocks", type=int, default=200)
     parser.add_argument("--block-results-offset", type=int, default=0)
     parser.add_argument("--run-forever", action="store_true")
+    parser.add_argument("--disable-assertions", action="store_true")
     args = parser.parse_args(argv[1:])
 
     cmd = command.Command()
@@ -540,6 +571,7 @@ def main(argv: List[str]):
     test.lpd_duration_blocks = args.lpd_duration_blocks
     test.block_results_offset = args.block_results_offset
     test.run_forever = args.run_forever
+    test.disable_assertions = args.disable_assertions
 
     test_start_time = time.time()
     test.setup()
@@ -562,6 +594,20 @@ def main(argv: List[str]):
     if args.run_forever:
         wait_for_enter_key_pressed()
 
+
+class RateLimiter:
+    def __init__(self, sifnoded, max_tpb):
+        self.sifnoded = sifnoded
+        self.max_tpb = max_tpb
+        self.counter = 0
+
+    def limit(self):
+        if self.max_tpb == 0:
+            pass
+        self.counter += 1
+        if self.counter == self.max_tpb:
+            self.sifnoded.wait_for_last_transaction_to_be_mined()
+            self.counter = 0
 
 if __name__ == "__main__":
     main(sys.argv)
