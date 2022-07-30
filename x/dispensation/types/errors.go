@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	ErrInvalid                = sdkerrors.Register(ModuleName, 2, "invalid")
-	ErrFailedInputs           = sdkerrors.Register(ModuleName, 3, "Failed in collecting funds")
-	ErrFailedOutputs          = sdkerrors.Register(ModuleName, 4, "Failed in distributing funds")
-	ErrDistribution           = sdkerrors.Register(ModuleName, 5, "DistributionFailed")
-	ErrNotFoundMintController = sdkerrors.Register(ModuleName, 6, "Mint controller not found")
+	ErrInvalid                = sdkerrors.Register(ModuleName, 1, "invalid")
+	ErrFailedInputs           = sdkerrors.Register(ModuleName, 4, "Failed in collecting funds")
+	ErrFailedOutputs          = sdkerrors.Register(ModuleName, 5, "Failed in distributing funds")
+	ErrDistribution           = sdkerrors.Register(ModuleName, 6, "DistributionFailed")
+	ErrNotFoundMintController = sdkerrors.Register(ModuleName, 7, "Mint controller not found")
 )
