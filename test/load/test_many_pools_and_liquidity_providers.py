@@ -448,6 +448,9 @@ class Test:
         lppd_start_block = start_block + self.lpd_offset_blocks
         lppd_end_block = lppd_start_block + self.lpd_duration_blocks
 
+        wait_boundaries = set()
+        wait_boundaries.add(start_block)
+
         # Set up rewards
         if self.rewards_duration_blocks > 0:
             reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
@@ -455,35 +458,39 @@ class Test:
                 self.reward_period_default_multiplier, self.reward_period_distribute, self.reward_period_mod)
             sifnoded.clp_reward_period(sif, reward_params)
             sifnoded.wait_for_last_transaction_to_be_mined()
+            wait_boundaries.add(rewards_start_block)
+            wait_boundaries.add(rewards_end_block)
 
         # Set up LPD policies
         if self.lpd_duration_blocks > 0:
             lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045, self.lpd_period_mod)
             sifnoded.clp_set_lppd_params(sif, lppd_params)
             sifnoded.wait_for_last_transaction_to_be_mined()
+            wait_boundaries.add(lppd_start_block)
+            wait_boundaries.add(lppd_end_block)
 
         if not self.run_forever:
             # run_forever means we're not interested in average block times but want to run this
             # as an environment
-            time0 = self.wait_for_block(start_block)
-            log.info("In phase 'neither' (blocks {} - {})".format(start_block, rewards_start_block))
-            time1 = self.wait_for_block(rewards_start_block)
-            log.info("In phase 'rewards only' (blocks {} - {})".format(rewards_start_block, lppd_start_block))
-            time2 = self.wait_for_block(lppd_start_block)
-            log.info("In phase 'rewards + LPD' (blocks {} - {})".format(lppd_start_block, rewards_end_block))
-            time3 = self.wait_for_block(rewards_end_block)
-            log.info("In phase 'LPD only' (blocks {} - {})".format(rewards_end_block, lppd_end_block))
-            time4 = self.wait_for_block(lppd_end_block)
+            wait_boundaries = sorted(list(wait_boundaries))
+            cnt = len(wait_boundaries)
+            if cnt < 2:
+                log.info("Not measuring block time - nothing to wait for")
+            else:
+                block_time_per_phase = []
+                log.info("Waiting for phase 0...")
+                prev_time = self.wait_for_block(wait_boundaries[0])
+                for i in range(1, cnt):
+                    log.info("Waiting for phase {}...".format(i))
+                    next_time = self.wait_for_block(wait_boundaries[i])
+                    block_time_per_phase.append((next_time - prev_time) / (wait_boundaries[i] - wait_boundaries[i - 1]))
+                    prev_time = next_time
+                for i in range(cnt - 1):
+                    log.info("Block time for phase {} (blocks {} - {}): {}".format(i + 1,
+                        wait_boundaries[i], wait_boundaries[i + 1], block_time_per_phase[i]))
 
-            accuracy = 1.0 / self.test_duration_blocks
-
-            log.info("Neither: {:.2f} +/- {:.2f} s/block".format((time1 - time0) / self.test_duration_blocks, accuracy))
-            log.info("Rewards only: {:.2f} +/- {:.2f} s/block".format((time2 - time1) / self.test_duration_blocks, accuracy))
-            log.info("Rewards + LPD: {:.2f} +/- {:.2f} s/block".format((time3 - time2) / self.test_duration_blocks, accuracy))
-            log.info("LPD only: {:.2f} +/- {:.2f} s/block".format((time4 - time3) / self.test_duration_blocks, accuracy))
-
-            # TODO LPD and rewards assertions
-            # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
+                # TODO LPD and rewards assertions
+                # See https://www.notion.so/sifchain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5#7392be2c1a034d2db83b9b38ab89ff9e
         else:
             log.info("Phase 'neither': blocks {} - {}".format(start_block, rewards_start_block))
             log.info("Phase 'rewards only' blocks {} - {}".format(rewards_start_block, lppd_start_block))
