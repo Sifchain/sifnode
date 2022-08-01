@@ -16,51 +16,33 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
-func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
+func TestAnte_CalculateDelegateProjectedVotingPower(t *testing.T) {
 	testcases := []struct { //nolint
-		name                   string
-		delegateAmount         sdk.Int
-		validatorTokens        sdk.Int
-		validatorBondStatus    stakingtypes.BondStatus
-		weakestValidatorTokens sdk.Int
-		maxValidators          uint32
-		expectedVotingPower    sdk.Dec
+		name                         string
+		delegateAmount               sdk.Int
+		validatorTokens              sdk.Int
+		bondStatus                   stakingtypes.BondStatus
+		otherValidatorBondedTokens   sdk.Int
+		otherValidatorUnbondedTokens sdk.Int
+		expectedVotingPower          sdk.Dec
 	}{
 		{
-			name:                   "not bonded, spare validator slot",
-			delegateAmount:         sdk.NewIntFromUint64(100),
-			validatorTokens:        sdk.NewIntFromUint64(1000),
-			validatorBondStatus:    stakingtypes.Unbonded,
-			weakestValidatorTokens: sdk.NewIntFromUint64(1050),
-			maxValidators:          2,
-			expectedVotingPower:    sdk.MustNewDecFromStr("0.511627906976744186"),
+			name:                         "bonded",
+			delegateAmount:               sdk.NewIntFromUint64(100),
+			validatorTokens:              sdk.NewIntFromUint64(1000),
+			bondStatus:                   stakingtypes.Bonded,
+			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
+			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
+			expectedVotingPower:          sdk.MustNewDecFromStr("0.4"),
 		},
 		{
-			name:                   "not bonded, projected to be more powerful than weakest",
-			delegateAmount:         sdk.NewIntFromUint64(100),
-			validatorTokens:        sdk.NewIntFromUint64(1000),
-			validatorBondStatus:    stakingtypes.Unbonded,
-			weakestValidatorTokens: sdk.NewIntFromUint64(1050),
-			maxValidators:          1,
-			expectedVotingPower:    sdk.MustNewDecFromStr("1.0000000000000"),
-		},
-		{
-			name:                   "not bonded, NOT projected to be more powerful than weakest",
-			delegateAmount:         sdk.NewIntFromUint64(100),
-			validatorTokens:        sdk.NewIntFromUint64(1000),
-			validatorBondStatus:    stakingtypes.Unbonded,
-			weakestValidatorTokens: sdk.NewIntFromUint64(2000),
-			maxValidators:          1,
-			expectedVotingPower:    sdk.MustNewDecFromStr("0.0000000"),
-		},
-		{
-			name:                   "bonded",
-			delegateAmount:         sdk.NewIntFromUint64(100),
-			validatorTokens:        sdk.NewIntFromUint64(1000),
-			validatorBondStatus:    stakingtypes.Bonded,
-			weakestValidatorTokens: sdk.NewIntFromUint64(2000),
-			maxValidators:          1,
-			expectedVotingPower:    sdk.MustNewDecFromStr("0.354838709677419355"),
+			name:                         "unbonded - no difference to bonded",
+			delegateAmount:               sdk.NewIntFromUint64(100),
+			validatorTokens:              sdk.NewIntFromUint64(1000),
+			bondStatus:                   stakingtypes.Unbonded,
+			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
+			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
+			expectedVotingPower:          sdk.MustNewDecFromStr("0.4"),
 		},
 	}
 
@@ -69,24 +51,84 @@ func TestAnte_CalculateProjectedVotingPower(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			app := sifapp.Setup(false)
 			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-			params := stakingtypes.DefaultParams()
-			params.MaxValidators = tc.maxValidators
-			app.StakingKeeper.SetParams(ctx, params)
 
-			vcd := sifAnte.NewValidateMinCommissionDecorator(app.StakingKeeper)
+			vcd := sifAnte.NewValidateMinCommissionDecorator(app.StakingKeeper, app.BankKeeper)
 
-			delegatorAddresses := sifapp.AddTestAddrs(app, ctx, 1, tc.weakestValidatorTokens.Add(tc.validatorTokens))
+			delegatedTokens := tc.otherValidatorBondedTokens.Add(tc.otherValidatorUnbondedTokens.Add(tc.validatorTokens))
+			delegatorAddresses := sifapp.AddTestAddrs(app, ctx, 1, delegatedTokens)
 			delegatorAddress := delegatorAddresses[0]
-			pubKeys := sifapp.CreateTestPubKeys(2)
+			pubKeys := sifapp.CreateTestPubKeys(3)
 
-			// create weakest validator
-			createValidator(app, ctx, tc.weakestValidatorTokens, stakingtypes.Bonded, delegatorAddress, pubKeys[0])
+			// create other validator bonded
+			createValidator(app, ctx, tc.otherValidatorBondedTokens, stakingtypes.Bonded, delegatorAddress, pubKeys[0])
+
+			// create other validator unbonded
+			createValidator(app, ctx, tc.otherValidatorUnbondedTokens, stakingtypes.Unbonded, delegatorAddress, pubKeys[1])
 
 			// create validator for which we'll calculate projected voting power
-			valAddress := createValidator(app, ctx, tc.validatorTokens, tc.validatorBondStatus, delegatorAddress, pubKeys[1])
+			valAddress := createValidator(app, ctx, tc.validatorTokens, tc.bondStatus, delegatorAddress, pubKeys[2])
 			validator, _ := app.StakingKeeper.GetValidator(ctx, valAddress)
 
-			calcVotingPower := vcd.CalculateProjectedVotingPower(ctx, validator, tc.delegateAmount.ToDec())
+			calcVotingPower := vcd.CalculateDelegateProjectedVotingPower(ctx, validator, tc.delegateAmount.ToDec())
+			require.Equal(t, tc.expectedVotingPower.String(), calcVotingPower.String())
+		})
+	}
+}
+
+func TestAnte_CalculateRedelegateProjectedVotingPower(t *testing.T) {
+	testcases := []struct { //nolint
+		name                         string
+		delegateAmount               sdk.Int
+		validatorTokens              sdk.Int
+		bondStatus                   stakingtypes.BondStatus
+		otherValidatorBondedTokens   sdk.Int
+		otherValidatorUnbondedTokens sdk.Int
+		expectedVotingPower          sdk.Dec
+	}{
+		{
+			name:                         "bonded",
+			delegateAmount:               sdk.NewIntFromUint64(100),
+			validatorTokens:              sdk.NewIntFromUint64(1000),
+			bondStatus:                   stakingtypes.Bonded,
+			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
+			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
+			expectedVotingPower:          sdk.MustNewDecFromStr("0.415094339622641509"),
+		},
+		{
+			name:                         "unbonded - no difference to bonded",
+			delegateAmount:               sdk.NewIntFromUint64(100),
+			validatorTokens:              sdk.NewIntFromUint64(1000),
+			bondStatus:                   stakingtypes.Unbonded,
+			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
+			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
+			expectedVotingPower:          sdk.MustNewDecFromStr("0.415094339622641509"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			app := sifapp.Setup(false)
+			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
+			vcd := sifAnte.NewValidateMinCommissionDecorator(app.StakingKeeper, app.BankKeeper)
+
+			delegatedTokens := tc.otherValidatorBondedTokens.Add(tc.otherValidatorUnbondedTokens.Add(tc.validatorTokens))
+			delegatorAddresses := sifapp.AddTestAddrs(app, ctx, 1, delegatedTokens)
+			delegatorAddress := delegatorAddresses[0]
+			pubKeys := sifapp.CreateTestPubKeys(3)
+
+			// create other validator bonded
+			createValidator(app, ctx, tc.otherValidatorBondedTokens, stakingtypes.Bonded, delegatorAddress, pubKeys[0])
+
+			// create other validator unbonded
+			createValidator(app, ctx, tc.otherValidatorUnbondedTokens, stakingtypes.Unbonded, delegatorAddress, pubKeys[1])
+
+			// create validator for which we'll calculate projected voting power
+			valAddress := createValidator(app, ctx, tc.validatorTokens, tc.bondStatus, delegatorAddress, pubKeys[2])
+			validator, _ := app.StakingKeeper.GetValidator(ctx, valAddress)
+
+			calcVotingPower := vcd.CalculateRedelegateProjectedVotingPower(ctx, validator, tc.delegateAmount.ToDec())
 			require.Equal(t, tc.expectedVotingPower.String(), calcVotingPower.String())
 		})
 	}

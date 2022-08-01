@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
 
@@ -13,7 +14,7 @@ import (
 // AnteHandler decorators.
 type HandlerOptions struct {
 	AccountKeeper   ante.AccountKeeper
-	BankKeeper      authtypes.BankKeeper
+	BankKeeper      bankkeeper.Keeper
 	FeegrantKeeper  ante.FeegrantKeeper
 	StakingKeeper   stakingkeeper.Keeper
 	SignModeHandler authsigning.SignModeHandler
