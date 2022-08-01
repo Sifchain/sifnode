@@ -742,6 +742,9 @@ func GetCmdSetProviderDistributionPeriods() *cobra.Command {
 	}
 
 	cmd.Flags().AddFlagSet(FsFlagProviderDistributionPeriods)
+	if err := cmd.MarkFlagRequired(FlagProviderDistributionPeriods); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

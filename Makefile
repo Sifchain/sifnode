@@ -10,6 +10,13 @@ HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
+GOFLAGS:=""
+TAGS:=
+ifeq ($(FEATURE_TOGGLE_SDK_045), 1)
+	GOFLAGS := "-modfile=go_045.mod"
+	TAGS := FEATURE_TOGGLE_SDK_045
+endif
+
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
@@ -38,7 +45,7 @@ start:
 
 lint-pre:
 	@test -z $(gofmt -l .)
-	@go mod verify
+	@GOFLAGS=${GOFLAGS} go mod verify
 
 lint: lint-pre
 	@golangci-lint run
@@ -47,7 +54,7 @@ lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
 install: go.sum ${smart_contract_file} proto-gen
-	go install ${BUILD_FLAGS} ${BINARIES}
+	GOFLAGS=${GOFLAGS} go install ${BUILD_FLAGS} ${BINARIES}
 
 install-bin: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
@@ -56,7 +63,7 @@ install-smart-contracts:
 	make -C smart-contracts install
 
 build-sifd: go.sum
-	go build  ${BUILD_FLAGS} ./cmd/sifnoded
+	GOFLAGS=${GOFLAGS} go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
 clean-config:
 	@rm -rf ~/.sifnode*
@@ -72,22 +79,22 @@ clean: clean-config clean-peggy clean-ebrelayer
 	git clean -fdx cmd/ebrelayer/contract/generated
 
 coverage:
-	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+	@GOFLAGS=${GOFLAGS} go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 .PHONY: tests test-peggy test-bin feature-tests
 test-peggy:
 	$(MAKE) -C smart-contracts tests
 
 test-bin:
-	@go test -v -coverprofile .testCoverage.txt ./...
+	@GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
 
 tests: test-peggy test-bin
 
 feature-tests:
-	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
+	@GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	go run ./cmd/sifnoded start
+	GOFLAGS=${GOFLAGS} go run ./cmd/sifnoded start
 
 build-image: install-smart-contracts
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .

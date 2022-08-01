@@ -1343,6 +1343,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             }
         }
 
+        # TODO Inconsistent format of deployed smart contract addresses (this was intentionally carried over from
+        #      devenv to preserve compatibility with devenv users)
+        # TODO Convert to out "unified" json file format
+
         # TODO Do we want "0x" prefixes here for private keys?
         dot_env = dict_merge({
             "BASEDIR": project_dir,

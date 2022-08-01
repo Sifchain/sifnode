@@ -39,6 +39,7 @@ var (
 	LiquidityProtectionParamsPrefix     = []byte{0x08} // Key to store the Liquidity Protection params
 	LiquidityProtectionRateParamsPrefix = []byte{0x09} // Key to store the Liquidity Protection rate params
 	ProviderDistributionParamsPrefix    = []byte{0x0a}
+	RewardsBlockDistributionPrefix      = []byte{0x0b}
 )
 
 // Generates a key for storing a specific pool
@@ -88,8 +89,8 @@ func GetDefaultPmtpParams() *PmtpParams {
 
 func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
 	return &LiquidityProtectionParams{
-		MaxRowanLiquidityThreshold:      sdk.NewUint(1000),
-		MaxRowanLiquidityThresholdAsset: "cusdt",
+		MaxRowanLiquidityThreshold:      sdk.NewUint(1000000000000),
+		MaxRowanLiquidityThresholdAsset: "cusdc",
 		EpochLength:                     14400,
 		IsActive:                        false,
 	}

@@ -1,11 +1,13 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
+//go:build FEATURE_TOGGLE_SDK_045
+// +build FEATURE_TOGGLE_SDK_045
 
 package oracle_test
 
 import (
+	"fmt"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -14,18 +16,13 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-//nolint:golint
 func TestInitGenesis(t *testing.T) {
-	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
-
 	tt, _ := testGenesisData(t)
 
 	for i := range tt {
 		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
-			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
-
+			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 
 			if len(tc.genesis.AdminAddress) <= 0 {
@@ -34,21 +31,18 @@ func TestInitGenesis(t *testing.T) {
 				require.Equal(t, tc.genesis.AdminAddress, keeper.GetAdminAccount(ctx).String())
 			}
 
-			wl := keeper.GetOracleWhiteList(ctx, networkDescriptor).WhiteList
-
-			whiteList, ok := tc.genesis.AddressWhitelist[uint32(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)]
-
-			if ok {
-				for addr := range whiteList.WhiteList {
-					_, ok := wl[addr]
-					require.Equal(t, ok, true)
-				}
+			wl := keeper.GetOracleWhiteList(ctx)
+			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
+			for i, addr := range tc.genesis.AddressWhitelist {
+				require.Equal(t, addr, wl[i].String())
 			}
 
 			prophecies := keeper.GetProphecies(ctx)
 			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
 			for i, p := range tc.genesis.Prophecies {
-				require.Equal(t, *p, prophecies[i])
+				serialised, err := prophecies[i].SerializeForDB()
+				require.NoError(t, err)
+				require.Equal(t, p, &serialised)
 			}
 		})
 	}
@@ -60,11 +54,7 @@ func TestExportGenesis(t *testing.T) {
 	for i := range tt {
 		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
-			networkDescriptor := types.NetworkIdentity{NetworkDescriptor: types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM}
-
-			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
-
+			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 			genesis := oracle.ExportGenesis(ctx, keeper)
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
@@ -90,10 +80,7 @@ func TestGenesisMarshalling(t *testing.T) {
 	for i := range tt {
 		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, _, _, _, keeper, encCfg, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
-			networkDescriptor := types.NetworkIdentity{NetworkDescriptor: types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM}
-			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
-
+			ctx, _, _, _, keeper, encCfg, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 			genesis := oracle.ExportGenesis(ctx, keeper)
 
@@ -102,14 +89,12 @@ func TestGenesisMarshalling(t *testing.T) {
 			var genesisState types.GenesisState
 			encCfg.Marshaler.MustUnmarshalJSON(genesisData, &genesisState)
 
-			ctx, _, _, _, keeper, _, _, _ = test.CreateTestKeepers(t, 1, []int64{1}, "")
-
+			ctx, _, _, _, keeper, _, _ = test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, genesisState)
 
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
 			wl := genesis.AddressWhitelist
-
 			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
 			for i, addr := range tc.genesis.AddressWhitelist {
 				require.Equal(t, addr, wl[i])
@@ -119,7 +104,9 @@ func TestGenesisMarshalling(t *testing.T) {
 			require.Equal(t, len(tc.genesis.Prophecies), len(dbProphecies))
 			for i, p := range tc.genesis.Prophecies {
 				require.Equal(t, p, dbProphecies[i])
-				require.Equal(t, prophecies[i], *p)
+				unserialised, err := p.DeserializeFromDB()
+				require.NoError(t, err)
+				require.Equal(t, prophecies[i], unserialised)
 			}
 		})
 	}
@@ -132,17 +119,35 @@ type testCase struct {
 
 func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
-	// power := uint32(100)
 
 	whitelist := make([]string, len(valAddrs))
 	for i, addr := range valAddrs {
 		whitelist[i] = addr.String()
 	}
 
-	prophecy := types.Prophecy{
-		Id:              []byte("asd"),
-		Status:          types.StatusText_STATUS_TEXT_PENDING,
-		ClaimValidators: []string{valAddrs[0].String()},
+	prophecies := []types.Prophecy{}
+	for i := 0; i <= 5; i++ {
+		prophecy := types.Prophecy{
+			ID: fmt.Sprintf("prophecy%d", i),
+			Status: types.Status{
+				Text:       types.StatusText_STATUS_TEXT_PENDING,
+				FinalClaim: "abc",
+			},
+			ClaimValidators: map[string][]sdk.ValAddress{
+				"123": valAddrs,
+			},
+			ValidatorClaims: map[string]string{
+				"321": "4321",
+			},
+		}
+		prophecies = append(prophecies, prophecy)
+	}
+
+	dbProphecies := []*types.DBProphecy{}
+	for _, p := range prophecies {
+		dbProphecy, err := p.SerializeForDB()
+		require.NoError(t, err)
+		dbProphecies = append(dbProphecies, &dbProphecy)
 	}
 
 	return []testCase{
@@ -153,12 +158,10 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name: "Prophecy",
 			genesis: types.GenesisState{
-				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{},
+				AddressWhitelist: whitelist,
 				AdminAddress:     addrs[0].String(),
-				Prophecies: []*types.Prophecy{
-					&prophecy,
-				},
+				Prophecies:       dbProphecies,
 			},
 		},
-	}, []types.Prophecy{prophecy}
+	}, prophecies
 }
