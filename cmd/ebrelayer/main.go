@@ -40,7 +40,7 @@ const (
 	tendermintNodeFlag                = "tendermint-node"
 	web3ProviderFlag                  = "web3-provider"
 	bridgeRegistryContractAddressFlag = "bridge-registry-contract-address"
-	validatorMnemonicFlag             = "validator-mnemonic"
+	validatorMonikerFlag              = "validator-moniker"
 	maxFeePerGasFlag                  = "maxFeePerGasFlag"
 	maxPriorityFeePerGasFlag          = "maxPriorityFeePerGasFlag"
 	ethereumChainIdFlag               = "ethereum-chain-id"
@@ -254,7 +254,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(contractAddressString)
 
-	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
+	validatorMoniker, err := cmd.Flags().GetString(validatorMonikerFlag)
 	if err != nil {
 		return errors.Errorf("validator moniker is invalid: %s", err.Error())
 	}
@@ -455,7 +455,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(contractAddressString)
 
-	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
+	validatorMoniker, err := cmd.Flags().GetString(validatorMonikerFlag)
 	if err != nil {
 		return errors.Errorf("validator moniker is invalid: %s", err.Error())
 	}
@@ -550,9 +550,9 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		"Ethereum bridge registry contract address",
 	)
 	cmd.Flags().String(
-		validatorMnemonicFlag,
+		validatorMonikerFlag,
 		"",
-		"Validator mnemonic",
+		"Validator moniker",
 	)
 	cmd.Flags().String(
 		maxFeePerGasFlag,
