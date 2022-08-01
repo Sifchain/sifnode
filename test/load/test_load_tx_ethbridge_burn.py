@@ -1,5 +1,6 @@
 import time
 import threading
+import logging
 from typing import List, Any, Iterable
 from web3.eth import Contract
 
@@ -23,9 +24,12 @@ import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
 # E0326 11:41:27.125006742  636480 fork_posix.cc:70]           Fork support is only compatible with the epoll1 and poll polling strategies
 # Maybe: https://github.com/grpc/grpc/issues/29044
 
+log = logging.getLogger(__name__)
+
 eth_account_number = 2
 sif_account_number = 1
 transaction_number = 2
+
 
 # build the transfer matrix 
 def build_transfer_table() -> [[int]]:
@@ -35,19 +39,19 @@ def build_transfer_table() -> [[int]]:
 # create an erc20 contract for rowan via lock rowan in sifnode
 def burn_rowan_get_erc20_address(ctx: test_utils.EnvCtx) -> Address:
     # check contract not created before
-    token_address = ctx.get_destination_contract_address(rowan)
+    token_address = ctx.get_destination_contract_address("rowan")
     if token_address != NULL_ADDRESS:
         return token_address
     fund_amount_sif = 10 ** 20
     fund_amount_eth = 10 ** 20
     rowan_transfer_amount = 10 ** 18
-    test_sif_account = ctx.create_sifchain_addr(fund_amounts={rowan:fund_amount_sif, ctx.ceth_symbol:fund_amount_eth})
+    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"], [fund_amount_eth, ctx.ceth_symbol]])
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
-    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, rowan_transfer_amount, rowan)
+    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, rowan_transfer_amount, "rowan")
     ctx.advance_blocks()
 
     # wait for erc20 contract created
-    token_address = ctx.wait_for_new_bridge_token_created(rowan)
+    token_address = ctx.wait_for_new_bridge_token_created("rowan")
     return token_address
 
 # test single sif account burn erc20 to multiple ethereum accounts
@@ -103,11 +107,12 @@ def test_load_tx_ethbridge_burn_eth(ctx: test_utils.EnvCtx):
     amount_per_tx = 1000100101
     _test_load_tx_ethbridge_lock_burn(ctx, amount_per_tx, transfer_table, None)
 
+
 def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int, transfer_table: List[List[int]],
     token_address: Optional[Address], isRowan: bool = False, randomize: Optional[random.Random] = None):
     # rowan is natvie token, denom not from contract in Ethereum
     if isRowan:
-        token_denom = rowan
+        token_denom = "rowan"
     elif token_address == None:
         token_denom = ctx.ceth_symbol
     else:
@@ -126,7 +131,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     # Theoretically, we could fund accounts with ceth here, but in a strict sense this would violate the balance sheets
     # (i.e. there might be an attempt to unlock ETH in the bridge bank without enough locked ETH available).
     sif_acct_funds: List[cosmos.Balance] = [{
-        rowan: sif_tx_burn_fee_in_rowan * n + sif_tx_burn_fee_buffer_in_rowan,
+        "rowan": sif_tx_burn_fee_in_rowan * n + sif_tx_burn_fee_buffer_in_rowan,
         # ctx.ceth_symbol: sif_tx_burn_fee_in_ceth * n
     } for n in sum_sif]
     sif_accts: List[cosmos.Address] = [ctx.create_sifchain_addr(fund_amounts=f) for f in sif_acct_funds]
@@ -148,14 +153,14 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     # Create a dispensation sif account that will receive all locked ETH and dispense it to each sif account
     # (we do this in one transaction because lock transactions take a lot of time).
     # Dispensation account needs rowan for distributing ceth to sif_accts.
-    if token_denom == rowan:
+    if token_denom == "rowan":
         amount = sum_all * amount_per_tx + n_sif * 2 * sif_tx_fee_in_rowan
-        dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={rowan: amount})
+        dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={"rowan": amount})
     elif token_denom == ctx.ceth_symbol:
-        dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={rowan: n_sif * sif_tx_fee_in_rowan})
+        dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={"rowan": n_sif * sif_tx_fee_in_rowan})
     else:
         # for erc20 token, dispensation_sif_acct need distribute both ceth for cross chain fee and erc20 to burn
-        dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={rowan: n_sif * 2 * sif_tx_fee_in_rowan})
+        dispensation_sif_acct: cosmos.Address = ctx.create_sifchain_addr(fund_amounts={"rowan": n_sif * 2 * sif_tx_fee_in_rowan})
 
     # Transfer ETH from operator to dispensation_sif_acct (aka lock)
     old_balances = ctx.get_sifchain_balance(dispensation_sif_acct)
@@ -216,7 +221,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
             signed_tx = ctx.sifnode_client.sign_transaction(tx, sif_acct, sequence=sequence,
                 account_number=account_number)
             encoded_tx = ctx.sifnode_client.encode_transaction(signed_tx)
-            rowan_after = ctx.get_sifchain_balance(sif_acct)[rowan]
+            rowan_after = ctx.get_sifchain_balance(sif_acct)["rowan"]
             if rowan_before is not None:
                 rowan_fee = rowan_after - rowan_before
                 fee_histogram[rowan_fee] = fee_histogram.get(rowan_fee, 0) + 1
@@ -249,7 +254,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     # Get initial balances. The balances should not have been changed by now.
     sif_balances_before = [ctx.get_sifchain_balance(x) for x in sif_accts]  # Assert == sif_balances_initial (for rowan)
     assert all(ctx.eth.get_eth_balance(eth_accts[i]) == eth_balances_initial[i] for i in range(n_eth))
-    assert all(ctx.get_sifchain_balance(sif_accts[i])[rowan] == sif_balances_before[i][rowan] for i in range(n_sif))
+    assert all(ctx.get_sifchain_balance(sif_accts[i])["rowan"] == sif_balances_before[i]["rowan"] for i in range(n_sif))
 
     # Broadcast transactions
     start_time = time.time()
@@ -264,7 +269,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     for c in channels:
         c.close()
 
-    avg_tx_fees = [(sif_balances_before[i].get(rowan, 0) - ctx.get_sifchain_balance(sif_accts[i]).get(rowan, 0)) / sum_sif[i] for i in range(n_sif)]
+    avg_tx_fees = [(sif_balances_before[i].get("rowan", 0) - ctx.get_sifchain_balance(sif_accts[i]).get("rowan", 0)) / sum_sif[i] for i in range(n_sif)]
     log.debug("Average used fee per transaction: {}".format(repr(avg_tx_fees)))
 
     # Wait for eth balances
@@ -306,7 +311,7 @@ def _test_load_tx_ethbridge_lock_burn(ctx: test_utils.EnvCtx, amount_per_tx: int
     for sif_acct in sif_accts:
         actual_balance = ctx.get_sifchain_balance(sif_acct)
         assert actual_balance.get(ctx.ceth_symbol, 0) == 0
-        assert actual_balance.get(rowan, 0) == sif_tx_burn_fee_buffer_in_rowan
+        assert actual_balance.get("rowan", 0) == sif_tx_burn_fee_buffer_in_rowan
 
     # Verify final eth balances
     for i, eth_acct in enumerate(eth_accts):
@@ -324,7 +329,7 @@ if __name__ == "__main__":
     from siftool import test_utils
     ctx = test_utils.get_env_ctx()
     test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
-    test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
-    test_single_sif_to_multiple_eth_account_burn_eth(ctx)
-    test_load_tx_ethbridge_burn_eth_short(ctx)
-    test_load_tx_ethbridge_burn_eth(ctx)
+    # test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
+    # test_single_sif_to_multiple_eth_account_burn_eth(ctx)
+    # test_load_tx_ethbridge_burn_eth_short(ctx)
+    # test_load_tx_ethbridge_burn_eth(ctx)
