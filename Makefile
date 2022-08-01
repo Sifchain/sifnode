@@ -31,6 +31,17 @@ BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 
+ # You can regenerate proto_files with
+#	find . -name *.proto | sort | grep -v node_mo | paste -s -d " "
+# if the list of .proto files changes
+#
+# go_proto_files is simpler:
+#	find . -name *.pb.go | paste -s -d " "
+
+proto_files=./proto/sifnode/admin/v1/query.proto ./proto/sifnode/admin/v1/tx.proto ./proto/sifnode/admin/v1/types.proto ./proto/sifnode/clp/v1/genesis.proto ./proto/sifnode/clp/v1/params.proto ./proto/sifnode/clp/v1/querier.proto ./proto/sifnode/clp/v1/tx.proto ./proto/sifnode/clp/v1/types.proto ./proto/sifnode/dispensation/v1/query.proto ./proto/sifnode/dispensation/v1/tx.proto ./proto/sifnode/dispensation/v1/types.proto ./proto/sifnode/ethbridge/v1/query.proto ./proto/sifnode/ethbridge/v1/tx.proto ./proto/sifnode/ethbridge/v1/types.proto ./proto/sifnode/oracle/v1/network_descriptor.proto ./proto/sifnode/oracle/v1/types.proto ./proto/sifnode/tokenregistry/v1/query.proto ./proto/sifnode/tokenregistry/v1/tx.proto ./proto/sifnode/tokenregistry/v1/types.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/any.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/api.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/compiler/plugin.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/descriptor.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/duration.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/empty.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/field_mask.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/source_context.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/struct.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/timestamp.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/type.proto ./test/integration/framework/venv/lib/python3.9/site-packages/grpc_tools/_proto/google/protobuf/wrappers.proto ./third_party/proto/cosmos/base/coin.proto ./third_party/proto/cosmos/base/query/v1beta1/pagination.proto ./third_party/proto/gogoproto/gogo.proto ./third_party/proto/google/api/annotations.proto ./third_party/proto/google/api/httpbody.proto ./third_party/proto/google/api/http.proto
+go_proto_files=x/ethbridge/types/types.pb.go x/ethbridge/types/tx.pb.go x/ethbridge/types/query.pb.go x/oracle/types/types.pb.go x/oracle/types/network_descriptor.pb.go x/dispensation/types/types.pb.go x/dispensation/types/tx.pb.go x/dispensation/types/query.pb.go x/clp/types/types.pb.go x/clp/types/tx.pb.go x/clp/types/params.pb.go x/clp/types/genesis.pb.go x/clp/types/querier.pb.go x/tokenregistry/types/types.pb.go x/tokenregistry/types/tx.pb.go x/tokenregistry/types/query.pb.go
+
+.PHONY: all
 all: lint install
 
 build-config:
@@ -43,27 +54,29 @@ init:
 start:
 	sifnoded start
 
-lint-pre:
-	@test -z $(gofmt -l .)
-	@GOFLAGS=${GOFLAGS} go mod verify
+# Note that ebrelayer depends on go files from the smart contracts, so the smart contracts
+# must be built first
+lint-pre: ${smart_contract_file}
+	# test -z "$(shell gofmt -l .)"
+	GOFLAGS=${GOFLAGS} go mod verify
 
 lint: lint-pre
-	@golangci-lint run
+	golangci-lint run
 
 lint-verbose: lint-pre
-	@golangci-lint run -v --timeout=5m
+	golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file} proto-gen
+.PHONY: install
+install: ${BINARIES}
+
+${BINARIES} &: go.mod go.sum ${smart_contract_file} $(go_proto_files)
 	GOFLAGS=${GOFLAGS} go install ${BUILD_FLAGS} ${BINARIES}
+	# You can't depend on go updating the timestamps - go install may decide it doesn't need to do any work
+	touch ${BINARIES}
 
-install-bin: go.sum
-	go install ${BUILD_FLAGS} ${BINARIES}
-
-install-smart-contracts:
+.PHONY: install-smart-contracts
+install-smart-contracts: ${smart_contract_file}
 	make -C smart-contracts install
-
-build-sifd: go.sum
-	GOFLAGS=${GOFLAGS} go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
 clean-config:
 	@rm -rf ~/.sifnode*
@@ -79,19 +92,19 @@ clean: clean-config clean-peggy clean-ebrelayer
 	git clean -fdx cmd/ebrelayer/contract/generated
 
 coverage:
-	@GOFLAGS=${GOFLAGS} go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+	GOFLAGS=${GOFLAGS} go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 .PHONY: tests test-peggy test-bin feature-tests
 test-peggy:
 	$(MAKE) -C smart-contracts tests
 
 test-bin:
-	@GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
+	GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
 
 tests: test-peggy test-bin
 
 feature-tests:
-	@GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
+	GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
 	GOFLAGS=${GOFLAGS} go run ./cmd/sifnoded start
@@ -121,12 +134,15 @@ rollback:
 protoVer=v0.3
 protoImageName=tendermintdev/sdk-proto-gen:$(protoVer)
 
-proto-all: proto-format proto-lint proto-gen
+proto-all: proto-format proto-lint $(go_proto_files)
 
-proto-gen:
-	@echo "Generating Protobuf files"
-	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) sh ./scripts/protocgen.sh
 .PHONY: proto-gen
+proto-gen: $(go_proto_files)
+
+$(go_proto_files) &: $(proto_files)
+	@echo "Generating Protobuf files"
+	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh -x ./scripts/protocgen.sh
+	touch $@
 
 proto-format:
 	@echo "Formatting Protobuf files"
