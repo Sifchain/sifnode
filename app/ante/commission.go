@@ -88,6 +88,8 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 
 		var delegateAmount sdk.Dec
 		if msg.ValidatorSrcAddress == msg.ValidatorDstAddress {
+			// This is blocked later on by the SDK. However we may as well calculate the correct projected voting power.
+			// Since this is a self redelegation, no additional tokens are delegated to this validator hence delegateAmount = 0
 			delegateAmount = sdk.ZeroDec()
 		} else {
 			delegateAmount = sdk.NewDecFromInt(msg.Amount.Amount)
