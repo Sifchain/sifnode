@@ -3,15 +3,6 @@ name: Golang CI
 on: push
 
 jobs:
-  golangci:
-    name: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2.5.2
-        with:
-          version: v1.45.2
   test:
     runs-on: ubuntu-latest
     steps:
@@ -26,6 +17,9 @@ jobs:
 
     - name: Install geth
       run: sudo add-apt-repository -y ppa:ethereum/ethereum && sudo apt-get update && sudo apt-get install ethereum
+
+    - name: Lint
+      run: make lint
 
     - name: Build
       run: make install
