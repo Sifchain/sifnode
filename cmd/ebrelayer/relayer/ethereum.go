@@ -128,7 +128,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 
 	validatorAddress, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
-		log.Fatal("Error getting validator address: ", err.Error())
+		log.Fatal("Error getting validator address: ", err.Error(), ". ValidatorName: [", sub.ValidatorName, "]")
 	}
 
 	sub.ValidatorAddress = validatorAddress
