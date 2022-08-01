@@ -94,7 +94,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		}
 
 		if !coinsToMint.Equal(poolRowanMapSum) {
-			k.Logger(ctx).Error(fmt.Sprintln("coinsToMint", coinsToMint.String(), " != poolRowanMapSum", poolRowanMapSum.String()))
+			k.Logger(ctx).Info(fmt.Sprintln("coinsToMint", coinsToMint.String(), " != poolRowanMapSum", poolRowanMapSum.String()))
 		}
 
 		// this updates poolRowanMap in case coin tranfers fails
