@@ -115,13 +115,13 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use: `init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic
+		Use: `init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
 		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
 		Short: "Validate credentials and initialize subscriptions to both chains",
 		Args:  cobra.ExactArgs(0),
-		Example: `ebrelayer init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic
+		Example: `ebrelayer init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
 		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
 		RunE: RunInitRelayerCmd,
 	}
@@ -135,13 +135,13 @@ func initRelayerCmd() *cobra.Command {
 func initWitnessCmd() *cobra.Command {
 	//nolint:lll
 	initWitnessCmd := &cobra.Command{
-		Use: `init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic
+		Use: `init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
 		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
 		Short: "Validate credentials and initialize subscriptions to both chains",
 		Args:  cobra.ExactArgs(0),
-		Example: `ebrelayer init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic
+		Example: `ebrelayer init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
 		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
 		RunE: RunInitWitnessCmd,
 	}
