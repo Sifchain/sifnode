@@ -19,6 +19,7 @@ jobs:
       run: sudo add-apt-repository -y ppa:ethereum/ethereum && sudo apt-get update && sudo apt-get install ethereum
 
     - name: Lint
+      uses: golangci/golangci-lint-action@v2.5.2
       run: make lint
 
     - name: Build
