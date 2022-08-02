@@ -23,7 +23,13 @@ func GetQueryCmd() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	cmd.AddCommand(GetCmdQueryPositionsForAddress(), GetCmdParams())
+	cmd.AddCommand(
+		GetCmdQueryPositions(),
+		GetCmdQueryPositionsForAddress(),
+		GetCmdQueryPositionsForPool(),
+		GetCmdParams(),
+		GetCmdQueryStatus(),
+	)
 	return cmd
 }
 
@@ -62,6 +68,97 @@ func GetCmdQueryPositionsForAddress() *cobra.Command {
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "positions-for-address")
+	return cmd
+}
+
+func GetCmdQueryPositionsForPool() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "positions-for-pool [asset]",
+		Short: "query positions for a pool",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			asset := args[0]
+
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.GetPositionsByPool(context.Background(), &types.PositionsByPoolRequest{
+				Asset:      asset,
+				Pagination: pageReq,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "positions-for-pool")
+	return cmd
+}
+
+func GetCmdQueryPositions() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "positions",
+		Short: "query all positions",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.GetPositions(context.Background(), &types.PositionsRequest{
+				Pagination: pageReq,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "positions")
+	return cmd
+}
+
+func GetCmdQueryStatus() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "status",
+		Short: "query status properties",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.GetStatus(context.Background(), &types.StatusRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 
