@@ -660,6 +660,12 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return json.loads(stderr(res))
 
+    def query_block(self, block: Optional[int] = None) -> JsonDict:
+        args = ["query", "block"] + \
+            ([str(block)] if block is not None else []) + self._node_args()
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))
+
     def query_pools(self, height: Optional[int] = None) -> List[JsonDict]:
         return self._paged_read(["query", "clp", "pools"], "pools", height)
 
