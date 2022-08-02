@@ -29,6 +29,7 @@ func TestKeeper_PolicyRun(t *testing.T) {
 		poolAssetDecimals         int64
 		poolAssetPermissions      []tokenregistrytypes.Permission
 		nativeAssetPermissions    []tokenregistrytypes.Permission
+		pmtpCurrentRunningRate    sdk.Dec
 		expectedPool              types.Pool
 		expectedSwapPriceNative   sdk.Dec
 		expectedSwapPriceExternal sdk.Dec
@@ -50,6 +51,7 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			poolAssetDecimals:      18,
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			pmtpCurrentRunningRate: sdk.ZeroDec(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1000),
@@ -57,8 +59,8 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				PoolUnits:                     sdk.NewUint(1000),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.998002996005000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("0.998002996005000000"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("1.000000000000000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("1.000000000000000000"),
 		},
 		{
 			name:                   "cusdt with 6 decimals",
@@ -75,6 +77,7 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			poolAssetDecimals:      6,
 			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			pmtpCurrentRunningRate: sdk.ZeroDec(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "cusdt"},
 				NativeAssetBalance:            sdk.NewUintFromString("1550459183129248235861408"),
@@ -82,8 +85,86 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
-			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.112385271402000000"),
-			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.897963118404021251"),
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.112385271402191051"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.897963118506150670"),
+		},
+		{
+			name:                   "cusdt with 6 decimals with PMTP",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "cusdt",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUintFromString("1550459183129248235861408"),
+			externalAssetAmount:    sdk.NewUintFromString("174248776094"),
+			poolUnits:              sdk.NewUintFromString("1550459183129248235861408"),
+			poolAssetDecimals:      6,
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.1"),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "cusdt"},
+				NativeAssetBalance:            sdk.NewUintFromString("1550459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("174248776094"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.123623798542410156"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("8.089057380460136972"),
+		},
+		{
+			name:                   "zero pool depth native asset",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "cusdt",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUintFromString("0"),
+			externalAssetAmount:    sdk.NewUintFromString("174248776094"),
+			poolUnits:              sdk.NewUintFromString("1550459183129248235861408"),
+			poolAssetDecimals:      6,
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.1"),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "cusdt"},
+				NativeAssetBalance:            sdk.NewUintFromString("0"),
+				ExternalAssetBalance:          sdk.NewUintFromString("174248776094"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.000000000000000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+		{
+			name:                   "zero pool depth external asset",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "cusdt",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUintFromString("1550459183129248235861408"),
+			externalAssetAmount:    sdk.NewUintFromString("0"),
+			poolUnits:              sdk.NewUintFromString("1550459183129248235861408"),
+			poolAssetDecimals:      6,
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.1"),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "cusdt"},
+				NativeAssetBalance:            sdk.NewUintFromString("1550459183129248235861408"),
+				ExternalAssetBalance:          sdk.NewUintFromString("0"),
+				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.000000000000000000"),
+			expectedSwapPriceExternal: sdk.MustNewDecFromStr("0.000000000000000000"),
 		},
 	}
 
@@ -92,12 +173,6 @@ func TestKeeper_PolicyRun(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: &tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
-						{
-							AdminType:    tokenregistrytypes.AdminType_PMTPREWARDS,
-							AdminAddress: tc.address,
-						},
-					}},
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.poolAssetDecimals, Permissions: tc.poolAssetPermissions},
@@ -157,9 +232,9 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				return genesisState
 			})
 
-			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
+			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, tc.pmtpCurrentRunningRate)
 
-			err := app.ClpKeeper.PolicyRun(ctx, sdk.NewDec(0))
+			err := app.ClpKeeper.PolicyRun(ctx, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -172,6 +247,10 @@ func TestKeeper_PolicyRun(t *testing.T) {
 			require.NoError(t, err)
 
 			pool, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
+
+			// explicitly test swap prices before testing pool - makes debugging easier
+			require.Equal(t, &tc.expectedSwapPriceNative, pool.SwapPriceNative)
+			require.Equal(t, &tc.expectedSwapPriceExternal, pool.SwapPriceExternal)
 
 			tc.expectedPool.SwapPriceNative = &tc.expectedSwapPriceNative
 			tc.expectedPool.SwapPriceExternal = &tc.expectedSwapPriceExternal

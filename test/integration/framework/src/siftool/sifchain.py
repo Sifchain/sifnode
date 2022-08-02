@@ -47,8 +47,18 @@ def is_cosmos_native_denom(denom: str) -> bool:
     return not str.startswith(denom, "sifBridge")
 
 def ondemand_import_generated_protobuf_sources():
+    global cosmos_pb
+    global cosmos_pb_grpc
     import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
     import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
+
+def mnemonic_to_address(cmd: command.Command, mnemonic: Iterable[str]):
+    tmpdir = cmd.mktempdir()
+    sifnode = Sifnoded(cmd, tmpdir)
+    try:
+       return sifnode.keys_add("tmp", mnemonic)["address"]
+    finally:
+        cmd.rmdir(tmpdir)
 
 
 class Sifnoded:
@@ -83,7 +93,9 @@ class Sifnoded:
         assert result == expected
         return result
 
-    def keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Mapping[str, Any]:
+    def keys_add(self, moniker: Optional[str], mnemonic: Optional[Iterable[str]] = None) -> Mapping[str, Any]:
+        if moniker is None:
+            moniker = "temp-{}".format(random_string(10))
         if mnemonic is None:
             res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend=self.keyring_backend,
                  sifnoded_home=self.home, stdin=["y"])
@@ -159,7 +171,7 @@ class Sifnoded:
         cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee, admin_account_name, chain_id, gas_prices,
         gas_adjustment
     ):
-        args = ["tx", "ethbridge", "set-cross-chain-fee", admin_account_address, str(network_id),
+        args = ["tx", "ethbridge", "set-cross-chain-fee", str(network_id),
             ethereum_cross_chain_fee_token, str(cross_chain_fee_base), str(cross_chain_lock_fee),
             str(cross_chain_burn_fee), "--from", admin_account_name, "--chain-id", chain_id, "--gas-prices",
             sif_format_amount(*gas_prices), "--gas-adjustment", str(gas_adjustment), "-y"]
@@ -167,7 +179,7 @@ class Sifnoded:
         return res
 
     def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, chain_id, consensus_needed):
-        args = ["tx", "ethbridge", "update-consensus-needed", admin_account_address, str(hardhat_chain_id),
+        args = ["tx", "ethbridge", "update-consensus-needed", str(hardhat_chain_id),
             str(consensus_needed), "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
             "0.5rowan", "--gas-adjustment", "1.5", "-y"]
         res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
@@ -259,7 +271,7 @@ class SifnodeClient:
 
         direction = "lock" if is_cosmos_native_denom(denom) else "burn"
         cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, from_sif_addr, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+        args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                 "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
                 "--from", from_sif_addr,  # Mandatory, either name from keyring or address
                 "--output", "json",

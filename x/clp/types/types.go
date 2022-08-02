@@ -5,10 +5,7 @@ import (
 )
 
 func (p Pool) Validate() bool {
-	if !p.ExternalAsset.Validate() {
-		return false
-	}
-	return true
+	return p.ExternalAsset.Validate()
 }
 
 // NewPool returns a new Pool
@@ -19,6 +16,33 @@ func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poo
 		PoolUnits:            poolUnits}
 
 	return pool
+}
+
+func (p *Pool) ExtractValues(to Asset) (sdk.Uint, sdk.Uint, bool) {
+  var X, Y sdk.Uint
+  var toRowan bool
+
+   if to.IsSettlementAsset() {
+     Y = p.NativeAssetBalance
+     X = p.ExternalAssetBalance
+     toRowan = true
+   } else {
+     X = p.NativeAssetBalance
+     Y = p.ExternalAssetBalance
+     toRowan = false
+   }
+
+   return X, Y, toRowan
+}
+
+func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) {
+  if toRowan {
+    p.ExternalAssetBalance = X.Add(x)
+    p.NativeAssetBalance = Y.Sub(swapResult)
+  } else {
+    p.NativeAssetBalance = X.Add(x)
+    p.ExternalAssetBalance = Y.Sub(swapResult)
+  }
 }
 
 type Pools []Pool
@@ -54,4 +78,8 @@ func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance
 
 func NewPmtpParamsResponse(params *PmtpParams, pmtpRateParams PmtpRateParams, pmtpEpoch PmtpEpoch, height int64) PmtpParamsRes {
 	return PmtpParamsRes{Params: params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
+}
+
+func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rateParams LiquidityProtectionRateParams, height int64) LiquidityProtectionParamsRes {
+	return LiquidityProtectionParamsRes{Params: params, RateParams: &rateParams, Height: height}
 }

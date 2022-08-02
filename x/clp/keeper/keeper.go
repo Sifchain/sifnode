@@ -21,12 +21,14 @@ type Keeper struct {
 	bankKeeper          types.BankKeeper
 	authKeeper          types.AuthKeeper
 	tokenRegistryKeeper types.TokenRegistryKeeper
+	adminKeeper         types.AdminKeeper
 	mintKeeper          mintkeeper.Keeper
 	paramstore          paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper,
+	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -37,6 +39,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		bankKeeper:          bankkeeper,
 		authKeeper:          accountKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
+		adminKeeper:         adminKeeper,
 		mintKeeper:          mintKeeper,
 		paramstore:          ps,
 	}
@@ -97,6 +100,15 @@ func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Ass
 		return sdk.Dec{}, false
 	}
 	return k.GetNormalizationFactor(registryEntry.Decimals)
+}
+
+func (k Keeper) GetAssetDecimals(ctx sdk.Context, asset types.Asset) (uint8, error) {
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset.Symbol)
+	if err != nil {
+		return 0, err
+	}
+	return Int64ToUint8Safe(registryEntry.Decimals)
 }
 
 func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {

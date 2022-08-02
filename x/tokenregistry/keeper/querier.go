@@ -14,7 +14,7 @@ func NewLegacyQuerier(keeper types.Keeper) sdk.Querier {
 		case types.QueryEntries:
 			return queryDenoms(ctx, querier)
 		default:
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown query endpoint")
 		}
 	}
 }
