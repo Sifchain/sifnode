@@ -1,3 +1,6 @@
+//go:build !FEATURE_TOGGLE_SDK_045
+// +build !FEATURE_TOGGLE_SDK_045
+
 package app
 
 import (
@@ -7,6 +10,9 @@ import (
 	"os"
 
 	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
+	"github.com/Sifchain/sifnode/x/admin"
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -142,6 +148,7 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
+		admin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
 
@@ -214,6 +221,7 @@ type SifchainApp struct {
 	EthbridgeKeeper     ethbridgekeeper.Keeper
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
+	AdminKeeper         adminkeeper.Keeper
 
 	mm           *module.Manager
 	sm           *module.SimulationManager
@@ -224,6 +232,14 @@ func NewSifApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
+) *SifchainApp {
+	return NewSifAppWithBlacklist(logger, db, traceStore, loadLatest, skipUpgradeHeights, homePath, invCheckPeriod, encodingConfig, appOpts, []sdk.AccAddress{}, baseAppOptions...)
+}
+
+func NewSifAppWithBlacklist(
+	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
+	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
+	appOpts servertypes.AppOptions, blackListedAddresses []sdk.AccAddress, baseAppOptions ...func(*baseapp.BaseApp),
 ) *SifchainApp {
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
@@ -252,6 +268,7 @@ func NewSifApp(
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
+		admintypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -289,11 +306,16 @@ func NewSifApp(
 		maccPerms,
 	)
 
+	addrs := app.ModuleAccountAddrs()
+	for _, addr := range blackListedAddresses {
+		addrs[addr.String()] = true
+	}
+
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.GetSubspace(banktypes.ModuleName),
-		app.ModuleAccountAddrs(),
+		addrs,
 	)
 
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
@@ -337,13 +359,15 @@ func NewSifApp(
 	)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
+	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		appCodec,
 		keys[clptypes.StoreKey],
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
@@ -402,7 +426,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
-		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -461,6 +485,7 @@ func NewSifApp(
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
+		admin.NewAppModule(app.AdminKeeper, &appCodec),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -502,6 +527,7 @@ func NewSifApp(
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
 		tokenregistrytypes.ModuleName,
+		admintypes.ModuleName,
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,

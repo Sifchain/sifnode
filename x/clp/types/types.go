@@ -5,10 +5,7 @@ import (
 )
 
 func (p Pool) Validate() bool {
-	if !p.ExternalAsset.Validate() {
-		return false
-	}
-	return true
+	return p.ExternalAsset.Validate()
 }
 
 // NewPool returns a new Pool
@@ -81,4 +78,8 @@ func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance
 
 func NewPmtpParamsResponse(params *PmtpParams, pmtpRateParams PmtpRateParams, pmtpEpoch PmtpEpoch, height int64) PmtpParamsRes {
 	return PmtpParamsRes{Params: params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
+}
+
+func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rateParams LiquidityProtectionRateParams, height int64) LiquidityProtectionParamsRes {
+	return LiquidityProtectionParamsRes{Params: params, RateParams: &rateParams, Height: height}
 }

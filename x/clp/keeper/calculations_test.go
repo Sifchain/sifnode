@@ -738,7 +738,6 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
@@ -1871,6 +1870,126 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			ratioDec := clpkeeper.RatToDec(&ratio)
 
 			require.Equal(t, tc.expected.String(), ratioDec.String())
+		})
+	}
+}
+
+func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
+	testcases := []struct {
+		name                          string
+		rowanBalance, externalBalance sdk.Uint
+		pmtpCurrentRunningRate        sdk.Dec
+		expectedSpotPrice             sdk.Dec
+		expectedError                 error
+	}{
+		{
+			name:                   "success simple",
+			rowanBalance:           sdk.NewUint(1),
+			externalBalance:        sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expectedSpotPrice:      sdk.MustNewDecFromStr("2"),
+		},
+		{
+			name:                   "success small",
+			rowanBalance:           sdk.NewUint(1000000000123),
+			externalBalance:        sdk.NewUint(20000000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
+			expectedSpotPrice:      sdk.MustNewDecFromStr("0.000047999999994096"),
+		},
+
+		{
+			name:                   "success",
+			rowanBalance:           sdk.NewUint(1000),
+			externalBalance:        sdk.NewUint(2000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
+			expectedSpotPrice:      sdk.MustNewDecFromStr("4.8"),
+		},
+		{
+			name:                   "fail - rowan balance zero",
+			rowanBalance:           sdk.NewUint(0),
+			externalBalance:        sdk.NewUint(2000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
+			expectedError:          errors.New("amount is invalid"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.rowanBalance,
+				ExternalAssetBalance: tc.externalBalance,
+			}
+
+			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
+			if tc.expectedError != nil {
+				require.EqualError(t, tc.expectedError, err.Error())
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedSpotPrice, spotPrice)
+		})
+	}
+}
+
+func TestKeeper_CalcRowanValue(t *testing.T) {
+	testcases := []struct {
+		name                          string
+		rowanBalance, externalBalance sdk.Uint
+		rowanAmount                   sdk.Uint
+		pmtpCurrentRunningRate        sdk.Dec
+		expectedValue                 sdk.Uint
+		expectedError                 error
+	}{
+		{
+			name:                   "success simple",
+			rowanBalance:           sdk.NewUint(1),
+			externalBalance:        sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			rowanAmount:            sdk.NewUint(100),
+			expectedValue:          sdk.NewUint(200),
+		},
+		{
+			name:                   "success zero",
+			rowanBalance:           sdk.NewUint(1000000000123),
+			externalBalance:        sdk.NewUint(20000000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
+			rowanAmount:            sdk.NewUint(100),
+			expectedValue:          sdk.NewUint(0),
+		},
+		{
+			name:                   "success",
+			rowanBalance:           sdk.NewUint(1000),
+			externalBalance:        sdk.NewUint(2000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
+			rowanAmount:            sdk.NewUint(100),
+			expectedValue:          sdk.NewUint(480),
+		},
+		{
+			name:                   "fail - rowan balance zero",
+			rowanBalance:           sdk.NewUint(0),
+			externalBalance:        sdk.NewUint(2000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
+			rowanAmount:            sdk.NewUint(100),
+			expectedError:          errors.New("amount is invalid"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.rowanBalance,
+				ExternalAssetBalance: tc.externalBalance,
+			}
+
+			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount)
+			if tc.expectedError != nil {
+				require.EqualError(t, tc.expectedError, err.Error())
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedValue.String(), rowanValue.String())
 		})
 	}
 }

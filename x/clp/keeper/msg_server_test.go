@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
+	admintest "github.com/Sifchain/sifnode/x/admin/test"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -141,7 +143,6 @@ func TestMsgServer_DecommissionPool(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
@@ -220,31 +221,37 @@ func TestMsgServer_DecommissionPool(t *testing.T) {
 
 func TestMsgServer_Swap(t *testing.T) {
 	testcases := []struct {
-		name                   string
-		createBalance          bool
-		createPool             bool
-		createLPs              bool
-		poolAsset              string
-		decimals               int64
-		address                string
-		nativeBalance          sdk.Int
-		externalBalance        sdk.Int
-		nativeAssetAmount      sdk.Uint
-		externalAssetAmount    sdk.Uint
-		poolUnits              sdk.Uint
-		nativeBalanceEnd       sdk.Int
-		externalBalanceEnd     sdk.Int
-		poolAssetPermissions   []tokenregistrytypes.Permission
-		nativeAssetPermissions []tokenregistrytypes.Permission
-		msg                    *types.MsgSwap
-		err                    error
-		errString              error
+		name                            string
+		createBalance                   bool
+		createPool                      bool
+		createLPs                       bool
+		poolAsset                       string
+		decimals                        int64
+		address                         string
+		maxRowanLiquidityThresholdAsset string
+		nativeBalance                   sdk.Int
+		externalBalance                 sdk.Int
+		nativeAssetAmount               sdk.Uint
+		externalAssetAmount             sdk.Uint
+		poolUnits                       sdk.Uint
+		currentRowanLiquidityThreshold  sdk.Uint
+		expectedRunningThresholdEnd     sdk.Uint
+		maxRowanLiquidityThreshold      sdk.Uint
+		nativeBalanceEnd                sdk.Int
+		externalBalanceEnd              sdk.Int
+		poolAssetPermissions            []tokenregistrytypes.Permission
+		nativeAssetPermissions          []tokenregistrytypes.Permission
+		msg                             *types.MsgSwap
+		err                             error
+		errString                       error
 	}{
 		{
-			name:          "sent asset token not supported",
-			createBalance: false,
-			createPool:    false,
-			createLPs:     false,
+			name:                            "sent asset token not supported",
+			createBalance:                   false,
+			createPool:                      false,
+			createLPs:                       false,
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "xxx"},
@@ -255,12 +262,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("Token not supported by sifchain"),
 		},
 		{
-			name:          "received asset token not supported",
-			createBalance: false,
-			createPool:    false,
-			createLPs:     false,
-			poolAsset:     "eth",
-			decimals:      18,
+			name:                            "received asset token not supported",
+			createBalance:                   false,
+			createPool:                      false,
+			createLPs:                       false,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -271,12 +280,14 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("Token not supported by sifchain"),
 		},
 		{
-			name:          "external asset permission denied",
-			createBalance: false,
-			createPool:    false,
-			createLPs:     false,
-			poolAsset:     "eth",
-			decimals:      18,
+			name:                            "external asset permission denied",
+			createBalance:                   false,
+			createPool:                      false,
+			createLPs:                       false,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -287,13 +298,15 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("permission denied for denom"),
 		},
 		{
-			name:                 "native asset permission denied",
-			createBalance:        false,
-			createPool:           false,
-			createLPs:            false,
-			poolAsset:            "eth",
-			decimals:             18,
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                            "native asset permission denied",
+			createBalance:                   false,
+			createPool:                      false,
+			createLPs:                       false,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "xxx",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -304,22 +317,24 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("permission denied for denom"),
 		},
 		{
-			name:                   "received amount below expected",
-			createBalance:          true,
-			createPool:             true,
-			createLPs:              true,
-			poolAsset:              "eth",
-			decimals:               18,
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:          sdk.NewInt(10000),
-			externalBalance:        sdk.NewInt(10000),
-			nativeAssetAmount:      sdk.NewUint(1000),
-			externalAssetAmount:    sdk.NewUint(1000),
-			poolUnits:              sdk.NewUint(1000),
-			nativeBalanceEnd:       sdk.NewInt(10000),
-			externalBalanceEnd:     sdk.NewInt(10000),
-			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                            "received amount below expected",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(1000),
+			externalAssetAmount:             sdk.NewUint(1000),
+			poolUnits:                       sdk.NewUint(1000),
+			nativeBalanceEnd:                sdk.NewInt(10000),
+			externalBalanceEnd:              sdk.NewInt(10000),
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			maxRowanLiquidityThresholdAsset: "rowan",
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -330,22 +345,26 @@ func TestMsgServer_Swap(t *testing.T) {
 			errString: errors.New("Unable to swap, received amount is below expected"),
 		},
 		{
-			name:                   "success",
-			createBalance:          true,
-			createPool:             true,
-			createLPs:              true,
-			poolAsset:              "eth",
-			decimals:               18,
-			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:          sdk.NewInt(10000),
-			externalBalance:        sdk.NewInt(10000),
-			nativeAssetAmount:      sdk.NewUint(1000),
-			externalAssetAmount:    sdk.NewUint(1000),
-			poolUnits:              sdk.NewUint(1000),
-			nativeBalanceEnd:       sdk.NewInt(10082),
-			externalBalanceEnd:     sdk.NewInt(9900),
-			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                            "success",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(1000),
+			externalAssetAmount:             sdk.NewUint(1000),
+			poolUnits:                       sdk.NewUint(1000),
+			nativeBalanceEnd:                sdk.NewInt(10082),
+			externalBalanceEnd:              sdk.NewInt(9900),
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			expectedRunningThresholdEnd:     sdk.NewUint(1041),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
 			msg: &types.MsgSwap{
 				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				SentAsset:          &types.Asset{Symbol: "eth"},
@@ -412,7 +431,6 @@ func TestMsgServer_Swap(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.decimals, Permissions: tc.poolAssetPermissions},
@@ -485,6 +503,13 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
 
+			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
+			liquidityProtectionParam.MaxRowanLiquidityThresholdAsset = tc.maxRowanLiquidityThresholdAsset
+			liquidityProtectionParam.MaxRowanLiquidityThreshold = tc.maxRowanLiquidityThreshold
+			liquidityProtectionParam.IsActive = true
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
+			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
+
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
 			_, err := msgServer.Swap(sdk.WrapSDKContext(ctx), tc.msg)
@@ -526,6 +551,9 @@ func TestMsgServer_Swap(t *testing.T) {
 			nativeAssetBalance := nativeAssetBalanceResponse.Balance.Amount
 
 			require.Equal(t, tc.nativeBalanceEnd.String(), nativeAssetBalance.String())
+
+			runningThreshold := app.ClpKeeper.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+			require.Equal(t, tc.expectedRunningThresholdEnd.String(), runningThreshold.String())
 
 		})
 	}
@@ -677,7 +705,6 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
@@ -884,7 +911,6 @@ func TestMsgServer_CreatePool(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
@@ -1263,7 +1289,6 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.externalDecimals, Permissions: tc.poolAssetPermissions},
@@ -1349,4 +1374,57 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			require.Equal(t, tc.expectedLPUnits.String(), lp.LiquidityProviderUnits.String())
 		})
 	}
+}
+
+func TestMsgServer_AddProviderDistribution(t *testing.T) {
+	admin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9q"
+	nonAdmin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9r"
+	ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+		adminGs := &admintypes.GenesisState{
+			AdminAccounts: admintest.GetAdmins(admin),
+		}
+		bz, _ := app.AppCodec().MarshalJSON(adminGs)
+		genesisState["admin"] = bz
+		trGs := &tokenregistrytypes.GenesisState{
+			Registry: nil,
+		}
+		bz, _ = app.AppCodec().MarshalJSON(trGs)
+		genesisState["tokenregistry"] = bz
+
+		return genesisState
+	})
+	msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
+
+	_, err := msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), nil)
+	require.Error(t, err)
+
+	var periods []*types.ProviderDistributionPeriod
+	validPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 10, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 1}
+	wrongPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 9, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 1}
+
+	periods = append(periods, &wrongPeriod)
+	msg := types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
+	require.Error(t, err)
+	// check events didn't fire
+	require.Equal(t, len(ctx.EventManager().Events()), 0)
+
+	periods[0] = &validPeriod
+	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: admin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
+	require.NoError(t, err)
+	// check events fired
+	require.Equal(t, len(ctx.EventManager().Events()), 2)
+
+	// non admin acc
+	msg = types.MsgAddProviderDistributionPeriodRequest{Signer: nonAdmin, DistributionPeriods: periods}
+	_, err = msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), &msg)
+	require.Error(t, err)
+	// check no additional events fired
+	require.Equal(t, len(ctx.EventManager().Events()), 2)
+
+	cbp := app.ClpKeeper.GetProviderDistributionParams(ctx)
+	require.NotNil(t, cbp)
+	require.Equal(t, 1, len(cbp.DistributionPeriods))
+	require.Equal(t, *cbp.DistributionPeriods[0], validPeriod)
 }
