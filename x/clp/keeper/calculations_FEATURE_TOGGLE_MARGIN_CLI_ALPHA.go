@@ -43,3 +43,49 @@ func CalculateWithdrawalRowanValue(
 
 	return CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
 }
+
+func SwapOne(from types.Asset,
+	sentAmount sdk.Uint,
+	to types.Asset,
+	pool types.Pool,
+	pmtpCurrentRunningRate sdk.Dec,
+	marginEnabled bool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+
+	X, Y, toRowan := pool.ExtractValues(to)
+
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, toRowan)
+	}
+
+	liquidityFee := CalcLiquidityFee(X, sentAmount, Y)
+	priceImpact := calcPriceImpact(X, sentAmount)
+	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
+
+	// NOTE: impossible... pre-pmtp at least
+	if swapResult.GTE(Y) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
+	}
+
+	pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
+
+	return swapResult, liquidityFee, priceImpact, pool, nil
+}
+
+func GetSwapFee(sentAmount sdk.Uint,
+	to types.Asset,
+	pool types.Pool,
+	pmtpCurrentRunningRate sdk.Dec,
+	marginEnabled bool) sdk.Uint {
+	X, Y, toRowan := pool.ExtractValues(to)
+
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, toRowan)
+	}
+
+	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
+
+	if swapResult.GTE(Y) {
+		return sdk.ZeroUint()
+	}
+	return swapResult
+}
