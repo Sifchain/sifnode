@@ -4,6 +4,7 @@
 package margin
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -67,10 +68,10 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, _ sdkclient.T
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *runtime.ServeMux) {
-	// err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
-	//if err != nil {
-	//	panic(err)
-	//}
+	err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err != nil {
+		panic(err)
+	}
 }
 
 // RegisterRESTRoutes registers the REST routes.
