@@ -33,10 +33,13 @@ func CalculateWithdrawalRowanValue(
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	normalizationFactor sdk.Dec,
-	adjustExternalToken bool,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, error) {
+	pmtpCurrentRunningRate sdk.Dec, marginEnabled bool) sdk.Uint {
 
-	X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
-	return CalcSwapResult(toRowan, normalizationFactor, adjustExternalToken, X, x, Y, pmtpCurrentRunningRate)
+	X, Y, toRowan := pool.ExtractValues(to)
+
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, toRowan)
+	}
+
+	return CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
 }

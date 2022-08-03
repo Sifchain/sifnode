@@ -17,9 +17,14 @@ func SwapOne(from types.Asset,
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	pmtpCurrentRunningRate sdk.Dec,
+	marginEnabled bool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
 	X, Y, toRowan := pool.ExtractValues(to)
+
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, toRowan)
+	}
 
 	liquidityFee := CalcLiquidityFee(X, sentAmount, Y)
 	priceImpact := calcPriceImpact(X, sentAmount)
@@ -51,8 +56,14 @@ func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate sdk.Dec,
+	marginEnabled bool) sdk.Uint {
 	X, Y, toRowan := pool.ExtractValues(to)
+
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, toRowan)
+	}
+
 	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate)
 
 	if swapResult.GTE(Y) {

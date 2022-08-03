@@ -12,7 +12,7 @@ import (
 
 func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveLiquidity) (sdk.Int, sdk.Int, sdk.Uint, error) {
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	_, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrTokenNotSupported
 	}
@@ -34,11 +34,8 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-	if err != nil {
-		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), err
-	}
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+	extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, marginEnabled)
 
 	withdrawExternalAssetAmountInt, ok := k.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
@@ -60,8 +57,8 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, marginEnabled)
 		if err != nil {
 			return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -82,8 +79,8 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, marginEnabled)
 		if err != nil {
 			return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}

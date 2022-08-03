@@ -215,10 +215,10 @@ func (k Keeper) AdminKeeper() adminkeeper.Keeper {
 func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error) {
 	toAsset := ToAsset(to)
 	// add liabilities? and custody to pool depth
-	pool.NativeAssetBalance = pool.NativeAssetBalance.Add(pool.NativeCustody).Add(pool.NativeLiabilities)
-	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(pool.ExternalCustody).Add(pool.ExternalLiabilities)
 
-	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool)
+	marginEnabled := k.IsPoolEnabled(ctx, pool.String())
+
+	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool, marginEnabled)
 	if err != nil {
 		return sdk.Uint{}, err
 	}
