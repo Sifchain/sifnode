@@ -133,7 +133,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 func GenerateRandomLPWithUnitsAndAsset(poolUnitss []uint64, asset types.Asset) []*types.LiquidityProvider {
 	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
 	for i, poolUnits := range poolUnitss {
-		address := GenerateAddress(fmt.Sprintf("%d", i))
+		address := GenerateAddress2(fmt.Sprintf("%d%d%d%d", i, i, i, i))
 		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
 		lpList[i] = &lp
 	}
@@ -157,12 +157,30 @@ func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
 
 	return lpList
 }
+func genTokens(n int) []string {
+	var runes = []rune("abcdefghijklmnopqrstuvwxyz")
+	set := make(map[string]bool, n)
+
+	for len(set) != n {
+		token := make([]rune, 6)
+		for i := range token {
+			token[i] = runes[rand.Intn(len(runes))]
+		}
+		set[string(token)] = true
+	}
+
+	var strings = make([]string, n)
+	i := 0
+	for str := range set {
+		strings[i] = str
+		i++
+	}
+
+	return strings
+}
 
 func GeneratePoolsSetLPs(keeper clpkeeper.Keeper, ctx sdk.Context, nPools, nLPs int) []*types.Pool {
-	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
-	if nPools > len(tokens) {
-		panic("nPools is too high")
-	}
+	tokens := genTokens(nPools)
 
 	rand.Seed(time.Now().Unix())
 	poolList := make([]*types.Pool, nPools)
@@ -240,6 +258,16 @@ func TrimFirstRune(s string) string {
 	return strings.ToLower(s[i:])
 }
 
+func GenerateAddress2(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(key)
+
+	return genAddressInternal(buffer)
+}
+
 func GenerateAddress(key string) sdk.AccAddress {
 	if key == "" {
 		key = AddressKey1
@@ -247,6 +275,11 @@ func GenerateAddress(key string) sdk.AccAddress {
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
+
+	return genAddressInternal(buffer)
+}
+
+func genAddressInternal(buffer bytes.Buffer) sdk.AccAddress {
 	res, _ := sdk.AccAddressFromHex(buffer.String())
 	bech := res.String()
 	addr := buffer.String()

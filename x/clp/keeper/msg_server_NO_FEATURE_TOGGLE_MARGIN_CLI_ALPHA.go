@@ -36,3 +36,22 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx sdk.Conte
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx sdk.Context, k msgServer, msg *types.MsgRemoveLiquidity, lp types.LiquidityProvider, pool types.Pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount sdk.Uint, eAsset *tokenregistrytypes.RegistryEntry, pmtpCurrentRunningRate sdk.Dec) error {
 	return nil
 }
+
+func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
+	k msgServer,
+	sentAsset types.Asset,
+	sentAmount sdk.Uint,
+	nativeAsset types.Asset,
+	inPool types.Pool,
+	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	return SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate)
+}
+
+func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
+	k msgServer,
+	ReceivedAsset *types.Asset,
+	liquidityFeeNative sdk.Uint,
+	outPool types.Pool,
+	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	return GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate)
+}

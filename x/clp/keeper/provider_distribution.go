@@ -62,7 +62,7 @@ func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMa
 }
 
 func fireDistributeSuccessEvent(ctx sdk.Context, lpAddress string, pools []LPPool, totalDistributed sdk.Uint, typeStr string) {
-	data := printPools(pools)
+	data := PrintPools(pools)
 	successEvent := sdk.NewEvent(
 		typeStr,
 		sdk.NewAttribute("recipient", lpAddress),
@@ -78,7 +78,7 @@ type FormattedPool struct {
 	Amount sdk.Uint `json:"amount"`
 }
 
-func printPools(pools []LPPool) string {
+func PrintPools(pools []LPPool) string {
 	var formattedPools = make([]FormattedPool, len(pools))
 
 	for i, pool := range pools {
@@ -132,14 +132,16 @@ func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Poo
 	lpMap := make(LpRowanMap, 0)
 	lpPoolMap := make(LpPoolMap, 0)
 
+	partitions, err := k.GetAllLiquidityProvidersPartitions(ctx)
+	if err != nil {
+		fireLPPGetLPsErrorEvent(ctx, err)
+	}
+
 	for _, pool := range pools {
-		lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
-		if err != nil {
-			//k.Logger(ctx).Error(fmt.Sprintf("Getting liquidity providers for asset %s error %s", pool.ExternalAsset.Symbol, err.Error()))
-			fireLPPGetLPsErrorEvent(ctx, *pool.ExternalAsset, err)
+		lps, exists := partitions[*pool.ExternalAsset]
+		if !exists { // TODO: fire event
 			continue
 		}
-
 		lpsFiltered := FilterValidLiquidityProviders(ctx, lps)
 		rowanToDistribute := CollectProviderDistribution(ctx, pool, sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()),
 			blockRate, pool.PoolUnits, lpsFiltered, lpMap, lpPoolMap)
@@ -159,6 +161,16 @@ type LPPool struct {
 	Amount sdk.Uint
 }
 
+func PoolRowanMapToLPPools(poolRowanMap PoolRowanMap) []LPPool {
+	arr := make([]LPPool, 0, len(poolRowanMap))
+
+	for pool, coins := range poolRowanMap {
+		arr = append(arr, LPPool{Pool: pool, Amount: coins})
+	}
+
+	return arr
+}
+
 func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvider) []ValidLiquidityProvider {
 	var valid []ValidLiquidityProvider //nolint
 
@@ -176,10 +188,9 @@ func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvid
 	return valid
 }
 
-func fireLPPGetLPsErrorEvent(ctx sdk.Context, asset types.Asset, err error) {
+func fireLPPGetLPsErrorEvent(ctx sdk.Context, err error) {
 	failureEvent := sdk.NewEvent(
 		"lppd/get_liquidity_providers_error",
-		sdk.NewAttribute("asset", asset.Symbol),
 		sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 	)
@@ -192,9 +203,17 @@ func CollectProviderDistribution(ctx sdk.Context, pool *types.Pool, poolDepthRow
 
 	//	rowan_provider_distribution = r_block * pool_depth_rowan
 	rowanPd := blockRate.Mul(poolDepthRowan)
+	rowanPdUint := sdk.NewUintFromBigInt(rowanPd.RoundInt().BigInt())
 	for _, lp := range lps {
 		providerRowan := CalcProviderDistributionAmount(rowanPd, poolUnits, lp.LP.LiquidityProviderUnits)
 		totalRowanDistribute = totalRowanDistribute.Add(providerRowan)
+
+		// TODO: find a proper solution
+		if totalRowanDistribute.GT(rowanPdUint) {
+			providerRowan = rowanPdUint.Sub(totalRowanDistribute.Sub(providerRowan))
+			totalRowanDistribute = rowanPdUint
+		}
+
 		addr := lp.Address.String()
 
 		globalLpRowan := globalLpRowanMap[addr]

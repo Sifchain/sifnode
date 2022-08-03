@@ -186,6 +186,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	lpCoinsAfter1 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	require.True(t, lpCoinsBefore.IsLT(lpCoinsAfter1))
 	require.Equal(t, lpCoinsAfter1, totalCoinsDistribution)
+	require.Subset(t, ctx.EventManager().Events(), createRewardsDistributeEvent(totalCoinsDistribution, pool.ExternalAsset))
 
 	distributed1 := pool.RewardPeriodNativeDistributed
 	moduleBalance1 := app.ClpKeeper.GetModuleRowan(ctx)
@@ -200,6 +201,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	require.Nil(t, err)
 	distributed2 := pool.RewardPeriodNativeDistributed
 	require.Equal(t, distributed1, distributed2)
+	require.Subset(t, ctx.EventManager().Events(), createRewardsAccumEvent(totalCoinsDistribution, pool.ExternalAsset))
 
 	lpCoinsAfter2 := app.BankKeeper.GetBalance(ctx, lpAddr, types.NativeSymbol)
 	require.Equal(t, lpCoinsAfter1, lpCoinsAfter2)
@@ -210,10 +212,27 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	require.Equal(t, startBalance.Add(diffBalance).String(), moduleBalance2.String())
 }
 
+//nolint
+func createRewardsDistributeEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
+	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
+	return []sdk.Event{sdk.NewEvent("rewards/distribution",
+		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+		sdk.NewAttribute("amounts", amountsStr)),
+	}
+}
+
+func createRewardsAccumEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
+	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
+	return []sdk.Event{sdk.NewEvent("rewards/accumulation",
+		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+		sdk.NewAttribute("amounts", amountsStr)),
+	}
+}
+
 func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	sifapp.SetConfig(false) // needed for GenerateAddress to generate a proper address
 	// We cheat here to get the first LP's address in order to add it to the blacklist
-	lpAddress := test.GenerateAddress(fmt.Sprintf("%d", 0))
+	lpAddress := test.GenerateAddress2(fmt.Sprintf("%d%d%d%d", 0, 0, 0, 0))
 	blacklist := []sdk.AccAddress{lpAddress}
 	startBalance := sdk.NewCoin(types.NativeSymbol, sdk.NewInt(42))
 
