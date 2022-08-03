@@ -17,7 +17,7 @@ import web3
 
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1
-rowan_contract_address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+rowan_contract_address = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
 
 threads_num = 3
 amount_to_send = 10000
