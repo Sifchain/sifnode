@@ -226,6 +226,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 					ForceCloseFundPercentage: sdk.MustNewDecFromStr(viper.GetString("force-close-fund-percentage")),
 					InsuranceFundAddress:     viper.GetString("insurance-fund-address"),
 					SqModifier:               sdk.MustNewDecFromStr(viper.GetString("sq-modifier")),
+					SafetyFactor:             sdk.MustNewDecFromStr(viper.GetString("safety-factor")),
 				},
 			}
 
@@ -252,6 +253,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().String("force-close-fund-percentage", "", "percentage of force close proceeds for insurance fund (decimal range 0-1)")
 	cmd.Flags().String("insurance-fund-address", "", "address of insurance fund wallet")
 	cmd.Flags().String("sq-modifier", "", "the modifier value for the removal queue's sq formula")
+	cmd.Flags().String("safety-factor", "", "the safety factor used in liquidation ratio")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
@@ -265,6 +267,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("insurance-fund-address")
 	_ = cmd.MarkFlagRequired("force-close-fund-percentage")
 	_ = cmd.MarkFlagRequired("sq-modifier")
+	_ = cmd.MarkFlagRequired("safety-factor")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
