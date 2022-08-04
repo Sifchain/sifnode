@@ -243,10 +243,6 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 	currentHeight := ctx.BlockHeight()
 	lockPeriod := params.LiquidityRemovalLockPeriod
 
-	if lockPeriod == 0 {
-		return nil
-	}
-
 	unitsLeftToUse := units
 	for _, record := range lp.Unlocks {
 		if any || record.RequestHeight+int64(lockPeriod) <= currentHeight {
@@ -263,7 +259,7 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 		}
 	}
 
-	if !unitsLeftToUse.IsZero() {
+	if lockPeriod != 0 && !unitsLeftToUse.IsZero() {
 		return types.ErrBalanceNotAvailable
 	}
 
