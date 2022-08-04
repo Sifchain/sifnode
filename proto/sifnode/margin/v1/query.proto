@@ -10,11 +10,22 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 service Query {
   rpc GetMTP(MTPRequest) returns (MTPResponse) {}
+  rpc GetPositions(PositionsRequest) returns (PositionsResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/positions/{pagination.key}";
+  }
   rpc GetPositionsForAddress(PositionsForAddressRequest)
       returns (PositionsForAddressResponse) {
-    option (google.api.http).get = "/sifchain/margin/v1/mtps-for-address/{address}/{pagination.offset}/{pagination.limit}";
+    option (google.api.http).get = "/sifchain/margin/v1/mtps-for-address/{address}/{pagination.key}";
   }
-  rpc GetParams(ParamsRequest) returns (ParamsResponse) {}
+  rpc GetPositionsByPool(PositionsByPoolRequest) returns (PositionsByPoolResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/mtps-by-pool/{asset}/{pagination.key}";
+  }
+  rpc GetParams(ParamsRequest) returns (ParamsResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/params";
+  }
+  rpc GetStatus(StatusRequest) returns (StatusResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/status";
+  }
 }
 
 message MTPRequest {
@@ -34,8 +45,36 @@ message PositionsForAddressResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
+message PositionsByPoolRequest {
+  string asset = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message PositionsByPoolResponse {
+  repeated MTP mtps = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message PositionsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message PositionsResponse {
+  repeated MTP mtps = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
 message ParamsRequest {}
 
 message ParamsResponse {
   Params params = 1;
+}
+
+message StatusRequest {
+
+}
+
+message StatusResponse {
+  uint64 open_mtp_count = 1;
+  uint64 lifetime_mtp_count = 2;
 }

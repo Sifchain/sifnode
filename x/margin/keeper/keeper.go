@@ -5,6 +5,7 @@ package keeper
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
 
@@ -114,47 +115,51 @@ func (k Keeper) GetMTPIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.MTPPrefix)
 }
 
-func (k Keeper) GetMTPs(ctx sdk.Context) []*types.MTP {
+func (k Keeper) GetMTPs(ctx sdk.Context, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
 	var mtpList []*types.MTP
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
+	store := ctx.KVStore(k.storeKey)
+	mtpStore := prefix.NewStore(store, types.MTPPrefix)
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: math.MaxUint64 - 1,
+		}
+	}
+
+	pageRes, err := query.Paginate(mtpStore, pagination, func(key []byte, value []byte) error {
 		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		k.cdc.MustUnmarshal(value, &mtp)
 		mtpList = append(mtpList, &mtp)
-	}
-	return mtpList
+		return nil
+	})
+
+	return mtpList, pageRes, err
 }
 
-func (k Keeper) GetMTPsForPool(ctx sdk.Context, asset string) []*types.MTP {
-	var mtpList []*types.MTP
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if strings.EqualFold(mtp.CustodyAsset, asset) || strings.EqualFold(mtp.CollateralAsset, asset) {
-			mtpList = append(mtpList, &mtp)
-		}
-	}
-	return mtpList
-}
+func (k Keeper) GetMTPsForPool(ctx sdk.Context, asset string, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
+	var mtps []*types.MTP
 
-func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string {
-	var assetList []string
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if mtpAddress.String() == mtp.Address {
-			assetList = append(assetList, mtp.CollateralAsset)
+	store := ctx.KVStore(k.storeKey)
+	mtpStore := prefix.NewStore(store, types.MTPPrefix)
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: math.MaxUint64 - 1,
 		}
 	}
-	return assetList
+
+	pageRes, err := query.FilteredPaginate(mtpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var mtp types.MTP
+		k.cdc.MustUnmarshal(value, &mtp)
+		if accumulate && (strings.EqualFold(mtp.CustodyAsset, asset) || strings.EqualFold(mtp.CollateralAsset, asset)) {
+			mtps = append(mtps, &mtp)
+			return true, nil
+		}
+
+		return false, nil
+	})
+
+	return mtps, pageRes, err
 }
 
 func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {

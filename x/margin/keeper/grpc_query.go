@@ -5,9 +5,12 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var _ types.QueryServer = queryServer{}
@@ -47,4 +50,39 @@ func (srv queryServer) GetParams(ctx context.Context, request *types.ParamsReque
 	params := srv.keeper.GetParams(sdk.UnwrapSDKContext(ctx))
 
 	return &types.ParamsResponse{Params: &params}, nil
+}
+
+func (srv queryServer) GetPositionsByPool(ctx context.Context, request *types.PositionsByPoolRequest) (*types.PositionsByPoolResponse, error) {
+	mtps, pageRes, err := srv.keeper.GetMTPsForPool(sdk.UnwrapSDKContext(ctx), request.Asset, request.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.PositionsByPoolResponse{
+		Mtps:       mtps,
+		Pagination: pageRes,
+	}, nil
+}
+
+func (srv queryServer) GetPositions(ctx context.Context, request *types.PositionsRequest) (*types.PositionsResponse, error) {
+	if request.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	mtps, page, err := srv.keeper.GetMTPs(sdk.UnwrapSDKContext(ctx), request.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.PositionsResponse{
+		Mtps:       mtps,
+		Pagination: page,
+	}, nil
+}
+
+func (srv queryServer) GetStatus(ctx context.Context, request *types.StatusRequest) (*types.StatusResponse, error) {
+	return &types.StatusResponse{
+		OpenMtpCount:     srv.keeper.GetOpenMTPCount(sdk.UnwrapSDKContext(ctx)),
+		LifetimeMtpCount: srv.keeper.GetMTPCount(sdk.UnwrapSDKContext(ctx)),
+	}, nil
 }
