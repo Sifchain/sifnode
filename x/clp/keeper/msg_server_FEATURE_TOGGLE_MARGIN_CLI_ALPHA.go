@@ -48,11 +48,9 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx sdk.Conte
 		return nil
 	}
 
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-	if err != nil {
-		return err
-	}
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+	extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, marginEnabled)
+
 	futurePool := pool
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
@@ -77,11 +75,10 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx sdk.Contex
 	if !k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
 		return nil
 	}
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	extRowanValue, err := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-	if err != nil {
-		return err
-	}
+
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+	extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, marginEnabled)
+
 	futurePool := pool
 	futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
@@ -95,4 +92,25 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx sdk.Contex
 	}
 
 	return nil
+}
+
+func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
+	k msgServer,
+	sentAsset types.Asset,
+	sentAmount sdk.Uint,
+	nativeAsset types.Asset,
+	inPool types.Pool,
+	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, inPool.String())
+	return SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, marginEnabled)
+}
+
+func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
+	k msgServer,
+	ReceivedAsset *types.Asset,
+	liquidityFeeNative sdk.Uint,
+	outPool types.Pool,
+	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, outPool.String())
+	return GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate, marginEnabled)
 }

@@ -69,6 +69,10 @@ func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
 	return k.GetParams(ctx).MaxOpenPositions
 }
 
+func (k Keeper) GetSafetyFactor(ctx sdk.Context) sdk.Dec {
+	return k.GetParams(ctx).SafetyFactor
+}
+
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	return k.GetParams(ctx).Pools
 }

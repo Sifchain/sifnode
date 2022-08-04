@@ -215,10 +215,10 @@ func (k Keeper) AdminKeeper() adminkeeper.Keeper {
 func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error) {
 	toAsset := ToAsset(to)
 	// add liabilities? and custody to pool depth
-	pool.NativeAssetBalance = pool.NativeAssetBalance.Add(pool.NativeCustody).Add(pool.NativeLiabilities)
-	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(pool.ExternalCustody).Add(pool.ExternalLiabilities)
 
-	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool)
+	marginEnabled := k.IsPoolEnabled(ctx, pool.String())
+
+	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool, marginEnabled)
 	if err != nil {
 		return sdk.Uint{}, err
 	}
@@ -303,49 +303,24 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 
 // TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
-	// delta x in calculate in y currency
-	nativeAsset := types.GetSettlementAsset()
+	sf := k.GetSafetyFactor(ctx)
+	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
+	xlp := mtp.LiabilitiesP
 
-	var normalizedCollateral, normalizedLiabilitiesP, normalizedLiabilitiesI, normalizedCustody sdk.Dec
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
-
-		normalizedCustodyInt, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedCustody = sdk.NewDecFromBigInt(normalizedCustodyInt.BigInt())
-		normalizedCollateral = sdk.NewDecFromBigInt(mtp.CollateralAmount.BigInt())
-		normalizedLiabilitiesP = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
-		normalizedLiabilitiesI = sdk.NewDecFromBigInt(mtp.LiabilitiesI.BigInt())
-	} else { // collateral is external
-		normalizedCollateralInt, err := k.CLPSwap(ctx, mtp.CollateralAmount, mtp.CustodyAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedCollateral = sdk.NewDecFromBigInt(normalizedCollateralInt.BigInt())
-
-		normalizedLiabilitiesPInt, err := k.CLPSwap(ctx, mtp.LiabilitiesP, mtp.CustodyAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedLiabilitiesP = sdk.NewDecFromBigInt(normalizedLiabilitiesPInt.BigInt())
-
-		normalizedLiabilitiesIInt, err := k.CLPSwap(ctx, mtp.LiabilitiesI, mtp.CustodyAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedLiabilitiesI = sdk.NewDecFromBigInt(normalizedLiabilitiesIInt.BigInt())
-
-		normalizedCustody = sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
+	if xlp.IsZero() {
+		return sdk.ZeroDec(), nil
 	}
 
-	if normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
-		return sdk.Dec{}, types.ErrMTPInvalid
+	var debt sdk.Dec
+	if strings.EqualFold(mtp.CustodyAsset, clptypes.NativeSymbol) {
+		debt = sdk.NewDecFromBigInt(xlp.BigInt()).Mul(*pool.SwapPriceNative)
+	} else {
+		debt = sdk.NewDecFromBigInt(xlp.BigInt()).Mul(*pool.SwapPriceExternal)
 	}
 
-	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody))
+	lr := yc.Quo(debt).Mul(sf)
 
-	return health, nil
+	return lr, nil
 }
 
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {

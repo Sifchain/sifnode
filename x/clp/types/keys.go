@@ -19,8 +19,9 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol = "rowan"
-	PoolThrehold = "1000000000000000000"
+	NativeSymbol        = "rowan"
+	PoolThrehold        = "1000000000000000000"
+	NativeAssetDecimals = 18
 
 	MaxSymbolLength = 71
 	MaxWbasis       = 10000
@@ -77,8 +78,8 @@ func GetDefaultPmtpParams() *PmtpParams {
 
 func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
 	return &LiquidityProtectionParams{
-		MaxRowanLiquidityThreshold:      sdk.NewUint(1000),
-		MaxRowanLiquidityThresholdAsset: "cusdt",
+		MaxRowanLiquidityThreshold:      sdk.NewUint(1000000000000),
+		MaxRowanLiquidityThresholdAsset: "cusdc",
 		EpochLength:                     14400,
 		IsActive:                        false,
 	}
