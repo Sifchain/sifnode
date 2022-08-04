@@ -329,7 +329,7 @@ if __name__ == "__main__":
     from siftool import test_utils
     ctx = test_utils.get_env_ctx()
     test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
-    # test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
-    # test_single_sif_to_multiple_eth_account_burn_eth(ctx)
-    # test_load_tx_ethbridge_burn_eth_short(ctx)
-    # test_load_tx_ethbridge_burn_eth(ctx)
+    test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
+    test_single_sif_to_multiple_eth_account_burn_eth(ctx)
+    test_load_tx_ethbridge_burn_eth_short(ctx)
+    test_load_tx_ethbridge_burn_eth(ctx)
