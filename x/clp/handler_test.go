@@ -465,6 +465,7 @@ func TestUnlockLiquidity(t *testing.T) {
 	UnlockAllliquidity(app, ctx, asset, signer, t)
 	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, externalDenom, signer.String())
 	assert.NoError(t, err)
+	beforeUnlocks := lp.Unlocks
 
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
@@ -482,6 +483,14 @@ func TestUnlockLiquidity(t *testing.T) {
 	}
 	ctx = ctx.WithBlockHeight(3)
 
+	lp, err = app.ClpKeeper.GetLiquidityProvider(ctx, externalDenom, signer.String())
+	assert.NoError(t, err)
+	afterUnlocks := lp.Unlocks
+	// Unlocks expired but still not pruned
+	assert.NotNil(t, afterUnlocks)
+	// Unlocks reduced by liquidity removal
+	assert.True(t, beforeUnlocks[0].Units.GT(afterUnlocks[0].Units))
+
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.Error(t, err)
@@ -491,6 +500,9 @@ func TestUnlockLiquidity(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, lp.Unlocks)
 
+	// Test flow with no unbond request made.
+	err = app.ClpKeeper.UseUnlockedLiquidity(ctx, clptypes.LiquidityProvider{Asset: &clptypes.Asset{Symbol: "ceth"}}, sdk.NewUint(1), true)
+	require.NoError(t, err)
 }
 
 func UnlockAllliquidity(app *sifapp.SifchainApp, ctx sdk.Context, asset clptypes.Asset, lp sdk.AccAddress, t *testing.T) {
