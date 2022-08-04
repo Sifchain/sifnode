@@ -500,6 +500,9 @@ func TestUnlockLiquidity(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, lp.Unlocks)
 
+	// Test flow with no unbond request made.
+	err = app.ClpKeeper.UseUnlockedLiquidity(ctx, clptypes.LiquidityProvider{Asset: &clptypes.Asset{Symbol: "ceth"}}, sdk.NewUint(1), true)
+	require.NoError(t, err)
 }
 
 func UnlockAllliquidity(app *sifapp.SifchainApp, ctx sdk.Context, asset clptypes.Asset, lp sdk.AccAddress, t *testing.T) {
