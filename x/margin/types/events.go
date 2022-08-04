@@ -3,11 +3,11 @@
 
 package types
 
-const EventOpen = "mtp_open"
-const EventClose = "mtp_close"
-const EventForceClose = "mtp_force_close"
-const EventInterestRateComputation = "margin_interest_rate_computation"
-const EventMarginUpdateParams = "margin_update_params"
-const EventRepayInsuranceFund = "repay_insurance_fund"
-const AttributeKeyPoolInterestRate = "pool_interest_rate"
+const EventOpen = "margin/mtp_open"
+const EventClose = "margin/mtp_close"
+const EventForceClose = "margin/mtp_force_close"
+const EventInterestRateComputation = "margin/interest_rate_computation"
+const EventMarginUpdateParams = "margin/update_params"
+const EventRepayInsuranceFund = "margin/repay_insurance_fund"
+const AttributeKeyPoolInterestRate = "margin_pool_interest_rate"
 const AttributeKeyMarginParams = "margin_params"
