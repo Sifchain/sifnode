@@ -90,6 +90,12 @@ def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account: str, test_eth_acc
 
     ctx.advance_blocks()
 
+# For this test case, it only success if the operator has the priviledge to mint rowan token in Ethereum.
+# It use the contract which is deployed at the beginning when start the hardhat, and set as bridge token in the map
+# cosmosDenomToDestinationAddress of cosmos bridge. This kind of setting not done in integration env now.
+# The burn rowan case also covered in test_load_tx_ethbridge_burn with different approach.
+# Which burn rowan in sifnode and get the new created bridge token address, not correlated to pre-created one.
+
 def test_load_burn_rowan(ctx: test_utils.EnvCtx):
     rowan_cosmos_denom = "rowan"
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
