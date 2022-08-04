@@ -13,6 +13,10 @@ sifnoded tx margin update-params \
   --epoch-length=1 \
   --removal-queue-threshold=0.1 \
   --max-open-positions=10000 \
+  --force-close-fund-percentage=1 \
+  --insurance-fund-address=sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd \
+  --pool-open-threshold=0.1 \
+  --sq-modifier=1000000 \
   --from=$SIF_ACT \
   --keyring-backend=test \
   --fees 100000000000000000rowan \

@@ -20,6 +20,7 @@ func DefaultGenesis() *GenesisState {
 			EpochLength:           1,
 			MaxOpenPositions:      10000,
 			Pools:                 []string{},
+			SqModifier:            sdk.MustNewDecFromStr("10000000000000000000000000"),
 		},
 	}
 }

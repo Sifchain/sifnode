@@ -212,17 +212,20 @@ func GetUpdateParamsCmd() *cobra.Command {
 			msg := types.MsgUpdateParams{
 				Signer: signer.String(),
 				Params: &types.Params{
-					LeverageMax:           sdk.MustNewDecFromStr(viper.GetString("leverage-max")),
-					InterestRateMax:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
-					InterestRateMin:       sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
-					InterestRateIncrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),
-					InterestRateDecrease:  sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
-					HealthGainFactor:      sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
-					ForceCloseThreshold:   sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
-					PoolOpenThreshold:     sdk.MustNewDecFromStr(viper.GetString("pool-open-threshold")),
-					EpochLength:           viper.GetInt64("epoch-length"),
-					MaxOpenPositions:      viper.GetUint64("max-open-positions"),
-					RemovalQueueThreshold: sdk.MustNewDecFromStr(viper.GetString("removal-queue-threshold")),
+					LeverageMax:              sdk.MustNewDecFromStr(viper.GetString("leverage-max")),
+					InterestRateMax:          sdk.MustNewDecFromStr(viper.GetString("interest-rate-max")),
+					InterestRateMin:          sdk.MustNewDecFromStr(viper.GetString("interest-rate-min")),
+					InterestRateIncrease:     sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),
+					InterestRateDecrease:     sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
+					HealthGainFactor:         sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
+					ForceCloseThreshold:      sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
+					PoolOpenThreshold:        sdk.MustNewDecFromStr(viper.GetString("pool-open-threshold")),
+					EpochLength:              viper.GetInt64("epoch-length"),
+					MaxOpenPositions:         viper.GetUint64("max-open-positions"),
+					RemovalQueueThreshold:    sdk.MustNewDecFromStr(viper.GetString("removal-queue-threshold")),
+					ForceCloseFundPercentage: sdk.MustNewDecFromStr(viper.GetString("force-close-fund-percentage")),
+					InsuranceFundAddress:     viper.GetString("insurance-fund-address"),
+					SqModifier:               sdk.MustNewDecFromStr(viper.GetString("sq-modifier")),
 				},
 			}
 
@@ -246,6 +249,9 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().Uint64("max-open-positions", 10000, "max open positions")
 	cmd.Flags().String("removal-queue-threshold", "", "removal queue threshold (decimal range 0-1)")
 	cmd.Flags().String("pool-open-threshold", "", "threshold to prevent new positions (decimal range 0-1)")
+	cmd.Flags().String("force-close-fund-percentage", "", "percentage of force close proceeds for insurance fund (decimal range 0-1)")
+	cmd.Flags().String("insurance-fund-address", "", "address of insurance fund wallet")
+	cmd.Flags().String("sq-modifier", "", "the modifier value for the removal queue's sq formula")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
@@ -256,6 +262,9 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("removal-queue-threshold")
 	_ = cmd.MarkFlagRequired("max-open-positions")
 	_ = cmd.MarkFlagRequired("pool-open-threshold")
+	_ = cmd.MarkFlagRequired("insurance-fund-address")
+	_ = cmd.MarkFlagRequired("force-close-fund-percentage")
+	_ = cmd.MarkFlagRequired("sq-modifier")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
