@@ -83,8 +83,8 @@ class Geth:
         try:
             self.cmd.write_text_file(passfile, password or "")
             self.cmd.write_text_file(keyfile, private_key)
-            args = [self.program, "account", "import", keyfile, "--password", passfile] + \
-                (["--datadir", self.datadir] if self.datadir else [])
+            args = [self.program, "account", "import", "--password", passfile] + \
+                (["--datadir", self.datadir] if self.datadir else []) + [keyfile]
             res = self.cmd.execst(args)
             address = "0x" + re.compile("^Address: \\{(.*)\\}$").match(exactly_one(stdout_lines(res)))[1]
             assert addr.lower() == address
@@ -135,7 +135,7 @@ class Geth:
         try:
             genesis = self.create_genesis_config_clique(ethereum_chain_id, signers, funds_alloc, **kwargs)
             self.cmd.write_text_file(tmp_genesis_file, json.dumps(genesis))
-            args = [self.program, "init", tmp_genesis_file] + (["--datadir", self.datadir] if self.datadir else [])
+            args = [self.program, "init"] + (["--datadir", self.datadir] if self.datadir else []) + [tmp_genesis_file]
             self.cmd.execst(args)
         finally:
             self.cmd.rm(tmp_genesis_file)
