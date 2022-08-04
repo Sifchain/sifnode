@@ -465,6 +465,7 @@ func TestUnlockLiquidity(t *testing.T) {
 	UnlockAllliquidity(app, ctx, asset, signer, t)
 	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, externalDenom, signer.String())
 	assert.NoError(t, err)
+	beforeUnlocks := lp.Unlocks
 
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
@@ -481,6 +482,14 @@ func TestUnlockLiquidity(t *testing.T) {
 		assert.True(t, ok, "")
 	}
 	ctx = ctx.WithBlockHeight(3)
+
+	lp, err = app.ClpKeeper.GetLiquidityProvider(ctx, externalDenom, signer.String())
+	assert.NoError(t, err)
+	afterUnlocks := lp.Unlocks
+	// Unlocks expired but still not pruned
+	assert.NotNil(t, afterUnlocks)
+	// Unlocks reduced by liquidity removal
+	assert.True(t, beforeUnlocks[0].Units.GT(afterUnlocks[0].Units))
 
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
