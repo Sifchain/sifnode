@@ -496,7 +496,7 @@ func (k Keeper) CalcMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, inte
 	return sdk.NewUintFromBigInt(interestLiabilitiesRational.Num())
 }
 
-func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) error {
+func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
 	// if mtp has unpaid interest, add to payment
 	if mtp.InterestUnpaid.GT(sdk.ZeroUint()) {
 		interestPayment = interestPayment.Add(mtp.InterestUnpaid)
@@ -513,7 +513,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	// swap interest payment to custody asset for payment
 	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, pool)
 	if err != nil {
-		return err
+		return sdk.ZeroUint(), err
 	}
 	// if paying unpaid interest reset to 0
 	mtp.InterestUnpaid = sdk.ZeroUint()
@@ -532,10 +532,10 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 
 	err = k.SetMTP(ctx, mtp)
 	if err != nil {
-		return err
+		return sdk.ZeroUint(), err
 	}
 
-	return k.ClpKeeper().SetPool(ctx, &pool)
+	return interestPayment, k.ClpKeeper().SetPool(ctx, &pool)
 }
 
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {

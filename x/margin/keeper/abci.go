@@ -64,7 +64,11 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	// if incremental payment on, compute and pay interest
 	if incrementalInterestPaymentEnabled {
 		interestPayment := k.CalcMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
-		_ = k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool) // do something with error? log?
+		interestPaid, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool) // do something with error? log?
+		if err == nil {
+			// Emit event if payment was made
+			k.EmitInterestPayment(ctx, mtp, interestPaid)
+		}
 	} else { // else update unpaid mtp interest
 		_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate) // do something with error? log?
 	}
