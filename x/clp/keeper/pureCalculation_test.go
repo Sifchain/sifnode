@@ -192,6 +192,12 @@ func TestKeeper_Abs(t *testing.T) {
 }
 
 func TestKeeper_DecToRat(t *testing.T) {
+	// golint wasn't happy with the use of Rat.SetString, so do the division by hand
+	largeNum, isValidLargeNum := new(big.Int).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)
+	require.True(t, isValidLargeNum)
+	largeDenom, isValidLargeDenom := new(big.Int).SetString("1000000000000000000", 10)
+	require.True(t, isValidLargeDenom)
+	largeRat := new(big.Rat).SetFrac(largeNum, largeDenom)
 	testcases := []struct {
 		name     string
 		dec      sdk.Dec
@@ -215,7 +221,7 @@ func TestKeeper_DecToRat(t *testing.T) {
 		{
 			name:     "big numbers",
 			dec:      sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
-			expected: getFirstArgRat(new(big.Rat).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333/1000000000000000000")),
+			expected: getFirstArgRat(largeRat, false),
 		},
 	}
 
