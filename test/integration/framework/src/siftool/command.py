@@ -1,3 +1,4 @@
+import os
 import shutil
 import time
 from typing import Mapping, List, Union, Optional, Tuple, AnyStr
@@ -18,6 +19,7 @@ def buildcmd(args: List[str], cwd: Optional[str] = None, env: Optional[Mapping[s
 class Command:
     def __init__(self):
         self._tmpdir: Optional[str] = None
+        self._uname: Optional[str] = None
 
     def execst(self, args: Sequence[str], cwd: str = None, env: Mapping[str, str] = None,
         stdin: Union[str, bytes, List[str], None] = None, binary: bool = False, pipe: bool = True,
@@ -105,6 +107,14 @@ class Command:
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
+    def uname(self):
+        if self._uname is None:
+            self._uname = exactly_one(stdout_lines(self.execst(["uname"])))
+        return self._uname
+
+    def is_mac(self):
+        return self.uname() == "Darwin"
+
     def tmpdir(self, *paths: str) -> str:
         if self._tmpdir is not None:
             path = self._tmpdir
@@ -121,12 +131,12 @@ class Command:
 
     def mktempdir(self, parent_dir: Optional[str] = None) -> str:
         parent_dir = parent_dir or self.tmpdir()
-        args = ["mktemp", "-d", "-p", parent_dir]
+        args = ["mktemp", "-d", "-p", parent_dir] if not self.is_mac() else ["mktemp", "-d", os.path.join(parent_dir, "siftool.XXXXXX")]
         return exactly_one(stdout_lines(self.execst(args)))
 
     def mktempfile(self, parent_dir: Optional[str] = None) -> str:
         parent_dir = parent_dir or self.tmpdir()
-        args = ["mktemp", "-p", parent_dir]
+        args = ["mktemp", "-p", parent_dir] if not self.is_mac() else ["mktemp", os.path.join(parent_dir, "siftool.XXXXXX")]
         return exactly_one(stdout_lines(self.execst(args)))
 
     def chmod(self, path: str, mode_str: str, recursive: bool = False):

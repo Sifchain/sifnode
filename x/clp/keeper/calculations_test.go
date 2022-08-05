@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"errors"
+	"math/big"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -81,17 +82,16 @@ func TestKeeper_SwapOne(t *testing.T) {
 	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.NoError(t, err)
 	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	_, err = app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	// asymmetry is positive
-	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, sdk.OneDec())
 	assert.NoError(t, err)
-	assert.Equal(t, swapResult.String(), "20")
-	assert.Equal(t, liquidityFee.String(), "978")
-	assert.Equal(t, priceImpact.String(), "0")
+	assert.Equal(t, "19", swapResult.String())
+	assert.Equal(t, "978", liquidityFee.String())
+	assert.Equal(t, "0", priceImpact.String())
 }
 
 func TestKeeper_SwapOneFromGenesis(t *testing.T) {
@@ -135,13 +135,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.OneDec(),
-			swapResult:             sdk.NewUint(20),
+			swapResult:             sdk.NewUint(19),
 			liquidityFee:           sdk.NewUint(978),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(100598),
-				ExternalAssetBalance:          sdk.NewUint(978),
+				ExternalAssetBalance:          sdk.NewUint(979),
 				PoolUnits:                     sdk.NewUint(1),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -184,7 +184,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			adjustExternalToken:    true,
 			swapAmount:             sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.OneDec(),
-			swapResult:             sdk.NewUint(165),
+			swapResult:             sdk.NewUint(166),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
@@ -234,13 +234,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.0"),
-			swapResult:             sdk.NewUint(83),
+			swapResult:             sdk.NewUint(82),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(915),
+				ExternalAssetBalance:          sdk.NewUint(916),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -258,13 +258,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.1"),
-			swapResult:             sdk.NewUint(91),
+			swapResult:             sdk.NewUint(90),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(907),
+				ExternalAssetBalance:          sdk.NewUint(908),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -330,13 +330,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.4"),
-			swapResult:             sdk.NewUint(116),
+			swapResult:             sdk.NewUint(115),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(882),
+				ExternalAssetBalance:          sdk.NewUint(883),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -354,13 +354,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.5"),
-			swapResult:             sdk.NewUint(124),
+			swapResult:             sdk.NewUint(123),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(874),
+				ExternalAssetBalance:          sdk.NewUint(875),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -426,13 +426,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.8"),
-			swapResult:             sdk.NewUint(149),
+			swapResult:             sdk.NewUint(148),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(849),
+				ExternalAssetBalance:          sdk.NewUint(850),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -450,13 +450,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.9"),
-			swapResult:             sdk.NewUint(157),
+			swapResult:             sdk.NewUint(156),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(841),
+				ExternalAssetBalance:          sdk.NewUint(842),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -498,13 +498,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("2.0"),
-			swapResult:             sdk.NewUint(248),
+			swapResult:             sdk.NewUint(247),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(750),
+				ExternalAssetBalance:          sdk.NewUint(751),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -570,13 +570,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("5.0"),
-			swapResult:             sdk.NewUint(496),
+			swapResult:             sdk.NewUint(495),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(502),
+				ExternalAssetBalance:          sdk.NewUint(503),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -618,13 +618,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("7.0"),
-			swapResult:             sdk.NewUint(661),
+			swapResult:             sdk.NewUint(660),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(337),
+				ExternalAssetBalance:          sdk.NewUint(338),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -642,13 +642,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("8.0"),
-			swapResult:             sdk.NewUint(744),
+			swapResult:             sdk.NewUint(743),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(254),
+				ExternalAssetBalance:          sdk.NewUint(255),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -690,13 +690,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("10.0"),
-			swapResult:             sdk.NewUint(909),
+			swapResult:             sdk.NewUint(908),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(89),
+				ExternalAssetBalance:          sdk.NewUint(90),
 				PoolUnits:                     sdk.NewUint(998),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
@@ -801,12 +801,9 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			})
 
-			var normalizationFactor sdk.Dec
-			var adjustExternalToken bool
 			var swapAmount sdk.Uint
 
 			if tc.calculateWithdraw {
-				normalizationFactor, adjustExternalToken = app.ClpKeeper.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
 				_, _, _, swapAmount = clpkeeper.CalculateWithdrawal(
 					pool.PoolUnits,
 					pool.NativeAssetBalance.String(),
@@ -816,8 +813,6 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 					tc.asymmetry,
 				)
 			} else {
-				normalizationFactor = tc.normalizationFactor
-				adjustExternalToken = tc.adjustExternalToken
 				swapAmount = tc.swapAmount
 			}
 
@@ -834,8 +829,6 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				swapAmount,
 				to,
 				pool,
-				normalizationFactor,
-				adjustExternalToken,
 				tc.pmtpCurrentRunningRate,
 			)
 
@@ -849,7 +842,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.Equal(t, swapResult, tc.swapResult)
+			require.Equal(t, swapResult, tc.swapResult, "swapResult")
 			require.Equal(t, liquidityFee, tc.liquidityFee)
 			require.Equal(t, priceImpact, tc.priceImpact)
 			require.Equal(t, newPool, tc.expectedPool)
@@ -857,7 +850,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 	}
 }
 
-func TestKeeper_SetInputs(t *testing.T) {
+func TestKeeper_ExtractValuesFromPool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
 	//Parameters for create pool
@@ -871,9 +864,9 @@ func TestKeeper_SetInputs(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	X, x, Y, toRowan := clpkeeper.SetInputs(sdk.NewUint(1), asset, *pool)
+	X, Y, toRowan := pool.ExtractValues(asset)
+
 	assert.Equal(t, X, sdk.NewUint(998))
-	assert.Equal(t, x, sdk.NewUint(1))
 	assert.Equal(t, Y, sdk.NewUint(998))
 	assert.Equal(t, toRowan, false)
 }
@@ -892,11 +885,8 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, _ := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
-	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
-	assert.Equal(t, "2", swapResult.String())
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec())
+	assert.Equal(t, "1", swapResult.String())
 }
 
 func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
@@ -905,10 +895,8 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 		ExternalAssetBalance: sdk.NewUint(100),
 	}
 	asset := types.Asset{}
-	normalizationFactor := sdk.NewDec(1)
-	adjustExternalToken := false
 
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, normalizationFactor, adjustExternalToken, sdk.NewDec(100))
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100))
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -931,8 +919,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		externalAssetBalance sdk.Uint
 		nativeAssetAmount    sdk.Uint
 		externalAssetAmount  sdk.Uint
-		normalizationFactor  sdk.Dec
-		adjustExternalToken  bool
+		externalDecimals     uint8
 		poolUnits            sdk.Uint
 		lpunits              sdk.Uint
 		err                  error
@@ -946,8 +933,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.ZeroUint(),
 			externalAssetAmount:  sdk.ZeroUint(),
-			normalizationFactor:  sdk.ZeroDec(),
-			adjustExternalToken:  true,
+			externalDecimals:     18,
 			errString:            errors.New("Tx amount is too low"),
 		},
 		{
@@ -957,8 +943,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.ZeroUint(),
 			externalAssetAmount:  sdk.ZeroUint(),
-			normalizationFactor:  sdk.ZeroDec(),
-			adjustExternalToken:  false,
+			externalDecimals:     18,
 			errString:            errors.New("Tx amount is too low"),
 		},
 		{
@@ -966,10 +951,9 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			oldPoolUnits:         sdk.ZeroUint(),
 			nativeAssetBalance:   sdk.ZeroUint(),
 			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.OneUint(),
+			nativeAssetAmount:    sdk.ZeroUint(),
 			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.ZeroDec(),
-			adjustExternalToken:  false,
+			externalDecimals:     18,
 			errString:            errors.New("0: insufficient funds"),
 		},
 		{
@@ -979,8 +963,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.ZeroUint(),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.ZeroUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
+			externalDecimals:     18,
 			errString:            errors.New("0: insufficient funds"),
 		},
 		{
@@ -990,75 +973,9 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(100),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
+			externalDecimals:     18,
 			poolUnits:            sdk.OneUint(),
 			lpunits:              sdk.OneUint(),
-		},
-		{
-			name:                 "fail to convert oldPoolUnits to Dec",
-			oldPoolUnits:         sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert nativeAssetBalance to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert externalAssetBalance to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert nativeAssetAmount to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
-		},
-		{
-			name:                 "fail to convert externalAssetAmount to Dec",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.NewUint(100),
-			externalAssetBalance: sdk.NewUint(100),
-			nativeAssetAmount:    sdk.OneUint(),
-			externalAssetAmount:  sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000000000"),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
-			poolUnits:            sdk.OneUint(),
-			lpunits:              sdk.OneUint(),
-			panicErr:             "fail to convert 10000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal out of range; bitLen: got 303, max 256",
 		},
 		{
 			name:                 "successful",
@@ -1067,8 +984,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(100),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
+			externalDecimals:     18,
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
 		},
@@ -1079,14 +995,147 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance: sdk.NewUint(100),
 			nativeAssetAmount:    sdk.OneUint(),
 			externalAssetAmount:  sdk.OneUint(),
-			normalizationFactor:  sdk.OneDec(),
-			adjustExternalToken:  false,
+			externalDecimals:     18,
 			poolUnits:            sdk.ZeroUint(),
 			lpunits:              sdk.ZeroUint(),
 			errString:            errors.New("Cannot add liquidity asymmetrically"),
 		},
+		{
+			name:                 "successful",
+			oldPoolUnits:         sdk.NewUint(1),
+			nativeAssetBalance:   sdk.NewUint(1),
+			externalAssetBalance: sdk.NewUint(1),
+			nativeAssetAmount:    sdk.NewUint(1),
+			externalAssetAmount:  sdk.NewUint(1),
+			externalDecimals:     18,
+			poolUnits:            sdk.NewUint(2),
+			lpunits:              sdk.NewUint(1),
+		},
+		{
+			name:                 "successful no slip",
+			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
+			nativeAssetBalance:   sdk.NewUint(1099511627776),
+			externalAssetBalance: sdk.NewUint(1099511627776),
+			nativeAssetAmount:    sdk.NewUint(1099511627776),
+			externalAssetAmount:  sdk.NewUint(1099511627776),
+			externalDecimals:     18,
+			poolUnits:            sdk.NewUint(2199023255552),
+			lpunits:              sdk.NewUint(1099511627776),
+		},
+		{
+			name:                 "no asymmetric",
+			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
+			nativeAssetBalance:   sdk.NewUint(1048576),
+			externalAssetBalance: sdk.NewUint(1024123),
+			nativeAssetAmount:    sdk.NewUint(999),
+			externalAssetAmount:  sdk.NewUint(111),
+			externalDecimals:     18,
+			poolUnits:            sdk.NewUintFromString("1100094484982"),
+			lpunits:              sdk.NewUintFromString("582857206"),
+			errString:            errors.New("Cannot add liquidity asymmetrically"),
+		},
+		{
+			name:                 "successful - very big",
+			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
+			externalAssetAmount:  sdk.NewUint(1099511627776),
+			externalDecimals:     18,
+			poolUnits:            sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
+			lpunits:              sdk.NewUint(1099511627776),
+		},
+		{
+			name:                 "failure - asymmetric",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(0),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			externalDecimals:     18,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			name:                 "opportunist scenario - fails trivially due to div zero",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(0),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			name:                 "opportunist scenario with one native asset - avoids div zero trivial fail",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUint(1),
+			externalAssetAmount:  sdk.NewUint(200000000),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			name:                 "success",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(68140),
+			externalDecimals:     6,
+			poolUnits:            sdk.NewUintFromString("23662661153298835875523384"),
+			lpunits:              sdk.NewUintFromString("602841452182585430"),
+		},
+		{
+			// Same test as above but with external asset amount just below top limit
+			name:                 "success (normalized) ratios diff = 0.000000000000000499",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(70140),
+			externalDecimals:     6,
+			poolUnits:            sdk.NewUintFromString("23662661162145935094484778"),
+			lpunits:              sdk.NewUintFromString("611688551401546824"),
+		},
+		{
+			// Same test as above but with external asset amount just above top limit
+			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(70141),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
+		{
+			// Same test as above but with external asset amount just above bottom limit
+			name:                 "success (normalized) ratios diff = 0.000000000000000499",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(66141),
+			externalDecimals:     6,
+			poolUnits:            sdk.NewUintFromString("23662661144456159305055227"),
+			lpunits:              sdk.NewUintFromString("593998775612117273"),
+		},
+		{
+			// Same test as above but with external asset amount just below bottom limit
+			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
+			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
+			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance: sdk.NewUint(2674623482959),
+			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
+			externalAssetAmount:  sdk.NewUint(66140),
+			externalDecimals:     6,
+			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
+		},
 	}
 
+	symmetryThreshold := sdk.NewDecWithPrec(1, 4)
+	ratioThreshold := sdk.NewDecWithPrec(5, 4)
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -1099,10 +1148,9 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 						tc.externalAssetBalance,
 						tc.nativeAssetAmount,
 						tc.externalAssetAmount,
-						tc.normalizationFactor,
-						tc.adjustExternalToken,
-						sdk.NewDecWithPrec(1, 4),
-						sdk.NewDecWithPrec(1, 4),
+						tc.externalDecimals,
+						symmetryThreshold,
+						ratioThreshold,
 					)
 				})
 				return
@@ -1114,10 +1162,9 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 				tc.externalAssetBalance,
 				tc.nativeAssetAmount,
 				tc.externalAssetAmount,
-				tc.normalizationFactor,
-				tc.adjustExternalToken,
-				sdk.NewDecWithPrec(1, 4),
-				sdk.NewDecWithPrec(1, 4),
+				tc.externalDecimals,
+				symmetryThreshold,
+				ratioThreshold,
 			)
 
 			if tc.errString != nil {
@@ -1130,8 +1177,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.Equal(t, poolUnits, tc.poolUnits)
-			require.Equal(t, lpunits, tc.lpunits)
+			require.Equal(t, tc.poolUnits.String(), poolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.lpunits.String(), lpunits.String())
 		})
 	}
 }
@@ -1234,53 +1281,59 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 		toRowan             bool
 		adjustExternalToken bool
 		normalizationFactor sdk.Dec
-		X, x, Y             sdk.Uint
+		X, x, Y, fee        sdk.Uint
 		err                 error
 		errString           error
 	}{
 		{
-			name:                "Y zero",
-			toRowan:             true,
-			normalizationFactor: sdk.NewDec(1),
-			adjustExternalToken: true,
-			X:                   sdk.NewUint(1),
-			x:                   sdk.NewUint(1),
-			Y:                   sdk.NewUint(0),
+			name: "success",
+			X:    sdk.NewUint(0),
+			x:    sdk.NewUint(0),
+			Y:    sdk.NewUint(1),
+			fee:  sdk.NewUint(0),
 		},
 		{
-			name:                "adjust external token with rowan",
-			toRowan:             true,
-			normalizationFactor: sdk.NewDec(1),
-			adjustExternalToken: true,
-			X:                   sdk.NewUint(1),
-			x:                   sdk.NewUint(1),
-			Y:                   sdk.NewUint(1),
+			name: "success",
+			X:    sdk.NewUint(1),
+			x:    sdk.NewUint(1),
+			Y:    sdk.NewUint(1),
+			fee:  sdk.NewUint(0),
 		},
 		{
-			name:                "adjust external token without rowan",
-			toRowan:             false,
-			normalizationFactor: sdk.NewDec(1),
-			adjustExternalToken: true,
-			X:                   sdk.NewUint(1),
-			x:                   sdk.NewUint(1),
-			Y:                   sdk.NewUint(1),
+			name: "success",
+			X:    sdk.NewUint(1),
+			x:    sdk.NewUint(1),
+			Y:    sdk.NewUint(4),
+			fee:  sdk.NewUint(1),
+		},
+		{
+			name: "success",
+			X:    sdk.NewUint(2),
+			x:    sdk.NewUint(2),
+			Y:    sdk.NewUint(16),
+			fee:  sdk.NewUint(4),
+		},
+		{
+			name: "success",
+			X:    sdk.NewUint(1054677676764),
+			x:    sdk.NewUint(2567655449999),
+			Y:    sdk.NewUint(1099511627776),
+			fee:  sdk.NewUint(552454535440),
+		},
+		{
+			name: "success",
+			X:    sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
+			x:    sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
+			Y:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
+			fee:  sdk.NewUintFromString("1089217832674356640599131638158097447402363655799918705091874559386226334"),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y)
-
-			if tc.errString != nil {
-				require.EqualError(t, err, tc.errString.Error())
-				return
-			}
-			if tc.err != nil {
-				require.ErrorIs(t, err, tc.err)
-				return
-			}
-			require.NoError(t, err)
+			fee := clpkeeper.CalcLiquidityFee(tc.X, tc.x, tc.Y)
+			require.Equal(t, tc.fee.String(), fee.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
 }
@@ -1289,9 +1342,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 	testcases := []struct {
 		name                   string
 		toRowan                bool
-		adjustExternalToken    bool
-		X, x, Y                sdk.Uint
-		normalizationFactor    sdk.Dec
+		X, x, Y, y             sdk.Uint
 		pmtpCurrentRunningRate sdk.Dec
 		err                    error
 		errString              error
@@ -1299,39 +1350,526 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		{
 			name:                   "adjust external token with rowan",
 			toRowan:                true,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    true,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
+			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
 		},
 		{
 			name:                   "adjust external token without rowan",
 			toRowan:                false,
-			normalizationFactor:    sdk.NewDec(1),
-			adjustExternalToken:    true,
 			X:                      sdk.NewUint(1),
 			x:                      sdk.NewUint(1),
 			Y:                      sdk.NewUint(1),
+			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
+		},
+		{
+			name:                   "x=0, X=0, Y=0",
+			toRowan:                true,
+			X:                      sdk.NewUint(0),
+			x:                      sdk.NewUint(0),
+			Y:                      sdk.NewUint(0),
+			y:                      sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
+		{
+			name:                   "x=1, X=1, Y=1",
+			toRowan:                true,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(1),
+			y:                      sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
+		{
+			name:                   "x=1, X=1, Y=4",
+			toRowan:                true,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(4),
+			y:                      sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
+		{
+			name:                   "x=1, X=1, Y=4, nf=10",
+			toRowan:                true,
+			X:                      sdk.NewUint(1),
+			x:                      sdk.NewUint(1),
+			Y:                      sdk.NewUint(4),
+			y:                      sdk.NewUint(1),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := clpkeeper.CalcSwapResult(tc.toRowan, tc.normalizationFactor, tc.adjustExternalToken, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+
+			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+func getFirstArg(a *big.Int, b bool) *big.Int {
+	return a
+}
+
+func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
+	testcases := []struct {
+		name      string
+		decimalsX uint8
+		decimalsY uint8
+		expected  big.Rat
+	}{
+		{
+			name:      "zero values",
+			decimalsX: 0,
+			decimalsY: 0,
+			expected:  *big.NewRat(1, 1),
+		},
+		{
+			name:      "equal values",
+			decimalsX: 5,
+			decimalsY: 5,
+			expected:  *big.NewRat(1, 1),
+		},
+		{
+			name:      "zero X",
+			decimalsX: 0,
+			decimalsY: 2,
+			expected:  *big.NewRat(1, 100),
+		},
+		{
+			name:      "zero Y",
+			decimalsX: 2,
+			decimalsY: 0,
+			expected:  *big.NewRat(100, 1),
+		},
+		{
+			name:      "small numbers",
+			decimalsX: 18,
+			decimalsY: 14,
+			expected:  *big.NewRat(10000, 1),
+		},
+		{
+			name:      "small numbers",
+			decimalsX: 14,
+			decimalsY: 18,
+			expected:  *big.NewRat(1, 10000),
+		},
+		{
+			name:      "big X, small Y",
+			decimalsX: 255,
+			decimalsY: 0,
+			expected:  *big.NewRat(1, 1).SetInt(big.NewInt(1).Exp(big.NewInt(10), big.NewInt(255), nil)),
+		},
+		{
+			name:      "small X, big Y",
+			decimalsX: 0,
+			decimalsY: 255,
+			expected:  *big.NewRat(1, 1).SetFrac(big.NewInt(1), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(255), nil)),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			y := clpkeeper.CalcDenomChangeMultiplier(tc.decimalsX, tc.decimalsY)
+
+			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+		})
+	}
+}
+
+//nolint
+func TestKeeper_CalcSpotPriceX(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		X                      sdk.Uint
+		Y                      sdk.Uint
+		decimalsX              uint8
+		decimalsY              uint8
+		pmtpCurrentRunningRate sdk.Dec
+		isXNative              bool
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "fail when X = 0",
+			X:                      sdk.ZeroUint(),
+			Y:                      sdk.OneUint(),
+			decimalsX:              10,
+			decimalsY:              80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success when Y = 0",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.ZeroUint(),
+			decimalsX:              10,
+			decimalsY:              80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "success small values",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.OneUint(),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("5.499100413926233941"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("10.998200827852467883"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			X:                      sdk.NewUint(12345678),
+			Y:                      sdk.NewUint(67890123),
+			decimalsX:              16,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("0.109982008278524678"),
+		},
+		{
+			name:                   "success big numbers",
+			X:                      sdk.OneUint(),
+			Y:                      sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			decimalsX:              18,
+			decimalsY:              18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			X:                      sdk.NewUint(100),
+			Y:                      sdk.NewUint(100),
+			decimalsX:              255,
+			decimalsY:              0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals, small answer",
+			X:                      sdk.NewUint(100),
+			Y:                      sdk.NewUint(100),
+			decimalsX:              0,
+			decimalsY:              255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			isXNative:              true,
+			expected:               sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
 				return
 			}
-			if tc.err != nil {
-				require.ErrorIs(t, err, tc.err)
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceNative(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		nativeAssetBalance     sdk.Uint
+		externalAssetBalance   sdk.Uint
+		decimalsExternal       uint8
+		pmtpCurrentRunningRate sdk.Dec
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "fail when native balance = 0",
+			nativeAssetBalance:     sdk.ZeroUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success when external balance = 0",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.ZeroUint(),
+			decimalsExternal:       10,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "success small values",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("5.499100413926233941"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("10.998200827852467883"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       16,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("1099.820082785246788390"),
+		},
+		{
+			name:                   "success big numbers",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+		{
+			name:                   "success small decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("1000000000000000000.000000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.nativeAssetBalance,
+				ExternalAssetBalance: tc.externalAssetBalance,
+			}
+
+			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
 				return
 			}
+
 			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
+
+	testcases := []struct {
+		name                   string
+		nativeAssetBalance     sdk.Uint
+		externalAssetBalance   sdk.Uint
+		decimalsExternal       uint8
+		pmtpCurrentRunningRate sdk.Dec
+		expected               sdk.Dec
+		errString              error
+	}{
+		{
+			name:                   "success when native balance = 0",
+			nativeAssetBalance:     sdk.ZeroUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       80,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.NewDec(0),
+		},
+		{
+			name:                   "fail when external balance = 0",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.ZeroUint(),
+			decimalsExternal:       10,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			errString:              errors.New("amount is invalid"),
+		},
+		{
+			name:                   "success small values",
+			nativeAssetBalance:     sdk.OneUint(),
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDec(1),
+		},
+		{
+			name:                   "success mid values",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.181847925065624052"),
+		},
+		{
+			name:                   "success mid values with PMTP",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("0.090923962532812026"),
+		},
+		{
+			name:                   "success mid values with PMTP and decimals",
+			nativeAssetBalance:     sdk.NewUint(12345678),
+			externalAssetBalance:   sdk.NewUint(67890123),
+			decimalsExternal:       16,
+			pmtpCurrentRunningRate: sdk.NewDec(1),
+			expected:               sdk.MustNewDecFromStr("0.000909239625328120"),
+		},
+		{
+			name:                   "success big numbers",
+			nativeAssetBalance:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			externalAssetBalance:   sdk.OneUint(),
+			decimalsExternal:       18,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success big decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       255,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+		},
+		{
+			name:                   "success small decimals",
+			nativeAssetBalance:     sdk.NewUint(100),
+			externalAssetBalance:   sdk.NewUint(100),
+			decimalsExternal:       0,
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expected:               sdk.MustNewDecFromStr("0.000000000000000001"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pool := types.Pool{
+				NativeAssetBalance:   tc.nativeAssetBalance,
+				ExternalAssetBalance: tc.externalAssetBalance,
+			}
+
+			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, price)
+		})
+	}
+}
+
+func TestKeeper_CalculateRatioDiff(t *testing.T) {
+
+	testcases := []struct {
+		name       string
+		A, R, a, r *big.Int
+		expected   sdk.Dec
+		errString  error
+	}{
+		{
+			name:     "symmetric",
+			A:        big.NewInt(20),
+			R:        big.NewInt(10),
+			a:        big.NewInt(8),
+			r:        big.NewInt(4),
+			expected: sdk.MustNewDecFromStr("0.000000000000000000"),
+		},
+		{
+			name:     "not symmetric",
+			A:        big.NewInt(20),
+			R:        big.NewInt(10),
+			a:        big.NewInt(16),
+			r:        big.NewInt(4),
+			expected: sdk.MustNewDecFromStr("2.000000000000000000"),
+		},
+		{
+			name:     "not symmetric",
+			A:        big.NewInt(501),
+			R:        big.NewInt(100),
+			a:        big.NewInt(5),
+			r:        big.NewInt(1),
+			expected: sdk.MustNewDecFromStr("0.010000000000000000"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			ratio, err := clpkeeper.CalculateRatioDiff(tc.A, tc.R, tc.a, tc.r)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			require.NoError(t, err)
+
+			ratioDec := clpkeeper.RatToDec(&ratio)
+
+			require.Equal(t, tc.expected.String(), ratioDec.String())
 		})
 	}
 }
