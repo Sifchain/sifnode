@@ -102,8 +102,7 @@ func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Ass
 }
 
 func (k Keeper) GetAssetDecimals(ctx sdk.Context, asset types.Asset) (uint8, error) {
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	registryEntry, err := k.tokenRegistryKeeper.GetEntry(registry, asset.Symbol)
+	registryEntry, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, asset.Symbol)
 	if err != nil {
 		return 0, err
 	}

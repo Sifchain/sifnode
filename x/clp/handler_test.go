@@ -293,13 +293,13 @@ func TestSwap(t *testing.T) {
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	receivedAmount := CalculateSwapReceived(t, clpKeeper, app.TokenRegistryKeeper, ctx, assetEth, assetDash, swapSentAssetETH)
+	receivedAmount := CalculateSwapReceived(t, clpKeeper, ctx, assetEth, assetDash, swapSentAssetETH)
 	msg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, receivedAmount)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	// Created ETH pool and Send amount for swap
-	CoinsExt1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Sub(sdk.Uint(sdk.Int(swapSentAssetETH)))))
+	CoinsExt1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance.Sub(poolBalance).Sub(swapSentAssetETH)))
 	// Creating two pools
 	CoinsNative := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Sub(sdk.Uint(sdk.Int(poolBalance)))))
 	// Created one pool and Received swap amount
@@ -393,8 +393,6 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 		wBasisPoints, asymmetry)
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
-	ctx, app := test.CreateTestAppClp(false)
-	eAsset, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {
 		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, sdk.OneDec())
@@ -415,16 +413,12 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	return sdk.NewCoins(externalAssetCoin, nativeAssetCoin)
 }
 
-func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryKeeper tokenregistrytypes.Keeper, ctx sdk.Context, assetSent clptypes.Asset, assetReceived clptypes.Asset, swapAmount sdk.Uint) sdk.Uint {
+func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, assetSent clptypes.Asset, assetReceived clptypes.Asset, swapAmount sdk.Uint) sdk.Uint {
 	inPool, err := keeper.GetPool(ctx, assetSent.Symbol)
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Symbol)
 	assert.NoError(t, err)
-	eAsset, err := tokenRegistryKeeper.GetRegistryEntry(ctx, inPool.ExternalAsset.Symbol)
-	assert.NoError(t, err)
 	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, sdk.OneDec())
-	assert.NoError(t, err)
-	eAsset, err = tokenRegistryKeeper.GetRegistryEntry(ctx, outPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, sdk.OneDec())
 	assert.NoError(t, err)

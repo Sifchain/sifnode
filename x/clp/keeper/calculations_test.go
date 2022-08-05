@@ -81,7 +81,6 @@ func TestKeeper_SwapOne(t *testing.T) {
 	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
 	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.NoError(t, err)
-	eAsset, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	// asymmetry is positive
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
@@ -886,12 +885,12 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 
 	// ours
-	eAsset, _ := app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
-	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
-	assert.Equal(t, "2", swapResult.String())
+	//eAsset, _ := app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
+	//normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
+	//swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+	//assert.Equal(t, "2", swapResult.String())
 
-	// master fnord
+	// TODO this was the test in master
 	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec())
 	assert.Equal(t, "1", swapResult.String())
 }

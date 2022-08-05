@@ -102,7 +102,8 @@ test-peggy:
 test-bin:
 	GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
 
-tests: test-peggy test-bin
+.PHONY: tests test 
+test tests: test-peggy test-bin
 
 feature-tests:
 	GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
