@@ -10,7 +10,7 @@ type Migrator struct {
 }
 
 func NewMigrator(keeper Keeper) Migrator {
-	return Migrator{keeper: keeper}
+	return Migrator{keeper}
 }
 
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
