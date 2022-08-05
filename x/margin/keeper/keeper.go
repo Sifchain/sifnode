@@ -397,14 +397,15 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	if !returnAmount.IsZero() {
 		actualReturnAmount := returnAmount
 		if takeInsurance {
+			fundAddrParam := k.GetInsuranceFundAddress(ctx)
+			fundAddr, _ := sdk.AccAddressFromBech32(fundAddrParam)
 			takePercentage := k.GetForceCloseFundPercentage(ctx)
 			returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
 			takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
 			actualReturnAmount = returnAmount.Sub(takeAmount)
 
-			if !takeAmount.IsZero() {
+			if !takeAmount.IsZero() && fundAddr.String() != "" {
 				takeCoins := sdk.NewCoins(sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
-				fundAddr := k.GetInsuranceFundAddress(ctx)
 				err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
 				if err != nil {
 					return err

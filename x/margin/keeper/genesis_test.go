@@ -47,6 +47,7 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 			EpochLength:           1,
 			ForceCloseThreshold:   sdk.NewDec(1), //TODO get real default
 			RemovalQueueThreshold: sdk.ZeroDec(),
+			SqModifier:            sdk.NewDec(10000),
 		}
 		want := types.GenesisState{Params: &params}
 		marginKeeper.InitGenesis(ctx, want)
@@ -58,14 +59,13 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 }
 
 func TestKeeper_InitGenesis(t *testing.T) {
-	t.Run("params with empty fields", func(t *testing.T) {
+	t.Run("params from default genesis", func(t *testing.T) {
 		ctx, app := test.CreateTestAppMargin(false)
 		marginKeeper := app.MarginKeeper
 		require.NotNil(t, marginKeeper)
 
-		params := types.Params{}
-		want := types.GenesisState{Params: &params}
-		validatorUpdate := marginKeeper.InitGenesis(ctx, want)
+		want := types.DefaultGenesis()
+		validatorUpdate := marginKeeper.InitGenesis(ctx, *want)
 
 		require.Equal(t, validatorUpdate, []abci.ValidatorUpdate{})
 
@@ -96,6 +96,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 			EpochLength:           1,
 			ForceCloseThreshold:   sdk.NewDec(1), //TODO get real default
 			RemovalQueueThreshold: sdk.ZeroDec(),
+			SqModifier:            sdk.NewDec(1),
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)

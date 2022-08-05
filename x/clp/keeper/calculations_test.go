@@ -87,7 +87,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 	// asymmetry is positive
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, sdk.OneDec())
+	swapResult, liquidityFee, priceImpact, _, err := swapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, sdk.OneDec())
 	assert.NoError(t, err)
 	assert.Equal(t, "19", swapResult.String())
 	assert.Equal(t, "978", liquidityFee.String())
@@ -1039,7 +1039,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			if to == (types.Asset{}) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
-			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(
+			swapResult, liquidityFee, priceImpact, newPool, err := swapOne(
 				from,
 				swapAmount,
 				to,
@@ -1100,7 +1100,7 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec())
+	swapResult := getSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec())
 	assert.Equal(t, "1", swapResult.String())
 }
 
@@ -1111,7 +1111,7 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 	}
 	asset := types.Asset{}
 
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100))
+	swapResult := getSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100))
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }

@@ -56,13 +56,8 @@ func (k Keeper) GetForceCloseFundPercentage(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).ForceCloseFundPercentage
 }
 
-func (k Keeper) GetInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).InsuranceFundAddress)
-	if err != nil {
-		panic(err)
-	}
-
-	return addr
+func (k Keeper) GetInsuranceFundAddress(ctx sdk.Context) string {
+	return k.GetParams(ctx).InsuranceFundAddress
 }
 
 func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
