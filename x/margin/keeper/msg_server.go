@@ -74,8 +74,9 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
 		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
 		sdk.NewAttribute("leverage", mtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
+		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
+		sdk.NewAttribute("interest_paid", mtp.InterestPaid.String()),
+		sdk.NewAttribute("interest_unpaid", mtp.InterestUnpaid.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 	))
 
@@ -112,8 +113,9 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 		sdk.NewAttribute("custody_amount", closedMtp.CustodyAmount.String()),
 		sdk.NewAttribute("repay_amount", repayAmount.String()),
 		sdk.NewAttribute("leverage", closedMtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", closedMtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", closedMtp.LiabilitiesI.String()),
+		sdk.NewAttribute("liabilities", closedMtp.Liabilities.String()),
+		sdk.NewAttribute("interest_paid", mtp.InterestPaid.String()),
+		sdk.NewAttribute("interest_unpaid", closedMtp.InterestUnpaid.String()),
 		sdk.NewAttribute("health", closedMtp.MtpHealth.String()),
 	))
 

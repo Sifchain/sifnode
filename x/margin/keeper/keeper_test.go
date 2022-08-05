@@ -446,8 +446,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 		to               string
 		collateralAmount sdk.Uint
 		custodyAmount    sdk.Uint
-		liabilitiesP     sdk.Uint
-		liabilitiesI     sdk.Uint
+		liabilities      sdk.Uint
+		interestUnpaid   sdk.Uint
 		health           sdk.Dec
 		err              error
 		errString        error
@@ -459,8 +459,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			err:              tokenregistrytypes.ErrNotFound,
 		},
@@ -471,8 +471,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "rowan",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(10000000000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			err:              clptypes.ErrNotEnoughAssetTokens,
 		},
@@ -483,8 +483,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "rowan",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			err:              nil,
 		},
@@ -495,8 +495,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			err:              nil,
 		},
@@ -507,8 +507,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(10000000000000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(10000000000000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			err:              clptypes.ErrNotEnoughAssetTokens,
 		},
@@ -519,8 +519,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(0),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			err:              types.ErrMTPInvalid,
 		},
@@ -539,9 +539,9 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", types.Position_LONG, 1)
 			mtp.CustodyAmount = tt.custodyAmount
-			mtp.LiabilitiesP = tt.liabilitiesP
+			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
-			mtp.LiabilitiesI = tt.liabilitiesI
+			mtp.InterestUnpaid = tt.interestUnpaid
 
 			_, got := marginKeeper.UpdateMTPHealth(ctx, mtp, pool)
 
@@ -670,8 +670,8 @@ func TestKeeper_Repay(t *testing.T) {
 		address          string
 		collateralAmount sdk.Uint
 		custodyAmount    sdk.Uint
-		liabilitiesP     sdk.Uint
-		liabilitiesI     sdk.Uint
+		liabilities      sdk.Uint
+		interestUnpaid   sdk.Uint
 		health           sdk.Dec
 		repayAmount      sdk.Uint
 		overrideAddress  string
@@ -686,8 +686,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1),
 			err:              tokenregistrytypes.ErrNotFound,
@@ -700,8 +700,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			err:              nil,
@@ -714,8 +714,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			err:              nil,
@@ -728,8 +728,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			err:              nil,
@@ -742,8 +742,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
 			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
@@ -756,8 +756,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
 		},
@@ -769,8 +769,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			err:              nil,
@@ -784,8 +784,8 @@ func TestKeeper_Repay(t *testing.T) {
 			overrideAddress:  "yyy",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			err:              types.ErrMTPDoesNotExist,
@@ -805,9 +805,9 @@ func TestKeeper_Repay(t *testing.T) {
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address, types.Position_LONG, 1)
 			mtp.CustodyAmount = tt.custodyAmount
-			mtp.LiabilitiesP = tt.liabilitiesP
+			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
-			mtp.LiabilitiesI = tt.liabilitiesI
+			mtp.InterestUnpaid = tt.interestUnpaid
 			if tt.overrideAddress != "" {
 				mtp.Address = tt.overrideAddress
 			}
@@ -841,8 +841,8 @@ func TestKeeper_UpdateMTPInterestLiabilitiesOverflow(t *testing.T) {
 		Address:          "sif123",
 		CollateralAsset:  "rowan",
 		CollateralAmount: sdk.Uint{},
-		LiabilitiesP:     sdk.NewUintFromString("100"),
-		LiabilitiesI:     sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
+		Liabilities:      sdk.NewUintFromString("100"),
+		InterestUnpaid:   sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
 		CustodyAsset:     "ceth",
 		CustodyAmount:    sdk.Uint{},
 		Leverage:         sdk.Dec{},
@@ -966,8 +966,8 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 		Id:               id,
 		Address:          address,
 		CollateralAsset:  collateralAsset,
-		LiabilitiesP:     sdk.NewUint(1000),
-		LiabilitiesI:     sdk.NewUint(1000),
+		Liabilities:      sdk.NewUint(1000),
+		InterestUnpaid:   sdk.NewUint(1000),
 		CollateralAmount: sdk.NewUint(1000),
 		CustodyAsset:     custodyAsset,
 		CustodyAmount:    sdk.NewUint(1000),

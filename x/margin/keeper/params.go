@@ -69,6 +69,10 @@ func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
 	return k.GetParams(ctx).MaxOpenPositions
 }
 
+func (k Keeper) GetIncrementalInterestPaymentEnabled(ctx sdk.Context) bool {
+	return k.GetParams(ctx).IncrementalInterestPaymentEnabled
+}
+
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	return k.GetParams(ctx).Pools
 }
