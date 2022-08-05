@@ -397,15 +397,13 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	eAsset, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {
-		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
-		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, sdk.OneDec())
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount.Add(swapResult)))
 		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
 	}
 	if asymmetry.IsNegative() {
-		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
-		swapResult, _, _, _, err := clpkeeper.SwapOne(asset, swapAmount, clptypes.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+		swapResult, _, _, _, err := clpkeeper.SwapOne(asset, swapAmount, clptypes.GetSettlementAsset(), pool, sdk.OneDec())
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
 		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount.Add(swapResult)))
@@ -424,13 +422,11 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryK
 	assert.NoError(t, err)
 	eAsset, err := tokenRegistryKeeper.GetRegistryEntry(ctx, inPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
-	normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(eAsset.Decimals)
-	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, sdk.OneDec())
 	assert.NoError(t, err)
 	eAsset, err = tokenRegistryKeeper.GetRegistryEntry(ctx, outPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
-	normalizationFactor, adjustExternalToken = keeper.GetNormalizationFactor(eAsset.Decimals)
-	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, normalizationFactor, adjustExternalToken, sdk.OneDec())
+	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, sdk.OneDec())
 	assert.NoError(t, err)
 	return emitAmount2
 }
@@ -502,6 +498,9 @@ func TestUnlockLiquidity(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, lp.Unlocks)
 
+	// Test flow with no unbond request made.
+	err = app.ClpKeeper.UseUnlockedLiquidity(ctx, clptypes.LiquidityProvider{Asset: &clptypes.Asset{Symbol: "ceth"}}, sdk.NewUint(1), true)
+	require.NoError(t, err)
 }
 
 func UnlockAllliquidity(app *sifapp.SifchainApp, ctx sdk.Context, asset clptypes.Asset, lp sdk.AccAddress, t *testing.T) {

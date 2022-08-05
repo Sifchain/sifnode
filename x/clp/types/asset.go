@@ -42,6 +42,10 @@ func (a Asset) IsEmpty() bool {
 	return a.Symbol == ""
 }
 
+func (a *Asset) IsSettlementAsset() bool {
+  return *a == GetSettlementAsset()
+}
+
 func GetSettlementAsset() Asset {
 	return Asset{
 		Symbol: NativeSymbol,
