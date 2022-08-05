@@ -484,6 +484,51 @@ func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, in
 	return k.SetMTP(ctx, mtp)
 }
 
+func (k Keeper) CalcMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) sdk.Uint {
+	var interestLiabilitiesRational, liabilitiesRational, rate big.Rat
+
+	rate.SetFloat64(interestRate.MustFloat64())
+
+	liabilitiesRational.SetInt(mtp.Liabilities.BigInt())
+	interestLiabilitiesRational.Mul(&rate, &liabilitiesRational)
+
+	return sdk.NewUintFromBigInt(interestLiabilitiesRational.Num())
+}
+
+func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) error {
+	// not enough collateral left to cover interest
+	if interestPayment.GTE(mtp.CollateralAmount) {
+		// close?
+	}
+
+	// add payment to total paid
+	mtp.InterestPaid = mtp.InterestPaid.Add(interestPayment)
+	// swap interest payment to custody asset for payment
+	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, pool)
+	if err != nil {
+		return err
+	}
+	// deduct interest payment from custody amount
+	mtp.CustodyAmount = mtp.CustodyAmount.Sub(interestPaymentCustody)
+
+	nativeAsset := types.GetSettlementAsset()
+
+	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) { // custody is native
+		pool.NativeCustody = pool.NativeCustody.Sub(interestPaymentCustody)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(interestPaymentCustody)
+	} else { // custody is external
+		pool.ExternalCustody = pool.ExternalCustody.Sub(interestPaymentCustody)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(interestPaymentCustody)
+	}
+
+	err = k.SetMTP(ctx, mtp)
+	if err != nil {
+		return err
+	}
+
+	return k.ClpKeeper().SetPool(ctx, &pool)
+}
+
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {
 	interestRateMax := k.GetInterestRateMax(ctx)
 	interestRateMin := k.GetInterestRateMin(ctx)
