@@ -37,7 +37,7 @@ func NewKeeper(storeKey sdk.StoreKey,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
 	adminKeeper adminkeeper.Keeper,
-	ps paramtypes.Subspace) types.Keeper {
+	ps paramtypes.Subspace) Keeper {
 
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
