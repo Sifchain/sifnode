@@ -98,14 +98,13 @@ type AppModuleSimulation struct{}
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
-	Keeper types.Keeper
 	Codec  *codec.Codec
 	keeper keeper.Keeper
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
-	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.keeper))
 	m := keeper.NewMigrator(am.keeper)
 	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer2)
 	if err != nil {
@@ -114,11 +113,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper types.Keeper, cdc *codec.Codec) AppModule {
+func NewAppModule(keeper keeper.Keeper, cdc *codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
-		Keeper:              keeper,
+		keeper:              keeper,
 		Codec:               cdc,
 	}
 }
@@ -139,7 +138,7 @@ func (am AppModule) Route() sdk.Route {
 
 // NewHandler returns an sdk.Handler for the module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return keeper.NewLegacyHandler(am.Keeper)
+	return keeper.NewLegacyHandler(am.keeper)
 }
 
 // QuerierRoute returns the module's querier route name.
@@ -149,7 +148,7 @@ func (AppModule) QuerierRoute() string {
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
 func (am AppModule) LegacyQuerierHandler(aminoCodec *codec.LegacyAmino) sdk.Querier { //nolint
-	return keeper.NewLegacyQuerier(am.Keeper, aminoCodec)
+	return keeper.NewLegacyQuerier(am.keeper, aminoCodec)
 }
 
 // InitGenesis performs genesis initialization. It returns
@@ -157,17 +156,17 @@ func (am AppModule) LegacyQuerierHandler(aminoCodec *codec.LegacyAmino) sdk.Quer
 func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	marshaler.MustUnmarshalJSON(data, &genesisState)
-	return am.Keeper.InitGenesis(ctx, genesisState)
+	return am.keeper.InitGenesis(ctx, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONCodec) json.RawMessage {
-	return marshaler.MustMarshalJSON(am.Keeper.ExportGenesis(ctx))
+	return marshaler.MustMarshalJSON(am.keeper.ExportGenesis(ctx))
 }
 
 // BeginBlock returns the begin blocker.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	am.Keeper.BeginBlocker(ctx)
+	am.keeper.BeginBlocker(ctx)
 }
 
 // EndBlock returns the end blocker. It returns no validator updates.
