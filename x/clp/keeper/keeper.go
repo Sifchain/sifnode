@@ -101,6 +101,14 @@ func (k Keeper) GetNormalizationFactorFromAsset(ctx sdk.Context, asset types.Ass
 	return k.GetNormalizationFactor(registryEntry.Decimals)
 }
 
+func (k Keeper) GetAssetDecimals(ctx sdk.Context, asset types.Asset) (uint8, error) {
+	registryEntry, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, asset.Symbol)
+	if err != nil {
+		return 0, err
+	}
+	return Int64ToUint8Safe(registryEntry.Decimals)
+}
+
 func (k Keeper) GetSymmetryThreshold(ctx sdk.Context) sdk.Dec {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.SymmetryThresholdPrefix)

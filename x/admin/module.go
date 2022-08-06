@@ -101,15 +101,11 @@ type AppModule struct {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
-	m := keeper.NewMigrator(am.Keeper)
-	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer3)
-	if err != nil {
-		panic(err)
-	}
-	err = cfg.RegisterMigration(types.ModuleName, 2, m.MigrateToVer4)
-	if err != nil {
-		panic(err)
-	}
+	//m := keeper.NewMigrator(am.Keeper)
+	//err := cfg.RegisterMigration(types.ModuleName, 0, m.InitialMigration)
+	//if err != nil {
+	//	panic(err)
+	//}
 }
 
 // NewAppModule creates a new AppModule object
@@ -172,4 +168,4 @@ func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 	return nil
 }
 
-func (AppModule) ConsensusVersion() uint64 { return 4 }
+func (AppModule) ConsensusVersion() uint64 { return 1 }

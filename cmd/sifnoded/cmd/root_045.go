@@ -1,5 +1,5 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
+//go:build FEATURE_TOGGLE_SDK_045
+// +build FEATURE_TOGGLE_SDK_045
 
 package cmd
 
@@ -52,7 +52,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		Use:   "sifnoded",
 		Short: "app Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			initClientCtx = client.ReadHomeFlag(initClientCtx, cmd)
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
@@ -85,7 +84,6 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		SetGenesisWhitelisterAdminCmd(app.DefaultNodeHome),
 		AddGenesisValidatorCmd(app.DefaultNodeHome),
 		SetGenesisOracleAdminCmd(app.DefaultNodeHome),
-		SetTokenRegistryAdminCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		NewIBCDiagCmd(),
