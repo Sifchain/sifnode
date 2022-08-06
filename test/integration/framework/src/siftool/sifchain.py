@@ -294,7 +294,7 @@ class Sifnoded:
         self.save_app_toml(app_toml)
 
     def get_effective_home(self) -> str:
-        return self.home if self.home is not None else self.cmd.get_user_home(".siufnoded")
+        return self.home if self.home is not None else self.cmd.get_user_home(".sifnoded")
 
     def add_genesis_clp_admin(self, address: cosmos.Address):
         args = ["add-genesis-clp-admin", address] + self._home_args() + self._keyring_backend_args()
@@ -335,19 +335,25 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return json.loads(stdout(res))
 
-    # "--node" points to existing validator (i.e. node 0) and needs to be up.
-    def staking_create_validator(self, amount: GasFees, pubkey: JsonDict, moniker: str, commission_rate: float,
+    # self.node ("--node") should point to existing validator (i.e. node 0) which must be up.
+    # The balance of from_acct (from node 0's perspective) must be greater than the staking amount.
+    # amount must be a single denom, and must denominated as per config/app_state.toml::staking.params.bond_denom
+    # pubkey must be from "tendermint show validator", NOT from "keys add"
+    def staking_create_validator(self, amount: cosmos.Balance, pubkey: JsonDict, moniker: str, commission_rate: float,
         commission_max_rate: float, commission_max_change_rate: float, min_self_delegation: int,
-        from_acct: cosmos.Address
+        from_acct: cosmos.Address, broadcast_mode: Optional[str] = None
     ):
-        args = ["tx", "staking", "create-validator", "--amount", sif_format_amount(*amount), "--pubkey",
+        assert len(amount) == 1  # Maybe not? We haven't seen staking with more than one denom yet though.
+        assert cosmos.balance_exceeds(self.get_balance(from_acct), amount)
+        assert pubkey["@type"] == "/cosmos.crypto.ed25519.PubKey"
+        args = ["tx", "staking", "create-validator", "--amount", cosmos.balance_format(amount), "--pubkey",
             format_pubkey(pubkey), "--moniker", moniker, "--commission-rate", str(commission_rate),
             "--commission-max-rate", str(commission_max_rate), "--commission-max-change-rate",
             str(commission_max_change_rate), "--min-self-delegation", str(min_self_delegation), "--from", from_acct] + \
             self._home_args() + self._chain_id_args() + self._node_args() + self._keyring_backend_args() + \
-            self._fees_args() + self._yes_args()
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
-        return sifnoded_parse_output_lines(stdout(res))
+        return yaml_load(stdout(res))
 
     def query_staking_validators(self) -> JsonObj:
         args = ["query", "staking", "validators", "--output", "json"] + self._home_args() + self._node_args()
@@ -886,15 +892,18 @@ class Sifnoded:
                 time.sleep(1)
 
     # TODO Refactor wait_up() / _wait_up()
-    def _wait_up(self):
+    def _wait_up(self, timeout: int=30):
         host, port = self._get_host_and_port()
         from urllib.error import URLError
+        start_time = time.time()
         while True:
             try:
                 response = self._rpc_get(host, port, "status")
                 result = response["result"]
                 return result
             except URLError:
+                if time.time() - start_time > timeout:
+                    raise Exception("Timeout waiting for sifnoded to come up")
                 time.sleep(1)
 
     def _home_args(self) -> Optional[List[str]]:

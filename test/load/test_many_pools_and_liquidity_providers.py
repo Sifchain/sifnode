@@ -126,7 +126,6 @@ class Test:
             "zebra sentence tape you spawn forget catalog veteran rocket steel ticket slender follow rubber spoil thing into liar twin document ring clock shell skirt",
         ]
 
-        self.chain_id = "localnet"
         self.sifnoded = []
         self.sifnoded_client = None
         self.node_info = None
@@ -197,11 +196,12 @@ class Test:
             genesis_balances[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
 
         env = environments.SifnodedEnvironment(self.cmd)
-        env.chain_id = self.chain_id
         env.number_of_nodes = self.number_of_nodes
         env.node_external_ip_address = ip_address
+        env.staking_denom = ROWAN
         env.sifnoded_home_root = self.sifnoded_home_root
         env.validator0_mnemonic = self.validator0_mnemonic
+        env.admin0_stake = {ROWAN: 10**24}
         env.validator_account_balance = cosmos.balance_add({
             ROWAN: 999 * 10**30,
             STAKE: 999 * 10**30,
@@ -215,7 +215,7 @@ class Test:
         self.sifnoded = env.sifnoded
         sifnoded0 = self.sifnoded[0]
         sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.node_info[0]["external_address"],
-            chain_id=self.chain_id)
+            chain_id=env.chain_id)
         self.sifnoded_client = sifnoded_client
 
         # On each node, do a sample transfer of one rowan from admin to a new wallet and check that the change of
@@ -226,9 +226,6 @@ class Test:
             self.sifnoded[i].send(self.node_info[i]["acct_addr"], test_addr, test_transfer_amount)
             for j in range(self.number_of_nodes):
                 self.sifnoded[j].wait_for_balance_change(test_addr, {}, test_transfer_amount)
-
-        assert all(len(self.sifnoded[i].query_staking_validators()) == self.number_of_nodes
-            for i in range(self.number_of_nodes))
 
         # Check balances
         assert all(cosmos.balance_equal(sifnoded0.get_balance(addr), env.genesis_balances[addr])

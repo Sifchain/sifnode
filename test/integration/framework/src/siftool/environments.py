@@ -1,6 +1,6 @@
 from siftool.common import *
 from siftool.sifchain import ROWAN
-from siftool import common, sifchain, command
+from siftool import common, sifchain, command, cosmos
 
 
 # Environment for load test test_many_pools_and_liquidity_providers
@@ -9,14 +9,16 @@ from siftool import common, sifchain, command
 class SifnodedEnvironment:
     def __init__(self, cmd: command.Command):
         self.cmd = cmd
-        self.chain_id = None
-        self.number_of_nodes = None
-        self.node_external_ip_address = None
+        self.chain_id = "localnet"
+        self.number_of_nodes = 1
+        self.node_external_ip_address = LOCALHOST
         self.sifnoded_home_root = None
         self.validator0_mnemonic = None
         self.log_level = None
-        self.validator_account_balance = None
-        self.genesis_balances = None
+        self.staking_denom = ROWAN
+        self.admin0_stake = {ROWAN: 10**24}  # Must be greater than balance
+        self.validator_account_balance = {ROWAN: 10**30}
+        self.genesis_balances = {}
         self.node_info = None
         self.sifnoded = None
         self.running_processes = None
@@ -34,6 +36,10 @@ class SifnodedEnvironment:
         }
 
     def init(self):
+        assert len(self.admin0_stake) == 1
+        assert exactly_one(list(self.admin0_stake)) == self.staking_denom
+        assert cosmos.balance_exceeds(self.validator_account_balance, self.admin0_stake)
+
         self.sifnoded = []
         self.node_info = []
         for i in range(self.number_of_nodes):
@@ -82,11 +88,11 @@ class SifnodedEnvironment:
         app_state["gov"]["voting_params"] = {"voting_period": "120s"}
         app_state["gov"]["deposit_params"]["min_deposit"] = [{"denom": ROWAN, "amount": "10000000"}]
         app_state["crisis"]["constant_fee"] = {"denom": ROWAN, "amount": "1000"}
-        app_state["staking"]["params"]["bond_denom"] = ROWAN
+        app_state["staking"]["params"]["bond_denom"] = self.staking_denom
         app_state["mint"]["params"]["mint_denom"] = ROWAN
         sifnoded0.save_genesis_json(genesis)
 
-        sifnoded0.gentx(admin0_name, {ROWAN: 10**24})
+        sifnoded0.gentx(admin0_name, self.admin0_stake)
         sifnoded0.collect_gentx()
         sifnoded0.validate_genesis()
 
@@ -138,13 +144,17 @@ class SifnodedEnvironment:
         sifnoded0.wait_for_last_transaction_to_be_mined()
 
         # Create a validator for all non-0 nodes. Node 0 needs to be up, but node i may or may not be up.
+        # We're using the same stake for all non-0 nodes as for 0 node.
         for i in [x for x in range(self.number_of_nodes) if x != 0]:
             node_info = self.node_info[i]
             # This needs to have the private key ("home") of i-th validator but "node" of the 0-th.
             # TODO We need to use "rpc" for --node, not p2p / external_address!
             sifnoded_tmp = sifchain.Sifnoded(self.cmd, home=node_info["home"], chain_id=self.chain_id,
                 node=self.node_info[0]["external_address"])
-            sifnoded_tmp.staking_create_validator((10 ** 24, ROWAN), node_info["pubkey"], node_info["moniker"],
+            sifnoded_tmp.staking_create_validator(self.admin0_stake, node_info["pubkey"], node_info["moniker"],
                 0.10, 0.20, 0.01, 1000000, node_info["acct_addr"])
 
         sifnoded0.wait_for_last_transaction_to_be_mined()
+
+        assert all(len(self.sifnoded[i].query_staking_validators()) == self.number_of_nodes
+            for i in range(self.number_of_nodes))
