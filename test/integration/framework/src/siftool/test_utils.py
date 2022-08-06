@@ -11,15 +11,13 @@ from hexbytes import HexBytes
 from web3.types import TxReceipt
 
 from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos, command
+from siftool.sifchain import ROWAN, CETH
 from siftool.common import *
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
 # This is to replace test_utilities.py, conftest.py, burn_lock_functions.py and integration_test_context.py.
 # Also to replace smart-contracts/scripts/...
 
-
-CETH = "ceth"  # Peggy1 only (Peggy2.0 uses denom hash)
-ROWAN = "rowan"
 
 sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
 

@@ -17,6 +17,7 @@ log = siftool_logger(__name__)
 ROWAN = "rowan"
 STAKE = "stake"
 ROWAN_DECIMALS = 18
+CETH = "ceth"  # Peggy1 only (Peggy2.0 uses denom hash)
 
 # Sifchain public network endpoints
 BETANET = {"node": "https://rpc.sifchain.finance", "chain_id": "sifchain-1"}
@@ -389,7 +390,8 @@ class Sifnoded:
     # If you are calling this for several tokens, you need to call it synchronously
     # (i.e. wait_for_current_block_to_be_mined(), or broadcast_mode="block"). Otherwise this will silently fail.
     # This is used in test_many_pools_and_liquidity_providers.py
-    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address) -> JsonDict:
+    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address, broadcast_mode=None
+    ) -> JsonDict:
         # Check that we have the private key in test keyring. This will throw an exception if we don't.
         assert self.keys_show(from_sif_addr)
         # This command requires a single TokenRegistryEntry, even though the JSON file has "entries" as a list.
@@ -398,7 +400,8 @@ class Sifnoded:
         with self._with_temp_json_file(token_data) as tmp_registry_json:
             args = ["tx", "tokenregistry", "register", tmp_registry_json, "--from", from_sif_addr, "--output",
                 "json"] + self._home_args() + self._keyring_backend_args() + self._chain_id_args() + \
-                self._node_args() + self._fees_args() + self._broadcast_mode_args() + self._yes_args()
+                self._node_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
+                self._yes_args()
             res = self.sifnoded_exec(args)
             res = json.loads(stdout(res))
             # Example of successful output: {"height":"196804","txhash":"C8252E77BCD441A005666A4F3D76C99BD35F9CB49AA1BE44CBE2FFCC6AD6ADF4","codespace":"","code":0,"data":"0A270A252F7369666E6F64652E746F6B656E72656769737472792E76312E4D73675265676973746572","raw_log":"[{\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/sifnode.tokenregistry.v1.MsgRegister\"}]}]}]","logs":[{"msg_index":0,"log":"","events":[{"type":"message","attributes":[{"key":"action","value":"/sifnode.tokenregistry.v1.MsgRegister"}]}]}],"info":"","gas_wanted":"200000","gas_used":"115149","tx":null,"timestamp":""}
@@ -793,6 +796,11 @@ class Sifnoded:
             res = sifnoded_parse_output_lines(stdout(res))
             return res
 
+    def query_reward_params(self):
+        args = ["query", "reward", "params"] + self._node_args()
+        res = self.sifnoded_exec(args)
+        return res
+
     def clp_set_lppd_params(self, from_addr: cosmos.Address, lppd_params: LPPDParams):
         with self._with_temp_json_file([lppd_params]) as tmp_distribution_json:
             args = ["tx", "clp", "set-lppd-params", "--path", tmp_distribution_json, "--from", from_addr] + \
@@ -1069,6 +1077,21 @@ class Ebrelayer:
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--trace"] if trace else [])
         return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+
+
+class RateLimiter:
+    def __init__(self, sifnoded, max_tpb):
+        self.sifnoded = sifnoded
+        self.max_tpb = max_tpb
+        self.counter = 0
+
+    def limit(self):
+        if self.max_tpb == 0:
+            pass
+        self.counter += 1
+        if self.counter == self.max_tpb:
+            self.sifnoded.wait_for_last_transaction_to_be_mined()
+            self.counter = 0
 
 
 # This is probably useful for any program that uses web3 library in the same way

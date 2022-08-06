@@ -65,64 +65,11 @@ import sys
 import time
 import siftool_path
 from siftool.common import *
-from siftool import command, sifchain, project, cosmos
+from siftool import command, sifchain, project, cosmos, environments
 from siftool.sifchain import ROWAN, STAKE, ROWAN_DECIMALS
 
 
 log = siftool_logger()
-
-
-class SifnodedEnvironment:
-    def __init__(self, cmd: command.Command):
-        self.cmd = cmd
-
-        self.chain_id = None
-        self.number_of_nodes = None
-        self.sifnoded_home_root = None
-        self.validator0_mnemonic = None
-
-        self.node_info = None
-        self.sifnoded = None
-        self.running_processes = None
-        self.open_log_files = None
-
-    def setup(self):
-        self.sifnoded = []
-        self.node_info = []
-        for i in range(self.number_of_nodes):
-            ports = self.ports_for_node(i)
-            home = os.path.join(self.sifnoded_home_root, "sifnoded-{}".format(i))
-            sifnoded_i = sifchain.Sifnoded(self.cmd, node=sifchain.format_node_url(ANY_ADDR, ports["rpc"]),
-                home=home, chain_id=self.chain_id)
-            moniker = "sifnode-{}".format(i)
-            acct_name = "sif-{}".format(i)
-            acct_addr = sifnoded_i.create_addr(acct_name, mnemonic=self.validator0_mnemonic if i == 0 else None)
-            sifnoded_i.init(moniker)
-            node_id = sifnoded_i.tendermint_show_node_id()  # Taken from ${sifnoded_home}/config/node_key.json
-            pubkey = sifnoded_i.tendermint_show_validator()  # Taken from ${sifnoded_home}/config/priv_validator_key.json
-            node_info = {
-                "moniker": moniker,
-                "home": home,
-                "node_id": node_id,
-                "pubkey": pubkey,
-                "acct_name": acct_name,
-                "acct_addr": acct_addr,
-                "ports": ports,
-                "external_address": sifchain.format_node_url(LOCALHOST, ports["rpc"])  # For --node
-            }
-            self.sifnoded.append(sifnoded_i)
-            self.node_info.append(node_info)
-
-    def ports_for_node(self, i: int) -> JsonDict:
-        return {
-            "p2p": 10276 + i,
-            "grpc": 10909 + i,
-            "grpc_web": 10919 + i,
-            "address": 10276 + i,
-            "rpc": 10286 + i,
-            "api": 10131 + i,
-            "pprof": 10606 + i,
-        }
 
 
 class Test:
@@ -174,6 +121,10 @@ class Test:
         self.sifnoded_home_root = sifnoded_home_root
 
         self.env = None
+        self.custom_wallet_mnemonics = [
+            # sif1rruvw03utshn7ry3emeqf2gzkg6eap6hu5shun
+            "zebra sentence tape you spawn forget catalog veteran rocket steel ticket slender follow rubber spoil thing into liar twin document ring clock shell skirt",
+        ]
 
         self.chain_id = "localnet"
         self.sifnoded = []
@@ -214,7 +165,6 @@ class Test:
 
         self.amount_of_rowan_per_wallet = 10000 * 10**18  # TODO How much?
 
-        self.log_level = "debug"
         self.validator0_mnemonic = "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow".split()
 
         self.prj.pkill()
@@ -223,134 +173,50 @@ class Test:
         import socket
         hostname = socket.gethostname()
         ip_address = socket.gethostbyname(hostname)
+        client_home = os.path.join(self.sifnoded_home_root, "sifnoded-client")
 
-        self.env = SifnodedEnvironment(self.cmd)
-        env = self.env
-        env.chain_id = self.chain_id
-        env.number_of_nodes = self.number_of_nodes
-        env.sifnoded_home_root = self.sifnoded_home_root
-        env.validator0_mnemonic = self.validator0_mnemonic
-
-        env.setup()
-
-        self.node_info = env.node_info
-        self.sifnoded = env.sifnoded
-
+        # Set up test wallets with test tokens. We do this in genesis for performance reasons. For each wallet we choose
+        # number_of_denoms_per_wallet` random denoms.
         # Set up admin account balances. We add these with "add-genesis-account"
         # TODO It is not clear if we really need to fund all of them (and how much).
         # TODO Does this have to cover for rewards and lppd distribution? If rewards are minted, then no.
         # For rewards, the funds are minted and in case we opted for a distribution of the rewards to the LP wallet the
         # minted rowans are transferred there, you can see the minting process here: https://github.com/Sifchain/sifnode/blob/master/x/clp/keeper/rewards.go#L54
         # For LPD, we only transfer the existing funds in CLP to the LP's wallet, you can see here: https://github.com/Sifchain/sifnode/blob/8b2f9c45130c79e07555735185fbe1d00279fab0/x/clp/keeper/pool.go#L128
-        denom_total_supply = 10000 * self.number_of_wallets * self.amount_of_denom_per_wallet
-        validator_account_balance = cosmos.balance_add({
-            ROWAN: 999 * 10**30,
-            STAKE: 999 * 10**30,
-        }, {denom: denom_total_supply for denom in self.tokens})
-
-        sifnoded0 = self.sifnoded[0]
-
-        for i in range(self.number_of_nodes):
-            acct_addr = self.node_info[i]["acct_addr"]
-            acct_bech = self.sifnoded[i].get_val_address(acct_addr)
-            sifnoded0.add_genesis_account(acct_addr, validator_account_balance)
-            sifnoded0.add_genesis_validators(acct_bech)
-        admin0_addr = self.node_info[0]["acct_addr"]
-        admin0_name = self.node_info[0]["acct_name"]
-        sifnoded0.add_genesis_clp_admin(admin0_addr)
-        sifnoded0.set_genesis_oracle_admin(admin0_name)
-        sifnoded0.set_genesis_whitelister_admin(admin0_name)
-
-        genesis_balances_to_add = {}
-
-        # Set up test wallets with test tokens. We do this in genesis for performance reasons. For each wallet we choose
-        # number_of_denoms_per_wallet` random denoms.
-        client_home = os.path.join(self.sifnoded_home_root, "sifnoded-client")
-        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.node_info[0]["external_address"],
-            chain_id=self.chain_id)
+        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home)
         self.sifnoded_client = sifnoded_client
-
+        denom_total_supply = 10000 * self.number_of_wallets * self.amount_of_denom_per_wallet
         wallets = {}
+        genesis_balances = {}
         for i in range(self.number_of_wallets):
             chosen_tokens = [self.tokens[i] for i in random_choice(self.liquidity_providers_per_wallet, len(self.tokens), rnd=self.rnd)]
             balances = {denom: self.amount_of_denom_per_wallet for denom in chosen_tokens}
-            addr = sifnoded_client.create_addr()
+            mnemonic = None if ((self.custom_wallet_mnemonics is None) or (i >= len(self.custom_wallet_mnemonics))) else self.custom_wallet_mnemonics[i].split(" ")
+            addr = sifnoded_client.create_addr(mnemonic=mnemonic)
             wallets[addr] = chosen_tokens
-            genesis_balances_to_add[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
+            genesis_balances[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
 
-        genesis = sifnoded0.load_genesis_json()
-        sifnoded0.add_accounts_to_existing_genesis(genesis, genesis_balances_to_add)
+        env = environments.SifnodedEnvironment(self.cmd)
+        env.chain_id = self.chain_id
+        env.number_of_nodes = self.number_of_nodes
+        env.node_external_ip_address = ip_address
+        env.sifnoded_home_root = self.sifnoded_home_root
+        env.validator0_mnemonic = self.validator0_mnemonic
+        env.validator_account_balance = cosmos.balance_add({
+            ROWAN: 999 * 10**30,
+            STAKE: 999 * 10**30,
+        }, {denom: denom_total_supply for denom in self.tokens})
+        env.genesis_balances = genesis_balances
+        env.log_level = "debug"
+        env.init()
 
-        app_state = genesis["app_state"]
-        app_state["gov"]["voting_params"] = {"voting_period": "120s"}
-        app_state["gov"]["deposit_params"]["min_deposit"] = [{"denom": ROWAN, "amount": "10000000"}]
-        app_state["crisis"]["constant_fee"] = {"denom": ROWAN, "amount": "1000"}
-        app_state["staking"]["params"]["bond_denom"] = ROWAN
-        app_state["mint"]["params"]["mint_denom"] = ROWAN
-        sifnoded0.save_genesis_json(genesis)
-
-        sifnoded0.gentx(admin0_name, {ROWAN: 10**24})
-        sifnoded0.collect_gentx()
-        sifnoded0.validate_genesis()
-
-        # According to gzukel, nodes need just one peer to make sync work.
-        peers = [sifchain.format_peer_address(node_info["node_id"], LOCALHOST, node_info["ports"]["p2p"])
-            for node_info in [self.node_info[0]]]
-        genesis = sifnoded0.load_genesis_json()
-        for i in range(self.number_of_nodes):
-            sifnoded_i = self.sifnoded[i]
-            if i != 0:
-                sifnoded_i.save_genesis_json(genesis)  # Copy genesis from validator 0 to all other
-            info = self.node_info[i]
-            app_toml = sifnoded_i.load_app_toml()
-            app_toml["minimum-gas-prices"] = sif_format_amount(0.5, ROWAN)
-            app_toml['api']['enable'] = True
-            app_toml["api"]["address"] = sifchain.format_node_url(ANY_ADDR, info["ports"]["api"])
-            sifnoded_i.save_app_toml(app_toml)
-            config_toml = sifnoded_i.load_config_toml()
-            config_toml["log_level"] = self.log_level  # TODO Probably redundant
-            config_toml['p2p']["external_address"] = "{}:{}".format(ip_address, info["ports"]["p2p"])
-            if i != 0:
-                config_toml["p2p"]["persistent_peers"] = ",".join(peers)
-            config_toml['p2p']['max_num_inbound_peers'] = 50
-            config_toml['p2p']['max_num_outbound_peers'] = 50
-            config_toml['p2p']['allow_duplicate_ip'] = True
-            config_toml["rpc"]["pprof_laddr"] = "{}:{}".format(LOCALHOST, info["ports"]["pprof"])
-            config_toml['moniker'] = info["moniker"]
-            sifnoded_i.save_config_toml(config_toml)
-
-        # Start processes
-        env.running_processes = []
-        env.open_log_files = []
-        for i, sifnoded_i in enumerate(self.sifnoded):
-            node_info = self.node_info[i]
-            ports = node_info["ports"]
-            log_file_path = os.path.join(sifnoded_i.home, "sifnoded.log")
-            log_file = open(log_file_path, "w")
-            env.open_log_files.append(log_file)
-            process = sifnoded_i.sifnoded_start(log_file=log_file, log_level="debug", trace=True,
-                tcp_url="tcp://{}:{}".format(ANY_ADDR, ports["rpc"]), p2p_laddr="{}:{}".format(ANY_ADDR, ports["p2p"]),
-                grpc_address="{}:{}".format(ANY_ADDR, ports["grpc"]),
-                grpc_web_address="{}:{}".format(ANY_ADDR, ports["grpc_web"]),
-                address="tcp://{}:{}".format(ANY_ADDR, ports["address"])
-            )
-            sifnoded_i._wait_up()
-            env.running_processes.append(process)
-
-        # Wait for some time so that nodes are fully booted
-        sifnoded0.wait_for_last_transaction_to_be_mined()
-
-        # Create a validator for all non-0 nodes. Node 0 needs to be up, but node i may or may not be up.
-        for i in [x for x in range(self.number_of_nodes) if x != 0]:
-            node_info = self.node_info[i]
-            # This needs to have the private key ("home") of i-th validator but "node" of the 0-th.
-            # TODO We need to use "rpc" for --node, not p2p / external_address!
-            sifnoded_tmp = sifchain.Sifnoded(self.cmd, home=node_info["home"], chain_id=self.chain_id,
-                node=self.node_info[0]["external_address"])
-            sifnoded_tmp.staking_create_validator((10 ** 24, ROWAN), node_info["pubkey"], node_info["moniker"],
-                0.10, 0.20, 0.01, 1000000, node_info["acct_addr"])
-
-        sifnoded0.wait_for_last_transaction_to_be_mined()
+        self.env = env
+        self.node_info = env.node_info
+        self.sifnoded = env.sifnoded
+        sifnoded0 = self.sifnoded[0]
+        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.node_info[0]["external_address"],
+            chain_id=self.chain_id)
+        self.sifnoded_client = sifnoded_client
 
         # On each node, do a sample transfer of one rowan from admin to a new wallet and check that the change of
         # balances is visible on all nodes
@@ -365,8 +231,8 @@ class Test:
             for i in range(self.number_of_nodes))
 
         # Check balances
-        assert all(cosmos.balance_equal(sifnoded0.get_balance(addr), genesis_balances_to_add[addr])
-            for addr in genesis_balances_to_add)
+        assert all(cosmos.balance_equal(sifnoded0.get_balance(addr), env.genesis_balances[addr])
+            for addr in env.genesis_balances)
         assert all(sifnoded0.get_acct_seq(addr)[1] == 0 for addr in wallets)
 
         sifnoded = self.sifnoded[0]
@@ -376,9 +242,31 @@ class Test:
         # TODO Might want to use `tx tokenregistry set-registry` to do it in one step (faster)
         #      According to @sheokapr `tx tokenregistry set-registry` also works for only one entry
         #      But`tx tokenregistry register-all` also works only for one entry.
+
+        # TODO HACKING: we're trying to connect UI to this environment. At the moment it is not clear if we need to add
+        #      rowan to token registry and if IBCIMPORT/IBCEXPORT permissions are needed for tokens to show up in UI.
+
+        _hacking_ui = False
+        if _hacking_ui:
+            sifnoded.token_registry_register({
+                "decimals": str(ROWAN_DECIMALS),
+                "denom": ROWAN,
+                "base_denom": ROWAN,
+                "permissions": [1]
+            }, sif, broadcast_mode="block")
+            sifnoded.wait_for_last_transaction_to_be_mined()
+
         for denom in self.tokens:
-            entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
-            sifnoded.token_registry_register(entry, sif)
+            if _hacking_ui:
+                entry = {
+                    "decimals": 18,
+                    "denom": denom,
+                    "base_denom": denom,
+                    "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
+                }
+            else:
+                entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
+            sifnoded.token_registry_register(entry, sif, broadcast_mode="block")
             sifnoded.wait_for_last_transaction_to_be_mined()  # Must be run synchronously! (if not, only the first will work)
         if self.disable_assertions:
             act = set(e["denom"] for e in sifnoded.query_tokenregistry_entries())
@@ -403,14 +291,12 @@ class Test:
         # Calling `tx_clp_add_liquidity` to add multiple liquidity providers within the same block does not work (only
         # the first call gets through). To avoid `--broadcast-mode block` or waiting for new block, we need to use
         # account sequence numbers.
-        limiter = RateLimiter(sifnoded_client, 0)
         for addr, denoms in wallets.items():
             account_number, account_sequence = sifnoded.get_acct_seq(addr)
             for denom in denoms:
                 sifnoded_client.tx_clp_add_liquidity(addr, denom, self.amount_of_liquidity_added_by_wallet,
                     self.amount_of_liquidity_added_by_wallet, account_seq=(account_number, account_sequence))
                 account_sequence += 1
-                limiter.limit()
         sifnoded_client.wait_for_last_transaction_to_be_mined()
         actual_lp_providers = {}
         for denom in self.tokens:
@@ -460,6 +346,7 @@ class Test:
             sifnoded.wait_for_last_transaction_to_be_mined()
             wait_boundaries.add(rewards_start_block)
             wait_boundaries.add(rewards_end_block)
+        # TODO sifnoded query reward params --node --chain-id (check if/when implemented)
 
         # Set up LPD policies
         if self.lpd_duration_blocks > 0:
@@ -601,20 +488,6 @@ def main(argv: List[str]):
     if args.run_forever:
         wait_for_enter_key_pressed()
 
-
-class RateLimiter:
-    def __init__(self, sifnoded, max_tpb):
-        self.sifnoded = sifnoded
-        self.max_tpb = max_tpb
-        self.counter = 0
-
-    def limit(self):
-        if self.max_tpb == 0:
-            pass
-        self.counter += 1
-        if self.counter == self.max_tpb:
-            self.sifnoded.wait_for_last_transaction_to_be_mined()
-            self.counter = 0
 
 if __name__ == "__main__":
     main(sys.argv)
