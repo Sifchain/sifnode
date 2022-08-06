@@ -30,7 +30,7 @@ import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
 log = siftool_logger(__name__)
 
 eth_account_number = 2
-sif_account_number = 2
+sif_account_number = 1
 transaction_number = 2
 
 
