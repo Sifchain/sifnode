@@ -100,9 +100,9 @@ def test_load_burn_rowan(ctx: test_utils.EnvCtx):
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
     
-    test_eth_accounts = batch_create_eth_account(ctx, ctx.rowan_sc_addr)
+    test_eth_accounts = batch_create_eth_account(ctx, ctx.get_rowan_sc().address)
 
-    run_multi_thread(ctx, test_sif_account, test_eth_accounts, ctx.rowan_sc_addr, False)
+    run_multi_thread(ctx, test_sif_account, test_eth_accounts, ctx.get_rowan_sc().address, False)
     expected_change = {rowan_cosmos_denom: amount_to_send * threads_num}
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 

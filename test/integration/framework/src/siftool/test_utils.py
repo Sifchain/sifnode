@@ -318,6 +318,12 @@ class EnvCtx:
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
+    def get_rowan_sc(self) -> Contract:
+        abi, _, address = self.abi_provider.get_descriptor("Rowan")
+        assert address, "No address for Rowan"
+        result = self.w3_conn.eth.contract(address=address, abi=abi)
+        return result
+
     def get_generic_erc20_sc(self, address):
         abi, _, _ = self.abi_provider.get_descriptor(self.generic_erc20_contract)
         return self.w3_conn.eth.contract(abi=abi, address=address)

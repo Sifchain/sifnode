@@ -1003,8 +1003,6 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         # Note: if the contracts were compiled previously for hardhat, or if previous deployment failed, you might
         # have to remove smart-contracts/{build,cache,artifacts,.openzeppelin}
         peggy_sc_addrs = hardhat_scripts.deploy_smart_contracts()
-        # save rowan contract address in env
-        self.rowan_sc_addr = peggy_sc_addrs.get("Rowan")
 
         admin_account_name = "sifnodeadmin"
         validator_power = self.witness_power
