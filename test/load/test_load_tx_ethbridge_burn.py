@@ -25,8 +25,6 @@ import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_tx_grpc
 # E0326 11:41:27.125006742  636480 fork_posix.cc:70]           Fork support is only compatible with the epoll1 and poll polling strategies
 # Maybe: https://github.com/grpc/grpc/issues/29044
 
-# log = logging.getLogger(__name__)
-
 log = siftool_logger(__name__)
 
 eth_account_number = 2
@@ -334,5 +332,5 @@ if __name__ == "__main__":
     test_single_sif_to_multiple_eth_account_lock_rowan(ctx)
     test_single_sif_to_multiple_eth_account_burn_erc20(ctx)
     test_single_sif_to_multiple_eth_account_burn_eth(ctx)
-    # test_load_tx_ethbridge_burn_eth_short(ctx)
-    # test_load_tx_ethbridge_burn_eth(ctx)
+    test_load_tx_ethbridge_burn_eth_short(ctx)
+    test_load_tx_ethbridge_burn_eth(ctx)
