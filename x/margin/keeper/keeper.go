@@ -421,10 +421,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 			if err != nil {
 				return err
 			}
-			err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
-			if err != nil {
-				return err
-			}
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, addr, returnCoins)
 			if err != nil {
 				return err
