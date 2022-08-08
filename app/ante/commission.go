@@ -10,7 +10,7 @@ import (
 )
 
 var minCommission = sdk.NewDecWithPrec(5, 2)   // 5%
-var maxVotingPower = sdk.NewDecWithPrec(10, 2) // 10%
+var maxVotingPower = sdk.NewDecWithPrec(66, 3) // 6.6%
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
 

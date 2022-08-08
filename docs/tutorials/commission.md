@@ -229,8 +229,8 @@ sifnoded query staking validators --output=json | jq .validators[0].commission.c
 # Max voting power
 
 The max voting power feature is intended to prevent delegations or redelegations which would result in a validator having
-more than a hard coded threshold voting power (currently 10%). This is done by blocking `MsgDelegate` and
-`MsgBeginRedelegate` messages which would give the targeted validator more than 10% of the voting power. The projected
+more than a hard coded threshold voting power (currently 6.6%). This is done by blocking `MsgDelegate` and
+`MsgBeginRedelegate` messages which would give the targeted validator more than 6.6% of the voting power. The projected
 voting power is defined as the amount of projected token delegated to the validator divided by the projected total amount of **delegated** token.
 
 The SDK and mintscan calculate the voting power as zero for validators outside the validator set and for validators inside the validator set the voting power is the amount of token delegated to the validator divided by
@@ -264,11 +264,11 @@ make run
 sifnoded query staking validators
 ```
 
-3. Create a second validator with 92000000000000000000000 tokens, this will give it ~8.424% of the voting power:
+3. Create a second validator with 62000000000000000000000 tokens, this will give it ~5.838% of the voting power:
 
 ```
 sifnoded tx staking create-validator \
-  --amount=92000000000000000000000stake \
+  --amount=62000000000000000000000stake \
   --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
   --moniker="akasha_val" \
   --chain-id=localnet \
@@ -282,10 +282,16 @@ sifnoded tx staking create-validator \
   -y
 ```
 
-### Failure
+4. There should now be two validators:
+
+```
+sifnoded query staking validators
+```
+
+### Failure - Current (and projected) voting power too big
 
 1. Try to delegate 100 tokens to `sif_val`. This would give `sif_val` a projected voting power
-of (1000000000000000000000000 + 100) / (1000000000000000000000000 + 92000000000000000000000 + 100) = 0.161073825503355705. NOTE:
+of (1000000000000000000000000 + 100) / (1000000000000000000000000 + 62000000000000000000000 + 100) = 0.94161. NOTE:
 the exact voting power here might vary as `sif_val` earns rewards and `akasha_val` gets slashed:
 
 ```
@@ -298,12 +304,12 @@ sifnoded tx staking delegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 1
 
 Which fails with the message:
 
-'validator would have 0.915750915750915751 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power: invalid request'
+`validator would have 0.941619585687382298 voting power, cannot delegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
 
-### Failure
+### Failure - Projected voting power too big
 
 1. Try to delegate 100000000000000000000000 tokens to `akasha_val`. This would give `akasha_val` a projected voting power
-of (92000000000000000000000 + 100000000000000000000000) / (92000000000000000000000 + 1000000000000000000000000 + 100000000000000000000000) = 0.1610738255033557. NOTE:
+of (92000000000000000000000 + 100000000000000000000000) / (92000000000000000000000 + 1000000000000000000000000 + 100000000000000000000000) = 0.1394. NOTE:
 the exact voting power here might vary as `sif_val` earns rewards and `akasha_val` gets slashed::
 
 ```
@@ -316,11 +322,19 @@ sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 1
 
 Which fails with the message:
 
-`validator would have 0.161073825503355705 voting power, cannot delegate to a validator with 0.100000000000000000 or higher voting power: invalid request`
+`validator would have 0.139414802065404475 voting power, cannot delegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
 
 ### Success
 
-1. Delegate to `akasha_val`
+1. Confirm that `akasha_val` has 62000000000000000000000 tokens. NOTE: this may
+vary if `akasha_val` has already been slashed:
+
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
+```
+
+2. Delegate to `akasha_val`
 
 ```
 sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake \
@@ -330,7 +344,9 @@ sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 1
   --broadcast-mode block -y
 ```
 
-2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 92000000000000000000000 tokens)
+3. Confirm that `akasha_val` now has 62000000000000000000100 tokens. NOTE: this may
+vary if `akasha_val` has already been slashed:
+
 
 ```
 sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
@@ -351,11 +367,11 @@ make run
 sifnoded query staking validators
 ```
 
-3. Create a second validator with 92000000000000000000000 tokens, this will give it ~8.424% of the voting power:
+3. Create a second validator with 62000000000000000000000 tokens, this will give it ~5.838% of the voting power:
 
 ```
 sifnoded tx staking create-validator \
-  --amount=92000000000000000000000stake \
+  --amount=62000000000000000000000stake \
   --pubkey='{"@type":"/cosmos.crypto.ed25519.PubKey","key":"+uo5x4+nFiCBt2MuhVwT5XeMfj6ttkjY/JC6WyHb+rE="}' \
   --moniker="akasha_val" \
   --chain-id=localnet \
@@ -369,10 +385,16 @@ sifnoded tx staking create-validator \
   -y
 ```
 
-### Failure
+4. There should now be two validators:
+
+```
+sifnoded query staking validators
+```
+
+### Failure - Current (and projected) voting power too big
 
 1. Try to redelegate 100 tokens from `akasha_val` to `to sif_val`. This would give `sif_val` a projected voting power of 
-(1000000000000000000000000 + 100) / (1000000000000000000000000 + 92000000000000000000000) = 0.915750915750915751. NOTE:
+(1000000000000000000000000 + 100) / (1000000000000000000000000 + 62000000000000000000000) = 0.9416. NOTE:
 the exact voting power here might vary as `sif_val` earns rewards and `akasha_val` gets slashed:
 
 ```
@@ -385,12 +407,12 @@ sifnoded tx staking redelegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy
 
 Which fails with the message:
 
-`validator would have 0.915750915750915751 voting power, cannot redelegate to a validator with projected 0.100000000000000000 or higher voting power: invalid request`
+`validator would have 0.941619585687382298 voting power, cannot redelegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
 
-### Failure
+### Failure - Projected voting power too big
 
 1. Try to redelegate 100000000000000000000000 tokens to `akasha_val` from `sif_val`. This would give `akasha_val` a projected voting power
-of (92000000000000000000000 + 100000000000000000000000) / (92000000000000000000000 + 1000000000000000000000000) = 0.175824175824175824. NOTE:
+of (92000000000000000000000 + 100000000000000000000000) / (92000000000000000000000 + 1000000000000000000000000) = 0.1525. NOTE:
 the exact voting power here might vary as `sif_val` earns rewards and `akasha_val` gets slashed:
 
 ```
@@ -403,11 +425,18 @@ sifnoded tx staking redelegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna
 
 Which fails with the message:
 
-`validator would have 0.175824175824175824 voting power, cannot redelegate to a validator with projected 0.100000000000000000 or higher voting power: invalid request`
+`validator would have 0.152542372881355932 voting power, cannot redelegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
 
 ### Success
 
-1. Rdelegate to `akasha_val` from `sif_val`
+1. Confirm that `akasha_val` has 62000000000000000000000 tokens. NOTE: this may
+vary if `akasha_val` has already been slashed:
+
+```
+sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
+```
+
+2. Rdelegate to `akasha_val` from `sif_val`
 
 ```
 sifnoded tx staking redelegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 100stake \
@@ -418,8 +447,8 @@ sifnoded tx staking redelegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna
   --broadcast-mode block -y
 ```
 
-2. Confirm that `akasha_val` now has 92000000000000000000100 tokens (previously they had 92000000000000000000000 tokens). NOTE: this may
-vary if `akasha_val` has been slashed:
+3. Confirm that `akasha_val` now has 62000000000000000000100 tokens (previously they had 62000000000000000000000 tokens). NOTE: this may
+vary if `akasha_val` has already been slashed:
 
 ```
 sifnoded query staking validators --output=json  | jq '.validators[] | select(.description.moniker=="akasha_val").tokens'
