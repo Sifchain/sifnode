@@ -101,7 +101,7 @@ This section demonstrates the blocking behaviour on `MsgEditValidator` messages.
 
 If editing the `commission-rate` to a value above 5% the edit succeeds.
 
-1. The commission rate can only be updated once within 24hrs, so wait 24 hrs then edit the `akasha_val` validator to set the commission-rate to 7%:
+1. The commission rate can only be updated once within 24hrs, so wait 24 hrs then edit the `akasha_val` validator to set the commission-rate to 7%. NOTE: there doesn't seem to be a way to shorten the wait here, the 24hr check is hardcoded into the sdk, see https://github.com/cosmos/cosmos-sdk/blob/3f8596c1955e40ef30e4abcd06f2237d132db3a9/x/staking/types/commission.go#L85:
 
 ```
 sifnoded tx staking edit-validator \
