@@ -1993,3 +1993,17 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 		})
 	}
 }
+
+func TestKeeper_BrokenDownEquality(t *testing.T) {
+
+	var Y, X float64 = 100000, 100000
+	var y, x float64 = 8000, 2000
+
+	var f, r float64 = 0.003, 0.01
+
+	expected := clpkeeper.CalculateSwapAmountAsymmetricFloat(Y, X, y, x, f, r)
+
+	got := clpkeeper.CalculateSwapAmountAsymmetricBrokenDown(Y, X, y, x, f, r)
+
+	require.Equal(t, expected, got)
+}

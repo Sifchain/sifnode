@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -435,4 +436,69 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 		sdk.NewInt(types.MaxWbasis).String(),
 		sdk.ZeroInt(),
 	)
+}
+
+func CalculateSwapAmountAsymmetricFloat(Y, X, y, x, f, r float64) float64 {
+
+	return math.Abs((math.Sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
+}
+
+func CalculateSwapAmountAsymmetricBrokenDown(Y, X, y, x, f, r float64) float64 {
+
+	a := x + X
+	b := -1 * a
+	c := Y * b
+
+	d := f * f * x * Y
+	d1 := f * f * X * Y
+	e := 2 * f * r * x * Y
+	g := 4 * f * r * X * y
+	h := 2 * f * r * X * Y
+	i := 4 * f * X * y
+	j := 4 * f * X * Y
+	k := r * r * x * Y
+	l := r * r * X * Y
+	m := 4 * r * X * y
+	n := 4 * r * X * Y
+	o := 4 * X * y
+	p := 4 * X * Y
+	q := f * x * Y
+	s := f * X * Y
+	t := r * x * Y
+	u := 2 * r * X * y
+	v := r * X * Y
+	w := 2 * X * y
+	z := 2 * X * Y
+
+	r1 := (r + 1)
+	a1 := (y + Y)
+	b1 := -d - d1 - e + g + h + i + j - k - l - m - n - o - p
+	c1 := c * b1
+	e1 := math.Sqrt(c1)
+	f1 := (e1 + q + s + t - u - v - w - z)
+	g1 := (2 * r1 * a1)
+	h1 := f1 / g1
+
+	return math.Abs(h1)
+}
+
+func CalculateSwapAmountAsymmetric(Y, X, y, x *big.Int, f, r *big.Rat) sdk.Uint {
+
+	var a, minusOne *big.Int
+
+	minusOne.SetInt64(-1)
+
+	a.Add(x, X).Mul(a, minusOne).Mul(a, Y) //TODO: use of a here looks dangerous
+
+	c := sdk.ZeroDec()
+
+	c.Add(sdk.OneDec())
+	//b := -1 * a
+	//c := Y * b
+
+	//s.Add(x, X)
+	//x.Add()
+
+	//math.Abs((math.Sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
+
 }
