@@ -13,7 +13,7 @@ func (k Keeper) SetBlockTime(ctx sdk.Context, now time.Time) {
 	store := ctx.KVStore(k.storeKey)
 	bytes, err := now.MarshalBinary()
 	if err != nil {
-		k.Logger(ctx).Info(fmt.Sprintln("Error marshalling block time", err))
+		k.Logger(ctx).Info(fmt.Sprint("Error marshalling block time: ", err))
 		k.Logger(ctx).Info("Next reported block time will be off")
 		return
 	}
