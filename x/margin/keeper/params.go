@@ -94,6 +94,17 @@ func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 	return false
 }
 
+func (k Keeper) IsPoolClosed(ctx sdk.Context, asset string) bool {
+	params := k.GetParams(ctx)
+	for _, p := range params.ClosedPools {
+		if strings.EqualFold(p, asset) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (k Keeper) GetSqModifier(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).SqModifier
 }
