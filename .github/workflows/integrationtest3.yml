@@ -18,13 +18,31 @@ jobs:
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
-      - name: Setup integration test environment
+      - name: Clean
+        run: make clean
+
+      - name: Build
         run: |
-          source $HOME/.bash_profile
-          bash test/integration/start-integration-env.sh
+          source ~/.bash_profile
+          make install
+
+      - name: Start standalone peggy
+        run: |
+          source ~/.bash_profile
+          export PATH=./test/integration/framework/venv/bin/python3:$PATH
+          ./test/integration/framework/siftool run-env
+
       - name: Execute test chain integration tests
         run: |
-          source $HOME/.bash_profile
-          . test/integration/vagrantenv.sh
+          source ~/.bash_profile
+          ./test/integration/framework/siftool generate-python-protobuf-stubs
+          sleep 30
           export LOG_LEVEL=DEBUG
           bash test/integration/execute_integration_tests_against_test_chain_clp.sh
+
+      - name: Archive logs from test
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: testlogs2
+          path: test/integration
