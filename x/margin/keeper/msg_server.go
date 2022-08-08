@@ -282,7 +282,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	}
 
 	// check MTP health against threshold
-	forceCloseThreshold := k.GetForceCloseThreshold(ctx)
+	forceCloseThreshold := k.GetSafetyFactor(ctx)
 
 	interestRate, err := k.InterestRateComputation(ctx, pool)
 	if err != nil {

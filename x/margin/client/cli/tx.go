@@ -260,7 +260,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("interest-rate-increase")
 	_ = cmd.MarkFlagRequired("interest-rate-decrease")
 	_ = cmd.MarkFlagRequired("health-gain-factor")
-	_ = cmd.MarkFlagRequired("force-close-threshold")
+	//_ = cmd.MarkFlagRequired("force-close-threshold")
 	_ = cmd.MarkFlagRequired("removal-queue-threshold")
 	_ = cmd.MarkFlagRequired("max-open-positions")
 	_ = cmd.MarkFlagRequired("pool-open-threshold")
