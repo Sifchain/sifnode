@@ -148,25 +148,25 @@ pre the upgrade with a `commission-rate` below `minCommission`.
 git checkout v0.14.0
 ```
 
-2. Initialize the chain
-
-```
-make init
-```
-
-3. Decrease the governance voting period time before first start:
-
-```
-echo "$(jq '.app_state.gov.voting_params.voting_period = "60s"' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json
-```
-
-4. Set validator `commission-rate` to 3% and `max-commission-rate` to 4%
+2. Update the init script to set validator `commission-rate` to 3% and `max-commission-rate` to 4%
 
 NOTE: The commission-rates of the validator could be permanently set to 3% and 4% in the `scripts/init.sh` script. This
 however causes the chain to fail to start on newer versions of the code which have the new min-commission feature.
 
 ```
 sed -i 's/sifnoded gentx/sifnoded gentx sif 1000000000000000000000000stake --chain-id=localnet --keyring-backend=test --commission-max-rate=0.04 --commission-rate=0.03/g' scripts/init.sh
+```
+
+3. Initialize the chain
+
+```
+make init
+```
+
+4. Decrease the governance voting period time before first start:
+
+```
+echo "$(jq '.app_state.gov.voting_params.voting_period = "60s"' $HOME/.sifnoded/config/genesis.json)" > $HOME/.sifnoded/config/genesis.json
 ```
 
 5. Start the chain
