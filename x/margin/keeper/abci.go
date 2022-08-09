@@ -67,7 +67,7 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 		interestPaid, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool) // do something with error? log?
 		if err == nil {
 			// Emit event if payment was made
-			k.EmitInterestPayment(ctx, mtp, interestPaid)
+			k.EmitIncrementalInterestPayment(ctx, mtp, interestPaid)
 		}
 	} else { // else update unpaid mtp interest
 		_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate) // do something with error? log?

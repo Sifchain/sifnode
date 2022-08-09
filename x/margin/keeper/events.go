@@ -29,8 +29,8 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.
 	))
 }
 
-func (k Keeper) EmitInterestPayment(ctx sdk.Context, mtp *types.MTP, interestPayment sdk.Uint) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
+func (k Keeper) EmitIncrementalInterestPayment(ctx sdk.Context, mtp *types.MTP, interestPayment sdk.Uint) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventIncrementalInterestPayment,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
 		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
@@ -40,7 +40,7 @@ func (k Keeper) EmitInterestPayment(ctx sdk.Context, mtp *types.MTP, interestPay
 		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
 		sdk.NewAttribute("leverage", mtp.Leverage.String()),
 		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
-		sdk.NewAttribute("interest_paid", mtp.InterestUnpaid.String()),
+		sdk.NewAttribute("interest_paid", mtp.InterestPaid.String()),
 		sdk.NewAttribute("interest_unpaid", mtp.InterestUnpaid.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 		sdk.NewAttribute("interest_payment", interestPayment.String()),
