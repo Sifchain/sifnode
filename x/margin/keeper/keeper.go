@@ -478,12 +478,6 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 		interestPayment = interestPayment.Add(mtp.InterestUnpaid)
 	}
 
-	// not enough collateral left to cover interest
-	if interestPayment.GTE(mtp.CollateralAmount) {
-		// close? force close is called right after this
-		// do we want to continue charging interest in this case?
-	}
-
 	// add payment to total paid
 	mtp.InterestPaid = mtp.InterestPaid.Add(interestPayment)
 	// swap interest payment to custody asset for payment
