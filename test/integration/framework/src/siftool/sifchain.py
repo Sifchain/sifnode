@@ -40,6 +40,33 @@ SIFNODED_DEFAULT_GRPC_PORT = 9090  # In config/app.toml, section [grpc]
 SIFNODED_DEFAULT_GRPC_WEB_PORT = 9091  # In config/app.toml, section [grpc-web]
 
 
+# Fees for sifchain -> sifchain transactions, paid by the sender.
+# TODO This should be dynamic (per-Sifnoded)
+sif_tx_fee_in_rowan = 1 * 10**17
+
+# Fees for "ethbridge burn" transactions. Determined experimentally
+# TODO This should be dynamic (per-Sifnoded)
+sif_tx_burn_fee_in_rowan = 100000
+sif_tx_burn_fee_in_ceth = 1
+
+# TODO This should be dynamic (per-Sifnoded)
+# There seems to be a minimum amount of rowan that a sif account needs to own in order for the bridge to do an
+# "ethbridge burn". This amount does not seem to be actually used. For example, if you fund the account just with
+# sif_tx_burn_fee_in_rowan, We observed that if you try to fund sif accounts with just the exact amount of rowan
+# needed to pay fees (sif_tx_burn_fee_in_rowan * number_of_transactions), the bridge would stop forwarding after
+# approx. 200 transactions, and you would see in sifnoded logs this message:
+# {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"...","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
+# TODO This should be dynamic (per-Sifnoded)
+sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
+
+# Fee for transfering ERC20 tokens from an ethereum account to sif account (approve + lock). This is the maximum cost
+# for a single transfer (regardless of amount) that the sender needs to have in his account in order for transaction to
+# be processed. This value was determined experimentally with hardhat. Typical effective fee is 210542 GWEI per
+# transaction, but for some reason the logic requires sender to have more funds in his account.
+# TODO This should be dynamic (per-Sifnoded)
+max_eth_transfer_fee = 10000000 * eth.GWEI
+
+
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
@@ -96,6 +123,17 @@ def format_peer_address(node_id: str, hostname: str, p2p_port: int) -> str:
 
 def format_node_url(hostname: str, p2p_port: int) -> str:
     return "tcp://{}:{}".format(hostname, p2p_port)
+
+# Use this to check the output of sifnoded commands if transaction was successful. This can only be used with
+# "--broadcast-mode block" when the stack trace is returned in standard output (json/yaml) field `raw_log`.
+# @TODO Sometimes, raw_log is also json file, c.f. Sifnoded.send()
+def check_raw_log(res: JsonDict):
+    if res["code"] == 0:
+        assert res["height"] != 0
+        return
+    lines = res["raw_log"].splitlines()
+    last_line = lines[-1]
+    raise SifnodedException(last_line)
 
 def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
     multipliers: Iterable[Tuple[str, int]], allocation: int, reward_period_default_multiplier: float,
@@ -342,8 +380,8 @@ class Sifnoded:
     def staking_create_validator(self, amount: cosmos.Balance, pubkey: JsonDict, moniker: str, commission_rate: float,
         commission_max_rate: float, commission_max_change_rate: float, min_self_delegation: int,
         from_acct: cosmos.Address, broadcast_mode: Optional[str] = None
-    ):
-        assert len(amount) == 1  # Maybe not? We haven't seen staking with more than one denom yet though.
+    ) -> JsonDict:
+        assert len(amount) == 1  # Maybe not? We haven't seen staking with more than one denom yet...
         assert cosmos.balance_exceeds(self.get_balance(from_acct), amount)
         assert pubkey["@type"] == "/cosmos.crypto.ed25519.PubKey"
         args = ["tx", "staking", "create-validator", "--amount", cosmos.balance_format(amount), "--pubkey",
@@ -351,6 +389,15 @@ class Sifnoded:
             "--commission-max-rate", str(commission_max_rate), "--commission-max-change-rate",
             str(commission_max_change_rate), "--min-self-delegation", str(min_self_delegation), "--from", from_acct] + \
             self._home_args() + self._chain_id_args() + self._node_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def staking_edit_validator(self, commission_rate: float, from_acct: cosmos.Address,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "staking", "edit-validator", "--from", from_acct, "--commission-rate", str(commission_rate)] + \
+            self._chain_id_args() + self._home_args() + self._node_args() + self._keyring_backend_args() + \
             self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
@@ -521,7 +568,9 @@ class Sifnoded:
             self._home_args()
         return command.buildcmd(args)
 
-    def send(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address, amounts: cosmos.Balance) -> Mapping:
+    def send(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address, amounts: cosmos.Balance,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
         amounts = cosmos.balance_normalize(amounts)
         assert len(amounts) > 0
         # TODO Implement batching (factor it out of inflate_token and put here)
@@ -531,7 +580,7 @@ class Sifnoded:
         amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string, "--output", "json"] + \
             self._home_args() + self._keyring_backend_args() + self._chain_id_args() + self._node_args() + \
-            self._fees_args() + self._broadcast_mode_args() + self._yes_args()
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         retval = json.loads(stdout(res))
         raw_log = retval["raw_log"]
@@ -539,6 +588,22 @@ class Sifnoded:
             if bad_thing in raw_log:
                 raise Exception(raw_log)
         return retval
+
+    def send_and_check(self, from_addr: cosmos.Address, to_addr: cosmos.Address, amounts: cosmos.Balance
+    ) -> cosmos.Balance:
+        from_balance_before = self.get_balance(from_addr)
+        assert cosmos.balance_exceeds(from_balance_before, amounts), \
+            "Source account has insufficient balance (excluding transaction fee)"
+        to_balance_before = self.get_balance(to_addr)
+        expected_balance = cosmos.balance_add(to_balance_before, amounts)
+        self.send(from_addr, to_addr, amounts)
+        self.wait_for_balance_change(to_addr, to_balance_before, expected_balance=expected_balance)
+        from_balance_after = self.get_balance(from_addr)
+        to_balance_after = self.get_balance(to_addr)
+        expected_tx_fee = {ROWAN: sif_tx_fee_in_rowan}
+        assert cosmos.balance_equal(cosmos.balance_sub(from_balance_before, from_balance_after, expected_tx_fee), amounts)
+        assert cosmos.balance_equal(to_balance_after, expected_balance)
+        return to_balance_after
 
     def get_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
         disable_log: bool = False, retries_on_error: Optional[int] = None, delay_on_error: int = 3
@@ -1086,6 +1151,12 @@ class Ebrelayer:
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--trace"] if trace else [])
         return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+
+
+class SifnodedException(Exception):
+    def __init__(self, message = None):
+        super().__init__(message)
+        self.message = message
 
 
 class RateLimiter:

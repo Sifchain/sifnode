@@ -51,6 +51,7 @@ def random_string(length):
     chars = string.ascii_letters + string.digits
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
+# Choose m out of n in random order
 def random_choice(m: int, n: int, rnd: Optional[random.Random] = None):
     rnd = rnd if rnd is not None else random
     a = [x for x in range(n)]
