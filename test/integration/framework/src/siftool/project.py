@@ -124,6 +124,7 @@ class Project:
         pass
 
     # Top-level "make install" should build everything, such as after git clone. If it does not, it's a bug.
+    # "Official" way is "make clean install"
     def make_all(self):
         self.cmd.execst(["make"], cwd=project_dir(), pipe=False)
 
@@ -303,9 +304,11 @@ class Project:
             cache = cache[:max_cache_items]
         self.cmd.write_text_file(cache_index, json.dumps(cache))
 
+    def get_project_venv_dir(self):
+        return project_dir("test", "integration", "framework", "venv")
+
     def project_python(self):
-        project_venv_dir = project_dir("test", "integration", "framework", "venv")
-        return os.path.join(project_venv_dir, "bin", "python3")
+        return os.path.join(self.get_project_venv_dir(), "bin", "python3")
 
     def _ensure_build_dirs(self):
         for d in ["build", "build/repos", "build/generated"]:
