@@ -521,12 +521,13 @@ func (k Keeper) SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uin
 }
 
 func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
+	threshold := k.GetRemovalQueueThreshold(ctx)
 	sqBeginBlock := k.GetSQBeginBlock(ctx, pool)
 	if sqBeginBlock == 0 {
-		if pool.Health.LT(k.GetPoolOpenThreshold(ctx)) {
+		if pool.Health.LT(threshold) {
 			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight()))
 		}
-	} else if pool.Health.GTE(k.GetPoolOpenThreshold(ctx)) {
+	} else if pool.Health.GTE(threshold) {
 		k.SetSQBeginBlock(ctx, pool, 0)
 	}
 }
