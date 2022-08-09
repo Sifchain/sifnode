@@ -41,7 +41,6 @@ rm -rf $GOPATH/bin/old/sifnoded
 rm -rf $GOPATH/bin/new/sifnoded
 
 # Setup old binary and start chain
-
 git checkout $CurrentBinary
 make install
 cp $GOPATH/bin/sifnoded $GOPATH/bin/old/
