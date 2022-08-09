@@ -56,6 +56,7 @@ message MsgUpdateParamsResponse {}
 message MsgUpdatePools {
   string signer = 1;
   repeated string pools = 2;
+  repeated string closed_pools = 3;
 }
 
 message MsgUpdatePoolsResponse {}
