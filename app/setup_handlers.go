@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Sifchain/sifnode/app/ante"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
@@ -10,12 +11,12 @@ import (
 
 const releaseVersion = "0.15.0"
 
-var minCommissionRate = sdk.NewDecWithPrec(5, 2) //5%
-
 func SetupHandlers(app *SifchainApp) {
 
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
+
+		minCommissionRate := ante.MinCommission
 
 		validators := app.StakingKeeper.GetAllValidators(ctx)
 

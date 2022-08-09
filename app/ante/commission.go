@@ -9,7 +9,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-var minCommission = sdk.NewDecWithPrec(5, 2)   // 5% as a fraction
+var MinCommission = sdk.NewDecWithPrec(5, 2)   // 5% as a fraction
 var maxVotingPower = sdk.NewDecWithPrec(66, 1) // 6.6%
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
@@ -57,16 +57,16 @@ func (vcd ValidateMinCommissionDecorator) getValidator(ctx sdk.Context, bech32Va
 func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.Msg) error {
 	switch msg := msg.(type) {
 	case *stakingtypes.MsgCreateValidator:
-		if msg.Commission.Rate.LT(minCommission) {
+		if msg.Commission.Rate.LT(MinCommission) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"validator commission %s cannot be lower than minimum of %s", msg.Commission.Rate, minCommission)
+				"validator commission %s cannot be lower than minimum of %s", msg.Commission.Rate, MinCommission)
 		}
 	case *stakingtypes.MsgEditValidator:
-		if msg.CommissionRate != nil && msg.CommissionRate.LT(minCommission) {
+		if msg.CommissionRate != nil && msg.CommissionRate.LT(MinCommission) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"validator commission %s cannot be lower than minimum of %s", msg.CommissionRate, minCommission)
+				"validator commission %s cannot be lower than minimum of %s", msg.CommissionRate, MinCommission)
 		}
 	case *stakingtypes.MsgDelegate:
 		val, err := vcd.getValidator(ctx, msg.ValidatorAddress)
