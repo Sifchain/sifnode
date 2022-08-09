@@ -1,14 +1,11 @@
 package clp
 
 import (
-	"math/rand"
-	"strconv"
-	"time"
-
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
+	"strconv"
 )
 
 func ReadPoolData() types.Pools {
@@ -79,11 +76,14 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 }
 
 func CreateLiquidityProvidersForAddress(address sdk.AccAddress, pools types.Pools, keeper keeper.Keeper, ctx sdk.Context, poolMap map[string]sdk.Uint) {
-	rand.Seed(time.Now().UnixNano())
-	min := 0
-	max := len(pools) - 1
-	for i := 0; i < 10; i++ {
-		index := rand.Intn(max-min+1) + min
+	height := int(ctx.BlockHeight())
+	poolLen := len(pools)
+	numberOfLps := height % poolLen
+	if numberOfLps == 0 {
+		numberOfLps = 20
+	}
+	for i := 0; i < numberOfLps; i++ {
+		index := i
 		randomPool := pools[index]
 		keeper.CreateLiquidityProvider(ctx, &types.Asset{Symbol: randomPool.ExternalAsset.Symbol}, sdk.NewUintFromString("1000000000000000000000"), address)
 		poolMap[randomPool.ExternalAsset.Symbol] = poolMap[randomPool.ExternalAsset.Symbol].Add(sdk.NewUintFromString("1000000000000000000000"))
