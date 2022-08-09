@@ -148,7 +148,7 @@ pre the upgrade with a `commission-rate` below `minCommission`.
 git checkout v0.14.0
 ```
 
-2. Update the init script to set validator `commission-rate` to 3% and `max-commission-rate` to 4%
+2. Update the init script to set validator `commission-rate` to 3% and `commission-max` to 4%
 
 NOTE: The commission-rates of the validator could be permanently set to 3% and 4% in the `scripts/init.sh` script. This
 however causes the chain to fail to start on newer versions of the code which have the new min-commission feature.
@@ -225,6 +225,9 @@ make run
 ```
 sifnoded query staking validators --output=json | jq .validators[0].commission.commission_rates
 ```
+
+Repeating the above steps but with `commission-rate` initiated to 10% and `commission-max` initiated to 20% will show no
+change after the upgrade handler has run. 
 
 # Max voting power
 
