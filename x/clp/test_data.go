@@ -30,12 +30,14 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 	rowanAmount := "1000"
 	amount, ok := sdk.NewIntFromString(rowanAmount)
 	if !ok {
-		panic("Unable to generate rowan amount")
+		ctx.Logger().Error("Unable to generate rowan amount")
+		return
 	}
 	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin("ceth", amount), sdk.NewCoin("cusdc", amount), sdk.NewCoin("cwbtc", amount))
 	bigAmount, ok := sdk.NewIntFromString("9999999999999999990000000000000000000000000000000000")
 	if !ok {
-		panic("unable to get big rowan")
+		ctx.Logger().Error("unable to get big rowan")
+		return
 	}
 	pools := ReadPoolData()
 	poolMap := map[string]sdk.Uint{}
@@ -47,15 +49,18 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		err := keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", bigAmount)))
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error(err.Error())
+			continue
 		}
 		err = keeper.GetBankKeeper().MintCoins(ctx, types.ModuleName, coin)
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error(err.Error())
+			continue
 		}
 		err = keeper.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, coin)
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error(err.Error())
+			continue
 		}
 		CreateLiquidityProvidersForAddress(address, pools, keeper, ctx, poolMap)
 	}
@@ -70,7 +75,8 @@ func TestingONLY_CreateAccounts(keeper keeper.Keeper, ctx sdk.Context) {
 			RewardPeriodNativeDistributed: sdk.Uint{},
 		})
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error(err.Error())
+			continue
 		}
 	}
 }
