@@ -154,7 +154,7 @@ NOTE: The commission-rates of the validator could be permanently set to 3% and 4
 however causes the chain to fail to start on newer versions of the code which have the new min-commission feature.
 
 ```
-sed -i 's/sifnoded gentx/sifnoded gentx sif 1000000000000000000000000stake --chain-id=localnet --keyring-backend=test --commission-max-rate=0.04 --commission-rate=0.03/g' scripts/init.sh
+sed -i 's/sifnoded gentx.*/sifnoded gentx sif 1000000000000000000000000stake --chain-id=localnet --keyring-backend=test --commission-max-rate=0.04 --commission-rate=0.03/g' scripts/init.sh
 ```
 
 3. Initialize the chain
