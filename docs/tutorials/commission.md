@@ -99,7 +99,7 @@ This section demonstrates the blocking behaviour on `MsgEditValidator` messages.
 
 ### Success
 
-If editing the `commission-rate` to a value above 5% the edit succeeds.
+If editing the `commission-rate` to a value above 5% (by less than commission-max-change-rate) the edit succeeds.
 
 1. The commission rate can only be updated once within 24hrs, so wait 24 hrs then edit the `akasha_val` validator to set the commission-rate to 7%. NOTE: there doesn't seem to be a way to shorten the wait here, the 24hr check is hardcoded into the sdk, see https://github.com/cosmos/cosmos-sdk/blob/3f8596c1955e40ef30e4abcd06f2237d132db3a9/x/staking/types/commission.go#L85:
 
@@ -145,7 +145,7 @@ pre the upgrade with a `commission-rate` below `minCommission`.
 1. Checkout the previous release
 
 ```
-git checkout v0.13.5
+git checkout v0.14.0
 ```
 
 2. Initialize the chain
@@ -211,7 +211,7 @@ Hit `ctrl-c` to kill the stuck node.
 9. Checkout the release with the min-commission upgrade handler:
 
 ```
-git checkout v0.13.6
+git checkout v0.15.0
 ```
 
 10. Run the release:
