@@ -8,5 +8,6 @@ import (
 )
 
 var (
-	ErrQueued = sdkerrors.Register(ModuleName, 40, "Cannot process immediately, request has been queued")
+	ErrQueued                  = sdkerrors.Register(ModuleName, 41, "Cannot process immediately, request has been queued")
+	ErrRemovalsBlockedByHealth = sdkerrors.Register(ModuleName, 42, "Cannot remove liquidity due to low pool health")
 )

@@ -49,6 +49,10 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 		return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, externalAsset)
 	}
 
+	if !k.IsPoolEnabled(ctx, externalAsset) || k.IsPoolClosed(ctx, externalAsset) {
+		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, externalAsset)
+	}
+
 	if !pool.Health.IsNil() && pool.Health.LTE(k.GetPoolOpenThreshold(ctx)) {
 		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, "pool health too low to open new positions")
 	}
@@ -284,7 +288,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	}
 
 	// check MTP health against threshold
-	forceCloseThreshold := k.GetForceCloseThreshold(ctx)
+	forceCloseThreshold := k.GetSafetyFactor(ctx)
 
 	interestRate, err := k.InterestRateComputation(ctx, pool)
 	if err != nil {
@@ -357,6 +361,7 @@ func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools)
 
 	params := k.GetParams(ctx)
 	params.Pools = msg.Pools
+	params.ClosedPools = msg.ClosedPools
 	k.SetParams(ctx, &params)
 
 	return &types.MsgUpdatePoolsResponse{}, nil

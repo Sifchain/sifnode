@@ -1752,6 +1752,7 @@ func TestKeeper_EC(t *testing.T) {
 						CollateralAmount: testItem.X_A.Mul(chunkItem.chunk).Quo(sdk.NewUint(100)),
 						BorrowAsset:      ec.externalAsset,
 						Position:         types.Position_LONG,
+						Leverage:         sdk.NewDec(1),
 					}
 					msgClose := types.MsgClose{
 						Signer: signer,

@@ -226,6 +226,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 					ForceCloseFundPercentage: sdk.MustNewDecFromStr(viper.GetString("force-close-fund-percentage")),
 					InsuranceFundAddress:     viper.GetString("insurance-fund-address"),
 					SqModifier:               sdk.MustNewDecFromStr(viper.GetString("sq-modifier")),
+					SafetyFactor:             sdk.MustNewDecFromStr(viper.GetString("safety-factor")),
 				},
 			}
 
@@ -252,19 +253,21 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().String("force-close-fund-percentage", "", "percentage of force close proceeds for insurance fund (decimal range 0-1)")
 	cmd.Flags().String("insurance-fund-address", "", "address of insurance fund wallet")
 	cmd.Flags().String("sq-modifier", "", "the modifier value for the removal queue's sq formula")
+	cmd.Flags().String("safety-factor", "", "the safety factor used in liquidation ratio")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
 	_ = cmd.MarkFlagRequired("interest-rate-increase")
 	_ = cmd.MarkFlagRequired("interest-rate-decrease")
 	_ = cmd.MarkFlagRequired("health-gain-factor")
-	_ = cmd.MarkFlagRequired("force-close-threshold")
+	//_ = cmd.MarkFlagRequired("force-close-threshold")
 	_ = cmd.MarkFlagRequired("removal-queue-threshold")
 	_ = cmd.MarkFlagRequired("max-open-positions")
 	_ = cmd.MarkFlagRequired("pool-open-threshold")
 	_ = cmd.MarkFlagRequired("insurance-fund-address")
 	_ = cmd.MarkFlagRequired("force-close-fund-percentage")
 	_ = cmd.MarkFlagRequired("sq-modifier")
+	_ = cmd.MarkFlagRequired("safety-factor")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -272,7 +275,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 func GetUpdatePoolsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-pools [pools.json]",
-		Short: "Update margin enabled pools",
+		Short: "Update margin enabled pools, and closed pools",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -290,9 +293,15 @@ func GetUpdatePoolsCmd() *cobra.Command {
 				return err
 			}
 
+			closedPools, err := readPoolsJSON(viper.GetString("closed-pools"))
+			if err != nil {
+				return err
+			}
+
 			msg := types.MsgUpdatePools{
-				Signer: signer.String(),
-				Pools:  pools,
+				Signer:      signer.String(),
+				Pools:       pools,
+				ClosedPools: closedPools,
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
@@ -303,6 +312,8 @@ func GetUpdatePoolsCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().String("closed-pools", "", "pools that new positions cannot be opened on")
+	_ = cmd.MarkFlagRequired("closed-pools")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

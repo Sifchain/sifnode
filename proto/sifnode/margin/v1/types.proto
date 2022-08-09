@@ -55,7 +55,13 @@ message Params {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  bool incremental_interest_payment_enabled = 16;
+  string safety_factor = 16 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string closed_pools = 17;
+  bool incremental_interest_payment_enabled = 18;
+
 }
 
 enum Position {

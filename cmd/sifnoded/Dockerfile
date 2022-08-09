@@ -29,7 +29,6 @@ RUN go mod download
 
 COPY . .
 
-ENV FEATURE_TOGGLE_MARGIN_CLI_ALPHA=1
 RUN CHAINNET=$CHAINNET make install
 
 #

@@ -72,6 +72,9 @@ func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
 func (k Keeper) GetIncrementalInterestPaymentEnabled(ctx sdk.Context) bool {
 	return k.GetParams(ctx).IncrementalInterestPaymentEnabled
 }
+func (k Keeper) GetSafetyFactor(ctx sdk.Context) sdk.Dec {
+	return k.GetParams(ctx).SafetyFactor
+}
 
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {
 	return k.GetParams(ctx).Pools
@@ -86,6 +89,17 @@ func (k Keeper) SetEnabledPools(ctx sdk.Context, pools []string) {
 func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 	pools := k.GetEnabledPools(ctx)
 	for _, p := range pools {
+		if strings.EqualFold(p, asset) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (k Keeper) IsPoolClosed(ctx sdk.Context, asset string) bool {
+	params := k.GetParams(ctx)
+	for _, p := range params.ClosedPools {
 		if strings.EqualFold(p, asset) {
 			return true
 		}
