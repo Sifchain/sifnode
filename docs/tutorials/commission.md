@@ -184,7 +184,7 @@ sifnoded query staking validators --output=json | jq .validators[0].commission.c
 7. Raise an upgrade proposal:
 
 ```
-sifnoded tx gov submit-proposal software-upgrade 0.13.6 \
+sifnoded tx gov submit-proposal software-upgrade 0.15.0 \
   --from sif \
   --deposit 10000000000000000000stake \
   --upgrade-height 30 \
@@ -210,6 +210,7 @@ Hit `ctrl-c` to kill the stuck node.
 9. Checkout the release with the min-commission upgrade handler:
 
 ```
+git checkout . # to drop the changes made to the init script
 git checkout v0.15.0
 ```
 
