@@ -9,8 +9,8 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-var minCommission = sdk.NewDecWithPrec(5, 2)   // 5%
-var maxVotingPower = sdk.NewDecWithPrec(66, 3) // 6.6%
+var minCommission = sdk.NewDecWithPrec(5, 2)   // 5% as a fraction
+var maxVotingPower = sdk.NewDecWithPrec(66, 1) // 6.6%
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
 
@@ -78,7 +78,7 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		if projectedVotingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"validator would have %s voting power, cannot delegate to a validator with projected %s or higher voting power", projectedVotingPower, maxVotingPower)
+				"This validator has a voting power of %s%%. Delegations not allowed to a validator whose post-delegation voting power is more than %s%%. Please delegate to a validator with less bonded tokens", projectedVotingPower, maxVotingPower)
 		}
 	case *stakingtypes.MsgBeginRedelegate:
 		dstVal, err := vcd.getValidator(ctx, msg.ValidatorDstAddress)
@@ -99,7 +99,7 @@ func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.M
 		if projectedVotingPower.GTE(maxVotingPower) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"validator would have %s voting power, cannot redelegate to a validator with projected %s or higher voting power", projectedVotingPower, maxVotingPower)
+				"This validator has a voting power of %s%%. Delegations not allowed to a validator whose post-delegation voting power is more than %s%%. Please redelegate to a validator with less bonded tokens", projectedVotingPower, maxVotingPower)
 		}
 	}
 	return nil
@@ -116,6 +116,7 @@ func (vcd ValidateMinCommissionDecorator) getTotalDelegatedTokens(ctx sdk.Contex
 	return notBondedAmount.Add(bondedAmount)
 }
 
+// Returns the projected voting power as a percentage (not a fraction)
 func (vcd ValidateMinCommissionDecorator) CalculateDelegateProjectedVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
 	validatorTokens := sdk.NewDecFromInt(validator.GetTokens())
 	totalDelegatedTokens := sdk.NewDecFromInt(vcd.getTotalDelegatedTokens(ctx))
@@ -123,14 +124,15 @@ func (vcd ValidateMinCommissionDecorator) CalculateDelegateProjectedVotingPower(
 	projectedTotalDelegatedTokens := totalDelegatedTokens.Add(delegateAmount)
 	projectedValidatorTokens := validatorTokens.Add(delegateAmount)
 
-	return projectedValidatorTokens.Quo(projectedTotalDelegatedTokens)
+	return projectedValidatorTokens.Quo(projectedTotalDelegatedTokens).Mul(sdk.NewDec(100))
 }
 
+// Returns the projected voting power as a percentage (not a fraction)
 func (vcd ValidateMinCommissionDecorator) CalculateRedelegateProjectedVotingPower(ctx sdk.Context, validator stakingtypes.ValidatorI, delegateAmount sdk.Dec) sdk.Dec {
 	validatorTokens := sdk.NewDecFromInt(validator.GetTokens())
 	projectedTotalDelegatedTokens := sdk.NewDecFromInt(vcd.getTotalDelegatedTokens(ctx)) // no additional delegated tokens
 
 	projectedValidatorTokens := validatorTokens.Add(delegateAmount)
 
-	return projectedValidatorTokens.Quo(projectedTotalDelegatedTokens)
+	return projectedValidatorTokens.Quo(projectedTotalDelegatedTokens).Mul(sdk.NewDec(100))
 }

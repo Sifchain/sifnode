@@ -33,7 +33,7 @@ func TestAnte_CalculateDelegateProjectedVotingPower(t *testing.T) {
 			bondStatus:                   stakingtypes.Bonded,
 			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
 			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
-			expectedVotingPower:          sdk.MustNewDecFromStr("0.4"),
+			expectedVotingPower:          sdk.MustNewDecFromStr("40"),
 		},
 		{
 			name:                         "unbonded - no difference to bonded",
@@ -42,7 +42,7 @@ func TestAnte_CalculateDelegateProjectedVotingPower(t *testing.T) {
 			bondStatus:                   stakingtypes.Unbonded,
 			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
 			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
-			expectedVotingPower:          sdk.MustNewDecFromStr("0.4"),
+			expectedVotingPower:          sdk.MustNewDecFromStr("40"),
 		},
 	}
 
@@ -92,7 +92,7 @@ func TestAnte_CalculateRedelegateProjectedVotingPower(t *testing.T) {
 			bondStatus:                   stakingtypes.Bonded,
 			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
 			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
-			expectedVotingPower:          sdk.MustNewDecFromStr("0.415094339622641509"),
+			expectedVotingPower:          sdk.MustNewDecFromStr("41.5094339622641509"),
 		},
 		{
 			name:                         "unbonded - no difference to bonded",
@@ -101,7 +101,7 @@ func TestAnte_CalculateRedelegateProjectedVotingPower(t *testing.T) {
 			bondStatus:                   stakingtypes.Unbonded,
 			otherValidatorBondedTokens:   sdk.NewIntFromUint64(1050),
 			otherValidatorUnbondedTokens: sdk.NewIntFromUint64(600),
-			expectedVotingPower:          sdk.MustNewDecFromStr("0.415094339622641509"),
+			expectedVotingPower:          sdk.MustNewDecFromStr("41.5094339622641509"),
 		},
 	}
 

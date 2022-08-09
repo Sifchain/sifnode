@@ -304,7 +304,7 @@ sifnoded tx staking delegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 1
 
 Which fails with the message:
 
-`validator would have 0.941619585687382298 voting power, cannot delegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
+`This validator has a voting power of 94.161958568738229800%. Delegations not allowed to a validator whose post-delegation voting power is more than 6.600000000000000000%. Please delegate to a validator with less bonded tokens: invalid request`
 
 ### Failure - Projected voting power too big
 
@@ -322,7 +322,7 @@ sifnoded tx staking delegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy 1
 
 Which fails with the message:
 
-`validator would have 0.139414802065404475 voting power, cannot delegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
+`This validator has a voting power of 13.941480206540447500%. Delegations not allowed to a validator whose post-delegation voting power is more than 6.600000000000000000%. Please delegate to a validator with less bonded tokens: invalid request`
 
 ### Success
 
@@ -407,7 +407,7 @@ sifnoded tx staking redelegate sifvaloper1l7hypmqk2yc334vc6vmdwzp5sdefygj250dmpy
 
 Which fails with the message:
 
-`validator would have 0.941619585687382298 voting power, cannot redelegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
+`This validator has a voting power of 94.161958568738229800%. Delegations not allowed to a validator whose post-delegation voting power is more than 6.600000000000000000%. Please redelegate to a validator with less bonded tokens: invalid request`
 
 ### Failure - Projected voting power too big
 
@@ -425,7 +425,7 @@ sifnoded tx staking redelegate sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna
 
 Which fails with the message:
 
-`validator would have 0.152542372881355932 voting power, cannot redelegate to a validator with projected 0.066000000000000000 or higher voting power: invalid request`
+`This validator has a voting power of 15.254237288135593200%. Delegations not allowed to a validator whose post-delegation voting power is more than 6.600000000000000000%. Please redelegate to a validator with less bonded tokens: invalid request`
 
 ### Success
 
