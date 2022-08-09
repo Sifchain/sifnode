@@ -37,7 +37,7 @@ func NewKeeper(storeKey sdk.StoreKey,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
 	adminKeeper adminkeeper.Keeper,
-	ps paramtypes.Subspace) types.Keeper {
+	ps paramtypes.Subspace) Keeper {
 
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -308,7 +308,6 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 
 // TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
-	sf := k.GetSafetyFactor(ctx)
 	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	xlp := mtp.LiabilitiesP
 
@@ -316,14 +315,12 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		return sdk.ZeroDec(), nil
 	}
 
-	var debt sdk.Dec
-	if strings.EqualFold(mtp.CustodyAsset, clptypes.NativeSymbol) {
-		debt = sdk.NewDecFromBigInt(xlp.BigInt()).Mul(*pool.SwapPriceNative)
-	} else {
-		debt = sdk.NewDecFromBigInt(xlp.BigInt()).Mul(*pool.SwapPriceExternal)
+	debt, err := k.CLPSwap(ctx, xlp, mtp.CustodyAsset, pool)
+	if err != nil {
+		return sdk.ZeroDec(), nil
 	}
 
-	lr := yc.Quo(debt).Mul(sf)
+	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
 
 	return lr, nil
 }
@@ -419,10 +416,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 			returnCoin := sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(actualReturnAmount.BigInt()))
 			returnCoins := coins.Add(returnCoin)
 			addr, err := sdk.AccAddressFromBech32(mtp.Address)
-			if err != nil {
-				return err
-			}
-			err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
 			if err != nil {
 				return err
 			}

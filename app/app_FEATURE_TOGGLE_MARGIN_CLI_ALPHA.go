@@ -29,7 +29,7 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getMaccPerms(maccPerms map[string][]string)
 }
 
 type FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SifchainApp struct {
-	MarginKeeper margintypes.Keeper
+	MarginKeeper marginkeeper.Keeper
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getStoreKeys() []string {
