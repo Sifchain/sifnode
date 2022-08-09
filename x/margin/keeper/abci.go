@@ -27,6 +27,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				}
 				pool.InterestRate = rate
 				_ = k.UpdatePoolHealth(ctx, pool)
+				k.TrackSQBeginBlock(ctx, pool)
 				_ = k.clpKeeper.SetPool(ctx, pool)
 				mtps, _, _ := k.GetMTPsForPool(ctx, pool.ExternalAsset.Symbol, nil)
 				for _, mtp := range mtps {

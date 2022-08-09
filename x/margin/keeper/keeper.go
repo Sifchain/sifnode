@@ -506,6 +506,31 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	return newInterestRate, nil
 }
 
+func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetSQBeginBlockKey(pool))
+	if bz == nil {
+		return 0
+	}
+	return types.GetUint64FromBytes(bz)
+}
+
+func (k Keeper) SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetSQBeginBlockKey(pool), types.GetUint64Bytes(height))
+}
+
+func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
+	sqBeginBlock := k.GetSQBeginBlock(ctx, pool)
+	if sqBeginBlock == 0 {
+		if pool.Health.LT(k.GetPoolOpenThreshold(ctx)) {
+			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight()))
+		}
+	} else if pool.Health.GTE(k.GetPoolOpenThreshold(ctx)) {
+		k.SetSQBeginBlock(ctx, pool, 0)
+	}
+}
+
 func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 	q := k.ClpKeeper().GetRemovalQueue(ctx, pool.ExternalAsset.Symbol)
 	if q.Count == 0 {

@@ -938,6 +938,28 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 	}
 }
 
+func TestSQBeginBlocker(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+	params := marginKeeper.GetParams(ctx)
+	params.PoolOpenThreshold = sdk.NewDec(1)
+	marginKeeper.SetParams(ctx, &params)
+	pool := clptypes.Pool{
+		ExternalAsset: &clptypes.Asset{Symbol: "ceth"},
+		Health:        sdk.NewDec(2),
+	}
+
+	marginKeeper.TrackSQBeginBlock(ctx, &pool)
+	require.Equal(t, uint64(0), marginKeeper.GetSQBeginBlock(ctx, &pool))
+
+	pool.Health = sdk.NewDecWithPrec(1, 1)
+	marginKeeper.TrackSQBeginBlock(ctx.WithBlockHeight(1), &pool)
+	require.Equal(t, uint64(1), marginKeeper.GetSQBeginBlock(ctx, &pool))
+
+	pool.Health = sdk.NewDec(2)
+	marginKeeper.TrackSQBeginBlock(ctx.WithBlockHeight(2), &pool)
+	require.Equal(t, uint64(0), marginKeeper.GetSQBeginBlock(ctx, &pool))
+}
+
 func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	ctx, app := test.CreateTestAppMargin(false)
 	marginKeeper := app.MarginKeeper
