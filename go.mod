@@ -151,6 +151,7 @@ require (
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
+	pgregory.net/rapid v0.4.7
 )
 
 replace (

@@ -113,7 +113,7 @@ def _test_inflate_tokens_parametrized(ctx, number_of_tokens):
 def disabled_test_inflate_tokens_full(ctx):
     amount =  12 * 10**10
     script = InflateTokens(ctx)
-    script.transfer(assets, amount, test_wallets)
+    script.transfer(assets, amount, test_wallets, 0)
 
 
 # TODO
