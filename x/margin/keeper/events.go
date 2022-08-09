@@ -6,6 +6,7 @@ package keeper
 import (
 	"strconv"
 
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -33,4 +34,16 @@ func (k Keeper) EmitRepayInsuranceFund(ctx sdk.Context, mtp *types.MTP, takeAmou
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
 		sdk.NewAttribute("takeAmount", takeAmount.String()),
 	))
+}
+
+func (k Keeper) EmitBelowRemovalThreshold(ctx sdk.Context, pool *clptypes.Pool) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent("below_removal_threshold",
+		sdk.NewAttribute("pool", pool.ExternalAsset.Symbol),
+		sdk.NewAttribute("height", strconv.FormatInt(ctx.BlockHeight(), 10))))
+}
+
+func (k Keeper) EmitAboveRemovalThreshold(ctx sdk.Context, pool *clptypes.Pool) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent("above_removal_threshold",
+		sdk.NewAttribute("pool", pool.ExternalAsset.Symbol),
+		sdk.NewAttribute("height", strconv.FormatInt(ctx.BlockHeight(), 10))))
 }
