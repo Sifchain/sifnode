@@ -162,12 +162,11 @@ echo "$(jq '.app_state.gov.voting_params.voting_period = "60s"' $HOME/.sifnoded/
 
 4. Set validator `commission-rate` to 3% and `max-commission-rate` to 4%
 
-NOTE: The `commission-rate` of the validator could be set to 3% in the `scripts/init.sh` script. This
+NOTE: The commission-rates of the validator could be permanently set to 3% and 4% in the `scripts/init.sh` script. This
 however causes the chain to fail to start on newer versions of the code which have the new min-commission feature.
 
 ```
-sed -i 's/"rate": "0.100000000000000000",/"rate": "0.030000000000000000",/g' $HOME/.sifnoded/config/genesis.json
-sed -i 's/"max_rate": "0.200000000000000000",/"max_rate": "0.040000000000000000",/g' $HOME/.sifnoded/config/genesis.json
+sed -i 's/sifnoded gentx/sifnoded gentx sif 1000000000000000000000000stake --chain-id=localnet --keyring-backend=test --commission-max-rate=0.04 --commission-rate=0.03/g' scripts/init.sh
 ```
 
 5. Start the chain
