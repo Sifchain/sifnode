@@ -27,14 +27,6 @@ class InflateTokens:
         # sequential transfers instead of parallel.
         self.max_ethereum_batch_size = 0
 
-        # Firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
-        # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
-        # Instead, we take advantage of batching multiple denoms to single account with single send command (amounts
-        # separated by by comma: "sifnoded tx bank send ... 100denoma,100denomb,100denomc") and wait for destination
-        # account to show changes for all denoms after each send. But also batches don't work reliably if they are too
-        # big, so we limit the maximum batch size here.
-        self.max_sifnoded_batch_size = 5
-
     def get_whitelisted_tokens(self) -> List[TokenDict]:
         whitelist = self.ctx.get_whitelisted_tokens_from_bridge_bank_past_events()
         ibc_pattern = re.compile("^ibc/([0-9a-fA-F]{64})$")
@@ -174,7 +166,7 @@ class InflateTokens:
         previous_block = self.ctx.eth.w3_conn.eth.block_number
         self.ctx.advance_blocks()
         log.info("Ethereum blocks advanced by {}".format(self.ctx.eth.w3_conn.eth.block_number - previous_block))
-        self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
+        self.ctx.sifnode.wait_for_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
             polling_time=5, timeout=0, change_timeout=self.wait_for_account_change_timeout)
 
     # Distributes from intermediate_sif_account to each individual account
@@ -188,13 +180,13 @@ class InflateTokens:
             remaining = send_amounts
             while remaining:
                 batch_size = len(remaining)
-                if (self.max_sifnoded_batch_size > 0) and (batch_size > self.max_sifnoded_batch_size):
-                    batch_size = self.max_sifnoded_batch_size
+                if (self.ctx.sifnode.max_send_batch_size > 0) and (batch_size > self.ctx.sifnode.max_send_batch_size):
+                    batch_size = self.ctx.sifnode.max_send_batch_size
                 batch = remaining[:batch_size]
                 remaining = remaining[batch_size:]
                 sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
                 self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, batch)
-                self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=batch,
+                self.ctx.sifnode.wait_for_balance_change(sif_acct, sif_balance_before, min_changes=batch,
                     polling_time=2, timeout=0, change_timeout=self.wait_for_account_change_timeout)
                 progress_current += batch_size
                 log.debug("Distributing tokens to wallets: {:0.0f}% done".format((progress_current/progress_total) * 100))
@@ -228,7 +220,7 @@ class InflateTokens:
         # Calculate how much rowan we need to fund intermediate account with. This is only an estimation at this point.
         # We need to take into account that we might need to break transfers in batches. The number of tokens is the
         # number of ERC20 tokens plus one for ETH, rounded up. 5 is a safety factor
-        number_of_batches = 1 if self.max_sifnoded_batch_size == 0 else (len(requested_tokens) + 1) // self.max_sifnoded_batch_size + 1
+        number_of_batches = 1 if self.ctx.sifnode.max_send_batch_size == 0 else (len(requested_tokens) + 1) // self.ctx.sifnode.max_send_batch_size + 1
         fund_rowan = [5 * test_utils.sifnode_funds_for_transfer_peggy1 * n_accounts * number_of_batches, "rowan"]
         log.debug("Estimated number of batches needed to transfer tokens from intermediate sif account to target sif wallet: {}".format(number_of_batches))
         log.debug("Estimated rowan funding needed for intermediate account: {}".format(fund_rowan))
