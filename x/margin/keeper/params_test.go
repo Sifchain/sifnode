@@ -18,14 +18,22 @@ func TestKeeper_ParamGetter(t *testing.T) {
 	marginKeeper := app.MarginKeeper
 
 	data := types.GenesisState{Params: &types.Params{
-		LeverageMax:          sdk.NewDec(10),
-		InterestRateMax:      sdk.NewDec(5),
-		InterestRateMin:      sdk.NewDec(1),
-		InterestRateIncrease: sdk.NewDec(1),
-		InterestRateDecrease: sdk.NewDec(1),
-		HealthGainFactor:     sdk.NewDec(1),
-		EpochLength:          1,
-		ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
+		LeverageMax:              sdk.NewDec(10),
+		InterestRateMax:          sdk.NewDec(5),
+		InterestRateMin:          sdk.NewDec(1),
+		InterestRateIncrease:     sdk.NewDec(1),
+		InterestRateDecrease:     sdk.NewDec(1),
+		HealthGainFactor:         sdk.NewDec(1),
+		EpochLength:              1,
+		ForceCloseThreshold:      sdk.NewDec(1), //TODO get real default
+		ForceCloseFundPercentage: sdk.NewDecWithPrec(1, 1),
+		InsuranceFundAddress:     "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		PoolOpenThreshold:        sdk.NewDecWithPrec(1, 1),
+		RemovalQueueThreshold:    sdk.NewDecWithPrec(1, 1),
+		MaxOpenPositions:         10000,
+		Pools:                    []string{},
+		SqModifier:               sdk.MustNewDecFromStr("10000000000000000000000000"),
+		SafetyFactor:             sdk.MustNewDecFromStr("1.05"),
 	}}
 	marginKeeper.InitGenesis(ctx, data)
 
