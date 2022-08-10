@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "0.15.0-rc.1"
+const releaseVersion = "0.15.0-rc.2"
 
 func SetupHandlers(app *SifchainApp) {
 

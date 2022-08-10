@@ -167,12 +167,11 @@ func TestKeeper_CLPSwap(t *testing.T) {
 		err        error
 	}{
 		{
-			name:       "denom not registered",
+			name:       "denom not registered does not throw an error as it does not rely on tokenregistry",
 			denom:      "unregistred_denom",
 			decimals:   18,
 			to:         "xxx",
 			sentAmount: sdk.NewUint(0),
-			err:        tokenregistrytypes.ErrNotFound,
 		},
 		{
 			name:       "invalid sent amount",
@@ -183,36 +182,32 @@ func TestKeeper_CLPSwap(t *testing.T) {
 			err:        nil,
 		},
 		{
-			name:       "no token adjustment and non-rowan target asset",
+			name:       "no token adjustment and non-rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   18,
 			to:         "xxx",
 			sentAmount: sdk.NewUint(10000000000000),
-			err:        clptypes.ErrNotEnoughAssetTokens,
 		},
 		{
-			name:       "no token adjustment and rowan target asset",
+			name:       "no token adjustment and rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   18,
 			to:         "rowan",
 			sentAmount: sdk.NewUint(10000000000000),
-			err:        clptypes.ErrNotEnoughAssetTokens,
 		},
 		{
-			name:       "token adjustment and non-rowan target asset",
+			name:       "token adjustment and non-rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   9,
 			to:         "xxx",
 			sentAmount: sdk.NewUint(1000),
-			err:        nil,
 		},
 		{
-			name:       "token adjustment and rowan target asset",
+			name:       "token adjustment and rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   9,
 			to:         "rowan",
 			sentAmount: sdk.NewUint(1000000000000),
-			err:        clptypes.ErrNotEnoughAssetTokens,
 		},
 	}
 
@@ -291,7 +286,7 @@ func TestKeeper_Borrow(t *testing.T) {
 			errString:        errors.New("user does not have enough balance of the required coin"),
 		},
 		{
-			name:             "denom not registered",
+			name:             "denom not registered does not throw error as it does not rely on token registry",
 			denom:            "unregistered_denom",
 			decimals:         18,
 			to:               "rowan",
@@ -301,7 +296,6 @@ func TestKeeper_Borrow(t *testing.T) {
 			leverage:         sdk.NewDec(1),
 			health:           sdk.NewDec(1),
 			fundedAccount:    true,
-			err:              tokenregistrytypes.ErrNotFound,
 		},
 		{
 			name:             "not enough balance required to swap",
@@ -431,6 +425,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 		denom            string
 		decimals         int64
 		to               string
+		position         types.Position
 		collateralAmount sdk.Uint
 		custodyAmount    sdk.Uint
 		liabilitiesP     sdk.Uint
@@ -438,9 +433,11 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 		health           sdk.Dec
 		err              error
 		errString        error
+		err2             error
+		errString2       error
 	}{
 		{
-			name:             "denom not registered",
+			name:             "denom not registered does not throw an error as it does rely on token registry",
 			denom:            "unregistred_denom",
 			decimals:         18,
 			to:               "xxx",
@@ -449,10 +446,10 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			liabilitiesP:     sdk.NewUint(1000),
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
-			err:              tokenregistrytypes.ErrNotFound,
+			position:         types.Position_LONG,
 		},
 		{
-			name:             "not enough received asset tokens to swap",
+			name:             "not enough received asset tokens to swap does not throw an error as swap result readjusted based on slippage",
 			denom:            "rowan",
 			decimals:         18,
 			to:               "rowan",
@@ -461,7 +458,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			liabilitiesP:     sdk.NewUint(1000),
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
-			err:              clptypes.ErrNotEnoughAssetTokens,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "swap with same asset",
@@ -473,7 +470,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			liabilitiesP:     sdk.NewUint(1000),
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
-			err:              nil,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "swap with different asset",
@@ -485,10 +482,10 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			liabilitiesP:     sdk.NewUint(1000),
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
-			err:              nil,
+			position:         types.Position_LONG,
 		},
 		{
-			name:             "insufficient liabilities funds",
+			name:             "insufficient liabilities funds does not throw an error as swap result readjusted based on slippage",
 			denom:            "rowan",
 			decimals:         18,
 			to:               "xxx",
@@ -497,7 +494,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			liabilitiesP:     sdk.NewUint(10000000000000),
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
-			err:              clptypes.ErrNotEnoughAssetTokens,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "mtp invalid",
@@ -509,7 +506,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			liabilitiesP:     sdk.NewUint(0),
 			liabilitiesI:     sdk.NewUint(0),
 			health:           sdk.NewDec(1),
-			err:              types.ErrMTPInvalid,
+			err2:             types.ErrMTPInvalid,
+			position:         types.Position_UNSPECIFIED,
 		},
 	}
 
@@ -524,7 +522,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", types.Position_LONG, 1)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", tt.position, 1)
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.LiabilitiesP = tt.liabilitiesP
 			mtp.CollateralAmount = tt.collateralAmount
@@ -538,6 +536,15 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 				require.NoError(t, got)
 			} else {
 				require.ErrorIs(t, got, tt.err)
+			}
+
+			got = mtp.Validate()
+			if tt.errString2 != nil {
+				require.EqualError(t, got, tt.errString2.Error())
+			} else if tt.err2 == nil {
+				require.NoError(t, got)
+			} else {
+				require.ErrorIs(t, got, tt.err2)
 			}
 		})
 	}
@@ -655,6 +662,7 @@ func TestKeeper_Repay(t *testing.T) {
 		decimals         int64
 		to               string
 		address          string
+		position         types.Position
 		collateralAmount sdk.Uint
 		custodyAmount    sdk.Uint
 		liabilitiesP     sdk.Uint
@@ -664,9 +672,11 @@ func TestKeeper_Repay(t *testing.T) {
 		overrideAddress  string
 		err              error
 		errString        error
+		err2             error
+		errString2       error
 	}{
 		{
-			name:             "denom not registered",
+			name:             "denom not registered does not throw an error as it does rely on token registry",
 			denom:            "unregistred_denom",
 			decimals:         18,
 			to:               "xxx",
@@ -677,7 +687,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1),
-			err:              tokenregistrytypes.ErrNotFound,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "cannot afford principle liability",
@@ -691,7 +701,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
-			err:              nil,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "v principle libarity; x excess liability",
@@ -705,7 +715,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
-			err:              nil,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "can afford both",
@@ -719,7 +729,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
-			err:              nil,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "non zero return amount + fails because of wrong address",
@@ -733,6 +743,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
+			position:         types.Position_LONG,
 			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
 		{
@@ -747,6 +758,8 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
+			position:         types.Position_LONG,
+			errString:        errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
 		},
 		{
 			name:             "collateral and native assets are equal",
@@ -760,7 +773,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
-			err:              nil,
+			position:         types.Position_LONG,
 		},
 		{
 			name:             "mtp not found",
@@ -775,6 +788,7 @@ func TestKeeper_Repay(t *testing.T) {
 			liabilitiesI:     sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
+			position:         types.Position_LONG,
 			err:              types.ErrMTPDoesNotExist,
 		},
 	}
@@ -807,6 +821,15 @@ func TestKeeper_Repay(t *testing.T) {
 				require.NoError(t, got)
 			} else {
 				require.ErrorIs(t, got, tt.err)
+			}
+
+			got = mtp.Validate()
+			if tt.errString2 != nil {
+				require.EqualError(t, got, tt.errString2.Error())
+			} else if tt.err2 == nil {
+				require.NoError(t, got)
+			} else {
+				require.ErrorIs(t, got, tt.err2)
 			}
 		})
 	}
@@ -898,14 +921,22 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 			})
 
 			data := types.GenesisState{Params: &types.Params{
-				LeverageMax:          sdk.NewDec(10),
-				InterestRateMax:      tt.interestRateMax,
-				InterestRateMin:      sdk.NewDec(1),
-				InterestRateIncrease: tt.interestRateIncrease,
-				InterestRateDecrease: tt.interestRateDecrease,
-				HealthGainFactor:     sdk.NewDec(1),
-				EpochLength:          1,
-				ForceCloseThreshold:  sdk.NewDec(1), //TODO get real default
+				LeverageMax:              sdk.NewDec(10),
+				InterestRateMax:          tt.interestRateMax,
+				InterestRateMin:          sdk.NewDec(1),
+				InterestRateIncrease:     tt.interestRateIncrease,
+				InterestRateDecrease:     tt.interestRateDecrease,
+				HealthGainFactor:         sdk.NewDec(1),
+				EpochLength:              1,
+				ForceCloseThreshold:      sdk.NewDec(1), //TODO get real default
+				ForceCloseFundPercentage: sdk.NewDecWithPrec(1, 1),
+				InsuranceFundAddress:     "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				PoolOpenThreshold:        sdk.NewDecWithPrec(1, 1),
+				RemovalQueueThreshold:    sdk.NewDecWithPrec(1, 1),
+				MaxOpenPositions:         10000,
+				Pools:                    []string{},
+				SqModifier:               sdk.MustNewDecFromStr("10000000000000000000000000"),
+				SafetyFactor:             sdk.MustNewDecFromStr("1.05"),
 			}}
 			marginKeeper.InitGenesis(ctx, data)
 
