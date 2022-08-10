@@ -5,8 +5,6 @@ package keeper
 
 import (
 	"errors"
-	"strings"
-
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -89,7 +87,7 @@ func (k Keeper) SetEnabledPools(ctx sdk.Context, pools []string) {
 func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 	pools := k.GetEnabledPools(ctx)
 	for _, p := range pools {
-		if strings.EqualFold(p, asset) {
+		if types.StringCompare(p, asset) {
 			return true
 		}
 	}
@@ -100,7 +98,7 @@ func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 func (k Keeper) IsPoolClosed(ctx sdk.Context, asset string) bool {
 	params := k.GetParams(ctx)
 	for _, p := range params.ClosedPools {
-		if strings.EqualFold(p, asset) {
+		if types.StringCompare(p, asset) {
 			return true
 		}
 	}

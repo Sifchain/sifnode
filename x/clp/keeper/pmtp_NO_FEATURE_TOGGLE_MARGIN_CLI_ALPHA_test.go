@@ -1,3 +1,6 @@
+//go:build !FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build !FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+
 package keeper_test
 
 import (
@@ -57,12 +60,6 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				NativeAssetBalance:            sdk.NewUint(1000),
 				ExternalAssetBalance:          sdk.NewUint(1000),
 				PoolUnits:                     sdk.NewUint(1000),
-				NativeCustody:                 sdk.ZeroUint(),
-				ExternalCustody:               sdk.ZeroUint(),
-				NativeLiabilities:             sdk.ZeroUint(),
-				ExternalLiabilities:           sdk.ZeroUint(),
-				Health:                        sdk.ZeroDec(),
-				InterestRate:                  sdk.NewDecWithPrec(1, 1),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 			expectedSwapPriceNative:   sdk.MustNewDecFromStr("1.000000000000000000"),
@@ -89,12 +86,6 @@ func TestKeeper_PolicyRun(t *testing.T) {
 				NativeAssetBalance:            sdk.NewUintFromString("1550459183129248235861408"),
 				ExternalAssetBalance:          sdk.NewUintFromString("174248776094"),
 				PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
-				NativeCustody:                 sdk.ZeroUint(),
-				ExternalCustody:               sdk.ZeroUint(),
-				NativeLiabilities:             sdk.ZeroUint(),
-				ExternalLiabilities:           sdk.ZeroUint(),
-				Health:                        sdk.ZeroDec(),
-				InterestRate:                  sdk.NewDecWithPrec(1, 1),
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
 			},
 			expectedSwapPriceNative:   sdk.MustNewDecFromStr("0.112385271402191051"),
@@ -219,12 +210,6 @@ func TestKeeper_PolicyRun(t *testing.T) {
 							NativeAssetBalance:   tc.nativeAssetAmount,
 							ExternalAssetBalance: tc.externalAssetAmount,
 							PoolUnits:            tc.poolUnits,
-							NativeCustody:        sdk.ZeroUint(),
-							ExternalCustody:      sdk.ZeroUint(),
-							NativeLiabilities:    sdk.ZeroUint(),
-							ExternalLiabilities:  sdk.ZeroUint(),
-							Health:               sdk.ZeroDec(),
-							InterestRate:         sdk.NewDecWithPrec(1, 1),
 						},
 					}
 					clpGs := types.DefaultGenesisState()

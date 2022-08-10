@@ -6,7 +6,6 @@ package keeper
 import (
 	"fmt"
 	"math"
-	"strings"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -150,7 +149,7 @@ func (k Keeper) GetMTPsForPool(ctx sdk.Context, asset string, pagination *query.
 	pageRes, err := query.FilteredPaginate(mtpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var mtp types.MTP
 		k.cdc.MustUnmarshal(value, &mtp)
-		if accumulate && (strings.EqualFold(mtp.CustodyAsset, asset) || strings.EqualFold(mtp.CollateralAsset, asset)) {
+		if accumulate && (types.StringCompare(mtp.CustodyAsset, asset) || types.StringCompare(mtp.CollateralAsset, asset)) {
 			mtps = append(mtps, &mtp)
 			return true, nil
 		}
@@ -266,7 +265,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // collateral is native
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(collateralAmount)
 		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.Liabilities)
 	} else { // collateral is external
@@ -331,7 +330,7 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+	if types.StringCompare(mtp.CustodyAsset, nativeAsset) {
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CustodyAmount)
 		pool.NativeCustody = pool.NativeCustody.Add(mtp.CustodyAmount)
 	} else {
@@ -345,7 +344,7 @@ func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Poo
 func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+	if types.StringCompare(mtp.CustodyAsset, nativeAsset) {
 		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CustodyAmount)
 	} else {
@@ -430,7 +429,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.Liabilities)
 	} else {
@@ -466,7 +465,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) { // custody is native
+	if types.StringCompare(mtp.CustodyAsset, nativeAsset) { // custody is native
 		pool.NativeCustody = pool.NativeCustody.Sub(interestPaymentCustody)
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(interestPaymentCustody)
 	} else { // custody is external
