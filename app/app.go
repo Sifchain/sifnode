@@ -502,6 +502,7 @@ func NewSifAppWithBlacklist(
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
+		dispensation.ModuleName,
 		clptypes.ModuleName,
 	}
 	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_SDK_045_getOrderBeginBlockers(&transferModule)...)

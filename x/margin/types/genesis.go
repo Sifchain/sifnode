@@ -16,7 +16,7 @@ func DefaultGenesis() *GenesisState {
 			InterestRateIncrease:     sdk.NewDecWithPrec(1, 1),
 			ForceCloseThreshold:      sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundPercentage: sdk.NewDecWithPrec(1, 1),
-			InsuranceFundAddress:     "",
+			InsuranceFundAddress:     "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			PoolOpenThreshold:        sdk.NewDecWithPrec(1, 1),
 			RemovalQueueThreshold:    sdk.NewDecWithPrec(1, 1),
 			EpochLength:              1,
