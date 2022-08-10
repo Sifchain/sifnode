@@ -28,7 +28,7 @@ def stdout_lines(res):
 def joinlines(lines):
     return "".join([x + os.linesep for x in lines])
 
-def zero_or_one(items):
+def zero_or_one(items: Sequence[Any]) -> Any:
     if len(items) == 0:
         return None
     elif len(items) > 1:
@@ -36,7 +36,7 @@ def zero_or_one(items):
     else:
         return items[0]
 
-def exactly_one(items):
+def exactly_one(items: Sequence[Any]) -> Any:
     if len(items) == 0:
         raise ValueError("Zero items")
     elif len(items) > 1:

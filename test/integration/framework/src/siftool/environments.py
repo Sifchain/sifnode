@@ -3,7 +3,7 @@ from siftool.sifchain import ROWAN, STAKE
 from siftool import sifchain, command, cosmos
 
 
-# Environment for load test test_many_pools_and_liquidity_providers
+# Environment for load test test_many_pools_and_liquidity_providers and for testing min commission/max voting power
 # Just sifnode, no ethereum
 # Multi-node support
 class SifnodedEnvironment:
@@ -32,6 +32,7 @@ class SifnodedEnvironment:
         self.default_commission_max_change_rate = 0.01
         self.default_min_self_delegation = 1000000
         self.default_initial_validator_mnemonic = None
+        self.default_binary = None
 
     def init(self):
         self.node_info = []
@@ -65,8 +66,9 @@ class SifnodedEnvironment:
             sifnoded0.add_accounts_to_existing_genesis(genesis, all_genesis_balances)
 
         app_state = genesis["app_state"]
-        app_state["gov"]["voting_params"] = {"voting_period": "120s"}
-        app_state["gov"]["deposit_params"]["min_deposit"] = [{"denom": ROWAN, "amount": "10000000"}]
+        app_state["gov"]["voting_params"] = {"voting_period": "60s"}
+        # app_state["gov"]["deposit_params"]["min_deposit"] = [{"denom": ROWAN, "amount": "10000000"}]
+        app_state["gov"]["deposit_params"]["min_deposit"] = [{"denom": STAKE, "amount": "10000000"}]
         app_state["crisis"]["constant_fee"] = {"denom": ROWAN, "amount": "1000"}
         app_state["staking"]["params"]["bond_denom"] = self.staking_denom
         app_state["mint"]["params"]["mint_denom"] = ROWAN
@@ -124,7 +126,7 @@ class SifnodedEnvironment:
         return log_file, process
 
     def fund(self, address: cosmos.Address, amounts: cosmos.Balance):
-        self.sifnoded[0].send_and_check(self.faucet, address, amounts)
+        return self.sifnoded[0].send_and_check(self.faucet, address, amounts)
 
     def add_validator(self, moniker: Optional[str] = None, staking_amount: Optional[int] = None,
         extra_funds: cosmos.Balance = None, commission_rate: Optional[float] = None,
@@ -223,7 +225,7 @@ class SifnodedEnvironment:
         moniker = moniker or "sifnoded-{}".format(next_index)
         home = os.path.join(self.sifnoded_home_root, moniker)
         sifnoded_i = sifchain.Sifnoded(self.cmd, node=sifchain.format_node_url(ANY_ADDR, ports["rpc"]),
-            home=home, chain_id=self.chain_id)
+            home=home, chain_id=self.chain_id, binary=self.default_binary)
         admin_name = "admin-{}".format(next_index)
         mnemonic = None  # TODO
         admin_addr = sifnoded_i.create_addr(admin_name, mnemonic=mnemonic)

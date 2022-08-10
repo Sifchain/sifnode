@@ -163,9 +163,11 @@ def create_lppd_params(start_block: int, end_block: int, rate: float, mod: int) 
 
 
 class Sifnoded:
-    def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None):
+    def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None,
+        binary: Optional[str] = None
+    ):
         self.cmd = cmd
-        self.binary = "sifnoded"
+        self.binary = binary or "sifnoded"
         self.home = home
         self.node = node
         self.chain_id = chain_id
@@ -899,6 +901,43 @@ class Sifnoded:
             encoded_tx = base64.b64decode(stdout(res))
             return encoded_tx
 
+    def version(self) -> str:
+        return exactly_one(stderr(self.sifnoded_exec(["version"])).splitlines())
+
+    def gov_submit_software_upgrade(self, version: str, from_acct: cosmos.Address, deposit: cosmos.Balance,
+        upgrade_height: int, upgrade_info: str, title: str, description: str, broadcast_mode: Optional[str] = None
+    ):
+        args = ["tx", "gov", "submit-proposal", "software-upgrade", version, "--from", from_acct, "--deposit",
+            cosmos.balance_format(deposit), "--upgrade-height", str(upgrade_height), "--upgrade-info", upgrade_info,
+            "--title", title, "--description", description] + self._home_args() +  self._keyring_backend_args() + \
+            self._node_args() + self._chain_id_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
+        res = yaml_load(stdout(self.sifnoded_exec(args)))
+        return res
+
+    def query_gov_proposals(self) -> JsonObj:
+        args = ["query", "gov", "proposals"] + self._node_args() + self._chain_id_args()
+        # Check if there are no active proposals, in this case we don't get an empty result but an error
+        res = self.sifnoded_exec(args, check_exit=False)
+        if res[0] == 1:
+            error_lines = stderr(res).splitlines()
+            if len(error_lines) > 0:
+                if error_lines[0] == "Error: no proposals found":
+                    return []
+        elif res[0] == 0:
+            assert len(stderr(res)) == 0
+            # TODO Pagination without initial block
+            res = yaml_load(stdout(self.sifnoded_exec(args)))
+            assert res["pagination"]["next_key"] is None
+            return res["proposals"]
+
+    def gov_vote(self, proposal_id: int, vote: bool, from_acct: cosmos.Address, broadcast_mode: Optional[str] = None):
+        args = ["tx", "gov", "vote", str(proposal_id), "yes" if vote else "no", "--from", from_acct] + \
+            self._home_args() + self._keyring_backend_args() + self._node_args() + self._chain_id_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = yaml_load(stdout(self.sifnoded_exec(args)))
+        return res
+
     @contextlib.contextmanager
     def _with_temp_json_file(self, json_obj: JsonObj) -> str:
         with self.cmd.with_temp_file() as tmpfile:
@@ -906,10 +945,10 @@ class Sifnoded:
             yield tmpfile
 
     def sifnoded_exec(self, args: List[str], stdin: Union[str, bytes, Sequence[str], None] = None,
-        cwd: Optional[str] = None, disable_log: bool = False
+        cwd: Optional[str] = None, disable_log: bool = False, check_exit: bool = True
     ) -> command.ExecResult:
         args = [self.binary] + args
-        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log)
+        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log, check_exit=check_exit)
         return res
 
     # Block has to be mined, does not work for block 0
@@ -946,6 +985,10 @@ class Sifnoded:
             time.sleep(1)
             if time.time() - start_time > timeout:
                 raise Exception("Timeout expired while waiting for last sifnode transaction to be mined")
+
+    def wait_for_block(self, height: int):
+        while self.get_current_block() < height:
+            time.sleep(1)
 
     # TODO Refactor wait_up() / _wait_up()
     def wait_up(self, host, port):
