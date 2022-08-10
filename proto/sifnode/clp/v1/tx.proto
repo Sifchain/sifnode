@@ -3,6 +3,7 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
+import "sifnode/clp/v1/pool.proto";
 import "sifnode/clp/v1/params.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
@@ -234,6 +235,14 @@ message MsgCancelUnlock {
 
 message MsgCancelUnlockResponse {}
 
+message RemovalRequest {
+  int64 id = 1;
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  MsgRemoveLiquidity msg = 3;
+}
 message MsgModifyLiquidityProtectionRates {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   string current_rowan_liquidity_threshold = 2 [
