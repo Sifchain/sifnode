@@ -74,7 +74,10 @@ func GetOpenCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			leverageDec := sdk.MustNewDecFromStr(leverage)
+			leverageDec, err := sdk.NewDecFromStr(leverage)
+			if err != nil {
+				return err
+			}
 
 			msg := types.MsgOpen{
 				Signer:           signer.String(),
