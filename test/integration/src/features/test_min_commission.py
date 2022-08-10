@@ -1,4 +1,5 @@
 import sys
+import re
 from typing import Tuple
 
 import siftool_path
@@ -46,17 +47,20 @@ def get_binary_for_version(label):
     return project_dir("test", "integration", "framework", "build", "versions", label, "sifnoded")
 
 
-def create_environment(cmd, version, commission_rate=0.06, commission_max_rate=0.10, commission_max_change_rate=0.05):
+def create_environment(cmd, version, commission_rate=0.06, commission_max_rate=0.10, commission_max_change_rate=0.05,
+    default_staking_amount: int = 92 * 10**21
+):
     home_root = "/tmp/siftool.tmp/test_min_commission"
     cmd.rmdir(home_root)
     cmd.mkdir(home_root)
     env = environments.SifnodedEnvironment(cmd)
     env.staking_denom = STAKE
-    env.validator_account_balance = {ROWAN: 10**30, STAKE: 10**30}
+    env.default_validator_balance = {ROWAN: 10**25, STAKE: 10**25}
     env.default_binary = get_binary_for_version(version)
     env.default_commission_rate = commission_rate
     env.default_commission_max_rate = commission_max_rate
     env.default_commission_max_change_rate = commission_max_change_rate
+    env.default_staking_amount = default_staking_amount
     env.sifnoded_home_root = home_root
     env.init()
     env.start()
@@ -67,6 +71,15 @@ def is_min_commission_too_low_exception(e: Exception):
     return \
         (type(e) == sifchain.SifnodedException) and \
         (e.message == 'validator commission 0.030000000000000000 cannot be lower than minimum of 0.050000000000000000: invalid request')
+
+
+def is_max_voting_power_limit_exceeded_exception(e: Exception):
+    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a "
+        "validator whose post-delegation voting power is more than 6.600000000000000000%. Please delegate to a "
+        "validator with less bonded tokens: invalid request$")
+
+    return \
+        (type(e) == sifchain.SifnodedException) and patt.match(e.message)
 
 
 def upgrade(env, new_version):
@@ -106,6 +119,16 @@ def upgrade(env, new_version):
     sifnoded.binary = get_binary_for_version(new_version)
     env._sifnoded_start(0)
     assert sifnoded.version() == new_version
+
+
+def delegate(env, from_index, to_index, amount):
+    from_validator_node_info = env.node_info[from_index]
+    to_validator_node_info = env.node_info[to_index]
+    sifnoded_tmp = env.sifnoded_from_to(from_validator_node_info, to_validator_node_info)
+    validator_addr = env.sifnoded[to_index].get_val_address(to_validator_node_info["admin_addr"])
+    from_addr = from_validator_node_info["admin_addr"]
+    res = sifnoded_tmp.staking_delegate(validator_addr, {env.staking_denom: amount}, from_addr, broadcast_mode="block")
+    sifchain.check_raw_log(res)
 
 
 def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Command, prj: project.Project):
@@ -209,6 +232,52 @@ def test_min_commission_upgrade_handler(cmd: command.Command, prj: project.Proje
     assert float(commission_rates_after["max_change_rate"]) == 0.01
 
 
+def test_max_voting_power(cmd: command.Command, prj: project.Project):
+    stake0 = 1000 * 10**21
+    stake1 = 62 * 10**21
+    stake2 = 100 * 10**21
+    stake3 = 3 * 10**21
+
+    env = create_environment(cmd, NEW_VERSION, default_staking_amount=stake0)
+    env.default_staking_amount = 10**24
+
+    sifnoded = env.sifnoded[0]
+
+    sif_val = env.sifnoded[0]
+    akasha_val = env.add_validator(staking_amount=stake1)
+
+    sif_validator_index = 0
+    akasha_validator_index = 1
+
+    validator_powers_0 = sifnoded.query_staking_validators()
+
+    exception = None
+    try:
+        delegate(env, akasha_validator_index, sif_validator_index, stake2)
+    except Exception as e:
+        exception = e
+    assert is_max_voting_power_limit_exceeded_exception(exception)
+
+    validator_powers_1 = sifnoded.query_staking_validators()
+
+    # First time it's OK
+    delegate(env, sif_validator_index, akasha_validator_index, stake3)
+
+    validator_powers_2 = sifnoded.query_staking_validators()
+
+    # Second time we're already over 6.6%
+    exception = None
+    try:
+        delegate(env, akasha_validator_index, sif_validator_index, stake3)
+    except Exception as e:
+        exception = e
+    assert is_max_voting_power_limit_exceeded_exception(exception)
+
+    validator_powers_3 = sifnoded.query_staking_validators()
+
+    return
+
+
 def main(argv: List[str]):
     basic_logging_setup()
     cmd = command.Command()
@@ -222,9 +291,23 @@ def main(argv: List[str]):
     # Kill off any sifnoded processes running from before
     prj.pkill()
     time.sleep(2)
+
     test_min_commission_create_new_validator(cmd, prj)
+
+    prj.pkill()
+    time.sleep(2)
+
+    # Disabled because it takes 24 hours
     # test_min_commission_modify_existing_validator(cmd, prj)
     test_min_commission_upgrade_handler(cmd, prj)
+
+    prj.pkill()
+    time.sleep(2)
+
+    test_max_voting_power(cmd, prj)
+
+    prj.pkill()
+    time.sleep(2)
 
 
 if __name__ == "__main__":

@@ -395,6 +395,16 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
+    def staking_delegate(self, validator_addr, amount: cosmos.Balance, from_addr: cosmos.Balance,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "staking", "delegate", validator_addr, cosmos.balance_format(amount), "--from", from_addr] + \
+            self._home_args() + self._keyring_backend_args() + self._node_args() + self._chain_id_args() + \
+            self._fees_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
+            self._yes_args()
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
     def staking_edit_validator(self, commission_rate: float, from_acct: cosmos.Address,
         broadcast_mode: Optional[str] = None
     ) -> JsonDict:

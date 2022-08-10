@@ -170,6 +170,11 @@ class SifnodedEnvironment:
             commission_max_change_rate, min_self_delegation)
         return next_index
 
+    # For cross-node things such as creating new validators, delegating etc.
+    def sifnoded_from_to(self, from_node_info, to_node_info) -> sifchain.Sifnoded:
+        return sifchain.Sifnoded(self.cmd, home=from_node_info["home"], chain_id=self.chain_id,
+            node=to_node_info["external_address"], binary=self.default_binary)
+
     def _broadcast_create_validator_msg(self, node_info: JsonDict, staking_amount: int, commission_rate: float,
         commission_max_rate: float, commission_max_change_rate, min_self_delegation: int
     ):
@@ -181,8 +186,7 @@ class SifnodedEnvironment:
         # Send "create validator" transaction. For this we need to use sifnoded with new validator's keystore, but with
         # "--node" pointing to existing (running) validator. We also check that the sender has enough balance for
         # staking and transaction itself.
-        sifnoded_tmp = sifchain.Sifnoded(self.cmd, home=node_info["home"], chain_id=self.chain_id,
-            node=self.node_info[0]["external_address"])
+        sifnoded_tmp = self.sifnoded_from_to(node_info, self.node_info[0])
 
         validators_before = {v["description"]["moniker"] for v in sifnoded_tmp.query_staking_validators()}
         assert moniker not in validators_before
