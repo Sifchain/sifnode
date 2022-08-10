@@ -15,8 +15,8 @@ Prerequisite
 - sudo apt install nodejs
 - Install geth (for peggy2)
   sudo add-apt-repository -y ppa:ethereum/ethereum
-  sudo apt-get update
-  sudo apt-get install ethereum
+  sudo apt update
+  sudo apt install -y ethereum
 
 Additional requirements (depending on your use case):
 - Install Python development libraries (recommended; required if you are compiling Python from source, i.e. using pyenv)

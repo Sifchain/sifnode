@@ -1,13 +1,6 @@
 package keeper_test
 
-import (
-	"testing"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
-)
-
-func CheckEvents(t *testing.T, expectedEvents, events []sdk.Event) {
+/* func CheckEvents(t *testing.T, expectedEvents, events []sdk.Event) {
 	require.ElementsMatch(t, expectedEvents, events)
 	// For more readable debugging on failure, replace above with the below
 	// and add prints were needed
@@ -20,4 +13,4 @@ func CheckEvents(t *testing.T, expectedEvents, events []sdk.Event) {
 	//		require.Equal(t, expectedAttributes[j].String(), attr.String())
 	//	}
 	//}
-}
+} */
