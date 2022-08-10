@@ -40,7 +40,6 @@ var (
 	LiquidityProtectionRateParamsPrefix = []byte{0x09} // Key to store the Liquidity Protection rate params
 	ProviderDistributionParamsPrefix    = []byte{0x0a}
 	RewardsBlockDistributionPrefix      = []byte{0x0b}
-	BlockTimePrefix                     = []byte{0x0c}
 )
 
 // Generates a key for storing a specific pool
