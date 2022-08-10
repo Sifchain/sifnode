@@ -18,12 +18,16 @@ var (
 	_ sdk.Msg = &MsgForceClose{}
 	_ sdk.Msg = &MsgUpdateParams{}
 	_ sdk.Msg = &MsgUpdatePools{}
+	_ sdk.Msg = &MsgDewhitelist{}
+	_ sdk.Msg = &MsgWhitelist{}
 
 	_ legacytx.LegacyMsg = &MsgOpen{}
 	_ legacytx.LegacyMsg = &MsgClose{}
 	_ legacytx.LegacyMsg = &MsgForceClose{}
 	_ legacytx.LegacyMsg = &MsgUpdateParams{}
 	_ legacytx.LegacyMsg = &MsgUpdatePools{}
+	_ legacytx.LegacyMsg = &MsgWhitelist{}
+	_ legacytx.LegacyMsg = &MsgDewhitelist{}
 )
 
 func Validate(asset string) bool {
@@ -207,6 +211,70 @@ func (m MsgUpdatePools) ValidateBasic() error {
 }
 
 func (m MsgUpdatePools) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgWhitelist) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgWhitelist) Route() string {
+	return RouterKey
+}
+
+func (m MsgWhitelist) Type() string {
+	return "whitelist"
+}
+
+func (m MsgWhitelist) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	_, err := sdk.AccAddressFromBech32(m.WhitelistedAddress)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m MsgWhitelist) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgDewhitelist) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgDewhitelist) Route() string {
+	return RouterKey
+}
+
+func (m MsgDewhitelist) Type() string {
+	return "dewhitelist"
+}
+
+func (m MsgDewhitelist) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	_, err := sdk.AccAddressFromBech32(m.WhitelistedAddress)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m MsgDewhitelist) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
