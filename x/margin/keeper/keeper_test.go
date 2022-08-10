@@ -938,6 +938,17 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 	}
 }
 
+func TestWhitelist(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+
+	marginKeeper.WhitelistAddress(ctx, "sif123")
+	is := marginKeeper.IsWhitelisted(ctx, "sif123")
+	require.True(t, is)
+	whitelist, _, err := marginKeeper.GetWhitelist(ctx, nil)
+	require.NoError(t, err)
+	require.Equal(t, []string{"sif123"}, whitelist)
+}
+
 func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	ctx, app := test.CreateTestAppMargin(false)
 	marginKeeper := app.MarginKeeper
