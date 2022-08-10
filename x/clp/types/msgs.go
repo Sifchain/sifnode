@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -262,10 +261,7 @@ func (m MsgDecommissionPool) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
-	if !VerifyRange(len(strings.TrimSpace(m.Symbol)), 0, MaxSymbolLength) {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Symbol)
-	}
-	return nil
+	return sdk.ValidateDenom(m.Symbol)
 }
 
 func (m MsgDecommissionPool) GetSignBytes() []byte {
