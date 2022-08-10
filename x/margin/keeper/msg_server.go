@@ -6,14 +6,12 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
-
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"strconv"
 )
 
 type msgServer struct {
@@ -38,7 +36,7 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
 		externalAsset = msg.CollateralAsset
@@ -170,7 +168,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
 		externalAsset = msg.CollateralAsset
@@ -225,7 +223,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
 			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
@@ -273,7 +271,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
 			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
