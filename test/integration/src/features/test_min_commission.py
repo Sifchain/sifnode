@@ -36,12 +36,6 @@ MAX_VOTING_POWER = 0.066
 OLD_VERSION = "0.14.0"
 NEW_VERSION = "0.15.0-rc.1"
 
-commission_defaults = {
-    "commission_rate": 0.06,
-    "commission_max_rate": 0.10,
-    "commission_max_change_rate": 0.05,
-}
-
 
 def get_binary_for_version(label):
     return project_dir("test", "integration", "framework", "build", "versions", label, "sifnoded")
@@ -65,21 +59,6 @@ def create_environment(cmd, version, commission_rate=0.06, commission_max_rate=0
     env.init()
     env.start()
     return env
-
-
-def is_min_commission_too_low_exception(e: Exception):
-    return \
-        (type(e) == sifchain.SifnodedException) and \
-        (e.message == 'validator commission 0.030000000000000000 cannot be lower than minimum of 0.050000000000000000: invalid request')
-
-
-def is_max_voting_power_limit_exceeded_exception(e: Exception):
-    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a "
-        "validator whose post-delegation voting power is more than 6.600000000000000000%. Please delegate to a "
-        "validator with less bonded tokens: invalid request$")
-
-    return \
-        (type(e) == sifchain.SifnodedException) and patt.match(e.message)
 
 
 def upgrade(env, new_version):
@@ -159,10 +138,9 @@ def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Co
         env.add_validator(moniker="juno", extra_funds={ROWAN: 10**25}, commission_rate=0.03)
     except Exception as e:
         exception = e
-    assert is_min_commission_too_low_exception(exception)
+    assert sifchain.is_min_commission_too_low_exception(exception)
 
     assert len(sifnoded.query_staking_validators()) == 2  # Cross check
-
 
     # Min commission - blocking MsgEditValidator messages
 
@@ -181,12 +159,14 @@ def test_min_commission_create_new_validator(cmd: command.Command, prj: project.
         validator2 = env.add_validator(commission_rate=0.03)
     except Exception as e:
         exception = e
-    assert is_min_commission_too_low_exception(exception)
+    assert sifchain.is_min_commission_too_low_exception(exception)
 
     validator3 = env.add_validator(commission_rate=0.07)
 
 
 def test_min_commission_modify_existing_validator(cmd: command.Command, prj: project.Project):
+    # Using defaults: commission_rate=0.06, commission_max_rate=0.10, commission_max_change_rate=0.05
+    # We create 3 validators for 3 different test cases so that we only have to wait once
     env = create_environment(cmd, NEW_VERSION)
     env.add_validator()
     env.add_validator()
@@ -199,10 +179,17 @@ def test_min_commission_modify_existing_validator(cmd: command.Command, prj: pro
     admin2_addr = env.node_info[2]["admin_addr"]
 
     # Commission cannot be changed more than once in 24h.
+    log.info("Sleeping for 24h...")
     time.sleep(24 * 3600 + 5 * 60)  # 1 day + 5 minutes
+    log.info("Sleep over")
 
-    res = sifnoded0.staking_edit_validator(0.05, from_acct=admin0_addr, broadcast_mode="block")
-    sifchain.check_raw_log(res)
+    exception = None
+    try:
+        res = sifnoded0.staking_edit_validator(0.05, from_acct=admin0_addr, broadcast_mode="block")
+        sifchain.check_raw_log(res)
+    except Exception as e:
+        exception = e
+    assert exception is None
 
     exception = None
     try:
@@ -210,10 +197,14 @@ def test_min_commission_modify_existing_validator(cmd: command.Command, prj: pro
         sifchain.check_raw_log(res)
     except Exception as e:
         exception = e
-    assert is_min_commission_too_low_exception(exception)
+    assert sifchain.is_min_commission_too_low_exception(exception)
 
-    res = sifnoded2.staking_edit_validator(0.07, from_acct=admin2_addr, broadcast_mode="block")
-    sifchain.check_raw_log(res)
+    try:
+        res = sifnoded2.staking_edit_validator(0.07, from_acct=admin2_addr, broadcast_mode="block")
+        sifchain.check_raw_log(res)
+    except Exception as e:
+        exception = e
+    assert exception is None
 
 
 def test_min_commission_upgrade_handler(cmd: command.Command, prj: project.Project):
@@ -256,7 +247,7 @@ def test_max_voting_power(cmd: command.Command, prj: project.Project):
         delegate(env, akasha_validator_index, sif_validator_index, stake2)
     except Exception as e:
         exception = e
-    assert is_max_voting_power_limit_exceeded_exception(exception)
+    assert sifchain.is_max_voting_power_limit_exceeded_exception(exception)
 
     validator_powers_1 = sifnoded.query_staking_validators()
 
@@ -271,7 +262,7 @@ def test_max_voting_power(cmd: command.Command, prj: project.Project):
         delegate(env, akasha_validator_index, sif_validator_index, stake3)
     except Exception as e:
         exception = e
-    assert is_max_voting_power_limit_exceeded_exception(exception)
+    assert sifchain.is_max_voting_power_limit_exceeded_exception(exception)
 
     validator_powers_3 = sifnoded.query_staking_validators()
 
@@ -292,23 +283,27 @@ def main(argv: List[str]):
     prj.pkill()
     time.sleep(2)
 
-    test_min_commission_create_new_validator(cmd, prj)
+    if argv == ["24"]:
+        log.info("24h test")
+        test_min_commission_modify_existing_validator(cmd, prj)
+    else:
+        test_min_commission_create_new_validator(cmd, prj)
+
+        prj.pkill()
+        time.sleep(2)
+
+        test_min_commission_upgrade_handler(cmd, prj)
+
+        prj.pkill()
+        time.sleep(2)
+
+        test_max_voting_power(cmd, prj)
 
     prj.pkill()
     time.sleep(2)
 
-    # Disabled because it takes 24 hours
-    # test_min_commission_modify_existing_validator(cmd, prj)
-    test_min_commission_upgrade_handler(cmd, prj)
-
-    prj.pkill()
-    time.sleep(2)
-
-    test_max_voting_power(cmd, prj)
-
-    prj.pkill()
-    time.sleep(2)
+    log.info("Finished successfully")
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main(sys.argv[1:])

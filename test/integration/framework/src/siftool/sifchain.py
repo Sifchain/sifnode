@@ -1232,6 +1232,22 @@ class RateLimiter:
             self.counter = 0
 
 
+def is_min_commission_too_low_exception(e: Exception):
+    return \
+        (type(e) == SifnodedException) and \
+        (e.message == 'validator commission 0.030000000000000000 cannot be lower than minimum of '
+            '0.050000000000000000: invalid request')
+
+
+def is_max_voting_power_limit_exceeded_exception(e: Exception):
+    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a "
+        "validator whose post-delegation voting power is more than 6.600000000000000000%. Please delegate to a "
+        "validator with less bonded tokens: invalid request$")
+
+    return \
+        (type(e) == SifnodedException) and patt.match(e.message)
+
+
 # This is probably useful for any program that uses web3 library in the same way
 # ETHEREUM_ADDRESS has to start with "0x" and ETHEREUM_PRIVATE_KEY has to be without "0x".
 def _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key):
