@@ -472,10 +472,15 @@ class Sifnoded:
         return json.loads(stdout(res))["entries"]
 
     # Creates file config/gentx/gentx-*.json
-    def gentx(self, name: str, stake: cosmos.Balance):
+    def gentx(self, name: str, stake: cosmos.Balance, commission_rate: Optional[float] = None,
+        commission_max_rate: Optional[float] = None, commission_max_change_rate: Optional[float] = None\
+    ):
         # TODO Make chain_id an attribute
-        args = ["gentx", name, cosmos.balance_format(stake)] + self._home_args() + self._keyring_backend_args() + \
-            self._chain_id_args()
+        args = ["gentx", name, cosmos.balance_format(stake)] + \
+            (["--commission-rate", str(commission_rate)] if commission_rate is not None else []) + \
+            (["--commission-max-rate", str(commission_max_rate)] if commission_max_rate is not None else []) + \
+            (["--commission-max-change-rate", str(commission_max_change_rate)] if commission_max_change_rate is not None else []) + \
+            self._home_args() + self._keyring_backend_args() + self._chain_id_args()
         res = self.sifnoded_exec(args)
         return exactly_one(stderr(res).splitlines())
 

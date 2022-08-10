@@ -7,16 +7,19 @@ from siftool.sifchain import ROWAN, ROWAN_DECIMALS, STAKE
 from siftool import command, cosmos, project, environments, sifchain
 
 
-log = siftool_logger(__name__)
-
-
-MIN_COMISSION = 0.05
-MAX_VOTING_POWER = 0.066
-
-
-# Min commission / max voting power
-# Design document: https://github.com/Sifchain/sifnode/blob/feature/min-commission/docs/tutorials/commission.md
-# Also: https://www.notion.so/sifchain/Minimum-Commissions-Max-Voting-Power-Test-Scenarios-Draft-729620045e2d41f8b18f3a5df28b623b
+# How to use:
+# Install Python 3.8-3.10
+# Run test/integration/framework/siftool venv
+# Prepare sifnoded binaries
+# - Compile sifnoded binary for v0.14.0 and put them into test/integration/framework/build/versions/0.14.0/sifnoded
+# - Compile sifnoded binary for v0.15.0-rc.1 and put them into test/integration/framework/build/versions/0.15.0-rc.1/sifnoded
+# - For exact versions se OLD_VERSION and NEW_VERSION above
+# Run test/integration/framework/venv/bin/python3 test/integration/src/features/test_min_commission.py
+# To watch live logs: tail -F /tmp/siftool.tmp/test_min_commission/sifnoded-0/sifnoded.log
+#
+# More information about min commission / max voting power:
+# Test scenarios (Kevin): https://github.com/Sifchain/sifnode/blob/feature/min-commission/docs/tutorials/commission.md
+# Test scenarios (James): https://www.notion.so/sifchain/Minimum-Commissions-Max-Voting-Power-Test-Scenarios-Draft-729620045e2d41f8b18f3a5df28b623b
 # Useful info:
 # - https://app.zenhub.com/workspaces/current-sprint---engineering-615a2e9fe2abd5001befc7f9/issues/sifchain/sifchain-chainops/200
 # Upgrades:
@@ -24,29 +27,46 @@ MAX_VOTING_POWER = 0.066
 # - https://github.com/Sifchain/sifnode/blob/68f69eb7e390363f336ec7a235ab7e564bf5dabb/scripts/upgrade-integration.sh#L39-L39
 
 
+log = siftool_logger(__name__)
+
+MIN_COMISSION = 0.05
+MAX_VOTING_POWER = 0.066
+
 OLD_VERSION = "0.14.0"
 NEW_VERSION = "0.15.0-rc.1"
+
+commission_defaults = {
+    "commission_rate": 0.06,
+    "commission_max_rate": 0.10,
+    "commission_max_change_rate": 0.05,
+}
 
 
 def get_binary_for_version(label):
     return project_dir("test", "integration", "framework", "build", "versions", label, "sifnoded")
 
 
-def create_environment(cmd, validator_setup: Tuple[Tuple]):
+def create_environment(cmd, version, commission_rate=0.06, commission_max_rate=0.10, commission_max_change_rate=0.05):
     home_root = "/tmp/siftool.tmp/test_min_commission"
     cmd.rmdir(home_root)
     cmd.mkdir(home_root)
     env = environments.SifnodedEnvironment(cmd)
     env.staking_denom = STAKE
     env.validator_account_balance = {ROWAN: 10**30, STAKE: 10**30}
-    env.default_binary = get_binary_for_version(validator_setup[0][0])
-    env.default_commission_rate = validator_setup[0][1]
-    env.default_commission_max_rate = validator_setup[0][2]
-    env.default_commission_max_change_rate = validator_setup[0][3]
+    env.default_binary = get_binary_for_version(version)
+    env.default_commission_rate = commission_rate
+    env.default_commission_max_rate = commission_max_rate
+    env.default_commission_max_change_rate = commission_max_change_rate
     env.sifnoded_home_root = home_root
     env.init()
     env.start()
     return env
+
+
+def is_min_commission_too_low_exception(e: Exception):
+    return \
+        (type(e) == sifchain.SifnodedException) and \
+        (e.message == 'validator commission 0.030000000000000000 cannot be lower than minimum of 0.050000000000000000: invalid request')
 
 
 def upgrade(env, new_version):
@@ -85,6 +105,7 @@ def upgrade(env, new_version):
     time.sleep(5)
     sifnoded.binary = get_binary_for_version(new_version)
     env._sifnoded_start(0)
+    assert sifnoded.version() == new_version
 
 
 def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Command, prj: project.Project):
@@ -115,8 +136,7 @@ def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Co
         env.add_validator(moniker="juno", extra_funds={ROWAN: 10**25}, commission_rate=0.03)
     except Exception as e:
         exception = e
-    assert type(exception) == sifchain.SifnodedException
-    assert exception.message == 'validator commission 0.030000000000000000 cannot be lower than minimum of 0.050000000000000000: invalid request'
+    assert is_min_commission_too_low_exception(exception)
 
     assert len(sifnoded.query_staking_validators()) == 2  # Cross check
 
@@ -128,13 +148,65 @@ def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Co
     sifchain.check_raw_log(res)
 
 
+def test_min_commission_create_new_validator(cmd: command.Command, prj: project.Project):
+    env = create_environment(cmd, NEW_VERSION)
+
+    validator1 = env.add_validator(commission_rate=0.05)
+
+    exception = None
+    try:
+        validator2 = env.add_validator(commission_rate=0.03)
+    except Exception as e:
+        exception = e
+    assert is_min_commission_too_low_exception(exception)
+
+    validator3 = env.add_validator(commission_rate=0.07)
+
+
+def test_min_commission_modify_existing_validator(cmd: command.Command, prj: project.Project):
+    env = create_environment(cmd, NEW_VERSION)
+    env.add_validator()
+    env.add_validator()
+
+    sifnoded0 = env.sifnoded[0]
+    admin0_addr = env.node_info[0]["admin_addr"]
+    sifnoded1 = env.sifnoded[1]
+    admin1_addr = env.node_info[1]["admin_addr"]
+    sifnoded2 = env.sifnoded[2]
+    admin2_addr = env.node_info[2]["admin_addr"]
+
+    # Commission cannot be changed more than once in 24h.
+    time.sleep(24 * 3600 + 5 * 60)  # 1 day + 5 minutes
+
+    res = sifnoded0.staking_edit_validator(0.05, from_acct=admin0_addr, broadcast_mode="block")
+    sifchain.check_raw_log(res)
+
+    exception = None
+    try:
+        res = sifnoded1.staking_edit_validator(0.03, from_acct=admin1_addr, broadcast_mode="block")
+        sifchain.check_raw_log(res)
+    except Exception as e:
+        exception = e
+    assert is_min_commission_too_low_exception(exception)
+
+    res = sifnoded2.staking_edit_validator(0.07, from_acct=admin2_addr, broadcast_mode="block")
+    sifchain.check_raw_log(res)
+
+
 def test_min_commission_upgrade_handler(cmd: command.Command, prj: project.Project):
-    env = create_environment(cmd, ((OLD_VERSION, 0.03, 0.04, 0.01),))
-    actual_commission_rates = env.sifnoded[0].query_staking_validators()
+    env = create_environment(cmd, OLD_VERSION, commission_rate=0.03, commission_max_rate=0.04, commission_max_change_rate=0.01)
+
+    commission_rates_before = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
+    assert float(commission_rates_before["rate"]) == 0.03
+    assert float(commission_rates_before["max_rate"]) == 0.04
+    assert float(commission_rates_before["max_change_rate"]) == 0.01
 
     upgrade(env, NEW_VERSION)
 
-    return
+    commission_rates_after = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
+    assert float(commission_rates_after["rate"]) == 0.05
+    assert float(commission_rates_after["max_rate"]) == 0.05
+    assert float(commission_rates_after["max_change_rate"]) == 0.01
 
 
 def main(argv: List[str]):
@@ -150,7 +222,8 @@ def main(argv: List[str]):
     # Kill off any sifnoded processes running from before
     prj.pkill()
     time.sleep(2)
-    # should_not_add_validator_with_commission_less_than_5_percent(cmd, prj)
+    test_min_commission_create_new_validator(cmd, prj)
+    # test_min_commission_modify_existing_validator(cmd, prj)
     test_min_commission_upgrade_handler(cmd, prj)
 
 

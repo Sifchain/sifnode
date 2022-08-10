@@ -35,6 +35,9 @@ class SifnodedEnvironment:
         self.default_binary = None
 
     def init(self):
+        assert self.default_commission_max_change_rate <= self.default_commission_max_rate, \
+            "Commission max_change_rate cannot be more than commission_max_rate"
+
         self.node_info = []
         self.sifnoded = []
         self.sifnoded_home_root = self.sifnoded_home_root or self.cmd.mktempdir()
@@ -74,7 +77,9 @@ class SifnodedEnvironment:
         app_state["mint"]["params"]["mint_denom"] = ROWAN
         sifnoded0.save_genesis_json(genesis)
 
-        sifnoded0.gentx(admin0_name, {self.staking_denom: self.default_staking_amount})
+        sifnoded0.gentx(admin0_name, {self.staking_denom: self.default_staking_amount},
+            commission_rate=self.default_commission_rate, commission_max_rate=self.default_commission_max_rate,
+            commission_max_change_rate=self.default_commission_max_change_rate)
         sifnoded0.collect_gentx()
         sifnoded0.validate_genesis()
 
@@ -145,6 +150,10 @@ class SifnodedEnvironment:
         commission_max_rate = commission_max_rate if commission_max_rate is not None else self.default_commission_max_rate
         commission_max_change_rate = commission_max_change_rate if commission_max_change_rate is not None else self.default_commission_max_change_rate
         min_self_delegation = min_self_delegation if min_self_delegation is not None else self.default_min_self_delegation
+        extra_funds = extra_funds if extra_funds is not None else self.default_validator_balance
+
+        assert commission_max_change_rate <= commission_max_rate, \
+            "Commission max_change_rate cannot be more than commission_max_rate"
 
         assert cosmos.balance_exceeds(extra_funds, {ROWAN: sifchain.sif_tx_fee_in_rowan}), \
             "Validator needs at least one sif_tx_fee_in_rowan to fund the transaction"
