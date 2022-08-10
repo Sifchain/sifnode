@@ -20,11 +20,11 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
 	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate)
 }
 
-func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
+/* func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
 	k clpkeeper.Keeper,
 	ReceivedAsset *types.Asset,
 	liquidityFeeNative sdk.Uint,
 	outPool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 	return clpkeeper.GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate)
-}
+} */
