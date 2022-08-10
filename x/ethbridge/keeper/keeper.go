@@ -24,13 +24,13 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc                 codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	accountKeeper       types.AccountKeeper
-	bankKeeper          types.BankKeeper
-	oracleKeeper        types.OracleKeeper
+	cdc           codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	accountKeeper types.AccountKeeper
+	bankKeeper    types.BankKeeper
+	oracleKeeper  types.OracleKeeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
 	adminKeeper         types.AdminKeeper
-	storeKey            sdk.StoreKey
+	storeKey      sdk.StoreKey
 }
 
 // GetAccountKeeper
@@ -52,13 +52,13 @@ func NewKeeper(
 	adminKeeper types.AdminKeeper,
 	storeKey sdk.StoreKey) Keeper {
 	return Keeper{
-		cdc:                 cdc,
-		accountKeeper:       accountKeeper,
-		bankKeeper:          bankKeeper,
-		oracleKeeper:        oracleKeeper,
+		cdc:           cdc,
+		accountKeeper: accountKeeper,
+		bankKeeper:    bankKeeper,
+		oracleKeeper:  oracleKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
 		adminKeeper:         adminKeeper,
-		storeKey:            storeKey,
+		storeKey:      storeKey,
 	}
 }
 

@@ -1,21 +1,23 @@
-const web3 = require("web3");
-const BigNumber = web3.BigNumber;
-const { ethers } = require("hardhat");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
-const { setup } = require("./helpers/testFixture");
+import web3 from "web3";
+import { ethers } from "hardhat";
+import { use, expect } from "chai";
+import { solidity } from "ethereum-waffle";
+import { setup, TestFixtureState } from "./helpers/testFixture";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BridgeToken__factory, ManyDecimalsToken, ManyDecimalsToken__factory } from "../build";
 
-require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
+const BigNumber = ethers.BigNumber;
 
 use(solidity);
 
 describe("Many Decimals Token", function () {
-  let userOne;
-  let userTwo;
-  let addresses;
-  let state;
-  let tokenFactory;
-  let manyDecimalsToken;
+  let userOne: SignerWithAddress;
+  let userTwo: SignerWithAddress;
+  let addresses: string[];
+  let state: TestFixtureState;
+  let tokenFactory: ManyDecimalsToken__factory;
+  let manyDecimalsToken: ManyDecimalsToken;
+  let accounts: SignerWithAddress[];
 
   before(async function () {
     accounts = await ethers.getSigners();
@@ -30,17 +32,17 @@ describe("Many Decimals Token", function () {
   });
 
   beforeEach(async function () {
-    state = await setup({
-      initialValidators: addresses.slice(2, 6),
-      initialPowers: [25, 25, 25, 25],
-      operator: accounts[0],
-      consensusThreshold: 75,
-      owner: accounts[1],
-      user: userOne,
-      recipient: userTwo,
-      pauser: accounts[8],
-      networkDescriptor: 1,
-    });
+    state = await setup(
+      addresses.slice(2, 6),
+      [25, 25, 25, 25],
+      accounts[0],
+      75,
+      accounts[1],
+      userOne,
+      userTwo,
+      accounts[8],
+      1,
+    );
     state.amount = 1000;
 
     manyDecimalsToken = await tokenFactory.deploy(
@@ -77,8 +79,8 @@ describe("Many Decimals Token", function () {
           1
         );
 
-      afterUserBalance = Number(await manyDecimalsToken.balanceOf(userOne.address));
-      afterUserBalance.should.be.equal(state.amount / 2);
+      const afterUserBalance = Number(await manyDecimalsToken.balanceOf(userOne.address));
+      expect(afterUserBalance).to.equal(state.amount / 2);
 
       await expect(
         state.bridgeBank

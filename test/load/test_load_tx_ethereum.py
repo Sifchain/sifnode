@@ -17,7 +17,6 @@ import web3
 
 fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1
-rowan_contract_address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
 threads_num = 3
 amount_to_send = 10000
@@ -90,14 +89,20 @@ def run_multi_thread(ctx: test_utils.EnvCtx, test_sif_account: str, test_eth_acc
 
     ctx.advance_blocks()
 
+# For this test case, it only success if the operator has the priviledge to mint rowan token in Ethereum.
+# It use the contract which is deployed at the beginning when start the hardhat, and set as bridge token in the map
+# cosmosDenomToDestinationAddress of cosmos bridge. This kind of setting not done in integration env now.
+# The burn rowan case also covered in test_load_tx_ethbridge_burn with different approach.
+# Which burn rowan in sifnode and get the new created bridge token address, not correlated to pre-created one.
+
 def test_load_burn_rowan(ctx: test_utils.EnvCtx):
     rowan_cosmos_denom = "rowan"
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     test_sif_account_initial_balance = ctx.get_sifchain_balance(test_sif_account)
     
-    test_eth_accounts = batch_create_eth_account(ctx, rowan_contract_address)    
+    test_eth_accounts = batch_create_eth_account(ctx, ctx.get_rowan_sc().address)
 
-    run_multi_thread(ctx, test_sif_account, test_eth_accounts, rowan_contract_address, False)
+    run_multi_thread(ctx, test_sif_account, test_eth_accounts, ctx.get_rowan_sc().address, False)
     expected_change = {rowan_cosmos_denom: amount_to_send * threads_num}
     ctx.wait_for_sif_balance_change(test_sif_account, test_sif_account_initial_balance, expected_change)
 

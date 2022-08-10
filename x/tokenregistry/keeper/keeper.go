@@ -2,12 +2,11 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
-
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"

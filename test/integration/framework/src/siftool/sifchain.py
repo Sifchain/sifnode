@@ -251,6 +251,73 @@ class SifnodeClient:
         result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
         return result
 
+    def query_tx(self, tx_hash: str) -> Optional[str]:
+        time.sleep(6)
+        args = [
+            "q", "tx", tx_hash,
+        ] + self._home_args() + \
+            self._chain_id_args()
+
+        try:
+            tx = self.sifnoded_exec(args)
+        except Exception as e:
+            not_found = re.findall(".*(.*tx \(" + tx_hash + "\) not found).*", str(e))
+
+            if len(not_found) > 0:
+                return None
+            else:
+                raise e
+
+        return tx
+
+    def query_tx_exists(self, tx_hash: str) -> bool:
+        return self.query_tx(tx_hash) is not None
+
+    def generate_sign_prophecy_tx(self, from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature: str) -> Mapping:
+        assert on_peggy2_branch, "Only for Peggy2.0"
+        assert self.ctx.eth
+        eth = self.ctx.eth
+
+        args = [
+            "tx", "ethbridge", "sign",
+            str(eth.ethereum_network_descriptor),
+            prophecy_id, to_eth_addr, signature,
+            "--from", from_sif_addr,
+            "--output", "json", "-y", "--generate-only"
+        ] + self._gas_prices_args() + \
+            self._home_args() + \
+            self._chain_id_args() + \
+            self._node_args()
+
+        res = self.sifnoded_exec(args)
+        result = json.loads(stdout(res))
+        return result
+
+    def send_sign_prophecy_with_wrong_signature_grpc(self, from_sif_addr: cosmos.Address, from_val_addr: cosmos.Address,
+        wrong_from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str) -> bool:
+
+        tx = self.generate_sign_prophecy_tx(from_sif_addr, to_eth_addr, prophecy_id, signature_for_sign_prophecy)
+
+        # need update cosmos sender according to prophecy message
+        tx['body']['messages'][0]['cosmos_sender'] = from_val_addr
+
+        signed_tx = self.sign_transaction(tx, from_sif_addr)
+        # replace the cosmos sender to simulate wrong signature for cosmos tx
+        signed_tx['body']['messages'][0]['cosmos_sender'] = wrong_from_sif_addr
+        encoded_tx = self.encode_transaction(signed_tx)
+        result = str(self.broadcast_tx(encoded_tx))
+
+        # tx_response {txhash: "C4CDD532E73F3D12335FA30C306452808BEFAC4A4226803585E738EC24D77320"}
+        find_txhash = re.findall(".*\"(.*)\"", result)
+        if len(find_txhash) > 0:
+            # get the tx hash from result
+            tx_hash = find_txhash[0]
+
+            result = self.query_tx_exists(tx_hash)
+            return result
+        else:
+            return False
+
     def send_from_sifchain_to_ethereum(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int, denom: str,
         generate_only: bool = False
     ) -> Mapping:
@@ -467,7 +534,7 @@ class Ebrelayer:
         self.binary = "ebrelayer"
 
     def peggy2_build_ebrelayer_cmd(self, init_what: str, network_descriptor: int, tendermint_node: str,
-        web3_provider: str, bridge_registry_contract_address: eth.Address, validator_mnemonic: str, chain_id: str,
+        web3_provider: str, bridge_registry_contract_address: eth.Address, validator_moniker: str, chain_id: str,
         node: Optional[str] = None, keyring_backend: Optional[str] = None, keyring_dir: Optional[str] = None,
         sign_with: Optional[str] = None, symbol_translator_file: Optional[str] = None, log_format: Optional[str] = None,
         max_fee_per_gas: Optional[int] = None, max_priority_fee_per_gas: Optional[str] = None,
@@ -483,7 +550,7 @@ class Ebrelayer:
             "--tendermint-node", tendermint_node,  # URL to tendermint node
             "--web3-provider", web3_provider,  # Ethereum web3 service address (ws://localhost:8545/)
             "--bridge-registry-contract-address", bridge_registry_contract_address,
-            "--validator-mnemonic", validator_mnemonic,
+            "--validator-moniker", validator_moniker,
             "--chain-id", chain_id  # chain ID of tendermint node (localnet)
         ] + \
             (extra_args if extra_args else []) + \
