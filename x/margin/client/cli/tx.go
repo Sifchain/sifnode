@@ -85,12 +85,7 @@ func GetOpenCmd() *cobra.Command {
 				Leverage:         leverageDec,
 			}
 
-			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().String("collateral_amount", "0", "amount of collateral asset")
@@ -133,12 +128,7 @@ func GetCloseCmd() *cobra.Command {
 				Id:     id,
 			}
 
-			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().Uint64("id", 0, "id of the position")
@@ -178,12 +168,7 @@ func GetForceCloseCmd() *cobra.Command {
 				Id:         id,
 			}
 
-			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().String("mtp_address", "", "mtp address")
@@ -230,12 +215,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 				},
 			}
 
-			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 
@@ -304,12 +284,7 @@ func GetUpdatePoolsCmd() *cobra.Command {
 				ClosedPools: closedPools,
 			}
 
-			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().String("closed-pools", "", "pools that new positions cannot be opened on")
