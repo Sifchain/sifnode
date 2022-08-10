@@ -253,9 +253,15 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		return nil, sdk.ZeroUint(), err
 	}
 
-	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
+	epochLength := k.GetEpochLength(ctx)
+	epochPosition := k.GetEpochPosition(ctx, epochLength)
+	if epochPosition > 0 {
+		mtp.InterestUnpaid = CalcMTPInterestLiabilities(&mtp, interestRate, epochPosition, epochLength)
+
+		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+		if err != nil {
+			return nil, sdk.ZeroUint(), err
+		}
 	}
 
 	err = k.Repay(ctx, &mtp, pool, repayAmount, false)
@@ -290,22 +296,22 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	// check MTP health against threshold
 	forceCloseThreshold := k.GetSafetyFactor(ctx)
 
-	interestRate, err := k.InterestRateComputation(ctx, pool)
+	interestRate, err := k.InterestRateComputation(ctx, pool) // move into epoch check?
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
 
-	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
+	epochLength := k.GetEpochLength(ctx)
+	epochPosition := k.GetEpochPosition(ctx, epochLength)
+	if epochPosition > 0 {
+		mtp.InterestUnpaid = CalcMTPInterestLiabilities(&mtp, interestRate, epochPosition, epochLength)
 
-	mtpHealth, err := k.UpdateMTPHealth(ctx, mtp, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
+		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+		if err != nil {
+			return nil, sdk.ZeroUint(), err
+		}
 	}
-
-	if mtpHealth.GT(forceCloseThreshold) {
+	if mtp.MtpHealth.GT(forceCloseThreshold) {
 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
 

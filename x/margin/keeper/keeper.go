@@ -6,7 +6,6 @@ package keeper
 import (
 	"fmt"
 	"math"
-	"math/big"
 	"strings"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
@@ -447,31 +446,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
-func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
-	var interestUnpaidRational, liabilitiesRational, rate big.Rat
-
-	rate.SetFloat64(interestRate.MustFloat64())
-
-	liabilitiesRational.SetInt(mtp.Liabilities.BigInt().Add(mtp.Liabilities.BigInt(), mtp.InterestUnpaid.BigInt()))
-	interestUnpaidRational.Mul(&rate, &liabilitiesRational)
-
-	interestUnpaidNew := interestUnpaidRational.Num().Quo(liabilitiesRational.Num(), interestUnpaidRational.Denom())
-	mtp.InterestUnpaid = sdk.NewUintFromBigInt(interestUnpaidNew.Add(interestUnpaidNew, mtp.InterestUnpaid.BigInt()))
-
-	return k.SetMTP(ctx, mtp)
-}
-
-func (k Keeper) CalcMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) sdk.Uint {
-	var interestLiabilitiesRational, liabilitiesRational, rate big.Rat
-
-	rate.SetFloat64(interestRate.MustFloat64())
-
-	liabilitiesRational.SetInt(mtp.Liabilities.BigInt())
-	interestLiabilitiesRational.Mul(&rate, &liabilitiesRational)
-
-	return sdk.NewUintFromBigInt(interestLiabilitiesRational.Num())
-}
-
 func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
 	// if mtp has unpaid interest, add to payment
 	if mtp.InterestUnpaid.GT(sdk.ZeroUint()) {
@@ -514,40 +488,8 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	interestRateIncrease := k.GetInterestRateIncrease(ctx)
 	interestRateDecrease := k.GetInterestRateDecrease(ctx)
 	healthGainFactor := k.GetHealthGainFactor(ctx)
-
-	prevInterestRate := pool.InterestRate
-
-	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
-	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
-	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
-	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
-
-	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
-	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
-
-	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQ(ctx, pool))
-
-	interestRateChange := targetInterestRate.Sub(prevInterestRate)
-	interestRate := prevInterestRate
-	if interestRateChange.LTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
-		interestRate = targetInterestRate
-	} else if interestRateChange.GT(interestRateIncrease) {
-		interestRate = prevInterestRate.Add(interestRateIncrease)
-	} else if interestRateChange.LT(interestRateDecrease.Mul(sdk.NewDec(-1))) {
-		interestRate = prevInterestRate.Sub(interestRateDecrease)
-	}
-
-	newInterestRate := interestRate
-
-	if interestRate.GT(interestRateMin) && interestRate.LT(interestRateMax) {
-		newInterestRate = interestRate
-	} else if interestRate.LTE(interestRateMin) {
-		newInterestRate = interestRateMin
-	} else if interestRate.GTE(interestRateMax) {
-		newInterestRate = interestRateMax
-	}
-
-	return newInterestRate, nil
+	sQ := k.GetSQ(ctx, pool)
+	return CalcInterestRate(interestRateMax, interestRateMin, interestRateIncrease, interestRateDecrease, healthGainFactor, sQ, pool)
 }
 
 func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
@@ -568,4 +510,10 @@ func ToAsset(asset string) clptypes.Asset {
 	return clptypes.Asset{
 		Symbol: asset,
 	}
+}
+
+// get position of current block in epoch
+func (k Keeper) GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
+	currentHeight := ctx.BlockHeight()
+	return currentHeight % epochLength
 }

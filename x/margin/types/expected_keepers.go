@@ -79,7 +79,6 @@ type Keeper interface {
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
-	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 
@@ -88,4 +87,6 @@ type Keeper interface {
 	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
 	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
+
+	GetEpochPosition(ctx sdk.Context, epochLength int64) int64
 }

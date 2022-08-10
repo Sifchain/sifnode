@@ -13,9 +13,10 @@ import (
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	//check if epoch has passed then execute
-	currentHeight := ctx.BlockHeight()
 	epochLength := k.GetEpochLength(ctx)
-	if currentHeight%epochLength == 0 { // if epoch has passed
+	epochPosition := k.GetEpochPosition(ctx, epochLength)
+
+	if epochPosition == 0 { // if epoch has passed
 		events := sdk.EmptyEvents()
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
@@ -60,17 +61,18 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 		return
 	}
 	mtp.MtpHealth = h
+	// compute interest
+	interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, 0, 0)
 	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
-	// if incremental payment on, compute and pay interest
+	// if incremental payment on, pay interest
 	if incrementalInterestPaymentEnabled {
-		interestPayment := k.CalcMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
 		interestPaid, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool) // do something with error? log?
 		if err == nil {
 			// Emit event if payment was made
 			k.EmitIncrementalInterestPayment(ctx, mtp, interestPaid)
 		}
 	} else { // else update unpaid mtp interest
-		_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate) // do something with error? log?
+		mtp.InterestUnpaid = interestPayment
 	}
 	_ = k.SetMTP(ctx, mtp)
 	_, repayAmount, err := k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
