@@ -108,21 +108,8 @@ func TestKeeper_GetMTPs(t *testing.T) {
 	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", types.Position_LONG, 1)
 	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", types.Position_LONG, 1)
 	want := []*types.MTP{&key1, &key2}
-	got := marginKeeper.GetMTPs(ctx)
-
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v want %v", got, want)
-	}
-}
-
-func TestKeeper_GetAssetsForMTP(t *testing.T) {
-	ctx, app, marginKeeper := initKeeper(t)
-	addr, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-
-	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String(), types.Position_LONG, 1)
-	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String(), types.Position_LONG, 1)
-	want := []string{"ceth"}
-	got := marginKeeper.GetAssetsForMTP(ctx, addr)
+	got, _, err := marginKeeper.GetMTPs(ctx, nil)
+	require.NoError(t, err)
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)

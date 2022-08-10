@@ -1,18 +1,34 @@
 package app
 
 import (
+	"github.com/Sifchain/sifnode/app/ante"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "0.14.0"
+const releaseVersion = "0.15.0-rc.1"
 
 func SetupHandlers(app *SifchainApp) {
+
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
 
+		validators := app.StakingKeeper.GetAllValidators(ctx)
+		for _, v := range validators {
+			if v.Commission.Rate.LT(ante.MinCommission) {
+				v.Commission.Rate = ante.MinCommission
+				v.Commission.UpdateTime = ctx.BlockHeader().Time
+				if v.Commission.MaxRate.LT(ante.MinCommission) {
+					v.Commission.MaxRate = ante.MinCommission
+				}
+
+				// call the before-modification hook since we're about to update the commission
+				app.StakingKeeper.BeforeValidatorModified(ctx, v.GetOperator())
+				app.StakingKeeper.SetValidator(ctx, v)
+			}
+		}
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 

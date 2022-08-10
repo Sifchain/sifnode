@@ -26,10 +26,6 @@ type CLPKeeper interface {
 	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
 	CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to clptypes.Asset, pool clptypes.Pool, marginEnabled bool) (sdk.Uint, error)
-	ValidateZero(inputs []sdk.Uint) bool
-	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
-	IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec
-	GetMinLen(inputs []sdk.Uint) int64
 
 	GetPmtpRateParams(ctx sdk.Context) clptypes.PmtpRateParams
 
@@ -53,9 +49,8 @@ type Keeper interface {
 	SetMTP(ctx sdk.Context, mtp *MTP) error
 	GetMTP(ctx sdk.Context, mtpAddress string, id uint64) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
-	GetMTPs(ctx sdk.Context) []*MTP
-	GetMTPsForPool(ctx sdk.Context, asset string) []*MTP
-	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
+	GetMTPs(ctx sdk.Context, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
+	GetMTPsForPool(ctx sdk.Context, asset string, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
 	DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error
 
@@ -73,6 +68,7 @@ type Keeper interface {
 	GetEnabledPools(ctx sdk.Context) []string
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
+	IsPoolClosed(ctx sdk.Context, asset string) bool
 
 	CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error

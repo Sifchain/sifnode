@@ -15,6 +15,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"math"
 	"math/big"
 )
 
@@ -34,7 +35,7 @@ func NewKeeper(storeKey sdk.StoreKey,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
 	adminKeeper adminkeeper.Keeper,
-	ps paramtypes.Subspace) types.Keeper {
+	ps paramtypes.Subspace) Keeper {
 
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -112,47 +113,51 @@ func (k Keeper) GetMTPIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.MTPPrefix)
 }
 
-func (k Keeper) GetMTPs(ctx sdk.Context) []*types.MTP {
+func (k Keeper) GetMTPs(ctx sdk.Context, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
 	var mtpList []*types.MTP
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
+	store := ctx.KVStore(k.storeKey)
+	mtpStore := prefix.NewStore(store, types.MTPPrefix)
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: math.MaxUint64 - 1,
+		}
+	}
+
+	pageRes, err := query.Paginate(mtpStore, pagination, func(key []byte, value []byte) error {
 		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		k.cdc.MustUnmarshal(value, &mtp)
 		mtpList = append(mtpList, &mtp)
-	}
-	return mtpList
+		return nil
+	})
+
+	return mtpList, pageRes, err
 }
 
-func (k Keeper) GetMTPsForPool(ctx sdk.Context, asset string) []*types.MTP {
-	var mtpList []*types.MTP
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if types.StringCompare(mtp.CustodyAsset, asset) || types.StringCompare(mtp.CollateralAsset, asset) {
-			mtpList = append(mtpList, &mtp)
-		}
-	}
-	return mtpList
-}
+func (k Keeper) GetMTPsForPool(ctx sdk.Context, asset string, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
+	var mtps []*types.MTP
 
-func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string {
-	var assetList []string
-	iterator := k.GetMTPIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var mtp types.MTP
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if mtpAddress.String() == mtp.Address {
-			assetList = append(assetList, mtp.CollateralAsset)
+	store := ctx.KVStore(k.storeKey)
+	mtpStore := prefix.NewStore(store, types.MTPPrefix)
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: math.MaxUint64 - 1,
 		}
 	}
-	return assetList
+
+	pageRes, err := query.FilteredPaginate(mtpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var mtp types.MTP
+		k.cdc.MustUnmarshal(value, &mtp)
+		if accumulate && (types.StringCompare(mtp.CustodyAsset, asset) || types.StringCompare(mtp.CollateralAsset, asset)) {
+			mtps = append(mtps, &mtp)
+			return true, nil
+		}
+
+		return false, nil
+	})
+
+	return mtps, pageRes, err
 }
 
 func (k Keeper) GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
@@ -301,49 +306,21 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 
 // TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
-	// delta x in calculate in y currency
-	nativeAsset := types.GetSettlementAsset()
+	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
+	xlp := mtp.LiabilitiesP
 
-	var normalizedCollateral, normalizedLiabilitiesP, normalizedLiabilitiesI, normalizedCustody sdk.Dec
-	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // collateral is native
-
-		normalizedCustodyInt, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedCustody = sdk.NewDecFromBigInt(normalizedCustodyInt.BigInt())
-		normalizedCollateral = sdk.NewDecFromBigInt(mtp.CollateralAmount.BigInt())
-		normalizedLiabilitiesP = sdk.NewDecFromBigInt(mtp.LiabilitiesP.BigInt())
-		normalizedLiabilitiesI = sdk.NewDecFromBigInt(mtp.LiabilitiesI.BigInt())
-	} else { // collateral is external
-		normalizedCollateralInt, err := k.CLPSwap(ctx, mtp.CollateralAmount, mtp.CustodyAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedCollateral = sdk.NewDecFromBigInt(normalizedCollateralInt.BigInt())
-
-		normalizedLiabilitiesPInt, err := k.CLPSwap(ctx, mtp.LiabilitiesP, mtp.CustodyAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedLiabilitiesP = sdk.NewDecFromBigInt(normalizedLiabilitiesPInt.BigInt())
-
-		normalizedLiabilitiesIInt, err := k.CLPSwap(ctx, mtp.LiabilitiesI, mtp.CustodyAsset, pool)
-		if err != nil {
-			return sdk.Dec{}, err
-		}
-		normalizedLiabilitiesI = sdk.NewDecFromBigInt(normalizedLiabilitiesIInt.BigInt())
-
-		normalizedCustody = sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
+	if xlp.IsZero() {
+		return sdk.ZeroDec(), nil
 	}
 
-	if normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody).Equal(sdk.ZeroDec()) {
-		return sdk.Dec{}, types.ErrMTPInvalid
+	debt, err := k.CLPSwap(ctx, xlp, mtp.CustodyAsset, pool)
+	if err != nil {
+		return sdk.ZeroDec(), nil
 	}
 
-	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilitiesP).Add(normalizedLiabilitiesI).Add(normalizedCustody))
+	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
 
-	return health, nil
+	return lr, nil
 }
 
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
@@ -436,10 +413,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 			returnCoin := sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(actualReturnAmount.BigInt()))
 			returnCoins := coins.Add(returnCoin)
 			addr, err := sdk.AccAddressFromBech32(mtp.Address)
-			if err != nil {
-				return err
-			}
-			err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
 			if err != nil {
 				return err
 			}

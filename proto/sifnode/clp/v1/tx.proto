@@ -3,6 +3,7 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
+import "sifnode/clp/v1/pool.proto";
 import "sifnode/clp/v1/params.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
