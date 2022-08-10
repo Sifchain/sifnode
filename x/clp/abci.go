@@ -138,19 +138,16 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 	}
 }
 
+var blockTime *time.Time = nil
+
 func MeasureBlockTime(ctx sdk.Context, k kpr.Keeper) {
-	before, err := k.GetBlockTime(ctx)
-	if err != nil {
-		k.Logger(ctx).Info(fmt.Sprint("Error getting block time from store: ", err))
-	}
-
 	now := time.Now()
-	k.SetBlockTime(ctx, now)
-
-	if before == nil {
+	if blockTime == nil {
+		blockTime = &now
 		return
 	}
 
-	elapsed := now.Sub(*before)
+	elapsed := now.Sub(*blockTime)
+	blockTime = &now
 	k.Logger(ctx).Info(fmt.Sprint("Block took ", elapsed.Seconds(), "s to execute"))
 }
