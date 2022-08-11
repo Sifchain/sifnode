@@ -37,13 +37,13 @@ func (k Keeper) EmitRepayInsuranceFund(ctx sdk.Context, mtp *types.MTP, takeAmou
 }
 
 func (k Keeper) EmitBelowRemovalThreshold(ctx sdk.Context, pool *clptypes.Pool) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent("below_removal_threshold",
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventBelowRemovalThreshold,
 		sdk.NewAttribute("pool", pool.ExternalAsset.Symbol),
 		sdk.NewAttribute("height", strconv.FormatInt(ctx.BlockHeight(), 10))))
 }
 
 func (k Keeper) EmitAboveRemovalThreshold(ctx sdk.Context, pool *clptypes.Pool) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent("above_removal_threshold",
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAboveRemovalThreshold,
 		sdk.NewAttribute("pool", pool.ExternalAsset.Symbol),
 		sdk.NewAttribute("height", strconv.FormatInt(ctx.BlockHeight(), 10))))
 }

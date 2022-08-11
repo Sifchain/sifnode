@@ -91,5 +91,5 @@ type Keeper interface {
 
 	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
-	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
+	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }
