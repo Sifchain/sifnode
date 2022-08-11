@@ -473,7 +473,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQFromBlocks(ctx, pool))
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
@@ -494,6 +494,8 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	} else if interestRate.GTE(interestRateMax) {
 		newInterestRate = interestRateMax
 	}
+
+	newInterestRate = newInterestRate.Add(k.GetSQFromBlocks(ctx, pool, newInterestRate))
 
 	return newInterestRate, nil
 }
@@ -526,7 +528,7 @@ func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
 	}
 }
 
-func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool, poolInterestRate sdk.Dec) sdk.Dec {
 	beginBlock := k.GetSQBeginBlock(ctx, &pool)
 	if beginBlock == 0 {
 		return sdk.ZeroDec()
@@ -534,8 +536,8 @@ func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 
 	blocks := ctx.BlockHeight() - int64(beginBlock)
 	maxInterestRate := k.GetInterestRateMax(ctx)
-	poolInterestRate, _ := pool.InterestRate.Float64()
-	minus := math.Pow(math.E, -1*poolInterestRate*float64(blocks))
+	poolInterestRateFloat, _ := poolInterestRate.Float64()
+	minus := math.Pow(math.E, -1*poolInterestRateFloat*float64(blocks))
 	minusDec, err := sdk.NewDecFromStr(fmt.Sprintf("%v", minus))
 	if err != nil {
 		minusDec = sdk.NewDec(0)
