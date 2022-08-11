@@ -4,7 +4,6 @@
 package app
 
 import (
-	"github.com/Sifchain/sifnode/x/admin"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin"
@@ -69,14 +68,12 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModules(app *SifchainApp, appCodec *c
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers() []string {
 	return []string{
 		margin.ModuleName,
-		admin.ModuleName,
 	}
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers() []string {
 	return []string{
 		margin.ModuleName,
-		admin.ModuleName,
 	}
 }
 

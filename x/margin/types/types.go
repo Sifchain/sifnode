@@ -67,3 +67,7 @@ func GetPositionFromString(s string) Position {
 		return Position_UNSPECIFIED
 	}
 }
+
+func StringCompare(a, b string) bool {
+	return a == b
+}

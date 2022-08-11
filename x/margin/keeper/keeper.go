@@ -5,10 +5,6 @@ package keeper
 
 import (
 	"fmt"
-	"math"
-	"math/big"
-	"strings"
-
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
@@ -19,6 +15,8 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"math"
+	"math/big"
 )
 
 const MaxPageLimit = 100
@@ -151,7 +149,7 @@ func (k Keeper) GetMTPsForPool(ctx sdk.Context, asset string, pagination *query.
 	pageRes, err := query.FilteredPaginate(mtpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var mtp types.MTP
 		k.cdc.MustUnmarshal(value, &mtp)
-		if accumulate && (strings.EqualFold(mtp.CustodyAsset, asset) || strings.EqualFold(mtp.CollateralAsset, asset)) {
+		if accumulate && (types.StringCompare(mtp.CustodyAsset, asset) || types.StringCompare(mtp.CollateralAsset, asset)) {
 			mtps = append(mtps, &mtp)
 			return true, nil
 		}
@@ -267,7 +265,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // collateral is native
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(collateralAmount)
 		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
 	} else { // collateral is external
@@ -308,7 +306,6 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 
 // TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
-	sf := k.GetSafetyFactor(ctx)
 	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	xlp := mtp.LiabilitiesP
 
@@ -316,14 +313,12 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		return sdk.ZeroDec(), nil
 	}
 
-	var debt sdk.Dec
-	if strings.EqualFold(mtp.CustodyAsset, clptypes.NativeSymbol) {
-		debt = sdk.NewDecFromBigInt(xlp.BigInt()).Mul(*pool.SwapPriceNative)
-	} else {
-		debt = sdk.NewDecFromBigInt(xlp.BigInt()).Mul(*pool.SwapPriceExternal)
+	debt, err := k.CLPSwap(ctx, xlp, mtp.CustodyAsset, pool)
+	if err != nil {
+		return sdk.ZeroDec(), nil
 	}
 
-	lr := yc.Quo(debt).Mul(sf)
+	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
 
 	return lr, nil
 }
@@ -331,7 +326,7 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+	if types.StringCompare(mtp.CustodyAsset, nativeAsset) {
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CustodyAmount)
 		pool.NativeCustody = pool.NativeCustody.Add(mtp.CustodyAmount)
 	} else {
@@ -345,7 +340,7 @@ func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Poo
 func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CustodyAsset, nativeAsset) {
+	if types.StringCompare(mtp.CustodyAsset, nativeAsset) {
 		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtp.CustodyAmount)
 	} else {
@@ -421,10 +416,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 			if err != nil {
 				return err
 			}
-			err = k.BankKeeper().MintCoins(ctx, clptypes.ModuleName, returnCoins)
-			if err != nil {
-				return err
-			}
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, addr, returnCoins)
 			if err != nil {
 				return err
@@ -434,7 +425,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	} else {

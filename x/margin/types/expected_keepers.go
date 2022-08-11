@@ -68,6 +68,7 @@ type Keeper interface {
 	GetEnabledPools(ctx sdk.Context) []string
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
+	IsPoolClosed(ctx sdk.Context, asset string) bool
 
 	CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
