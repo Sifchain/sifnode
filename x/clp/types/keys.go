@@ -3,8 +3,9 @@ package types
 import (
 	"errors"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -24,8 +25,7 @@ const (
 	PoolThrehold        = "1000000000000000000"
 	NativeAssetDecimals = 18
 
-	MaxSymbolLength = 71
-	MaxWbasis       = 10000
+	MaxWbasis = 10000
 )
 
 var (

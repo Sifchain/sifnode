@@ -1,8 +1,6 @@
 package types
 
 import (
-	"strings"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -17,11 +15,7 @@ func NewAsset(symbol string) Asset {
 }
 
 func (a Asset) Validate() bool {
-	if !VerifyRange(len(strings.TrimSpace(a.Symbol)), 0, MaxSymbolLength) {
-		return false
-	}
-	coin := sdk.NewCoin(a.Symbol, sdk.OneInt())
-	return coin.IsValid()
+	return sdk.ValidateDenom(a.Symbol) == nil
 }
 
 func VerifyRange(num, low, high int) bool {
