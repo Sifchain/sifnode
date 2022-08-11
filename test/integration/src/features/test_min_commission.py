@@ -163,18 +163,23 @@ def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Co
 
 
 def test_min_commission_create_new_validator(cmd: command.Command):
-    env = create_environment(cmd, NEW_VERSION)
+    def test_case(commission_rate, commission_max_rate, should_succeed):
+        env = create_environment(cmd, NEW_VERSION)
 
-    validator1 = env.add_validator(commission_rate=0.05)
+        exception = None
+        try:
+            env.add_validator(commission_rate=commission_rate, commission_max_rate=commission_max_rate)
+        except Exception as e:
+            exception = e
 
-    exception = None
-    try:
-        validator2 = env.add_validator(commission_rate=0.03)
-    except Exception as e:
-        exception = e
-    assert sifchain.is_min_commission_too_low_exception(exception)
+        if should_succeed:
+            assert exception is None, repr(exception)
+        else:
+            assert sifchain.is_min_commission_too_low_exception(exception)
 
-    validator3 = env.add_validator(commission_rate=0.07)
+    test_case(0.05, 0.10, True)
+    test_case(0.03, 0.20, False)
+    test_case(0.07, 0.10, True)  # TODO Original scenarion failed for test_case(0.07, 0.04, True)
 
 
 def test_min_commission_modify_existing_validator(cmd: command.Command):
@@ -221,19 +226,27 @@ def test_min_commission_modify_existing_validator(cmd: command.Command):
 
 
 def test_min_commission_upgrade_handler(cmd: command.Command):
-    env = create_environment(cmd, OLD_VERSION, commission_rate=0.03, commission_max_rate=0.04, commission_max_change_rate=0.01)
+    def test_case(pre_upgrade_commission_rate, pre_upgrade_commission_max_rate, expected_commission_rate, expected_commission_max_rate):
+        env = create_environment(cmd, OLD_VERSION, commission_rate=pre_upgrade_commission_rate, commission_max_rate=pre_upgrade_commission_max_rate, commission_max_change_rate=0.01)
 
-    commission_rates_before = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
-    assert float(commission_rates_before["rate"]) == 0.03
-    assert float(commission_rates_before["max_rate"]) == 0.04
-    assert float(commission_rates_before["max_change_rate"]) == 0.01
+        commission_rates_before = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
+        assert float(commission_rates_before["rate"]) == pre_upgrade_commission_rate
+        assert float(commission_rates_before["max_rate"]) == pre_upgrade_commission_max_rate
+        assert float(commission_rates_before["max_change_rate"]) == 0.01
 
-    upgrade(env, NEW_VERSION)
+        upgrade(env, NEW_VERSION)
 
-    commission_rates_after = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
-    assert float(commission_rates_after["rate"]) == 0.05
-    assert float(commission_rates_after["max_rate"]) == 0.05
-    assert float(commission_rates_after["max_change_rate"]) == 0.01
+        commission_rates_after = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
+        assert float(commission_rates_after["rate"]) == expected_commission_rate
+        assert float(commission_rates_after["max_rate"]) == expected_commission_max_rate
+        assert float(commission_rates_after["max_change_rate"]) == 0.01
+
+    test_case(0.03, 0.04, 0.05, 0.05)
+    test_case(0.06, 0.14, 0.06, 0.14)
+    test_case(0.15, 0.25, 0.15, 0.25)
+    test_case(0.02, 0.10, 0.04, 0.10)
+    # test_case(0.12, 0.10, 0.12, 0.10)  # This fails with "panic: commission cannot be more than the max rate"
+    # test_case(0.07, 0.04, 0.07, 0.04)  # This fails with "panic: commission cannot be more than the max rate"
 
 
 def test_max_voting_power(cmd: command.Command):
@@ -241,13 +254,13 @@ def test_max_voting_power(cmd: command.Command):
     def test_case(from_validator_index, to_validator_index, amount, should_succeed):
         env = create_environment(cmd, NEW_VERSION, default_staking_amount=1000 * 10**21)
         env.add_validator(staking_amount=62 * 10**21)
-        time.sleep(5)  # Without this we would sometimes get "validator does not exist" in "tx staking delegate"
         sifnoded = env.sifnoded[0]
 
         validator_powers_before = [int(x["tokens"]) for x in sifnoded.query_staking_validators()]
 
         exception = None
         try:
+            time.sleep(5)  # Without this we would sometimes get "validator does not exist" in "tx staking delegate"
             delegate(env, from_validator_index, to_validator_index, amount)
         except Exception as e:
             exception = e
@@ -282,8 +295,8 @@ def main(argv: List[str]):
         log.info("24h test")
         test_min_commission_modify_existing_validator(cmd)
     else:
-        # test_min_commission_create_new_validator(cmd)
-        # test_min_commission_upgrade_handler(cmd)
+        test_min_commission_create_new_validator(cmd)
+        test_min_commission_upgrade_handler(cmd)
         test_max_voting_power(cmd)
 
     pkill(cmd)
