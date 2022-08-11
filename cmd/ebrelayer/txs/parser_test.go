@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
@@ -44,8 +43,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
 
-	symbolTranslator := symbol_translator.NewSymbolTranslator()
-	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent, symbolTranslator, sugaredLogger)
+	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent)
 	require.NoError(t, err)
 
 	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
@@ -56,8 +54,6 @@ func TestEthereumEventToEthBridgeClaimAcceptsEthSymbolNonNullAddress(t *testing.
 	testTokenContractAddress := ethbridge.NewEthereumAddress(TestEthereumAddress2)
 	testEthereumAddress := ethbridge.NewEthereumAddress(TestEthereumAddress1)
 	testCosmosAddress, _ := sdk.AccAddressFromBech32(TestCosmosAddress1)
-
-	symbolTranslator := symbol_translator.NewSymbolTranslator()
 
 	testRawCosmosValidatorAddress, _ := sdk.AccAddressFromBech32(TestCosmosAddress2)
 	testCosmosValidatorBech32Address := sdk.ValAddress(testRawCosmosValidatorAddress)
@@ -74,9 +70,7 @@ func TestEthereumEventToEthBridgeClaimAcceptsEthSymbolNonNullAddress(t *testing.
 		TestName, TestDecimals)
 
 	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address,
-		ethereumEvent,
-		symbolTranslator,
-		sugaredLogger)
+		ethereumEvent)
 
 	require.NoError(t, err)
 

@@ -11,13 +11,9 @@ import (
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	flag "github.com/spf13/pflag"
-
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -94,11 +90,6 @@ func buildRootCmd() *cobra.Command {
 	))
 	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
-	rootCmd.PersistentFlags().String(
-		ebrelayertypes.FlagSymbolTranslatorFile,
-		"",
-		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
-	)
 	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
@@ -277,11 +268,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	defer loggerCleanup()
 
-	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
-	if err != nil {
-		return err
-	}
-
 	sugaredLogger := logger.Sugar()
 
 	instrumentation.PeggyCheckpointZap(
@@ -323,8 +309,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
-	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll, symbolTranslator)
+	go ethSub.Start(txFactory, &waitForAll)
+	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll)
 	waitForAll.Wait()
 
 	return nil
@@ -477,11 +463,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	}
 	defer loggerCleanup()
 
-	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
-	if err != nil {
-		return err
-	}
-
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Ethereum event listener
@@ -517,8 +498,8 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
-	go cosmosSub.Start(txFactory, &waitForAll, symbolTranslator)
+	go ethSub.Start(txFactory, &waitForAll)
+	go cosmosSub.Start(txFactory, &waitForAll)
 	waitForAll.Wait()
 
 	return nil
@@ -571,21 +552,6 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		"",
 		"The sifnode grpc url",
 	)
-}
-
-func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTranslator, error) {
-	filename, err := flags.GetString(ebrelayertypes.FlagSymbolTranslatorFile)
-	// If FlagSymbolTranslatorFile isn't specified, just use an empty SymbolTranslator
-	if err != nil || filename == "" {
-		return symbol_translator.NewSymbolTranslator(), nil
-	}
-
-	symbolTranslator, err := symbol_translator.NewSymbolTranslatorFromJSONFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	return symbolTranslator, nil
 }
 
 func main() {

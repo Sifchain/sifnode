@@ -18,7 +18,6 @@ import (
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/CosmosBridge.sol"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -46,7 +45,6 @@ const (
 	blockTimeInSecond = 5
 	secondsPerDay     = 60 * 60 * 24
 	daysPerMonth      = 30
-	ProphecyLifeTime  = (secondsPerDay * daysPerMonth) / blockTimeInSecond
 )
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -96,7 +94,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor,
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
+func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := tmclient.New(sub.TmProvider, "/websocket")
@@ -110,7 +108,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 

@@ -11,7 +11,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"go.uber.org/zap"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -22,7 +21,7 @@ const (
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
-func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator, sugaredLogger *zap.SugaredLogger) (ethbridge.EthBridgeClaim, error) {
+func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent) (ethbridge.EthBridgeClaim, error) {
 	ethBridgeClaim := ethbridge.EthBridgeClaim{}
 
 	networkDescriptor := oracletypes.NetworkDescriptor(event.NetworkDescriptor)
@@ -50,9 +49,6 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 
 	// Symbol formatted to lowercase
 	symbol := strings.ToLower(event.Symbol)
-	if event.ClaimType == ethbridge.ClaimType_CLAIM_TYPE_BURN {
-		symbol = symbolTranslator.EthereumToSifchain(symbol)
-	}
 
 	amount := sdk.NewIntFromBigInt(event.Value)
 
@@ -164,52 +160,6 @@ func AttributesToEthereumBridgeClaim(attributes []abci.EventAttribute) (types.Et
 		EthereumSender: ethereumSender,
 		CosmosSender:   cosmosSender,
 		Sequence:       ethereumSenderSequence,
-	}, nil
-}
-
-// AttributesToCosmosSignProphecyClaim parses data from event to EthereumBridgeClaim
-func AttributesToCosmosSignProphecyClaim(attributes []abci.EventAttribute) (types.CosmosSignProphecyClaim, error) {
-	var cosmosSender sdk.ValAddress
-	var networkDescriptor oracletypes.NetworkDescriptor
-	var prophecyID []byte
-	var err error
-	attributeNumber := 0
-
-	for _, attribute := range attributes {
-		key := string(attribute.GetKey())
-		val := string(attribute.GetValue())
-
-		// Set variable based on the attribute's key
-		switch key {
-		case types.CosmosSender.String():
-			cosmosSender, err = sdk.ValAddressFromBech32(val)
-			if err != nil {
-				return types.CosmosSignProphecyClaim{}, err
-			}
-
-		case types.NetworkDescriptor.String():
-			attributeNumber++
-			tempNetworkDescriptor, err := strconv.ParseUint(val, 10, 32)
-			if err != nil {
-				log.Printf("network id can't parse networkDescriptor is %s\n", val)
-				return types.CosmosSignProphecyClaim{}, errors.New("network id can't parse")
-			}
-			networkDescriptor = oracletypes.NetworkDescriptor(uint32(tempNetworkDescriptor))
-
-			// check if the networkDescriptor is valid
-			if !networkDescriptor.IsValid() {
-				return types.CosmosSignProphecyClaim{}, errors.New("network id is invalid")
-			}
-
-		case types.ProphecyID.String():
-			prophecyID = []byte(val)
-		}
-	}
-
-	return types.CosmosSignProphecyClaim{
-		CosmosSender:      cosmosSender,
-		NetworkDescriptor: networkDescriptor,
-		ProphecyID:        prophecyID,
 	}, nil
 }
 
