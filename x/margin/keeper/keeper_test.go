@@ -972,7 +972,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 func TestSQBeginBlocker(t *testing.T) {
 	ctx, _, marginKeeper := initKeeper(t)
 	params := marginKeeper.GetParams(ctx)
-	params.PoolOpenThreshold = sdk.NewDec(1)
+	params.RemovalQueueThreshold = sdk.NewDec(1)
 	marginKeeper.SetParams(ctx, &params)
 	pool := clptypes.Pool{
 		ExternalAsset: &clptypes.Asset{Symbol: "ceth"},

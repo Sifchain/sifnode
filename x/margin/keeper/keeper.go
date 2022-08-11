@@ -5,6 +5,9 @@ package keeper
 
 import (
 	"fmt"
+	"math"
+	"math/big"
+
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
@@ -15,8 +18,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"math"
-	"math/big"
 )
 
 const MaxPageLimit = 100
@@ -472,7 +473,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQ(ctx, pool))
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQFromBlocks(ctx, pool))
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
@@ -515,17 +516,35 @@ func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
 	threshold := k.GetRemovalQueueThreshold(ctx)
 	sqBeginBlock := k.GetSQBeginBlock(ctx, pool)
 	if sqBeginBlock == 0 {
-		if pool.Health.LT(threshold) {
+		if pool.Health.LTE(threshold) {
 			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight()))
 			k.EmitBelowRemovalThreshold(ctx, pool)
 		}
-	} else if pool.Health.GTE(threshold) {
+	} else if pool.Health.GT(threshold) {
 		k.SetSQBeginBlock(ctx, pool, 0)
 		k.EmitAboveRemovalThreshold(ctx, pool)
 	}
 }
 
-func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+	beginBlock := k.GetSQBeginBlock(ctx, &pool)
+	if beginBlock == 0 {
+		return sdk.ZeroDec()
+	}
+
+	blocks := ctx.BlockHeight() - int64(beginBlock)
+	maxInterestRate := k.GetInterestRateMax(ctx)
+	poolInterestRate, _ := pool.InterestRate.Float64()
+	minus := math.Pow(math.E, -1*poolInterestRate*float64(blocks))
+	minusDec, err := sdk.NewDecFromStr(fmt.Sprintf("%v", minus))
+	if err != nil {
+		minusDec = sdk.NewDec(0)
+	}
+	multipliedBy := sdk.NewDec(1).Sub(minusDec)
+	return maxInterestRate.Mul(multipliedBy)
+}
+
+func (k Keeper) GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 	q := k.ClpKeeper().GetRemovalQueue(ctx, pool.ExternalAsset.Symbol)
 	if q.Count == 0 {
 		return sdk.ZeroDec()
