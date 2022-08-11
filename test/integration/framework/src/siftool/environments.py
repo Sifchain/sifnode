@@ -145,8 +145,8 @@ class SifnodedEnvironment:
     ) -> int:
         next_index = len(self.sifnoded)
         sifnoded, node_info = self._create_validator_home_and_account(next_index, moniker=moniker)
-        self.node_info.append(node_info)
-        self.sifnoded.append(sifnoded)
+        self.node_info.append(node_info)  # TODO Do this at the end in case something goes wrong (but update_configuration_files() needs it)
+        self.sifnoded.append(sifnoded)  # TODO Do this at the end in case something goes wrong (but update_configuration_files() needs it)
         self.update_configuration_files(next_index)
 
         admin_addr = node_info["admin_addr"]
@@ -167,8 +167,6 @@ class SifnodedEnvironment:
 
         # Start the newly added validator then broadcast the message "create validator" message.
         # In a real world scenario perhaps we would need to wait for the new validator to catch up before we add it?
-        self.node_info.append(node_info)
-        self.sifnoded.append(sifnoded)
         self._sifnoded_start(next_index)
 
         self._broadcast_create_validator_msg(node_info, staking_amount, commission_rate, commission_max_rate,
