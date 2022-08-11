@@ -6,6 +6,7 @@ from siftool import sifchain, command, cosmos
 # Environment for load test test_many_pools_and_liquidity_providers and for testing min commission/max voting power
 # Just sifnode, no ethereum
 # Multi-node support
+# TODO Refactor: use the same method for adding both initial and subsequent validators
 class SifnodedEnvironment:
     def __init__(self, cmd: command.Command):
         self.cmd = cmd
@@ -34,16 +35,20 @@ class SifnodedEnvironment:
         self.default_initial_validator_mnemonic = None
         self.default_binary = None
 
-    def init(self):
+    def init(self, moniker: Optional[str] = None):
         assert self.default_commission_max_change_rate <= self.default_commission_max_rate, \
             "Commission max_change_rate cannot be more than commission_max_rate"
+
+        # TODO Check that valivator stakes are above minimum, i.e. 240stake fails with
+        #      "validator set is nil in genesis and still empty after InitChain"
 
         self.node_info = []
         self.sifnoded = []
         self.sifnoded_home_root = self.sifnoded_home_root or self.cmd.mktempdir()
 
         for index in range(self.number_of_nodes):
-            sifnoded, node_info = self._create_validator_home_and_account(index)
+            # TODO We can set only the first moniker here, needs reengineering
+            sifnoded, node_info = self._create_validator_home_and_account(index, moniker=moniker if index == 0 else None)
             self.sifnoded.append(sifnoded)
             self.node_info.append(node_info)
 
