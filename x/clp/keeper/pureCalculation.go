@@ -41,6 +41,11 @@ func RatIntQuo(r *big.Rat) *big.Int {
 	return i.Quo(num, denom)
 }
 
+func ApproxRatSquareRoot(x *big.Rat) *big.Int {
+	var i big.Int
+	return i.Sqrt(RatIntQuo(x))
+}
+
 func IsAnyZero(inputs []sdk.Uint) bool {
 	for _, val := range inputs {
 		if val.IsZero() {

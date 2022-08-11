@@ -400,67 +400,97 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	)
 }
 
-func CalculateSwapAmountAsymmetricFloat(Y, X, y, x, f, r float64) float64 {
+func CalculateExternalSwapAmountAsymmetricFloat(Y, X, y, x, f, r float64) float64 {
 
 	return math.Abs((math.Sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
 }
 
 func CalculateSwapAmountAsymmetricBrokenDown(Y, X, y, x, f, r float64) float64 {
+	a_ := x + X
+	b_ := -1 * a_
+	c_ := Y * b_
 
-	a := x + X
-	b := -1 * a
-	c := Y * b
-
-	d := f * f * x * Y
-	d1 := f * f * X * Y
-	e := 2 * f * r * x * Y
-	g := 4 * f * r * X * y
-	h := 2 * f * r * X * Y
-	i := 4 * f * X * y
-	j := 4 * f * X * Y
-	k := r * r * x * Y
-	l := r * r * X * Y
-	m := 4 * r * X * y
-	n := 4 * r * X * Y
-	o := 4 * X * y
-	p := 4 * X * Y
-	q := f * x * Y
-	s := f * X * Y
-	t := r * x * Y
-	u := 2 * r * X * y
-	v := r * X * Y
-	w := 2 * X * y
-	z := 2 * X * Y
+	d_ := f * f * x * Y
+	e_ := f * f * X * Y
+	f_ := 2 * f * r * x * Y
+	g_ := 4 * f * r * X * y
+	h_ := 2 * f * r * X * Y
+	i_ := 4 * f * X * y
+	j_ := 4 * f * X * Y
+	k_ := r * r * x * Y
+	l_ := r * r * X * Y
+	m_ := 4 * r * X * y
+	n_ := 4 * r * X * Y
+	o_ := 4 * X * y
+	p_ := 4 * X * Y
+	q_ := f * x * Y
+	r_ := f * X * Y
+	s_ := r * x * Y
+	t_ := 2 * r * X * y
+	u_ := r * X * Y
+	v_ := 2 * X * y
+	w_ := 2 * X * Y
 
 	r1 := (r + 1)
-	a1 := (y + Y)
-	b1 := -d - d1 - e + g + h + i + j - k - l - m - n - o - p
-	c1 := c * b1
-	e1 := math.Sqrt(c1)
-	f1 := (e1 + q + s + t - u - v - w - z)
-	g1 := (2 * r1 * a1)
-	h1 := f1 / g1
+	x_ := (y + Y)
+	y_ := -d_ - e_ - f_ + g_ + h_ + i_ + j_ - k_ - l_ - m_ - n_ - o_ - p_
+	z_ := c_ * y_
+	aa_ := math.Sqrt(z_)
+	ab_ := (aa_ + q_ + r_ + s_ - t_ - u_ - v_ - w_)
+	ac_ := (2 * r1 * x_)
+	ad_ := ab_ / ac_
 
-	return math.Abs(h1)
+	return math.Abs(ad_)
 }
 
-func CalculateSwapAmountAsymmetric(Y, X, y, x *big.Int, f, r *big.Rat) sdk.Uint {
+// Calculates how much external asset to swap for an asymmetric add
+func CalculateExternalSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
 
-	var a, minusOne *big.Int
-
+	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, ac_, ad_, minusOne, one, two, four, r1 big.Rat
 	minusOne.SetInt64(-1)
+	one.SetInt64(1)
+	two.SetInt64(2)
+	four.SetInt64(4)
+	r1.Add(r, &one)
 
-	a.Add(x, X).Mul(a, minusOne).Mul(a, Y) //TODO: use of a here looks dangerous
+	a_.Add(x, X)           // a_ = x + X
+	b_.Mul(&a_, &minusOne) // b_ = -1 * (x + X)
+	c_.Mul(Y, &b_)         // c_ = Y * -1 * (x + X)
 
-	c := sdk.ZeroDec()
+	d_.Mul(f, f).Mul(&d_, x).Mul(&d_, Y)                 // d_ = f * f * x * Y
+	e_.Mul(f, f).Mul(&e_, X).Mul(&e_, Y)                 // e_ := f * f * X * Y
+	f_.Mul(&two, f).Mul(&f_, r).Mul(&f_, x).Mul(&f_, Y)  // f_ := 2 * f * r * x * Y
+	g_.Mul(&four, f).Mul(&g_, r).Mul(&g_, X).Mul(&g_, y) // g_ := 4 * f * r * X * y
+	h_.Mul(&two, f).Mul(&h_, r).Mul(&h_, X).Mul(&h_, Y)  // h_ := 2 * f * r * X * Y
+	i_.Mul(&four, f).Mul(&i_, X).Mul(&i_, y)             // i_ := 4 * f * X * y
+	j_.Mul(&four, f).Mul(&j_, X).Mul(&j_, Y)             // j_ := 4 * f * X * Y
+	k_.Mul(r, r).Mul(&k_, x).Mul(&k_, Y)                 // k_ := r * r * x * Y
+	l_.Mul(r, r).Mul(&l_, X).Mul(&l_, Y)                 // l_ := r * r * X * Y
+	m_.Mul(&four, r).Mul(&m_, X).Mul(&m_, y)             // m_ := 4 * r * X * y
+	n_.Mul(&four, r).Mul(&n_, X).Mul(&n_, Y)             // n_ := 4 * r * X * Y
+	o_.Mul(&four, X).Mul(&o_, y)                         // o_ := 4 * X * y
+	p_.Mul(&four, X).Mul(&p_, Y)                         // p_ := 4 * X * Y
+	q_.Mul(f, x).Mul(&q_, Y)                             // q_ := f * x * Y
+	r_.Mul(f, X).Mul(&r_, Y)                             // r_ := f * X * Y
+	s_.Mul(r, x).Mul(&s_, Y)                             // s_ := r * x * Y
+	t_.Mul(&two, r).Mul(&t_, X).Mul(&t_, y)              // t_ := 2 * r * X * y
+	u_.Mul(r, X).Mul(&u_, Y)                             // u_ := r * X * Y
+	v_.Mul(&two, X).Mul(&v_, y)                          // v_ := 2 * X * y
+	w_.Mul(&two, X).Mul(&w_, Y)                          // w_ := 2 * X * Y
 
-	c.Add(sdk.OneDec())
-	//b := -1 * a
-	//c := Y * b
+	x_.Add(y, Y) // x_ := (y + Y)
 
-	//s.Add(x, X)
-	//x.Add()
+	y_.Add(&g_, &h_).Add(&y_, &i_).Add(&y_, &j_).Sub(&y_, &d_).Sub(&y_, &e_).Sub(&y_, &f_).Sub(&y_, &k_).Sub(&y_, &l_).Sub(&y_, &m_).Sub(&y_, &n_).Sub(&y_, &o_).Sub(&y_, &p_) // y_ :=  g_ + h_ + i_ + j_ - d_ - e_ - f_ - k_ - l_ - m_ - n_ - o_ - p_ // y_ := -d_ - e_ - f_ + g_ + h_ + i_ + j_ - k_ - l_ - m_ - n_ - o_ - p_
 
-	//math.Abs((math.Sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
+	z_.Mul(&c_, &y_) // z_ := c_ * y_
 
+	aa_.SetInt(ApproxRatSquareRoot(&z_)) // aa_ := math.Sqrt(z_)
+
+	ab_.Add(&aa_, &q_).Add(&ab_, &r_).Add(&ab_, &s_).Sub(&ab_, &t_).Sub(&ab_, &u_).Sub(&ab_, &v_).Sub(&ab_, &w_) // ab_ := (aa_ + q_ + r_ + s_ - t_ - u_ - v_ - w_)
+
+	ac_.Mul(&two, &r1).Mul(&ac_, &x_) // ac_ := (2 * r1 * x_)
+
+	ad_.Quo(&ab_, &ac_) // ad_ := ab_ / ac_
+
+	return *ad_.Abs(&ad_)
 }

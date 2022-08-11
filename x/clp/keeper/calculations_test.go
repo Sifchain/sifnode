@@ -1245,9 +1245,32 @@ func TestKeeper_BrokenDownEquality(t *testing.T) {
 
 	var f, r float64 = 0.003, 0.01
 
-	expected := clpkeeper.CalculateSwapAmountAsymmetricFloat(Y, X, y, x, f, r)
+	expected := clpkeeper.CalculateExternalSwapAmountAsymmetricFloat(Y, X, y, x, f, r)
 
 	got := clpkeeper.CalculateSwapAmountAsymmetricBrokenDown(Y, X, y, x, f, r)
 
 	require.Equal(t, expected, got)
+}
+
+func TestKeeper_CalculateSwapAmountAsymmetric(t *testing.T) {
+
+	var Y, X big.Rat
+	Y.SetInt64(100000)
+	X.SetInt64(100000)
+
+	var y, x big.Rat
+	y.SetInt64(8000)
+	x.SetInt64(2000)
+
+	var f, r big.Rat
+	f.SetFrac(big.NewInt(3), big.NewInt(1000)) // 0.003
+	r.SetFrac(big.NewInt(1), big.NewInt(100))  // 0.01
+
+	res := clpkeeper.CalculateExternalSwapAmountAsymmetric(&Y, &X, &y, &x, &f, &r)
+	got := clpkeeper.RatToDec(&res)
+
+	expected := clpkeeper.CalculateExternalSwapAmountAsymmetricFloat(100000, 100000, 8000, 2000, 0.003, 0.01)
+
+	require.Equal(t, expected, got.String())
+
 }
