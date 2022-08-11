@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"math"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -400,52 +399,13 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	)
 }
 
-func CalculateExternalSwapAmountAsymmetricFloat(Y, X, y, x, f, r float64) float64 {
-
-	return math.Abs((math.Sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
-}
-
-func CalculateSwapAmountAsymmetricBrokenDown(Y, X, y, x, f, r float64) float64 {
-	a_ := x + X
-	b_ := -1 * a_
-	c_ := Y * b_
-
-	d_ := f * f * x * Y
-	e_ := f * f * X * Y
-	f_ := 2 * f * r * x * Y
-	g_ := 4 * f * r * X * y
-	h_ := 2 * f * r * X * Y
-	i_ := 4 * f * X * y
-	j_ := 4 * f * X * Y
-	k_ := r * r * x * Y
-	l_ := r * r * X * Y
-	m_ := 4 * r * X * y
-	n_ := 4 * r * X * Y
-	o_ := 4 * X * y
-	p_ := 4 * X * Y
-	q_ := f * x * Y
-	r_ := f * X * Y
-	s_ := r * x * Y
-	t_ := 2 * r * X * y
-	u_ := r * X * Y
-	v_ := 2 * X * y
-	w_ := 2 * X * Y
-
-	r1 := (r + 1)
-	x_ := (y + Y)
-	y_ := -d_ - e_ - f_ + g_ + h_ + i_ + j_ - k_ - l_ - m_ - n_ - o_ - p_
-	z_ := c_ * y_
-	aa_ := math.Sqrt(z_)
-	ab_ := (aa_ + q_ + r_ + s_ - t_ - u_ - v_ - w_)
-	ac_ := (2 * r1 * x_)
-	ad_ := ab_ / ac_
-
-	return math.Abs(ad_)
-}
-
-// Calculates how much external asset to swap for an asymmetric add
+// Calculates how much external asset to swap for an asymmetric add to become
+// symmetric
+// NOTE: this method panics if a negative value is passed to the sqrt
+// It's not clear whether this condition could ever happen given the
+// constraints on the inputs (e.g. all are > 0). It is possible to guard against
+// a panic by ensuring the sqrt argument is positive.
 func CalculateExternalSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
-
 	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, ac_, ad_, minusOne, one, two, four, r1 big.Rat
 	minusOne.SetInt64(-1)
 	one.SetInt64(1)
@@ -482,15 +442,12 @@ func CalculateExternalSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
 
 	y_.Add(&g_, &h_).Add(&y_, &i_).Add(&y_, &j_).Sub(&y_, &d_).Sub(&y_, &e_).Sub(&y_, &f_).Sub(&y_, &k_).Sub(&y_, &l_).Sub(&y_, &m_).Sub(&y_, &n_).Sub(&y_, &o_).Sub(&y_, &p_) // y_ :=  g_ + h_ + i_ + j_ - d_ - e_ - f_ - k_ - l_ - m_ - n_ - o_ - p_ // y_ := -d_ - e_ - f_ + g_ + h_ + i_ + j_ - k_ - l_ - m_ - n_ - o_ - p_
 
-	z_.Mul(&c_, &y_) // z_ := c_ * y_
-
+	z_.Mul(&c_, &y_)                     // z_ := c_ * y_
 	aa_.SetInt(ApproxRatSquareRoot(&z_)) // aa_ := math.Sqrt(z_)
 
 	ab_.Add(&aa_, &q_).Add(&ab_, &r_).Add(&ab_, &s_).Sub(&ab_, &t_).Sub(&ab_, &u_).Sub(&ab_, &v_).Sub(&ab_, &w_) // ab_ := (aa_ + q_ + r_ + s_ - t_ - u_ - v_ - w_)
 
 	ac_.Mul(&two, &r1).Mul(&ac_, &x_) // ac_ := (2 * r1 * x_)
-
-	ad_.Quo(&ab_, &ac_) // ad_ := ab_ / ac_
-
+	ad_.Quo(&ab_, &ac_)               // ad_ := ab_ / ac_
 	return *ad_.Abs(&ad_)
 }
