@@ -516,3 +516,37 @@ func ToAsset(asset string) clptypes.Asset {
 		Symbol: asset,
 	}
 }
+
+func (k Keeper) IsWhitelisted(ctx sdk.Context, address string) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(types.GetWhitelistKey(address))
+}
+
+func (k Keeper) WhitelistAddress(ctx sdk.Context, address string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetWhitelistKey(address), []byte(address))
+}
+
+func (k Keeper) DewhitelistAddress(ctx sdk.Context, address string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetWhitelistKey(address))
+}
+
+func (k Keeper) GetWhitelist(ctx sdk.Context, pagination *query.PageRequest) ([]string, *query.PageResponse, error) {
+	var list []string
+	store := ctx.KVStore(k.storeKey)
+	prefixStore := prefix.NewStore(store, types.WhitelistPrefix)
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: math.MaxUint64 - 1,
+		}
+	}
+
+	pageRes, err := query.Paginate(prefixStore, pagination, func(key []byte, value []byte) error {
+		list = append(list, string(value))
+		return nil
+	})
+
+	return list, pageRes, err
+}

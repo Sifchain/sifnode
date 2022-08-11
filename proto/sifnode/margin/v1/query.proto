@@ -26,6 +26,9 @@ service Query {
   rpc GetStatus(StatusRequest) returns (StatusResponse) {
     option (google.api.http).get = "/sifchain/margin/v1/status";
   }
+  rpc GetWhitelist(WhitelistRequest) returns (WhitelistResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/whitelist";
+  }
 }
 
 message MTPRequest {
@@ -77,4 +80,13 @@ message StatusRequest {
 message StatusResponse {
   uint64 open_mtp_count = 1;
   uint64 lifetime_mtp_count = 2;
+}
+
+message WhitelistRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message WhitelistResponse {
+  repeated string whitelist = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

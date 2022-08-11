@@ -54,6 +54,11 @@ type Keeper interface {
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
 	DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error
 
+	IsWhitelisted(ctx sdk.Context, address string) bool
+	WhitelistAddress(ctx sdk.Context, address string)
+	DewhitelistAddress(ctx sdk.Context, address string)
+	GetWhitelist(ctx sdk.Context, pagination *query.PageRequest) ([]string, *query.PageResponse, error)
+
 	GetMaxLeverageParam(sdk.Context) sdk.Dec
 	GetInterestRateMax(sdk.Context) sdk.Dec
 	GetInterestRateMin(ctx sdk.Context) sdk.Dec
