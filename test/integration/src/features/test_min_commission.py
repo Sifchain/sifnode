@@ -226,8 +226,21 @@ def test_min_commission_modify_existing_validator(cmd: command.Command):
 
 
 def test_min_commission_upgrade_handler(cmd: command.Command):
-    def test_case(pre_upgrade_commission_rate, pre_upgrade_commission_max_rate, expected_commission_rate, expected_commission_max_rate):
-        env = create_environment(cmd, OLD_VERSION, commission_rate=pre_upgrade_commission_rate, commission_max_rate=pre_upgrade_commission_max_rate, commission_max_change_rate=0.01)
+    def test_case(pre_upgrade_commission_rate, pre_upgrade_commission_max_rate, expected_commission_rate,
+        expected_commission_max_rate, should_succeed
+    ):
+        exception = None
+        try:
+            env = create_environment(cmd, OLD_VERSION, commission_rate=pre_upgrade_commission_rate, commission_max_rate=pre_upgrade_commission_max_rate, commission_max_change_rate=0.01)
+        except Exception as e:
+            exception = e
+        if should_succeed:
+            assert exception is None
+        else:
+            # TODO In case of invalid validator setup (commission_rate > commission_max_rate) sifnoded does not start
+            #      and we get a timeout. We don't check the exception here, but we assume that this is what happened
+            #      since other scenarios are working which only differ in parameters.
+            return
 
         commission_rates_before = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
         assert float(commission_rates_before["rate"]) == pre_upgrade_commission_rate
@@ -241,12 +254,12 @@ def test_min_commission_upgrade_handler(cmd: command.Command):
         assert float(commission_rates_after["max_rate"]) == expected_commission_max_rate
         assert float(commission_rates_after["max_change_rate"]) == 0.01
 
-    test_case(0.03, 0.04, 0.05, 0.05)
-    test_case(0.06, 0.14, 0.06, 0.14)
-    test_case(0.15, 0.25, 0.15, 0.25)
-    test_case(0.02, 0.10, 0.04, 0.10)
-    # test_case(0.12, 0.10, 0.12, 0.10)  # This fails with "panic: commission cannot be more than the max rate"
-    # test_case(0.07, 0.04, 0.07, 0.04)  # This fails with "panic: commission cannot be more than the max rate"
+    test_case(0.03, 0.04, 0.05, 0.05, True)
+    test_case(0.06, 0.14, 0.06, 0.14, True)
+    test_case(0.15, 0.25, 0.15, 0.25, True)
+    test_case(0.02, 0.10, 0.05, 0.10, True)
+    test_case(0.12, 0.10, 0.12, 0.10, False)  # This fails with "panic: commission cannot be more than the max rate"
+    test_case(0.07, 0.04, 0.07, 0.04, False)  # This fails with "panic: commission cannot be more than the max rate"
 
 
 def test_max_voting_power(cmd: command.Command):
