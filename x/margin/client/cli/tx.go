@@ -30,6 +30,8 @@ func GetTxCmd() *cobra.Command {
 		GetForceCloseCmd(),
 		GetUpdateParamsCmd(),
 		GetUpdatePoolsCmd(),
+		GetDewhitelistCmd(),
+		GetWhitelistCmd(),
 	)
 	return cmd
 }
@@ -308,4 +310,70 @@ func readPoolsJSON(filename string) ([]string, error) {
 	}
 
 	return pools, nil
+}
+
+func GetWhitelistCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "whitelist [address]",
+		Short: "Whitelist the provided address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
+			msg := types.MsgWhitelist{
+				Signer:             signer.String(),
+				WhitelistedAddress: args[0],
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetDewhitelistCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dewhitelist [address]",
+		Short: "Dewhitelist the provided address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
+			msg := types.MsgDewhitelist{
+				Signer:             signer.String(),
+				WhitelistedAddress: args[0],
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
