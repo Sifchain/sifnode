@@ -53,6 +53,11 @@ issues:
     - text: "ST1003:"
       linters:
         - stylecheck
+# Not a real issue here, so ignore
+    - path: x/clp/keeper/pureCalculation_test.go
+      text: "G113:"
+      linters:
+        - gosec
 
 linters-settings:
   goconst:
