@@ -13,15 +13,18 @@ linters:
 #    - gofmt
 #    - goimports
     - golint
+#    - revive : this is replacement for golint
     - gosec
     - govet
     - ineffassign
 #    - interfacer
+# this is deprecated/obsolete
     - maligned
     - misspell
     - nakedret
     - prealloc
     - scopelint
+#    - exportloopref : this is replacement for exportloopref
     - staticcheck
     - structcheck
     - stylecheck
