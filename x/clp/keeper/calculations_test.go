@@ -809,14 +809,14 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
 		},
 		{
-			name:                   "success big decimals",
+			name:                   "failure big decimals",
 			X:                      sdk.NewUint(100),
 			Y:                      sdk.NewUint(100),
 			decimalsX:              255,
 			decimalsY:              0,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
 			isXNative:              true,
-			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+			errString:              errors.New("decimal out of range; bitLen: got 907, max 315"),
 		},
 		{
 			name:                   "success big decimals, small answer",
@@ -1019,12 +1019,12 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
 		},
 		{
-			name:                   "success big decimals",
+			name:                   "failure big decimals",
 			nativeAssetBalance:     sdk.NewUint(100),
 			externalAssetBalance:   sdk.NewUint(100),
 			decimalsExternal:       255,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
-			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+			errString:              errors.New("decimal out of range; bitLen: got 848, max 315"),
 		},
 		{
 			name:                   "success small decimals",
@@ -1102,7 +1102,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 
 			require.NoError(t, err)
 
-			ratioDec := clpkeeper.RatToDec(&ratio)
+			ratioDec, _ := clpkeeper.RatToDec(&ratio)
 
 			require.Equal(t, tc.expected.String(), ratioDec.String())
 		})
@@ -1313,7 +1313,7 @@ func TestKeeper_CalculateSwapAmountAsymmetric(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			res := clpkeeper.CalculateExternalSwapAmountAsymmetric(tc.Y, tc.X, tc.y, tc.x, tc.f, tc.r)
-			got := clpkeeper.RatToDec(&res)
+			got, _ := clpkeeper.RatToDec(&res)
 
 			require.Equal(t, tc.expectedValue.String(), got.String())
 		})
