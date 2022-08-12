@@ -84,13 +84,16 @@ type Keeper interface {
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
-	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
+
+	TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool)
+	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
+	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
 	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, sdk.Uint, error)
 
 	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
-	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
+	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }
