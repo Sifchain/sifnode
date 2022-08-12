@@ -53,6 +53,9 @@ issues:
     - text: "ST1003:"
       linters:
         - stylecheck
+    - text: "SA1019:"
+      linters:
+        - staticcheck
 # Not a real issue here, so ignore
     - path: x/clp/keeper/pureCalculation_test.go
       text: "G113:"
