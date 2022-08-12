@@ -455,6 +455,12 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}
+
+	// edge case, not enough custody to cover payment
+	if interestPaymentCustody.GT(mtp.CustodyAmount) {
+		interestPaymentCustody = mtp.CustodyAmount
+	}
+
 	// if paying unpaid interest reset to 0
 	mtp.InterestUnpaid = sdk.ZeroUint()
 	// deduct interest payment from custody amount
