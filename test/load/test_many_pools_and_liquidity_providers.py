@@ -319,7 +319,7 @@ class Test:
     def run(self):
         sifnoded = self.sifnoded[0]
         sifnoded_client = self.sifnoded_client
-        sif = self.node_info[0]["acct_addr"]
+        sif = self.node_info[0]["admin_addr"]
 
         # Determine start and end blocks for rewards and LPPD
         # TODO start and end blocks are both inclusive, adjust
@@ -476,7 +476,7 @@ def main(argv: List[str]):
         log.error("Test failed", exc_info=True)
         try:
             log.error("Checking some balances to see if the thing is dead or alive...")
-            addr = test.node_info[0]["acct_addr"]
+            addr = test.node_info[0]["admin_addr"]
             balance = cosmos.balance_format(test.sifnoded[0].get_balance(addr))
             log.debug("Balance of {}: {}".format(addr, balance))
         except Exception as e:
