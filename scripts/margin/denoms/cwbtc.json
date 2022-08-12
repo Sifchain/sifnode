@@ -1,0 +1,14 @@
+{
+    "entries": [
+        {
+            "decimals": 8,
+            "denom": "cwbtc",
+            "base_denom": "cwbtc",
+            "permissions": [
+                "CLP",
+                "IBCEXPORT",
+                "IBCIMPORT"
+            ]
+        }
+    ]
+}

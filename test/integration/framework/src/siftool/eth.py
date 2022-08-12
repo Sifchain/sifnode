@@ -71,7 +71,6 @@ def validate_address_and_private_key(addr: Optional[Address], private_key: Optio
         assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
     else:
         private_key = None
-    assert addr
     return addr, private_key
 
 class EthereumTxWrapper:

@@ -1,6 +1,3 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package keeper
 
 import (
@@ -26,10 +23,9 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	}
 
 	store := ctx.KVStore(k.storeKey)
-
 	// Process removals
 	var removals []string
-	iter := sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
+	iter := k.getStoreIterator(ctx)
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		if len(key) > 1 {
@@ -40,6 +36,7 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 					remains = true
 				}
 			}
+
 			if !remains {
 				removals = append(removals, address)
 			}
@@ -63,11 +60,8 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 
 func (k Keeper) GetBlacklist(ctx sdk.Context) []string {
 	var addresses []string
-
-	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
+	iter := k.getStoreIterator(ctx)
 	defer iter.Close()
-
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		address := string(key[1:])

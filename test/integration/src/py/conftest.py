@@ -4,7 +4,6 @@ import os
 import threading
 
 import pytest
-import siftool_path
 
 import test_utilities
 from burn_lock_functions import decrease_log_level, force_log_level
@@ -349,30 +348,13 @@ def restore_default_rescue_location(
     )
 
 
-threadlocals = threading.local()
+import siftool_path
+import siftool.test_utils
 
-@pytest.fixture
-def ctx_legacy(snapshot_name):
-    logging.debug("Before ctx()")
-    yield threadlocals.ctx
-    logging.debug("After ctx()")
 
-@pytest.fixture(scope="function")
-def with_snapshot(snapshot_name):
-    main = integration_test_context.main
-    cmd = main.Integrator()
-    project = cmd.project
-    project.cleanup_and_reset_state()
-    ctx = integration_test_context.IntegrationTestContext(snapshot_name)
-    logging.info("Started processes: {}".format(repr(ctx.processes)))
-    threadlocals.ctx = ctx
-    os.environ["VAGRANT_ENV_JSON"] = main.project_dir("test/integration/vagrantenv.json")  # TODO HACK
-    logging.debug("Before with_snapshot()")
-    yield
-    logging.debug("After with_snapshot()")
-    main.project.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
-    logging.info("Terminated processes: {}".format(repr(ctx.processes)))
-    del threadlocals.ctx
+@pytest.fixture(autouse=True)
+def test_wrapper_fixture():
+    siftool.test_utils.pytest_test_wrapper_fixture()
 
 @pytest.fixture(scope="function")
 def ctx(request):
@@ -382,7 +364,6 @@ def ctx(request):
     if snapshot_name is not None:
         snapshot_name = snapshot_name.args[0]
         logging.debug("Context setup: snapshot_name={}".format(repr(snapshot_name)))
-    from siftool import test_utils
-    with test_utils.get_test_env_ctx() as ctx:
+    with siftool.test_utils.get_test_env_ctx() as ctx:
         yield ctx
         logging.debug("Test context cleanup")

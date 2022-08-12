@@ -151,6 +151,16 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
+require (
+	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/lib/pq v1.10.2 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
+	github.com/pelletier/go-toml v1.9.4 // indirect
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	gopkg.in/ini.v1 v1.66.2 // indirect
+	pgregory.net/rapid v0.4.7
+)
+
 replace (
 	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.3-issue.850
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
