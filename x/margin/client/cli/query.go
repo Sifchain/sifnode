@@ -29,6 +29,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryPositionsForPool(),
 		GetCmdParams(),
 		GetCmdQueryStatus(),
+		GetCmdSQParams(),
 	)
 	return cmd
 }
@@ -175,6 +176,32 @@ func GetCmdParams() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.GetParams(context.Background(), &types.ParamsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSQParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "sq-params [pool]",
+		Short: "query margin sq-params for a pool",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.GetSQParams(context.Background(), &types.GetSQParamsRequest{
+				Pool: args[0],
+			})
 			if err != nil {
 				return err
 			}

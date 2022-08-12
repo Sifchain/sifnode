@@ -26,6 +26,7 @@ service Query {
   rpc GetStatus(StatusRequest) returns (StatusResponse) {
     option (google.api.http).get = "/sifchain/margin/v1/status";
   }
+  rpc GetSQParams(GetSQParamsRequest) returns (GetSQParamsResponse) {}
 }
 
 message MTPRequest {
@@ -77,4 +78,12 @@ message StatusRequest {
 message StatusResponse {
   uint64 open_mtp_count = 1;
   uint64 lifetime_mtp_count = 2;
+}
+
+message GetSQParamsRequest {
+  string pool = 1;
+}
+
+message GetSQParamsResponse {
+  int64 begin_block = 1;
 }
