@@ -102,3 +102,13 @@ func (srv queryServer) GetWhitelist(ctx context.Context, request *types.Whitelis
 		Pagination: page,
 	}, nil
 }
+
+func (srv queryServer) GetSQParams(ctx context.Context, request *types.GetSQParamsRequest) (*types.GetSQParamsResponse, error) {
+	pool, err := srv.keeper.ClpKeeper().GetPool(sdk.UnwrapSDKContext(ctx), request.Pool)
+	if err != nil {
+		return nil, err
+	}
+	return &types.GetSQParamsResponse{
+		BeginBlock: int64(srv.keeper.GetSQBeginBlock(sdk.UnwrapSDKContext(ctx), &pool)),
+	}, nil
+}

@@ -26,6 +26,7 @@ service Query {
   rpc GetStatus(StatusRequest) returns (StatusResponse) {
     option (google.api.http).get = "/sifchain/margin/v1/status";
   }
+  rpc GetSQParams(GetSQParamsRequest) returns (GetSQParamsResponse) {}
   rpc GetWhitelist(WhitelistRequest) returns (WhitelistResponse) {
     option (google.api.http).get = "/sifchain/margin/v1/whitelist";
   }
@@ -89,4 +90,12 @@ message WhitelistRequest {
 message WhitelistResponse {
   repeated string whitelist = 1;
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message GetSQParamsRequest {
+  string pool = 1;
+}
+
+message GetSQParamsResponse {
+  int64 begin_block = 1;
 }

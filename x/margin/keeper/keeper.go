@@ -6,6 +6,7 @@ package keeper
 import (
 	"fmt"
 	"math"
+	"math/big"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -508,7 +509,53 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	return CalcInterestRate(interestRateMax, interestRateMin, interestRateIncrease, interestRateDecrease, healthGainFactor, sQ, pool)
 }
 
-func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetSQBeginBlockKey(pool))
+	if bz == nil {
+		return 0
+	}
+	return types.GetUint64FromBytes(bz)
+}
+
+func (k Keeper) SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetSQBeginBlockKey(pool), types.GetUint64Bytes(height))
+}
+
+func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
+	threshold := k.GetRemovalQueueThreshold(ctx)
+	sqBeginBlock := k.GetSQBeginBlock(ctx, pool)
+	if sqBeginBlock == 0 {
+		if pool.Health.LTE(threshold) {
+			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight()))
+			k.EmitBelowRemovalThreshold(ctx, pool)
+		}
+	} else if pool.Health.GT(threshold) {
+		k.SetSQBeginBlock(ctx, pool, 0)
+		k.EmitAboveRemovalThreshold(ctx, pool)
+	}
+}
+
+func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool, poolInterestRate sdk.Dec) sdk.Dec {
+	beginBlock := k.GetSQBeginBlock(ctx, &pool)
+	if beginBlock == 0 {
+		return sdk.ZeroDec()
+	}
+
+	blocks := ctx.BlockHeight() - int64(beginBlock)
+	maxInterestRate := k.GetInterestRateMax(ctx)
+	poolInterestRateFloat, _ := poolInterestRate.Float64()
+	minus := math.Pow(math.E, -1*poolInterestRateFloat*float64(blocks))
+	minusDec, err := sdk.NewDecFromStr(fmt.Sprintf("%v", minus))
+	if err != nil {
+		minusDec = sdk.NewDec(0)
+	}
+	multipliedBy := sdk.NewDec(1).Sub(minusDec)
+	return maxInterestRate.Mul(multipliedBy)
+}
+
+func (k Keeper) GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 	q := k.ClpKeeper().GetRemovalQueue(ctx, pool.ExternalAsset.Symbol)
 	if q.Count == 0 {
 		return sdk.ZeroDec()
