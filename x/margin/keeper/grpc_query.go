@@ -87,6 +87,22 @@ func (srv queryServer) GetStatus(ctx context.Context, request *types.StatusReque
 	}, nil
 }
 
+func (srv queryServer) GetWhitelist(ctx context.Context, request *types.WhitelistRequest) (*types.WhitelistResponse, error) {
+	if request.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	whitelist, page, err := srv.keeper.GetWhitelist(sdk.UnwrapSDKContext(ctx), request.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.WhitelistResponse{
+		Whitelist:  whitelist,
+		Pagination: page,
+	}, nil
+}
+
 func (srv queryServer) GetSQParams(ctx context.Context, request *types.GetSQParamsRequest) (*types.GetSQParamsResponse, error) {
 	pool, err := srv.keeper.ClpKeeper().GetPool(sdk.UnwrapSDKContext(ctx), request.Pool)
 	if err != nil {
