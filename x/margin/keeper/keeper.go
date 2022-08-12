@@ -465,8 +465,6 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 		interestPaymentCustody = mtp.CustodyAmount
 	}
 
-	// if paying unpaid interest reset to 0
-	mtp.InterestUnpaid = sdk.ZeroUint()
 	// deduct interest payment from custody amount
 	mtp.CustodyAmount = mtp.CustodyAmount.Sub(interestPaymentCustody)
 
