@@ -1,0 +1,14 @@
+{
+    "entries": [
+        {
+            "decimals": 18,
+            "denom": "stake",
+            "base_denom": "stake",
+            "permissions": [
+                "CLP",
+                "IBCEXPORT",
+                "IBCIMPORT"
+            ]
+        }
+    ]
+}

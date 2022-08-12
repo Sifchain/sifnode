@@ -1,6 +1,3 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package keeper
 
 import (
@@ -45,8 +42,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
-	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.ProphecyPrefix, nil)
+	iter := k.GetProphecyIterator(ctx)
 	for ; iter.Valid(); iter.Next() {
 		var dbProphecy types.DBProphecy
 		k.cdc.MustUnmarshal(iter.Value(), &dbProphecy)

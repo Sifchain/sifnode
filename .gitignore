@@ -11,7 +11,7 @@ frontend/.cache
 .ruby-version
 deploy/networks
 log/*.log
-.env
+.env*
 .backups
 .ssh
 anchore-reports

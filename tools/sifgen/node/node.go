@@ -216,6 +216,10 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	if err = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_seedGenesis(); err != nil {
+		return err
+	}
+
 	err = n.replaceConfigTOML()
 	if err != nil {
 		return err
