@@ -61,4 +61,5 @@ message Pool {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
+  int64 last_height_interest_rate_computed = 14;
 }
