@@ -13,7 +13,7 @@ linters:
 #    - gofmt
 #    - goimports
     - golint
-#    - revive : this is replacement for golint
+#    - revive : this is replacement for golint above which is deprecated
     - gosec
     - govet
     - ineffassign
@@ -24,7 +24,7 @@ linters:
     - nakedret
     - prealloc
     - scopelint
-#    - exportloopref : this is replacement for exportloopref
+#    - exportloopref : this is replacement for scopelint which is deprecated
     - staticcheck
     - structcheck
     - stylecheck
