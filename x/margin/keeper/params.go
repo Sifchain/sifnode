@@ -5,6 +5,7 @@ package keeper
 
 import (
 	"errors"
+
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -54,8 +55,21 @@ func (k Keeper) GetForceCloseFundPercentage(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).ForceCloseFundPercentage
 }
 
-func (k Keeper) GetInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).InsuranceFundAddress)
+func (k Keeper) GetForceCloseInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).ForceCloseInsuranceFundAddress)
+	if err != nil {
+		panic(err)
+	}
+
+	return addr
+}
+
+func (k Keeper) GetIncrementalInterestPaymentFundPercentage(ctx sdk.Context) sdk.Dec {
+	return k.GetParams(ctx).IncrementalInterestPaymentFundPercentage
+}
+
+func (k Keeper) GetIncrementalInterestPaymentInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).IncrementalInterestPaymentInsuranceFundAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -67,6 +81,9 @@ func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
 	return k.GetParams(ctx).MaxOpenPositions
 }
 
+func (k Keeper) GetIncrementalInterestPaymentEnabled(ctx sdk.Context) bool {
+	return k.GetParams(ctx).IncrementalInterestPaymentEnabled
+}
 func (k Keeper) GetSafetyFactor(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).SafetyFactor
 }

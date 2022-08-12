@@ -4,7 +4,7 @@
 package keeper
 
 import (
-	"strconv"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
@@ -13,10 +13,11 @@ import (
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	//check if epoch has passed then execute
-	currentHeight := ctx.BlockHeight()
 	epochLength := k.GetEpochLength(ctx)
-	if currentHeight%epochLength == 0 { // if epoch has passed
-		events := sdk.EmptyEvents()
+	epochPosition := GetEpochPosition(ctx, epochLength)
+
+	if epochPosition == 0 { // if epoch has passed
+		currentHeight := ctx.BlockHeight()
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
 			if k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol) {
@@ -26,23 +27,16 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 					continue // ?
 				}
 				pool.InterestRate = rate
+				pool.LastHeightInterestRateComputed = currentHeight
 				_ = k.UpdatePoolHealth(ctx, pool)
 				_ = k.clpKeeper.SetPool(ctx, pool)
 				mtps, _, _ := k.GetMTPsForPool(ctx, pool.ExternalAsset.Symbol, nil)
 				for _, mtp := range mtps {
 					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
-				events = events.AppendEvents(sdk.Events{
-					sdk.NewEvent(
-						types.EventInterestRateComputation,
-						sdk.NewAttribute(clptypes.AttributeKeyPool, pool.ExternalAsset.Symbol),
-						sdk.NewAttribute(types.AttributeKeyPoolInterestRate, rate.String()),
-						sdk.NewAttribute(clptypes.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-					),
-				})
 			}
 		}
-		ctx.EventManager().EmitEvents(events)
+		k.EmitInterestRateComputation(ctx)
 	}
 
 }
@@ -60,7 +54,18 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 		return
 	}
 	mtp.MtpHealth = h
-	_ = k.UpdateMTPInterestLiabilities(ctx, mtp, pool.InterestRate)
+	// compute interest
+	interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, 0, 0)
+	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
+	// if incremental payment on, pay interest
+	if incrementalInterestPaymentEnabled {
+		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool)
+		if err != nil {
+			ctx.Logger().Error(errors.Wrap(err, "error executing incremental interest payment").Error())
+		}
+	} else { // else update unpaid mtp interest
+		mtp.InterestUnpaid = interestPayment
+	}
 	_ = k.SetMTP(ctx, mtp)
 	_, repayAmount, err := k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
 	if err == nil {
