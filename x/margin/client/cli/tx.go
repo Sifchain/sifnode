@@ -30,6 +30,8 @@ func GetTxCmd() *cobra.Command {
 		GetForceCloseCmd(),
 		GetUpdateParamsCmd(),
 		GetUpdatePoolsCmd(),
+		GetDewhitelistCmd(),
+		GetWhitelistCmd(),
 	)
 	return cmd
 }
@@ -206,15 +208,15 @@ func GetUpdateParamsCmd() *cobra.Command {
 					InterestRateIncrease:                           sdk.MustNewDecFromStr(viper.GetString("interest-rate-increase")),
 					InterestRateDecrease:                           sdk.MustNewDecFromStr(viper.GetString("interest-rate-decrease")),
 					HealthGainFactor:                               sdk.MustNewDecFromStr(viper.GetString("health-gain-factor")),
-					ForceCloseThreshold:                            sdk.MustNewDecFromStr(viper.GetString("force-close-threshold")),
 					PoolOpenThreshold:                              sdk.MustNewDecFromStr(viper.GetString("pool-open-threshold")),
 					EpochLength:                                    viper.GetInt64("epoch-length"),
 					MaxOpenPositions:                               viper.GetUint64("max-open-positions"),
 					RemovalQueueThreshold:                          sdk.MustNewDecFromStr(viper.GetString("removal-queue-threshold")),
 					ForceCloseFundPercentage:                       sdk.MustNewDecFromStr(viper.GetString("force-close-fund-percentage")),
-					ForceCloseInsuranceFundAddress:                 viper.GetString("insurance-fund-address"),
-					IncrementalInterestPaymentFundPercentage:       sdk.MustNewDecFromStr(viper.GetString("incremental_interest_payment_fund_percentage")),
-					IncrementalInterestPaymentInsuranceFundAddress: viper.GetString("incremental_interest_payment_insurance_fund_address"),
+					ForceCloseInsuranceFundAddress:                 viper.GetString("force-close-insurance-fund-address"),
+					IncrementalInterestPaymentEnabled:              viper.GetBool("incremental-interest-payment-enabled"),
+					IncrementalInterestPaymentFundPercentage:       sdk.MustNewDecFromStr(viper.GetString("incremental-interest-payment-fund-percentage")),
+					IncrementalInterestPaymentInsuranceFundAddress: viper.GetString("incremental-interest-payment-insurance-fund-address"),
 					SqModifier:                                     sdk.MustNewDecFromStr(viper.GetString("sq-modifier")),
 					SafetyFactor:                                   sdk.MustNewDecFromStr(viper.GetString("safety-factor")),
 				},
@@ -230,13 +232,15 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().String("interest-rate-increase", "", "interest rate increase (decimal)")
 	cmd.Flags().String("interest-rate-decrease", "", "interest rate decrease (decimal)")
 	cmd.Flags().String("health-gain-factor", "", "health gain factor (decimal)")
-	cmd.Flags().String("force-close-threshold", "", "force close threshold (decimal range 0-1)")
 	cmd.Flags().Int64("epoch-length", 1, "epoch length in blocks (integer)")
 	cmd.Flags().Uint64("max-open-positions", 10000, "max open positions")
 	cmd.Flags().String("removal-queue-threshold", "", "removal queue threshold (decimal range 0-1)")
 	cmd.Flags().String("pool-open-threshold", "", "threshold to prevent new positions (decimal range 0-1)")
 	cmd.Flags().String("force-close-fund-percentage", "", "percentage of force close proceeds for insurance fund (decimal range 0-1)")
-	cmd.Flags().String("insurance-fund-address", "", "address of insurance fund wallet")
+	cmd.Flags().String("force-close-insurance-fund-address", "", "address of insurance fund wallet for force close")
+	cmd.Flags().Bool("incremental-interest-payment-enabled", true, "enable incremental interest payment")
+	cmd.Flags().String("incremental-interest-payment-fund-percentage", "", "percentage of incremental interest payment proceeds for insurance fund (decimal range 0-1)")
+	cmd.Flags().String("incremental-interest-payment-insurance-fund-address", "", "address of insurance fund wallet for incremental interest payment")
 	cmd.Flags().String("sq-modifier", "", "the modifier value for the removal queue's sq formula")
 	cmd.Flags().String("safety-factor", "", "the safety factor used in liquidation ratio")
 	_ = cmd.MarkFlagRequired("leverage-max")
@@ -245,12 +249,14 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("interest-rate-increase")
 	_ = cmd.MarkFlagRequired("interest-rate-decrease")
 	_ = cmd.MarkFlagRequired("health-gain-factor")
-	//_ = cmd.MarkFlagRequired("force-close-threshold")
 	_ = cmd.MarkFlagRequired("removal-queue-threshold")
 	_ = cmd.MarkFlagRequired("max-open-positions")
 	_ = cmd.MarkFlagRequired("pool-open-threshold")
-	_ = cmd.MarkFlagRequired("insurance-fund-address")
 	_ = cmd.MarkFlagRequired("force-close-fund-percentage")
+	_ = cmd.MarkFlagRequired("force-close-insurance-fund-address")
+	_ = cmd.MarkFlagRequired("incremental-interest-payment-enabled")
+	_ = cmd.MarkFlagRequired("incremental-interest-payment-fund-percentage")
+	_ = cmd.MarkFlagRequired("incremental-interest-payment-insurance-fund-address")
 	_ = cmd.MarkFlagRequired("sq-modifier")
 	_ = cmd.MarkFlagRequired("safety-factor")
 	flags.AddTxFlagsToCmd(cmd)
@@ -310,4 +316,70 @@ func readPoolsJSON(filename string) ([]string, error) {
 	}
 
 	return pools, nil
+}
+
+func GetWhitelistCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "whitelist [address]",
+		Short: "Whitelist the provided address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
+			msg := types.MsgWhitelist{
+				Signer:             signer.String(),
+				WhitelistedAddress: args[0],
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetDewhitelistCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dewhitelist [address]",
+		Short: "Dewhitelist the provided address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
+			msg := types.MsgDewhitelist{
+				Signer:             signer.String(),
+				WhitelistedAddress: args[0],
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }

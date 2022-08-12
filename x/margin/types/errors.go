@@ -13,4 +13,5 @@ var (
 	ErrMTPHealthy       = sdkerrors.Register(ModuleName, 5, "mtp health above force close threshold")
 	ErrInvalidPosition  = sdkerrors.Register(ModuleName, 6, "mtp position invalid")
 	ErrMaxOpenPositions = sdkerrors.Register(ModuleName, 7, "max open positions reached")
+	ErrUnauthorised     = sdkerrors.Register(ModuleName, 8, "address not on whitelist")
 )
