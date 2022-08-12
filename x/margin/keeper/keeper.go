@@ -6,7 +6,6 @@ package keeper
 import (
 	"fmt"
 	"math"
-	"math/big"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -505,8 +504,42 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	interestRateIncrease := k.GetInterestRateIncrease(ctx)
 	interestRateDecrease := k.GetInterestRateDecrease(ctx)
 	healthGainFactor := k.GetHealthGainFactor(ctx)
-	sQ := k.GetSQ(ctx, pool)
-	return CalcInterestRate(interestRateMax, interestRateMin, interestRateIncrease, interestRateDecrease, healthGainFactor, sQ, pool)
+
+	prevInterestRate := pool.InterestRate
+
+	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
+	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
+
+	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
+	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
+
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
+
+	interestRateChange := targetInterestRate.Sub(prevInterestRate)
+	interestRate := prevInterestRate
+	if interestRateChange.LTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
+		interestRate = targetInterestRate
+	} else if interestRateChange.GT(interestRateIncrease) {
+		interestRate = prevInterestRate.Add(interestRateIncrease)
+	} else if interestRateChange.LT(interestRateDecrease.Mul(sdk.NewDec(-1))) {
+		interestRate = prevInterestRate.Sub(interestRateDecrease)
+	}
+
+	newInterestRate := interestRate
+
+	if interestRate.GT(interestRateMin) && interestRate.LT(interestRateMax) {
+		newInterestRate = interestRate
+	} else if interestRate.LTE(interestRateMin) {
+		newInterestRate = interestRateMin
+	} else if interestRate.GTE(interestRateMax) {
+		newInterestRate = interestRateMax
+	}
+
+	sQ := k.GetSQFromBlocks(ctx, pool, newInterestRate)
+
+	return newInterestRate.Add(sQ), nil
 }
 
 func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {
