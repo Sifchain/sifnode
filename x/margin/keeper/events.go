@@ -34,16 +34,10 @@ func (k Keeper) EmitInterestRateComputation(ctx sdk.Context) {
 		sdk.NewAttribute("block_height", strconv.FormatInt(ctx.BlockHeight(), 10))))
 }
 
-func (k Keeper) EmitRepayInsuranceFund(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventRepayInsuranceFund,
+func (k Keeper) EmitInsuranceFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(paymentType,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
-		sdk.NewAttribute("takeAmount", takeAmount.String()),
-	))
-}
-
-func (k Keeper) EmitIncrementalPayInsuranceFund(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventRepayInsuranceFund,
-		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
-		sdk.NewAttribute("takeAmount", takeAmount.String()),
+		sdk.NewAttribute("insurance_payment_amount", takeAmount.String()),
+		sdk.NewAttribute("insurance_payment_asset", takeAsset),
 	))
 }

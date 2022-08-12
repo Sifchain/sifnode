@@ -87,6 +87,4 @@ type Keeper interface {
 	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
 	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
-
-	GetEpochPosition(ctx sdk.Context, epochLength int64) int64
 }

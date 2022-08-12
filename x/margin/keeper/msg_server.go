@@ -6,12 +6,13 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strconv"
 )
 
 type msgServer struct {
@@ -252,7 +253,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	}
 
 	epochLength := k.GetEpochLength(ctx)
-	epochPosition := k.GetEpochPosition(ctx, epochLength)
+	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
 		mtp.InterestUnpaid = CalcMTPInterestLiabilities(&mtp, interestRate, epochPosition, epochLength)
 
@@ -300,7 +301,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	}
 
 	epochLength := k.GetEpochLength(ctx)
-	epochPosition := k.GetEpochPosition(ctx, epochLength)
+	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
 		mtp.InterestUnpaid = CalcMTPInterestLiabilities(&mtp, interestRate, epochPosition, epochLength)
 

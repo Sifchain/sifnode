@@ -50,17 +50,22 @@ message Params {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string insurance_fund_address = 14;
-  string sq_modifier = 15 [
+  string force_close_insurance_fund_address = 14;
+  string incremental_interest_payment_fund_percentage = 15 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string safety_factor = 16 [
+  string incremental_interest_payment_insurance_fund_address = 16;
+  string sq_modifier = 17 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  repeated string closed_pools = 17;
-  bool incremental_interest_payment_enabled = 18;
+  string safety_factor = 18 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string closed_pools = 19;
+  bool incremental_interest_payment_enabled = 20;
 
 }
 

@@ -397,18 +397,15 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		actualReturnAmount := returnAmount
 		if takeInsurance {
 			takePercentage := k.GetForceCloseFundPercentage(ctx)
-			returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
-			takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
+			fundAddr := k.GetForceCloseInsuranceFundAddress(ctx)
+			takeAmount, err := k.TakeInsurance(ctx, returnAmount, mtp.CollateralAsset, takePercentage, fundAddr)
+			if err != nil {
+				return err
+			}
 			actualReturnAmount = returnAmount.Sub(takeAmount)
 
 			if !takeAmount.IsZero() {
-				takeCoins := sdk.NewCoins(sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
-				fundAddr := k.GetInsuranceFundAddress(ctx)
-				err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
-				if err != nil {
-					return err
-				}
-				k.EmitRepayInsuranceFund(ctx, mtp, takeAmount)
+				k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CollateralAsset, types.EventRepayInsuranceFund)
 			}
 		}
 
@@ -463,14 +460,26 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	// deduct interest payment from custody amount
 	mtp.CustodyAmount = mtp.CustodyAmount.Sub(interestPaymentCustody)
 
+	takePercentage := k.GetIncrementalInterestPaymentFundPercentage(ctx)
+	fundAddr := k.GetIncrementalInterestPaymentInsuranceFundAddress(ctx)
+	takeAmount, err := k.TakeInsurance(ctx, interestPaymentCustody, mtp.CustodyAsset, takePercentage, fundAddr)
+	if err != nil {
+		return sdk.ZeroUint(), err
+	}
+	actualInterestPaymentCustody := interestPaymentCustody.Sub(takeAmount)
+
+	if !takeAmount.IsZero() {
+		k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CustodyAsset, types.EventIncrementalPayInsuranceFund)
+	}
+
 	nativeAsset := types.GetSettlementAsset()
 
 	if types.StringCompare(mtp.CustodyAsset, nativeAsset) { // custody is native
 		pool.NativeCustody = pool.NativeCustody.Sub(interestPaymentCustody)
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(interestPaymentCustody)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(actualInterestPaymentCustody)
 	} else { // custody is external
 		pool.ExternalCustody = pool.ExternalCustody.Sub(interestPaymentCustody)
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(interestPaymentCustody)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(actualInterestPaymentCustody)
 	}
 
 	err = k.SetMTP(ctx, mtp)
@@ -512,7 +521,21 @@ func ToAsset(asset string) clptypes.Asset {
 }
 
 // get position of current block in epoch
-func (k Keeper) GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
+func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 	currentHeight := ctx.BlockHeight()
 	return currentHeight % epochLength
+}
+
+func (k Keeper) TakeInsurance(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
+	returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
+	takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
+
+	if !takeAmount.IsZero() {
+		takeCoins := sdk.NewCoins(sdk.NewCoin(returnAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
+		err := k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
+		if err != nil {
+			return sdk.ZeroUint(), err
+		}
+	}
+	return takeAmount, nil
 }
