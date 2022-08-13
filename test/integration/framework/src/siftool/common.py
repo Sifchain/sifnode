@@ -7,7 +7,7 @@ import random
 import time
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any, Callable, Dict
+from typing import Optional, Mapping, Sequence, Set, IO, Union, Iterable, List, Any, Callable, Dict
 
 
 ANY_ADDR = "0.0.0.0"
@@ -36,13 +36,13 @@ def zero_or_one(items: Sequence[Any]) -> Any:
     else:
         return items[0]
 
-def exactly_one(items: Sequence[Any]) -> Any:
+def exactly_one(items: Union[Sequence[Any], Set[Any]]) -> Any:
     if len(items) == 0:
         raise ValueError("Zero items")
     elif len(items) > 1:
         raise ValueError("Multiple items")
     else:
-        return items[0]
+        return next(iter(items))
 
 def find_by_value(list_of_dicts, field, value):
     return [t for t in list_of_dicts if t[field] == value]

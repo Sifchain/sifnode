@@ -191,7 +191,7 @@ class SifnodedEnvironment:
         # staking and transaction itself.
         sifnoded_tmp = self.sifnoded_from_to(node_info, self.node_info[0])
 
-        validators_before = {v["description"]["moniker"] for v in sifnoded_tmp.query_staking_validators()}
+        validators_before = sifnoded_tmp.query_staking_validators()
         assert moniker not in validators_before
 
         admin_balance = sifnoded_tmp.get_balance(admin_addr)
@@ -204,9 +204,16 @@ class SifnodedEnvironment:
             commission_max_change_rate, min_self_delegation, admin_addr, broadcast_mode="block")
         sifchain.check_raw_log(res)
 
-        validators_after = {v["description"]["moniker"] for v in sifnoded_tmp.query_staking_validators()}
+        # Check that the new validator was actually added and that its commission rate is correct
+        validators_after = sifnoded_tmp.query_staking_validators()
         assert len(validators_after) == len(validators_before) + 1
-        assert moniker in validators_after
+        new_validator_moniker = exactly_one({v["description"]["moniker"] for v in validators_after}.difference(
+            {v["description"]["moniker"] for v in validators_before}))
+        assert new_validator_moniker == moniker
+        new_validator = exactly_one([v for v in validators_after if v["description"]["moniker"] == moniker])
+        assert float(new_validator["commission"]["commission_rates"]["rate"]) == commission_rate
+        assert float(new_validator["commission"]["commission_rates"]["max_rate"]) == commission_max_rate
+        assert float(new_validator["commission"]["commission_rates"]["max_change_rate"]) == commission_max_change_rate
 
     # Adjust configuration files for i != 0node.
     def update_configuration_files(self, index):

@@ -47,6 +47,11 @@ def get_binary_for_version(label):
     return project_dir("test", "integration", "framework", "build", "versions", label, "sifnoded")
 
 
+def assert_no_exception(exception):
+    if exception is None:
+        return
+    raise AssertionError("Assertion failed") from exception
+
 def create_environment(cmd, version, moniker=None, commission_rate=0.06, commission_max_rate=0.10,
     commission_max_change_rate=0.05, default_staking_amount: int = 92 * 10**21
 ):
@@ -173,7 +178,7 @@ def test_min_commission_create_new_validator(cmd: command.Command):
             exception = e
 
         if should_succeed:
-            assert exception is None, repr(exception)
+            assert_no_exception(exception)
         else:
             assert sifchain.is_min_commission_too_low_exception(exception)
 
@@ -182,7 +187,7 @@ def test_min_commission_create_new_validator(cmd: command.Command):
     test_case(0.07, 0.10, True)  # TODO Original scenarion failed for test_case(0.07, 0.04, True)
 
 
-def test_min_commission_modify_existing_validator(cmd: command.Command):
+def test_min_commission_modify_existing_validator_24h(cmd: command.Command):
     # Using defaults: commission_rate=0.06, commission_max_rate=0.10, commission_max_change_rate=0.05
     # We create 3 validators for 3 different test cases so that we only have to wait once
     env = create_environment(cmd, NEW_VERSION)
@@ -196,6 +201,11 @@ def test_min_commission_modify_existing_validator(cmd: command.Command):
     sifnoded2 = env.sifnoded[2]
     admin2_addr = env.node_info[2]["admin_addr"]
 
+    validators = sifnoded0.query_staking_validators()
+    assert all(float(v["commission"]["commission_rates"]["rate"]) == 0.06 for v in validators)
+    assert all(float(v["commission"]["commission_rates"]["max_rate"]) == 0.10 for v in validators)
+    assert all(float(v["commission"]["commission_rates"]["max_change_rate"]) == 0.05 for v in validators)
+
     # Commission cannot be changed more than once in 24h.
     log.info("Sleeping for 24h...")
     time.sleep(24 * 3600 + 5 * 60)  # 1 day + 5 minutes
@@ -207,7 +217,7 @@ def test_min_commission_modify_existing_validator(cmd: command.Command):
         sifchain.check_raw_log(res)
     except Exception as e:
         exception = e
-    assert exception is None
+    assert_no_exception(exception)
 
     exception = None
     try:
@@ -222,7 +232,7 @@ def test_min_commission_modify_existing_validator(cmd: command.Command):
         sifchain.check_raw_log(res)
     except Exception as e:
         exception = e
-    assert exception is None
+    assert_no_exception(exception)
 
 
 def test_min_commission_upgrade_handler(cmd: command.Command):
@@ -235,7 +245,7 @@ def test_min_commission_upgrade_handler(cmd: command.Command):
         except Exception as e:
             exception = e
         if should_succeed:
-            assert exception is None
+            assert_no_exception(exception)
         else:
             # TODO In case of invalid validator setup (commission_rate > commission_max_rate) sifnoded does not start
             #      and we get a timeout. We don't check the exception here, but we assume that this is what happened
@@ -281,7 +291,7 @@ def test_max_voting_power(cmd: command.Command):
         validator_powers_after = [int(x["tokens"]) for x in sifnoded.query_staking_validators()]
 
         if should_succeed:
-            assert exception is None, repr(exception)
+            assert_no_exception(exception)
             # Check actual vs. expected validator powers.
             # Note: this assertion might fail if "sifnoded query staking validators" returns a list in different order.
             expected_validator_powers_after = validator_powers_before
@@ -306,7 +316,7 @@ def main(argv: List[str]):
 
     if argv == ["24"]:
         log.info("24h test")
-        test_min_commission_modify_existing_validator(cmd)
+        test_min_commission_modify_existing_validator_24h(cmd)
     else:
         test_min_commission_create_new_validator(cmd)
         test_min_commission_upgrade_handler(cmd)
