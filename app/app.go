@@ -144,6 +144,7 @@ var (
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ibctransferoverride.AppModuleBasic{},
+
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
@@ -151,7 +152,6 @@ var (
 		tokenregistry.AppModuleBasic{},
 		admin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-
 	)
 
 	maccPerms = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getMaccPerms(
@@ -187,8 +187,6 @@ var (
 
 type SifchainApp struct {
 	*baseapp.BaseApp
-	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SifchainApp
-
 	legacyAmino       *codec.LegacyAmino //nolint
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
@@ -377,7 +375,16 @@ func NewSifAppWithBlacklist(
 	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
 	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
 
-	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app, keys, &appCodec)
+	app.ClpKeeper = clpkeeper.NewKeeper(
+		appCodec,
+		keys[clptypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.TokenRegistryKeeper,
+		app.AdminKeeper,
+		app.MintKeeper,
+		app.GetSubspace(clptypes.ModuleName),
+	)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -406,7 +413,7 @@ func NewSifAppWithBlacklist(
 	)
 	app.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
-			// register governance hooks
+		// register governance hooks
 		),
 	)
 
@@ -501,7 +508,9 @@ func NewSifAppWithBlacklist(
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	orderBeginBlockers := []string{
+	// NOTE: staking module is required if HistoricalEntries param > 0
+	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
+	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -526,13 +535,9 @@ func NewSifAppWithBlacklist(
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		dispensation.ModuleName,
-		clptypes.ModuleName,
 		admintypes.ModuleName,
-	}
-	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_SDK_045_getOrderBeginBlockers(&transferModule)...)
-	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers()...)
-	app.mm.SetOrderBeginBlockers(orderBeginBlockers...)
-	orderEndBlockers := []string{
+	)
+	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -557,13 +562,13 @@ func NewSifAppWithBlacklist(
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		admintypes.ModuleName,
-	}
-	orderEndBlockers = append(orderEndBlockers, FEATURE_TOGGLE_SDK_045_getOrderEndBlockers(&transferModule)...)
-	orderEndBlockers = append(orderEndBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers()...)
-	app.mm.SetOrderEndBlockers(orderEndBlockers...)
+	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
-	orderInitGenesis := []string{
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
+	app.mm.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -573,7 +578,6 @@ func NewSifAppWithBlacklist(
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
-		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		authz.ModuleName,
@@ -591,10 +595,8 @@ func NewSifAppWithBlacklist(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-	}
-	orderInitGenesis = append(orderInitGenesis, FEATURE_TOGGLE_SDK_045_getOrderInitGenesis(&transferModule)...)
-	orderInitGenesis = append(orderInitGenesis, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderInitGenesis()...)
-	app.mm.SetOrderInitGenesis(orderInitGenesis...)
+	)
+
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(app.configurator)
@@ -778,10 +780,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(clptypes.ModuleName)
-	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setParamsKeeper(&paramsKeeper)
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
+	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setParamsKeeper(&paramsKeeper)
 	return paramsKeeper
 }
