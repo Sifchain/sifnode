@@ -262,7 +262,7 @@ class SifnodeClient:
             tx = self.sifnoded_exec(args)
         except Exception as e:
             not_found = re.findall(".*(.*tx \(" + tx_hash + "\) not found).*", str(e))
-            
+
             if len(not_found) > 0:
                 return None
             else:
@@ -295,7 +295,7 @@ class SifnodeClient:
 
     def send_sign_prophecy_with_wrong_signature_grpc(self, from_sif_addr: cosmos.Address, from_val_addr: cosmos.Address,
         wrong_from_sif_addr: cosmos.Address, prophecy_id: str, to_eth_addr: str, signature_for_sign_prophecy: str) -> bool:
-        
+
         tx = self.generate_sign_prophecy_tx(from_sif_addr, to_eth_addr, prophecy_id, signature_for_sign_prophecy)
 
         # need update cosmos sender according to prophecy message
@@ -534,7 +534,7 @@ class Ebrelayer:
         self.binary = "ebrelayer"
 
     def peggy2_build_ebrelayer_cmd(self, init_what: str, network_descriptor: int, tendermint_node: str,
-        web3_provider: str, bridge_registry_contract_address: eth.Address, validator_mnemonic: str, chain_id: str,
+        web3_provider: str, bridge_registry_contract_address: eth.Address, validator_moniker: str, chain_id: str,
         node: Optional[str] = None, keyring_backend: Optional[str] = None, keyring_dir: Optional[str] = None,
         sign_with: Optional[str] = None, symbol_translator_file: Optional[str] = None, log_format: Optional[str] = None,
         max_fee_per_gas: Optional[int] = None, max_priority_fee_per_gas: Optional[str] = None,
@@ -550,7 +550,7 @@ class Ebrelayer:
             "--tendermint-node", tendermint_node,  # URL to tendermint node
             "--web3-provider", web3_provider,  # Ethereum web3 service address (ws://localhost:8545/)
             "--bridge-registry-contract-address", bridge_registry_contract_address,
-            "--validator-mnemonic", validator_mnemonic,
+            "--validator-moniker", validator_moniker,
             "--chain-id", chain_id  # chain ID of tendermint node (localnet)
         ] + \
             (extra_args if extra_args else []) + \

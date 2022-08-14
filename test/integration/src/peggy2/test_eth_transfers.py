@@ -45,9 +45,19 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
     # Verify final balance
     ctx.wait_for_eth_balance_change(test_eth_account, eth_balance_before)
 
+
 def test_erc20_to_sifnode_and_back_first_time(ctx):
     token_decimals = 18
     token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
+
+
+@pytest.mark.xfail()
+def test_erc20_to_sifnode_and_back_with_bad_network_descriptor(ctx):
+    token_decimals = 18
+    token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    # A bad network descriptor should cause an expected failure
+    ctx.eth.ethereum_network_descriptor = 0
     transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
 
 

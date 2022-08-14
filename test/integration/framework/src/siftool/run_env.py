@@ -1230,7 +1230,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         sifnode_validator0_address = sifnode_validator0["address"]
 
         sifnode_relayer0 = exactly_one(sifnode_relayers)
-        sifnode_relayer0_mnemonic = sifnode_relayer0["name"]
+        sifnode_relayer0_moniker = sifnode_relayer0["name"]
         sifnode_relayer0_address = sifnode_relayer0["address"]
         sifnode_relayer0_home = sifnode_relayer0["home"]
 
@@ -1246,7 +1246,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
             tcp_url,
             web3_websocket_address,
             bridge_registry_contract_addr,
-            sifnode_relayer0_mnemonic,
+            sifnode_relayer0_moniker,
             chain_id=chain_id,
             node=tcp_url,
             sign_with=sifnode_relayer0_address,
@@ -1342,6 +1342,10 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                 "tcpurl": tcp_url,
             }
         }
+
+        # TODO Inconsistent format of deployed smart contract addresses (this was intentionally carried over from
+        #      devenv to preserve compatibility with devenv users)
+        # TODO Convert to out "unified" json file format
 
         # TODO Do we want "0x" prefixes here for private keys?
         dot_env = dict_merge({
@@ -1454,7 +1458,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "--tendermint-node", tcp_url,
                         "--web3-provider", w3_url,
                         "--bridge-registry-contract-address", evm_smart_contract_addrs["BridgeRegistry"],
-                        "--validator-mnemonic", relayer["name"],
+                        "--validator-moniker", relayer["name"],
                         "--chain-id", "localnet",
                         "--node", tcp_url,
                         "--keyring-backend", "test",
@@ -1482,7 +1486,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
                         "--tendermint-node", tcp_url,
                         "--web3-provider", w3_url,
                         "--bridge-registry-contract-address", evm_smart_contract_addrs["BridgeRegistry"],
-                        "--validator-mnemonic", witness["name"],
+                        "--validator-moniker", witness["name"],
                         "--chain-id", "localnet",
                         "--node", tcp_url,
                         "--keyring-backend", "test",

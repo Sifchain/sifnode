@@ -31,12 +31,8 @@ func (m *MsgRegister) ValidateBasic() error {
 	if m.Entry.Denom == "" {
 		return errors.New("no denom specified")
 	}
-	coin := sdk.Coin{
-		Denom:  m.Entry.Denom,
-		Amount: sdk.OneInt(),
-	}
-	if !coin.IsValid() {
-		return errors.New("Denom is not valid")
+	if err := sdk.ValidateDenom(m.Entry.Denom); err != nil {
+		return err
 	}
 	_, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
@@ -80,15 +76,8 @@ func (m *MsgRegisterAll) ValidateBasic() error {
 		if entry == nil {
 			return errors.New("entry not initialized")
 		}
-		if entry.Denom == "" {
-			return errors.New("no denom specified")
-		}
-		coin := sdk.Coin{
-			Denom:  entry.Denom,
-			Amount: sdk.OneInt(),
-		}
-		if !coin.IsValid() {
-			return errors.New("Denom is not valid")
+		if err := sdk.ValidateDenom(entry.Denom); err != nil {
+			return err
 		}
 		_, err := sdk.AccAddressFromBech32(m.From)
 		if err != nil {
@@ -130,15 +119,8 @@ func (m *MsgSetRegistry) ValidateBasic() error {
 
 	// verify the entries
 	for _, entry := range m.Registry.Entries {
-		if entry.Denom == "" {
-			return errors.New("no denom specified")
-		}
-		coin := sdk.Coin{
-			Denom:  entry.Denom,
-			Amount: sdk.OneInt(),
-		}
-		if !coin.IsValid() {
-			return errors.New("Denom is not valid")
+		if err := sdk.ValidateDenom(entry.Denom); err != nil {
+			return err
 		}
 		if entry.Decimals < 0 {
 			return errors.New("Decimals cannot be less than zero")
@@ -175,15 +157,8 @@ func (m *MsgDeregister) Type() string {
 }
 
 func (m *MsgDeregister) ValidateBasic() error {
-	if m.Denom == "" {
-		return errors.New("no denom specified")
-	}
-	coin := sdk.Coin{
-		Denom:  m.Denom,
-		Amount: sdk.OneInt(),
-	}
-	if !coin.IsValid() {
-		return errors.New("Denom is not valid")
+	if err := sdk.ValidateDenom(m.Denom); err != nil {
+		return err
 	}
 	_, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
@@ -215,21 +190,11 @@ func (m *MsgDeregisterAll) Type() string {
 }
 
 func (m *MsgDeregisterAll) ValidateBasic() error {
-
 	for _, denom := range m.Denoms {
-
-		if denom == "" {
-			return errors.New("no denom specified")
+		if err := sdk.ValidateDenom(denom); err != nil {
+			return err
 		}
-		coin := sdk.Coin{
-			Denom:  denom,
-			Amount: sdk.OneInt(),
-		}
-		if !coin.IsValid() {
-			return errors.New("Denom is not valid")
-		}
-		_, err := sdk.AccAddressFromBech32(m.From)
-		if err != nil {
+		if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
 			return sdkerrors.Wrap(err, "invalid from address")
 		}
 	}
@@ -274,15 +239,19 @@ func (msg TokenMetadataAddRequest) ValidateBasic() error {
 	}
 
 	if msg.Metadata.Name == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.Name)
+		return ErrInvalidMetadataName
 	}
 
 	if msg.Metadata.Symbol == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.Symbol)
+		return ErrInvalidMetadataSymbol
 	}
 
 	if msg.Metadata.TokenAddress == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.TokenAddress)
+	}
+
+	if !msg.Metadata.NetworkDescriptor.IsValid() {
+		return ErrInvalidNetworkDescriptor
 	}
 
 	return nil

@@ -2,16 +2,13 @@ package types
 
 import (
 	"encoding/json"
-	"errors"
-	"math/big"
-	"strconv"
-
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	gethCommon "github.com/ethereum/go-ethereum/common"
-	crypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto"
+	"math/big"
 )
 
 // NewMsgLock is a constructor function for MsgLock
@@ -34,10 +31,20 @@ func (msg MsgLock) Route() string { return RouterKey }
 // Type should return the action
 func (msg MsgLock) Type() string { return "lock" }
 
+// ValidateNetworkDescriptor returns an error if the network type is out of the
+// range we require (four base-10 digits)
+func ValidateNetworkDescriptor(networkDescriptor oracletypes.NetworkDescriptor) error {
+	if networkDescriptor < 0 || networkDescriptor > 9999 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", networkDescriptor)
+	}
+	return nil
+}
+
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.FormatInt(int64(msg.NetworkDescriptor), 10) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
+	err := ValidateNetworkDescriptor(msg.NetworkDescriptor)
+	if err != nil {
+		return err
 	}
 
 	if msg.CosmosSender == "" {
@@ -125,8 +132,9 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if msg.NetworkDescriptor == 0 {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
+	err := ValidateNetworkDescriptor(msg.NetworkDescriptor)
+	if err != nil {
+		return err
 	}
 
 	if msg.CosmosSender == "" {
@@ -302,6 +310,10 @@ func (msg MsgCreateEthBridgeClaim) Type() string { return "create_bridge_claim" 
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
+	if err := ValidateNetworkDescriptor(msg.EthBridgeClaim.NetworkDescriptor); err != nil {
+		return err
+	}
+
 	if msg.EthBridgeClaim.CosmosReceiver == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.CosmosReceiver)
 	}
@@ -532,8 +544,8 @@ func (msg MsgSignProphecy) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !msg.NetworkDescriptor.IsValid() {
-		return errors.New("network descriptor is invalid")
+	if err := ValidateNetworkDescriptor(msg.NetworkDescriptor); err != nil {
+		return err
 	}
 
 	return nil
@@ -571,8 +583,8 @@ func (msg MsgSetFeeInfo) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !msg.NetworkDescriptor.IsValid() {
-		return errors.New("network descriptor is invalid")
+	if err := ValidateNetworkDescriptor(msg.NetworkDescriptor); err != nil {
+		return err
 	}
 
 	return nil
@@ -610,8 +622,8 @@ func (msg MsgUpdateConsensusNeeded) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !msg.NetworkDescriptor.IsValid() {
-		return errors.New("network descriptor is invalid")
+	if err := ValidateNetworkDescriptor(msg.NetworkDescriptor); err != nil {
+		return err
 	}
 
 	return nil

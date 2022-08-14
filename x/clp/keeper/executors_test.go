@@ -12,25 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestKeeper_CreatePool_Error(t *testing.T) {
-	// nativeAssetAmount sdk.Uint, externalAssetAmount
-	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth0123456789012345678901234567890123456789012345678901234567890123456789")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("10000")))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Test Create Pool with invalid pool asset name
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	assert.Error(t, err, "Invalid pool asset name.")
-	assert.Nil(t, pool)
-}
-
 func TestKeeper_CreatePool_Range(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)

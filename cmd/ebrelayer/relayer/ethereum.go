@@ -47,16 +47,17 @@ const (
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
-	EthProvider             string
-	TmProvider              string
-	RegistryContractAddress common.Address
-	ValidatorName           string
-	ValidatorAddress        sdk.ValAddress
-	NetworkDescriptor       oracletypes.NetworkDescriptor
-	CliCtx                  client.Context
-	PrivateKey              *ecdsa.PrivateKey
-	SugaredLogger           *zap.SugaredLogger
-	SifnodeGrpc             string
+	EthProvider                     string
+	TmProvider                      string
+	RegistryContractAddress         common.Address
+	ValidatorName                   string
+	ValidatorAddress                sdk.ValAddress
+	NetworkDescriptor               oracletypes.NetworkDescriptor
+	CliCtx                          client.Context
+	PrivateKey                      *ecdsa.PrivateKey
+	SugaredLogger                   *zap.SugaredLogger
+	SifnodeGrpc                     string
+	maxMessagesInSifnodeTransaction int
 }
 
 // NewKeybase create a new keybase instance
@@ -81,18 +82,20 @@ func NewEthereumSub(
 	registryContractAddress common.Address,
 	sugaredLogger *zap.SugaredLogger,
 	sifnodeGrpc string,
+	maxMessagesInSifnodeTransaction int,
 ) EthereumSub {
 
 	return EthereumSub{
-		EthProvider:             ethProvider,
-		TmProvider:              nodeURL,
-		NetworkDescriptor:       networkDescriptor,
-		RegistryContractAddress: registryContractAddress,
-		ValidatorName:           validatorMoniker,
-		ValidatorAddress:        nil,
-		CliCtx:                  cliCtx,
-		SugaredLogger:           sugaredLogger,
-		SifnodeGrpc:             sifnodeGrpc,
+		EthProvider:                     ethProvider,
+		TmProvider:                      nodeURL,
+		NetworkDescriptor:               networkDescriptor,
+		RegistryContractAddress:         registryContractAddress,
+		ValidatorName:                   validatorMoniker,
+		ValidatorAddress:                nil,
+		CliCtx:                          cliCtx,
+		SugaredLogger:                   sugaredLogger,
+		SifnodeGrpc:                     sifnodeGrpc,
+		maxMessagesInSifnodeTransaction: maxMessagesInSifnodeTransaction,
 	}
 }
 
@@ -466,7 +469,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		return lockBurnNonce, nil
 	}
 
-	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
+	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.maxMessagesInSifnodeTransaction, sub.SugaredLogger)
 }
 
 // GetLockBurnSequenceFromCosmos via rpc
@@ -480,7 +483,7 @@ func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	queryClient := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryEthereumLockBurnSequenceRequest{

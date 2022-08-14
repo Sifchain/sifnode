@@ -44,12 +44,16 @@ func TestInitGenesis(t *testing.T) {
 	receiver := CreateState(ctx1, keeper1, t)
 	state := ethbridge.ExportGenesis(ctx1, keeper1)
 	assert.Equal(t, state.CrosschainFeeReceiveAccount, receiver)
+
+	// not set for state2, so receiver account is empty
 	state2 := ethbridge.ExportGenesis(ctx2, keeper2)
 	assert.Equal(t, state2.CrosschainFeeReceiveAccount, "")
 
+	// no validator update from the module
 	valUpdates := ethbridge.InitGenesis(ctx2, keeper2, *state)
 	assert.Equal(t, len(valUpdates), 0)
 
+	// after init the genesis from state, receive account is set
 	actualReceiver := keeper2.GetCrossChainFeeReceiverAccount(ctx2)
 	assert.Equal(t, receiver, actualReceiver.String())
 }

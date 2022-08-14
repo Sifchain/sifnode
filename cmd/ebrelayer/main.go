@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math/big"
-	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -31,21 +30,21 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-
-	_ "net/http/pprof" // nolint:gosec, G108
 )
 
 const (
-	networkDescriptorFlag             = "network-descriptor"
-	tendermintNodeFlag                = "tendermint-node"
-	web3ProviderFlag                  = "web3-provider"
-	bridgeRegistryContractAddressFlag = "bridge-registry-contract-address"
-	validatorMnemonicFlag             = "validator-mnemonic"
-	maxFeePerGasFlag                  = "maxFeePerGasFlag"
-	maxPriorityFeePerGasFlag          = "maxPriorityFeePerGasFlag"
-	ethereumChainIdFlag               = "ethereum-chain-id"
-	sifnodeGrpcEntryPointFlag         = "sifnode-grpc-endpoint"
-	defaultSifnodeGrpc                = "0.0.0.0:9090"
+	networkDescriptorFlag                  = "network-descriptor"
+	tendermintNodeFlag                     = "tendermint-node"
+	web3ProviderFlag                       = "web3-provider"
+	bridgeRegistryContractAddressFlag      = "bridge-registry-contract-address"
+	validatorMonikerFlag                   = "validator-moniker"
+	maxFeePerGasFlag                       = "maxFeePerGasFlag"
+	maxPriorityFeePerGasFlag               = "maxPriorityFeePerGasFlag"
+	ethereumChainIdFlag                    = "ethereum-chain-id"
+	sifnodeGrpcEntryPointFlag              = "sifnode-grpc-endpoint"
+	defaultSifnodeGrpc                     = "0.0.0.0:9090"
+	maxMessagesInSifnodeTransactionFlag    = "max-messages-in-sifnode-transaction"
+	defaultMaxMessagesInSifnodeTransaction = "5"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -116,13 +115,13 @@ func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
 		Use: `init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic 
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
 		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
 		Short: "Validate credentials and initialize subscriptions to both chains",
 		Args:  cobra.ExactArgs(0),
 		Example: `ebrelayer init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  
-		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
+		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090 --max-messages-in-sifnode-transaction 5`,
 		RunE: RunInitRelayerCmd,
 	}
 	flags.AddTxFlagsToCmd(initRelayerCmd)
@@ -136,13 +135,13 @@ func initWitnessCmd() *cobra.Command {
 	//nolint:lll
 	initWitnessCmd := &cobra.Command{
 		Use: `init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic 
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
 		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
 		Short: "Validate credentials and initialize subscriptions to both chains",
 		Args:  cobra.ExactArgs(0),
 		Example: `ebrelayer init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 
-		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  
-		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090`,
+		--web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-moniker moniker 
+		--chain-id=peggy --sifnode-grpc-endpoint 0.0.0.0:9090 --max-messages-in-sifnode-transaction 5`,
 		RunE: RunInitWitnessCmd,
 	}
 	flags.AddTxFlagsToCmd(initWitnessCmd)
@@ -254,7 +253,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(contractAddressString)
 
-	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
+	validatorMoniker, err := cmd.Flags().GetString(validatorMonikerFlag)
 	if err != nil {
 		return errors.Errorf("validator moniker is invalid: %s", err.Error())
 	}
@@ -266,11 +265,26 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	sifnodeGrpc, err := cmd.Flags().GetString(sifnodeGrpcEntryPointFlag)
 	if err != nil {
 		// set default value
+		log.Println("Using default Sifnode GRPC Endpoint: ", defaultSifnodeGrpc)
 		sifnodeGrpc = defaultSifnodeGrpc
 	}
 
 	if len(sifnodeGrpc) == 0 {
 		sifnodeGrpc = defaultSifnodeGrpc
+	}
+
+	maxMessagesInSifnodeTransactionString, err := cmd.Flags().GetString(maxMessagesInSifnodeTransactionFlag)
+	if err != nil {
+		return errors.Errorf("max messages in sifnode transaction is invalid: %s", err.Error())
+	}
+
+	maxMessagesInSifnodeTransaction, err := strconv.Atoi(maxMessagesInSifnodeTransactionString)
+	if err != nil {
+		return errors.Errorf("max messages in sifnode transaction: %s is invalid", maxMessagesInSifnodeTransactionString)
+	}
+
+	if maxMessagesInSifnodeTransaction <= 0 {
+		return errors.Errorf("max messages in sifnode transaction must be larger than 0")
 	}
 
 	logger, loggerCleanup, err := buildZapLogger(cmd)
@@ -302,6 +316,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		contractAddress,
 		sugaredLogger,
 		sifnodeGrpc,
+		maxMessagesInSifnodeTransaction,
 	)
 
 	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
@@ -454,7 +469,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(contractAddressString)
 
-	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
+	validatorMoniker, err := cmd.Flags().GetString(validatorMonikerFlag)
 	if err != nil {
 		return errors.Errorf("validator moniker is invalid: %s", err.Error())
 	}
@@ -471,6 +486,20 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 	if len(sifnodeGrpc) == 0 {
 		sifnodeGrpc = defaultSifnodeGrpc
+	}
+
+	maxMessagesInSifnodeTransactionString, err := cmd.Flags().GetString(maxMessagesInSifnodeTransactionFlag)
+	if err != nil {
+		return errors.Errorf("max messages in sifnode transaction is invalid: %s", err.Error())
+	}
+
+	maxMessagesInSifnodeTransaction, err := strconv.Atoi(maxMessagesInSifnodeTransactionString)
+	if err != nil {
+		return errors.Errorf("max messages in sifnode transaction: %s is invalid", maxMessagesInSifnodeTransactionString)
+	}
+
+	if maxMessagesInSifnodeTransaction <= 0 {
+		return errors.Errorf("max messages in sifnode transaction must be larger than 0")
 	}
 
 	logger, loggerCleanup, err := buildZapLogger(cmd)
@@ -496,6 +525,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		contractAddress,
 		sugaredLogger,
 		sifnodeGrpc,
+		maxMessagesInSifnodeTransaction,
 	)
 
 	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
@@ -549,9 +579,9 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		"Ethereum bridge registry contract address",
 	)
 	cmd.Flags().String(
-		validatorMnemonicFlag,
+		validatorMonikerFlag,
 		"",
-		"Validator mnemonic",
+		"Validator moniker",
 	)
 	cmd.Flags().String(
 		maxFeePerGasFlag,
@@ -573,6 +603,11 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		"",
 		"The sifnode grpc url",
 	)
+	cmd.Flags().String(
+		maxMessagesInSifnodeTransactionFlag,
+		defaultMaxMessagesInSifnodeTransaction,
+		"max messages included in single sifnode transaction",
+	)
 }
 
 func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTranslator, error) {
@@ -591,10 +626,6 @@ func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTransl
 }
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	if err := svrcmd.Execute(buildRootCmd(), sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:

@@ -25,8 +25,11 @@ const (
 func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator, sugaredLogger *zap.SugaredLogger) (ethbridge.EthBridgeClaim, error) {
 	ethBridgeClaim := ethbridge.EthBridgeClaim{}
 
-	// chainID type casting (*big.Int -> int)
 	networkDescriptor := oracletypes.NetworkDescriptor(event.NetworkDescriptor)
+
+	if err := ethbridge.ValidateNetworkDescriptor(networkDescriptor); err != nil {
+		return ethBridgeClaim, err
+	}
 
 	bridgeContractAddress := ethbridge.NewEthereumAddress(event.BridgeContractAddress.Hex())
 

@@ -1,5 +1,5 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
+//go:build FEATURE_TOGGLE_SDK_045
+// +build FEATURE_TOGGLE_SDK_045
 
 package app
 
@@ -10,10 +10,6 @@ import (
 	"os"
 
 	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
-	"github.com/Sifchain/sifnode/x/admin"
-	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
-	sifbank "github.com/Sifchain/sifnode/x/bank"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -31,7 +27,6 @@ import (
 	"github.com/Sifchain/sifnode/x/tokenregistry"
 	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -54,6 +49,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -150,7 +146,6 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
-		admin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
 
@@ -223,7 +218,6 @@ type SifchainApp struct {
 	EthbridgeKeeper     ethbridgekeeper.Keeper
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
-	AdminKeeper         adminkeeper.Keeper
 
 	mm           *module.Manager
 	sm           *module.SimulationManager
@@ -234,14 +228,6 @@ func NewSifApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
-) *SifchainApp {
-	return NewSifAppWithBlacklist(logger, db, traceStore, loadLatest, skipUpgradeHeights, homePath, invCheckPeriod, encodingConfig, appOpts, []sdk.AccAddress{}, baseAppOptions...)
-}
-
-func NewSifAppWithBlacklist(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
-	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
-	appOpts servertypes.AppOptions, blackListedAddresses []sdk.AccAddress, baseAppOptions ...func(*baseapp.BaseApp),
 ) *SifchainApp {
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
@@ -270,7 +256,6 @@ func NewSifAppWithBlacklist(
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
-		admintypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -308,16 +293,11 @@ func NewSifAppWithBlacklist(
 		maccPerms,
 	)
 
-	addrs := app.ModuleAccountAddrs()
-	for _, addr := range blackListedAddresses {
-		addrs[addr.String()] = true
-	}
-
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.GetSubspace(banktypes.ModuleName),
-		addrs,
+		app.ModuleAccountAddrs(),
 	)
 
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
@@ -361,15 +341,13 @@ func NewSifAppWithBlacklist(
 	)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
-	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		appCodec,
 		keys[clptypes.StoreKey],
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
-		app.AdminKeeper,
 		app.MintKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
@@ -429,7 +407,6 @@ func NewSifAppWithBlacklist(
 		app.OracleKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
-		app.AdminKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 
@@ -469,7 +446,7 @@ func NewSifAppWithBlacklist(
 		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
-		sifbank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
+		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
@@ -488,11 +465,12 @@ func NewSifAppWithBlacklist(
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
-		admin.NewAppModule(app.AdminKeeper, &appCodec),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
+	// NOTE: staking module is required if HistoricalEntries param > 0
+	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
@@ -501,19 +479,53 @@ func NewSifAppWithBlacklist(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		govtypes.ModuleName,
+		crisistypes.ModuleName,
+		genutiltypes.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		ibchost.ModuleName,
-		dispensation.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
+		vestingtypes.ModuleName,
 		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
+		dispensation.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
+		capabilitytypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		minttypes.ModuleName,
+		genutiltypes.ModuleName,
+		evidencetypes.ModuleName,
 		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
 	app.mm.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -524,18 +536,23 @@ func NewSifAppWithBlacklist(
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
-		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
-		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
-		tokenregistrytypes.ModuleName,
-		admintypes.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
 	)
+
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(app.configurator)
