@@ -21,6 +21,7 @@ from siftool import command, cosmos, project, environments, sifchain
 # More information about min commission / max voting power:
 # Test scenarios (Kevin): https://github.com/Sifchain/sifnode/blob/feature/min-commission/docs/tutorials/commission.md
 # Test scenarios (James): https://www.notion.so/sifchain/Minimum-Commissions-Max-Voting-Power-Test-Scenarios-Draft-729620045e2d41f8b18f3a5df28b623b
+# How to bypass the 24h limit (Caner): https://www.notion.so/sifchain/v0-15-0-Edit-min-commission-of-existing-validator-edecd16b074a4900974704d223847b48
 # Useful info:
 # - https://app.zenhub.com/workspaces/current-sprint---engineering-615a2e9fe2abd5001befc7f9/issues/sifchain/sifchain-chainops/200
 # Upgrades:
@@ -227,6 +228,7 @@ def test_min_commission_modify_existing_validator_24h(cmd: command.Command):
         exception = e
     assert sifchain.is_min_commission_too_low_exception(exception)
 
+    exception = None
     try:
         res = sifnoded2.staking_edit_validator(0.07, from_acct=admin2_addr, broadcast_mode="block")
         sifchain.check_raw_log(res)
