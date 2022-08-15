@@ -1,3 +1,6 @@
+//go:build !FEATURE_TOGGLE_SDK_045
+// +build !FEATURE_TOGGLE_SDK_045
+
 package keeper_test
 
 import (
@@ -13,8 +16,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Setting to true to use 0.45
 var (
-	isFeatureToggleSdk045 = os.Getenv("FEATURE_TOGGLE_SDK_045") != ""
+	isFeatureToggleSdk045 = os.Getenv("FEATURE_TOGGLE_SDK_045") == ""
 )
 
 func TestIsBlacklisted(t *testing.T) {
