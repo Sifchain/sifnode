@@ -26,6 +26,7 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
 	nativeAsset types.Asset,
 	inPool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+
 	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate)
 }
 
@@ -80,7 +81,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			calculateWithdraw:      true,
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
-			pmtpCurrentRunningRate: sdk.OneDec(),
+			pmtpCurrentRunningRate: sdk.ZeroDec(),
 			swapResult:             sdk.NewUint(19),
 			liquidityFee:           sdk.NewUint(978),
 			priceImpact:            sdk.ZeroUint(),
@@ -163,7 +164,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			from:                   types.Asset{Symbol: "eth"},
 			to:                     types.Asset{Symbol: "rowan"},
 			pmtpCurrentRunningRate: sdk.OneDec(),
-			swapResult:             sdk.NewUint(41),
+			swapResult:             sdk.NewUint(45),
 			liquidityFee:           sdk.NewUint(8),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{

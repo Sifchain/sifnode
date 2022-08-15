@@ -281,18 +281,24 @@ func CalcSwapResult(toRowan bool,
 	return sdk.NewUintFromBigInt(num)
 }
 
+// y = (1-f)*x*Y/(x+X)
 func calcSwap(x, X, Y *big.Int) big.Rat {
-	var s, d, d2, d3 big.Int
-	var numerator, denominator, y big.Rat
+	var diff big.Rat
+	one := big.NewRat(1, 1)
+	f := big.NewRat(3, 1000)
+	diff.Sub(one, f) // diff = 1 - f
 
-	s.Add(X, x)    // s = X + x
-	d.Mul(&s, &s)  // d = (X + x)**2
-	d2.Mul(X, Y)   // d2 = X * Y
-	d3.Mul(x, &d2) // d3 = x * X * Y
+	var s, d big.Int
+	var numerator, denominator, d2, y big.Rat
 
-	denominator.SetInt(&d)
-	numerator.SetInt(&d3)
-	y.Quo(&numerator, &denominator) // y = d3 / d = (x * X * Y) / (X + x)**2
+	s.Add(X, x) // s = X + x
+	d.Mul(x, Y) // d = x * Y
+
+	d2.SetInt(&d)
+	numerator.Mul(&diff, &d2)
+
+	denominator.SetInt(&s)
+	y.Quo(&numerator, &denominator) // y = (diff * d2) / s = ((1 - f) * x * Y) / (X + x)
 
 	return y
 }

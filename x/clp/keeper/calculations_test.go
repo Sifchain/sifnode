@@ -645,6 +645,15 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			y:                      sdk.NewUint(1),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
 		},
+		{
+			name:                   "x=23, X=42, Y=1337",
+			toRowan:                true,
+			X:                      sdk.NewUint(42),
+			x:                      sdk.NewUint(23),
+			Y:                      sdk.NewUint(1337),
+			y:                      sdk.NewUint(471),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+		},
 	}
 
 	for _, tc := range testcases {

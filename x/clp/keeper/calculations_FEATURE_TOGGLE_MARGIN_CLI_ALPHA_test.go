@@ -26,6 +26,7 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
 	nativeAsset types.Asset,
 	inPool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+
 	marginEnabled := k.GetMarginKeeper().IsPoolEnabled(ctx, inPool.String())
 	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, marginEnabled)
 }
