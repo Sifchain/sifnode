@@ -30,7 +30,7 @@ func NewMsgServerImpl(k types.Keeper) types.MsgServer {
 func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOpenResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !k.IsWhitelisted(ctx, msg.Signer) {
+	if k.IsWhitelistingEnabled(ctx) && !k.IsWhitelisted(ctx, msg.Signer) {
 		return nil, sdkerrors.Wrap(types.ErrUnauthorised, "unauthorised")
 	}
 

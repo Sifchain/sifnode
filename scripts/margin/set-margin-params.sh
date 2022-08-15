@@ -3,7 +3,7 @@
 set -x
 
 sifnoded tx margin update-params \
-  --health-gain-factor=0.001 \
+  --health-gain-factor=0.0000000001 \
   --interest-rate-decrease=0.000000001 \
   --interest-rate-increase=0.000000001 \
   --interest-rate-max=3.0 \
@@ -17,9 +17,10 @@ sifnoded tx margin update-params \
   --incremental-interest-payment-enabled=true \
   --incremental-interest-payment-fund-percentage=0.1 \
   --incremental-interest-payment-insurance-fund-address=sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd \
-  --pool-open-threshold=0.1 \
+  --pool-open-threshold=0.0000000000001 \
   --sq-modifier=10000000000000000000000000 \
   --safety-factor=1.05 \
+  --whitelisting-enabled=true \
   --from=$SIF_ACT \
   --keyring-backend=test \
   --fees 100000000000000000rowan \

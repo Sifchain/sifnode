@@ -112,3 +112,10 @@ func (srv queryServer) GetSQParams(ctx context.Context, request *types.GetSQPara
 		BeginBlock: int64(srv.keeper.GetSQBeginBlock(sdk.UnwrapSDKContext(ctx), &pool)),
 	}, nil
 }
+
+func (srv queryServer) IsWhitelisted(ctx context.Context, request *types.IsWhitelistedRequest) (*types.IsWhitelistedResponse, error) {
+	return &types.IsWhitelistedResponse{
+		Address:       request.Address,
+		IsWhitelisted: srv.keeper.IsWhitelisted(sdk.UnwrapSDKContext(ctx), request.Address),
+	}, nil
+}
