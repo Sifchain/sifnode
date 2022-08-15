@@ -400,6 +400,11 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 
 // Calculates how much external asset to swap for an asymmetric add to become
 // symmetric
+// Y - native asset pool depth
+// X - external asset pool depth
+// y - native asset amount
+// x - external asset amount
+// Should be used when Y/X > y/x
 // NOTE: this method panics if a negative value is passed to the sqrt
 // It's not clear whether this condition could ever happen given the
 // constraints on the inputs (e.g. all are > 0). It is possible to guard against
@@ -449,4 +454,57 @@ func CalculateExternalSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
 	ac_.Mul(&two, &r1).Mul(&ac_, &x_) // ac_ := (2 * r1 * x_)
 	ad_.Quo(&ab_, &ac_)               // ad_ := ab_ / ac_
 	return *ad_.Abs(&ad_)
+}
+
+// Calculates how much native asset to swap for an asymmetric add to become
+// symmetric
+// Y - native asset pool depth
+// X - external asset pool depth
+// y - native asset amount
+// x - external asset amount
+// Should be used when Y/X < y/x
+// NOTE: this method panics if a negative value is passed to the sqrt
+// It's not clear whether this condition could ever happen given the
+// constraints on the inputs (e.g. all are > 0). It is possible to guard against
+// a panic by ensuring the sqrt argument is positive.
+func CalculateNativeSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
+	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, two, four big.Rat
+	two.SetInt64(2)
+	four.SetInt64(4)
+
+	a_.Mul(f, r).Mul(&a_, X).Mul(&a_, y) // a_ := f * r * X * y
+	b_.Mul(f, r).Mul(&b_, X).Mul(&b_, Y) // b_ := f * r * X * Y
+	c_.Mul(f, X).Mul(&c_, y)             // c_ := f * X * y
+	d_.Mul(f, X).Mul(&d_, Y)             // d_ := f * X * Y
+	e_.Mul(r, X).Mul(&e_, y)             // e_ := r * X * y
+	f_.Mul(r, X).Mul(&f_, Y)             // f_ := r * X * Y
+	g_.Mul(&two, x).Mul(&g_, Y)          // g_ := 2 * x * Y
+	h_.Mul(&two, X).Mul(&h_, Y)          // h_ := 2 * X * Y
+	i_.Add(x, X)                         // i_ := x + X
+	j_.Mul(x, Y).Mul(&j_, Y)             // j_ := x * Y * Y
+	k_.Mul(X, y).Mul(&k_, Y)             // k_ := X * y * Y
+	l_.Sub(&j_, &k_)                     // l_ := j_ - k_
+	m_.Mul(&four, &i_).Mul(&m_, &l_)     // m_ := 4 * i_ * l_
+	n_.Mul(f, r).Mul(&n_, X).Mul(&n_, y) // n_ := f * r * X * y
+	o_.Mul(f, r).Mul(&o_, X).Mul(&o_, Y) // o_ := f * r * X * Y
+	p_.Mul(f, X).Mul(&p_, y)             // p_ := f * X * y
+	q_.Mul(f, X).Mul(&q_, Y)             // q_ := f * X * Y
+	r_.Mul(r, X).Mul(&r_, y)             // r_ := r * X * y
+	s_.Mul(r, X).Mul(&s_, Y)             // s_ := r * X * Y
+	t_.Mul(&two, x).Mul(&t_, Y)          // t_ := 2 * x * Y
+	u_.Mul(&two, X).Mul(&u_, Y)          // u_ := 2 * X * Y
+	v_.Add(x, X).Mul(&v_, &two)          // v_ := 2 * (x + X)
+
+	w_.Add(&e_, &f_).Add(&w_, &g_).Add(&w_, &h_).Sub(&w_, &a_).Sub(&w_, &b_).Sub(&w_, &c_).Sub(&w_, &d_) // w_ := e_ + f_ + g_ + h_ -a_ - b_ - c_ - d_  // w_ := -a_ - b_ - c_ - d_ + e_ + f_ + g_ + h_
+
+	x_.Mul(&w_, &w_) // x_ := math.Pow(w_, 2)
+	y_.Sub(&x_, &m_) // y_ := x_ - m_
+
+	z_.SetInt(ApproxRatSquareRoot(&y_)) // z_ := math.Sqrt(y_)
+
+	aa_.Add(&z_, &n_).Add(&aa_, &o_).Add(&aa_, &p_).Add(&aa_, &q_).Sub(&aa_, &r_).Sub(&aa_, &s_).Sub(&aa_, &t_).Sub(&aa_, &u_) // aa_ := z_ + n_ + o_ + p_ + q_ - r_ - s_ - t_ - u_
+
+	ab_.Quo(&aa_, &v_) // ab_ := aa_ / v_
+
+	return *ab_.Abs(&ab_)
 }

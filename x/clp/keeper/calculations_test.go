@@ -1227,9 +1227,9 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 	}
 }
 
-// Used only to generate expected results for TestKeeper_CalculateSwapAmountAsymmetric
-// Useful to keep around if more test cases are needed in future
-// func TestKeeper_GenerateCalculateSwapAmountAsymmetricTestCases(t *testing.T) {
+// // Used only to generate expected results for TestKeeper_CalculateExternalSwapAmountAsymmetric
+// // Useful to keep around if more test cases are needed in future
+// func TestKeeper_GenerateCalculateExternalSwapAmountAsymmetricTestCases(t *testing.T) {
 // 	testcases := []struct {
 // 		Y, X, y, x, f, r float64
 // 		expectedValue    float64
@@ -1237,16 +1237,16 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 // 		{
 // 			Y: 100000,
 // 			X: 100000,
-// 			y: 8000,
-// 			x: 2000,
+// 			y: 2000,
+// 			x: 8000,
 // 			f: 0.003,
 // 			r: 0.01,
 // 		},
 // 		{
 // 			Y: 3456789887,
 // 			X: 1244516357,
-// 			y: 99887776,
-// 			x: 2000,
+// 			y: 2000,
+// 			x: 99887776,
 // 			f: 0.003,
 // 			r: 0.01,
 // 		},
@@ -1272,7 +1272,7 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 // 	}
 
 // }
-func TestKeeper_CalculateSwapAmountAsymmetric(t *testing.T) {
+func TestKeeper_CalculateExternalSwapAmountAsymmetric(t *testing.T) {
 	testcases := []struct {
 		name             string
 		Y, X, y, x, f, r *big.Rat
@@ -1282,24 +1282,24 @@ func TestKeeper_CalculateSwapAmountAsymmetric(t *testing.T) {
 			name:          "test1",
 			Y:             big.NewRat(100000, 1),
 			X:             big.NewRat(100000, 1),
-			y:             big.NewRat(8000, 1),
-			x:             big.NewRat(2000, 1),
+			y:             big.NewRat(2000, 1),
+			x:             big.NewRat(8000, 1),
 			f:             big.NewRat(3, 1000), // 0.003
 			r:             big.NewRat(1, 100),  // 0.01
-			expectedValue: sdk.MustNewDecFromStr("2835.202305647231389805"),
+			expectedValue: sdk.MustNewDecFromStr("2918.476067753834206950"),
 		},
 		{
 			name:          "test2",
 			Y:             big.NewRat(3456789887, 1),
 			X:             big.NewRat(1244516357, 1),
-			y:             big.NewRat(99887776, 1),
-			x:             big.NewRat(2000, 1),
+			y:             big.NewRat(2000, 1),
+			x:             big.NewRat(99887776, 1),
 			f:             big.NewRat(3, 1000), // 0.003
 			r:             big.NewRat(1, 100),  // 0.01
-			expectedValue: sdk.MustNewDecFromStr("17711703.583139594741014241"),
+			expectedValue: sdk.MustNewDecFromStr("49309453.001511112834211406"),
 		},
 		{
-			name:          "real data",
+			name:          "test3",
 			Y:             MustRatFromString("157007500498726220240179086"),
 			X:             big.NewRat(2674623482959, 1),
 			y:             big.NewRat(0, 1),
@@ -1316,6 +1316,95 @@ func TestKeeper_CalculateSwapAmountAsymmetric(t *testing.T) {
 			got, _ := clpkeeper.RatToDec(&res)
 
 			require.Equal(t, tc.expectedValue.String(), got.String())
+		})
+	}
+
+}
+
+// // Used only to generate expected results for TestKeeper_CalculateNativeSwapAmountAsymmetric
+// // Useful to keep around if more test cases are needed in future
+// func TestKeeper_GenerateCalculateNativeSwapAmountAsymmetricTestCases(t *testing.T) {
+// 	testcases := []struct {
+// 		Y, X, y, x, f, r float64
+// 		expectedValue    float64
+// 	}{
+// 		{
+// 			Y: 100000,
+// 			X: 100000,
+// 			y: 8000,
+// 			x: 2000,
+// 			f: 0.003,
+// 			r: 0.01,
+// 		},
+// 		{
+// 			Y: 3456789887,
+// 			X: 1244516357,
+// 			y: 99887776,
+// 			x: 2000,
+// 			f: 0.003,
+// 			r: 0.01,
+// 		},
+// 	}
+
+// 	for _, tc := range testcases {
+// 		Y := tc.Y
+// 		X := tc.X
+// 		y := tc.y
+// 		x := tc.x
+// 		f := tc.f
+// 		r := tc.r
+// 		expected := math.Abs((math.Sqrt(math.Pow((-1*f*r*X*y-f*r*X*Y-f*X*y-f*X*Y+r*X*y+r*X*Y+2*x*Y+2*X*Y), 2)-4*(x+X)*(x*Y*Y-X*y*Y)) + f*r*X*y + f*r*X*Y + f*X*y + f*X*Y - r*X*y - r*X*Y - 2*x*Y - 2*X*Y) / (2 * (x + X)))
+// 		fmt.Println(expected)
+// 	}
+
+// }
+func TestKeeper_CalculateNativeSwapAmountAsymmetric(t *testing.T) {
+	testcases := []struct {
+		name             string
+		Y, X, y, x, f, r *big.Rat
+		expectedValue    sdk.Dec
+	}{
+		{
+			name:          "test1",
+			Y:             big.NewRat(100000, 1),
+			X:             big.NewRat(100000, 1),
+			y:             big.NewRat(8000, 1),
+			x:             big.NewRat(2000, 1),
+			f:             big.NewRat(3, 1000), // 0.003
+			r:             big.NewRat(1, 100),  // 0.01
+			expectedValue: sdk.MustNewDecFromStr("2888.791254901960784313"),
+		},
+		{
+			name:          "test2",
+			Y:             big.NewRat(3456789887, 1),
+			X:             big.NewRat(1244516357, 1),
+			y:             big.NewRat(99887776, 1),
+			x:             big.NewRat(2000, 1),
+			f:             big.NewRat(3, 1000), // 0.003
+			r:             big.NewRat(1, 100),  // 0.01
+			expectedValue: sdk.MustNewDecFromStr("49410724.289235769454274911"),
+		},
+		{
+			//NOTE: cannot be confirmed with the float64 model above since that runs out of precision.
+			// However the expectedValue is about half the value of y, which is as expected
+			name:          "test3",
+			Y:             MustRatFromString("157007500498726220240179086"),
+			X:             big.NewRat(2674623482959, 1),
+			y:             big.NewRat(200000000, 1),
+			x:             big.NewRat(0, 1),
+			f:             big.NewRat(3, 1000), // 0.003
+			r:             big.NewRat(1, 100),  // 0.01
+			expectedValue: sdk.MustNewDecFromStr("99652710.304588509013984918"),
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := clpkeeper.CalculateNativeSwapAmountAsymmetric(tc.Y, tc.X, tc.y, tc.x, tc.f, tc.r)
+			got, _ := clpkeeper.RatToDec(&res)
+
+			require.Equal(t, tc.expectedValue.String(), got.String())
+
 		})
 	}
 
