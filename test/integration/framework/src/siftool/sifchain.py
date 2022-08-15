@@ -1015,7 +1015,7 @@ class Sifnoded:
                 time.sleep(1)
 
     # TODO Refactor wait_up() / _wait_up()
-    def _wait_up(self, timeout: int=30):
+    def _wait_up(self, timeout: int = 30):
         host, port = self._get_host_and_port()
         from urllib.error import URLError
         start_time = time.time()
@@ -1023,11 +1023,12 @@ class Sifnoded:
             try:
                 response = self._rpc_get(host, port, "status")
                 result = response["result"]
-                return result
+                if not result["sync_info"]["catching_up"]:
+                    return result
             except URLError:
                 if time.time() - start_time > timeout:
                     raise Exception("Timeout waiting for sifnoded to come up")
-                time.sleep(1)
+            time.sleep(1)
 
     def _home_args(self) -> Optional[List[str]]:
         return ["--home", self.home] if self.home else []
