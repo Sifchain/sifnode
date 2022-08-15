@@ -31,6 +31,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryStatus(),
 		GetCmdSQParams(),
 		GetCmdQueryWhitelist(),
+		GetCmdQueryIsWhitelist(),
 	)
 	return cmd
 }
@@ -246,11 +247,11 @@ func GetCmdQueryWhitelist() *cobra.Command {
 	return cmd
 }
 
-func GetCmdQueryIswhitelist() *cobra.Command {
+func GetCmdQueryIsWhitelist() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "is-whitelisted [address]",
 		Short: "query whitelist for one address",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
