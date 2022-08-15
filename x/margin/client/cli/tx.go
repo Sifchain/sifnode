@@ -244,7 +244,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().String("incremental-interest-payment-insurance-fund-address", "", "address of insurance fund wallet for incremental interest payment")
 	cmd.Flags().String("sq-modifier", "", "the modifier value for the removal queue's sq formula")
 	cmd.Flags().String("safety-factor", "", "the safety factor used in liquidation ratio")
-	cmd.Flags().Bool("whitelisting-enabled", true, "Enable whitelisting")
+	cmd.Flags().Bool("whitelisting-enabled", false, "Enable whitelisting")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
