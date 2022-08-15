@@ -27,6 +27,7 @@ func DefaultGenesis() *GenesisState {
 			SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
 			SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
 			IncrementalInterestPaymentEnabled:              true,
+			WhitelistingEnabled:                            false,
 		},
 	}
 }
