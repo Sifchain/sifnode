@@ -66,7 +66,7 @@ message Params {
   ];
   repeated string closed_pools = 19;
   bool incremental_interest_payment_enabled = 20;
-
+  bool whitelisting_enabled = 21;
 }
 
 enum Position {
