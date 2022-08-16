@@ -341,8 +341,7 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 	dcm := CalcDenomChangeMultiplier(decimalsX, decimalsY)
 	pmtpPrice.Mul(&pmtpPrice, &dcm)
 
-	res := RatToDec(&pmtpPrice)
-	return res, nil
+	return RatToDec(&pmtpPrice)
 }
 func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
 	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
