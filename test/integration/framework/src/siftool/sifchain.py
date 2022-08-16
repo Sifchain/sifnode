@@ -708,7 +708,7 @@ class Sifnoded:
                 return new_balance
             now = time.time()
             if (timeout is not None) and (timeout > 0) and (now - start_time > timeout):
-                raise Exception("Timeout waiting for sif balance to change ({}s)".format(timeout))
+                raise SifnodedException("Timeout waiting for sif account {} balance to change ({}s)".format(sif_addr, timeout))
             if last_change_time is None:
                 last_changed_balance = new_balance
                 last_change_time = now
@@ -719,7 +719,7 @@ class Sifnoded:
                     last_change_time = now
                     log.debug("New state detected ({} denoms changed)".format(len(delta)))
                 if (change_timeout is not None) and (change_timeout > 0) and (now - last_change_time > change_timeout):
-                    raise Exception("Timeout waiting for sif balance to change ({}s)".format(change_timeout))
+                    raise SifnodedException("Timeout waiting for sif account {} balance to change ({}s)".format(sif_addr, change_timeout))
             time.sleep(polling_time)
 
     # TODO Refactor - consolidate with test_inflate_tokens.py
@@ -1026,8 +1026,11 @@ class Sifnoded:
                 if not result["sync_info"]["catching_up"]:
                     return result
             except URLError:
-                if time.time() - start_time > timeout:
-                    raise Exception("Timeout waiting for sifnoded to come up")
+                pass
+            if time.time() - start_time > timeout:
+                raise SifnodedException("Timeout waiting for sifnoded to come up. Check if the process is running. "
+                    "If it didn't start, ther should be some information in the log file. If the process is slow to "
+                    "start or if the validator needs more time to catch up, increase the timeout.")
             time.sleep(1)
 
     def _home_args(self) -> Optional[List[str]]:

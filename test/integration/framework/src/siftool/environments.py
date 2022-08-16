@@ -1,4 +1,3 @@
-from typing import Tuple
 from siftool.common import *
 from siftool.sifchain import ROWAN, STAKE
 from siftool import sifchain, command, cosmos
