@@ -60,37 +60,88 @@ func TestKeeper_CheckBalances(t *testing.T) {
 }
 
 func TestKeeper_SwapOne(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
-	wBasis := sdk.NewInt(1000)
-	asymmetry := sdk.NewInt(10000)
-	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	require.NoError(t, err)
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Create Pool
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	assert.NoError(t, err)
-	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
-	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
-	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
-	assert.NoError(t, err)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	_, err = app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
-	assert.NoError(t, err)
-	// asymmetry is positive
-	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, types.GetSettlementAsset(), swapAmount, asset, *pool, sdk.OneDec())
-	assert.NoError(t, err)
-	assert.Equal(t, "19", swapResult.String())
-	assert.Equal(t, "978", liquidityFee.String())
-	assert.Equal(t, "0", priceImpact.String())
+	testcases := []struct {
+		name                         string
+		nativeAssetBalance           sdk.Uint
+		externalAssetBalance         sdk.Uint
+		sentAmount                   sdk.Uint
+		fromAsset                    types.Asset
+		toAsset                      types.Asset
+		pmtpCurrentRunningRate       sdk.Dec
+		errString                    error
+		expectedSwapResult           sdk.Uint
+		expectedLiquidityFee         sdk.Uint
+		expectedPriceImpact          sdk.Uint
+		expectedExternalAssetBalance sdk.Uint
+		expectedNativeAssetBalance   sdk.Uint
+	}{
+		{
+			name:                         "test1",
+			nativeAssetBalance:           sdk.NewUint(1000),
+			externalAssetBalance:         sdk.NewUint(877),
+			sentAmount:                   sdk.NewUint(50),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUint(39),
+			expectedLiquidityFee:         sdk.NewUint(1),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(838),
+			expectedNativeAssetBalance:   sdk.NewUint(1050),
+		},
+		{
+			name:                         "test2",
+			nativeAssetBalance:           sdk.NewUint(10000000),
+			externalAssetBalance:         sdk.NewUint(8770000),
+			sentAmount:                   sdk.NewUint(50000),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUint(43414),
+			expectedLiquidityFee:         sdk.NewUint(217),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(8726586),
+			expectedNativeAssetBalance:   sdk.NewUint(10050000),
+		},
+		{
+			name:                         "test3",
+			nativeAssetBalance:           sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance:         sdk.NewUint(2674623482959),
+			sentAmount:                   sdk.NewUint(200000000),
+			toAsset:                      types.GetSettlementAsset(),
+			fromAsset:                    types.NewAsset("cusdt"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUintFromString("11738775425422586055923"),
+			expectedLiquidityFee:         sdk.NewUint(877789004711474209),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(2674823482959),
+			expectedNativeAssetBalance:   sdk.NewUintFromString("156995761723300797654123163"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, app := test.CreateTestAppClp(false)
+			poolUnits := sdk.NewUint(2000) //don't care
+			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
+
+			swapResult, liquidityFee, priceImpact, pool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate)
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			assert.NoError(t, err)
+			require.Equal(t, tc.expectedSwapResult.String(), swapResult.String())
+			require.Equal(t, tc.expectedLiquidityFee.String(), liquidityFee.String())
+			require.Equal(t, tc.expectedPriceImpact.String(), priceImpact.String())
+			require.Equal(t, tc.expectedExternalAssetBalance.String(), pool.ExternalAssetBalance.String())
+			require.Equal(t, tc.expectedNativeAssetBalance.String(), pool.NativeAssetBalance.String())
+		})
+	}
+
 }
 
 func TestKeeper_ExtractValuesFromPool(t *testing.T) {
@@ -738,7 +789,7 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 	}
 }
 
-//nolint
+// nolint
 func TestKeeper_CalcSpotPriceX(t *testing.T) {
 
 	testcases := []struct {
