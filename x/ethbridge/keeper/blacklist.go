@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -65,7 +64,6 @@ func (k Keeper) GetBlacklist(ctx sdk.Context) []string {
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
-		fmt.Println(key)
 		address := string(key[1:])
 		addresses = append(addresses, address)
 	}
