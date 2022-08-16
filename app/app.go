@@ -121,37 +121,42 @@ var (
 	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
 
 	ModuleBasics = module.NewBasicManager(
-		genutil.AppModuleBasic{},
-		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		capability.AppModuleBasic{},
-		crisis.AppModuleBasic{},
-		feegrantmodule.AppModuleBasic{},
-		authzmodule.AppModuleBasic{},
-		staking.AppModuleBasic{},
-		mint.AppModuleBasic{},
-		distr.AppModuleBasic{},
-		gov.NewAppModuleBasic(
-			paramsclient.ProposalHandler,
-			distrclient.ProposalHandler,
-			upgradeclient.ProposalHandler,
-			ibcclientclient.UpdateClientProposalHandler,
-			ibcclientclient.UpgradeProposalHandler,
-		),
-		params.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		slashing.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ibctransferoverride.AppModuleBasic{},
+		append(
+			[]module.AppModuleBasic{
+				genutil.AppModuleBasic{},
+				auth.AppModuleBasic{},
+				bank.AppModuleBasic{},
+				capability.AppModuleBasic{},
+				crisis.AppModuleBasic{},
+				feegrantmodule.AppModuleBasic{},
+				authzmodule.AppModuleBasic{},
+				staking.AppModuleBasic{},
+				mint.AppModuleBasic{},
+				distr.AppModuleBasic{},
+				gov.NewAppModuleBasic(
+					paramsclient.ProposalHandler,
+					distrclient.ProposalHandler,
+					upgradeclient.ProposalHandler,
+					ibcclientclient.UpdateClientProposalHandler,
+					ibcclientclient.UpgradeProposalHandler,
+				),
+				params.AppModuleBasic{},
+				upgrade.AppModuleBasic{},
+				slashing.AppModuleBasic{},
+				evidence.AppModuleBasic{},
+				ibc.AppModuleBasic{},
+				ibctransferoverride.AppModuleBasic{},
 
-		clp.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		ethbridge.AppModuleBasic{},
-		dispensation.AppModuleBasic{},
-		tokenregistry.AppModuleBasic{},
-		admin.AppModuleBasic{},
-		vesting.AppModuleBasic{},
+				clp.AppModuleBasic{},
+				oracle.AppModuleBasic{},
+				ethbridge.AppModuleBasic{},
+				dispensation.AppModuleBasic{},
+				tokenregistry.AppModuleBasic{},
+				admin.AppModuleBasic{},
+				vesting.AppModuleBasic{},
+			},
+			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModuleBasics()...,
+		)...,
 	)
 
 	maccPerms = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getMaccPerms(
@@ -187,6 +192,7 @@ var (
 
 type SifchainApp struct {
 	*baseapp.BaseApp
+	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SifchainApp
 	legacyAmino       *codec.LegacyAmino //nolint
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry

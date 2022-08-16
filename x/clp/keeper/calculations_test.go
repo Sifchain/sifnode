@@ -478,7 +478,7 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 			asymmetry:            sdk.NewInt(1),
 			panicErr:             "fail to convert 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 to cosmos.Dec: decimal '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' out of range; bitLen: got 545, max 315",
 		},
-		// The panic is from sdk.NewUintFromString and not CalculateWithdrawal
+		//The panic is from sdk.NewUintFromString and not CalculateWithdrawal
 		//{
 		//	name:                 "fail to convert asymmetry to INT",
 		//	poolUnits:            sdk.NewUint(1),
