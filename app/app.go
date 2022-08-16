@@ -382,17 +382,6 @@ func NewSifAppWithBlacklist(
 	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
 
 	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app, keys, &appCodec)
-	//app.ClpKeeper = clpkeeper.NewKeeper(
-	//	appCodec,
-	//	keys[clptypes.StoreKey],
-	//	app.BankKeeper,
-	//	app.AccountKeeper,
-	//	app.TokenRegistryKeeper,
-	//	app.AdminKeeper,
-	//	app.MintKeeper,
-	//	app.GetSubspace(clptypes.ModuleName),
-	//)
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
