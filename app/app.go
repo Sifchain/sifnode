@@ -381,16 +381,17 @@ func NewSifAppWithBlacklist(
 	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
 	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
 
-	app.ClpKeeper = clpkeeper.NewKeeper(
-		appCodec,
-		keys[clptypes.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.TokenRegistryKeeper,
-		app.AdminKeeper,
-		app.MintKeeper,
-		app.GetSubspace(clptypes.ModuleName),
-	)
+	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app, keys, &appCodec)
+	//app.ClpKeeper = clpkeeper.NewKeeper(
+	//	appCodec,
+	//	keys[clptypes.StoreKey],
+	//	app.BankKeeper,
+	//	app.AccountKeeper,
+	//	app.TokenRegistryKeeper,
+	//	app.AdminKeeper,
+	//	app.MintKeeper,
+	//	app.GetSubspace(clptypes.ModuleName),
+	//)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -516,7 +517,7 @@ func NewSifAppWithBlacklist(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
-	app.mm.SetOrderBeginBlockers(
+	orderBeginBlockers := []string{
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -542,8 +543,11 @@ func NewSifAppWithBlacklist(
 		oracletypes.ModuleName,
 		dispensation.ModuleName,
 		admintypes.ModuleName,
-	)
-	app.mm.SetOrderEndBlockers(
+	}
+	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers()...)
+	app.mm.SetOrderBeginBlockers(orderBeginBlockers...)
+
+	orderEndBlockers := []string{
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -568,13 +572,15 @@ func NewSifAppWithBlacklist(
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		admintypes.ModuleName,
-	)
+	}
+	orderEndBlockers = append(orderEndBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers()...)
+	app.mm.SetOrderEndBlockers(orderEndBlockers...)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
 	// NOTE: Capability module must occur first so that it can initialize any capabilities
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
-	app.mm.SetOrderInitGenesis(
+	orderInitGenesis := []string{
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -601,7 +607,9 @@ func NewSifAppWithBlacklist(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-	)
+	}
+	orderInitGenesis = append(orderInitGenesis, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderInitGenesis()...)
+	app.mm.SetOrderInitGenesis(orderInitGenesis...)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
