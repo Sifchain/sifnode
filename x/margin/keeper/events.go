@@ -6,6 +6,7 @@ package keeper
 import (
 	"strconv"
 
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,16 +22,35 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.
 		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
 		sdk.NewAttribute("repay_amount", repayAmount.String()),
 		sdk.NewAttribute("leverage", mtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
+		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
+		sdk.NewAttribute("interest_paid", mtp.InterestUnpaid.String()),
+		sdk.NewAttribute("interest_unpaid", mtp.InterestUnpaid.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 		sdk.NewAttribute("closer", closer),
 	))
 }
 
-func (k Keeper) EmitRepayInsuranceFund(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventRepayInsuranceFund,
+func (k Keeper) EmitInterestRateComputation(ctx sdk.Context) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventInterestRateComputation,
+		sdk.NewAttribute("block_height", strconv.FormatInt(ctx.BlockHeight(), 10))))
+}
+
+func (k Keeper) EmitInsuranceFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(paymentType,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
-		sdk.NewAttribute("takeAmount", takeAmount.String()),
+		sdk.NewAttribute("insurance_payment_amount", takeAmount.String()),
+		sdk.NewAttribute("insurance_payment_asset", takeAsset),
 	))
+}
+
+func (k Keeper) EmitBelowRemovalThreshold(ctx sdk.Context, pool *clptypes.Pool) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventBelowRemovalThreshold,
+		sdk.NewAttribute("pool", pool.ExternalAsset.Symbol),
+		sdk.NewAttribute("height", strconv.FormatInt(ctx.BlockHeight(), 10))))
+}
+
+func (k Keeper) EmitAboveRemovalThreshold(ctx sdk.Context, pool *clptypes.Pool) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAboveRemovalThreshold,
+		sdk.NewAttribute("pool", pool.ExternalAsset.Symbol),
+		sdk.NewAttribute("height", strconv.FormatInt(ctx.BlockHeight(), 10))))
 }

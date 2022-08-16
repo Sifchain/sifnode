@@ -12,6 +12,8 @@ service Msg {
   rpc ForceClose(MsgForceClose) returns (MsgForceCloseResponse) {}
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {}
   rpc UpdatePools(MsgUpdatePools) returns (MsgUpdatePoolsResponse) {}
+  rpc Whitelist(MsgWhitelist) returns (MsgWhitelistResponse) {}
+  rpc Dewhitelist(MsgDewhitelist) returns (MsgDewhitelistResponse) {}
 }
 
 message MsgOpen {
@@ -60,3 +62,17 @@ message MsgUpdatePools {
 }
 
 message MsgUpdatePoolsResponse {}
+
+message MsgWhitelist {
+  string signer = 1;
+  string whitelisted_address = 2;
+}
+
+message MsgWhitelistResponse {}
+
+message MsgDewhitelist {
+  string signer = 1;
+  string whitelisted_address = 2;
+}
+
+message MsgDewhitelistResponse {}

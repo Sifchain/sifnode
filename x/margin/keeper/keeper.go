@@ -5,6 +5,8 @@ package keeper
 
 import (
 	"fmt"
+	"math"
+
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
@@ -15,8 +17,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"math"
-	"math/big"
 )
 
 const MaxPageLimit = 100
@@ -240,11 +240,11 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	}
 
 	collateralAmountDec := sdk.NewDecFromBigInt(collateralAmount.BigInt())
-	liabilitiesPDec := collateralAmountDec.Mul(eta)
+	liabilitiesDec := collateralAmountDec.Mul(eta)
 
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
 
-	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(sdk.NewUintFromBigInt(liabilitiesPDec.TruncateInt().BigInt()))
+	mtp.Liabilities = mtp.Liabilities.Add(sdk.NewUintFromBigInt(liabilitiesDec.TruncateInt().BigInt()))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(custodyAmount)
 	mtp.Leverage = eta.Add(sdk.OneDec())
 
@@ -267,10 +267,10 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 
 	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // collateral is native
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(collateralAmount)
-		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.LiabilitiesP)
+		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.Liabilities)
 	} else { // collateral is external
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(collateralAmount)
-		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.LiabilitiesP)
+		pool.ExternalLiabilities = pool.ExternalLiabilities.Add(mtp.Liabilities)
 	}
 	err = k.ClpKeeper().SetPool(ctx, pool)
 	if err != nil {
@@ -307,13 +307,17 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 // TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
 	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
-	xlp := mtp.LiabilitiesP
+	xl := mtp.Liabilities
 
-	if xlp.IsZero() {
+	if xl.IsZero() {
 		return sdk.ZeroDec(), nil
 	}
+	// include unpaid interest in debt (from disabled incremental pay)
+	if mtp.InterestUnpaid.GT(sdk.ZeroUint()) {
+		xl = xl.Add(mtp.InterestUnpaid)
+	}
 
-	debt, err := k.CLPSwap(ctx, xlp, mtp.CustodyAsset, pool)
+	debt, err := k.CLPSwap(ctx, xl, mtp.CustodyAsset, pool)
 	if err != nil {
 		return sdk.ZeroDec(), nil
 	}
@@ -354,8 +358,8 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error {
 	// nolint:ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
-	LiabilitiesP := mtp.LiabilitiesP
-	LiabilitiesI := mtp.LiabilitiesI
+	Liabilities := mtp.Liabilities
+	InterestUnpaid := mtp.InterestUnpaid
 
 	var err error
 	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, pool)
@@ -364,25 +368,25 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	}
 
 	have := repayAmount
-	owe := LiabilitiesP.Add(LiabilitiesI)
+	owe := Liabilities.Add(InterestUnpaid)
 
 	fmt.Println("have:", have)
 	fmt.Println("owe:", owe)
-	fmt.Println("LiabilitiesP:", LiabilitiesP)
+	fmt.Println("Liabilities:", Liabilities)
 
-	if have.LT(LiabilitiesP) {
+	if have.LT(Liabilities) {
 		//can't afford principle liability
 		returnAmount = sdk.ZeroUint()
-		debtP = LiabilitiesP.Sub(have)
-		debtI = LiabilitiesI
+		debtP = Liabilities.Sub(have)
+		debtI = InterestUnpaid
 	} else if have.LT(owe) {
 		// v principle liability; x excess liability
 		returnAmount = sdk.ZeroUint()
 		debtP = sdk.ZeroUint()
-		debtI = LiabilitiesP.Add(LiabilitiesI).Sub(have)
+		debtI = Liabilities.Add(InterestUnpaid).Sub(have)
 	} else {
 		// can afford both
-		returnAmount = have.Sub(LiabilitiesP).Sub(LiabilitiesI)
+		returnAmount = have.Sub(Liabilities).Sub(InterestUnpaid)
 		debtP = sdk.ZeroUint()
 		debtI = sdk.ZeroUint()
 	}
@@ -393,18 +397,15 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		actualReturnAmount := returnAmount
 		if takeInsurance {
 			takePercentage := k.GetForceCloseFundPercentage(ctx)
-			returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
-			takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
+			fundAddr := k.GetForceCloseInsuranceFundAddress(ctx)
+			takeAmount, err := k.TakeInsurance(ctx, returnAmount, mtp.CollateralAsset, takePercentage, fundAddr)
+			if err != nil {
+				return err
+			}
 			actualReturnAmount = returnAmount.Sub(takeAmount)
 
 			if !takeAmount.IsZero() {
-				takeCoins := sdk.NewCoins(sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
-				fundAddr := k.GetInsuranceFundAddress(ctx)
-				err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
-				if err != nil {
-					return err
-				}
-				k.EmitRepayInsuranceFund(ctx, mtp, takeAmount)
+				k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CollateralAsset, types.EventRepayInsuranceFund)
 			}
 		}
 
@@ -427,10 +428,10 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 
 	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
-		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
+		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.Liabilities)
 	} else {
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
-		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.LiabilitiesP)
+		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.Liabilities)
 	}
 
 	err = k.DestroyMTP(ctx, mtp.Address, mtp.Id)
@@ -441,18 +442,60 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
-func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
-	var liabilitiesIRat, liabilitiesRat, rate big.Rat
+func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
+	// if mtp has unpaid interest, add to payment
+	if mtp.InterestUnpaid.GT(sdk.ZeroUint()) {
+		interestPayment = interestPayment.Add(mtp.InterestUnpaid)
+	}
 
-	rate.SetFloat64(interestRate.MustFloat64())
+	// add payment to total paid
+	mtp.InterestPaid = mtp.InterestPaid.Add(interestPayment)
+	// swap interest payment to custody asset for payment
+	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, pool)
+	if err != nil {
+		return sdk.ZeroUint(), err
+	}
 
-	liabilitiesRat.SetInt(mtp.LiabilitiesP.BigInt().Add(mtp.LiabilitiesP.BigInt(), mtp.LiabilitiesI.BigInt()))
-	liabilitiesIRat.Mul(&rate, &liabilitiesRat)
+	// if paying unpaid interest reset to 0
+	mtp.InterestUnpaid = sdk.ZeroUint()
 
-	liabilitiesINew := liabilitiesIRat.Num().Quo(liabilitiesRat.Num(), liabilitiesIRat.Denom())
-	mtp.LiabilitiesI = sdk.NewUintFromBigInt(liabilitiesINew.Add(liabilitiesINew, mtp.LiabilitiesI.BigInt()))
+	// edge case, not enough custody to cover payment
+	if interestPaymentCustody.GT(mtp.CustodyAmount) {
+		mtp.InterestUnpaid = interestPaymentCustody.Sub(mtp.CustodyAmount)
+		interestPaymentCustody = mtp.CustodyAmount
+	}
 
-	return k.SetMTP(ctx, mtp)
+	// deduct interest payment from custody amount
+	mtp.CustodyAmount = mtp.CustodyAmount.Sub(interestPaymentCustody)
+
+	takePercentage := k.GetIncrementalInterestPaymentFundPercentage(ctx)
+	fundAddr := k.GetIncrementalInterestPaymentInsuranceFundAddress(ctx)
+	takeAmount, err := k.TakeInsurance(ctx, interestPaymentCustody, mtp.CustodyAsset, takePercentage, fundAddr)
+	if err != nil {
+		return sdk.ZeroUint(), err
+	}
+	actualInterestPaymentCustody := interestPaymentCustody.Sub(takeAmount)
+
+	if !takeAmount.IsZero() {
+		k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CustodyAsset, types.EventIncrementalPayInsuranceFund)
+	}
+
+	nativeAsset := types.GetSettlementAsset()
+
+	if types.StringCompare(mtp.CustodyAsset, nativeAsset) { // custody is native
+		pool.NativeCustody = pool.NativeCustody.Sub(interestPaymentCustody)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(actualInterestPaymentCustody)
+	} else { // custody is external
+		pool.ExternalCustody = pool.ExternalCustody.Sub(interestPaymentCustody)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(actualInterestPaymentCustody)
+	}
+
+	err = k.SetMTP(ctx, mtp)
+	if err != nil {
+		return sdk.ZeroUint(), err
+	}
+
+	return interestPayment, k.ClpKeeper().SetPool(ctx, &pool)
 }
 
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {
@@ -472,7 +515,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
 	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
-	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2).Add(k.GetSQ(ctx, pool))
+	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
@@ -494,10 +537,58 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 		newInterestRate = interestRateMax
 	}
 
-	return newInterestRate, nil
+	sQ := k.GetSQFromBlocks(ctx, pool, newInterestRate)
+
+	return newInterestRate.Add(sQ), nil
 }
 
-func (k Keeper) GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
+func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetSQBeginBlockKey(pool))
+	if bz == nil {
+		return 0
+	}
+	return types.GetUint64FromBytes(bz)
+}
+
+func (k Keeper) SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetSQBeginBlockKey(pool), types.GetUint64Bytes(height))
+}
+
+func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
+	threshold := k.GetRemovalQueueThreshold(ctx)
+	sqBeginBlock := k.GetSQBeginBlock(ctx, pool)
+	if sqBeginBlock == 0 {
+		if pool.Health.LTE(threshold) {
+			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight()))
+			k.EmitBelowRemovalThreshold(ctx, pool)
+		}
+	} else if pool.Health.GT(threshold) {
+		k.SetSQBeginBlock(ctx, pool, 0)
+		k.EmitAboveRemovalThreshold(ctx, pool)
+	}
+}
+
+func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool, poolInterestRate sdk.Dec) sdk.Dec {
+	beginBlock := k.GetSQBeginBlock(ctx, &pool)
+	if beginBlock == 0 {
+		return sdk.ZeroDec()
+	}
+
+	blocks := ctx.BlockHeight() - int64(beginBlock)
+	maxInterestRate := k.GetInterestRateMax(ctx)
+	poolInterestRateFloat, _ := poolInterestRate.Float64()
+	minus := math.Pow(math.E, -1*poolInterestRateFloat*float64(blocks))
+	minusDec, err := sdk.NewDecFromStr(fmt.Sprintf("%v", minus))
+	if err != nil {
+		minusDec = sdk.NewDec(0)
+	}
+	multipliedBy := sdk.NewDec(1).Sub(minusDec)
+	return maxInterestRate.Mul(multipliedBy)
+}
+
+func (k Keeper) GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec {
 	q := k.ClpKeeper().GetRemovalQueue(ctx, pool.ExternalAsset.Symbol)
 	if q.Count == 0 {
 		return sdk.ZeroDec()
@@ -515,4 +606,61 @@ func ToAsset(asset string) clptypes.Asset {
 	return clptypes.Asset{
 		Symbol: asset,
 	}
+}
+
+// get position of current block in epoch
+func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
+	if epochLength <= 0 {
+		epochLength = 1
+	}
+	currentHeight := ctx.BlockHeight()
+	return currentHeight % epochLength
+}
+
+func (k Keeper) TakeInsurance(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
+	returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
+	takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
+
+	if !takeAmount.IsZero() {
+		takeCoins := sdk.NewCoins(sdk.NewCoin(returnAsset, sdk.NewIntFromBigInt(takeAmount.BigInt())))
+		err := k.BankKeeper().SendCoinsFromModuleToAccount(ctx, clptypes.ModuleName, fundAddr, takeCoins)
+		if err != nil {
+			return sdk.ZeroUint(), err
+		}
+	}
+	return takeAmount, nil
+}
+
+func (k Keeper) IsWhitelisted(ctx sdk.Context, address string) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(types.GetWhitelistKey(address))
+}
+
+func (k Keeper) WhitelistAddress(ctx sdk.Context, address string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetWhitelistKey(address), []byte(address))
+}
+
+func (k Keeper) DewhitelistAddress(ctx sdk.Context, address string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetWhitelistKey(address))
+}
+
+func (k Keeper) GetWhitelist(ctx sdk.Context, pagination *query.PageRequest) ([]string, *query.PageResponse, error) {
+	var list []string
+	store := ctx.KVStore(k.storeKey)
+	prefixStore := prefix.NewStore(store, types.WhitelistPrefix)
+
+	if pagination == nil {
+		pagination = &query.PageRequest{
+			Limit: math.MaxUint64 - 1,
+		}
+	}
+
+	pageRes, err := query.Paginate(prefixStore, pagination, func(key []byte, value []byte) error {
+		list = append(list, string(value))
+		return nil
+	})
+
+	return list, pageRes, err
 }

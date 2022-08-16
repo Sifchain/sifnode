@@ -5,6 +5,7 @@ package keeper_test
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	clptest "github.com/Sifchain/sifnode/x/clp/test"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
 	"github.com/Sifchain/sifnode/x/margin/test"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -79,6 +81,9 @@ func TestKeeper_GetMTP(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1)
 		got, err := marginKeeper.GetMTP(ctx, want.Address, 1)
+
+		fmt.Println(want)
+		fmt.Println(got)
 
 		require.NoError(t, err)
 		require.Equal(t, got, want)
@@ -428,8 +433,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 		position         types.Position
 		collateralAmount sdk.Uint
 		custodyAmount    sdk.Uint
-		liabilitiesP     sdk.Uint
-		liabilitiesI     sdk.Uint
+		liabilities      sdk.Uint
+		interestUnpaid   sdk.Uint
 		health           sdk.Dec
 		err              error
 		errString        error
@@ -443,8 +448,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			position:         types.Position_LONG,
 		},
@@ -455,8 +460,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "rowan",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(10000000000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			position:         types.Position_LONG,
 		},
@@ -467,8 +472,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "rowan",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			position:         types.Position_LONG,
 		},
@@ -479,8 +484,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			position:         types.Position_LONG,
 		},
@@ -491,8 +496,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(10000000000000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(10000000000000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			position:         types.Position_LONG,
 		},
@@ -503,8 +508,8 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			to:               "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(0),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			err2:             types.ErrMTPInvalid,
 			position:         types.Position_UNSPECIFIED,
@@ -524,9 +529,9 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", tt.position, 1)
 			mtp.CustodyAmount = tt.custodyAmount
-			mtp.LiabilitiesP = tt.liabilitiesP
+			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
-			mtp.LiabilitiesI = tt.liabilitiesI
+			mtp.InterestUnpaid = tt.interestUnpaid
 
 			_, got := marginKeeper.UpdateMTPHealth(ctx, mtp, pool)
 
@@ -665,8 +670,8 @@ func TestKeeper_Repay(t *testing.T) {
 		position         types.Position
 		collateralAmount sdk.Uint
 		custodyAmount    sdk.Uint
-		liabilitiesP     sdk.Uint
-		liabilitiesI     sdk.Uint
+		liabilities      sdk.Uint
+		interestUnpaid   sdk.Uint
 		health           sdk.Dec
 		repayAmount      sdk.Uint
 		overrideAddress  string
@@ -683,8 +688,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(1000),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1),
 			position:         types.Position_LONG,
@@ -697,8 +702,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			position:         types.Position_LONG,
@@ -711,8 +716,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			position:         types.Position_LONG,
@@ -725,8 +730,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			position:         types.Position_LONG,
@@ -739,8 +744,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
 			position:         types.Position_LONG,
@@ -754,8 +759,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(0),
-			liabilitiesI:     sdk.NewUint(0),
+			liabilities:      sdk.NewUint(0),
+			interestUnpaid:   sdk.NewUint(0),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(1000),
 			position:         types.Position_LONG,
@@ -769,8 +774,8 @@ func TestKeeper_Repay(t *testing.T) {
 			address:          "xxx",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			position:         types.Position_LONG,
@@ -784,8 +789,8 @@ func TestKeeper_Repay(t *testing.T) {
 			overrideAddress:  "yyy",
 			collateralAmount: sdk.NewUint(0),
 			custodyAmount:    sdk.NewUint(1000),
-			liabilitiesP:     sdk.NewUint(1000),
-			liabilitiesI:     sdk.NewUint(1000),
+			liabilities:      sdk.NewUint(1000),
+			interestUnpaid:   sdk.NewUint(1000),
 			health:           sdk.NewDec(1),
 			repayAmount:      sdk.NewUint(0),
 			position:         types.Position_LONG,
@@ -806,9 +811,9 @@ func TestKeeper_Repay(t *testing.T) {
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address, types.Position_LONG, 1)
 			mtp.CustodyAmount = tt.custodyAmount
-			mtp.LiabilitiesP = tt.liabilitiesP
+			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
-			mtp.LiabilitiesI = tt.liabilitiesI
+			mtp.InterestUnpaid = tt.interestUnpaid
 			if tt.overrideAddress != "" {
 				mtp.Address = tt.overrideAddress
 			}
@@ -835,24 +840,27 @@ func TestKeeper_Repay(t *testing.T) {
 	}
 }
 
-func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
+func TestKeeper_CalcMTPInterestLiabilities(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 
 	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1)
-
-	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(1.0))
-	require.Nil(t, got)
+	// calculation on epoch
+	got := marginkeeper.CalcMTPInterestLiabilities(&mtp, sdk.NewDecWithPrec(1, 1), 0, 1)
+	require.Equal(t, sdk.NewUint(1200), got)
+	// calculation within epoch
+	got = marginkeeper.CalcMTPInterestLiabilities(&mtp, sdk.NewDecWithPrec(1, 1), 3, 10)
+	require.Equal(t, sdk.NewUint(1060), got)
 }
 
-func TestKeeper_UpdateMTPInterestLiabilitiesOverflow(t *testing.T) {
-	ctx, _, marginKeeper := initKeeper(t)
+func TestKeeper_CalcMTPInterestLiabilitiesOverflow(t *testing.T) { // test fails after fix to interest calc
 
 	mtp := types.MTP{
 		Address:          "sif123",
 		CollateralAsset:  "rowan",
 		CollateralAmount: sdk.Uint{},
-		LiabilitiesP:     sdk.NewUintFromString("100"),
-		LiabilitiesI:     sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
+		Liabilities:      sdk.NewUintFromString("100"),
+		InterestPaid:     sdk.ZeroUint(),
+		InterestUnpaid:   sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
 		CustodyAsset:     "ceth",
 		CustodyAmount:    sdk.Uint{},
 		Leverage:         sdk.Dec{},
@@ -861,8 +869,9 @@ func TestKeeper_UpdateMTPInterestLiabilitiesOverflow(t *testing.T) {
 		Id:               1,
 	}
 
-	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(3.0))
-	require.Nil(t, got)
+	require.Panics(t, func() {
+		marginkeeper.CalcMTPInterestLiabilities(&mtp, sdk.NewDec(3.0), 0, 1)
+	}, "the code did not panic")
 }
 
 func TestKeeper_InterestRateComputation(t *testing.T) {
@@ -921,22 +930,25 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 			})
 
 			data := types.GenesisState{Params: &types.Params{
-				LeverageMax:              sdk.NewDec(10),
-				InterestRateMax:          tt.interestRateMax,
-				InterestRateMin:          sdk.NewDec(1),
-				InterestRateIncrease:     tt.interestRateIncrease,
-				InterestRateDecrease:     tt.interestRateDecrease,
-				HealthGainFactor:         sdk.NewDec(1),
-				EpochLength:              1,
-				ForceCloseThreshold:      sdk.NewDec(1), //TODO get real default
-				ForceCloseFundPercentage: sdk.NewDecWithPrec(1, 1),
-				InsuranceFundAddress:     "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				PoolOpenThreshold:        sdk.NewDecWithPrec(1, 1),
-				RemovalQueueThreshold:    sdk.NewDecWithPrec(1, 1),
-				MaxOpenPositions:         10000,
-				Pools:                    []string{},
-				SqModifier:               sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:             sdk.MustNewDecFromStr("1.05"),
+				LeverageMax:                                    sdk.NewDec(10),
+				InterestRateMax:                                tt.interestRateMax,
+				InterestRateMin:                                sdk.NewDec(1),
+				InterestRateIncrease:                           tt.interestRateIncrease,
+				InterestRateDecrease:                           tt.interestRateDecrease,
+				HealthGainFactor:                               sdk.NewDec(1),
+				EpochLength:                                    1,
+				ForceCloseThreshold:                            sdk.NewDec(1), //TODO get real default
+				ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
+				ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
+				IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentEnabled:              false,
+				PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
+				RemovalQueueThreshold:                          sdk.NewDecWithPrec(1, 1),
+				MaxOpenPositions:                               10000,
+				Pools:                                          []string{},
+				SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
+				SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
 			}}
 			marginKeeper.InitGenesis(ctx, data)
 
@@ -969,6 +981,39 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 	}
 }
 
+func TestWhitelist(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+
+	marginKeeper.WhitelistAddress(ctx, "sif123")
+	is := marginKeeper.IsWhitelisted(ctx, "sif123")
+	require.True(t, is)
+	whitelist, _, err := marginKeeper.GetWhitelist(ctx, nil)
+	require.NoError(t, err)
+	require.Equal(t, []string{"sif123"}, whitelist)
+}
+
+func TestSQBeginBlocker(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+	params := marginKeeper.GetParams(ctx)
+	params.RemovalQueueThreshold = sdk.NewDec(1)
+	marginKeeper.SetParams(ctx, &params)
+	pool := clptypes.Pool{
+		ExternalAsset: &clptypes.Asset{Symbol: "ceth"},
+		Health:        sdk.NewDec(2),
+	}
+
+	marginKeeper.TrackSQBeginBlock(ctx, &pool)
+	require.Equal(t, uint64(0), marginKeeper.GetSQBeginBlock(ctx, &pool))
+
+	pool.Health = sdk.NewDecWithPrec(1, 1)
+	marginKeeper.TrackSQBeginBlock(ctx.WithBlockHeight(1), &pool)
+	require.Equal(t, uint64(1), marginKeeper.GetSQBeginBlock(ctx, &pool))
+
+	pool.Health = sdk.NewDec(2)
+	marginKeeper.TrackSQBeginBlock(ctx.WithBlockHeight(2), &pool)
+	require.Equal(t, uint64(0), marginKeeper.GetSQBeginBlock(ctx, &pool))
+}
+
 func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	ctx, app := test.CreateTestAppMargin(false)
 	marginKeeper := app.MarginKeeper
@@ -984,14 +1029,16 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 		Id:               id,
 		Address:          address,
 		CollateralAsset:  collateralAsset,
-		LiabilitiesP:     sdk.NewUint(1000),
-		LiabilitiesI:     sdk.NewUint(1000),
+		Liabilities:      sdk.NewUint(1000),
+		InterestPaid:     sdk.ZeroUint(),
+		InterestUnpaid:   sdk.NewUint(1000),
 		CollateralAmount: sdk.NewUint(1000),
 		CustodyAsset:     custodyAsset,
 		CustodyAmount:    sdk.NewUint(1000),
 		Leverage:         sdk.NewDec(10),
 		MtpHealth:        sdk.NewDec(20),
-		Position:         position}
+		Position:         position,
+	}
 
 	store.Set(key, types.ModuleCdc.MustMarshal(&newMTP))
 
