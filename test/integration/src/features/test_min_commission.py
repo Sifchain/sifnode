@@ -53,8 +53,8 @@ def assert_no_exception(exception):
         return
     raise AssertionError("Assertion failed") from exception
 
-def create_environment(cmd, version, moniker=None, commission_rate=0.06, commission_max_rate=0.10,
-    commission_max_change_rate=0.05, default_staking_amount: int = 92 * 10**21
+def create_environment(cmd, version, commission_rate=0.06, commission_max_rate=0.10, commission_max_change_rate=0.05,
+    staking_amount: int = 92 * 10**21
 ):
     home_root = "/tmp/siftool.tmp/test_min_commission"
     cmd.rmdir(home_root)
@@ -65,106 +65,23 @@ def create_environment(cmd, version, moniker=None, commission_rate=0.06, commiss
 
     pkill(cmd)
 
-    env = environments.SifnodedEnvironment(cmd)
+    env = environments.SifnodedEnvironment(cmd, sifnoded_home_root=home_root)
     env.staking_denom = STAKE
-    env.default_validator_balance = {ROWAN: 10**25, STAKE: 10**25}
-    env.default_binary = binary
-    env.default_commission_rate = commission_rate
-    env.default_commission_max_rate = commission_max_rate
-    env.default_commission_max_change_rate = commission_max_change_rate
-    env.default_staking_amount = default_staking_amount
-    env.sifnoded_home_root = home_root
-    env.init(moniker=moniker)
+    env.add_validator(binary=binary, commission_rate=commission_rate, commission_max_rate=commission_max_rate,
+        commission_max_change_rate=commission_max_change_rate, staking_amount=staking_amount)
     env.start()
-    env.sifnoded[0].wait_for_last_transaction_to_be_mined()
     return env
-
-
-def upgrade(env, new_version):
-    sifnoded = env.sifnoded[0]
-    admin_addr = env.node_info[0]["admin_addr"]
-
-    # Whoever makes the proposal has to put in  deposit.
-    # Deposit must be >= genesis::app_state.gov.deposit_params.min_deposit
-    deposit = {env.staking_denom: env.default_staking_amount}
-    env.fund(admin_addr, deposit)
-
-    upgrade_info = "{\"binaries\":{\"linux/amd64\":\"url_with_checksum\"}}"
-    upgrade_height = env.sifnoded[0].get_current_block() + 15  # Note: must be > 60s (as per app config)
-
-    proposals_before = sifnoded.query_gov_proposals()
-    res = sifnoded.gov_submit_software_upgrade(NEW_VERSION, admin_addr, deposit, upgrade_height, upgrade_info,
-        "test_release", "Test Release", broadcast_mode="block"
-    )
-    sifchain.check_raw_log(res)
-    sifnoded.wait_for_last_transaction_to_be_mined()
-    proposals_after = sifnoded.query_gov_proposals()
-    new_proposal_ids = {p["proposal_id"] for p in proposals_after}.difference({p["proposal_id"] for p in proposals_before})
-    active_proposal = exactly_one([p for p in proposals_after if p["proposal_id"] in new_proposal_ids])
-    proposal_id = int(active_proposal["proposal_id"])
-
-    res = sifnoded.gov_vote(1, True, admin_addr, broadcast_mode="block")
-    sifchain.check_raw_log(res)
-
-    sifnoded.wait_for_block(upgrade_height)
-    time.sleep(5)
-    for p in env.running_processes:
-        p.terminate()
-        p.wait()
-    for f in env.open_log_files:
-        f.close()
-    time.sleep(5)
-    sifnoded.binary = get_binary_for_version(new_version)
-    env._sifnoded_start(0)
-    assert sifnoded.version() == new_version
 
 
 def delegate(env, from_index, to_index, amount):
     from_validator_node_info = env.node_info[from_index]
     to_validator_node_info = env.node_info[to_index]
-    sifnoded_tmp = env.sifnoded_from_to(from_validator_node_info, to_validator_node_info)
-    validator_addr = env.sifnoded[to_index].get_val_address(to_validator_node_info["admin_addr"])
+    sifnoded_to = env._sifnoded_for(to_validator_node_info)
+    sifnoded_from_to = env._sifnoded_for(from_validator_node_info, to_node_info=to_validator_node_info)
+    validator_addr = sifnoded_to.get_val_address(to_validator_node_info["admin_addr"])
     from_addr = from_validator_node_info["admin_addr"]
-    res = sifnoded_tmp.staking_delegate(validator_addr, {env.staking_denom: amount}, from_addr, broadcast_mode="block")
-    sifchain.check_raw_log(res)
-
-
-def should_not_add_validator_with_commission_less_than_5_percent(cmd: command.Command):
-    # Min commission - blocking MsgCreateValidator messages
-    env = environments.SifnodedEnvironment(cmd)
-    env.staking_denom = STAKE
-    env.validator_account_balance = {ROWAN: 10**30, STAKE: 10**30}
-    env.init()
-    env.start()
-
-    sifnoded = exactly_one(env.sifnoded)  # Use the initial validator (only one at this point)
-    validators_before = sifnoded.query_staking_validators()
-    assert len(validators_before) == 1
-
-    # This should succeed since the commission rate is higher than minimal (5%)
-    akasha_index = env.add_validator(moniker="akasha", extra_funds={ROWAN: 10**25}, commission_rate=0.10)
-    akasha_sifnoded = env.sifnoded[akasha_index]
-    akasha_info = env.node_info[akasha_index]
-    akasha_admin_addr = akasha_info["admin_addr"]
-
-    validators_after = sifnoded.query_staking_validators()
-    assert len(validators_after) == 2
-    assert "akasha" in {v["description"]["moniker"] for v in validators_after}
-
-    # This should fail since the commission rate is higher than minimal (5%)
-    exception = None
-    try:
-        env.add_validator(moniker="juno", extra_funds={ROWAN: 10**25}, commission_rate=0.03)
-    except Exception as e:
-        exception = e
-    assert sifchain.is_min_commission_too_low_exception(exception)
-
-    assert len(sifnoded.query_staking_validators()) == 2  # Cross check
-
-    # Min commission - blocking MsgEditValidator messages
-
-    # Try to change the first validator to 3%. Since this is less than allowed 3%, it should fail
-    res = akasha_sifnoded.staking_edit_validator(0.30, akasha_admin_addr, broadcast_mode="block")
+    env.fund(from_addr, {env.staking_denom: amount})  # Make sure admin has enough balance for what he is delegating
+    res = sifnoded_from_to.staking_delegate(validator_addr, {env.staking_denom: amount}, from_addr, broadcast_mode="block")
     sifchain.check_raw_log(res)
 
 
@@ -195,11 +112,11 @@ def test_min_commission_modify_existing_validator_24h(cmd: command.Command):
     env.add_validator()
     env.add_validator()
 
-    sifnoded0 = env.sifnoded[0]
+    sifnoded0 = env._sifnoded_for(env.node_info[0])
     admin0_addr = env.node_info[0]["admin_addr"]
-    sifnoded1 = env.sifnoded[1]
+    sifnoded1 = env._sifnoded_for(env.node_info[1])
     admin1_addr = env.node_info[1]["admin_addr"]
-    sifnoded2 = env.sifnoded[2]
+    sifnoded2 = env._sifnoded_for(env.node_info[2])
     admin2_addr = env.node_info[2]["admin_addr"]
 
     validators = sifnoded0.query_staking_validators()
@@ -243,7 +160,8 @@ def test_min_commission_upgrade_handler(cmd: command.Command):
     ):
         exception = None
         try:
-            env = create_environment(cmd, OLD_VERSION, commission_rate=pre_upgrade_commission_rate, commission_max_rate=pre_upgrade_commission_max_rate, commission_max_change_rate=0.01)
+            env = create_environment(cmd, OLD_VERSION, commission_rate=pre_upgrade_commission_rate,
+                commission_max_rate=pre_upgrade_commission_max_rate, commission_max_change_rate=0.01)
         except Exception as e:
             exception = e
         if should_succeed:
@@ -254,14 +172,19 @@ def test_min_commission_upgrade_handler(cmd: command.Command):
             #      since other scenarios are working which only differ in parameters.
             return
 
-        commission_rates_before = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
+        sifnoded = env._sifnoded_for(env.node_info[0])
+        upgrade_height = sifnoded.get_current_block() + 15  # 15 * 5 = 75s > 60s
+
+        commission_rates_before = exactly_one(sifnoded.query_staking_validators())["commission"]["commission_rates"]
         assert float(commission_rates_before["rate"]) == pre_upgrade_commission_rate
         assert float(commission_rates_before["max_rate"]) == pre_upgrade_commission_max_rate
         assert float(commission_rates_before["max_change_rate"]) == 0.01
 
-        upgrade(env, NEW_VERSION)
+        env.upgrade(NEW_VERSION, get_binary_for_version(NEW_VERSION), upgrade_height)
 
-        commission_rates_after = exactly_one(env.sifnoded[0].query_staking_validators())["commission"]["commission_rates"]
+        sifnoded = env._sifnoded_for(env.node_info[0])
+
+        commission_rates_after = exactly_one(sifnoded.query_staking_validators())["commission"]["commission_rates"]
         assert float(commission_rates_after["rate"]) == expected_commission_rate
         assert float(commission_rates_after["max_rate"]) == expected_commission_max_rate
         assert float(commission_rates_after["max_change_rate"]) == 0.01
@@ -275,11 +198,11 @@ def test_min_commission_upgrade_handler(cmd: command.Command):
 
 
 def test_max_voting_power(cmd: command.Command):
-
     def test_case(from_validator_index, to_validator_index, amount, should_succeed):
-        env = create_environment(cmd, NEW_VERSION, default_staking_amount=1000 * 10**21)
+        env = create_environment(cmd, NEW_VERSION, staking_amount=1000 * 10**21)
         env.add_validator(staking_amount=62 * 10**21)
-        sifnoded = env.sifnoded[0]
+        env.start()
+        sifnoded = env._sifnoded_for(env.node_info[0])
 
         validator_powers_before = [int(x["tokens"]) for x in sifnoded.query_staking_validators()]
 

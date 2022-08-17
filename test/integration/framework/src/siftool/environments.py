@@ -43,8 +43,6 @@ class SifnodedEnvironment:
         log_level = log_level if log_level is not None else "debug"
         log_file = log_file if log_file is not None else os.path.join(home, "sifnoded.log")
 
-        assert all(node_info["moniker"] != moniker for node_info in self.node_info)
-
         node_info = {
             "binary": binary,
             "moniker": moniker,
@@ -192,6 +190,50 @@ class SifnodedEnvironment:
         sifnoded = self._sifnoded_for(self.node_info[0])
         sifnoded.send_and_check(self.faucet, address, amounts)
 
+    # upgrade_height must be a block in the future such that the time is > 60s (value of voting_period from app.config)
+    def upgrade(self, new_version: str, new_binary: str, upgrade_height: int, deposit_amount: Optional[int] = None):
+        node_info = self.node_info[0]
+        sifnoded = self._sifnoded_for(node_info)
+        admin_addr = node_info["admin_addr"]
+
+        # Whoever makes the proposal has to put in  deposit.
+        # Deposit must be >= of the value set in genesis::app_state.gov.deposit_params.min_deposit
+        deposit_amount = deposit_amount if deposit_amount is not None else 92 * 10**21
+        deposit = {self.staking_denom: deposit_amount}
+        self.fund(admin_addr, deposit)
+
+        upgrade_info = "{\"binaries\":{\"linux/amd64\":\"url_with_checksum\"}}"
+        # upgrade_height = env.sifnoded[0].get_current_block() + 15  # Note: must be > 60s (as per app config)
+
+        proposals_before = sifnoded.query_gov_proposals()
+        res = sifnoded.gov_submit_software_upgrade(new_version, admin_addr, deposit, upgrade_height, upgrade_info,
+            "test_release", "Test Release", broadcast_mode="block")
+        sifchain.check_raw_log(res)
+        sifnoded.wait_for_last_transaction_to_be_mined()
+        proposals_after = sifnoded.query_gov_proposals()
+        new_proposal_ids = {p["proposal_id"] for p in proposals_after}.difference({p["proposal_id"] for p in proposals_before})
+        active_proposal = exactly_one([p for p in proposals_after if p["proposal_id"] in new_proposal_ids])
+        proposal_id = int(active_proposal["proposal_id"])
+
+        res = sifnoded.gov_vote(proposal_id, True, admin_addr, broadcast_mode="block")
+        sifchain.check_raw_log(res)
+
+        sifnoded.wait_for_block(upgrade_height)
+        time.sleep(5)
+        for p in self.running_processes:
+            p.terminate()
+            p.wait()
+        for f in self.open_log_files:
+            f.close()
+        time.sleep(5)
+        for node_info in self.node_info:
+            node_info["binary"] = new_binary
+        for node_info in self.node_info:
+            self._sifnoded_start(node_info)
+
+        sifnoded = self._sifnoded_for(node_info)  # Probably we could still use an older version of the client, but let's be consistent
+        assert sifnoded.version() == new_version
+
     # Adjust configuration files for i != 0node.
     def _update_configuration_files(self, node_info, peers_node_info):
         sifnoded = self._sifnoded_for(node_info)
@@ -216,6 +258,10 @@ class SifnodedEnvironment:
         sifnoded.save_app_toml(app_toml)
         sifnoded.save_config_toml(config_toml)
 
+    # This constructs a sifnoded CLI wrapper with values for --home, --chain_id and --node taken from corresponding
+    # node_info. Typically you want a CLI wrapper associated with a single running validator, but in some cases such as
+    # delegation or creating a new validator you want to use validator's own --home, but --node pointing to a
+    # different/existing validator.
     def _sifnoded_for(self, node_info: JsonDict, to_node_info: Optional[JsonDict] = None) -> sifchain.Sifnoded:
         binary = node_info["binary"]
         home = node_info["home"]
@@ -265,13 +311,14 @@ class SifnodedEnvironment:
             commission_max_change_rate, min_self_delegation, admin_addr, broadcast_mode="block")
         sifchain.check_raw_log(res)
 
-        # Check that the new validator was actually added and that its commission rate is correct
+        # Check that the new validator was actually added and that its moniker and commission rates are correct.
+        # To find which operator is the new one we look at the difference between operator_addresses before and after.
         validators_after = sifnoded_tmp.query_staking_validators()
         assert len(validators_after) == len(validators_before) + 1
-        new_validator_moniker = exactly_one({v["description"]["moniker"] for v in validators_after}.difference(
-            {v["description"]["moniker"] for v in validators_before}))
-        assert new_validator_moniker == moniker
-        new_validator = exactly_one([v for v in validators_after if v["description"]["moniker"] == moniker])
+        new_validator_operator_key = exactly_one({v["operator_address"] for v in validators_after}.difference(
+            {v["operator_address"] for v in validators_before}))
+        new_validator = exactly_one([v for v in validators_after if v["operator_address"] == new_validator_operator_key])
+        assert new_validator["description"]["moniker"] == moniker
         assert float(new_validator["commission"]["commission_rates"]["rate"]) == commission_rate
         assert float(new_validator["commission"]["commission_rates"]["max_rate"]) == commission_max_rate
         assert float(new_validator["commission"]["commission_rates"]["max_change_rate"]) == commission_max_change_rate

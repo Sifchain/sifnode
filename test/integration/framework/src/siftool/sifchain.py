@@ -1221,6 +1221,18 @@ class SifnodedException(Exception):
         self.message = message
 
 
+def is_min_commission_too_low_exception(e: Exception):
+    patt = re.compile("^validator commission [\d.]+ cannot be lower than minimum of [\d.]+: invalid request$")
+    return (type(e) == SifnodedException) and patt.match(e.message)
+
+
+def is_max_voting_power_limit_exceeded_exception(e: Exception):
+    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a validator whose "
+        "post-delegation voting power is more than [\d.]+%. Please delegate to a validator with less bonded tokens: "
+        "invalid request$")
+    return (type(e) == SifnodedException) and patt.match(e.message)
+
+
 class RateLimiter:
     def __init__(self, sifnoded, max_tpb):
         self.sifnoded = sifnoded
@@ -1234,22 +1246,6 @@ class RateLimiter:
         if self.counter == self.max_tpb:
             self.sifnoded.wait_for_last_transaction_to_be_mined()
             self.counter = 0
-
-
-def is_min_commission_too_low_exception(e: Exception):
-    return \
-        (type(e) == SifnodedException) and \
-        (e.message == 'validator commission 0.030000000000000000 cannot be lower than minimum of '
-            '0.050000000000000000: invalid request')
-
-
-def is_max_voting_power_limit_exceeded_exception(e: Exception):
-    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a "
-        "validator whose post-delegation voting power is more than 6.600000000000000000%. Please delegate to a "
-        "validator with less bonded tokens: invalid request$")
-
-    return \
-        (type(e) == SifnodedException) and patt.match(e.message)
 
 
 # This is probably useful for any program that uses web3 library in the same way

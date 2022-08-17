@@ -19,7 +19,7 @@ def assert_validators_working(env, expected_monikers):
         test_transfer(env, 0)
 
 
-class Test:
+class TestSifnodedEnvironment:
     def setup_method(self):
         self.cmd = command.Command()
         self.sifnoded_home_root = self.cmd.tmpdir("siftool.tmp")
@@ -38,7 +38,7 @@ class Test:
         env.start()
         assert_validators_working(env, set("sifnoded-{}".format(i) for i in range(1)))
 
-    def test_environment_mixed(self):
+    def test_add_validator_before_and_after_start(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
         env.add_validator()
         env.add_validator()
@@ -47,7 +47,7 @@ class Test:
         env.add_validator()
         assert_validators_working(env, set("sifnoded-{}".format(i) for i in range(3)))
 
-    def test_environment_fails_to_start_if_commission_rate_is_over_max3(self):
+    def test_environment_fails_to_start_if_commission_rate_is_over_max(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
         env.add_validator(commission_rate=0.10, commission_max_rate=0.05)
         exception = None
@@ -55,6 +55,8 @@ class Test:
             env.start()
         except Exception as e:
             exception = e
+        # The validator will exit immediately, writing error to the log.
+        # What we get here is a "timeout waiting for sifnoded to come up".
         assert type(exception) == sifchain.SifnodedException
 
     def test_need_2_out_of_3_validators_running_for_consensus(self):
@@ -83,3 +85,19 @@ class Test:
         except Exception as e:
             exception = e
         assert type(exception) == sifchain.SifnodedException
+
+    def test_can_have_validators_with_same_moniker(self):
+        env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
+        env.add_validator()
+        env.start()
+        sifnoded = env._sifnoded_for(env.node_info[0])
+        home1 = self.cmd.mktempdir()
+        home2 = self.cmd.mktempdir()
+        try:
+            env.add_validator(moniker="juniper", home=home1)
+            assert len(sifnoded.query_staking_validators()) == 2
+            env.add_validator(moniker="juniper", home=home2)
+            assert len(sifnoded.query_staking_validators()) == 3
+        finally:
+            self.cmd.rmdir(home1)
+            self.cmd.rmdir(home2)
