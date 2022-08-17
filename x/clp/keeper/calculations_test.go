@@ -599,28 +599,28 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 			X:    sdk.NewUint(1),
 			x:    sdk.NewUint(1),
 			Y:    sdk.NewUint(4),
-			fee:  sdk.NewUint(1),
+			fee:  sdk.NewUint(0),
 		},
 		{
 			name: "success",
 			X:    sdk.NewUint(2),
 			x:    sdk.NewUint(2),
 			Y:    sdk.NewUint(16),
-			fee:  sdk.NewUint(4),
+			fee:  sdk.NewUint(0),
 		},
 		{
 			name: "success",
 			X:    sdk.NewUint(1054677676764),
 			x:    sdk.NewUint(2567655449999),
 			Y:    sdk.NewUint(1099511627776),
-			fee:  sdk.NewUint(552454535440),
+			fee:  sdk.NewUint(2338134228),
 		},
 		{
 			name: "success",
 			X:    sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
 			x:    sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
 			Y:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
-			fee:  sdk.NewUintFromString("1089217832674356640599131638158097447402363655799918705091874559386226334"),
+			fee:  sdk.NewUintFromString("9900990099009901426572558245923592782681738421857292046053337241514933"),
 		},
 	}
 
