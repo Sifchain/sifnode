@@ -1,5 +1,5 @@
 from siftool.common import *
-from siftool import command, environments, project, sifchain
+from siftool import command, environments, project, sifchain, cosmos
 
 
 def get_validators(env):
@@ -101,3 +101,55 @@ class TestSifnodedEnvironment:
         finally:
             self.cmd.rmdir(home1)
             self.cmd.rmdir(home2)
+
+    def test_balances(self):
+        number_of_validators = 3
+        number_of_denoms = 10  # > 1
+        number_of_wallets = 100
+        faucet_balance = cosmos.balance_add({"foo{}".format(i): (i + 1) * 10**30 for i in range(10)},
+            {sifchain.ROWAN: 10**30})
+
+        tmpdir = self.cmd.mktempdir()
+        try:
+            sifnoded = sifchain.Sifnoded(self.cmd, home=tmpdir)
+            extra_accounts = {sifnoded.create_addr(): {"bar{}".format(j): (i * number_of_denoms + j + 1) * 10**25
+                for j in range(number_of_denoms)} for i in range(number_of_wallets)}
+            env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
+            for _ in range(number_of_validators):
+                env.add_validator()
+            env.init(faucet_balance=faucet_balance, extra_accounts=extra_accounts)
+            env.start()
+
+            # Check faucet balances
+            for i in range(number_of_validators):
+                sifnoded = env._sifnoded_for(env.node_info[i])
+                assert cosmos.balance_equal(sifnoded.get_balance(env.faucet), faucet_balance)
+
+            # Check balances of extra_accounts
+            for i in range(number_of_validators):
+                sifnoded = env._sifnoded_for(env.node_info[i])
+                assert cosmos.balance_equal(sifnoded.get_balance(env.faucet), faucet_balance)
+                for addr, balance in extra_accounts.items():
+                    assert cosmos.balance_equal(sifnoded.get_balance(addr), balance)
+
+            # Check funding
+            for i in range(number_of_validators):
+                addr = sifnoded.create_addr()
+                amount = {"foo0": 100 * 10**18, "foo1": 100 * 10**18}
+                env.fund(addr, amount)
+                assert cosmos.balance_equal(sifnoded.get_balance(addr), amount)
+
+            # On each node, do a sample transfer of one rowan from admin to a new wallet and check that the change of
+            # balances is visible on all nodes
+            test_transfer_amount = {sifchain.ROWAN: 10**sifchain.ROWAN_DECIMALS}
+            for i in range(number_of_validators):
+                sifnoded_i = env._sifnoded_for(env.node_info[i])
+                test_addr = sifnoded_i.create_addr()
+                # Sending also requires rowan, this way we're making sure that each validator has some
+                admin_addr = env.node_info[i]["admin_addr"]
+                sifnoded_i.send(admin_addr, test_addr, test_transfer_amount)
+                for j in range(number_of_validators):
+                    sifnoded_j = env._sifnoded_for(env.node_info[j])
+                    sifnoded_j.wait_for_balance_change(test_addr, {}, test_transfer_amount)
+        finally:
+            self.cmd.rmdir(tmpdir)

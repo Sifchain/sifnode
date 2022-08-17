@@ -185,53 +185,30 @@ class Test:
         self.sifnoded_client = sifnoded_client
         denom_total_supply = 10000 * self.number_of_wallets * self.amount_of_denom_per_wallet
         wallets = {}
-        extra_genesis_balances = {}
+        extra_accounts = {}
         for i in range(self.number_of_wallets):
             chosen_tokens = [self.tokens[i] for i in random_choice(self.liquidity_providers_per_wallet, len(self.tokens), rnd=self.rnd)]
             balances = {denom: self.amount_of_denom_per_wallet for denom in chosen_tokens}
             mnemonic = None if ((self.custom_wallet_mnemonics is None) or (i >= len(self.custom_wallet_mnemonics))) else self.custom_wallet_mnemonics[i].split(" ")
             addr = sifnoded_client.create_addr(mnemonic=mnemonic)
             wallets[addr] = chosen_tokens
-            extra_genesis_balances[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
+            extra_accounts[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
 
-        env = environments.SifnodedEnvironment(self.cmd)
-        env.number_of_nodes = self.number_of_nodes
-        env.node_external_ip_address = ip_address
-        env.staking_denom = ROWAN
-        env.sifnoded_home_root = self.sifnoded_home_root
-        env.default_initial_validator_mnemonic = self.validator0_mnemonic
-        env.default_staking_amount = 10**24
-        env.default_validator_balance = cosmos.balance_add({
-            ROWAN: 999 * 10**30,
-            STAKE: 999 * 10**30,
-        }, {denom: denom_total_supply for denom in self.tokens})
-        env.extra_genesis_balances = extra_genesis_balances
-        env.log_level = "debug"
-        env.init()
+        env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
+        for i in range(self.number_of_nodes):
+            mnemonic = self.validator0_mnemonic if i == 0 else None
+            env.add_validator(admin_mnemonic=mnemonic)
+
+        env.init(faucet_balance={denom: denom_total_supply for denom in self.tokens}, extra_accounts=extra_accounts)
         env.start()
 
         self.env = env
-        self.sifnoded = env.sifnoded
-        sifnoded0 = self.sifnoded[0]
-        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.env.node_info[0]["external_address"],
+        self.sifnoded = env._sifnoded_for(env.node_info[0])
+        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.env.node_info[0]["host"],
             chain_id=env.chain_id)
         self.sifnoded_client = sifnoded_client
 
-        # On each node, do a sample transfer of one rowan from admin to a new wallet and check that the change of
-        # balances is visible on all nodes
-        test_transfer_amount = {ROWAN: 10**ROWAN_DECIMALS}
-        for i in range(self.number_of_nodes):
-            test_addr = self.sifnoded[i].create_addr()
-            self.sifnoded[i].send(self.env.node_info[i]["admin_addr"], test_addr, test_transfer_amount)
-            for j in range(self.number_of_nodes):
-                self.sifnoded[j].wait_for_balance_change(test_addr, {}, test_transfer_amount)
-
-        # Check balances
-        assert all(cosmos.balance_equal(sifnoded0.get_balance(addr), env.extra_genesis_balances[addr])
-            for addr in env.extra_genesis_balances)
-        assert all(sifnoded0.get_acct_seq(addr)[1] == 0 for addr in wallets)
-
-        sifnoded = self.sifnoded[0]
+        sifnoded = self.sifnoded
         sif = self.env.node_info[0]["admin_addr"]
 
         # Add tokens to token registry. The minimum required permissions are  CLP.

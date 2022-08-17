@@ -600,10 +600,11 @@ class Sifnoded:
             self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         retval = json.loads(stdout(res))
-        raw_log = retval["raw_log"]
-        for bad_thing in ["insufficient funds", "signature verification failed"]:
-            if bad_thing in raw_log:
-                raise Exception(raw_log)
+        # raw_log = retval["raw_log"]
+        # for bad_thing in ["insufficient funds", "signature verification failed"]:
+        #     if bad_thing in raw_log:
+        #         raise Exception(raw_log)
+        check_raw_log(retval)
         return retval
 
     def send_and_check(self, from_addr: cosmos.Address, to_addr: cosmos.Address, amounts: cosmos.Balance
