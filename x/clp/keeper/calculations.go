@@ -10,6 +10,8 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
+var f = big.NewRat(3, 1000)
+
 func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	// if pmtpCurrentRunningRate.IsNil() {
 	// 	if toRowan {
@@ -285,20 +287,24 @@ func CalcSwapResult(toRowan bool,
 func calcSwap(x, X, Y *big.Int) big.Rat {
 	var diff big.Rat
 	one := big.NewRat(1, 1)
-	f := big.NewRat(3, 1000)
 	diff.Sub(one, f) // diff = 1 - f
 
-	var s, d big.Int
-	var numerator, denominator, d2, y big.Rat
+	rawYXK := calcRawXYK(x, X, Y)
+	diff.Mul(&diff, &rawYXK)
 
-	s.Add(X, x) // s = X + x
-	d.Mul(x, Y) // d = x * Y
+	return diff
+}
 
-	d2.SetInt(&d)
-	numerator.Mul(&diff, &d2)
+func calcRawXYK(x, X, Y *big.Int) big.Rat {
+	var numerator, denominator, xR, XR, YR, y big.Rat
 
-	denominator.SetInt(&s)
-	y.Quo(&numerator, &denominator) // y = (diff * d2) / s = ((1 - f) * x * Y) / (X + x)
+	xR.SetInt(x)
+	XR.SetInt(X)
+	YR.SetInt(Y)
+	numerator.Mul(&xR, &YR)   // x * Y
+	denominator.Add(&XR, &xR) // X + x
+
+	y.Quo(&numerator, &denominator) // y = (x * Y) / (X + x)
 
 	return y
 }
