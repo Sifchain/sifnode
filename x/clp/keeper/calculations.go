@@ -249,16 +249,12 @@ func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 	Xb := X.BigInt()
 	xb := x.BigInt()
 	Yb := Y.BigInt()
+	rawXYK := calcRawXYK(xb, Xb, Yb)
 
-	var sq, n, s, d, fee big.Int
+	var fee big.Rat
+	fee.Mul(f, &rawXYK)
 
-	sq.Mul(xb, xb)  // sq = x**2
-	n.Mul(&sq, Yb)  // n = x**2 * Y
-	s.Add(Xb, xb)   // s = x + X
-	d.Mul(&s, &s)   // d = (x + X)**2
-	fee.Quo(&n, &d) // fee = n / d = (x**2 * Y) / (x + X)**2
-
-	return sdk.NewUintFromBigInt(&fee)
+	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
 }
 
 func CalcSwapResult(toRowan bool,
