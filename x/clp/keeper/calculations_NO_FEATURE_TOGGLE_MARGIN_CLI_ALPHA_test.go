@@ -83,7 +83,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.OneDec(),
 			swapResult:             sdk.NewUint(181),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -110,7 +110,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			swapAmount:             sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.OneDec(),
 			swapResult:             sdk.NewUint(166),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -139,7 +139,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			to:                     types.Asset{Symbol: "rowan"},
 			pmtpCurrentRunningRate: sdk.OneDec(),
 			swapResult:             sdk.NewUint(45),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -165,7 +165,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.0"),
 			swapResult:             sdk.NewUint(90),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -191,7 +191,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.1"),
 			swapResult:             sdk.NewUint(99),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -217,7 +217,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.2"),
 			swapResult:             sdk.NewUint(108),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -243,7 +243,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.3"),
 			swapResult:             sdk.NewUint(117),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -269,7 +269,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.4"),
 			swapResult:             sdk.NewUint(126),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -295,7 +295,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.5"),
 			swapResult:             sdk.NewUint(135),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -321,7 +321,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.6"),
 			swapResult:             sdk.NewUint(144),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -347,7 +347,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.7"),
 			swapResult:             sdk.NewUint(154),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -373,7 +373,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.8"),
 			swapResult:             sdk.NewUint(163),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -399,7 +399,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.9"),
 			swapResult:             sdk.NewUint(172),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -425,7 +425,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.0"),
 			swapResult:             sdk.NewUint(181),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -451,7 +451,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("2.0"),
 			swapResult:             sdk.NewUint(271),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -477,7 +477,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("3.0"),
 			swapResult:             sdk.NewUint(362),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -503,7 +503,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("4.0"),
 			swapResult:             sdk.NewUint(453),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -529,7 +529,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("5.0"),
 			swapResult:             sdk.NewUint(543),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -555,7 +555,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("6.0"),
 			swapResult:             sdk.NewUint(634),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -581,7 +581,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("7.0"),
 			swapResult:             sdk.NewUint(724),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -607,7 +607,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("8.0"),
 			swapResult:             sdk.NewUint(815),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -633,7 +633,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("9.0"),
 			swapResult:             sdk.NewUint(906),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
@@ -659,7 +659,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("10.0"),
 			swapResult:             sdk.NewUint(996),
-			liquidityFee:           sdk.NewUint(8),
+			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
