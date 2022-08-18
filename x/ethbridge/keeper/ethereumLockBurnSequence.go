@@ -69,9 +69,23 @@ func (k Keeper) GetEthereumLockBurnSequences(ctx sdk.Context) map[string]uint64 
 
 // SetSequenceViaRawKey used in import sequence from genesis
 func (k Keeper) SetSequenceViaRawKey(ctx sdk.Context, key []byte, newSequence uint64) {
-	store := ctx.KVStore(k.storeKey)
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newSequence)
+	network, address := DecodeKey(key)
+	k.SetEthereumLockBurnSequence(ctx, network, address, newSequence)
+}
 
-	store.Set(key, bs)
+func DecodeKey(key []byte) (oracletypes.NetworkDescriptor, sdk.ValAddress) {
+	prefixLen := len(types.EthereumLockBurnSequencePrefix)
+
+	// the length must larger than 5
+	if len(key) < prefixLen+4 {
+		panic("key for EthereumLockBurnSequence with wrong length")
+	}
+
+	networkDescriptorKey := key[prefixLen : prefixLen+4]
+	addressKey := key[prefixLen+4:]
+
+	networkDescriptor := binary.BigEndian.Uint32(networkDescriptorKey)
+	address := sdk.ValAddress(addressKey)
+
+	return oracletypes.NetworkDescriptor(networkDescriptor), address
 }

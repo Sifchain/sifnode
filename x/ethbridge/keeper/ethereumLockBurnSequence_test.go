@@ -7,6 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 )
 
@@ -35,4 +38,23 @@ func TestGetEthereumLockBurnSequence(t *testing.T) {
 
 	LockBurnSequence := keeper.GetEthereumLockBurnSequence(ctx, testNetwork, testCosmosAddress)
 	assert.Equal(t, LockBurnSequence, testInitNonce)
+}
+
+func TestKeyDecode(t *testing.T) {
+	var _, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	testCosmosAddress, err := sdk.ValAddressFromBech32(testAddress)
+	require.NoError(t, err)
+
+	key := keeper.GetEthereumLockBurnSequencePrefix(testNetwork, testCosmosAddress)
+
+	parsedTestNetwork, parsedAddress := ethbridgekeeper.DecodeKey(key)
+
+	assert.Equal(t, parsedTestNetwork, oracletypes.NetworkDescriptor(testNetwork))
+
+	assert.Equal(t, parsedAddress, testCosmosAddress)
+}
+
+func TestKeyDecodePanic(t *testing.T) {
+	key := []byte{1, 2, 3}
+	assert.Panics(t, func() { ethbridgekeeper.DecodeKey(key) }, "no expected panic")
 }
