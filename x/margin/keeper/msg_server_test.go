@@ -922,18 +922,19 @@ func TestKeeper_OpenClose(t *testing.T) {
 			require.Equal(t, sdk.NewCoin(tt.externalAsset, sdk.Int(sdk.NewUint(1000000000000000))), app.BankKeeper.GetBalance(ctx, signer, tt.externalAsset))
 
 			openExpectedMTP := types.MTP{
-				Id:               1,
-				Address:          signer.String(),
-				CollateralAsset:  nativeAsset,
-				CollateralAmount: sdk.NewUint(1000),
-				Liabilities:      sdk.NewUint(1000),
-				InterestPaid:     sdk.ZeroUint(),
-				InterestUnpaid:   sdk.ZeroUint(),
-				CustodyAsset:     tt.externalAsset,
-				CustodyAmount:    sdk.NewUint(1999),
-				Leverage:         sdk.NewDec(2),
-				MtpHealth:        sdk.MustNewDecFromStr("2.001001001001001001"),
-				Position:         types.Position_LONG,
+				Id:                       1,
+				Address:                  signer.String(),
+				CollateralAsset:          nativeAsset,
+				CollateralAmount:         sdk.NewUint(1000),
+				Liabilities:              sdk.NewUint(1000),
+				InterestPaidCollateral:   sdk.ZeroUint(),
+				InterestPaidCustody:      sdk.ZeroUint(),
+				InterestUnpaidCollateral: sdk.ZeroUint(),
+				CustodyAsset:             tt.externalAsset,
+				CustodyAmount:            sdk.NewUint(1999),
+				Leverage:                 sdk.NewDec(2),
+				MtpHealth:                sdk.MustNewDecFromStr("2.001001001001001001"),
+				Position:                 types.Position_LONG,
 			}
 
 			openMTP, _ := marginKeeper.GetMTP(ctx, signer.String(), 1)
@@ -1110,17 +1111,17 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 	marginKeeper.BeginBlocker(ctx)
 
 	expectedMTP := types.MTP{
-		Address:          signer,
-		CollateralAsset:  nativeAsset,
-		CollateralAmount: sdk.NewUintFromString("10000"),
-		Liabilities:      sdk.NewUintFromString("10000"),
-		InterestUnpaid:   sdk.NewUintFromString("0"),
-		CustodyAsset:     externalAsset,
-		CustodyAmount:    sdk.NewUintFromString("20000"),
-		Leverage:         sdk.NewDec(1),
-		MtpHealth:        sdk.MustNewDecFromStr("0.166666666666666667"),
-		Position:         types.Position_LONG,
-		Id:               1,
+		Address:                  signer,
+		CollateralAsset:          nativeAsset,
+		CollateralAmount:         sdk.NewUintFromString("10000"),
+		Liabilities:              sdk.NewUintFromString("10000"),
+		InterestUnpaidCollateral: sdk.NewUintFromString("0"),
+		CustodyAsset:             externalAsset,
+		CustodyAmount:            sdk.NewUintFromString("20000"),
+		Leverage:                 sdk.NewDec(1),
+		MtpHealth:                sdk.MustNewDecFromStr("0.166666666666666667"),
+		Position:                 types.Position_LONG,
+		Id:                       1,
 	}
 	mtp, err := marginKeeper.GetMTP(ctx, signer, uint64(1))
 	t.Logf("mtp: %v\n", mtp)
@@ -1817,17 +1818,17 @@ func TestKeeper_EC(t *testing.T) {
 					// require.Equal(t, sdk.NewCoin(ec.externalAsset, sdk.Int(chunkItem.signerExternalAssetBalanceAfterOpen)), app.BankKeeper.GetBalance(ctx, acc, ec.externalAsset))
 
 					openExpectedMTP := types.MTP{
-						Id:               uint64(i + 1),
-						Address:          signer,
-						CollateralAsset:  nativeAsset,
-						CollateralAmount: msgOpen.CollateralAmount,
-						Liabilities:      msgOpen.CollateralAmount,
-						InterestUnpaid:   sdk.ZeroUint(),
-						CustodyAsset:     ec.externalAsset,
-						CustodyAmount:    chunkItem.mtpCustodyAmount,
-						Leverage:         sdk.NewDec(2),
-						MtpHealth:        chunkItem.mtpHealth,
-						Position:         types.Position_LONG,
+						Id:                       uint64(i + 1),
+						Address:                  signer,
+						CollateralAsset:          nativeAsset,
+						CollateralAmount:         msgOpen.CollateralAmount,
+						Liabilities:              msgOpen.CollateralAmount,
+						InterestUnpaidCollateral: sdk.ZeroUint(),
+						CustodyAsset:             ec.externalAsset,
+						CustodyAmount:            chunkItem.mtpCustodyAmount,
+						Leverage:                 sdk.NewDec(2),
+						MtpHealth:                chunkItem.mtpHealth,
+						Position:                 types.Position_LONG,
 					}
 					openMTP, err := marginKeeper.GetMTP(ctx, signer, uint64(i+1))
 					require.NoError(t, err)
@@ -1961,18 +1962,19 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 	require.NoError(t, openError)
 
 	openExpectedMTP := types.MTP{
-		Address:          signer.String(),
-		CollateralAsset:  nativeAsset,
-		CollateralAmount: sdk.NewUintFromString("1000000000000000000000"),
-		Liabilities:      sdk.ZeroUint(),
-		InterestPaid:     sdk.ZeroUint(),
-		InterestUnpaid:   sdk.ZeroUint(),
-		CustodyAsset:     externalAsset.Symbol,
-		CustodyAmount:    sdk.NewUintFromString("999800029996000499940"),
-		Leverage:         sdk.NewDec(1),
-		MtpHealth:        sdk.ZeroDec(),
-		Position:         types.Position_LONG,
-		Id:               1,
+		Address:                  signer.String(),
+		CollateralAsset:          nativeAsset,
+		CollateralAmount:         sdk.NewUintFromString("1000000000000000000000"),
+		Liabilities:              sdk.ZeroUint(),
+		InterestPaidCollateral:   sdk.ZeroUint(),
+		InterestPaidCustody:      sdk.ZeroUint(),
+		InterestUnpaidCollateral: sdk.ZeroUint(),
+		CustodyAsset:             externalAsset.Symbol,
+		CustodyAmount:            sdk.NewUintFromString("999800029996000499940"),
+		Leverage:                 sdk.NewDec(1),
+		MtpHealth:                sdk.ZeroDec(),
+		Position:                 types.Position_LONG,
+		Id:                       1,
 	}
 	openMTP, _ := marginKeeper.GetMTP(ctx, signer.String(), 1)
 	fmt.Println(openExpectedMTP)
@@ -1994,18 +1996,19 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 	require.NoError(t, openError)
 
 	openExpectedMTP = types.MTP{
-		Address:          signer.String(),
-		CollateralAsset:  nativeAsset,
-		CollateralAmount: sdk.NewUintFromString("1000000000000000000000"),
-		Liabilities:      sdk.ZeroUint(),
-		InterestPaid:     sdk.ZeroUint(),
-		InterestUnpaid:   sdk.ZeroUint(),
-		CustodyAsset:     externalAsset.Symbol,
-		CustodyAmount:    sdk.NewUintFromString("999800029996000499940"),
-		Leverage:         sdk.NewDec(1),
-		MtpHealth:        sdk.ZeroDec(),
-		Position:         types.Position_LONG,
-		Id:               1,
+		Address:                  signer.String(),
+		CollateralAsset:          nativeAsset,
+		CollateralAmount:         sdk.NewUintFromString("1000000000000000000000"),
+		Liabilities:              sdk.ZeroUint(),
+		InterestPaidCollateral:   sdk.ZeroUint(),
+		InterestPaidCustody:      sdk.ZeroUint(),
+		InterestUnpaidCollateral: sdk.ZeroUint(),
+		CustodyAsset:             externalAsset.Symbol,
+		CustodyAmount:            sdk.NewUintFromString("999800029996000499940"),
+		Leverage:                 sdk.NewDec(1),
+		MtpHealth:                sdk.ZeroDec(),
+		Position:                 types.Position_LONG,
+		Id:                       1,
 	}
 	openMTP, _ = marginKeeper.GetMTP(ctx, signer.String(), 1)
 	fmt.Println(openExpectedMTP)
@@ -2013,18 +2016,19 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 	require.Equal(t, openExpectedMTP, openMTP)
 
 	openExpectedMTP = types.MTP{
-		Address:          signer.String(),
-		CollateralAsset:  nativeAsset,
-		CollateralAmount: sdk.NewUintFromString("500000000000000000000"),
-		Liabilities:      sdk.ZeroUint(),
-		InterestPaid:     sdk.ZeroUint(),
-		InterestUnpaid:   sdk.ZeroUint(),
-		CustodyAsset:     externalAsset.Symbol,
-		CustodyAmount:    sdk.NewUintFromString("499850038741251802776"),
-		Leverage:         sdk.NewDec(1),
-		MtpHealth:        sdk.ZeroDec(),
-		Position:         types.Position_LONG,
-		Id:               2,
+		Address:                  signer.String(),
+		CollateralAsset:          nativeAsset,
+		CollateralAmount:         sdk.NewUintFromString("500000000000000000000"),
+		Liabilities:              sdk.ZeroUint(),
+		InterestPaidCollateral:   sdk.ZeroUint(),
+		InterestPaidCustody:      sdk.ZeroUint(),
+		InterestUnpaidCollateral: sdk.ZeroUint(),
+		CustodyAsset:             externalAsset.Symbol,
+		CustodyAmount:            sdk.NewUintFromString("499850038741251802776"),
+		Leverage:                 sdk.NewDec(1),
+		MtpHealth:                sdk.ZeroDec(),
+		Position:                 types.Position_LONG,
+		Id:                       2,
 	}
 	openMTP, _ = marginKeeper.GetMTP(ctx, signer.String(), 2)
 	fmt.Println(openExpectedMTP)
