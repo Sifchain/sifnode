@@ -149,7 +149,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg)
+		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg, true)
 		if err != nil {
 			return nil, err
 		}
@@ -270,7 +270,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	return &mtp, repayAmount, nil
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, sdk.Uint, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdminClose bool) (*types.MTP, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
@@ -304,7 +304,8 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 			return nil, sdk.ZeroUint(), err
 		}
 	}
-	if mtp.MtpHealth.GT(forceCloseThreshold) {
+
+	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
 

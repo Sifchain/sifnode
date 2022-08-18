@@ -68,7 +68,7 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 		mtp.InterestUnpaid = interestPayment
 	}
 	_ = k.SetMTP(ctx, mtp)
-	_, repayAmount, err := k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address})
+	_, repayAmount, err := k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address}, false)
 	if err == nil {
 		// Emit event if position was closed
 		k.EmitForceClose(ctx, mtp, repayAmount, "")
