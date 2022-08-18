@@ -10,6 +10,8 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
+var f = big.NewRat(3, 1000)
+
 func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	// if pmtpCurrentRunningRate.IsNil() {
 	// 	if toRowan {
@@ -107,6 +109,78 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
 		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.RoundInt().BigInt()),
 		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt())
+}
+
+// Calculate pool units taking into account the current pmtpCurrentRunningRate
+// R - native asset balance
+// A - external asset balance
+// r - native asset amount
+// a - external asset amount
+// P - current number of pool units
+// #################
+// TODO: need to check we're not exceeding liquidity protection OR swap block switches
+// ################
+func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint) {
+	if R.IsZero() || A.IsZero() {
+		return r, r
+	}
+
+	if r.IsZero() && a.IsZero() {
+		return r, sdk.ZeroUint()
+	}
+
+	// At this point A > 0 and R > 0 and (a > 0 or r > 0), so makes sense to
+	// determine what type of symmetry the liquidity add has and to calculate the pool units
+	// based on the type of symmetry.
+	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
+	symmetry := GetLiquidityAddSymmetry(R, r, A, a)
+	switch symmetry {
+	case 1:
+		// R,A,a > 0 and R/A > r/a
+		swapAmount := CalculateExternalSwapAmountAsymmetric(R, A, r, a, f, &pmtpCurrentRunningRateR)
+		aCorrected := a.Sub(swapAmount)
+		AProjected := A.Add(swapAmount)
+
+		// external or native asset can be used to calculate pool units since now r/R = a/A. for convenience
+		// use external asset
+		return CalculatePoolUnitsSymmetric(AProjected, aCorrected, P)
+	case -1:
+		// R,A,r > 0 and (a==0 or R/A < r/a)
+		swapAmount := CalculateNativeSwapAmountAsymmetric(R, A, r, a, f, &pmtpCurrentRunningRateR)
+		rCorrected := r.Sub(swapAmount)
+		RProjected := R.Add(swapAmount)
+		return CalculatePoolUnitsSymmetric(RProjected, rCorrected, P)
+	default:
+		// symmetric add
+		return CalculatePoolUnitsSymmetric(R, r, P)
+	}
+}
+
+func CalculatePoolUnitsSymmetric(X, x, P sdk.Uint) (sdk.Uint, sdk.Uint) {
+	var providerUnitsB big.Int
+
+	providerUnitsB.Mul(x.BigInt(), P.BigInt()).Quo(&providerUnitsB, X.BigInt()) // providerUnits = P * x / X
+	providerUnits := sdk.NewUintFromBigInt(&providerUnitsB)
+
+	return P.Add(providerUnits), providerUnits
+}
+
+// Determines whether the assets being added to a pool, y and x, are in the same
+// ratio as the pool i.e. Y/X == y/x
+// If Y,X,y > 0 and (x==0 or Y/X < y/x) returns -1
+// If Y,X   > 0 and Y/X==y/x returns 0
+// If Y,X,x > 0 and Y/X > y/x returns 1
+// The calculation is only meaningful when X > 0 and Y > 0 and (x > 0 or y > 0)
+func GetLiquidityAddSymmetry(X, x, Y, y sdk.Uint) int {
+	if x.IsZero() {
+		return -1
+	}
+	var YoverX, yOverx *big.Rat
+
+	YoverX.SetFrac(Y.BigInt(), X.BigInt())
+	yOverx.SetFrac(y.BigInt(), x.BigInt())
+
+	return YoverX.Cmp(yOverx)
 }
 
 // More details on the formula
@@ -400,16 +474,29 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 
 // Calculates how much external asset to swap for an asymmetric add to become
 // symmetric
+// R - native asset balance
+// A - external asset balance
+// r - native asset amount
+// a - external asset amount
+// Should be used when R,A,a > 0 and R/A > r/a
+func CalculateExternalSwapAmountAsymmetric(R, A, r, a sdk.Uint, fee, pmtpRunningRate *big.Rat) sdk.Uint {
+	var RRat, ARat, rRat, aRat *big.Rat
+	s := CalculateExternalSwapAmountAsymmetricRat(RRat, ARat, rRat, aRat, fee, pmtpRunningRate)
+	return sdk.NewUintFromBigInt(RatIntQuo(&s))
+}
+
+// Calculates how much external asset to swap for an asymmetric add to become
+// symmetric
 // Y - native asset pool depth
 // X - external asset pool depth
 // y - native asset amount
 // x - external asset amount
-// Should be used when Y/X > y/x
+// Should be used when Y,X,x > 0 and Y/X > y/x
 // NOTE: this method panics if a negative value is passed to the sqrt
-// It's not clear whether this condition could ever happen given the
-// constraints on the inputs (e.g. all are > 0). It is possible to guard against
+// It's not clear whether this condition could ever happen given the external
+// constraints on the inputs (e.g. X,Y,x > 0 and Y/X > y/x). It is possible to guard against
 // a panic by ensuring the sqrt argument is positive.
-func CalculateExternalSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
+func CalculateExternalSwapAmountAsymmetricRat(Y, X, y, x, f, r *big.Rat) big.Rat {
 	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, ac_, ad_, minusOne, one, two, four, r1 big.Rat
 	minusOne.SetInt64(-1)
 	one.SetInt64(1)
@@ -458,16 +545,33 @@ func CalculateExternalSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
 
 // Calculates how much native asset to swap for an asymmetric add to become
 // symmetric
+// R - native asset balance
+// A - external asset balance
+// r - native asset amount
+// a - external asset amount
+// Should be used when R,A,r > 0 and (a==0 or R/A < r/a)
+func CalculateNativeSwapAmountAsymmetric(R, A, r, a sdk.Uint, fee, pmtpRunningRate *big.Rat) sdk.Uint {
+	var RRat, ARat, rRat, aRat *big.Rat
+	RRat.SetInt(R.BigInt())
+	ARat.SetInt(A.BigInt())
+	rRat.SetInt(r.BigInt())
+	aRat.SetInt(a.BigInt())
+	s := CalculateNativeSwapAmountAsymmetricRat(RRat, ARat, rRat, aRat, fee, pmtpRunningRate)
+	return sdk.NewUintFromBigInt(RatIntQuo(&s))
+}
+
+// Calculates how much native asset to swap for an asymmetric add to become
+// symmetric
 // Y - native asset pool depth
 // X - external asset pool depth
 // y - native asset amount
 // x - external asset amount
-// Should be used when Y/X < y/x
+// Should be used when Y,X,y > 0 (x==0 or Y/X < y/x)
 // NOTE: this method panics if a negative value is passed to the sqrt
 // It's not clear whether this condition could ever happen given the
-// constraints on the inputs (e.g. all are > 0). It is possible to guard against
+// constraints on the inputs (i.e. Y,X,y > 0 and (x==0 or Y/X < y/x). It is possible to guard against
 // a panic by ensuring the sqrt argument is positive.
-func CalculateNativeSwapAmountAsymmetric(Y, X, y, x, f, r *big.Rat) big.Rat {
+func CalculateNativeSwapAmountAsymmetricRat(Y, X, y, x, f, r *big.Rat) big.Rat {
 	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, two, four big.Rat
 	two.SetInt64(2)
 	four.SetInt64(4)

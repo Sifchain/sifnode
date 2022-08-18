@@ -724,7 +724,7 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 	}
 }
 
-//nolint
+// nolint
 func TestKeeper_CalcSpotPriceX(t *testing.T) {
 
 	testcases := []struct {
@@ -1227,9 +1227,9 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 	}
 }
 
-// // Used only to generate expected results for TestKeeper_CalculateExternalSwapAmountAsymmetric
+// // Used only to generate expected results for TestKeeper_CalculateExternalSwapAmountAsymmetricRat
 // // Useful to keep around if more test cases are needed in future
-// func TestKeeper_GenerateCalculateExternalSwapAmountAsymmetricTestCases(t *testing.T) {
+// func TestKeeper_GenerateCalculateExternalSwapAmountAsymmetricRatTestCases(t *testing.T) {
 // 	testcases := []struct {
 // 		Y, X, y, x, f, r float64
 // 		expectedValue    float64
@@ -1272,7 +1272,7 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 // 	}
 
 // }
-func TestKeeper_CalculateExternalSwapAmountAsymmetric(t *testing.T) {
+func TestKeeper_CalculateExternalSwapAmountAsymmetricRat(t *testing.T) {
 	testcases := []struct {
 		name             string
 		Y, X, y, x, f, r *big.Rat
@@ -1312,7 +1312,7 @@ func TestKeeper_CalculateExternalSwapAmountAsymmetric(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := clpkeeper.CalculateExternalSwapAmountAsymmetric(tc.Y, tc.X, tc.y, tc.x, tc.f, tc.r)
+			res := clpkeeper.CalculateExternalSwapAmountAsymmetricRat(tc.Y, tc.X, tc.y, tc.x, tc.f, tc.r)
 			got, _ := clpkeeper.RatToDec(&res)
 
 			require.Equal(t, tc.expectedValue.String(), got.String())
@@ -1321,9 +1321,9 @@ func TestKeeper_CalculateExternalSwapAmountAsymmetric(t *testing.T) {
 
 }
 
-// // Used only to generate expected results for TestKeeper_CalculateNativeSwapAmountAsymmetric
+// // Used only to generate expected results for TestKeeper_CalculateNativeSwapAmountAsymmetricRat
 // // Useful to keep around if more test cases are needed in future
-// func TestKeeper_GenerateCalculateNativeSwapAmountAsymmetricTestCases(t *testing.T) {
+// func TestKeeper_GenerateCalculateNativeSwapAmountAsymmetricRatTestCases(t *testing.T) {
 // 	testcases := []struct {
 // 		Y, X, y, x, f, r float64
 // 		expectedValue    float64
@@ -1358,7 +1358,7 @@ func TestKeeper_CalculateExternalSwapAmountAsymmetric(t *testing.T) {
 // 	}
 
 // }
-func TestKeeper_CalculateNativeSwapAmountAsymmetric(t *testing.T) {
+func TestKeeper_CalculateNativeSwapAmountAsymmetricRat(t *testing.T) {
 	testcases := []struct {
 		name             string
 		Y, X, y, x, f, r *big.Rat
@@ -1400,7 +1400,7 @@ func TestKeeper_CalculateNativeSwapAmountAsymmetric(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := clpkeeper.CalculateNativeSwapAmountAsymmetric(tc.Y, tc.X, tc.y, tc.x, tc.f, tc.r)
+			res := clpkeeper.CalculateNativeSwapAmountAsymmetricRat(tc.Y, tc.X, tc.y, tc.x, tc.f, tc.r)
 			got, _ := clpkeeper.RatToDec(&res)
 
 			require.Equal(t, tc.expectedValue.String(), got.String())
