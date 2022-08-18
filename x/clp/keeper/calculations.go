@@ -133,7 +133,7 @@ func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, pmtpCurrentRunningRate sdk.Dec
 	// determine what type of symmetry the liquidity add has and to calculate the pool units
 	// based on the type of symmetry.
 	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
-	symmetry := GetLiquidityAddSymmetry(R, r, A, a)
+	symmetry := GetLiquidityAddSymmetryType(R, r, A, a)
 	switch symmetry {
 	case 1:
 		// R,A,a > 0 and R/A > r/a
@@ -170,8 +170,8 @@ func CalculatePoolUnitsSymmetric(X, x, P sdk.Uint) (sdk.Uint, sdk.Uint) {
 // If Y,X,y > 0 and (x==0 or Y/X < y/x) returns -1
 // If Y,X   > 0 and Y/X==y/x returns 0
 // If Y,X,x > 0 and Y/X > y/x returns 1
-// The calculation is only meaningful when X > 0 and Y > 0 and (x > 0 or y > 0)
-func GetLiquidityAddSymmetry(X, x, Y, y sdk.Uint) int {
+// Should be used when X > 0 and Y > 0 and (x > 0 or y > 0)
+func GetLiquidityAddSymmetryType(X, x, Y, y sdk.Uint) int {
 	if x.IsZero() {
 		return -1
 	}
