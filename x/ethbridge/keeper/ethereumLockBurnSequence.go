@@ -73,6 +73,7 @@ func (k Keeper) SetSequenceViaRawKey(ctx sdk.Context, key []byte, newSequence ui
 	k.SetEthereumLockBurnSequence(ctx, network, address, newSequence)
 }
 
+// DecodeKey extract the NetworkDescriptor and ValAddress from raw key
 func DecodeKey(key []byte) (oracletypes.NetworkDescriptor, sdk.ValAddress) {
 	prefixLen := len(types.EthereumLockBurnSequencePrefix)
 
