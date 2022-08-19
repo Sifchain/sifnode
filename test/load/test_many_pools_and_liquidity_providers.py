@@ -126,7 +126,7 @@ class Test:
             "zebra sentence tape you spawn forget catalog veteran rocket steel ticket slender follow rubber spoil thing into liar twin document ring clock shell skirt",
         ]
 
-        self.sifnoded = []
+        self.sifnoded = None
         self.sifnoded_client = None
 
     def setup(self):
@@ -194,18 +194,22 @@ class Test:
             wallets[addr] = chosen_tokens
             extra_accounts[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
 
+        # Create validators.
+        # CLP admin is admin account of validator 0. To create pools, this account needs to have balances for all denoms
+        # for all pools that he creates. For simplicity we add the same balance to all admins.
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
+        validator_admin_initial_balance = cosmos.balance_add({denom: denom_total_supply for denom in self.tokens}, {ROWAN: 10**25})
         for i in range(self.number_of_nodes):
             mnemonic = self.validator0_mnemonic if i == 0 else None
-            env.add_validator(admin_mnemonic=mnemonic)
+            env.add_validator(admin_mnemonic=mnemonic, initial_balance=validator_admin_initial_balance)
 
         env.init(faucet_balance={denom: denom_total_supply for denom in self.tokens}, extra_accounts=extra_accounts)
         env.start()
 
         self.env = env
         self.sifnoded = env._sifnoded_for(env.node_info[0])
-        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=self.env.node_info[0]["host"],
-            chain_id=env.chain_id)
+        sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=sifchain.format_node_url(
+            self.env.node_info[0]["host"], self.env.node_info[0]["ports"]["rpc"]), chain_id=env.chain_id)
         self.sifnoded_client = sifnoded_client
 
         sifnoded = self.sifnoded
@@ -239,8 +243,9 @@ class Test:
                 }
             else:
                 entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
-            sifnoded.token_registry_register(entry, sif, broadcast_mode="block")
-            sifnoded.wait_for_last_transaction_to_be_mined()  # Must be run synchronously! (if not, only the first will work)
+            res = sifnoded.token_registry_register(entry, sif, broadcast_mode="block")  # Must be run synchronously! (if not, only the first will work)
+            sifchain.check_raw_log(res)
+            # sifnoded.wait_for_last_transaction_to_be_mined()
         if self.disable_assertions:
             act = set(e["denom"] for e in sifnoded.query_tokenregistry_entries())
             exp = set(self.tokens)
@@ -249,9 +254,13 @@ class Test:
             assert set(e["denom"] for e in sifnoded.query_tokenregistry_entries()) == set(self.tokens)
 
         # Set up liquidity pools. We create them symmetrically (`native_amount == externam_amount`).
+        clp_admin = sif
         for denom in self.tokens:
-            sifnoded.tx_clp_create_pool(sif, denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet)
-            sifnoded.wait_for_last_transaction_to_be_mined()
+            # sifnoded.tx_clp_create_pool(sif, denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet)
+            res = sifnoded.tx_clp_create_pool(clp_admin, denom, self.amount_of_denom_per_wallet,
+                self.amount_of_denom_per_wallet, broadcast_mode="block")
+            sifchain.check_raw_log(res)
+            # sifnoded.wait_for_last_transaction_to_be_mined()
         if self.disable_assertions:
             act = set(p["external_asset"]["symbol"] for p in sifnoded.query_pools())
             exp = set(self.tokens)
@@ -267,36 +276,17 @@ class Test:
         for addr, denoms in wallets.items():
             account_number, account_sequence = sifnoded.get_acct_seq(addr)
             for denom in denoms:
-                sifnoded_client.tx_clp_add_liquidity(addr, denom, self.amount_of_liquidity_added_by_wallet,
+                res = sifnoded_client.tx_clp_add_liquidity(addr, denom, self.amount_of_liquidity_added_by_wallet,
                     self.amount_of_liquidity_added_by_wallet, account_seq=(account_number, account_sequence))
+                sifchain.check_raw_log(res)
                 account_sequence += 1
-        sifnoded_client.wait_for_last_transaction_to_be_mined()
-        actual_lp_providers = {}
-        for denom in self.tokens:
-            for lp in sifnoded_client.query_clp_liquidity_providers(denom):
-                addr = lp["liquidity_provider_address"]
-                symbol = lp["asset"]["symbol"]
-                if addr not in actual_lp_providers:
-                    actual_lp_providers[addr] = set()
-                actual_lp_providers[addr].add(symbol)
-        # Note: "sif" address will automatically be a liquidity provider for all => remove "sif" before asserting
-        actual_lp_providers.pop(sif)
-        if self.disable_assertions:
-            act = set(actual_lp_providers)
-            exp = set(wallets)
-            self.assert_set_equal("LP providers mismatch", act, exp)
-            for addr in wallets:
-                act = set(actual_lp_providers[addr])
-                exp = set(wallets[addr])
-                self.assert_set_equal("LP mismatch for wallet {}".format(addr), act, exp)
-        else:
-            assert set(actual_lp_providers) == set(wallets)  # Keys
-            assert all(set(actual_lp_providers[addr]) == set(wallets[addr]) for addr in wallets)  # Values
+        self.sifnoded_client.wait_for_last_transaction_to_be_mined()
+        self.check_actual_liquidity_providers(sifnoded_client, clp_admin, wallets)
 
     def run(self):
-        sifnoded = self.sifnoded[0]
+        sifnoded = self.sifnoded
         sifnoded_client = self.sifnoded_client
-        sif = self.node_info[0]["admin_addr"]
+        admin_addr = self.env.node_info[0]["admin_addr"]
 
         # Determine start and end blocks for rewards and LPPD
         # TODO start and end blocks are both inclusive, adjust
@@ -315,7 +305,7 @@ class Test:
             reward_params = sifchain.create_rewards_descriptor("RP_1", rewards_start_block, rewards_end_block,
                 [(token, 1) for token in self.tokens][:self.reward_period_pool_count], 100000 * self.token_unit,
                 self.reward_period_default_multiplier, self.reward_period_distribute, self.reward_period_mod)
-            sifnoded.clp_reward_period(sif, reward_params)
+            sifnoded.clp_reward_period(admin_addr, reward_params)
             sifnoded.wait_for_last_transaction_to_be_mined()
             wait_boundaries.add(rewards_start_block)
             wait_boundaries.add(rewards_end_block)
@@ -324,7 +314,7 @@ class Test:
         # Set up LPD policies
         if self.lpd_duration_blocks > 0:
             lppd_params = sifchain.create_lppd_params(lppd_start_block, lppd_end_block, 0.00045, self.lpd_period_mod)
-            sifnoded.clp_set_lppd_params(sif, lppd_params)
+            sifnoded.clp_set_lppd_params(admin_addr, lppd_params)
             sifnoded.wait_for_last_transaction_to_be_mined()
             wait_boundaries.add(lppd_start_block)
             wait_boundaries.add(lppd_end_block)
@@ -359,7 +349,7 @@ class Test:
 
     # TODO Refactor - move to Sifnoded
     def wait_for_block(self, block_number: int) -> float:
-        sifnoded = self.sifnoded[0]
+        sifnoded = self.sifnoded
         current_block = sifnoded.get_current_block()
         prev_block = None
         assert current_block < block_number
@@ -395,6 +385,30 @@ class Test:
             log.error("Assertion failed: {}: expected={}".format(message, repr(expected)))
             log.error("Assertion failed: {}: actual_only={}".format(message, repr(actual_only)))
             log.error("Assertion failed: {}: expected_only={}".format(message, repr(expected_only)))
+
+    def check_actual_liquidity_providers(self, sifnoded, clp_admin, wallets):
+        actual_lp_providers = {}
+        for denom in self.tokens:
+            for lp in sifnoded.query_clp_liquidity_providers(denom):
+                addr = lp["liquidity_provider_address"]
+                symbol = lp["asset"]["symbol"]
+                if addr not in actual_lp_providers:
+                    actual_lp_providers[addr] = set()
+                actual_lp_providers[addr].add(symbol)
+        # Note: "clp_admin" will automatically be a liquidity provider for all since it had created the pools
+        expected_lp_providers = dict_merge({clp_admin: set(self.tokens)}, {addr: wallets[addr] for addr in wallets})
+        if self.disable_assertions:
+            act = set(actual_lp_providers)
+            exp = set(expected_lp_providers)
+            self.assert_set_equal("LP providers mismatch", act, exp)
+            for addr in wallets:
+                act = set(actual_lp_providers[addr])
+                exp = set(expected_lp_providers[addr])
+                self.assert_set_equal("LP mismatch for wallet {}".format(addr), act, exp)
+        else:
+            assert set(actual_lp_providers) == set(expected_lp_providers)  # Keys
+            assert all(set(actual_lp_providers[addr]) == set(expected_lp_providers[addr]) for addr in actual_lp_providers)  # Values
+
 
 def main(argv: List[str]):
     basic_logging_setup()

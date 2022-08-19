@@ -785,24 +785,25 @@ class Sifnoded:
                 height = int(res["height"])
         return all_results
 
-    def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
+    def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int,
+        broadcast_mode: Optional[str] = None,
     ) -> JsonDict:
         # For more examples see ticket #2470, e.g.
         args = ["tx", "clp", "create-pool", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
             str(native_amount), "--externalAmount", str(external_amount)] + self._chain_id_args() + \
             self._node_args() + self._fees_args() + self._home_args() + self._keyring_backend_args() + \
-            self._broadcast_mode_args() + self._yes_args()
+            self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
     def tx_clp_add_liquidity(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int, /,
-        account_seq: Optional[Tuple[int, int]] = None
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None
     ) -> JsonDict:
         args = ["tx", "clp", "add-liquidity", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
             str(native_amount), "--externalAmount", str(external_amount)] + self._home_args() + \
             self._keyring_backend_args() + self._chain_id_args() + self._node_args() + self._fees_args() + \
-            self._account_number_and_sequence_args(account_seq) + self._broadcast_mode_args() + \
-            self._yes_args()
+            self._account_number_and_sequence_args(account_seq) + \
+            self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
