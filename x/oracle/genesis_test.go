@@ -4,6 +4,7 @@
 package oracle_test
 
 import (
+	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -124,22 +125,30 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		whitelist[i] = addr.String()
 	}
 
-	prophecy := types.Prophecy{
-		ID: "asd",
-		Status: types.Status{
-			Text:       types.StatusText_STATUS_TEXT_PENDING,
-			FinalClaim: "abc",
-		},
-		ClaimValidators: map[string][]sdk.ValAddress{
-			"123": valAddrs,
-		},
-		ValidatorClaims: map[string]string{
-			"321": "4321",
-		},
+	prophecies := []types.Prophecy{}
+	for i := 0; i <= 5; i++ {
+		prophecy := types.Prophecy{
+			ID: fmt.Sprintf("prophecy%d", i),
+			Status: types.Status{
+				Text:       types.StatusText_STATUS_TEXT_PENDING,
+				FinalClaim: "abc",
+			},
+			ClaimValidators: map[string][]sdk.ValAddress{
+				"123": valAddrs,
+			},
+			ValidatorClaims: map[string]string{
+				"321": "4321",
+			},
+		}
+		prophecies = append(prophecies, prophecy)
 	}
 
-	dbProphecy, err := prophecy.SerializeForDB()
-	require.NoError(t, err)
+	dbProphecies := []*types.DBProphecy{}
+	for _, p := range prophecies {
+		dbProphecy, err := p.SerializeForDB()
+		require.NoError(t, err)
+		dbProphecies = append(dbProphecies, &dbProphecy)
+	}
 
 	return []testCase{
 		{
@@ -151,10 +160,8 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 			genesis: types.GenesisState{
 				AddressWhitelist: whitelist,
 				AdminAddress:     addrs[0].String(),
-				Prophecies: []*types.DBProphecy{
-					&dbProphecy,
-				},
+				Prophecies:       dbProphecies,
 			},
 		},
-	}, []types.Prophecy{prophecy}
+	}, prophecies
 }
