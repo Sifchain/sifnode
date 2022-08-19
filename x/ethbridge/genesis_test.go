@@ -56,6 +56,18 @@ func TestInitGenesis(t *testing.T) {
 	// after init the genesis from state, receive account is set
 	actualReceiver := keeper2.GetCrossChainFeeReceiverAccount(ctx2)
 	assert.Equal(t, receiver, actualReceiver.String())
+
+	// check lock burn sequence from genesis
+	actualLockBurnSequence := keeper2.GetEthereumLockBurnSequence(ctx2, test.NetworkDescriptor, valAddress)
+	assert.Equal(t, lockBurnSequence, actualLockBurnSequence)
+
+	// check block number for network
+	actualBlockNumber := keeper2.GetGlobalSequence(ctx2, test.NetworkDescriptor)
+	assert.Equal(t, blockNumber, actualBlockNumber)
+
+	// check block number for network and global nonce
+	actualBlockNumber = keeper2.GetGlobalSequenceToBlockNumber(ctx2, test.NetworkDescriptor, globalNonce)
+	assert.Equal(t, blockNumber, actualBlockNumber)
 }
 
 func CreateState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) string {
