@@ -126,7 +126,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			poolUnits := sdk.NewUint(2000) //don't care
 			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
 
-			swapResult, liquidityFee, priceImpact, pool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate)
+			swapResult, liquidityFee, priceImpact, pool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -179,7 +179,7 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), *pool, sdk.OneDec())
+	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3))
 	assert.Equal(t, "1", swapResult.String())
 }
 
@@ -191,7 +191,7 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 	}
 	asset := types.Asset{}
 
-	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), pool, sdk.NewDec(100))
+	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3))
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -628,7 +628,7 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			fee := clpkeeper.CalcLiquidityFee(tc.X, tc.x, tc.Y)
+			fee := clpkeeper.CalcLiquidityFee(tc.X, tc.x, tc.Y, sdk.NewDecWithPrec(3, 3))
 			require.Equal(t, tc.fee.String(), fee.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
@@ -708,10 +708,12 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		},
 	}
 
+	swapFeeRate := sdk.NewDecWithPrec(3, 3)
+
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, swapFeeRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})

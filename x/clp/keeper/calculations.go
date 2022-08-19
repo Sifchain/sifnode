@@ -10,8 +10,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-var f = big.NewRat(3, 1000)
-
 func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	// if pmtpCurrentRunningRate.IsNil() {
 	// 	if toRowan {
@@ -241,7 +239,7 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
-func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+func CalcLiquidityFee(X, x, Y sdk.Uint, swapFeeRate sdk.Dec) sdk.Uint {
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
@@ -252,20 +250,23 @@ func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 	rawXYK := calcRawXYK(xb, Xb, Yb)
 
 	var fee big.Rat
-	fee.Mul(f, &rawXYK)
+	f := DecToRat(&swapFeeRate)
+	fee.Mul(&f, &rawXYK)
 
 	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
 }
 
 func CalcSwapResult(toRowan bool,
 	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
 
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
 
-	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
+	swapFeeRateR := DecToRat(&swapFeeRate)
+
+	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt(), &swapFeeRateR)
 	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
 
 	var res big.Rat
@@ -280,10 +281,10 @@ func CalcSwapResult(toRowan bool,
 }
 
 // y = (1-f)*x*Y/(x+X)
-func calcSwap(x, X, Y *big.Int) big.Rat {
+func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
 	var diff big.Rat
 	one := big.NewRat(1, 1)
-	diff.Sub(one, f) // diff = 1 - f
+	diff.Sub(one, swapFeeRate) // diff = 1 - f
 
 	rawYXK := calcRawXYK(x, X, Y)
 	diff.Mul(&diff, &rawYXK)
