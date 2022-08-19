@@ -274,7 +274,10 @@ message MsgAddProviderDistributionPeriodResponse {}
 
 message MsgUpdateSwapFeeRateRequest {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
-  SwapFeeRate swap_fee_rate = 2;
+  string swap_fee_rate = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message MsgUpdateSwapFeeRateResponse {}

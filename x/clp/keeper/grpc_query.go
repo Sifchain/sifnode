@@ -272,5 +272,5 @@ func (k Querier) GetSwapFeeRate(c context.Context, _ *types.SwapFeeRateReq) (*ty
 	ctx := sdk.UnwrapSDKContext(c)
 	swapFeeRate := k.Keeper.GetSwapFeeRate(ctx)
 
-	return &types.SwapFeeRateRes{SwapFeeRate: swapFeeRate}, nil
+	return &types.SwapFeeRateRes{SwapFeeRate: swapFeeRate.SwapFeeRate}, nil
 }

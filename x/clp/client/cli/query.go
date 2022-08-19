@@ -35,6 +35,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdPmtpParams(queryRoute),
 		GetCmdLiquidityProtectionParams(queryRoute),
 		GetCmdProviderDistributionParams(queryRoute),
+		GetCmdSwapFeeRate(queryRoute),
 	)
 	return clpQueryCmd
 }

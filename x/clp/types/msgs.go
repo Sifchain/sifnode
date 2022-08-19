@@ -659,6 +659,14 @@ func (m MsgUpdateSwapFeeRateRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 
+	if m.SwapFeeRate.LT(sdk.ZeroDec()) {
+		return fmt.Errorf("swap rate fee must be greater than or equal to zero")
+	}
+
+	if m.SwapFeeRate.GT(sdk.OneDec()) {
+		return fmt.Errorf("swap rate fee must be less than or equal to one")
+	}
+
 	return nil
 }
 
