@@ -79,7 +79,7 @@ func TestKeeper_SetMTP(t *testing.T) {
 func TestKeeper_GetMTP(t *testing.T) {
 	t.Run("get MTP from a store key that exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1)
+		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 		got, err := marginKeeper.GetMTP(ctx, want.Address, 1)
 
 		fmt.Println(want)
@@ -99,7 +99,7 @@ func TestKeeper_GetMTP(t *testing.T) {
 
 func TestKeeper_GetMTPIterator(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1)
+	want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 	iterator := marginKeeper.GetMTPIterator(ctx)
 	bytesValue := iterator.Value()
 	var got types.MTP
@@ -110,8 +110,8 @@ func TestKeeper_GetMTPIterator(t *testing.T) {
 
 func TestKeeper_GetMTPs(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", types.Position_LONG, 1)
-	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", types.Position_LONG, 1)
+	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1", types.Position_LONG, 1, sdk.NewDec(20))
+	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2", types.Position_LONG, 1, sdk.NewDec(20))
 	want := []*types.MTP{&key1, &key2}
 	got, _, err := marginKeeper.GetMTPs(ctx, nil)
 	require.NoError(t, err)
@@ -130,7 +130,7 @@ func TestKeeper_DestroyMTP(t *testing.T) {
 	})
 	t.Run("key exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 		got := marginKeeper.DestroyMTP(ctx, mtp.Address, 1)
 
 		require.NoError(t, got)
@@ -376,7 +376,7 @@ func TestKeeper_Borrow(t *testing.T) {
 				address = tt.address
 			}
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", address, types.Position_LONG, 1)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", address, types.Position_LONG, 1, sdk.NewDec(20))
 
 			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.custodyAmount, &mtp, &pool, tt.leverage)
 
@@ -527,7 +527,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", tt.position, 1)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx", tt.position, 1, sdk.NewDec(20))
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
@@ -560,7 +560,7 @@ func TestKeeper_TakeInCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -581,7 +581,7 @@ func TestKeeper_TakeInCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx", types.Position_LONG, 1)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -606,7 +606,7 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -627,7 +627,7 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx", types.Position_LONG, 1)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 
 		pool := clptypes.Pool{
 			ExternalAsset:        &asset,
@@ -809,7 +809,7 @@ func TestKeeper_Repay(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address, types.Position_LONG, 1)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address, types.Position_LONG, 1, sdk.NewDec(20))
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
@@ -843,7 +843,7 @@ func TestKeeper_Repay(t *testing.T) {
 func TestKeeper_CalcMTPInterestLiabilities(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 
-	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1)
+	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx", types.Position_LONG, 1, sdk.NewDec(20))
 	// calculation on epoch
 	got := marginkeeper.CalcMTPInterestLiabilities(&mtp, sdk.NewDecWithPrec(1, 1), 0, 1)
 	require.Equal(t, sdk.NewUint(1200), got)
@@ -1020,7 +1020,7 @@ func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	require.NotNil(t, marginKeeper)
 	return ctx, app, marginKeeper
 }
-func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string, position types.Position, id uint64) types.MTP {
+func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string, position types.Position, id uint64, health sdk.Dec) types.MTP {
 	storeKey := app.GetKey(types.StoreKey)
 	store := ctx.KVStore(storeKey)
 	key := types.GetMTPKey(address, id)
@@ -1036,7 +1036,7 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 		CustodyAsset:     custodyAsset,
 		CustodyAmount:    sdk.NewUint(1000),
 		Leverage:         sdk.NewDec(10),
-		MtpHealth:        sdk.NewDec(20),
+		MtpHealth:        health,
 		Position:         position,
 	}
 
