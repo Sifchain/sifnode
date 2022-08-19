@@ -374,3 +374,25 @@ func GetCmdProviderDistributionParams(queryRoute string) *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
+
+func GetCmdSwapFeeRate(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "swap-fee-rate",
+		Short: "Get swap fee rate",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetSwapFeeRate(context.Background(), &types.SwapFeeRateReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
