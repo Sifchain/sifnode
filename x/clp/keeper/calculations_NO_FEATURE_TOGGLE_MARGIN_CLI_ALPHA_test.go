@@ -25,9 +25,9 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
 	sentAmount sdk.Uint,
 	nativeAsset types.Asset,
 	inPool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
-	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate)
+	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, swapFeeRate)
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
@@ -35,8 +35,8 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
 	ReceivedAsset *types.Asset,
 	liquidityFeeNative sdk.Uint,
 	outPool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
-	return clpkeeper.GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate)
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
+	return clpkeeper.GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate, swapFeeRate)
 }
 
 func TestKeeper_SwapOneFromGenesis(t *testing.T) {
@@ -811,6 +811,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to,
 				pool,
 				tc.pmtpCurrentRunningRate,
+				sdk.NewDecWithPrec(3, 3),
 			)
 
 			if tc.errString != nil {

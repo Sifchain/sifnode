@@ -25,10 +25,10 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx sdk.Context,
 	sentAmount sdk.Uint,
 	nativeAsset types.Asset,
 	inPool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
 	marginEnabled := k.GetMarginKeeper().IsPoolEnabled(ctx, inPool.String())
-	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, marginEnabled)
+	return clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 }
 
 func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
@@ -36,9 +36,9 @@ func FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx sdk.Context,
 	ReceivedAsset *types.Asset,
 	liquidityFeeNative sdk.Uint,
 	outPool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
 	marginEnabled := k.GetMarginKeeper().IsPoolEnabled(ctx, outPool.String())
-	return clpkeeper.GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate, marginEnabled)
+	return clpkeeper.GetSwapFee(liquidityFeeNative, *ReceivedAsset, outPool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 }
 
 func TestKeeper_SwapOneFromGenesis(t *testing.T) {
@@ -963,6 +963,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to,
 				pool,
 				tc.pmtpCurrentRunningRate,
+				sdk.NewDecWithPrec(3, 3),
 			)
 
 			if tc.errString != nil {
