@@ -34,6 +34,7 @@ service Msg {
   rpc UpdateLiquidityProtectionParams(MsgUpdateLiquidityProtectionParams) returns (MsgUpdateLiquidityProtectionParamsResponse);
   rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
   rpc AddProviderDistributionPeriod(MsgAddProviderDistributionPeriodRequest) returns (MsgAddProviderDistributionPeriodResponse);
+  rpc UpdateSwapFeeRate(MsgUpdateSwapFeeRateRequest) returns (MsgUpdateSwapFeeRateResponse);
 }
 
 // message MsgUpdateStakingRewardParams{
@@ -270,3 +271,10 @@ message MsgAddProviderDistributionPeriodRequest {
 }
 
 message MsgAddProviderDistributionPeriodResponse {}
+
+message MsgUpdateSwapFeeRateRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  SwapFeeRate swap_fee_rate = 2;
+}
+
+message MsgUpdateSwapFeeRateResponse {}
