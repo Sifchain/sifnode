@@ -57,7 +57,7 @@ func SwapOne(from types.Asset,
 		X, Y = pool.ExtractDebt(X, Y, toRowan)
 	}
 
-	liquidityFee := CalcLiquidityFee(X, sentAmount, Y, swapFeeRate)
+	liquidityFee := CalcLiquidityFee(X, sentAmount, Y, swapFeeRate, pmtpCurrentRunningRate)
 	priceImpact := calcPriceImpact(X, sentAmount)
 	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
 
