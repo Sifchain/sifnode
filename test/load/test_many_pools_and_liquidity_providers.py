@@ -138,10 +138,6 @@ class Test:
         self.prj.pkill()
         time.sleep(1)
 
-        # import socket
-        # hostname = socket.gethostname()
-        # ip_address = socket.gethostbyname(hostname)
-
         if self.wallets_dir is not None:
             predefined_wallets = test_utils2.PredefinedWallets(self.cmd, self.wallets_dir)
             client_home = self.wallets_dir
@@ -212,28 +208,6 @@ class Test:
             }, sif, broadcast_mode="block")
             sifnoded.wait_for_last_transaction_to_be_mined()
 
-        # account_number, account_sequence = sifnoded.get_acct_seq(sif)
-        # for denom in self.tokens:
-        #     if _hacking_ui:
-        #         entry = {
-        #             "decimals": 18,
-        #             "denom": denom,
-        #             "base_denom": denom,
-        #             "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
-        #         }
-        #     else:
-        #         entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
-        #     # res = sifnoded.token_registry_register(entry, sif, broadcast_mode="block")  # Must be run synchronously! (if not, only the first will work)
-        #     res = sifnoded.token_registry_register(entry, sif, account_seq=(account_number, account_sequence))  # Must be run synchronously! (if not, only the first will work)
-        #     sifchain.check_raw_log(res)
-        #     account_sequence += 1
-        # sifnoded.wait_for_last_transaction_to_be_mined()
-        # if self.disable_assertions:
-        #     act = set(e["denom"] for e in sifnoded.query_tokenregistry_entries())
-        #     exp = set(self.tokens)
-        #     self.assert_set_equal("token registry entries mismatch", act, exp)
-        # else:
-        #     assert set(e["denom"] for e in sifnoded.query_tokenregistry_entries()) == set(self.tokens)
         make_entry_v1 = lambda denom: sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
         make_entry_v2 = lambda denom: {
             "decimals": 18,
@@ -475,19 +449,6 @@ def main(argv: List[str]):
     basic_logging_setup()
     parser = argparse.ArgumentParser()
     parser.add_argument("scenario_file", type=str)
-    # parser.add_argument("--number-of-nodes", type=int, default=1)
-    # parser.add_argument("--number-of-liquidity-pools", type=int, default=10)
-    # parser.add_argument("--number-of-wallets", type=int, default=10)
-    # parser.add_argument("--liquidity-providers-per-wallet", type=int, default=5)
-    # parser.add_argument("--reward-period-default-multiplier", type=float, default=0.0)
-    # parser.add_argument("--reward-period-distribute", action="store_true")
-    # parser.add_argument("--reward-period-mod", type=int, default=1)
-    # parser.add_argument("--reward-period-pool-count", type=int, default=10)
-    # parser.add_argument("--rewards-offset-blocks", type=int, default=100)
-    # parser.add_argument("--rewards-duration-blocks", type=int, default=200)
-    # parser.add_argument("--lpd-period-mod", type=int, default=1)
-    # parser.add_argument("--lpd-offset-blocks", type=int, default=200)
-    # parser.add_argument("--lpd-duration-blocks", type=int, default=200)
     parser.add_argument("--block-results-offset", type=int, default=None)
     parser.add_argument("--run-forever", action="store_true")
     parser.add_argument("--disable-assertions", action="store_true")
