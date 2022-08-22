@@ -1,7 +1,7 @@
 CHAINNET?=betanet
 BINARY?=sifnoded
 GOPATH?=$(shell go env GOPATH)
-GOBIN?=${GOPATH}/bin
+GOBIN?=$(GOPATH)/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
@@ -11,10 +11,13 @@ DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 GOFLAGS:=""
-TAGS:=
+GOTAGS:=
 ifeq ($(FEATURE_TOGGLE_SDK_045), 1)
-	GOFLAGS := "-modfile=go_045.mod"
-	TAGS := FEATURE_TOGGLE_SDK_045
+	GOFLAGS:="-modfile=go_FEATURE_TOGGLE_SDK_045.mod"
+	GOTAGS:=$(GOTAGS)FEATURE_TOGGLE_SDK_045,
+endif
+ifeq ($(FEATURE_TOGGLE_MARGIN_CLI_ALPHA), 1)
+	GOTAGS:=$(GOTAGS)FEATURE_TOGGLE_MARGIN_CLI_ALPHA,
 endif
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
@@ -27,7 +30,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 smart_contract_file=cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol/BridgeRegistry.go
 
 BUILD_TAGS ?= ${IMAGE_TAG}
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags "$(GOTAGS) ${BUILD_TAGS}"
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 
@@ -102,14 +105,14 @@ test-peggy:
 test-bin:
 	GOFLAGS=${GOFLAGS} go test -v -coverprofile .testCoverage.txt ./...
 
-.PHONY: tests test 
+.PHONY: tests test
 test tests: test-peggy test-bin
 
 feature-tests:
 	GOFLAGS=${GOFLAGS} go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	GOFLAGS=${GOFLAGS} go run ./cmd/sifnoded start
+	GOFLAGS=$(GOFLAGS) go run ./cmd/sifnoded start
 
 build-image: install-smart-contracts
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
