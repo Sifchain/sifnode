@@ -62,7 +62,7 @@ func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMa
 }
 
 func fireDistributeSuccessEvent(ctx sdk.Context, lpAddress string, pools []LPPool, totalDistributed sdk.Uint, typeStr string) {
-	data := printPools(pools)
+	data := PrintPools(pools)
 	successEvent := sdk.NewEvent(
 		typeStr,
 		sdk.NewAttribute("recipient", lpAddress),
@@ -78,7 +78,7 @@ type FormattedPool struct {
 	Amount sdk.Uint `json:"amount"`
 }
 
-func printPools(pools []LPPool) string {
+func PrintPools(pools []LPPool) string {
 	var formattedPools = make([]FormattedPool, len(pools))
 
 	for i, pool := range pools {
@@ -161,6 +161,16 @@ type LPPool struct {
 	Amount sdk.Uint
 }
 
+func PoolRowanMapToLPPools(poolRowanMap PoolRowanMap) []LPPool {
+	arr := make([]LPPool, 0, len(poolRowanMap))
+
+	for pool, coins := range poolRowanMap {
+		arr = append(arr, LPPool{Pool: pool, Amount: coins})
+	}
+
+	return arr
+}
+
 func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvider) []ValidLiquidityProvider {
 	var valid []ValidLiquidityProvider //nolint
 
@@ -193,9 +203,17 @@ func CollectProviderDistribution(ctx sdk.Context, pool *types.Pool, poolDepthRow
 
 	//	rowan_provider_distribution = r_block * pool_depth_rowan
 	rowanPd := blockRate.Mul(poolDepthRowan)
+	rowanPdUint := sdk.NewUintFromBigInt(rowanPd.RoundInt().BigInt())
 	for _, lp := range lps {
 		providerRowan := CalcProviderDistributionAmount(rowanPd, poolUnits, lp.LP.LiquidityProviderUnits)
 		totalRowanDistribute = totalRowanDistribute.Add(providerRowan)
+
+		// TODO: find a proper solution
+		if totalRowanDistribute.GT(rowanPdUint) {
+			providerRowan = rowanPdUint.Sub(totalRowanDistribute.Sub(providerRowan))
+			totalRowanDistribute = rowanPdUint
+		}
+
 		addr := lp.Address.String()
 
 		globalLpRowan := globalLpRowanMap[addr]

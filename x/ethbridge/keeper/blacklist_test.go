@@ -1,6 +1,3 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package keeper_test
 
 import (
@@ -126,12 +123,16 @@ func TestSetBlacklist(t *testing.T) {
 			Addresses: tc.updated,
 		})
 		require.NoError(t, err)
+
+		//list := app.EthbridgeKeeper.GetBlacklist(ctx)
+		//fmt.Println(list)
 		for _, address := range tc.expectTrue {
 			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
 		for _, address := range tc.expectFalse {
 			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
+
 	}
 }
 

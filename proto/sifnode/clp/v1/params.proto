@@ -6,7 +6,10 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
 // Params - used for initializing default parameter for clp at genesis
-message Params { uint64 min_create_pool_threshold = 1; }
+message Params {
+  uint64 min_create_pool_threshold = 1;
+  bool enable_removal_queue = 2;
+}
 
 message RewardParams {
   uint64 liquidity_removal_lock_period = 1;   // in blocks

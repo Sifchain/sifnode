@@ -52,7 +52,7 @@ func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermis
 func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry, error) {
 	for i := range wl.Entries {
 		e := wl.Entries[i]
-		if e != nil && strings.EqualFold(e.Denom, denom) {
+		if e != nil && e.Denom == denom {
 			return wl.Entries[i], nil
 		}
 	}
