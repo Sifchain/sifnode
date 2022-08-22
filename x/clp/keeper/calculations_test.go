@@ -640,6 +640,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		toRowan                bool
 		X, x, Y, y             sdk.Uint
 		pmtpCurrentRunningRate sdk.Dec
+		swapFeeRate            sdk.Dec
 		err                    error
 		errString              error
 	}{
@@ -651,6 +652,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "adjust external token without rowan",
@@ -660,6 +662,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=0, X=0, Y=0",
@@ -669,6 +672,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(0),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=1, X=1, Y=1",
@@ -678,6 +682,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=1, X=1, Y=4",
@@ -687,6 +692,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(4),
 			y:                      sdk.NewUint(1),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=1, X=1, Y=4, nf=10",
@@ -696,6 +702,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(4),
 			y:                      sdk.NewUint(1),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=23, X=42, Y=1337",
@@ -705,15 +712,24 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1337),
 			y:                      sdk.NewUint(471),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "swap fee rate = 0.01",
+			toRowan:                false,
+			X:                      sdk.NewUint(1999800619938006200),
+			x:                      sdk.NewUint(200000000000000),
+			Y:                      sdk.NewUint(2000200000000000000),
+			y:                      sdk.NewUint(198019738620019),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(1, 2),
 		},
 	}
-
-	swapFeeRate := sdk.NewDecWithPrec(3, 3)
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, swapFeeRate)
+			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
