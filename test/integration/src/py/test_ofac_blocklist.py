@@ -64,7 +64,7 @@ def test_blocklist_eth(ctx):
         balances_before = ctx.get_sifchain_balance(to_sif_acct)
         txrcpt = bridge_bank_lock_eth(ctx, addr, to_sif_acct, amount_to_send)
         ctx.advance_blocks()
-        balances_after = ctx.wait_for_sif_balance_change(to_sif_acct, balances_before)
+        balances_after = ctx.sifnode.wait_for_balance_change(to_sif_acct, balances_before)
 
         assert balances_after.get(sif_symbol, 0) == balances_before.get(sif_symbol, 0) + amount_to_send
 
@@ -142,7 +142,7 @@ def test_blocklist_erc20(ctx):
         balances_before = ctx.get_sifchain_balance(to_sif_acct)
         txrcpt = bridge_bank_lock_erc20(ctx, test_token, addr, to_sif_acct, amount_to_send)
         ctx.advance_blocks()
-        balances_after = ctx.wait_for_sif_balance_change(to_sif_acct, balances_before)
+        balances_after = ctx.sifnode.wait_for_balance_change(to_sif_acct, balances_before)
 
         assert balances_after.get(sif_token_symbol, 0) == balances_before.get(sif_token_symbol, 0) + amount_to_send
 

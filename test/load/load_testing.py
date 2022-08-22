@@ -2,6 +2,7 @@ import random
 from typing import Sequence, Any
 from siftool import eth, test_utils, cosmos, sifchain
 from siftool.common import *
+from siftool.sifchain import ROWAN
 
 # Fees for sifchain -> sifchain transactions, paid by the sender.
 sif_tx_fee_in_rowan = 1 * 10**17
@@ -18,8 +19,6 @@ sif_tx_burn_fee_in_ceth = 1
 # {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"...","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
 sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
 
-ROWAN = sifchain.ROWAN
-
 # Fee for transfering ERC20 tokens from an ethereum account to sif account (approve + lock). This is the maximum cost
 # for a single transfer (regardless of amount) that the sender needs to have in his account in order for transaction to
 # be processed. This value was determined experimentally with hardhat. Typical effective fee is 210542 GWEI per
@@ -28,11 +27,11 @@ max_eth_transfer_fee = 10000000 * eth.GWEI
 
 
 def get_sif_tx_fees(ctx):
-    return {rowan: sif_tx_fee_in_rowan}
+    return {ROWAN: sif_tx_fee_in_rowan}
 
 
 def get_sif_burn_fees(ctx):
-    return {rowan: sif_tx_burn_fee_in_rowan, ctx.ceth_symbol: sif_tx_burn_fee_in_ceth}
+    return {ROWAN: sif_tx_burn_fee_in_rowan, ctx.ceth_symbol: sif_tx_burn_fee_in_ceth}
 
 
 def send_from_sifchain_to_sifchain(ctx: test_utils.EnvCtx, from_addr: cosmos.Address, to_addr: cosmos.Address,
@@ -43,7 +42,7 @@ def send_from_sifchain_to_sifchain(ctx: test_utils.EnvCtx, from_addr: cosmos.Add
     ctx.send_from_sifchain_to_sifchain(from_addr, to_addr, amounts)
     from_expected_balance = cosmos.balance_sub(from_balance_before, amounts)
     to_expected_balance = cosmos.balance_add(to_balance_before, amounts)
-    to_balance_after = ctx.wait_for_sif_balance_change(to_addr, to_balance_before, expected_balance=to_expected_balance)
+    to_balance_after = ctx.sifnode.wait_for_balance_change(to_addr, to_balance_before, expected_balance=to_expected_balance)
     from_balance_after = cosmos.balance_sub(from_balance_before, amounts)
     assert to_balance_after == ctx.get_sifchain_balance(to_addr)
     assert cosmos.balance_equal(from_balance_after, from_expected_balance)

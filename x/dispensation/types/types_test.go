@@ -26,12 +26,12 @@ func TestQueryAllDistributionsResponse(t *testing.T) {
 func TestQueryRecordsByDistributionNameResponse(t *testing.T) {
 
 	d := types.DistributionRecord{
-		DistributionStatus:          types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED,
-		DistributionType:            types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
-		DistributionName:            types.AttributeKeyDistributionName,
-		RecipientAddress:             types.AttributeKeyDistributionRecordAddress,
-		Coins:                       sdk.Coins{sdk.Coin{Denom: "rowan",
-		Amount: sdk.NewInt(20)}},
+		DistributionStatus: types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED,
+		DistributionType:   types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		DistributionName:   types.AttributeKeyDistributionName,
+		RecipientAddress:   types.AttributeKeyDistributionRecordAddress,
+		Coins: sdk.Coins{sdk.Coin{Denom: "rowan",
+			Amount: sdk.NewInt(20)}},
 		DistributionStartHeight:     int64(0),
 		DistributionCompletedHeight: int64(10),
 		AuthorizedRunner:            types.AttributeKeyDistributionRunner,
@@ -46,12 +46,12 @@ func TestQueryRecordsByDistributionNameResponse(t *testing.T) {
 func TestQueryRecordsByRecipientAddrResponse(t *testing.T) {
 
 	d := types.DistributionRecord{
-		DistributionStatus:          types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED,
-		DistributionType:            types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
-		DistributionName:            types.AttributeKeyDistributionName,
-		RecipientAddress:            types.AttributeKeyDistributionRecordAddress,
-		Coins:                       sdk.Coins{sdk.Coin{Denom: "rowan",
-		Amount: sdk.NewInt(20)}},
+		DistributionStatus: types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED,
+		DistributionType:   types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		DistributionName:   types.AttributeKeyDistributionName,
+		RecipientAddress:   types.AttributeKeyDistributionRecordAddress,
+		Coins: sdk.Coins{sdk.Coin{Denom: "rowan",
+			Amount: sdk.NewInt(20)}},
 		DistributionStartHeight:     int64(0),
 		DistributionCompletedHeight: int64(10),
 		AuthorizedRunner:            types.AttributeKeyDistributionRunner,

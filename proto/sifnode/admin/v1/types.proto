@@ -14,6 +14,7 @@ enum AdminType {
   TOKENREGISTRY = 2;
   ETHBRIDGE = 3;
   ADMIN = 4;
+  MARGIN = 5;
 }
 
 message AdminAccount {

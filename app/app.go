@@ -1,9 +1,7 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package app
 
 import (
+	"github.com/cosmos/cosmos-sdk/x/authz"
 	"io"
 	"math/big"
 	"net/http"
@@ -52,6 +50,9 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -120,51 +121,59 @@ var (
 	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
 
 	ModuleBasics = module.NewBasicManager(
-		genutil.AppModuleBasic{},
-		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		capability.AppModuleBasic{},
-		crisis.AppModuleBasic{},
-		feegrantmodule.AppModuleBasic{},
-		staking.AppModuleBasic{},
-		mint.AppModuleBasic{},
-		distr.AppModuleBasic{},
-		gov.NewAppModuleBasic(
-			paramsclient.ProposalHandler,
-			distrclient.ProposalHandler,
-			upgradeclient.ProposalHandler,
-			ibcclientclient.UpdateClientProposalHandler,
-			ibcclientclient.UpgradeProposalHandler,
-		),
-		params.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		slashing.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ibctransferoverride.AppModuleBasic{},
+		append(
+			[]module.AppModuleBasic{
+				genutil.AppModuleBasic{},
+				auth.AppModuleBasic{},
+				bank.AppModuleBasic{},
+				capability.AppModuleBasic{},
+				crisis.AppModuleBasic{},
+				feegrantmodule.AppModuleBasic{},
+				authzmodule.AppModuleBasic{},
+				staking.AppModuleBasic{},
+				mint.AppModuleBasic{},
+				distr.AppModuleBasic{},
+				gov.NewAppModuleBasic(
+					paramsclient.ProposalHandler,
+					distrclient.ProposalHandler,
+					upgradeclient.ProposalHandler,
+					ibcclientclient.UpdateClientProposalHandler,
+					ibcclientclient.UpgradeProposalHandler,
+				),
+				params.AppModuleBasic{},
+				upgrade.AppModuleBasic{},
+				slashing.AppModuleBasic{},
+				evidence.AppModuleBasic{},
+				ibc.AppModuleBasic{},
+				ibctransferoverride.AppModuleBasic{},
 
-		clp.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		ethbridge.AppModuleBasic{},
-		dispensation.AppModuleBasic{},
-		tokenregistry.AppModuleBasic{},
-		admin.AppModuleBasic{},
-		vesting.AppModuleBasic{},
+				clp.AppModuleBasic{},
+				oracle.AppModuleBasic{},
+				ethbridge.AppModuleBasic{},
+				dispensation.AppModuleBasic{},
+				tokenregistry.AppModuleBasic{},
+				admin.AppModuleBasic{},
+				vesting.AppModuleBasic{},
+			},
+			FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModuleBasics()...,
+		)...,
 	)
 
-	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:     nil,
-		distrtypes.ModuleName:          nil,
-		minttypes.ModuleName:           {authtypes.Minter},
-		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
-		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		sctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
-		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
-		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
-		dispensation.ModuleName:        {authtypes.Minter},
-	}
+	maccPerms = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getMaccPerms(
+		map[string][]string{
+			authtypes.FeeCollectorName:     nil,
+			distrtypes.ModuleName:          nil,
+			minttypes.ModuleName:           {authtypes.Minter},
+			stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+			stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+			govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
+			ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+			sctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
+			ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
+			clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
+			dispensation.ModuleName:        {authtypes.Minter},
+		},
+	)
 )
 
 func init() {
@@ -183,6 +192,7 @@ var (
 
 type SifchainApp struct {
 	*baseapp.BaseApp
+	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SifchainApp
 	legacyAmino       *codec.LegacyAmino //nolint
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
@@ -210,6 +220,7 @@ type SifchainApp struct {
 	TransferKeeper   ibctransferkeeper.Keeper
 	PortKeeper       ibcmock.PortKeeper
 	FeegrantKeeper   feegrantkeeper.Keeper
+	AuthzKeeper      authzkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -248,7 +259,7 @@ func NewSifAppWithBlacklist(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
-	keys := sdk.NewKVStoreKeys(
+	storeKeys := []string{
 		authtypes.StoreKey,
 		banktypes.StoreKey,
 		stakingtypes.StoreKey,
@@ -269,7 +280,10 @@ func NewSifAppWithBlacklist(
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
 		admintypes.StoreKey,
-	)
+		authzkeeper.StoreKey,
+	}
+	storeKeys = append(storeKeys, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getStoreKeys()...)
+	keys := sdk.NewKVStoreKeys(storeKeys...)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 	var app = &SifchainApp{
@@ -317,6 +331,11 @@ func NewSifAppWithBlacklist(
 		app.GetSubspace(banktypes.ModuleName),
 		addrs,
 	)
+	app.AuthzKeeper = authzkeeper.NewKeeper(
+		keys[authzkeeper.StoreKey],
+		appCodec,
+		app.MsgServiceRouter(),
+	)
 
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
 		appCodec, keys[feegrant.StoreKey], app.AccountKeeper,
@@ -361,16 +380,8 @@ func NewSifAppWithBlacklist(
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 	app.AdminKeeper = adminkeeper.NewKeeper(appCodec, keys[admintypes.StoreKey])
 	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey], app.AdminKeeper)
-	app.ClpKeeper = clpkeeper.NewKeeper(
-		appCodec,
-		keys[clptypes.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.TokenRegistryKeeper,
-		app.AdminKeeper,
-		app.MintKeeper,
-		app.GetSubspace(clptypes.ModuleName),
-	)
+
+	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setKeepers(app, keys, &appCodec)
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -457,7 +468,7 @@ func NewSifAppWithBlacklist(
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
-	app.mm = module.NewManager(
+	appModules := []module.AppModule{
 		genutil.NewAppModule(
 			app.AccountKeeper,
 			app.StakingKeeper,
@@ -477,6 +488,7 @@ func NewSifAppWithBlacklist(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
+		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
@@ -486,11 +498,15 @@ func NewSifAppWithBlacklist(
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
 		admin.NewAppModule(app.AdminKeeper, &appCodec),
-	)
+	}
+	appModules = append(appModules, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getAppModules(app, &appCodec)...)
+	app.mm = module.NewManager(appModules...)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(
+	// NOTE: staking module is required if HistoricalEntries param > 0
+	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
+	orderBeginBlockers := []string{
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -498,20 +514,62 @@ func NewSifAppWithBlacklist(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		govtypes.ModuleName,
+		crisistypes.ModuleName,
+		genutiltypes.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		ibchost.ModuleName,
-		dispensation.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		clptypes.ModuleName,
-	)
-	app.mm.SetOrderEndBlockers(
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
+		dispensation.ModuleName,
+		admintypes.ModuleName,
+	}
+	orderBeginBlockers = append(orderBeginBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderBeginBlockers()...)
+	app.mm.SetOrderBeginBlockers(orderBeginBlockers...)
+
+	orderEndBlockers := []string{
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
+		capabilitytypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		minttypes.ModuleName,
+		genutiltypes.ModuleName,
+		evidencetypes.ModuleName,
+		authz.ModuleName,
 		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		clptypes.ModuleName,
-	)
+		ethbridgetypes.ModuleName,
+		tokenregistrytypes.ModuleName,
+		oracletypes.ModuleName,
+		admintypes.ModuleName,
+	}
+	orderEndBlockers = append(orderEndBlockers, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderEndBlockers()...)
+	app.mm.SetOrderEndBlockers(orderEndBlockers...)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
-	app.mm.SetOrderInitGenesis(
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
+	orderInitGenesis := []string{
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -521,18 +579,27 @@ func NewSifAppWithBlacklist(
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
-		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
-		ibctransfertypes.ModuleName,
+		authz.ModuleName,
 		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		disptypes.ModuleName,
+		transferModule.Name(),
 		tokenregistrytypes.ModuleName,
 		admintypes.ModuleName,
 		clptypes.ModuleName,
+		ethbridgetypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-	)
+	}
+	orderInitGenesis = append(orderInitGenesis, FEATURE_TOGGLE_MARGIN_CLI_ALPHA_getOrderInitGenesis()...)
+	app.mm.SetOrderInitGenesis(orderInitGenesis...)
+
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(app.configurator)
@@ -541,9 +608,10 @@ func NewSifAppWithBlacklist(
 	app.MountTransientStores(tkeys)
 	app.MountMemoryStores(memKeys)
 	anteHandler, err := sifchainAnte.NewAnteHandler(
-		ante.HandlerOptions{
+		sifchainAnte.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
+			StakingKeeper:   app.StakingKeeper,
 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeegrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
@@ -719,5 +787,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
+	FEATURE_TOGGLE_MARGIN_CLI_ALPHA_setParamsKeeper(&paramsKeeper)
 	return paramsKeeper
 }
