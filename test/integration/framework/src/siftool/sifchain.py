@@ -218,16 +218,20 @@ class Sifnoded:
         assert result == expected
         return result
 
-    def keys_add(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
-        moniker = self.__fill_in_moniker(moniker)
+    def _keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Tuple[JsonDict, Iterable[str]]:
         if mnemonic is None:
             args = ["keys", "add", moniker] + self._home_args() + self._keyring_backend_args()
             res = self.sifnoded_exec(args, stdin=["y"])
-            _unused_mnemonic = stderr(res).splitlines()[-1].split(" ")
+            mnemonic = stderr(res).splitlines()[-1].split(" ")
         else:
             args = ["keys", "add", moniker, "--recover"] + self._home_args() + self._keyring_backend_args()
             res = self.sifnoded_exec(args, stdin=[" ".join(mnemonic)])
         account = exactly_one(yaml_load(stdout(res)))
+        return account, mnemonic
+
+    def keys_add(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
+        moniker = self.__fill_in_moniker(moniker)
+        account, _ = self._keys_add(moniker, mnemonic=mnemonic)
         return account
 
     def generate_mnemonic(self) -> List[str]:

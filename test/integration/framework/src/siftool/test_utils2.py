@@ -3,7 +3,7 @@
 
 import random
 from typing import Sequence, Any
-from siftool import eth, test_utils, cosmos, sifchain
+from siftool import eth, test_utils, cosmos, sifchain, command
 from siftool.common import *
 from siftool.sifchain import ROWAN
 
@@ -53,3 +53,33 @@ def choose_from(distr: Sequence[Any], rnd: Optional[random.Random] = None) -> in
             distr[i] -= 1
             return i
     assert False
+
+
+class PredefinedWallets:
+    def __init__(self, cmd: command.Command, path: str):
+        self.cmd = cmd
+        self.entries = []
+        self.next_index = 0
+        lines = cmd.read_text_file(os.path.join(path, "siftool", "keys.txt")).splitlines()
+        for i in range(0, len(lines), 2):
+            self.entries.append((lines[i], lines[i + 1].split(" ")))
+
+    def create_acct(self):
+        if self.next_index == len(self.entries):
+            raise StopIteration()
+        addr = self.entries[self.next_index][0]
+        self.next_index += 1
+        return addr
+
+    @staticmethod
+    def create(cmd: command.Command, count: int, path: str):
+        sifnoded = sifchain.Sifnoded(cmd, home=path)
+        entries = []
+        for i in range(count):
+            account, mnemonic = sifnoded._keys_add("test-{}".format(i))
+            addr = account["address"]
+            entries.append(addr)
+            entries.append(" ".join(mnemonic))
+        path = os.path.join(path, "siftool")
+        cmd.mkdir(path)
+        cmd.write_text_file(os.path.join(path, "keys.txt"), joinlines(entries))
