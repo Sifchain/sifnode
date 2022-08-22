@@ -33,7 +33,7 @@ y = (1 - f) * (1 + r) * x * Y / (x + X)
 fee = f * (1 + r) * x * Y / (x + X)
 ```
 
-## Changing the fee
+## Changing the swap rate fee
 
 The swap fee rate, `f`, in the above formulas must be updatable with a regular Cosmos transaction
 however the transaction must be signed by the PMTP/rewards admin key. The swap rate fee must
@@ -72,6 +72,6 @@ sifnoded q clp swap-fee-rate --output json
 	"swap_fee_rate": "0.010000000000000000"
 }
 ```
-### References
+## References
 
 Background on the use of fixed rate fee swap formula for asymmetric adds https://hackmd.io/NjvaZY1qQiS17s_uEgZmTw?both
