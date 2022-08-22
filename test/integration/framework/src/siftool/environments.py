@@ -177,7 +177,11 @@ class SifnodedEnvironment:
             self.running_processes.append(process)
             self.open_log_files.append(log_file)
 
-        # We need to wait a bit otherwise the balances might not show up yet
+        # We need to wait a bit otherwise the balances might not show up yet.
+        # Waiting for second block might be needed in some cases such as for sending transactions when there are 100k
+        # wallets (symptom: "sifnoded status" and "sifnoded query" would work, but "sifnoded tx" would get
+        # "Error: post failed: Post "http://...": EOF".
+        sifnoded0.wait_for_last_transaction_to_be_mined()
         sifnoded0.wait_for_last_transaction_to_be_mined()
 
         for node_info in other_validators:
