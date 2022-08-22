@@ -8,22 +8,28 @@ the amount of received token.
 Due to ratio shifting the formula depends on whether the swap is from Rowan or to Rowan.
 
 In the following formulas:
+
+```
 X - Input balance
 Y - Output balance
 x - Input amount
 y - Output amount
 r - Current ratio shifting running rate
 f - Swap fee rate
+```
 
 ### Swapping to Rowan:
 
+```
 y = (1 - f) * x * Y / ((x + X)(1 + r))
 fee = f * x * Y / ((x + X)(1 + r))
-
+```
 ### Swapping rom Rowan:
 
+```
 y = (1 - f) * (1 + r) * x * Y / (x + X)
 fee = f * (1 + r) * x * Y / (x + X)
+```
 
 ## Examples
 
@@ -128,16 +134,18 @@ which returns:
 ```
 
 The swap amount is as expected:
-
+```
 y = (1 - f) * x * Y  / ((x + X)(1 + r))
   = (1 - 0.003) * 200000000000000 * 2000000000000000000 / ((200000000000000 + 2000000000000000000) * (1 + 0))
   = 199380061993800
+```
 
 And the swap fee is as expected
-
+```
 fee = f * x * Y  / ((x + X)(1 + r))
     = 0.003 * 200000000000000 * 2000000000000000000 / ((200000000000000 + 2000000000000000000) * (1 + 0))
     = 599940005999
+```
 
 7. Check the pool balances
 
@@ -150,10 +158,10 @@ sifnoded q clp pools --output json | jq
  	"native_asset_balance": "1999800619938006200",
  	"external_asset_balance": "2000200000000000000"
  }
-'''
+```
 
 These are as expected:
-
+```
 native_asset_balance = init_native - y
                      = 2000000000000000000 - 199380061993800
                      = 1999800619938006200
@@ -162,7 +170,7 @@ native_asset_balance = init_native - y
 external_asset_balance = init_external + x
                        = 2000000000000000000 + 200000000000000
                        = 2000200000000000000
-
+```
 8. Change the swap fee rate to 0.01
 
 ```bash
@@ -223,7 +231,7 @@ sifnoded tx clp swap \
 ```
 
 Which are as expected:
-
+```
 y = (1 - f) * (1 + r) * x * Y / (x + X)
   = (1 - 0.01) * (1 + 0) * 200000000000000 * 2000200000000000000 / (200000000000000 + 1999800619938006200)
   = 198019738620019
@@ -239,7 +247,7 @@ native_asset_balance = init_native + x
 external_asset_balance = init_external - y
                        = 2000200000000000000 - 198019738620019
                        = 2000001980261379981
-
+```
 10. Try to change swap fee > 1. This should fail:
 
 ```
