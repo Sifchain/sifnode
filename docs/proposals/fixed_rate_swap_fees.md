@@ -41,6 +41,8 @@ satisfy `0 <= f <= 1` otherwise the transaction is rejected.
 
 ## Events
 
+There are no new events or updates to existing events.
+
 ## CLI
 
 CLI options for setting and querying the swap fee rate must be implemented.
