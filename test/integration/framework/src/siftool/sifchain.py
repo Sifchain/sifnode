@@ -459,7 +459,8 @@ class Sifnoded:
     # If you are calling this for several tokens, you need to call it synchronously
     # (i.e. wait_for_current_block_to_be_mined(), or broadcast_mode="block"). Otherwise this will silently fail.
     # This is used in test_many_pools_and_liquidity_providers.py
-    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address, broadcast_mode=None
+    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address,
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None
     ) -> JsonDict:
         # Check that we have the private key in test keyring. This will throw an exception if we don't.
         assert self.keys_show(from_sif_addr)
@@ -469,6 +470,7 @@ class Sifnoded:
         with self._with_temp_json_file(token_data) as tmp_registry_json:
             args = ["tx", "tokenregistry", "register", tmp_registry_json, "--from", from_sif_addr, "--output",
                 "json"] + self._home_args() + self._keyring_backend_args() + self._chain_id_args() + \
+                self._account_number_and_sequence_args(account_seq) + \
                 self._node_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
                 self._yes_args()
             res = self.sifnoded_exec(args)
@@ -479,6 +481,15 @@ class Sifnoded:
             if res["raw_log"].startswith("failed to execute message"):
                 raise Exception(res["raw_log"])
             return res
+
+    def token_registry_register_batch(self, from_sif_addr: cosmos.Address, entries: Iterable[TokenRegistryParams]):
+        account_number, account_sequence = self.get_acct_seq(from_sif_addr)
+        for entry in entries:
+            res = self.token_registry_register(entry, from_sif_addr, account_seq=(account_number, account_sequence))
+            check_raw_log(res)
+            account_sequence += 1
+        self.wait_for_last_transaction_to_be_mined()
+        assert set(e["denom"] for e in self.query_tokenregistry_entries()) == set(e["denom"] for e in entries)
 
     def query_tokenregistry_entries(self):
         args = ["query", "tokenregistry", "entries"] + self._node_args() + self._chain_id_args()
@@ -790,15 +801,28 @@ class Sifnoded:
         return all_results
 
     def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int,
-        broadcast_mode: Optional[str] = None,
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None,
     ) -> JsonDict:
         # For more examples see ticket #2470, e.g.
         args = ["tx", "clp", "create-pool", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
             str(native_amount), "--externalAmount", str(external_amount)] + self._chain_id_args() + \
             self._node_args() + self._fees_args() + self._home_args() + self._keyring_backend_args() + \
+            self._account_number_and_sequence_args(account_seq) + \
             self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
+
+    # Items: (denom, native_amount, external_amount)
+    def create_liquidity_pools_batch(self, clp_admin: cosmos.Address, entries: Iterable[Tuple[str, int, int]]):
+        account_number, account_sequence = self.get_acct_seq(clp_admin)
+        for denom, native_amount, external_amount in entries:
+            # sifnoded.tx_clp_create_pool(sif, denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet)
+            res = self.tx_clp_create_pool(clp_admin, denom, native_amount, external_amount,
+                account_seq=(account_number, account_sequence))
+            check_raw_log(res)
+            account_sequence += 1
+        self.wait_for_last_transaction_to_be_mined()
+        assert set(p["external_asset"]["symbol"] for p in self.query_pools()) == set(e[0] for e in entries)
 
     def tx_clp_add_liquidity(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int, /,
         account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None

@@ -138,11 +138,10 @@ class Test:
         self.prj.pkill()
         time.sleep(1)
 
-        import socket
-        hostname = socket.gethostname()
-        ip_address = socket.gethostbyname(hostname)
+        # import socket
+        # hostname = socket.gethostname()
+        # ip_address = socket.gethostbyname(hostname)
 
-        predefined_wallets = None
         if self.wallets_dir is not None:
             predefined_wallets = test_utils2.PredefinedWallets(self.cmd, self.wallets_dir)
             client_home = self.wallets_dir
@@ -204,6 +203,7 @@ class Test:
 
         _hacking_ui = False
         if _hacking_ui:
+            # Include rowan
             sifnoded.token_registry_register({
                 "decimals": str(ROWAN_DECIMALS),
                 "denom": ROWAN,
@@ -212,40 +212,42 @@ class Test:
             }, sif, broadcast_mode="block")
             sifnoded.wait_for_last_transaction_to_be_mined()
 
-        for denom in self.tokens:
-            if _hacking_ui:
-                entry = {
-                    "decimals": 18,
-                    "denom": denom,
-                    "base_denom": denom,
-                    "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
-                }
-            else:
-                entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
-            res = sifnoded.token_registry_register(entry, sif, broadcast_mode="block")  # Must be run synchronously! (if not, only the first will work)
-            sifchain.check_raw_log(res)
-            # sifnoded.wait_for_last_transaction_to_be_mined()
-        if self.disable_assertions:
-            act = set(e["denom"] for e in sifnoded.query_tokenregistry_entries())
-            exp = set(self.tokens)
-            self.assert_set_equal("token registry entries mismatch", act, exp)
-        else:
-            assert set(e["denom"] for e in sifnoded.query_tokenregistry_entries()) == set(self.tokens)
+        # account_number, account_sequence = sifnoded.get_acct_seq(sif)
+        # for denom in self.tokens:
+        #     if _hacking_ui:
+        #         entry = {
+        #             "decimals": 18,
+        #             "denom": denom,
+        #             "base_denom": denom,
+        #             "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
+        #         }
+        #     else:
+        #         entry = sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
+        #     # res = sifnoded.token_registry_register(entry, sif, broadcast_mode="block")  # Must be run synchronously! (if not, only the first will work)
+        #     res = sifnoded.token_registry_register(entry, sif, account_seq=(account_number, account_sequence))  # Must be run synchronously! (if not, only the first will work)
+        #     sifchain.check_raw_log(res)
+        #     account_sequence += 1
+        # sifnoded.wait_for_last_transaction_to_be_mined()
+        # if self.disable_assertions:
+        #     act = set(e["denom"] for e in sifnoded.query_tokenregistry_entries())
+        #     exp = set(self.tokens)
+        #     self.assert_set_equal("token registry entries mismatch", act, exp)
+        # else:
+        #     assert set(e["denom"] for e in sifnoded.query_tokenregistry_entries()) == set(self.tokens)
+        make_entry_v1 = lambda denom: sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
+        make_entry_v2 = lambda denom: {
+            "decimals": 18,
+            "denom": denom,
+            "base_denom": denom,
+            "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
+        }
+        sifnoded.token_registry_register_batch(sif,
+            tuple((make_entry_v2 if _hacking_ui else make_entry_v1)(denom) for denom in self.tokens))
 
-        # Set up liquidity pools. We create them symmetrically (`native_amount == externam_amount`).
+        # Set up liquidity pools. We create them symmetrically (`native_amount == external_amount`).
         clp_admin = sif
-        for denom in self.tokens:
-            # sifnoded.tx_clp_create_pool(sif, denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet)
-            res = sifnoded.tx_clp_create_pool(clp_admin, denom, self.amount_of_denom_per_wallet,
-                self.amount_of_denom_per_wallet, broadcast_mode="block")
-            sifchain.check_raw_log(res)
-            # sifnoded.wait_for_last_transaction_to_be_mined()
-        if self.disable_assertions:
-            act = set(p["external_asset"]["symbol"] for p in sifnoded.query_pools())
-            exp = set(self.tokens)
-            self.assert_set_equal("liquidity pool mismatch", act, exp)
-        else:
-            assert set(p["external_asset"]["symbol"] for p in sifnoded.query_pools()) == set(self.tokens)
+        sifnoded.create_liquidity_pools_batch(clp_admin,
+            tuple((denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet) for denom in self.tokens))
 
         # Set up liquidity providers. We create them symmetrically (`native_amount == externam_amount`). The ratio of
         # native vs. external amount has to be the same as for corresponding pool (within certain rounding tolerance).
