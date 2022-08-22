@@ -13,15 +13,18 @@ linters:
 #    - gofmt
 #    - goimports
     - golint
+#    - revive : this is replacement for golint above which is deprecated
     - gosec
     - govet
     - ineffassign
 #    - interfacer
+# this is deprecated/obsolete
     - maligned
     - misspell
     - nakedret
     - prealloc
     - scopelint
+#    - exportloopref : this is replacement for scopelint which is deprecated
     - staticcheck
     - structcheck
     - stylecheck
@@ -41,12 +44,23 @@ issues:
     - text: "comment on exported var"
       linters:
         - golint
+    - text: "don't use underscores in Go names"
+      linters:
+        - golint
     - text: "don't use an underscore in package name"
       linters:
         - golint
     - text: "ST1003:"
       linters:
         - stylecheck
+    - text: "SA1019:"
+      linters:
+        - staticcheck
+# Not a real issue here, so ignore
+    - path: x/clp/keeper/pureCalculation_test.go
+      text: "G113:"
+      linters:
+        - gosec
 
 linters-settings:
   goconst:
