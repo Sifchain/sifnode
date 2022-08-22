@@ -16,7 +16,7 @@ Y - Output balance
 x - Input amount
 y - Output amount
 r - Current ratio shifting running rate
-f - Swap fee rate. This must satisfy 0 <= f <= 1
+f - Swap fee rate. This must satisfy `0 =< f =< 1`
 ```
 
 ### Swapping to Rowan:
@@ -26,7 +26,7 @@ y = (1 - f) * x * Y / ((x + X)(1 + r))
 fee = f * x * Y / ((x + X)(1 + r))
 ```
 
-### Swapping rom Rowan:
+### Swapping from Rowan:
 
 ```
 y = (1 - f) * (1 + r) * x * Y / (x + X)
@@ -35,9 +35,9 @@ fee = f * (1 + r) * x * Y / (x + X)
 
 ## Changing the fee
 
-The value of `f` in the above formulas must be updatable with a regular Cosmos transaction
-however the transaction must be signed by the PMTP/rewards admin key. The value of `f` must
-satisfy `0 <= f <= 1` otherwise the transaction is rejected.
+The swap fee rate, `f`, in the above formulas must be updatable with a regular Cosmos transaction
+however the transaction must be signed by the PMTP/rewards admin key. The swap rate fee must
+satisfy `0 =< f =< 1` otherwise the transaction is rejected.
 
 ## Events
 
@@ -49,7 +49,7 @@ CLI options for setting and querying the swap fee rate must be implemented.
 
 ### Setting
 
-The CLI should validate that the value of `f` satisfies `0 <= f <= 1`
+The CLI should validate that the value of the swap rate fee satisfies `0 =< f =< 1`
 
 ```bash
 sifnoded tx clp set-swap-fee-rate \
