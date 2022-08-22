@@ -239,7 +239,7 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
-func CalcLiquidityFee(X, x, Y sdk.Uint, swapFeeRate, pmtpRunningRate sdk.Dec) sdk.Uint {
+func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
@@ -252,9 +252,14 @@ func CalcLiquidityFee(X, x, Y sdk.Uint, swapFeeRate, pmtpRunningRate sdk.Dec) sd
 	var fee big.Rat
 	f := DecToRat(&swapFeeRate)
 	fee.Mul(&f, &rawXYK)
-	pmtp := DecToRat(&pmtpRunningRate)
-	pmtp.Add(&pmtp, big.NewRat(1, 1))
-	fee.Quo(&fee, &pmtp)
+
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
+
+	if toRowan {
+		fee.Quo(&fee, &pmtpFac) // res = y / pmtpFac
+	} else {
+		fee.Mul(&fee, &pmtpFac) // res = y * pmtpFac
+	}
 
 	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
 }
