@@ -37,10 +37,8 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
-	receiveAccount := keeper.GetCrossChainFeeReceiverAccount(ctx)
-
 	return &types.GenesisState{
-		CrosschainFeeReceiveAccount: receiveAccount.String(),
+		CrosschainFeeReceiveAccount: keeper.GetCrossChainFeeReceiverAccount(ctx).String(),
 		EthereumLockBurnSequence:    keeper.GetEthereumLockBurnSequences(ctx),
 		GlobalNonce:                 keeper.GetGlobalSequences(ctx),
 		GlobalNonceBlockNumber:      keeper.GetGlobalSequenceToBlockNumbers(ctx),
