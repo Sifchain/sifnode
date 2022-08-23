@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	. "github.com/Sifchain/sifnode/x/oracle/types"
 
 	"math/rand"
 )
@@ -80,10 +80,10 @@ func TestInitGenesisWithExportGenesisNonEmptyEthereumLockBurnSequence(t *testing
 
 	testValidatorAddress := validators[0]
 
-	expectedEvmNetworkToLockBurnSequence := make(map[oracletypes.NetworkDescriptor]uint64)
-	expectedEvmNetworkToLockBurnSequence[oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET] = rand.Uint64()
-	expectedEvmNetworkToLockBurnSequence[oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE] = rand.Uint64()
-	expectedEvmNetworkToLockBurnSequence[oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT] = rand.Uint64()
+	expectedEvmNetworkToLockBurnSequence := make(map[NetworkDescriptor]uint64)
+	expectedEvmNetworkToLockBurnSequence[NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET] = rand.Uint64()
+	expectedEvmNetworkToLockBurnSequence[NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE] = rand.Uint64()
+	expectedEvmNetworkToLockBurnSequence[NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT] = rand.Uint64()
 
 	for networkDescriptor, sequence := range expectedEvmNetworkToLockBurnSequence {
 		oldKeeper.SetEthereumLockBurnSequence(ctx1, networkDescriptor, testValidatorAddress, sequence)
@@ -97,37 +97,87 @@ func TestInitGenesisWithExportGenesisNonEmptyEthereumLockBurnSequence(t *testing
 }
 
 func TestInitGenesisWithExportGenesisEthereumLockBurnSequenceMultipleValidators(t *testing.T) {
-	ctx1, oldKeeper, _, _, _, _, _, validators := test.CreateTestKeepers(t, 0.7, []int64{3, 3, 2}, "")
+	ctx1, oldKeeper, _, _, _, _, _, validators := test.CreateTestKeepers(
+		t,
+		0.7,
+		[]int64{3, 3, 2, 3, 5},
+		"")
 	ctx2, newKeeper := test.CreateTestAppEthBridge(false)
 
 	for _, validator := range validators {
-		oldKeeper.SetEthereumLockBurnSequence(ctx1, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, validator, rand.Uint64())
-		oldKeeper.SetEthereumLockBurnSequence(ctx1, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, validator, rand.Uint64())
+		oldKeeper.SetEthereumLockBurnSequence(ctx1,
+			NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE,
+			validator,
+			rand.Uint64())
+		oldKeeper.SetEthereumLockBurnSequence(ctx1,
+			NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT,
+			validator,
+			rand.Uint64())
 	}
 
 	exportedState := ethbridge.ExportGenesis(ctx1, oldKeeper)
 	ethbridge.InitGenesis(ctx2, newKeeper, *exportedState)
 
 	assert.Equal(t, oldKeeper.GetEthereumLockBurnSequences(ctx1), newKeeper.GetEthereumLockBurnSequences(ctx2))
+	assert.Equal(t, len(validators), len(newKeeper.GetEthereumLockBurnSequences(ctx2)))
 }
 
-func TestInitGenesisWithExportGenesisDataGlobalSequenceSuccess(t *testing.T) {
+func TestInitGenesisWithExportGenesisGlobalSequenceMultipleNetwork(t *testing.T) {
 	ctx1, oldKeeper := test.CreateTestAppEthBridge(false)
 	ctx2, newKeeper := test.CreateTestAppEthBridge(false)
 
-	// TODO: Cleanup
-	oldKeeper.UpdateGlobalSequence(ctx1, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET, 5)
-	oldKeeper.UpdateGlobalSequence(ctx1, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET, 34)
-	oldKeeper.UpdateGlobalSequence(ctx1, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET, 51)
+	expectedNetworks := []NetworkDescriptor{
+		NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET,
+		NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE,
+		NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT}
 
-	oldKeeper.UpdateGlobalSequence(ctx1, test.NetworkDescriptor, 13)
-	oldKeeper.UpdateGlobalSequence(ctx1, test.NetworkDescriptor, 53)
+	for _, network := range expectedNetworks {
+		for j, last := 0, uint64(0); j < 5; j++ {
+			oldKeeper.UpdateGlobalSequence(ctx1, network, last)
+			last += 1000
+		}
+	}
 
 	exportedState := ethbridge.ExportGenesis(ctx1, oldKeeper)
 	ethbridge.InitGenesis(ctx2, newKeeper, *exportedState)
 
 	assert.Equal(t, oldKeeper.GetGlobalSequences(ctx1), newKeeper.GetGlobalSequences(ctx2))
+	assert.Equal(t, len(expectedNetworks), len(newKeeper.GetGlobalSequences(ctx2)))
+}
 
+func TestInitGenesisWithExportGenesisGlobalSequenceToBlockNumberSingleNetwork(t *testing.T) {
+	ctx1, oldKeeper := test.CreateTestAppEthBridge(false)
+	ctx2, newKeeper := test.CreateTestAppEthBridge(false)
+
+	// TODO: Cleanup
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 15, 25)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 16, 34)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 17, 54)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 18, 68)
+
+	exportedState := ethbridge.ExportGenesis(ctx1, oldKeeper)
+	ethbridge.InitGenesis(ctx2, newKeeper, *exportedState)
+	assert.Equal(t, oldKeeper.GetGlobalSequenceToBlockNumbers(ctx1), newKeeper.GetGlobalSequenceToBlockNumbers(ctx2))
+}
+
+func TestInitGenesisWithExportGenesisGlobalSequenceToBlockNumberMultipleNetwork(t *testing.T) {
+	ctx1, oldKeeper := test.CreateTestAppEthBridge(false)
+	ctx2, newKeeper := test.CreateTestAppEthBridge(false)
+
+	// TODO: Cleanup
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 15, 25)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 16, 34)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 17, 54)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 18, 68)
+
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 11, 65)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 12, 87)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 13, 99)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 14, 266)
+
+	exportedState := ethbridge.ExportGenesis(ctx1, oldKeeper)
+	ethbridge.InitGenesis(ctx2, newKeeper, *exportedState)
+	assert.Equal(t, oldKeeper.GetGlobalSequenceToBlockNumbers(ctx1), newKeeper.GetGlobalSequenceToBlockNumbers(ctx2))
 }
 
 func createState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) string {
