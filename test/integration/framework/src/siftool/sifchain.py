@@ -795,7 +795,7 @@ class Sifnoded:
             next_key = res["pagination"]["next_key"]
             if next_key is None:
                 break
-            page_key = base64.b64decode(next_key)
+            page_key = base64.b64decode(next_key).decode("UTF-8")
             if height is None:
                 height = int(res["height"])
         return all_results
