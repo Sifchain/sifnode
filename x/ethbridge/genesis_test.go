@@ -119,7 +119,7 @@ func TestInitGenesisWithExportGenesisEthereumLockBurnSequenceMultipleValidators(
 	ethbridge.InitGenesis(ctx2, newKeeper, *exportedState)
 
 	assert.Equal(t, oldKeeper.GetEthereumLockBurnSequences(ctx1), newKeeper.GetEthereumLockBurnSequences(ctx2))
-	assert.Equal(t, len(validators), len(newKeeper.GetEthereumLockBurnSequences(ctx2)))
+	assert.Equal(t, len(validators)*2, len(newKeeper.GetEthereumLockBurnSequences(ctx2)))
 }
 
 func TestInitGenesisWithExportGenesisGlobalSequenceMultipleNetwork(t *testing.T) {
