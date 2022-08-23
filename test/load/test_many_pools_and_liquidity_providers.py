@@ -181,12 +181,11 @@ class Test:
         env.start()
 
         self.env = env
-        self.sifnoded = env._sifnoded_for(env.node_info[0])
+        sifnoded = env._sifnoded_for(env.node_info[0])
         sifnoded_client = sifchain.Sifnoded(self.cmd, home=client_home, node=sifchain.format_node_url(
             self.env.node_info[0]["host"], self.env.node_info[0]["ports"]["rpc"]), chain_id=env.chain_id)
-        self.sifnoded_client = sifnoded_client
+        sifnoded_client.get_balance_default_retries = 5
 
-        sifnoded = self.sifnoded
         sif = self.env.node_info[0]["admin_addr"]
 
         # Add tokens to token registry. The minimum required permissions are  CLP.
@@ -235,8 +234,11 @@ class Test:
                     self.amount_of_liquidity_added_by_wallet, account_seq=(account_number, account_sequence))
                 sifchain.check_raw_log(res)
                 account_sequence += 1
-        self.sifnoded_client.wait_for_last_transaction_to_be_mined()
+        sifnoded_client.wait_for_last_transaction_to_be_mined()
         self.check_actual_liquidity_providers(sifnoded_client, clp_admin, wallets)
+
+        self.sifnoded = sifnoded
+        self.sifnoded_client = sifnoded_client
 
     def run(self):
         sifnoded = self.sifnoded

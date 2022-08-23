@@ -181,7 +181,7 @@ class Sifnoded:
         # Some transactions such as adding tokens to token registry or adding liquidity pools need a lot of gas and
         # will exceed the default implicit value of 200000.  According to Brandon the problem is in the code that loops
         # over existing entries resulting in gas that is proportional to the number of existing entries.
-        self.high_gas = 200000 * 100
+        self.high_gas = 200000 * 10000
 
         # Firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
         # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
@@ -194,6 +194,7 @@ class Sifnoded:
         self.broadcast_mode = None
         # self.sifnoded_burn_gas_cost = 16 * 10**10 * 393000  # see x/ethbridge/types/msgs.go for gas
         # self.sifnoded_lock_gas_cost = 16 * 10**10 * 393000
+        # TODO Rename, this is now shared among all callers of _paged_read()
         self.get_balance_default_retries = 0
 
         # Defaults
@@ -773,7 +774,7 @@ class Sifnoded:
                         raise e
                     else:
                         retries_left -= 1
-                        log.error("Error reading query result, retries left: {}".format(retries_left))
+                        log.error("Error reading query result for '{}' ({}), retries left: {}".format(repr(base_args), repr(e), retries_left))
                         time.sleep(delay_on_error)
             res = json.loads(stdout(res))
             next_key = res["pagination"]["next_key"]
