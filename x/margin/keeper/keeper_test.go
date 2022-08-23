@@ -426,93 +426,93 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 	}
 
 	updateMTPHealthTests := []struct {
-		name             string
-		denom            string
-		decimals         int64
-		to               string
-		position         types.Position
-		collateralAmount sdk.Uint
-		custodyAmount    sdk.Uint
-		liabilities      sdk.Uint
-		interestUnpaid   sdk.Uint
-		health           sdk.Dec
-		err              error
-		errString        error
-		err2             error
-		errString2       error
+		name                     string
+		denom                    string
+		decimals                 int64
+		to                       string
+		position                 types.Position
+		collateralAmount         sdk.Uint
+		custodyAmount            sdk.Uint
+		liabilities              sdk.Uint
+		interestUnpaidCollateral sdk.Uint
+		health                   sdk.Dec
+		err                      error
+		errString                error
+		err2                     error
+		errString2               error
 	}{
 		{
-			name:             "denom not registered does not throw an error as it does rely on token registry",
-			denom:            "unregistred_denom",
-			decimals:         18,
-			to:               "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			position:         types.Position_LONG,
+			name:                     "denom not registered does not throw an error as it does rely on token registry",
+			denom:                    "unregistred_denom",
+			decimals:                 18,
+			to:                       "xxx",
+			collateralAmount:         sdk.NewUint(1000),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "not enough received asset tokens to swap does not throw an error as swap result readjusted based on slippage",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "rowan",
-			collateralAmount: sdk.NewUint(1000),
-			custodyAmount:    sdk.NewUint(10000000000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			position:         types.Position_LONG,
+			name:                     "not enough received asset tokens to swap does not throw an error as swap result readjusted based on slippage",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "rowan",
+			collateralAmount:         sdk.NewUint(1000),
+			custodyAmount:            sdk.NewUint(10000000000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "swap with same asset",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "rowan",
-			collateralAmount: sdk.NewUint(1000),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			position:         types.Position_LONG,
+			name:                     "swap with same asset",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "rowan",
+			collateralAmount:         sdk.NewUint(1000),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "swap with different asset",
-			denom:            "rowan",
-			decimals:         9,
-			to:               "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			position:         types.Position_LONG,
+			name:                     "swap with different asset",
+			denom:                    "rowan",
+			decimals:                 9,
+			to:                       "xxx",
+			collateralAmount:         sdk.NewUint(1000),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "insufficient liabilities funds does not throw an error as swap result readjusted based on slippage",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(10000000000000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			position:         types.Position_LONG,
+			name:                     "insufficient liabilities funds does not throw an error as swap result readjusted based on slippage",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			collateralAmount:         sdk.NewUint(1000),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(10000000000000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "mtp invalid",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(0),
-			liabilities:      sdk.NewUint(0),
-			interestUnpaid:   sdk.NewUint(0),
-			health:           sdk.NewDec(1),
-			err2:             types.ErrMTPInvalid,
-			position:         types.Position_UNSPECIFIED,
+			name:                     "mtp invalid",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(0),
+			liabilities:              sdk.NewUint(0),
+			interestUnpaidCollateral: sdk.NewUint(0),
+			health:                   sdk.NewDec(1),
+			err2:                     types.ErrMTPInvalid,
+			position:                 types.Position_UNSPECIFIED,
 		},
 	}
 
@@ -531,7 +531,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
-			mtp.InterestUnpaid = tt.interestUnpaid
+			mtp.InterestUnpaidCollateral = tt.interestUnpaidCollateral
 
 			_, got := marginKeeper.UpdateMTPHealth(ctx, mtp, pool)
 
@@ -662,139 +662,139 @@ func TestKeeper_Repay(t *testing.T) {
 	}
 
 	repayTests := []struct {
-		name             string
-		denom            string
-		decimals         int64
-		to               string
-		address          string
-		position         types.Position
-		collateralAmount sdk.Uint
-		custodyAmount    sdk.Uint
-		liabilities      sdk.Uint
-		interestUnpaid   sdk.Uint
-		health           sdk.Dec
-		repayAmount      sdk.Uint
-		overrideAddress  string
-		err              error
-		errString        error
-		err2             error
-		errString2       error
+		name                     string
+		denom                    string
+		decimals                 int64
+		to                       string
+		address                  string
+		position                 types.Position
+		collateralAmount         sdk.Uint
+		custodyAmount            sdk.Uint
+		liabilities              sdk.Uint
+		interestUnpaidCollateral sdk.Uint
+		health                   sdk.Dec
+		repayAmount              sdk.Uint
+		overrideAddress          string
+		err                      error
+		errString                error
+		err2                     error
+		errString2               error
 	}{
 		{
-			name:             "denom not registered does not throw an error as it does rely on token registry",
-			denom:            "unregistred_denom",
-			decimals:         18,
-			to:               "xxx",
-			address:          "xxx",
-			collateralAmount: sdk.NewUint(1000),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(1),
-			position:         types.Position_LONG,
+			name:                     "denom not registered does not throw an error as it does rely on token registry",
+			denom:                    "unregistred_denom",
+			decimals:                 18,
+			to:                       "xxx",
+			address:                  "xxx",
+			collateralAmount:         sdk.NewUint(1000),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(1),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "cannot afford principle liability",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			address:          "xxx",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(0),
-			position:         types.Position_LONG,
+			name:                     "cannot afford principle liability",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			address:                  "xxx",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(0),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "v principle libarity; x excess liability",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			address:          "xxx",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(0),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(0),
-			position:         types.Position_LONG,
+			name:                     "v principle libarity; x excess liability",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			address:                  "xxx",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(0),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(0),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "can afford both",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			address:          "xxx",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(0),
-			interestUnpaid:   sdk.NewUint(0),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(0),
-			position:         types.Position_LONG,
+			name:                     "can afford both",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			address:                  "xxx",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(0),
+			interestUnpaidCollateral: sdk.NewUint(0),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(0),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "non zero return amount + fails because of wrong address",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			address:          "xxx",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(0),
-			interestUnpaid:   sdk.NewUint(0),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(1000),
-			position:         types.Position_LONG,
-			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
+			name:                     "non zero return amount + fails because of wrong address",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			address:                  "xxx",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(0),
+			interestUnpaidCollateral: sdk.NewUint(0),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(1000),
+			position:                 types.Position_LONG,
+			errString:                errors.New("decoding bech32 failed: invalid bech32 string length 3"),
 		},
 		{
-			name:             "non zero return amount",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "xxx",
-			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(0),
-			interestUnpaid:   sdk.NewUint(0),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(1000),
-			position:         types.Position_LONG,
-			errString:        errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
+			name:                     "non zero return amount",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "xxx",
+			address:                  "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(0),
+			interestUnpaidCollateral: sdk.NewUint(0),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(1000),
+			position:                 types.Position_LONG,
+			errString:                errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
 		},
 		{
-			name:             "collateral and native assets are equal",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "rowan",
-			address:          "xxx",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(0),
-			position:         types.Position_LONG,
+			name:                     "collateral and native assets are equal",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "rowan",
+			address:                  "xxx",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(0),
+			position:                 types.Position_LONG,
 		},
 		{
-			name:             "mtp not found",
-			denom:            "rowan",
-			decimals:         18,
-			to:               "rowan",
-			address:          "xxx",
-			overrideAddress:  "yyy",
-			collateralAmount: sdk.NewUint(0),
-			custodyAmount:    sdk.NewUint(1000),
-			liabilities:      sdk.NewUint(1000),
-			interestUnpaid:   sdk.NewUint(1000),
-			health:           sdk.NewDec(1),
-			repayAmount:      sdk.NewUint(0),
-			position:         types.Position_LONG,
-			err:              types.ErrMTPDoesNotExist,
+			name:                     "mtp not found",
+			denom:                    "rowan",
+			decimals:                 18,
+			to:                       "rowan",
+			address:                  "xxx",
+			overrideAddress:          "yyy",
+			collateralAmount:         sdk.NewUint(0),
+			custodyAmount:            sdk.NewUint(1000),
+			liabilities:              sdk.NewUint(1000),
+			interestUnpaidCollateral: sdk.NewUint(1000),
+			health:                   sdk.NewDec(1),
+			repayAmount:              sdk.NewUint(0),
+			position:                 types.Position_LONG,
+			err:                      types.ErrMTPDoesNotExist,
 		},
 	}
 
@@ -813,7 +813,7 @@ func TestKeeper_Repay(t *testing.T) {
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.Liabilities = tt.liabilities
 			mtp.CollateralAmount = tt.collateralAmount
-			mtp.InterestUnpaid = tt.interestUnpaid
+			mtp.InterestUnpaidCollateral = tt.interestUnpaidCollateral
 			if tt.overrideAddress != "" {
 				mtp.Address = tt.overrideAddress
 			}
@@ -855,18 +855,19 @@ func TestKeeper_CalcMTPInterestLiabilities(t *testing.T) {
 func TestKeeper_CalcMTPInterestLiabilitiesOverflow(t *testing.T) { // test fails after fix to interest calc
 
 	mtp := types.MTP{
-		Address:          "sif123",
-		CollateralAsset:  "rowan",
-		CollateralAmount: sdk.Uint{},
-		Liabilities:      sdk.NewUintFromString("100"),
-		InterestPaid:     sdk.ZeroUint(),
-		InterestUnpaid:   sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
-		CustodyAsset:     "ceth",
-		CustodyAmount:    sdk.Uint{},
-		Leverage:         sdk.Dec{},
-		MtpHealth:        sdk.Dec{},
-		Position:         types.Position_LONG,
-		Id:               1,
+		Address:                  "sif123",
+		CollateralAsset:          "rowan",
+		CollateralAmount:         sdk.Uint{},
+		Liabilities:              sdk.NewUintFromString("100"),
+		InterestPaidCollateral:   sdk.ZeroUint(),
+		InterestPaidCustody:      sdk.ZeroUint(),
+		InterestUnpaidCollateral: sdk.NewUintFromString("45231284858326638837332416019018714005183587760015845327913118753091066265500"),
+		CustodyAsset:             "ceth",
+		CustodyAmount:            sdk.Uint{},
+		Leverage:                 sdk.Dec{},
+		MtpHealth:                sdk.Dec{},
+		Position:                 types.Position_LONG,
+		Id:                       1,
 	}
 
 	require.Panics(t, func() {
@@ -1026,18 +1027,19 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 	key := types.GetMTPKey(address, id)
 
 	newMTP := types.MTP{
-		Id:               id,
-		Address:          address,
-		CollateralAsset:  collateralAsset,
-		Liabilities:      sdk.NewUint(1000),
-		InterestPaid:     sdk.ZeroUint(),
-		InterestUnpaid:   sdk.NewUint(1000),
-		CollateralAmount: sdk.NewUint(1000),
-		CustodyAsset:     custodyAsset,
-		CustodyAmount:    sdk.NewUint(1000),
-		Leverage:         sdk.NewDec(10),
-		MtpHealth:        health,
-		Position:         position,
+		Id:                       id,
+		Address:                  address,
+		CollateralAsset:          collateralAsset,
+		Liabilities:              sdk.NewUint(1000),
+		InterestPaidCollateral:   sdk.ZeroUint(),
+		InterestPaidCustody:      sdk.ZeroUint(),
+		InterestUnpaidCollateral: sdk.NewUint(1000),
+		CollateralAmount:         sdk.NewUint(1000),
+		CustodyAsset:             custodyAsset,
+		CustodyAmount:            sdk.NewUint(1000),
+		Leverage:                 sdk.NewDec(10),
+		MtpHealth:                health,
+		Position:                 position,
 	}
 
 	store.Set(key, types.ModuleCdc.MustMarshal(&newMTP))
