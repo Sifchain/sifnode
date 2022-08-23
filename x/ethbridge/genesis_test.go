@@ -60,15 +60,15 @@ func TestInitGenesisWithExportGenesisDataSuccessful(t *testing.T) {
 
 	assert.Equal(t, oldKeeper.GetEthereumLockBurnSequences(ctx1), newKeeper.GetEthereumLockBurnSequences(ctx2))
 
-	// check block number for network
-	actualBlockNumber := newKeeper.GetGlobalSequence(ctx2, test.NetworkDescriptor)
-	assert.Equal(t, blockNumber+1, actualBlockNumber)
+	// check global nonce, new value should be old value + 1, since we call UpdateGlobalSequence in createState
+	actualGlobalNonce := newKeeper.GetGlobalSequence(ctx2, test.NetworkDescriptor)
+	assert.Equal(t, globalNonce+1, actualGlobalNonce)
 
 	// TODO: Need to make the states more complex, Import actually fails, it is comparing default values.
 	assert.Equal(t, oldKeeper.GetGlobalSequences(ctx1), newKeeper.GetGlobalSequences(ctx2))
 
 	// check block number for network and global nonce
-	actualBlockNumber = newKeeper.GetGlobalSequenceToBlockNumber(ctx2, test.NetworkDescriptor, globalNonce)
+	actualBlockNumber := newKeeper.GetGlobalSequenceToBlockNumber(ctx2, test.NetworkDescriptor, globalNonce)
 	assert.Equal(t, blockNumber, actualBlockNumber)
 
 	assert.Equal(t, oldKeeper.GetGlobalSequenceToBlockNumbers(ctx1), newKeeper.GetGlobalSequenceToBlockNumbers(ctx2))
