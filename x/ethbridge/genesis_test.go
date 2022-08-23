@@ -149,7 +149,6 @@ func TestInitGenesisWithExportGenesisGlobalSequenceToBlockNumberSingleNetwork(t 
 	ctx1, oldKeeper := test.CreateTestAppEthBridge(false)
 	ctx2, newKeeper := test.CreateTestAppEthBridge(false)
 
-	// TODO: Cleanup
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 15, 25)
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 16, 34)
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 17, 54)
@@ -164,7 +163,6 @@ func TestInitGenesisWithExportGenesisGlobalSequenceToBlockNumberMultipleNetwork(
 	ctx1, oldKeeper := test.CreateTestAppEthBridge(false)
 	ctx2, newKeeper := test.CreateTestAppEthBridge(false)
 
-	// TODO: Cleanup
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 15, 25)
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 16, 34)
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_GANACHE, 17, 54)
@@ -174,6 +172,7 @@ func TestInitGenesisWithExportGenesisGlobalSequenceToBlockNumberMultipleNetwork(
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 12, 87)
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 13, 99)
 	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 14, 266)
+	oldKeeper.SetGlobalSequenceToBlockNumber(ctx1, NetworkDescriptor_NETWORK_DESCRIPTOR_HARDHAT, 15, 4323)
 
 	exportedState := ethbridge.ExportGenesis(ctx1, oldKeeper)
 	ethbridge.InitGenesis(ctx2, newKeeper, *exportedState)
