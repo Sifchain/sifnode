@@ -95,3 +95,10 @@ message ProviderDistributionPeriod {
 message ProviderDistributionParams {
   repeated ProviderDistributionPeriod distribution_periods = 1;
 }
+
+message SwapFeeRate {
+    string swap_fee_rate = 1 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable) = false
+    ];
+}
