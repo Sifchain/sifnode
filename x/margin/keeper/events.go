@@ -23,8 +23,9 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.
 		sdk.NewAttribute("repay_amount", repayAmount.String()),
 		sdk.NewAttribute("leverage", mtp.Leverage.String()),
 		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
-		sdk.NewAttribute("interest_paid", mtp.InterestUnpaid.String()),
-		sdk.NewAttribute("interest_unpaid", mtp.InterestUnpaid.String()),
+		sdk.NewAttribute("interest_paid_collateral", mtp.InterestPaidCollateral.String()),
+		sdk.NewAttribute("interest_paid_custody", mtp.InterestPaidCustody.String()),
+		sdk.NewAttribute("interest_unpaid_collateral", mtp.InterestUnpaidCollateral.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 		sdk.NewAttribute("closer", closer),
 	))
