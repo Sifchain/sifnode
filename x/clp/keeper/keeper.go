@@ -3,8 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/log"

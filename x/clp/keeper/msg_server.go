@@ -389,7 +389,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
-	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(msg.ExternalAsset.Symbol)
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
@@ -657,8 +657,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
