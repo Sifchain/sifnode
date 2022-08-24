@@ -389,8 +389,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
