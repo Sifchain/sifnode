@@ -21,7 +21,7 @@ func TestKeeper_DecRatIdentity(t *testing.T) {
 		expected := genDec(t)
 
 		rat := clpkeeper.DecToRat(&expected)
-		actual := clpkeeper.RatToDec(&rat)
+		actual, _ := clpkeeper.RatToDec(&rat)
 
 		if !expected.Equal(actual) {
 			t.Fatalf("\nexpected %s\nactual   %s", expected.String(), actual.String())
@@ -64,6 +64,7 @@ func TestKeeper_RatToDec(t *testing.T) {
 		num      *big.Int
 		denom    *big.Int
 		expected sdk.Dec
+		err      error
 	}{
 		{
 			name:     "small values",
@@ -84,10 +85,10 @@ func TestKeeper_RatToDec(t *testing.T) {
 			expected: sdk.MustNewDecFromStr("-2.333333333333333333"),
 		},
 		{
-			name:     "big numbers",
-			num:      big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
-			denom:    big.NewInt(3),
-			expected: sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
+			name:  "big numbers",
+			num:   big.NewInt(1).Exp(big.NewInt(2), big.NewInt(400), nil), // 2**400
+			denom: big.NewInt(3),
+			err:   errors.New("decimal out of range; bitLen: got 459, max 315"),
 		},
 	}
 
@@ -97,11 +98,40 @@ func TestKeeper_RatToDec(t *testing.T) {
 
 			var rat big.Rat
 			rat.SetFrac(tc.num, tc.denom)
-			y := clpkeeper.RatToDec(&rat)
+			y, err := clpkeeper.RatToDec(&rat)
 
+			if tc.err != nil {
+				require.EqualError(t, err, tc.err.Error())
+				return
+			}
+
+			require.NoError(t, err)
 			require.Equal(t, tc.expected, y)
 		})
 	}
+}
+
+// If the cosmos SDK reduces the value of maxDecBitLen below 315 then (without
+// further changes) RatToDec will be able to return an sdk.Dec with 316 bits.
+// Such sdk.Decs would cause panics and errors when unmarshaling. This test
+// will fail if the cosmos SDK reduces the value of maxDecBitLen < 315.
+func TestKeeper_RatToDec_Overflow(t *testing.T) {
+	numerator, _ := big.NewInt(1).SetString("66749594872528440074844428317798503581334516323645399060845050244444366430645", 10) // (2**315 - 1) / 10**18
+	denominator := big.NewInt(1)
+
+	var rat big.Rat
+	rat.SetFrac(numerator, denominator)
+
+	// The rat passed here uses 315 bits when represented as an sdk.Dec. Even if the SDK
+	// reduces the maxDecBitLen < 315 (without fixing sdk.NewDecFromBigIntWithPrec) the RatToDec
+	// will still succeed - returning an sdk.Dec which cannot be unmarshaled or that will cause a panic
+	// even when adding zero.
+	dec, err := clpkeeper.RatToDec(&rat)
+
+	require.NoError(t, err)
+
+	// If the SDK ever reduces the value of maxDecBitLen < 315 then this will panic
+	dec.Add(sdk.NewDec(0))
 }
 
 func TestKeeper_Int64ToUint8Safe(t *testing.T) {
