@@ -1,6 +1,7 @@
 package oracle
 
 import (
+	"errors"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,8 +27,19 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 	}
 
 	for _, prophecy := range data.Prophecies {
-
 		keeper.SetProphecy(ctx, *prophecy)
+	}
+
+	for key, value := range data.CrossChainFee {
+		keeper.SetCrossChainFeeObj(ctx, types.NewNetworkIdentity(types.NetworkDescriptor(key)), value)
+	}
+
+	for key, value := range data.ConsensusNeeded {
+		keeper.SetConsensusNeeded(ctx, types.NewNetworkIdentity(types.NetworkDescriptor(key)), value)
+	}
+
+	for key, value := range data.WitnessLockBurnSequence {
+		keeper.SetWitnessLockBurnNonceViaRawKey(ctx, []byte(key), value)
 	}
 
 	return []abci.ValidatorUpdate{}
@@ -42,19 +54,37 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	}
 	adminAcc := keeper.GetAdminAccount(ctx)
 	prophecies := keeper.GetProphecies(ctx)
+	crossChainFee := keeper.GetAllCrossChainFeeConfig(ctx)
+	consensusNeeded := keeper.GetAllConsensusNeeded(ctx)
+	witnessLockBurnSequence := keeper.GetAllWitnessLockBurnSequence(ctx)
 
 	dbProphecies := make([]*types.Prophecy, len(prophecies))
 	for i := range prophecies {
 		dbProphecies[i] = &prophecies[i]
 	}
 	return &types.GenesisState{
-		AddressWhitelist: wl,
-		AdminAddress:     adminAcc.String(),
-		Prophecies:       dbProphecies,
+		AddressWhitelist:        wl,
+		AdminAddress:            adminAcc.String(),
+		Prophecies:              dbProphecies,
+		CrossChainFee:           crossChainFee,
+		ConsensusNeeded:         consensusNeeded,
+		WitnessLockBurnSequence: witnessLockBurnSequence,
 	}
 }
 
 // ValidateGenesis validates the oracle genesis parameters
-func ValidateGenesis(_ *types.GenesisState) error {
+func ValidateGenesis(state *types.GenesisState) error {
+	for _, crossChainFee := range state.CrossChainFee {
+		if !crossChainFee.IsValid() {
+			return errors.New("crossChainFee is not valid")
+		}
+	}
+
+	for _, consensusNeeded := range state.ConsensusNeeded {
+		if consensusNeeded > 100 {
+			return errors.New("consensusNeeded stored is too large")
+		}
+	}
+
 	return nil
 }
