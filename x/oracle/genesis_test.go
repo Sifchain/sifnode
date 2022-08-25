@@ -224,7 +224,7 @@ func TestGenesisWithProphecyInfo(t *testing.T) {
 	tokenName := "name"
 	tokenSymbol := "symbol"
 
-	keeper.SetProphecyInfo(ctx, prophecyID,
+	err := keeper.SetProphecyInfo(ctx, prophecyID,
 		networkDescriptor,
 		cosmosSender,
 		cosmosSenderSequence,
@@ -238,6 +238,8 @@ func TestGenesisWithProphecyInfo(t *testing.T) {
 		tokenDecimal,
 		tokenName,
 		tokenSymbol)
+
+	assert.NoError(t, err)
 
 	exportedState := oracle.ExportGenesis(ctx, keeper)
 	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
