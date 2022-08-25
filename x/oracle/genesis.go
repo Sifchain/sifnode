@@ -42,6 +42,10 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetWitnessLockBurnNonceViaRawKey(ctx, []byte(key), value)
 	}
 
+	for _, value := range data.ProphecyInfo {
+		keeper.SetProphecyInfoObj(ctx, value)
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
@@ -57,6 +61,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	crossChainFee := keeper.GetAllCrossChainFeeConfig(ctx)
 	consensusNeeded := keeper.GetAllConsensusNeeded(ctx)
 	witnessLockBurnSequence := keeper.GetAllWitnessLockBurnSequence(ctx)
+	prophecyInfo := keeper.GetAllProphecyInfo(ctx)
 
 	dbProphecies := make([]*types.Prophecy, len(prophecies))
 	for i := range prophecies {
@@ -69,6 +74,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 		CrossChainFee:           crossChainFee,
 		ConsensusNeeded:         consensusNeeded,
 		WitnessLockBurnSequence: witnessLockBurnSequence,
+		ProphecyInfo:            prophecyInfo,
 	}
 }
 

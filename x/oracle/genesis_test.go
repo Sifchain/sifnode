@@ -6,10 +6,11 @@ package oracle_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/oracle"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -161,4 +162,91 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 			},
 		},
 	}, []types.Prophecy{prophecy}
+}
+
+func TestGenesisWithCrossChainFee(t *testing.T) {
+	ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+	networkIdentity := types.NewNetworkIdentity(types.NetworkDescriptor(1))
+	one := sdk.NewInt(1)
+	keeper.SetCrossChainFee(ctx, networkIdentity, "rowan", one, one, one, one)
+
+	exportedState := oracle.ExportGenesis(ctx, keeper)
+	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+
+	oracle.InitGenesis(newCtx, newKeeper, *exportedState)
+
+	assert.Equal(t, keeper.GetAllCrossChainFeeConfig(ctx), newKeeper.GetAllCrossChainFeeConfig(newCtx))
+}
+
+func TestGenesisWithConsensusNeeded(t *testing.T) {
+	ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+	networkIdentity := types.NewNetworkIdentity(types.NetworkDescriptor(1))
+	keeper.SetConsensusNeeded(ctx, networkIdentity, 66)
+
+	exportedState := oracle.ExportGenesis(ctx, keeper)
+	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+
+	oracle.InitGenesis(newCtx, newKeeper, *exportedState)
+
+	assert.Equal(t, keeper.GetAllCrossChainFeeConfig(ctx), newKeeper.GetAllCrossChainFeeConfig(newCtx))
+}
+
+func TestGenesisWithWitnessLockBurnSequence(t *testing.T) {
+	ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+	_, valAddrs := test.CreateTestAddrs(2)
+
+	networkDescriptor := types.NetworkDescriptor(1)
+	keeper.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddrs[0], 66)
+
+	exportedState := oracle.ExportGenesis(ctx, keeper)
+	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+
+	oracle.InitGenesis(newCtx, newKeeper, *exportedState)
+
+	assert.Equal(t, keeper.GetAllWitnessLockBurnSequence(ctx), newKeeper.GetAllWitnessLockBurnSequence(newCtx))
+}
+
+func TestGenesisWithProphecyInfo(t *testing.T) {
+	ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+
+	prophecyID := []byte{1, 2, 3, 4, 5, 6}
+	networkDescriptor := types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
+	cosmosSender := "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
+	cosmosSenderSequence := uint64(1)
+	ethereumReceiver := "0x0000000000000000000000000000000000000003"
+	tokenDenomHash := "rowan"
+	tokenContractAddress := "0x0000000000000000000000000000000000000004"
+	tokenAmount := sdk.NewInt(1)
+	crosschainFee := sdk.NewInt(1)
+	bridgeToken := true
+	globalSequence := uint64(1)
+	tokenDecimal := uint8(1)
+	tokenName := "name"
+	tokenSymbol := "symbol"
+
+	keeper.SetProphecyInfo(ctx, prophecyID,
+		networkDescriptor,
+		cosmosSender,
+		cosmosSenderSequence,
+		ethereumReceiver,
+		tokenDenomHash,
+		tokenContractAddress,
+		tokenAmount,
+		crosschainFee,
+		bridgeToken,
+		globalSequence,
+		tokenDecimal,
+		tokenName,
+		tokenSymbol)
+
+	exportedState := oracle.ExportGenesis(ctx, keeper)
+	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
+
+	oracle.InitGenesis(newCtx, newKeeper, *exportedState)
+
+	exportedProphecyID, existed := newKeeper.GetProphecyIDByNetworkDescriptorGlobalNonce(newCtx, networkDescriptor, globalSequence)
+	assert.Equal(t, existed, true)
+	assert.Equal(t, prophecyID, exportedProphecyID)
+
+	assert.Equal(t, keeper.GetAllProphecyInfo(ctx), newKeeper.GetAllProphecyInfo(newCtx))
 }
