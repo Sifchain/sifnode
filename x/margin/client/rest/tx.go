@@ -155,7 +155,7 @@ func forceCloseHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		msg := types.MsgForceClose{
+		msg := types.MsgAdminClose{
 			Signer:     signer.String(),
 			MtpAddress: mtpAddress.String(),
 			Id:         req.Id,

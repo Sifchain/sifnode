@@ -45,7 +45,7 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 	var (
 		msgOpen       sdk.Msg = &types.MsgOpen{Signer: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"}
 		msgClose      sdk.Msg = &types.MsgClose{}
-		msgForceClose sdk.Msg = &types.MsgForceClose{}
+		msgForceClose sdk.Msg = &types.MsgAdminClose{}
 		msgOther      sdk.Msg
 	)
 

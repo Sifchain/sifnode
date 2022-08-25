@@ -441,10 +441,10 @@ func TestKeeper_Close(t *testing.T) {
 	}
 }
 
-func TestKeeper_ForceClose(t *testing.T) {
+func TestKeeper_AdminClose(t *testing.T) {
 	table := []struct {
 		msgOpen                       types.MsgOpen
-		msgForceClose                 types.MsgForceClose
+		msgAdminClose                 types.MsgAdminClose
 		health                        sdk.Dec
 		forceCloseThreshold           sdk.Dec
 		name                          string
@@ -462,7 +462,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 	}{
 		{
 			name: "mtp does not exist",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			},
@@ -480,7 +480,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "pool does not exist",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -498,7 +498,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "same collateral and native asset but pool does not exist",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -516,7 +516,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "denom does not exist does not throw error as not using token registry but MTP health above threshold",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -536,7 +536,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "wrong address/mtp not found",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -557,7 +557,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "insufficient funds/mtp not found",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -578,7 +578,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "account funded and mtp healthy but MTP health above threshold",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -599,7 +599,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "account funded and mtp not healthy but MTP health above threshold",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -621,7 +621,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "mtp position invalid",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -641,7 +641,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 		},
 		{
 			name: "admin closure does not check health",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 				Id:         1,
@@ -671,15 +671,15 @@ func TestKeeper_ForceClose(t *testing.T) {
 					AdminAccounts: []*admintypes.AdminAccount{
 						{
 							AdminType:    admintypes.AdminType_MARGIN,
-							AdminAddress: tt.msgForceClose.Signer,
+							AdminAddress: tt.msgAdminClose.Signer,
 						},
 						{
 							AdminType:    admintypes.AdminType_CLPDEX,
-							AdminAddress: tt.msgForceClose.Signer,
+							AdminAddress: tt.msgAdminClose.Signer,
 						},
 						{
 							AdminType:    admintypes.AdminType_TOKENREGISTRY,
-							AdminAddress: tt.msgForceClose.Signer,
+							AdminAddress: tt.msgAdminClose.Signer,
 						},
 					},
 				}
@@ -741,7 +741,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 				balances := []banktypes.Balance{
 					{
-						Address: tt.msgForceClose.Signer,
+						Address: tt.msgAdminClose.Signer,
 						Coins: sdk.Coins{
 							nativeCoin,
 							externalCoin,
@@ -759,7 +759,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 						MinCreatePoolThreshold: 100,
 					},
 					AddressWhitelist: []string{
-						tt.msgForceClose.Signer,
+						tt.msgAdminClose.Signer,
 					},
 					PoolList: []*clptypes.Pool{
 						{
@@ -777,7 +777,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 					LiquidityProviders: []*clptypes.LiquidityProvider{
 						{
 							Asset:                    &clptypes.Asset{Symbol: tt.poolAsset},
-							LiquidityProviderAddress: tt.msgForceClose.Signer,
+							LiquidityProviderAddress: tt.msgAdminClose.Signer,
 							LiquidityProviderUnits:   sdk.NewUint(1000000000),
 						},
 					},
@@ -796,9 +796,9 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 			var address string
 
-			address = tt.msgForceClose.Signer
+			address = tt.msgAdminClose.Signer
 
-			msg := tt.msgForceClose
+			msg := tt.msgAdminClose
 			msg.Signer = address
 			msg.MtpAddress = address
 
@@ -811,7 +811,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 				addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1, sdk.NewDec(20))
 			}
 
-			_, got := msgServer.ForceClose(sdk.WrapSDKContext(ctx), &msg)
+			_, got := msgServer.AdminClose(sdk.WrapSDKContext(ctx), &msg)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())

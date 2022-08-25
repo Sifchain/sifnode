@@ -167,7 +167,7 @@ func GetForceCloseCmd() *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgForceClose{
+			msg := types.MsgAdminClose{
 				Signer:     signer.String(),
 				MtpAddress: MtpAddress,
 				Id:         id,

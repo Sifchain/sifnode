@@ -20,7 +20,7 @@ var (
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgOpen{}, "margin/MsgOpen", nil)
 	cdc.RegisterConcrete(&MsgClose{}, "margin/MsgClose", nil)
-	cdc.RegisterConcrete(&MsgForceClose{}, "margin/MsgForceClose", nil)
+	cdc.RegisterConcrete(&MsgAdminClose{}, "margin/MsgForceClose", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -28,7 +28,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgOpen{},
 		&MsgClose{},
-		&MsgForceClose{},
+		&MsgAdminClose{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

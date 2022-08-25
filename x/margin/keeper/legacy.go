@@ -36,8 +36,8 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgClose:
 			res, err := msgServer.Close(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgForceClose:
-			res, err := msgServer.ForceClose(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgAdminClose:
+			res, err := msgServer.AdminClose(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgUpdateParams:
 			res, err := msgServer.UpdateParams(sdk.WrapSDKContext(ctx), msg)

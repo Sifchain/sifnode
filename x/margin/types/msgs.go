@@ -15,7 +15,7 @@ import (
 var (
 	_ sdk.Msg = &MsgOpen{}
 	_ sdk.Msg = &MsgClose{}
-	_ sdk.Msg = &MsgForceClose{}
+	_ sdk.Msg = &MsgAdminClose{}
 	_ sdk.Msg = &MsgUpdateParams{}
 	_ sdk.Msg = &MsgUpdatePools{}
 	_ sdk.Msg = &MsgDewhitelist{}
@@ -23,7 +23,7 @@ var (
 
 	_ legacytx.LegacyMsg = &MsgOpen{}
 	_ legacytx.LegacyMsg = &MsgClose{}
-	_ legacytx.LegacyMsg = &MsgForceClose{}
+	_ legacytx.LegacyMsg = &MsgAdminClose{}
 	_ legacytx.LegacyMsg = &MsgUpdateParams{}
 	_ legacytx.LegacyMsg = &MsgUpdatePools{}
 	_ legacytx.LegacyMsg = &MsgWhitelist{}
@@ -128,19 +128,19 @@ func (m MsgClose) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{signer}
 }
 
-func (m MsgForceClose) GetSignBytes() []byte {
+func (m MsgAdminClose) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
-func (m MsgForceClose) Route() string {
+func (m MsgAdminClose) Route() string {
 	return RouterKey
 }
 
-func (m MsgForceClose) Type() string {
-	return "force_close"
+func (m MsgAdminClose) Type() string {
+	return "admin_close"
 }
 
-func (m MsgForceClose) ValidateBasic() error {
+func (m MsgAdminClose) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
@@ -154,7 +154,7 @@ func (m MsgForceClose) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgForceClose) GetSigners() []sdk.AccAddress {
+func (m MsgAdminClose) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

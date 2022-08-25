@@ -9,7 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 service Msg {
   rpc Open(MsgOpen) returns (MsgOpenResponse) {}
   rpc Close(MsgClose) returns (MsgCloseResponse) {}
-  rpc ForceClose(MsgForceClose) returns (MsgForceCloseResponse) {}
+  rpc AdminClose(MsgAdminClose) returns (MsgAdminCloseResponse) {}
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {}
   rpc UpdatePools(MsgUpdatePools) returns (MsgUpdatePoolsResponse) {}
   rpc Whitelist(MsgWhitelist) returns (MsgWhitelistResponse) {}
@@ -40,13 +40,13 @@ message MsgClose {
 
 message MsgCloseResponse {}
 
-message MsgForceClose {
+message MsgAdminClose {
   string signer = 1;
   string mtp_address = 2;
   uint64 id = 3;
 }
 
-message MsgForceCloseResponse {}
+message MsgAdminCloseResponse {}
 
 message MsgUpdateParams {
   string signer = 1;

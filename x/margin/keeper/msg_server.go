@@ -131,7 +131,7 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 	return &types.MsgCloseResponse{}, nil
 }
 
-func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
+func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (*types.MsgAdminCloseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -161,7 +161,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 
 	k.EmitForceClose(ctx, mtp, repayAmount, msg.Signer)
 
-	return &types.MsgForceCloseResponse{}, nil
+	return &types.MsgAdminCloseResponse{}, nil
 }
 
 func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, error) {
@@ -272,7 +272,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	return &mtp, repayAmount, nil
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdminClose bool) (*types.MTP, sdk.Uint, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgAdminClose, isAdminClose bool) (*types.MTP, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err

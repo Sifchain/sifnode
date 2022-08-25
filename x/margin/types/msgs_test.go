@@ -262,28 +262,28 @@ func TestTypes_MsgCloseGetSigners(t *testing.T) {
 	}
 }
 
-func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
+func TestTypes_MsgAdminCloseValidateBasic(t *testing.T) {
 	validateBasicTests := []struct {
 		name          string
-		msgForceClose types.MsgForceClose
+		msgAdminClose types.MsgAdminClose
 		err           error
 		errString     error
 	}{
 		{
 			name:          "no signer",
-			msgForceClose: types.MsgForceClose{},
+			msgAdminClose: types.MsgAdminClose{},
 			err:           sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
 			name: "no mtp address",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer: "xxx",
 			},
 			err: sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, ""),
 		},
 		{
 			name: "all valid",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer:     "xxx",
 				MtpAddress: "xxx",
 				Id:         1,
@@ -294,7 +294,7 @@ func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 	for _, tt := range validateBasicTests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.msgForceClose.ValidateBasic()
+			got := tt.msgAdminClose.ValidateBasic()
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -307,34 +307,34 @@ func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 	}
 }
 
-func TestTypes_MsgForceCloseGetSigners(t *testing.T) {
+func TestTypes_MsgAdminCloseGetSigners(t *testing.T) {
 	getSignersTests := []struct {
 		name          string
-		msgForceClose types.MsgForceClose
+		msgAdminClose types.MsgAdminClose
 		errString     string
 	}{
 		{
 			name:          "no signer",
-			msgForceClose: types.MsgForceClose{},
+			msgAdminClose: types.MsgAdminClose{},
 			errString:     "empty address string is not allowed",
 		},
 		{
 			name: "wrong address",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer: "xxx",
 			},
 			errString: "decoding bech32 failed: invalid bech32 string length 3",
 		},
 		{
 			name: "wrong prefix",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			},
 			errString: "invalid Bech32 prefix; expected cosmos, got sif",
 		},
 		{
 			name: "returned address",
-			msgForceClose: types.MsgForceClose{
+			msgAdminClose: types.MsgAdminClose{
 				Signer: "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
 			},
 			errString: "",
@@ -345,11 +345,11 @@ func TestTypes_MsgForceCloseGetSigners(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
-					tt.msgForceClose.GetSigners()
+					tt.msgAdminClose.GetSigners()
 				})
 			} else {
-				got := tt.msgForceClose.GetSigners()
-				require.Equal(t, got[0].String(), tt.msgForceClose.Signer)
+				got := tt.msgAdminClose.GetSigners()
+				require.Equal(t, got[0].String(), tt.msgAdminClose.Signer)
 			}
 		})
 	}
