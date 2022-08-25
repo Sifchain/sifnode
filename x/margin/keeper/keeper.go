@@ -529,7 +529,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
-	if interestRateChange.LTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
+	if interestRateChange.GTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
 		interestRate = targetInterestRate
 	} else if interestRateChange.GT(interestRateIncrease) {
 		interestRate = prevInterestRate.Add(interestRateIncrease)
