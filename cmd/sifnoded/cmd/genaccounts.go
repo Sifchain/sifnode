@@ -64,11 +64,11 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			if err != nil {
 				return fmt.Errorf("failed to parse coins: %w", err)
 			}
-			vestingStart, err := cmd.Flags().GetUint64(flagVestingStart)
+			vestingStart, err := cmd.Flags().GetInt64(flagVestingStart)
 			if err != nil {
 				return err
 			}
-			vestingEnd, err := cmd.Flags().GetUint64(flagVestingEnd)
+			vestingEnd, err := cmd.Flags().GetInt64(flagVestingEnd)
 			if err != nil {
 				return err
 			}
@@ -85,10 +85,10 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			balances := banktypes.Balance{Address: addr.String(), Coins: coins.Sort()}
 			baseAccount := authtypes.NewBaseAccount(addr, nil, 0, 0)
 			if !vestingAmt.IsZero() {
-				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), int64(vestingEnd))
+				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), vestingEnd)
 				switch {
 				case vestingStart != 0 && vestingEnd != 0:
-					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, int64(vestingStart))
+					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, vestingStart)
 				case vestingEnd != 0:
 					genAccount = authvesting.NewDelayedVestingAccountRaw(baseVestingAccount)
 				default:
