@@ -76,7 +76,7 @@ func TestInitGenesis(t *testing.T) {
 	genState := dispensation.ExportGenesis(ctx, keeper)
 
 	exportedMintController, exists := keeper2.GetMintController(ctx2)
-	// MintController's amount set as zero when
+	// MintController's amount set as zero if not exported in genesis
 	assert.Equal(t, exists, true)
 	assert.Equal(t, zeroMintController, exportedMintController)
 	assert.Len(t, keeper2.GetDistributions(ctx2).Distributions, 0)
