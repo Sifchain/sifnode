@@ -431,12 +431,8 @@ class Sifnoded:
 
     def query_staking_validators(self) -> JsonObj:
         args = ["query", "staking", "validators"] + self._home_args() + self._node_args()
-        res = self.sifnoded_exec(args)
-        res = json.loads(stdout(res))
-        # TODO Implement paging (here we don't have "block" so we can't use self._paged_read())
-        #      But probably have to go the same way as self.get_balance()
-        assert res["pagination"]["next_key"] is None, "TODO: Implement pagination"
-        return res["validators"]
+        res = self._paged_read(args, "validators")
+        return res
 
     # See scripts/ibc/tokenregistration for more information and examples.
     # JSON file can be generated with "sifnoded q tokenregistry generate"
@@ -510,11 +506,13 @@ class Sifnoded:
         return json.loads(stdout(res))["entries"]
 
     # Creates file config/gentx/gentx-*.json
-    def gentx(self, name: str, stake: cosmos.Balance, commission_rate: Optional[float] = None,
-        commission_max_rate: Optional[float] = None, commission_max_change_rate: Optional[float] = None\
+    def gentx(self, name: str, stake: cosmos.Balance, keyring_dir: Optional[str] = None,
+        commission_rate: Optional[float] = None, commission_max_rate: Optional[float] = None,
+        commission_max_change_rate: Optional[float] = None\
     ):
         # TODO Make chain_id an attribute
         args = ["gentx", name, cosmos.balance_format(stake)] + \
+            (["--keyring-dir", keyring_dir] if keyring_dir is not None else []) + \
             (["--commission-rate", str(commission_rate)] if commission_rate is not None else []) + \
             (["--commission-max-rate", str(commission_max_rate)] if commission_max_rate is not None else []) + \
             (["--commission-max-change-rate", str(commission_max_change_rate)] if commission_max_change_rate is not None else []) + \
@@ -839,21 +837,40 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
+    # asymmetry: -10000 = 100% of native asset, 0 = 50% of native asset and 50% of external asset, 10000 = 100% of external asset
+    # w_basis 0 = 0%, 10000 = 100%, Remove 0-100% of liquidity symmetrically for both assets of the pair
+    # See https://github.com/Sifchain/sifnode/blob/master/docs/tutorials/clp%20tutorial.md
+    def tx_clp_remove_liquidity(self, from_addr: cosmos.Address, w_basis: int, asymmetry: int) -> JsonDict:
+        assert (w_basis >= 0) and (w_basis <= 10000)
+        assert (asymmetry >= -10000) and (asymmetry <= 10000)
+        args = ["tx", "clp", "remove-liquidity", "--from", from_addr, "--wBasis", int(w_basis), "--asymmetry",
+            str(asymmetry)] + self._node_args() + self._chain_id_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(res)
+        check_raw_log(res)
+        return res
+
     def tx_clp_unbond_liquidity(self, from_addr: cosmos.Address, symbol: str, units: int) -> JsonDict:
         args = ["tx", "clp", "unbond-liquidity", "--from", from_addr, "--symbol", symbol, "--units", str(units)] + \
             self._home_args() + self._keyring_backend_args() + self._chain_id_args() + self._node_args() + \
             self._fees_args() + self._broadcast_mode_args() + self._yes_args()
         res = self.sifnoded_exec(args)
-        return yaml_load(stdout(res))
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
 
-    def tx_clp_cancel_unbound(self):
-        assert False, "Not implemented yet"  # TODO
-
-    def tx_clp_remove_liquidity_units(self):
-        assert False, "Not implemented yet"  # TODO
-
-    def tx_clp_swap(self):
-        assert False, "Not implemented yet"  # TODO
+    def tx_clp_swap(self, from_addr: cosmos.Address, sent_symbol: str, sent_amount: int, received_symbol: str,
+        min_receiving_amount: int, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "clp", "swap", "--from", from_addr, "--sentSymbol", sent_symbol, "--sentAmount", str(sent_amount),
+            "--receivedSymbol", received_symbol, "--minReceivingAmount", str(min_receiving_amount)] + \
+            self._node_args() + self._chain_id_args() + self._keyring_backend_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
 
     def clp_reward_period(self, from_addr: cosmos.Address, rewards_params: RewardsParams):
         with self._with_temp_json_file([rewards_params]) as tmp_rewards_json:

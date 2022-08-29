@@ -186,9 +186,9 @@ class Test:
             self.env.node_info[0]["host"], self.env.node_info[0]["ports"]["rpc"]), chain_id=env.chain_id)
         sifnoded_client.get_balance_default_retries = 5
 
-        sif = self.env.node_info[0]["admin_addr"]
+        clp_admin = self.env.clp_admin
 
-        # Add tokens to token registry. The minimum required permissions are  CLP.
+        # Add tokens to token registry. The minimum required permissions are CLP.
         # TODO Might want to use `tx tokenregistry set-registry` to do it in one step (faster)
         #      According to @sheokapr `tx tokenregistry set-registry` also works for only one entry
         #      But`tx tokenregistry register-all` also works only for one entry.
@@ -204,7 +204,7 @@ class Test:
                 "denom": ROWAN,
                 "base_denom": ROWAN,
                 "permissions": [1]
-            }, sif, broadcast_mode="block")
+            }, clp_admin, broadcast_mode="block")
             sifnoded.wait_for_last_transaction_to_be_mined()
 
         make_entry_v1 = lambda denom: sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
@@ -214,11 +214,10 @@ class Test:
             "base_denom": denom,
             "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
         }
-        sifnoded.token_registry_register_batch(sif,
+        sifnoded.token_registry_register_batch(clp_admin,
             tuple((make_entry_v2 if _hacking_ui else make_entry_v1)(denom) for denom in self.tokens))
 
         # Set up liquidity pools. We create them symmetrically (`native_amount == external_amount`).
-        clp_admin = sif
         sifnoded.create_liquidity_pools_batch(clp_admin,
             tuple((denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet) for denom in self.tokens))
 

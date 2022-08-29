@@ -1,3 +1,4 @@
+import contextlib
 from siftool.common import *
 from siftool import command, environments, project, sifchain, cosmos
 
@@ -7,16 +8,15 @@ def get_validators(env):
     return {v["description"]["moniker"]: v for v in sifnoded.query_staking_validators()}
 
 
-def test_transfer(env, i):
-    node_info = env.node_info[i]
-    sifnoded = env._sifnoded_for(node_info)
-    sifnoded.send_and_check(node_info["admin_addr"], sifnoded.create_addr(), {sifchain.ROWAN: 10 ** sifchain.ROWAN_DECIMALS})
+def test_transfer(env):
+    sifnoded = env.sifnoded
+    sifnoded.send_and_check(env.faucet, sifnoded.create_addr(), {sifchain.ROWAN: 10 ** sifchain.ROWAN_DECIMALS})
 
 
 def assert_validators_working(env, expected_monikers):
     assert set(get_validators(env)) == expected_monikers
     for i in range(len(env.node_info)):
-        test_transfer(env, 0)
+        test_transfer(env)
 
 
 class TestSifnodedEnvironment:
@@ -67,13 +67,13 @@ class TestSifnodedEnvironment:
         env.add_validator()
         env.start()
         assert len(env.running_processes) == 4
-        test_transfer(env, 0)  # 4 out of 4 => should work
+        test_transfer(env)  # 4 out of 4 => should work
         env.running_processes[-1].terminate()
         env.running_processes[-1].wait()
         env.open_log_files[-1].close()
         env.running_processes.pop()
         env.open_log_files.pop()
-        test_transfer(env, 0)  # 3 out of 4 => should work
+        test_transfer(env)  # 3 out of 4 => should work
         env.running_processes[-1].terminate()
         env.running_processes[-1].wait()
         env.open_log_files[-1].close()
@@ -81,7 +81,7 @@ class TestSifnodedEnvironment:
         env.open_log_files.pop()
         exception = None
         try:
-            test_transfer(env, 0)  # 2 out of 4 => should fail
+            test_transfer(env)  # 2 out of 4 => should fail
         except Exception as e:
             exception = e
         assert type(exception) == sifchain.SifnodedException
@@ -90,7 +90,7 @@ class TestSifnodedEnvironment:
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
         env.add_validator()
         env.start()
-        sifnoded = env._sifnoded_for(env.node_info[0])
+        sifnoded = env.sifnoded
         home1 = self.cmd.mktempdir()
         home2 = self.cmd.mktempdir()
         try:
@@ -153,3 +153,40 @@ class TestSifnodedEnvironment:
                     sifnoded_j.wait_for_balance_change(test_addr, {}, test_transfer_amount)
         finally:
             self.cmd.rmdir(tmpdir)
+
+    @contextlib.contextmanager
+    def with_test_env_with_tokens_and_pools(self, tokens_and_pools):
+        faucet_balance = cosmos.balance_add({
+            sifchain.ROWAN: 10**30,
+            sifchain.STAKE: 10**30,
+        }, {
+            t[0]: t[2] for t in tokens_and_pools
+        })
+
+        env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
+        env.add_validator()
+        env.init(faucet_balance=faucet_balance)
+        env.start()
+
+        sifnoded = env.sifnoded
+        sifnoded.send_batch(env.faucet, env.clp_admin, cosmos.balance_add(
+            {t[0]: t[4] for t in tokens_and_pools}, {sifchain.ROWAN: sum(t[3] for t in tokens_and_pools)}))
+
+        sifnoded.token_registry_register_batch(env.clp_admin,
+            [sifnoded.create_tokenregistry_entry(t[0], t[0], t[1], ["CLP"]) for t in tokens_and_pools])
+        sifnoded.create_liquidity_pools_batch(env.clp_admin,
+            [(t[0], t[3], t[4]) for t in tokens_and_pools])
+
+        yield env
+
+        env.close()
+
+    def test_env_with_tokens_and_pools(self):
+        tokens_and_pools = [
+            # denom, decimals, faucet balance, pool native amount, pool external amount
+            ["cusdc", 18, 10**30, 10**25, 10**25],
+        ]
+
+        with self.with_test_env_with_tokens_and_pools(tokens_and_pools) as env:
+            pools = env.sifnoded.query_pools()
+            assert len(pools) == len(tokens_and_pools)
