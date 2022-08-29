@@ -70,6 +70,16 @@ func TestTypes_MsgOpenValidateBasic(t *testing.T) {
 			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
 		},
 		{
+			name: "collateral amount is the default and invalid",
+			msgOpen: types.MsgOpen{
+				Signer:          "xxx",
+				CollateralAsset: "xxx",
+				BorrowAsset:     "xxx",
+				Position:        types.Position_LONG,
+			},
+			err: sdkerrors.Wrap(clptypes.ErrInValidAmount, sdk.NewUint(0).String()),
+		},
+		{
 			name: "collateral amount is zero",
 			msgOpen: types.MsgOpen{
 				Signer:           "xxx",

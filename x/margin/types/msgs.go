@@ -73,7 +73,7 @@ func (m MsgOpen) ValidateBasic() error {
 		return sdkerrors.Wrap(clptypes.ErrInValidAsset, m.BorrowAsset)
 	}
 
-	if m.CollateralAmount.IsZero() {
+	if m.CollateralAmount.Equal(sdk.Uint{}) || m.CollateralAmount.IsZero() {
 		return sdkerrors.Wrap(clptypes.ErrInValidAmount, m.CollateralAmount.String())
 	}
 	// Avoid eta (leverage - 1) going below zero.
