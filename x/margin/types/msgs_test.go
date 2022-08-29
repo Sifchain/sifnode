@@ -62,10 +62,11 @@ func TestTypes_MsgOpenValidateBasic(t *testing.T) {
 		{
 			name: "borrow asset invalid",
 			msgOpen: types.MsgOpen{
-				Signer:          "xxx",
-				CollateralAsset: "xxx",
-				BorrowAsset:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				Position:        types.Position_LONG,
+				Signer:           "xxx",
+				CollateralAsset:  "xxx",
+				CollateralAmount: sdk.NewUint(0),
+				BorrowAsset:      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				Position:         types.Position_LONG,
 			},
 			err: sdkerrors.Wrap(clptypes.ErrInValidAsset, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
 		},
