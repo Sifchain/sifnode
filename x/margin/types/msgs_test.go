@@ -25,7 +25,7 @@ func TestTypes_ValidateAsset(t *testing.T) {
 		},
 		{
 			asset: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-			valid: false,
+			valid: true,
 		},
 	}
 	for _, tt := range validateTests {

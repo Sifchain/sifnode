@@ -4,8 +4,6 @@
 package types
 
 import (
-	"strings"
-
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -31,11 +29,8 @@ var (
 )
 
 func Validate(asset string) bool {
-	if !clptypes.VerifyRange(len(strings.TrimSpace(asset)), 0, clptypes.MaxSymbolLength) {
-		return false
-	}
-	coin := sdk.NewCoin(asset, sdk.OneInt())
-	return coin.IsValid()
+	err := sdk.ValidateDenom(asset)
+	return err == nil
 }
 
 func IsValidPosition(position Position) bool {
