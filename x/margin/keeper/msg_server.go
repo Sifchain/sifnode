@@ -82,8 +82,9 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
 		sdk.NewAttribute("leverage", mtp.Leverage.String()),
 		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
-		sdk.NewAttribute("interest_paid", mtp.InterestPaid.String()),
-		sdk.NewAttribute("interest_unpaid", mtp.InterestUnpaid.String()),
+		sdk.NewAttribute("interest_paid_collateral", mtp.InterestPaidCollateral.String()),
+		sdk.NewAttribute("interest_paid_custody", mtp.InterestPaidCustody.String()),
+		sdk.NewAttribute("interest_unpaid_collateral", mtp.InterestUnpaidCollateral.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 	))
 
@@ -121,8 +122,9 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 		sdk.NewAttribute("repay_amount", repayAmount.String()),
 		sdk.NewAttribute("leverage", closedMtp.Leverage.String()),
 		sdk.NewAttribute("liabilities", closedMtp.Liabilities.String()),
-		sdk.NewAttribute("interest_paid", mtp.InterestPaid.String()),
-		sdk.NewAttribute("interest_unpaid", closedMtp.InterestUnpaid.String()),
+		sdk.NewAttribute("interest_paid_collateral", mtp.InterestPaidCollateral.String()),
+		sdk.NewAttribute("interest_paid_custody", mtp.InterestPaidCustody.String()),
+		sdk.NewAttribute("interest_unpaid_collateral", closedMtp.InterestUnpaidCollateral.String()),
 		sdk.NewAttribute("health", closedMtp.MtpHealth.String()),
 	))
 
@@ -149,7 +151,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg)
+		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg, true)
 		if err != nil {
 			return nil, err
 		}
@@ -254,7 +256,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
-		mtp.InterestUnpaid = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {
@@ -270,7 +272,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	return &mtp, repayAmount, nil
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, sdk.Uint, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdminClose bool) (*types.MTP, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
@@ -297,14 +299,14 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
-		mtp.InterestUnpaid = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {
 			return nil, sdk.ZeroUint(), err
 		}
 	}
-	if mtp.MtpHealth.GT(forceCloseThreshold) {
+	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
 
