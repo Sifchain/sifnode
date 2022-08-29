@@ -151,7 +151,7 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
-require pgregory.net/rapid v0.4.7
+require pgregory.net/rapid v0.5.0
 
 replace (
 	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.3-issue.850
