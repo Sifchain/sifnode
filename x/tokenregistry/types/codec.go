@@ -23,8 +23,6 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgDeregister{}, "tokenregistry/MsgDeregister", nil)
 	cdc.RegisterConcrete(&MsgDeregisterAll{}, "tokenregistry/MsgDeregisterAll", nil)
 	cdc.RegisterConcrete(&TokenMetadataAddRequest{}, "tokenregistry/TokenMetadataAddRequest", nil)
-	cdc.RegisterConcrete(&TokenMetadataDeleteRequest{}, "tokenregistry/TokenMetadataDeleteRequest", nil)
-	cdc.RegisterConcrete(&TokenMetadataSearchRequest{}, "tokenregistry/TokenMetadataSearchRequest", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -36,8 +34,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgDeregister{},
 		&MsgDeregisterAll{},
 		&TokenMetadataAddRequest{},
-		&TokenMetadataDeleteRequest{},
-		&TokenMetadataSearchRequest{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
