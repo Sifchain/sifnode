@@ -23,7 +23,6 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
 	CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to clptypes.Asset, pool clptypes.Pool, marginEnabled bool) (sdk.Uint, error)
 
