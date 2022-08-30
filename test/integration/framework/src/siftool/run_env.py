@@ -1025,6 +1025,8 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         log.debug("Witness count: {}".format(self.witness_count))
         log.debug("Consensus thresholds {}".format(self.consensus_threshold))
         log.debug("Validator 0 address: {}".format(sifnode_validators[0]["address"]))  # mint
+        log.debug("Log file directory: {}".format(log_dir))
+
         for sc_name, sc_address in peggy_sc_addrs.items():
             log.debug("{} smart contract address: {}".format(sc_name, sc_address))
 
