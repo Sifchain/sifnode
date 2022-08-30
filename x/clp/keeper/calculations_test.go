@@ -60,37 +60,88 @@ func TestKeeper_CheckBalances(t *testing.T) {
 }
 
 func TestKeeper_SwapOne(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
-	wBasis := sdk.NewInt(1000)
-	asymmetry := sdk.NewInt(10000)
-	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	require.NoError(t, err)
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Create Pool
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	assert.NoError(t, err)
-	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
-	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
-	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
-	assert.NoError(t, err)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	_, err = app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
-	assert.NoError(t, err)
-	// asymmetry is positive
-	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, types.GetSettlementAsset(), swapAmount, asset, *pool, sdk.OneDec())
-	assert.NoError(t, err)
-	assert.Equal(t, "19", swapResult.String())
-	assert.Equal(t, "978", liquidityFee.String())
-	assert.Equal(t, "0", priceImpact.String())
+	testcases := []struct {
+		name                         string
+		nativeAssetBalance           sdk.Uint
+		externalAssetBalance         sdk.Uint
+		sentAmount                   sdk.Uint
+		fromAsset                    types.Asset
+		toAsset                      types.Asset
+		pmtpCurrentRunningRate       sdk.Dec
+		errString                    error
+		expectedSwapResult           sdk.Uint
+		expectedLiquidityFee         sdk.Uint
+		expectedPriceImpact          sdk.Uint
+		expectedExternalAssetBalance sdk.Uint
+		expectedNativeAssetBalance   sdk.Uint
+	}{
+		{
+			name:                         "test1",
+			nativeAssetBalance:           sdk.NewUint(1000),
+			externalAssetBalance:         sdk.NewUint(877),
+			sentAmount:                   sdk.NewUint(50),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUint(41),
+			expectedLiquidityFee:         sdk.NewUint(0),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(836),
+			expectedNativeAssetBalance:   sdk.NewUint(1050),
+		},
+		{
+			name:                         "test2",
+			nativeAssetBalance:           sdk.NewUint(10000000),
+			externalAssetBalance:         sdk.NewUint(8770000),
+			sentAmount:                   sdk.NewUint(50000),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUint(43500),
+			expectedLiquidityFee:         sdk.NewUint(130),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(8726500),
+			expectedNativeAssetBalance:   sdk.NewUint(10050000),
+		},
+		{
+			name:                         "test3",
+			nativeAssetBalance:           sdk.NewUintFromString("157007500498726220240179086"),
+			externalAssetBalance:         sdk.NewUint(2674623482959),
+			sentAmount:                   sdk.NewUint(200000000),
+			toAsset:                      types.GetSettlementAsset(),
+			fromAsset:                    types.NewAsset("cusdt"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUintFromString("11704434254784015637542"),
+			expectedLiquidityFee:         sdk.NewUintFromString("35218959643281892590"),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(2674823482959),
+			expectedNativeAssetBalance:   sdk.NewUintFromString("156995796064471436224541544"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, app := test.CreateTestAppClp(false)
+			poolUnits := sdk.NewUint(2000) //don't care
+			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
+
+			swapResult, liquidityFee, priceImpact, pool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+
+			assert.NoError(t, err)
+			require.Equal(t, tc.expectedSwapResult.String(), swapResult.String())
+			require.Equal(t, tc.expectedLiquidityFee.String(), liquidityFee.String())
+			require.Equal(t, tc.expectedPriceImpact.String(), priceImpact.String())
+			require.Equal(t, tc.expectedExternalAssetBalance.String(), pool.ExternalAssetBalance.String())
+			require.Equal(t, tc.expectedNativeAssetBalance.String(), pool.NativeAssetBalance.String())
+		})
+	}
+
 }
 
 func TestKeeper_ExtractValuesFromPool(t *testing.T) {
@@ -128,7 +179,7 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), *pool, sdk.OneDec())
+	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3))
 	assert.Equal(t, "1", swapResult.String())
 }
 
@@ -140,7 +191,7 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 	}
 	asset := types.Asset{}
 
-	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), pool, sdk.NewDec(100))
+	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3))
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -531,53 +582,59 @@ func TestKeeper_CalcLiquidityFee(t *testing.T) {
 		errString           error
 	}{
 		{
-			name: "success",
-			X:    sdk.NewUint(0),
-			x:    sdk.NewUint(0),
-			Y:    sdk.NewUint(1),
-			fee:  sdk.NewUint(0),
+			name:    "success",
+			toRowan: true,
+			X:       sdk.NewUint(0),
+			x:       sdk.NewUint(0),
+			Y:       sdk.NewUint(1),
+			fee:     sdk.NewUint(0),
 		},
 		{
-			name: "success",
-			X:    sdk.NewUint(1),
-			x:    sdk.NewUint(1),
-			Y:    sdk.NewUint(1),
-			fee:  sdk.NewUint(0),
+			name:    "success",
+			toRowan: true,
+			X:       sdk.NewUint(1),
+			x:       sdk.NewUint(1),
+			Y:       sdk.NewUint(1),
+			fee:     sdk.NewUint(0),
 		},
 		{
-			name: "success",
-			X:    sdk.NewUint(1),
-			x:    sdk.NewUint(1),
-			Y:    sdk.NewUint(4),
-			fee:  sdk.NewUint(1),
+			name:    "success",
+			toRowan: true,
+			X:       sdk.NewUint(1),
+			x:       sdk.NewUint(1),
+			Y:       sdk.NewUint(4),
+			fee:     sdk.NewUint(0),
 		},
 		{
-			name: "success",
-			X:    sdk.NewUint(2),
-			x:    sdk.NewUint(2),
-			Y:    sdk.NewUint(16),
-			fee:  sdk.NewUint(4),
+			name:    "success",
+			toRowan: true,
+			X:       sdk.NewUint(2),
+			x:       sdk.NewUint(2),
+			Y:       sdk.NewUint(16),
+			fee:     sdk.NewUint(0),
 		},
 		{
-			name: "success",
-			X:    sdk.NewUint(1054677676764),
-			x:    sdk.NewUint(2567655449999),
-			Y:    sdk.NewUint(1099511627776),
-			fee:  sdk.NewUint(552454535440),
+			name:    "success",
+			toRowan: true,
+			X:       sdk.NewUint(1054677676764),
+			x:       sdk.NewUint(2567655449999),
+			Y:       sdk.NewUint(1099511627776),
+			fee:     sdk.NewUint(2292288459),
 		},
 		{
-			name: "success",
-			X:    sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
-			x:    sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
-			Y:    sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
-			fee:  sdk.NewUintFromString("1089217832674356640599131638158097447402363655799918705091874559386226334"),
+			name:    "success",
+			toRowan: true,
+			X:       sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
+			x:       sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
+			Y:       sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
+			fee:     sdk.NewUintFromString("9706853038245001398600547299925090963413469041036560829464056119132287"),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			fee := clpkeeper.CalcLiquidityFee(tc.X, tc.x, tc.Y)
+			fee := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.X, tc.x, tc.Y, sdk.NewDecWithPrec(3, 3), sdk.NewDecWithPrec(2, 2))
 			require.Equal(t, tc.fee.String(), fee.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
 	}
@@ -589,6 +646,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 		toRowan                bool
 		X, x, Y, y             sdk.Uint
 		pmtpCurrentRunningRate sdk.Dec
+		swapFeeRate            sdk.Dec
 		err                    error
 		errString              error
 	}{
@@ -600,6 +658,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "adjust external token without rowan",
@@ -609,6 +668,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=0, X=0, Y=0",
@@ -618,6 +678,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(0),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=1, X=1, Y=1",
@@ -627,6 +688,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(1),
 			y:                      sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=1, X=1, Y=4",
@@ -636,6 +698,7 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(4),
 			y:                      sdk.NewUint(1),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
 			name:                   "x=1, X=1, Y=4, nf=10",
@@ -645,13 +708,34 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			Y:                      sdk.NewUint(4),
 			y:                      sdk.NewUint(1),
 			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "x=23, X=42, Y=1337",
+			toRowan:                true,
+			X:                      sdk.NewUint(42),
+			x:                      sdk.NewUint(23),
+			Y:                      sdk.NewUint(1337),
+			y:                      sdk.NewUint(471),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "swap fee rate = 0.01",
+			toRowan:                false,
+			X:                      sdk.NewUint(1999800619938006200),
+			x:                      sdk.NewUint(200000000000000),
+			Y:                      sdk.NewUint(2000200000000000000),
+			y:                      sdk.NewUint(198019738620019),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeRate:            sdk.NewDecWithPrec(1, 2),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate)
+			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 		})
@@ -730,7 +814,7 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 	}
 }
 
-//nolint
+// nolint
 func TestKeeper_CalcSpotPriceX(t *testing.T) {
 
 	testcases := []struct {
@@ -815,14 +899,14 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
 		},
 		{
-			name:                   "success big decimals",
+			name:                   "failure big decimals",
 			X:                      sdk.NewUint(100),
 			Y:                      sdk.NewUint(100),
 			decimalsX:              255,
 			decimalsY:              0,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
 			isXNative:              true,
-			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+			errString:              errors.New("decimal out of range; bitLen: got 907, max 315"),
 		},
 		{
 			name:                   "success big decimals, small answer",
@@ -1027,12 +1111,12 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
 		},
 		{
-			name:                   "success big decimals",
+			name:                   "failure big decimals",
 			nativeAssetBalance:     sdk.NewUint(100),
 			externalAssetBalance:   sdk.NewUint(100),
 			decimalsExternal:       255,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
-			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 10)), 18),
+			errString:              errors.New("decimal out of range; bitLen: got 848, max 315"),
 		},
 		{
 			name:                   "success small decimals",
@@ -1112,7 +1196,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 
 			require.NoError(t, err)
 
-			ratioDec := clpkeeper.RatToDec(&ratio)
+			ratioDec, _ := clpkeeper.RatToDec(&ratio)
 
 			require.Equal(t, tc.expected.String(), ratioDec.String())
 		})
