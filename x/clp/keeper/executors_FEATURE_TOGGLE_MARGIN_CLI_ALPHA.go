@@ -28,6 +28,7 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
@@ -35,7 +36,7 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
 	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
-	extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, marginEnabled)
+	extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 
 	withdrawExternalAssetAmountInt, ok := k.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
@@ -58,7 +59,7 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
 		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
-		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, marginEnabled)
+		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 		if err != nil {
 			return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -80,7 +81,7 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	}
 	if msg.Asymmetry.IsNegative() {
 		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
-		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, marginEnabled)
+		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 		if err != nil {
 			return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}

@@ -23,7 +23,6 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
 	CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to clptypes.Asset, pool clptypes.Pool, marginEnabled bool) (sdk.Uint, error)
 
@@ -92,7 +91,7 @@ type Keeper interface {
 	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
 	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, sdk.Uint, error)
+	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose, isAdminClose bool) (*MTP, sdk.Uint, error)
 
 	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 

@@ -313,8 +313,8 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		return sdk.ZeroDec(), nil
 	}
 	// include unpaid interest in debt (from disabled incremental pay)
-	if mtp.InterestUnpaid.GT(sdk.ZeroUint()) {
-		xl = xl.Add(mtp.InterestUnpaid)
+	if mtp.InterestUnpaidCollateral.GT(sdk.ZeroUint()) {
+		xl = xl.Add(mtp.InterestUnpaidCollateral)
 	}
 
 	debt, err := k.CLPSwap(ctx, xl, mtp.CustodyAsset, pool)
@@ -359,7 +359,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	// nolint:ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	Liabilities := mtp.Liabilities
-	InterestUnpaid := mtp.InterestUnpaid
+	InterestUnpaidCollateral := mtp.InterestUnpaidCollateral
 
 	var err error
 	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, pool)
@@ -368,7 +368,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	}
 
 	have := repayAmount
-	owe := Liabilities.Add(InterestUnpaid)
+	owe := Liabilities.Add(InterestUnpaidCollateral)
 
 	fmt.Println("have:", have)
 	fmt.Println("owe:", owe)
@@ -378,15 +378,15 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		//can't afford principle liability
 		returnAmount = sdk.ZeroUint()
 		debtP = Liabilities.Sub(have)
-		debtI = InterestUnpaid
+		debtI = InterestUnpaidCollateral
 	} else if have.LT(owe) {
 		// v principle liability; x excess liability
 		returnAmount = sdk.ZeroUint()
 		debtP = sdk.ZeroUint()
-		debtI = Liabilities.Add(InterestUnpaid).Sub(have)
+		debtI = Liabilities.Add(InterestUnpaidCollateral).Sub(have)
 	} else {
 		// can afford both
-		returnAmount = have.Sub(Liabilities).Sub(InterestUnpaid)
+		returnAmount = have.Sub(Liabilities).Sub(InterestUnpaidCollateral)
 		debtP = sdk.ZeroUint()
 		debtI = sdk.ZeroUint()
 	}
@@ -444,12 +444,10 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 
 func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
 	// if mtp has unpaid interest, add to payment
-	if mtp.InterestUnpaid.GT(sdk.ZeroUint()) {
-		interestPayment = interestPayment.Add(mtp.InterestUnpaid)
+	if mtp.InterestUnpaidCollateral.GT(sdk.ZeroUint()) {
+		interestPayment = interestPayment.Add(mtp.InterestUnpaidCollateral)
 	}
 
-	// add payment to total paid
-	mtp.InterestPaid = mtp.InterestPaid.Add(interestPayment)
 	// swap interest payment to custody asset for payment
 	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, pool)
 	if err != nil {
@@ -457,13 +455,25 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	}
 
 	// if paying unpaid interest reset to 0
-	mtp.InterestUnpaid = sdk.ZeroUint()
+	mtp.InterestUnpaidCollateral = sdk.ZeroUint()
 
 	// edge case, not enough custody to cover payment
 	if interestPaymentCustody.GT(mtp.CustodyAmount) {
-		mtp.InterestUnpaid = interestPaymentCustody.Sub(mtp.CustodyAmount)
+		// swap custody amount to collateral for updating interest unpaid
+		custodyAmountCollateral, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool) // may need spot price here to not deduct fee
+		if err != nil {
+			return sdk.ZeroUint(), err
+		}
+		mtp.InterestUnpaidCollateral = interestPayment.Sub(custodyAmountCollateral)
+		interestPayment = custodyAmountCollateral
 		interestPaymentCustody = mtp.CustodyAmount
 	}
+
+	// add payment to total paid - collateral
+	mtp.InterestPaidCollateral = mtp.InterestPaidCollateral.Add(interestPayment)
+
+	// add payment to total paid - custody
+	mtp.InterestPaidCustody = mtp.InterestPaidCustody.Add(interestPaymentCustody)
 
 	// deduct interest payment from custody amount
 	mtp.CustodyAmount = mtp.CustodyAmount.Sub(interestPaymentCustody)
@@ -519,7 +529,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
-	if interestRateChange.LTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
+	if interestRateChange.GTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
 		interestRate = targetInterestRate
 	} else if interestRateChange.GT(interestRateIncrease) {
 		interestRate = prevInterestRate.Add(interestRateIncrease)
