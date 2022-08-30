@@ -370,10 +370,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	have := repayAmount
 	owe := Liabilities.Add(InterestUnpaidCollateral)
 
-	fmt.Println("have:", have)
-	fmt.Println("owe:", owe)
-	fmt.Println("Liabilities:", Liabilities)
-
 	if have.LT(Liabilities) {
 		//can't afford principle liability
 		returnAmount = sdk.ZeroUint()
@@ -433,7 +429,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.Liabilities)
 	}
-
 	err = k.DestroyMTP(ctx, mtp.Address, mtp.Id)
 	if err != nil {
 		return err

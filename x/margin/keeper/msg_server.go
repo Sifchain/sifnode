@@ -277,7 +277,6 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdmi
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
-
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
@@ -309,7 +308,6 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdmi
 	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
-
 	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
@@ -326,6 +324,31 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdmi
 	}
 
 	return &mtp, repayAmount, nil
+}
+
+func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (*types.MsgAdminCloseResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	if msg.CloseAll {
+		params.SafetyFactor = sdk.MustNewDecFromStr("100.00")
+	}
+	params.ForceCloseFundPercentage = sdk.ZeroDec()
+	k.SetParams(ctx, &params)
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMarginUpdateParams,
+		sdk.NewAttribute(types.AttributeKeyMarginParams, params.String()),
+		sdk.NewAttribute(clptypes.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+	))
+
+	return &types.MsgAdminCloseResponse{}, nil
 }
 
 func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {

@@ -32,6 +32,7 @@ func GetTxCmd() *cobra.Command {
 		GetUpdatePoolsCmd(),
 		GetDewhitelistCmd(),
 		GetWhitelistCmd(),
+		GetAdminCloseCmd(),
 	)
 	return cmd
 }
@@ -138,6 +139,39 @@ func GetCloseCmd() *cobra.Command {
 	}
 	cmd.Flags().Uint64("id", 0, "id of the position")
 	_ = cmd.MarkFlagRequired("id")
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetAdminCloseCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "admin-close",
+		Short: "Force close margin position",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
+			closeAll, err := cmd.Flags().GetBool("close_all")
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgAdminClose{
+				Signer:   signer.String(),
+				CloseAll: closeAll,
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().String("close_all", "", "mtp address")
+	_ = cmd.MarkFlagRequired("close_all")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
