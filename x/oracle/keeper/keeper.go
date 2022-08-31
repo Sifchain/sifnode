@@ -86,6 +86,8 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 }
 
 // AppendValidatorToProphecy append the validator's signature to prophecy
+//
+// Returns ErrInvalidProphecyStatus if prophecy.Status
 func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator sdk.ValAddress) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
@@ -97,7 +99,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
-
+		k.Logger(ctx).Debug("Processing pending prophecy")
 		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
@@ -110,15 +112,17 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
+		k.Logger(ctx).Debug("Processing succeeded prophecy")
 
 		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 		}
 		k.SetProphecy(ctx, prophecy)
-		return prophecy.Status, types.ErrProphecyFinalized
+		return prophecy.Status, nil
 
 	default:
+		// This is possible IFF GetProphecy returned with UNSPECIFIED
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
 }
@@ -136,6 +140,8 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 }
 
 // processCompletion looks at a given prophecy
+//
+// Updates Prophecy.Status to SUCCESS if voting power in ClaimValidators is higher than Consensus needed for networkDescriptor
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
 	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
@@ -235,6 +241,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 	if err != nil {
+		k.Logger(ctx).Error("Error appending validator to Prophecy", "Error", err)
 		return err
 	}
 

@@ -226,7 +226,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
 
-	if err != nil && err != oracletypes.ErrProphecyFinalized {
+	if err != nil {
 		logger.Error("bridge keeper failed to process claim.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -490,7 +490,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	err = srv.Keeper.ProcessSignProphecy(ctx, msg)
 
 	// if error is ErrProphecyFinalized, will continue and emit event, not return error.
-	if err != nil && err != oracletypes.ErrProphecyFinalized {
+	if err != nil {
 		logger.Error("keeper failed to process sign prophecy message.", errorMessageKey, err.Error())
 		return nil, err
 	}
