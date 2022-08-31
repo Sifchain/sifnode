@@ -119,7 +119,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 		}
 		k.SetProphecy(ctx, prophecy)
-		return prophecy.Status, nil
+		return prophecy.Status, types.ErrProphecyFinalized
 
 	default:
 		// This is possible IFF GetProphecy returned with UNSPECIFIED
@@ -240,7 +240,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	oldStatus := prophecy.Status
 
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
-	if err != nil {
+	if err != nil && err != types.ErrProphecyFinalized {
 		k.Logger(ctx).Error("Error appending validator to Prophecy", "Error", err)
 		return err
 	}
