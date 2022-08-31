@@ -473,6 +473,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
@@ -505,7 +506,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
-	totalLiquidityFee := sdk.ZeroUint()
+	totalLiquidityFee := sdk.ZeroUint() // nolint:staticcheck
 	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
@@ -536,7 +537,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if !msg.SentAsset.Equals(nativeAsset) && !msg.ReceivedAsset.Equals(nativeAsset) {
-		emitAmount, lp, ts, finalPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, *sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate)
+		emitAmount, lp, ts, finalPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, *sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, swapFeeRate)
 		if err != nil {
 			return nil, err
 		}
@@ -562,7 +563,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 	}
 	// Calculating amount user receives
-	emitAmount, lp, ts, finalPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, *sentAsset, sentAmount, *receivedAsset, outPool, pmtpCurrentRunningRate)
+	emitAmount, lp, ts, finalPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, *sentAsset, sentAmount, *receivedAsset, outPool, pmtpCurrentRunningRate, swapFeeRate)
 	if err != nil {
 		return nil, err
 	}
@@ -591,7 +592,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 	if liquidityFeeNative.GT(sdk.ZeroUint()) {
 		liquidityFeeExternal = liquidityFeeExternal.Add(lp)
-		firstSwapFeeInOutputAsset := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, k, msg.ReceivedAsset, liquidityFeeNative, outPool, pmtpCurrentRunningRate)
+		firstSwapFeeInOutputAsset := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, k, msg.ReceivedAsset, liquidityFeeNative, outPool, pmtpCurrentRunningRate, swapFeeRate)
 		totalLiquidityFee = liquidityFeeExternal.Add(firstSwapFeeInOutputAsset)
 	} else {
 		totalLiquidityFee = liquidityFeeNative.Add(lp)
@@ -742,6 +743,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -756,7 +758,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		return nil, err
 	}
 
-	err = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx, k, msg, lp, pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount, eAsset, pmtpCurrentRunningRate)
+	err = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWithdrawUnits(ctx, k, msg, lp, pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount, eAsset, pmtpCurrentRunningRate, swapFeeRate)
 	if err != nil {
 		return nil, err
 	}
@@ -823,6 +825,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -847,7 +850,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, err
 	}
 
-	err = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx, k, msg, lp, pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount, eAsset, pmtpCurrentRunningRate)
+	err = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_QueueRemovalWithWBasisPoints(ctx, k, msg, lp, pool, withdrawNativeAssetAmount, withdrawExternalAssetAmount, eAsset, pmtpCurrentRunningRate, swapFeeRate)
 	if err != nil {
 		return nil, err
 	}
@@ -873,7 +876,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		swapResult, _, _, swappedPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate)
+		swapResult, _, _, swappedPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, swapFeeRate)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -894,7 +897,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		swapResult, _, _, swappedPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, *msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate)
+		swapResult, _, _, swappedPool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, k, *msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -996,5 +999,32 @@ func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *ty
 		),
 	})
 	ctx.EventManager().EmitEvents(events)
+	return response, nil
+}
+
+func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdateSwapFeeRateRequest) (*types.MsgUpdateSwapFeeRateResponse, error) {
+	response := &types.MsgUpdateSwapFeeRateResponse{}
+
+	// defensive programming
+	if msg == nil {
+		return response, errors.Errorf("msg was nil")
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return response, err
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.SetSwapFeeRate(ctx, &types.SwapFeeRate{SwapFeeRate: msg.SwapFeeRate})
+
 	return response, nil
 }

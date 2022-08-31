@@ -97,23 +97,27 @@ func (m *GenesisState) GetParams() *Params {
 }
 
 type Params struct {
-	LeverageMax              github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=leverage_max,json=leverageMax,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"leverage_max"`
-	InterestRateMax          github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=interest_rate_max,json=interestRateMax,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_max"`
-	InterestRateMin          github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,3,opt,name=interest_rate_min,json=interestRateMin,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_min"`
-	InterestRateIncrease     github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=interest_rate_increase,json=interestRateIncrease,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_increase"`
-	InterestRateDecrease     github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,5,opt,name=interest_rate_decrease,json=interestRateDecrease,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_decrease"`
-	HealthGainFactor         github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,6,opt,name=health_gain_factor,json=healthGainFactor,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"health_gain_factor"`
-	EpochLength              int64                                  `protobuf:"varint,7,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
-	Pools                    []string                               `protobuf:"bytes,8,rep,name=pools,proto3" json:"pools,omitempty"`
-	ForceCloseThreshold      github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,9,opt,name=force_close_threshold,json=forceCloseThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"force_close_threshold"`
-	RemovalQueueThreshold    github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,10,opt,name=removal_queue_threshold,json=removalQueueThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"removal_queue_threshold"`
-	MaxOpenPositions         uint64                                 `protobuf:"varint,11,opt,name=max_open_positions,json=maxOpenPositions,proto3" json:"max_open_positions,omitempty"`
-	PoolOpenThreshold        github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,12,opt,name=pool_open_threshold,json=poolOpenThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"pool_open_threshold"`
-	ForceCloseFundPercentage github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,13,opt,name=force_close_fund_percentage,json=forceCloseFundPercentage,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"force_close_fund_percentage"`
-	InsuranceFundAddress     string                                 `protobuf:"bytes,14,opt,name=insurance_fund_address,json=insuranceFundAddress,proto3" json:"insurance_fund_address,omitempty"`
-	SqModifier               github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,15,opt,name=sq_modifier,json=sqModifier,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"sq_modifier"`
-	SafetyFactor             github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,16,opt,name=safety_factor,json=safetyFactor,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"safety_factor"`
-	ClosedPools              []string                               `protobuf:"bytes,17,rep,name=closed_pools,json=closedPools,proto3" json:"closed_pools,omitempty"`
+	LeverageMax                                    github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=leverage_max,json=leverageMax,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"leverage_max"`
+	InterestRateMax                                github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=interest_rate_max,json=interestRateMax,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_max"`
+	InterestRateMin                                github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,3,opt,name=interest_rate_min,json=interestRateMin,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_min"`
+	InterestRateIncrease                           github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=interest_rate_increase,json=interestRateIncrease,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_increase"`
+	InterestRateDecrease                           github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,5,opt,name=interest_rate_decrease,json=interestRateDecrease,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"interest_rate_decrease"`
+	HealthGainFactor                               github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,6,opt,name=health_gain_factor,json=healthGainFactor,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"health_gain_factor"`
+	EpochLength                                    int64                                  `protobuf:"varint,7,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	Pools                                          []string                               `protobuf:"bytes,8,rep,name=pools,proto3" json:"pools,omitempty"`
+	ForceCloseThreshold                            github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,9,opt,name=force_close_threshold,json=forceCloseThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"force_close_threshold"`
+	RemovalQueueThreshold                          github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,10,opt,name=removal_queue_threshold,json=removalQueueThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"removal_queue_threshold"`
+	MaxOpenPositions                               uint64                                 `protobuf:"varint,11,opt,name=max_open_positions,json=maxOpenPositions,proto3" json:"max_open_positions,omitempty"`
+	PoolOpenThreshold                              github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,12,opt,name=pool_open_threshold,json=poolOpenThreshold,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"pool_open_threshold"`
+	ForceCloseFundPercentage                       github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,13,opt,name=force_close_fund_percentage,json=forceCloseFundPercentage,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"force_close_fund_percentage"`
+	ForceCloseInsuranceFundAddress                 string                                 `protobuf:"bytes,14,opt,name=force_close_insurance_fund_address,json=forceCloseInsuranceFundAddress,proto3" json:"force_close_insurance_fund_address,omitempty"`
+	IncrementalInterestPaymentFundPercentage       github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,15,opt,name=incremental_interest_payment_fund_percentage,json=incrementalInterestPaymentFundPercentage,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"incremental_interest_payment_fund_percentage"`
+	IncrementalInterestPaymentInsuranceFundAddress string                                 `protobuf:"bytes,16,opt,name=incremental_interest_payment_insurance_fund_address,json=incrementalInterestPaymentInsuranceFundAddress,proto3" json:"incremental_interest_payment_insurance_fund_address,omitempty"`
+	SqModifier                                     github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,17,opt,name=sq_modifier,json=sqModifier,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"sq_modifier"`
+	SafetyFactor                                   github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,18,opt,name=safety_factor,json=safetyFactor,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"safety_factor"`
+	ClosedPools                                    []string                               `protobuf:"bytes,19,rep,name=closed_pools,json=closedPools,proto3" json:"closed_pools,omitempty"`
+	IncrementalInterestPaymentEnabled              bool                                   `protobuf:"varint,20,opt,name=incremental_interest_payment_enabled,json=incrementalInterestPaymentEnabled,proto3" json:"incremental_interest_payment_enabled,omitempty"`
+	WhitelistingEnabled                            bool                                   `protobuf:"varint,21,opt,name=whitelisting_enabled,json=whitelistingEnabled,proto3" json:"whitelisting_enabled,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -170,9 +174,16 @@ func (m *Params) GetMaxOpenPositions() uint64 {
 	return 0
 }
 
-func (m *Params) GetInsuranceFundAddress() string {
+func (m *Params) GetForceCloseInsuranceFundAddress() string {
 	if m != nil {
-		return m.InsuranceFundAddress
+		return m.ForceCloseInsuranceFundAddress
+	}
+	return ""
+}
+
+func (m *Params) GetIncrementalInterestPaymentInsuranceFundAddress() string {
+	if m != nil {
+		return m.IncrementalInterestPaymentInsuranceFundAddress
 	}
 	return ""
 }
@@ -184,18 +195,34 @@ func (m *Params) GetClosedPools() []string {
 	return nil
 }
 
+func (m *Params) GetIncrementalInterestPaymentEnabled() bool {
+	if m != nil {
+		return m.IncrementalInterestPaymentEnabled
+	}
+	return false
+}
+
+func (m *Params) GetWhitelistingEnabled() bool {
+	if m != nil {
+		return m.WhitelistingEnabled
+	}
+	return false
+}
+
 type MTP struct {
-	Address          string                                  `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	CollateralAsset  string                                  `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
-	CollateralAmount github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,3,opt,name=collateral_amount,json=collateralAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"collateral_amount"`
-	LiabilitiesP     github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,4,opt,name=liabilities_p,json=liabilitiesP,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"liabilities_p"`
-	LiabilitiesI     github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,5,opt,name=liabilities_i,json=liabilitiesI,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"liabilities_i"`
-	CustodyAsset     string                                  `protobuf:"bytes,6,opt,name=custody_asset,json=custodyAsset,proto3" json:"custody_asset,omitempty"`
-	CustodyAmount    github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,7,opt,name=custody_amount,json=custodyAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"custody_amount"`
-	Leverage         github_com_cosmos_cosmos_sdk_types.Dec  `protobuf:"bytes,8,opt,name=leverage,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"leverage"`
-	MtpHealth        github_com_cosmos_cosmos_sdk_types.Dec  `protobuf:"bytes,9,opt,name=mtp_health,json=mtpHealth,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"mtp_health"`
-	Position         Position                                `protobuf:"varint,10,opt,name=position,proto3,enum=sifnode.margin.v1.Position" json:"position,omitempty"`
-	Id               uint64                                  `protobuf:"varint,11,opt,name=id,proto3" json:"id,omitempty"`
+	Address                  string                                  `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	CollateralAsset          string                                  `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3" json:"collateral_asset,omitempty"`
+	CollateralAmount         github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,3,opt,name=collateral_amount,json=collateralAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"collateral_amount"`
+	Liabilities              github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,4,opt,name=liabilities,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"liabilities"`
+	InterestPaidCollateral   github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,5,opt,name=interest_paid_collateral,json=interestPaidCollateral,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"interest_paid_collateral"`
+	InterestPaidCustody      github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,6,opt,name=interest_paid_custody,json=interestPaidCustody,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"interest_paid_custody"`
+	InterestUnpaidCollateral github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,7,opt,name=interest_unpaid_collateral,json=interestUnpaidCollateral,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"interest_unpaid_collateral"`
+	CustodyAsset             string                                  `protobuf:"bytes,8,opt,name=custody_asset,json=custodyAsset,proto3" json:"custody_asset,omitempty"`
+	CustodyAmount            github_com_cosmos_cosmos_sdk_types.Uint `protobuf:"bytes,9,opt,name=custody_amount,json=custodyAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Uint" json:"custody_amount"`
+	Leverage                 github_com_cosmos_cosmos_sdk_types.Dec  `protobuf:"bytes,10,opt,name=leverage,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"leverage"`
+	MtpHealth                github_com_cosmos_cosmos_sdk_types.Dec  `protobuf:"bytes,11,opt,name=mtp_health,json=mtpHealth,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"mtp_health"`
+	Position                 Position                                `protobuf:"varint,12,opt,name=position,proto3,enum=sifnode.margin.v1.Position" json:"position,omitempty"`
+	Id                       uint64                                  `protobuf:"varint,13,opt,name=id,proto3" json:"id,omitempty"`
 }
 
 func (m *MTP) Reset()         { *m = MTP{} }
@@ -276,60 +303,69 @@ func init() {
 func init() { proto.RegisterFile("sifnode/margin/v1/types.proto", fileDescriptor_b3994728d56e8650) }
 
 var fileDescriptor_b3994728d56e8650 = []byte{
-	// 843 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x96, 0xcf, 0x6f, 0x1b, 0x45,
-	0x14, 0xc7, 0xed, 0xfc, 0xb4, 0x9f, 0x9d, 0xc4, 0x9e, 0xa6, 0xb0, 0x50, 0xe1, 0x86, 0x20, 0x41,
-	0xa8, 0xc0, 0x26, 0x05, 0x89, 0x73, 0xda, 0x34, 0x69, 0x50, 0xd3, 0xb8, 0xeb, 0x94, 0x43, 0x55,
-	0x31, 0x9a, 0xec, 0x3e, 0x7b, 0x47, 0xec, 0xce, 0x6c, 0x66, 0x66, 0x23, 0xe7, 0xbf, 0xe0, 0x9f,
-	0xe1, 0xca, 0xb9, 0xc7, 0x1e, 0x11, 0x87, 0x0a, 0x25, 0xff, 0x08, 0xda, 0xd9, 0xd9, 0xd8, 0x50,
-	0x90, 0x60, 0xcb, 0xc9, 0xde, 0x37, 0x6f, 0x3f, 0xdf, 0xf7, 0x9e, 0x9e, 0xbe, 0x3b, 0xf0, 0x91,
-	0xe6, 0x63, 0x21, 0x43, 0x1c, 0x24, 0x4c, 0x4d, 0xb8, 0x18, 0x5c, 0xec, 0x0e, 0xcc, 0x65, 0x8a,
-	0xba, 0x9f, 0x2a, 0x69, 0x24, 0xe9, 0xba, 0xe3, 0x7e, 0x71, 0xdc, 0xbf, 0xd8, 0xfd, 0x70, 0x73,
-	0x22, 0x27, 0xd2, 0x9e, 0x0e, 0xf2, 0x7f, 0x45, 0xe2, 0xf6, 0x1e, 0xb4, 0x0f, 0x51, 0xa0, 0xe6,
-	0x7a, 0x64, 0x98, 0x41, 0xb2, 0x0b, 0x2b, 0x29, 0x53, 0x2c, 0xd1, 0x5e, 0x7d, 0xab, 0xbe, 0xd3,
-	0xba, 0xff, 0x41, 0xff, 0x2d, 0x52, 0x7f, 0x68, 0x13, 0x7c, 0x97, 0xb8, 0xfd, 0x0b, 0xc0, 0x4a,
-	0x11, 0x22, 0xcf, 0xa0, 0x1d, 0xe3, 0x05, 0x2a, 0x36, 0x41, 0x9a, 0xb0, 0xa9, 0x65, 0x34, 0x1f,
-	0xf4, 0x5f, 0xbd, 0xb9, 0x5b, 0xfb, 0xed, 0xcd, 0xdd, 0x4f, 0x27, 0xdc, 0x44, 0xd9, 0x59, 0x3f,
-	0x90, 0xc9, 0x20, 0x90, 0x3a, 0x91, 0xda, 0xfd, 0x7c, 0xa9, 0xc3, 0x1f, 0x5d, 0xf9, 0xfb, 0x18,
-	0xf8, 0xad, 0x92, 0x71, 0xcc, 0xa6, 0xe4, 0x05, 0x74, 0xb9, 0x30, 0xa8, 0x50, 0x1b, 0xaa, 0x98,
-	0x29, 0xb8, 0x0b, 0x95, 0xb8, 0x1b, 0x25, 0xc8, 0x67, 0xe6, 0x1f, 0xd8, 0x5c, 0x78, 0x8b, 0xff,
-	0x03, 0x9b, 0x0b, 0x12, 0xc2, 0x7b, 0x7f, 0x66, 0x73, 0x11, 0x28, 0x64, 0x1a, 0xbd, 0xa5, 0x4a,
-	0x02, 0x9b, 0xf3, 0x02, 0x47, 0x8e, 0xf5, 0xb6, 0x4a, 0x88, 0x4e, 0x65, 0xf9, 0xdd, 0x55, 0xf6,
-	0x1d, 0x8b, 0xbc, 0x04, 0x12, 0x21, 0x8b, 0x4d, 0x44, 0x27, 0x8c, 0x0b, 0x3a, 0x66, 0x81, 0x91,
-	0xca, 0x5b, 0xa9, 0xa4, 0xd0, 0x29, 0x48, 0x87, 0x8c, 0x8b, 0x03, 0xcb, 0x21, 0x1f, 0x43, 0x1b,
-	0x53, 0x19, 0x44, 0x34, 0x46, 0x31, 0x31, 0x91, 0xb7, 0xba, 0x55, 0xdf, 0x59, 0xf4, 0x5b, 0x36,
-	0xf6, 0xc4, 0x86, 0xc8, 0x26, 0x2c, 0xa7, 0x52, 0xc6, 0xda, 0x6b, 0x6c, 0x2d, 0xee, 0x34, 0xfd,
-	0xe2, 0x81, 0x9c, 0xc1, 0xed, 0xb1, 0x54, 0x01, 0xd2, 0x20, 0x96, 0x1a, 0xa9, 0x89, 0x14, 0xea,
-	0x48, 0xc6, 0xa1, 0xd7, 0xac, 0x54, 0xd9, 0x2d, 0x0b, 0x7b, 0x98, 0xb3, 0x4e, 0x4b, 0x14, 0x19,
-	0xc3, 0xfb, 0x0a, 0x13, 0x79, 0xc1, 0x62, 0x7a, 0x9e, 0x61, 0x36, 0xaf, 0x02, 0x95, 0x54, 0x6e,
-	0x3b, 0xdc, 0xb3, 0x9c, 0x36, 0xd3, 0xf9, 0x02, 0x48, 0xc2, 0xa6, 0x54, 0xa6, 0x28, 0x68, 0x2a,
-	0x35, 0x37, 0x5c, 0x0a, 0xed, 0xb5, 0xb6, 0xea, 0x3b, 0x4b, 0x7e, 0x27, 0x61, 0xd3, 0x93, 0x14,
-	0xc5, 0xb0, 0x8c, 0x93, 0x1f, 0xe0, 0x56, 0x3e, 0x82, 0x22, 0x7d, 0x56, 0x51, 0xbb, 0x52, 0x45,
-	0xdd, 0x1c, 0x95, 0xf3, 0x67, 0xd5, 0x24, 0x70, 0x67, 0x7e, 0xb2, 0xe3, 0x4c, 0x84, 0x34, 0x45,
-	0x15, 0xa0, 0x30, 0x6c, 0x82, 0xde, 0x5a, 0x25, 0x1d, 0x6f, 0x36, 0xdf, 0x83, 0x4c, 0x84, 0xc3,
-	0x1b, 0x1e, 0xf9, 0x26, 0xdf, 0x62, 0x9d, 0x29, 0x26, 0x02, 0x27, 0xc6, 0xc2, 0x50, 0xa1, 0xd6,
-	0xde, 0x7a, 0xae, 0x94, 0x6f, 0xa5, 0x3b, 0xcd, 0x5f, 0xdc, 0x2b, 0xce, 0xc8, 0x09, 0xb4, 0xf4,
-	0x39, 0x4d, 0x64, 0xc8, 0xc7, 0x1c, 0x95, 0xb7, 0x51, 0xa9, 0x28, 0xd0, 0xe7, 0xc7, 0x8e, 0x40,
-	0x46, 0xb0, 0xa6, 0xd9, 0x18, 0xcd, 0x65, 0xb9, 0xe1, 0x9d, 0x4a, 0xc8, 0x76, 0x01, 0x99, 0x6d,
-	0xb7, 0x1d, 0x62, 0x48, 0x8b, 0x0d, 0xee, 0xda, 0x0d, 0x6e, 0x15, 0xb1, 0x61, 0x1e, 0xda, 0xfe,
-	0x79, 0x19, 0x16, 0x8f, 0x4f, 0x87, 0xc4, 0x83, 0xd5, 0xb2, 0x6f, 0x6b, 0x9c, 0x7e, 0xf9, 0x48,
-	0x3e, 0x87, 0x4e, 0x20, 0xe3, 0x98, 0x19, 0x54, 0x2c, 0xa6, 0x4c, 0x6b, 0x34, 0x85, 0x07, 0xfa,
-	0x1b, 0xb3, 0xf8, 0x5e, 0x1e, 0x26, 0x2f, 0xa1, 0x3b, 0x9f, 0x9a, 0xc8, 0x4c, 0x18, 0xe7, 0x69,
-	0x03, 0xd7, 0xc8, 0x67, 0xff, 0xa2, 0x91, 0xe7, 0x5c, 0x18, 0x7f, 0x4e, 0x74, 0xcf, 0x82, 0xc8,
-	0x29, 0xac, 0xc5, 0x9c, 0x9d, 0xf1, 0x98, 0x1b, 0x8e, 0x9a, 0xa6, 0xce, 0xcc, 0xfe, 0x33, 0xb9,
-	0x3d, 0x47, 0x19, 0xfe, 0x95, 0xca, 0x9d, 0x79, 0xbd, 0x13, 0xf5, 0x88, 0x7c, 0x02, 0x6b, 0x41,
-	0xa6, 0x8d, 0x0c, 0x2f, 0xdd, 0xc4, 0xac, 0x61, 0xf9, 0x6d, 0x17, 0x2c, 0xc6, 0xf5, 0x3d, 0xac,
-	0xdf, 0x24, 0x15, 0xb3, 0x5a, 0xad, 0xa6, 0x5d, 0x6a, 0xb9, 0x41, 0x7d, 0x07, 0x8d, 0xf2, 0x2b,
-	0xe6, 0x35, 0x2a, 0xad, 0xd1, 0xcd, 0xfb, 0xe4, 0x18, 0x20, 0x31, 0x29, 0x2d, 0x8c, 0xb3, 0xa2,
-	0xb9, 0x35, 0x13, 0x93, 0x3e, 0xb6, 0x00, 0xf2, 0x2d, 0x34, 0x4a, 0x87, 0xb1, 0x1e, 0xb6, 0x7e,
-	0xff, 0xce, 0xdf, 0x7d, 0xe4, 0x5d, 0x8a, 0x7f, 0x93, 0x4c, 0xd6, 0x61, 0x81, 0x87, 0xce, 0x93,
-	0x16, 0x78, 0x78, 0xef, 0x2b, 0x68, 0x94, 0x59, 0x64, 0x03, 0x5a, 0xcf, 0x9f, 0x8e, 0x86, 0x8f,
-	0x1e, 0x1e, 0x1d, 0x1c, 0x3d, 0xda, 0xef, 0xd4, 0x48, 0x03, 0x96, 0x9e, 0x9c, 0x3c, 0x3d, 0xec,
-	0xd4, 0x49, 0x13, 0x96, 0x47, 0x8f, 0x4f, 0xfc, 0xd3, 0xce, 0xc2, 0x83, 0xfd, 0x57, 0x57, 0xbd,
-	0xfa, 0xeb, 0xab, 0x5e, 0xfd, 0xf7, 0xab, 0x5e, 0xfd, 0xa7, 0xeb, 0x5e, 0xed, 0xf5, 0x75, 0xaf,
-	0xf6, 0xeb, 0x75, 0xaf, 0xf6, 0xe2, 0xde, 0x5c, 0x1f, 0x23, 0x3e, 0x0e, 0x22, 0xc6, 0xc5, 0xa0,
-	0xbc, 0xe3, 0x4c, 0xcb, 0x5b, 0x8e, 0xed, 0xe7, 0x6c, 0xc5, 0x5e, 0x5d, 0xbe, 0xfe, 0x23, 0x00,
-	0x00, 0xff, 0xff, 0x78, 0xb7, 0x4c, 0x00, 0x04, 0x09, 0x00, 0x00,
+	// 990 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x96, 0xcf, 0x6f, 0xdb, 0x36,
+	0x14, 0xc7, 0xa3, 0x24, 0x4d, 0xec, 0x67, 0x27, 0x71, 0x68, 0x67, 0xd3, 0x5a, 0xcc, 0x75, 0xb3,
+	0x61, 0xf3, 0x8a, 0xce, 0x5e, 0xda, 0xc3, 0xce, 0x69, 0x7e, 0xd5, 0x45, 0x53, 0x3b, 0x72, 0xb2,
+	0x43, 0x51, 0x4c, 0xa0, 0x25, 0xda, 0x26, 0x2a, 0x91, 0x8a, 0x48, 0x67, 0xce, 0x3f, 0x31, 0xec,
+	0xbe, 0x7f, 0xa8, 0xc7, 0x9e, 0x86, 0x61, 0x87, 0x62, 0x48, 0xfe, 0x91, 0x41, 0x14, 0x25, 0xab,
+	0x49, 0x53, 0x2c, 0xda, 0x4e, 0xb6, 0x1e, 0x9f, 0x3e, 0x5f, 0xbe, 0x27, 0x3e, 0x7c, 0x09, 0x5f,
+	0x0a, 0x3a, 0x64, 0xdc, 0x25, 0x6d, 0x1f, 0x87, 0x23, 0xca, 0xda, 0x67, 0x5b, 0x6d, 0x79, 0x1e,
+	0x10, 0xd1, 0x0a, 0x42, 0x2e, 0x39, 0x5a, 0xd7, 0xcb, 0xad, 0x78, 0xb9, 0x75, 0xb6, 0x75, 0xb7,
+	0x36, 0xe2, 0x23, 0xae, 0x56, 0xdb, 0xd1, 0xbf, 0x38, 0x71, 0x73, 0x1b, 0xca, 0x07, 0x84, 0x11,
+	0x41, 0x45, 0x5f, 0x62, 0x49, 0xd0, 0x16, 0x2c, 0x05, 0x38, 0xc4, 0xbe, 0x30, 0x8d, 0x86, 0xd1,
+	0x2c, 0x3d, 0xfe, 0xa2, 0x75, 0x8d, 0xd4, 0xea, 0xa9, 0x04, 0x4b, 0x27, 0x6e, 0xfe, 0xb1, 0x02,
+	0x4b, 0x71, 0x08, 0x1d, 0x41, 0xd9, 0x23, 0x67, 0x24, 0xc4, 0x23, 0x62, 0xfb, 0x78, 0xaa, 0x18,
+	0xc5, 0xa7, 0xad, 0xb7, 0xef, 0xef, 0xcf, 0xfd, 0xf5, 0xfe, 0xfe, 0x37, 0x23, 0x2a, 0xc7, 0x93,
+	0x41, 0xcb, 0xe1, 0x7e, 0xdb, 0xe1, 0xc2, 0xe7, 0x42, 0xff, 0x7c, 0x2f, 0xdc, 0x37, 0x7a, 0xfb,
+	0xbb, 0xc4, 0xb1, 0x4a, 0x09, 0xe3, 0x10, 0x4f, 0xd1, 0x2b, 0x58, 0xa7, 0x4c, 0x92, 0x90, 0x08,
+	0x69, 0x87, 0x58, 0xc6, 0xdc, 0xf9, 0x5c, 0xdc, 0xb5, 0x04, 0x64, 0x61, 0x79, 0x03, 0x9b, 0x32,
+	0x73, 0xe1, 0x7f, 0x60, 0x53, 0x86, 0x5c, 0xf8, 0xec, 0x43, 0x36, 0x65, 0x4e, 0x48, 0xb0, 0x20,
+	0xe6, 0x62, 0x2e, 0x81, 0x5a, 0x56, 0xa0, 0xa3, 0x59, 0xd7, 0x55, 0x5c, 0xa2, 0x55, 0xee, 0xfc,
+	0x77, 0x95, 0x5d, 0xcd, 0x42, 0xaf, 0x01, 0x8d, 0x09, 0xf6, 0xe4, 0xd8, 0x1e, 0x61, 0xca, 0xec,
+	0x21, 0x76, 0x24, 0x0f, 0xcd, 0xa5, 0x5c, 0x0a, 0x95, 0x98, 0x74, 0x80, 0x29, 0xdb, 0x57, 0x1c,
+	0xf4, 0x00, 0xca, 0x24, 0xe0, 0xce, 0xd8, 0xf6, 0x08, 0x1b, 0xc9, 0xb1, 0xb9, 0xdc, 0x30, 0x9a,
+	0x0b, 0x56, 0x49, 0xc5, 0x5e, 0xa8, 0x10, 0xaa, 0xc1, 0x9d, 0x80, 0x73, 0x4f, 0x98, 0x85, 0xc6,
+	0x42, 0xb3, 0x68, 0xc5, 0x0f, 0x68, 0x00, 0x1b, 0x43, 0x1e, 0x3a, 0xc4, 0x76, 0x3c, 0x2e, 0x88,
+	0x2d, 0xc7, 0x21, 0x11, 0x63, 0xee, 0xb9, 0x66, 0x31, 0xd7, 0xce, 0xaa, 0x0a, 0xb6, 0x13, 0xb1,
+	0x8e, 0x13, 0x14, 0x1a, 0xc2, 0xe7, 0x21, 0xf1, 0xf9, 0x19, 0xf6, 0xec, 0xd3, 0x09, 0x99, 0x64,
+	0x55, 0x20, 0x97, 0xca, 0x86, 0xc6, 0x1d, 0x45, 0xb4, 0x99, 0xce, 0x23, 0x40, 0x3e, 0x9e, 0xda,
+	0x3c, 0x20, 0xcc, 0x0e, 0xb8, 0xa0, 0x92, 0x72, 0x26, 0xcc, 0x52, 0xc3, 0x68, 0x2e, 0x5a, 0x15,
+	0x1f, 0x4f, 0xbb, 0x01, 0x61, 0xbd, 0x24, 0x8e, 0x7e, 0x86, 0x6a, 0xd4, 0x82, 0x38, 0x7d, 0xb6,
+	0xa3, 0x72, 0xae, 0x1d, 0xad, 0x47, 0xa8, 0x88, 0x3f, 0xdb, 0x8d, 0x0f, 0xf7, 0xb2, 0x9d, 0x1d,
+	0x4e, 0x98, 0x6b, 0x07, 0x24, 0x74, 0x08, 0x93, 0x78, 0x44, 0xcc, 0x95, 0x5c, 0x3a, 0xe6, 0xac,
+	0xbf, 0xfb, 0x13, 0xe6, 0xf6, 0x52, 0x1e, 0x7a, 0x0e, 0x9b, 0x59, 0x39, 0xca, 0xc4, 0x24, 0xc4,
+	0xcc, 0xd1, 0xc2, 0xd8, 0x75, 0x43, 0x22, 0x84, 0xb9, 0x1a, 0xa9, 0x5a, 0xf5, 0x19, 0xa5, 0x93,
+	0xe4, 0x45, 0xb8, 0xed, 0x38, 0x0b, 0xfd, 0x6a, 0xc0, 0x23, 0x35, 0x6a, 0x7e, 0x04, 0xf7, 0xec,
+	0x74, 0x3c, 0x02, 0x7c, 0x1e, 0x85, 0xae, 0x15, 0xb3, 0x96, 0xab, 0x98, 0x66, 0x46, 0xa3, 0xa3,
+	0x25, 0x7a, 0xb1, 0xc2, 0x95, 0xe2, 0xde, 0xc0, 0x93, 0x4f, 0xee, 0xe7, 0x86, 0x6a, 0x2b, 0xaa,
+	0xda, 0xd6, 0xcd, 0x32, 0x1f, 0xad, 0xbe, 0x0b, 0x25, 0x71, 0x6a, 0xfb, 0xdc, 0xa5, 0x43, 0x4a,
+	0x42, 0x73, 0x3d, 0x57, 0x6d, 0x20, 0x4e, 0x0f, 0x35, 0x01, 0xf5, 0x61, 0x45, 0xe0, 0x21, 0x91,
+	0xe7, 0xc9, 0xd4, 0xa3, 0x5c, 0xc8, 0x72, 0x0c, 0x99, 0x4d, 0xbc, 0xfa, 0xd2, 0xae, 0x1d, 0x4f,
+	0x75, 0x55, 0x4d, 0x75, 0x29, 0x8e, 0xf5, 0xd4, 0x6c, 0x77, 0xe1, 0xeb, 0x4f, 0x76, 0x8d, 0x30,
+	0x3c, 0xf0, 0x88, 0x6b, 0xd6, 0x1a, 0x46, 0xb3, 0x60, 0x3d, 0xb8, 0xb9, 0x4d, 0x7b, 0x71, 0x22,
+	0xda, 0x82, 0xda, 0x2f, 0x63, 0x2a, 0x89, 0x47, 0x85, 0xa4, 0x6c, 0x94, 0x02, 0x36, 0x14, 0xa0,
+	0x9a, 0x5d, 0xd3, 0xaf, 0x6c, 0xfe, 0xbe, 0x0c, 0x0b, 0x87, 0xc7, 0x3d, 0x64, 0xc2, 0x72, 0xf2,
+	0x55, 0x94, 0xa1, 0x59, 0xc9, 0x23, 0xfa, 0x0e, 0x2a, 0x0e, 0xf7, 0x3c, 0x2c, 0x49, 0x88, 0x3d,
+	0x1b, 0x0b, 0x41, 0x64, 0xec, 0x4d, 0xd6, 0xda, 0x2c, 0xbe, 0x1d, 0x85, 0xd1, 0x6b, 0x58, 0xcf,
+	0xa6, 0xfa, 0x7c, 0xc2, 0xa4, 0xf6, 0x9a, 0xb6, 0x6e, 0xe6, 0xb7, 0xff, 0xa2, 0x99, 0x27, 0x94,
+	0x49, 0x2b, 0x23, 0xba, 0xad, 0x40, 0xe8, 0x08, 0x4a, 0x1e, 0xc5, 0x03, 0xea, 0x51, 0x49, 0x89,
+	0xd0, 0x16, 0x73, 0x6b, 0x6e, 0x96, 0x81, 0x28, 0x98, 0x99, 0xae, 0x53, 0xd7, 0x9e, 0x89, 0x6a,
+	0x73, 0xb9, 0x35, 0x3f, 0xf5, 0xaa, 0x1e, 0xa6, 0xee, 0x4e, 0x8a, 0x43, 0x0e, 0x6c, 0x5c, 0x91,
+	0x9a, 0x08, 0xc9, 0xdd, 0x73, 0x6d, 0x31, 0xb7, 0xd6, 0xa9, 0x7e, 0xa0, 0x13, 0xb3, 0x90, 0x0f,
+	0x77, 0x53, 0x91, 0x09, 0xbb, 0x5a, 0xd1, 0x72, 0x3e, 0xa5, 0xb4, 0x45, 0x27, 0x8a, 0x98, 0xa9,
+	0xe9, 0x2b, 0x58, 0xd1, 0x55, 0xe8, 0x73, 0x51, 0x50, 0xe7, 0xa2, 0xac, 0x83, 0xf1, 0xa1, 0xf8,
+	0x09, 0x56, 0xd3, 0xa4, 0xf8, 0x44, 0x14, 0xf3, 0xed, 0x23, 0xd1, 0xd2, 0xc7, 0xe1, 0x39, 0x14,
+	0x92, 0x3b, 0x54, 0x4e, 0x9b, 0x4a, 0xdf, 0x47, 0x87, 0x00, 0xbe, 0x0c, 0xec, 0xd8, 0xb6, 0x95,
+	0x23, 0xdd, 0x9e, 0x56, 0xf4, 0x65, 0xf0, 0x4c, 0x01, 0xd0, 0x8f, 0x50, 0x48, 0xfc, 0x4d, 0xf9,
+	0xd5, 0xea, 0xe3, 0x7b, 0x1f, 0xbb, 0x62, 0xea, 0x14, 0x2b, 0x4d, 0x46, 0xab, 0x30, 0x4f, 0x5d,
+	0x65, 0x3d, 0x8b, 0xd6, 0x3c, 0x75, 0x1f, 0xfe, 0x00, 0x85, 0x24, 0x0b, 0xad, 0x41, 0xe9, 0xe4,
+	0x65, 0xbf, 0xb7, 0xb7, 0xd3, 0xd9, 0xef, 0xec, 0xed, 0x56, 0xe6, 0x50, 0x01, 0x16, 0x5f, 0x74,
+	0x5f, 0x1e, 0x54, 0x0c, 0x54, 0x84, 0x3b, 0xfd, 0x67, 0x5d, 0xeb, 0xb8, 0x32, 0xff, 0x74, 0xf7,
+	0xed, 0x45, 0xdd, 0x78, 0x77, 0x51, 0x37, 0xfe, 0xbe, 0xa8, 0x1b, 0xbf, 0x5d, 0xd6, 0xe7, 0xde,
+	0x5d, 0xd6, 0xe7, 0xfe, 0xbc, 0xac, 0xcf, 0xbd, 0x7a, 0x98, 0xa9, 0xa3, 0x4f, 0x87, 0xce, 0x18,
+	0x53, 0xd6, 0x4e, 0x6e, 0xd8, 0xd3, 0xe4, 0x8e, 0xad, 0xea, 0x19, 0x2c, 0xa9, 0x8b, 0xf3, 0x93,
+	0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xa6, 0x49, 0x94, 0xa9, 0x82, 0x0b, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -387,6 +423,30 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.WhitelistingEnabled {
+		i--
+		if m.WhitelistingEnabled {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa8
+	}
+	if m.IncrementalInterestPaymentEnabled {
+		i--
+		if m.IncrementalInterestPaymentEnabled {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa0
+	}
 	if len(m.ClosedPools) > 0 {
 		for iNdEx := len(m.ClosedPools) - 1; iNdEx >= 0; iNdEx-- {
 			i -= len(m.ClosedPools[iNdEx])
@@ -395,7 +455,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0x8a
+			dAtA[i] = 0x9a
 		}
 	}
 	{
@@ -409,7 +469,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i--
 	dAtA[i] = 0x1
 	i--
-	dAtA[i] = 0x82
+	dAtA[i] = 0x92
 	{
 		size := m.SqModifier.Size()
 		i -= size
@@ -419,11 +479,32 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
 	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x8a
+	if len(m.IncrementalInterestPaymentInsuranceFundAddress) > 0 {
+		i -= len(m.IncrementalInterestPaymentInsuranceFundAddress)
+		copy(dAtA[i:], m.IncrementalInterestPaymentInsuranceFundAddress)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.IncrementalInterestPaymentInsuranceFundAddress)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x82
+	}
+	{
+		size := m.IncrementalInterestPaymentFundPercentage.Size()
+		i -= size
+		if _, err := m.IncrementalInterestPaymentFundPercentage.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTypes(dAtA, i, uint64(size))
+	}
+	i--
 	dAtA[i] = 0x7a
-	if len(m.InsuranceFundAddress) > 0 {
-		i -= len(m.InsuranceFundAddress)
-		copy(dAtA[i:], m.InsuranceFundAddress)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.InsuranceFundAddress)))
+	if len(m.ForceCloseInsuranceFundAddress) > 0 {
+		i -= len(m.ForceCloseInsuranceFundAddress)
+		copy(dAtA[i:], m.ForceCloseInsuranceFundAddress)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.ForceCloseInsuranceFundAddress)))
 		i--
 		dAtA[i] = 0x72
 	}
@@ -572,12 +653,12 @@ func (m *MTP) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.Id != 0 {
 		i = encodeVarintTypes(dAtA, i, uint64(m.Id))
 		i--
-		dAtA[i] = 0x58
+		dAtA[i] = 0x68
 	}
 	if m.Position != 0 {
 		i = encodeVarintTypes(dAtA, i, uint64(m.Position))
 		i--
-		dAtA[i] = 0x50
+		dAtA[i] = 0x60
 	}
 	{
 		size := m.MtpHealth.Size()
@@ -588,7 +669,7 @@ func (m *MTP) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x4a
+	dAtA[i] = 0x5a
 	{
 		size := m.Leverage.Size()
 		i -= size
@@ -598,7 +679,7 @@ func (m *MTP) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x42
+	dAtA[i] = 0x52
 	{
 		size := m.CustodyAmount.Size()
 		i -= size
@@ -608,18 +689,38 @@ func (m *MTP) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x3a
+	dAtA[i] = 0x4a
 	if len(m.CustodyAsset) > 0 {
 		i -= len(m.CustodyAsset)
 		copy(dAtA[i:], m.CustodyAsset)
 		i = encodeVarintTypes(dAtA, i, uint64(len(m.CustodyAsset)))
 		i--
-		dAtA[i] = 0x32
+		dAtA[i] = 0x42
 	}
 	{
-		size := m.LiabilitiesI.Size()
+		size := m.InterestUnpaidCollateral.Size()
 		i -= size
-		if _, err := m.LiabilitiesI.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.InterestUnpaidCollateral.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTypes(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x3a
+	{
+		size := m.InterestPaidCustody.Size()
+		i -= size
+		if _, err := m.InterestPaidCustody.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTypes(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x32
+	{
+		size := m.InterestPaidCollateral.Size()
+		i -= size
+		if _, err := m.InterestPaidCollateral.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTypes(dAtA, i, uint64(size))
@@ -627,9 +728,9 @@ func (m *MTP) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i--
 	dAtA[i] = 0x2a
 	{
-		size := m.LiabilitiesP.Size()
+		size := m.Liabilities.Size()
 		i -= size
-		if _, err := m.LiabilitiesP.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.Liabilities.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTypes(dAtA, i, uint64(size))
@@ -725,12 +826,18 @@ func (m *Params) Size() (n int) {
 	n += 1 + l + sovTypes(uint64(l))
 	l = m.ForceCloseFundPercentage.Size()
 	n += 1 + l + sovTypes(uint64(l))
-	l = len(m.InsuranceFundAddress)
+	l = len(m.ForceCloseInsuranceFundAddress)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = m.SqModifier.Size()
+	l = m.IncrementalInterestPaymentFundPercentage.Size()
 	n += 1 + l + sovTypes(uint64(l))
+	l = len(m.IncrementalInterestPaymentInsuranceFundAddress)
+	if l > 0 {
+		n += 2 + l + sovTypes(uint64(l))
+	}
+	l = m.SqModifier.Size()
+	n += 2 + l + sovTypes(uint64(l))
 	l = m.SafetyFactor.Size()
 	n += 2 + l + sovTypes(uint64(l))
 	if len(m.ClosedPools) > 0 {
@@ -738,6 +845,12 @@ func (m *Params) Size() (n int) {
 			l = len(s)
 			n += 2 + l + sovTypes(uint64(l))
 		}
+	}
+	if m.IncrementalInterestPaymentEnabled {
+		n += 3
+	}
+	if m.WhitelistingEnabled {
+		n += 3
 	}
 	return n
 }
@@ -758,9 +871,13 @@ func (m *MTP) Size() (n int) {
 	}
 	l = m.CollateralAmount.Size()
 	n += 1 + l + sovTypes(uint64(l))
-	l = m.LiabilitiesP.Size()
+	l = m.Liabilities.Size()
 	n += 1 + l + sovTypes(uint64(l))
-	l = m.LiabilitiesI.Size()
+	l = m.InterestPaidCollateral.Size()
+	n += 1 + l + sovTypes(uint64(l))
+	l = m.InterestPaidCustody.Size()
+	n += 1 + l + sovTypes(uint64(l))
+	l = m.InterestUnpaidCollateral.Size()
 	n += 1 + l + sovTypes(uint64(l))
 	l = len(m.CustodyAsset)
 	if l > 0 {
@@ -1314,7 +1431,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 14:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InsuranceFundAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ForceCloseInsuranceFundAddress", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1342,9 +1459,75 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.InsuranceFundAddress = string(dAtA[iNdEx:postIndex])
+			m.ForceCloseInsuranceFundAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 15:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IncrementalInterestPaymentFundPercentage", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.IncrementalInterestPaymentFundPercentage.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 16:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IncrementalInterestPaymentInsuranceFundAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IncrementalInterestPaymentInsuranceFundAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 17:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SqModifier", wireType)
 			}
@@ -1378,7 +1561,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 16:
+		case 18:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SafetyFactor", wireType)
 			}
@@ -1412,7 +1595,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 17:
+		case 19:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ClosedPools", wireType)
 			}
@@ -1444,6 +1627,46 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 			m.ClosedPools = append(m.ClosedPools, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
+		case 20:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IncrementalInterestPaymentEnabled", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IncrementalInterestPaymentEnabled = bool(v != 0)
+		case 21:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WhitelistingEnabled", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.WhitelistingEnabled = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTypes(dAtA[iNdEx:])
@@ -1594,7 +1817,7 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LiabilitiesP", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Liabilities", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1622,13 +1845,13 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.LiabilitiesP.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Liabilities.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LiabilitiesI", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field InterestPaidCollateral", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1656,11 +1879,79 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.LiabilitiesI.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.InterestPaidCollateral.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InterestPaidCustody", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.InterestPaidCustody.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InterestUnpaidCollateral", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.InterestUnpaidCollateral.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CustodyAsset", wireType)
 			}
@@ -1692,7 +1983,7 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 			}
 			m.CustodyAsset = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 7:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CustodyAmount", wireType)
 			}
@@ -1726,7 +2017,7 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 8:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Leverage", wireType)
 			}
@@ -1760,7 +2051,7 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 9:
+		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MtpHealth", wireType)
 			}
@@ -1794,7 +2085,7 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 10:
+		case 12:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Position", wireType)
 			}
@@ -1813,7 +2104,7 @@ func (m *MTP) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 11:
+		case 13:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
 			}

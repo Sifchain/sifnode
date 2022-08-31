@@ -23,7 +23,6 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
 	CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to clptypes.Asset, pool clptypes.Pool, marginEnabled bool) (sdk.Uint, error)
 
@@ -54,6 +53,11 @@ type Keeper interface {
 	GetMTPsForAddress(ctx sdk.Context, mtpAddress sdk.Address, pagination *query.PageRequest) ([]*MTP, *query.PageResponse, error)
 	DestroyMTP(ctx sdk.Context, mtpAddress string, id uint64) error
 
+	IsWhitelisted(ctx sdk.Context, address string) bool
+	WhitelistAddress(ctx sdk.Context, address string)
+	DewhitelistAddress(ctx sdk.Context, address string)
+	GetWhitelist(ctx sdk.Context, pagination *query.PageRequest) ([]string, *query.PageResponse, error)
+
 	GetMaxLeverageParam(sdk.Context) sdk.Dec
 	GetInterestRateMax(sdk.Context) sdk.Dec
 	GetInterestRateMin(ctx sdk.Context) sdk.Dec
@@ -69,6 +73,7 @@ type Keeper interface {
 	SetEnabledPools(ctx sdk.Context, pools []string)
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
 	IsPoolClosed(ctx sdk.Context, asset string) bool
+	IsWhitelistingEnabled(ctx sdk.Context) bool
 
 	CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
@@ -79,13 +84,16 @@ type Keeper interface {
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
-	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
 	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, sdk.Uint, error)
+	TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool)
+	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
+	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
+
+	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose, isAdminClose bool) (*MTP, sdk.Uint, error)
 
 	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 
-	GetSQ(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
+	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }

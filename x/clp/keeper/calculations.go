@@ -313,7 +313,7 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
-func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
@@ -321,27 +321,34 @@ func CalcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 	Xb := X.BigInt()
 	xb := x.BigInt()
 	Yb := Y.BigInt()
+	rawXYK := calcRawXYK(xb, Xb, Yb)
 
-	var sq, n, s, d, fee big.Int
+	var fee big.Rat
+	f := DecToRat(&swapFeeRate)
+	fee.Mul(&f, &rawXYK)
 
-	sq.Mul(xb, xb)  // sq = x**2
-	n.Mul(&sq, Yb)  // n = x**2 * Y
-	s.Add(Xb, xb)   // s = x + X
-	d.Mul(&s, &s)   // d = (x + X)**2
-	fee.Quo(&n, &d) // fee = n / d = (x**2 * Y) / (x + X)**2
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
 
-	return sdk.NewUintFromBigInt(&fee)
+	if toRowan {
+		fee.Quo(&fee, &pmtpFac) // res = y / pmtpFac
+	} else {
+		fee.Mul(&fee, &pmtpFac) // res = y * pmtpFac
+	}
+
+	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
 }
 
 func CalcSwapResult(toRowan bool,
 	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
 
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
 
-	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt())
+	swapFeeRateR := DecToRat(&swapFeeRate)
+
+	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt(), &swapFeeRateR)
 	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
 
 	var res big.Rat
@@ -355,18 +362,28 @@ func CalcSwapResult(toRowan bool,
 	return sdk.NewUintFromBigInt(num)
 }
 
-func calcSwap(x, X, Y *big.Int) big.Rat {
-	var s, d, d2, d3 big.Int
-	var numerator, denominator, y big.Rat
+// y = (1-f)*x*Y/(x+X)
+func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
+	var diff big.Rat
+	one := big.NewRat(1, 1)
+	diff.Sub(one, swapFeeRate) // diff = 1 - f
 
-	s.Add(X, x)    // s = X + x
-	d.Mul(&s, &s)  // d = (X + x)**2
-	d2.Mul(X, Y)   // d2 = X * Y
-	d3.Mul(x, &d2) // d3 = x * X * Y
+	rawYXK := calcRawXYK(x, X, Y)
+	diff.Mul(&diff, &rawYXK)
 
-	denominator.SetInt(&d)
-	numerator.SetInt(&d3)
-	y.Quo(&numerator, &denominator) // y = d3 / d = (x * X * Y) / (X + x)**2
+	return diff
+}
+
+func calcRawXYK(x, X, Y *big.Int) big.Rat {
+	var numerator, denominator, xR, XR, YR, y big.Rat
+
+	xR.SetInt(x)
+	XR.SetInt(X)
+	YR.SetInt(Y)
+	numerator.Mul(&xR, &YR)   // x * Y
+	denominator.Add(&XR, &xR) // X + x
+
+	y.Quo(&numerator, &denominator) // y = (x * Y) / (X + x)
 
 	return y
 }

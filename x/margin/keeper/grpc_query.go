@@ -86,3 +86,36 @@ func (srv queryServer) GetStatus(ctx context.Context, request *types.StatusReque
 		LifetimeMtpCount: srv.keeper.GetMTPCount(sdk.UnwrapSDKContext(ctx)),
 	}, nil
 }
+
+func (srv queryServer) GetWhitelist(ctx context.Context, request *types.WhitelistRequest) (*types.WhitelistResponse, error) {
+	if request.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	whitelist, page, err := srv.keeper.GetWhitelist(sdk.UnwrapSDKContext(ctx), request.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.WhitelistResponse{
+		Whitelist:  whitelist,
+		Pagination: page,
+	}, nil
+}
+
+func (srv queryServer) GetSQParams(ctx context.Context, request *types.GetSQParamsRequest) (*types.GetSQParamsResponse, error) {
+	pool, err := srv.keeper.ClpKeeper().GetPool(sdk.UnwrapSDKContext(ctx), request.Pool)
+	if err != nil {
+		return nil, err
+	}
+	return &types.GetSQParamsResponse{
+		BeginBlock: int64(srv.keeper.GetSQBeginBlock(sdk.UnwrapSDKContext(ctx), &pool)),
+	}, nil
+}
+
+func (srv queryServer) IsWhitelisted(ctx context.Context, request *types.IsWhitelistedRequest) (*types.IsWhitelistedResponse, error) {
+	return &types.IsWhitelistedResponse{
+		Address:       request.Address,
+		IsWhitelisted: srv.keeper.IsWhitelisted(sdk.UnwrapSDKContext(ctx), request.Address),
+	}, nil
+}

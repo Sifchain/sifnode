@@ -23,16 +23,18 @@ const (
 
 func NewMTP(signer string, collateralAsset string, borrowAsset string, position Position, leverage sdk.Dec) *MTP {
 	return &MTP{
-		Address:          signer,
-		CollateralAsset:  collateralAsset,
-		CollateralAmount: sdk.ZeroUint(),
-		LiabilitiesP:     sdk.ZeroUint(),
-		LiabilitiesI:     sdk.ZeroUint(),
-		CustodyAsset:     borrowAsset,
-		CustodyAmount:    sdk.ZeroUint(),
-		Leverage:         leverage,
-		MtpHealth:        sdk.ZeroDec(),
-		Position:         position,
+		Address:                  signer,
+		CollateralAsset:          collateralAsset,
+		CollateralAmount:         sdk.ZeroUint(),
+		Liabilities:              sdk.ZeroUint(),
+		InterestPaidCollateral:   sdk.ZeroUint(),
+		InterestPaidCustody:      sdk.ZeroUint(),
+		InterestUnpaidCollateral: sdk.ZeroUint(),
+		CustodyAsset:             borrowAsset,
+		CustodyAmount:            sdk.ZeroUint(),
+		Leverage:                 leverage,
+		MtpHealth:                sdk.ZeroDec(),
+		Position:                 position,
 	}
 }
 
@@ -66,4 +68,8 @@ func GetPositionFromString(s string) Position {
 	default:
 		return Position_UNSPECIFIED
 	}
+}
+
+func StringCompare(a, b string) bool {
+	return a == b
 }

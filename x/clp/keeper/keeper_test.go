@@ -80,7 +80,7 @@ func TestKeeper_GetBankKeeper(t *testing.T) {
 	require.NotNil(t, got)
 }
 
-//nolint
+// nolint
 func TestKeeper_GetAssetDecimals(t *testing.T) {
 	testcases :=
 		[]struct {

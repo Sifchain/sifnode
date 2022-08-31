@@ -5,7 +5,6 @@ package keeper
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -56,8 +55,21 @@ func (k Keeper) GetForceCloseFundPercentage(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).ForceCloseFundPercentage
 }
 
-func (k Keeper) GetInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).InsuranceFundAddress)
+func (k Keeper) GetForceCloseInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).ForceCloseInsuranceFundAddress)
+	if err != nil {
+		panic(err)
+	}
+
+	return addr
+}
+
+func (k Keeper) GetIncrementalInterestPaymentFundPercentage(ctx sdk.Context) sdk.Dec {
+	return k.GetParams(ctx).IncrementalInterestPaymentFundPercentage
+}
+
+func (k Keeper) GetIncrementalInterestPaymentInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).IncrementalInterestPaymentInsuranceFundAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -69,6 +81,9 @@ func (k Keeper) GetMaxOpenPositions(ctx sdk.Context) uint64 {
 	return k.GetParams(ctx).MaxOpenPositions
 }
 
+func (k Keeper) GetIncrementalInterestPaymentEnabled(ctx sdk.Context) bool {
+	return k.GetParams(ctx).IncrementalInterestPaymentEnabled
+}
 func (k Keeper) GetSafetyFactor(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).SafetyFactor
 }
@@ -86,7 +101,7 @@ func (k Keeper) SetEnabledPools(ctx sdk.Context, pools []string) {
 func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 	pools := k.GetEnabledPools(ctx)
 	for _, p := range pools {
-		if strings.EqualFold(p, asset) {
+		if types.StringCompare(p, asset) {
 			return true
 		}
 	}
@@ -97,7 +112,7 @@ func (k Keeper) IsPoolEnabled(ctx sdk.Context, asset string) bool {
 func (k Keeper) IsPoolClosed(ctx sdk.Context, asset string) bool {
 	params := k.GetParams(ctx)
 	for _, p := range params.ClosedPools {
-		if strings.EqualFold(p, asset) {
+		if types.StringCompare(p, asset) {
 			return true
 		}
 	}
@@ -107,6 +122,10 @@ func (k Keeper) IsPoolClosed(ctx sdk.Context, asset string) bool {
 
 func (k Keeper) GetSqModifier(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).SqModifier
+}
+
+func (k Keeper) IsWhitelistingEnabled(ctx sdk.Context) bool {
+	return k.GetParams(ctx).WhitelistingEnabled
 }
 
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {

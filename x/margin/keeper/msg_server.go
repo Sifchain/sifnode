@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -31,6 +30,10 @@ func NewMsgServerImpl(k types.Keeper) types.MsgServer {
 func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOpenResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if k.IsWhitelistingEnabled(ctx) && !k.IsWhitelisted(ctx, msg.Signer) {
+		return nil, sdkerrors.Wrap(types.ErrUnauthorised, "unauthorised")
+	}
+
 	if k.GetOpenMTPCount(ctx) >= k.GetMaxOpenPositions(ctx) {
 		return nil, sdkerrors.Wrap(types.ErrMaxOpenPositions, "cannot open new positions")
 	}
@@ -38,7 +41,7 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
 		externalAsset = msg.CollateralAsset
@@ -78,8 +81,10 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
 		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
 		sdk.NewAttribute("leverage", mtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", mtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", mtp.LiabilitiesI.String()),
+		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
+		sdk.NewAttribute("interest_paid_collateral", mtp.InterestPaidCollateral.String()),
+		sdk.NewAttribute("interest_paid_custody", mtp.InterestPaidCustody.String()),
+		sdk.NewAttribute("interest_unpaid_collateral", mtp.InterestUnpaidCollateral.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 	))
 
@@ -116,8 +121,10 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 		sdk.NewAttribute("custody_amount", closedMtp.CustodyAmount.String()),
 		sdk.NewAttribute("repay_amount", repayAmount.String()),
 		sdk.NewAttribute("leverage", closedMtp.Leverage.String()),
-		sdk.NewAttribute("liabilities_p", closedMtp.LiabilitiesP.String()),
-		sdk.NewAttribute("liabilities_i", closedMtp.LiabilitiesI.String()),
+		sdk.NewAttribute("liabilities", closedMtp.Liabilities.String()),
+		sdk.NewAttribute("interest_paid_collateral", mtp.InterestPaidCollateral.String()),
+		sdk.NewAttribute("interest_paid_custody", mtp.InterestPaidCustody.String()),
+		sdk.NewAttribute("interest_unpaid_collateral", closedMtp.InterestUnpaidCollateral.String()),
 		sdk.NewAttribute("health", closedMtp.MtpHealth.String()),
 	))
 
@@ -144,7 +151,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg)
+		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg, true)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +177,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
-	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
 		externalAsset = msg.CollateralAsset
@@ -225,7 +232,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
 			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
@@ -246,14 +253,15 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		return nil, sdk.ZeroUint(), err
 	}
 
-	interestRate, err := k.InterestRateComputation(ctx, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
+	epochLength := k.GetEpochLength(ctx)
+	epochPosition := GetEpochPosition(ctx, epochLength)
+	if epochPosition > 0 {
+		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
 
-	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
+		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+		if err != nil {
+			return nil, sdk.ZeroUint(), err
+		}
 	}
 
 	err = k.Repay(ctx, &mtp, pool, repayAmount, false)
@@ -264,7 +272,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	return &mtp, repayAmount, nil
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*types.MTP, sdk.Uint, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdminClose bool) (*types.MTP, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
@@ -273,7 +281,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
-	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
 			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
@@ -288,22 +296,17 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose) (*type
 	// check MTP health against threshold
 	forceCloseThreshold := k.GetSafetyFactor(ctx)
 
-	interestRate, err := k.InterestRateComputation(ctx, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
+	epochLength := k.GetEpochLength(ctx)
+	epochPosition := GetEpochPosition(ctx, epochLength)
+	if epochPosition > 0 {
+		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
 
-	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
+		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+		if err != nil {
+			return nil, sdk.ZeroUint(), err
+		}
 	}
-
-	mtpHealth, err := k.UpdateMTPHealth(ctx, mtp, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
-	if mtpHealth.GT(forceCloseThreshold) {
+	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
 	}
 
@@ -363,4 +366,34 @@ func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools)
 	k.SetParams(ctx, &params)
 
 	return &types.MsgUpdatePoolsResponse{}, nil
+}
+
+func (k msgServer) Whitelist(goCtx context.Context, msg *types.MsgWhitelist) (*types.MsgWhitelistResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	k.WhitelistAddress(ctx, msg.WhitelistedAddress)
+
+	return &types.MsgWhitelistResponse{}, nil
+}
+
+func (k msgServer) Dewhitelist(goCtx context.Context, msg *types.MsgDewhitelist) (*types.MsgDewhitelistResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	k.DewhitelistAddress(ctx, msg.WhitelistedAddress)
+
+	return &types.MsgDewhitelistResponse{}, nil
 }
