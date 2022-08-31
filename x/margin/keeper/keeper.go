@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"google.golang.org/grpc/codes"
@@ -440,6 +441,19 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	}
 
 	return k.ClpKeeper().SetPool(ctx, &pool)
+}
+
+func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) {
+	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
+	// if incremental payment on, pay interest
+	if incrementalInterestPaymentEnabled {
+		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool)
+		if err != nil {
+			ctx.Logger().Error(errors.Wrap(err, "error executing incremental interest payment").Error())
+		}
+	} else { // else update unpaid mtp interest
+		mtp.InterestUnpaidCollateral = interestPayment
+	}
 }
 
 func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
