@@ -28,8 +28,8 @@ func CalcMTPInterestLiabilities(mtp *types.MTP, interestRate sdk.Dec, epochPosit
 	interestNew := interestRational.Num().Quo(interestRational.Num(), interestRational.Denom())
 
 	interestNewUint := sdk.NewUintFromBigInt(interestNew.Add(interestNew, mtp.InterestUnpaidCollateral.BigInt()))
-	// round up to lowest digit if interest too low
-	if interestNewUint.IsZero() {
+	// round up to lowest digit if interest too low and rate not 0
+	if interestNewUint.IsZero() && !interestRate.IsZero() {
 		interestNewUint = sdk.OneUint()
 	}
 

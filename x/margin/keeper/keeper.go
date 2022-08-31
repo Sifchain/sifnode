@@ -570,7 +570,7 @@ func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, 
 
 	samplePayment := sdk.NewUintFromBigInt(interestNew)
 
-	if samplePayment.IsZero() {
+	if samplePayment.IsZero() && !minInterestRate.IsZero() {
 		return types.ErrBorrowTooLow, minInterestRate
 	}
 
