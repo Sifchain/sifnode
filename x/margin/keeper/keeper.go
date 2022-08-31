@@ -218,13 +218,15 @@ func (k Keeper) AdminKeeper() adminkeeper.Keeper {
 
 func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error) {
 	toAsset := ToAsset(to)
-	// add liabilities? and custody to pool depth
 
 	marginEnabled := k.IsPoolEnabled(ctx, pool.String())
 
 	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool, marginEnabled)
 	if err != nil {
 		return sdk.Uint{}, err
+	}
+	if swapResult.IsZero() {
+		return sdk.Uint{}, clptypes.ErrUnableToSwap
 	}
 	return swapResult, nil
 }
@@ -320,7 +322,7 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 
 	debt, err := k.CLPSwap(ctx, xl, mtp.CustodyAsset, pool)
 	if err != nil {
-		return sdk.ZeroDec(), nil
+		return sdk.ZeroDec(), err
 	}
 
 	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
