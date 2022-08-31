@@ -128,7 +128,7 @@ class TestMargin:
 
             balances.append(sifnoded.get_balance(account))
             pools.append(sifnoded.query_pools_sorted())
-            env.fund(account, {ROWAN: 10**25, src_denom: swap_amount})
+            env.fund(account, {ROWAN: 10**20, src_denom: swap_amount})
 
             balance_before = sifnoded.get_balance(account)
             pools_before = sifnoded.query_pools_sorted()
@@ -185,24 +185,35 @@ class TestMargin:
                 ROWAN: 10**25,
                 collateral_asset: 10**25,
             })
+            margin_params = sifnoded.query_margin_params()
+
+            # sifnoded.tx_margin_whitelist(env.clp_admin, account, broadcast_mode="block")
 
             pool_before_open = sifnoded.query_pools_sorted()[collateral_asset]
             balance_before_open = sifnoded.get_balance(account)
-            mtp_positions_before = sifnoded.query_margin_positions_for_address(account)
+            mtp_positions_before_open = sifnoded.query_margin_positions_for_address(account)
             res = sifnoded.margin_open_simple(account, borrow_asset, collateral_asset=collateral_asset,
                 collateral_amount=collateral_amount, leverage=leverage, position="long")
             mtp_id = int(res["id"])
             pool_after_open = sifnoded.query_pools_sorted()[collateral_asset]
             balance_after_open = sifnoded.get_balance(account)
-            mtp_positions_after = sifnoded.query_margin_positions_for_address(account)
+            mtp_positions_after_open = sifnoded.query_margin_positions_for_address(account)
 
-            assert len(mtp_positions_before) == 0
-            assert len(mtp_positions_after) == 1
+            assert len(mtp_positions_before_open) == 0
+            assert len(mtp_positions_after_open) == 1
 
             open_borrow_delta = balance_after_open.get(borrow_asset, 0) - balance_before_open.get(borrow_asset, 0)
             open_collateral_delta = balance_after_open.get(collateral_asset, 0) - balance_before_open.get(collateral_asset, 0)
 
-            sifnoded.wait_for_last_transaction_to_be_mined(10)
+            # TODO Why does the open position disappear after 4 blocks?
+            # Whitelisting does not help
+            for i in range(10):
+                cnt = len(sifnoded.query_margin_positions_for_address(account))
+                if cnt == 0:
+                    break
+                sifnoded.wait_for_last_transaction_to_be_mined()
+
+            # TODO
 
             pool_before_close = sifnoded.query_pools_sorted()[collateral_asset]
             balance_before_close = sifnoded.get_balance(account)
