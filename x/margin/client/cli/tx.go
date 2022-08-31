@@ -33,6 +33,7 @@ func GetTxCmd() *cobra.Command {
 		GetDewhitelistCmd(),
 		GetWhitelistCmd(),
 		GetAdminCloseCmd(),
+		GetAdminCloseAllCmd(),
 	)
 	return cmd
 }
@@ -145,7 +146,7 @@ func GetCloseCmd() *cobra.Command {
 
 func GetForceCloseCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "admin-close",
+		Use:   "force-close",
 		Short: "Force close margin position",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

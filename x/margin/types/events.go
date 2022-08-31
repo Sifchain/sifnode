@@ -5,6 +5,7 @@ package types
 
 const EventOpen = "margin/mtp_open"
 const EventClose = "margin/mtp_close"
+const EventForceClose = "margin/mtp_force_close"
 const EventAdminClose = "margin/mtp_admin_close"
 const EventAdminCloseAll = "margin/mtp_admin_close_all"
 const EventInterestRateComputation = "margin/interest_rate_computation"
