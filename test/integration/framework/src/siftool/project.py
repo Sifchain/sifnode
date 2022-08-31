@@ -141,9 +141,10 @@ class Project:
     # TODO Merge
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
     # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    def make_go_binaries_2(self):
+    def make_go_binaries_2(self, feature_toggles: Optional[Iterable[str]] = None):
         # Original: cd smart-contracts; make -C .. install
-        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
+        extra_env = {feature: "1" for feature in feature_toggles}
+        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False, env=extra_env)
 
     def install_smart_contracts_dependencies(self):
         self.cmd.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin

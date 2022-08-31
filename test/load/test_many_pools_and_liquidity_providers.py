@@ -171,15 +171,17 @@ class Test:
             extra_accounts[addr] = cosmos.balance_add(balances, {ROWAN: self.amount_of_rowan_per_wallet})
 
         # Create validators.
-        # CLP admin is admin account of validator 0. To create pools, this account needs to have balances for all denoms
-        # for all pools that he creates. For simplicity we add the same balance to all admins.
+        # To create liquidity pools, faucet needs to have enough balances for all denoms. During
+        # setup_liquidity_pools_simple() tokens will be transferred from faucet to clp_admin automatically.
+        # (Currently, clp_admin == admin account of validator 0).
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
-        validator_admin_initial_balance = cosmos.balance_add({denom: denom_total_supply for denom in self.tokens}, {ROWAN: 10**25})
+        validator_admin_initial_balance = {ROWAN: 10**25}
         for i in range(self.number_of_nodes):
             mnemonic = self.validator0_mnemonic if i == 0 else None
             env.add_validator(admin_mnemonic=mnemonic, initial_balance=validator_admin_initial_balance)
 
-        env.init(faucet_balance={denom: denom_total_supply for denom in self.tokens}, extra_accounts=extra_accounts)
+        faucet_balance = cosmos.balance_add({denom: denom_total_supply for denom in self.tokens}, {ROWAN: 10**25})
+        env.init(faucet_balance=faucet_balance, extra_accounts=extra_accounts)
         env.start()
 
         self.env = env
@@ -188,40 +190,10 @@ class Test:
             self.env.node_info[0]["host"], self.env.node_info[0]["ports"]["rpc"]), chain_id=env.chain_id)
         sifnoded_client.get_balance_default_retries = 5
 
-        clp_admin = self.env.clp_admin
-
-        # Add tokens to token registry. The minimum required permissions are CLP.
-        # TODO Might want to use `tx tokenregistry set-registry` to do it in one step (faster)
-        #      According to @sheokapr `tx tokenregistry set-registry` also works for only one entry
-        #      But`tx tokenregistry register-all` also works only for one entry.
-
-        # TODO HACKING: we're trying to connect UI to this environment. At the moment it is not clear if we need to add
-        #      rowan to token registry and if IBCIMPORT/IBCEXPORT permissions are needed for tokens to show up in UI.
-
-        _hacking_ui = False
-        if _hacking_ui:
-            # Include rowan
-            sifnoded.token_registry_register({
-                "decimals": str(ROWAN_DECIMALS),
-                "denom": ROWAN,
-                "base_denom": ROWAN,
-                "permissions": [1]
-            }, clp_admin, broadcast_mode="block")
-            sifnoded.wait_for_last_transaction_to_be_mined()
-
-        make_entry_v1 = lambda denom: sifnoded.create_tokenregistry_entry(denom, denom, 18, ["CLP"])
-        make_entry_v2 = lambda denom: {
-            "decimals": 18,
-            "denom": denom,
-            "base_denom": denom,
-            "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"]
-        }
-        sifnoded.token_registry_register_batch(clp_admin,
-            tuple((make_entry_v2 if _hacking_ui else make_entry_v1)(denom) for denom in self.tokens))
-
         # Set up liquidity pools. We create them symmetrically (`native_amount == external_amount`).
-        sifnoded.create_liquidity_pools_batch(clp_admin,
-            tuple((denom, self.amount_of_denom_per_wallet, self.amount_of_denom_per_wallet) for denom in self.tokens))
+        native_amount = external_amount = self.amount_of_denom_per_wallet
+        pools_definitions = {denom: (18, native_amount, external_amount) for denom in self.tokens}
+        env.setup_liquidity_pools_simple(pools_definitions)
 
         # Set up liquidity providers. We create them symmetrically (`native_amount == externam_amount`). The ratio of
         # native vs. external amount has to be the same as for corresponding pool (within certain rounding tolerance).
@@ -236,7 +208,7 @@ class Test:
                 sifchain.check_raw_log(res)
                 account_sequence += 1
         sifnoded_client.wait_for_last_transaction_to_be_mined()
-        self.check_actual_liquidity_providers(sifnoded_client, clp_admin, wallets)
+        self.check_actual_liquidity_providers(sifnoded_client, env.clp_admin, wallets)
 
         self.sifnoded = sifnoded
         self.sifnoded_client = sifnoded_client

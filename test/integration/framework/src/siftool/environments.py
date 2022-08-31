@@ -1,5 +1,6 @@
+from typing import Tuple
 from siftool.common import *
-from siftool.sifchain import ROWAN, STAKE
+from siftool.sifchain import ROWAN, ROWAN_DECIMALS, STAKE
 from siftool import sifchain, command, cosmos
 
 
@@ -362,3 +363,40 @@ class SifnodedEnvironment:
             f.close()
         self.running_processes = []
         self.open_log_files = []
+
+    # pool_definition: {denom: (decimals, pool_native_amount, pool_external_amount)}
+    def setup_liquidity_pools_simple(self, pool_definitions: Mapping[str, Tuple[int, int, int]]):
+        assert self._state == 2
+        sifnoded = self.sifnoded
+        assert len(sifnoded.query_pools()) == 0  # This method is single-shot for now
+
+        rowan_permissions = ["CLP"]
+        other_permissions = ["CLP"]  # TODO We might need to add ["IBCIMPORT", "IBCEXPORT"] for tokens to show in the UI
+
+        if self.faucet != self.clp_admin:
+            # We need to give clp_admin enough funds (rowan + external) to create pools
+            sifnoded.send_batch(self.faucet, self.clp_admin, cosmos.balance_add(
+                {denom: external_amount for denom, (_, _, external_amount) in pool_definitions.items()},
+                {sifchain.ROWAN: sum(native_amount for _, (_, native_amount, _) in pool_definitions.items())}))
+
+        # Add tokens to token registry. The minimum required permissions are CLP.
+        # TODO Might want to use `tx tokenregistry set-registry` to do it in one step (faster)
+        #      According to @sheokapr `tx tokenregistry set-registry` also works for only one entry
+        #      But`tx tokenregistry register-all` also works only for one entry.
+        # We need to register rowan too, otherwise swaps from/to rowan will error out with
+        # "token not supported by sifchain"
+        # Note: original_entry = {
+        #     "decimals": str(ROWAN_DECIMALS),
+        #     "denom": ROWAN,
+        #     "base_denom": ROWAN,
+        #     "permissions": [1]
+        # }
+        sifnoded.token_registry_register(sifnoded.create_tokenregistry_entry(ROWAN, ROWAN, ROWAN_DECIMALS, rowan_permissions),
+            self.clp_admin, broadcast_mode="block")
+
+        sifnoded.token_registry_register_batch(self.clp_admin,
+            [sifnoded.create_tokenregistry_entry(denom, denom, decimals, other_permissions) for denom, (decimals, _, _) in pool_definitions.items()])
+        sifnoded.create_liquidity_pools_batch(self.clp_admin,
+            [(denom, native_amount, external_amount) for denom, (_, native_amount, external_amount) in pool_definitions.items()])
+
+        assert len(self.sifnoded.query_pools()) == len(pool_definitions)
