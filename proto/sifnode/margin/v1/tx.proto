@@ -1,3 +1,5 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
 syntax = "proto3";
 package sifnode.margin.v1;
 
@@ -82,7 +84,7 @@ message MsgDewhitelistResponse {}
 
 message MsgAdminCloseAll {
   string signer = 1;
-  bool TakeMarginFund = 2;
+  bool take_margin_fund = 2;
 }
 message MsgAdminCloseAllResponse {}
 
@@ -90,6 +92,6 @@ message MsgAdminClose {
   string signer = 1;
   string mtp_address = 2;
   uint64 id = 3;
-  bool TakeMarginFund = 4;
+  bool take_margin_fund = 4;
 }
 message MsgAdminCloseResponse {}
