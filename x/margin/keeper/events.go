@@ -11,8 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.Uint, closer string) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
+func (k Keeper) EmitAdminClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.Uint, closer string) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAdminClose,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
 		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
@@ -28,6 +28,12 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.
 		sdk.NewAttribute("interest_unpaid_collateral", mtp.InterestUnpaidCollateral.String()),
 		sdk.NewAttribute("health", mtp.MtpHealth.String()),
 		sdk.NewAttribute("closer", closer),
+	))
+}
+
+func (k Keeper) EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAdminCloseAll,
+		sdk.NewAttribute("takeMarginFund", strconv.FormatBool(takeMarginFund)),
 	))
 }
 

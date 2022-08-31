@@ -91,9 +91,10 @@ type Keeper interface {
 	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
 	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose, isAdminClose bool) (*MTP, sdk.Uint, error)
+	ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeInsuranceFund bool) (*MTP, sdk.Uint, error)
 
-	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool)
 
 	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }

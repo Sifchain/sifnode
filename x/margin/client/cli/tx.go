@@ -143,42 +143,9 @@ func GetCloseCmd() *cobra.Command {
 	return cmd
 }
 
-func GetAdminCloseCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "admin-close",
-		Short: "Force close margin position",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			signer := clientCtx.GetFromAddress()
-			if signer == nil {
-				return errors.New("signer address is missing")
-			}
-
-			closeAll, err := cmd.Flags().GetBool("close_all")
-			if err != nil {
-				return err
-			}
-
-			msg := types.MsgAdminClose{
-				Signer:   signer.String(),
-				CloseAll: closeAll,
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-	cmd.Flags().String("close_all", "", "mtp address")
-	_ = cmd.MarkFlagRequired("close_all")
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
 func GetForceCloseCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "force-close",
+		Use:   "admin-close",
 		Short: "Force close margin position",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

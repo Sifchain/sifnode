@@ -54,6 +54,9 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgAdminClose:
 			res, err := msgServer.AdminClose(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgAdminCloseAll:
+			res, err := msgServer.AdminCloseAll(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized margin message type: %T", msg)
 		}

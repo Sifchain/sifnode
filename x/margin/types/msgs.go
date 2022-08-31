@@ -21,6 +21,7 @@ var (
 	_ sdk.Msg = &MsgDewhitelist{}
 	_ sdk.Msg = &MsgWhitelist{}
 	_ sdk.Msg = &MsgAdminClose{}
+	_ sdk.Msg = &MsgAdminCloseAll{}
 
 	_ legacytx.LegacyMsg = &MsgOpen{}
 	_ legacytx.LegacyMsg = &MsgClose{}
@@ -30,6 +31,7 @@ var (
 	_ legacytx.LegacyMsg = &MsgWhitelist{}
 	_ legacytx.LegacyMsg = &MsgDewhitelist{}
 	_ legacytx.LegacyMsg = &MsgAdminClose{}
+	_ legacytx.LegacyMsg = &MsgAdminCloseAll{}
 )
 
 func Validate(asset string) bool {
@@ -305,6 +307,34 @@ func (m MsgAdminClose) ValidateBasic() error {
 }
 
 func (m MsgAdminClose) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (m MsgAdminCloseAll) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgAdminCloseAll) Route() string {
+	return RouterKey
+}
+
+func (m MsgAdminCloseAll) Type() string {
+	return "admin_close_all"
+}
+
+func (m MsgAdminCloseAll) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgAdminCloseAll) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

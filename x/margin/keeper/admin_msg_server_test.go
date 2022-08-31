@@ -18,11 +18,10 @@ import (
 	"testing"
 )
 
-func TestMsgServer_AdminClose(t *testing.T) {
+func TestMsgServer_AdminCloseAll(t *testing.T) {
 	table := []struct {
 		msgOpen                       types.MsgOpen
-		msgForceClose                 types.MsgForceClose
-		msgAdminClose                 types.MsgAdminClose
+		msgAdminCloseAll              types.MsgAdminCloseAll
 		health                        sdk.Dec
 		forceCloseThreshold           sdk.Dec
 		name                          string
@@ -37,16 +36,10 @@ func TestMsgServer_AdminClose(t *testing.T) {
 		poolEnabled                   bool
 		fundedAccount                 bool
 		mtpCreateDisabled             bool
-		repay                         bool
 	}{
 		{
-			name: "admin close all mtps automatically",
-			msgForceClose: types.MsgForceClose{
-				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-				Id:         1,
-			},
-			msgAdminClose: types.MsgAdminClose{Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v", CloseAll: true},
+			name:             "admin close and take funds",
+			msgAdminCloseAll: types.MsgAdminCloseAll{Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v", TakeMarginFund: true},
 			msgOpen: types.MsgOpen{
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
@@ -59,16 +52,10 @@ func TestMsgServer_AdminClose(t *testing.T) {
 			poolEnabled:         true,
 			fundedAccount:       true,
 			err2:                types.ErrMTPDoesNotExist,
-			repay:               false,
 		},
 		{
-			name: "admin update repay only",
-			msgForceClose: types.MsgForceClose{
-				Signer:     "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-				MtpAddress: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
-				Id:         1,
-			},
-			msgAdminClose: types.MsgAdminClose{Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v", CloseAll: false},
+			name:             "admin close and not take funds",
+			msgAdminCloseAll: types.MsgAdminCloseAll{Signer: "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v", TakeMarginFund: false},
 			msgOpen: types.MsgOpen{
 				CollateralAsset: "rowan",
 				BorrowAsset:     "xxx",
@@ -80,8 +67,7 @@ func TestMsgServer_AdminClose(t *testing.T) {
 			token:               "xxx",
 			poolEnabled:         true,
 			fundedAccount:       true,
-			err2:                nil,
-			repay:               false,
+			err2:                types.ErrMTPDoesNotExist,
 		},
 	}
 	for _, tt := range table {
@@ -94,15 +80,15 @@ func TestMsgServer_AdminClose(t *testing.T) {
 					AdminAccounts: []*admintypes.AdminAccount{
 						{
 							AdminType:    admintypes.AdminType_MARGIN,
-							AdminAddress: tt.msgAdminClose.Signer,
+							AdminAddress: tt.msgAdminCloseAll.Signer,
 						},
 						{
 							AdminType:    admintypes.AdminType_CLPDEX,
-							AdminAddress: tt.msgAdminClose.Signer,
+							AdminAddress: tt.msgAdminCloseAll.Signer,
 						},
 						{
 							AdminType:    admintypes.AdminType_TOKENREGISTRY,
-							AdminAddress: tt.msgAdminClose.Signer,
+							AdminAddress: tt.msgAdminCloseAll.Signer,
 						},
 					},
 				}
@@ -131,7 +117,7 @@ func TestMsgServer_AdminClose(t *testing.T) {
 						ForceCloseThreshold:                      tt.forceCloseThreshold,
 						RemovalQueueThreshold:                    sdk.ZeroDec(),
 						Pools:                                    []string{},
-						ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+						ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 2),
 						ForceCloseInsuranceFundAddress:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 						IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
 						IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
@@ -160,7 +146,7 @@ func TestMsgServer_AdminClose(t *testing.T) {
 
 				balances := []banktypes.Balance{
 					{
-						Address: tt.msgAdminClose.Signer,
+						Address: tt.msgAdminCloseAll.Signer,
 						Coins: sdk.Coins{
 							nativeCoin,
 							externalCoin,
@@ -178,7 +164,7 @@ func TestMsgServer_AdminClose(t *testing.T) {
 						MinCreatePoolThreshold: 100,
 					},
 					AddressWhitelist: []string{
-						tt.msgAdminClose.Signer,
+						tt.msgAdminCloseAll.Signer,
 					},
 					PoolList: []*clptypes.Pool{
 						{
@@ -196,7 +182,7 @@ func TestMsgServer_AdminClose(t *testing.T) {
 					LiquidityProviders: []*clptypes.LiquidityProvider{
 						{
 							Asset:                    &clptypes.Asset{Symbol: tt.poolAsset},
-							LiquidityProviderAddress: tt.msgAdminClose.Signer,
+							LiquidityProviderAddress: tt.msgAdminCloseAll.Signer,
 							LiquidityProviderUnits:   sdk.NewUint(1000000000),
 						},
 					},
@@ -206,6 +192,8 @@ func TestMsgServer_AdminClose(t *testing.T) {
 
 				return genesisState
 			})
+			i, _ := sdk.NewIntFromString("10000000000000000000000")
+			app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", i)))
 			marginKeeper := app.MarginKeeper
 			msgServer := keeper.NewMsgServerImpl(marginKeeper)
 
@@ -215,9 +203,9 @@ func TestMsgServer_AdminClose(t *testing.T) {
 
 			var address string
 
-			address = tt.msgAdminClose.Signer
+			address = tt.msgAdminCloseAll.Signer
 
-			msg := tt.msgAdminClose
+			msg := tt.msgAdminCloseAll
 			msg.Signer = address
 
 			var signer = msg.Signer
@@ -225,11 +213,12 @@ func TestMsgServer_AdminClose(t *testing.T) {
 				signer = tt.overrideSigner
 			}
 
-			if !tt.mtpCreateDisabled {
-				addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1, sdk.NewDec(20))
-			}
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1, sdk.NewDec(20))
+			mtp.Liabilities = sdk.NewUint(10)
+			mtp.CustodyAmount = sdk.NewUint(10000)
+			marginKeeper.SetMTP(ctx, &mtp)
 
-			_, got := msgServer.AdminClose(sdk.WrapSDKContext(ctx), &msg)
+			_, got := msgServer.AdminCloseAll(sdk.WrapSDKContext(ctx), &msg)
 			balanceOriginal, _ := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &banktypes.QueryBalanceRequest{
 				Address: signer,
 				Denom:   tt.msgOpen.CollateralAsset,
@@ -249,7 +238,8 @@ func TestMsgServer_AdminClose(t *testing.T) {
 				Address: signer,
 				Denom:   tt.msgOpen.CollateralAsset,
 			})
-			assert.NotEqual(t, tt.repay, balanceAfter.Balance.IsEqual(*balanceOriginal.Balance))
+			differrenceWithoutTakingMarginFund := sdk.NewCoin("rowan", sdk.NewInt(8919))
+			assert.Equal(t, tt.msgAdminCloseAll.TakeMarginFund, balanceAfter.Balance.Sub(*balanceOriginal.Balance).IsLT(differrenceWithoutTakingMarginFund))
 
 			if tt.errString2 != nil {
 				require.EqualError(t, got2, tt.errString2.Error())
