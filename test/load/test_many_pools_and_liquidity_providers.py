@@ -1,3 +1,5 @@
+# This is for load testing of LPD/rewardss (and in future, margin)
+#
 # Scenarion description: https://www.notion.so/nodechain/Rewards-2-0-Load-Testing-972fbe73b04440cd87232aa60a3146c5
 # Ticket: https://app.zenhub.com/workspaces/current-sprint---engineering-615a2e9fe2abd5001befc7f9/issues/sifchain/sifnode/3020
 # How to run a validator in multi-node setup:

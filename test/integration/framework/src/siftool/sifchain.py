@@ -492,12 +492,15 @@ class Sifnoded:
 
     def token_registry_register_batch(self, from_sif_addr: cosmos.Address, entries: Iterable[TokenRegistryParams]):
         account_number, account_sequence = self.get_acct_seq(from_sif_addr)
+        token_registry_entries_before = set(e["denom"] for e in self.query_tokenregistry_entries())
         for entry in entries:
             res = self.token_registry_register(entry, from_sif_addr, account_seq=(account_number, account_sequence))
             check_raw_log(res)
             account_sequence += 1
         self.wait_for_last_transaction_to_be_mined()
-        assert set(e["denom"] for e in self.query_tokenregistry_entries()) == set(e["denom"] for e in entries), \
+        token_registry_entries_after = set(e["denom"] for e in self.query_tokenregistry_entries())
+        token_registry_entries_added = token_registry_entries_after.difference(token_registry_entries_before)
+        assert token_registry_entries_added == set(e["denom"] for e in entries), \
             "Some tokenregistry registration have failed"
 
     def query_tokenregistry_entries(self):
@@ -745,6 +748,12 @@ class Sifnoded:
     def query_pools(self, height: Optional[int] = None) -> List[JsonDict]:
         return self._paged_read(["query", "clp", "pools"], "pools", height=height)
 
+    def query_pools_sorted(self, height: Optional[int] = None) -> Mapping[str, JsonDict]:
+        pools = self.query_pools(height=height)
+        result = {p["external_asset"]["symbol"]: p for p in pools}
+        assert len(result) == len(pools)
+        return result
+
     def query_clp_liquidity_providers(self, denom: str, height: Optional[int] = None) -> List[JsonDict]:
         # Note: this paged result is slightly different than `query bank balances`. Here we always get "height"
         return self._paged_read(["query", "clp", "lplist", denom], "liquidity_providers", height=height)
@@ -865,8 +874,8 @@ class Sifnoded:
     ) -> JsonDict:
         args = ["tx", "clp", "swap", "--from", from_addr, "--sentSymbol", sent_symbol, "--sentAmount", str(sent_amount),
             "--receivedSymbol", received_symbol, "--minReceivingAmount", str(min_receiving_amount)] + \
-            self._node_args() + self._chain_id_args() + self._keyring_backend_args() + self._fees_args() + \
-            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+            self._node_args() + self._chain_id_args() + self._home_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         res = yaml_load(stdout(res))
         check_raw_log(res)

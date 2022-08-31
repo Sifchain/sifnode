@@ -229,11 +229,7 @@ class SifnodedEnvironment:
 
         sifnoded.wait_for_block(upgrade_height)
         time.sleep(5)
-        for p in self.running_processes:
-            p.terminate()
-            p.wait()
-        for f in self.open_log_files:
-            f.close()
+        self.close()
         time.sleep(5)
         for node_info in self.node_info:
             node_info["binary"] = new_binary
@@ -359,4 +355,10 @@ class SifnodedEnvironment:
         node_info["pubkey"] = pubkey
 
     def close(self):
-        pass
+        for p in self.running_processes:
+            p.terminate()
+            p.wait()
+        for f in self.open_log_files:
+            f.close()
+        self.running_processes = []
+        self.open_log_files = []
