@@ -840,6 +840,25 @@ func TestKeeper_Repay(t *testing.T) {
 	}
 }
 
+func TestKeeper_CheckMinLiabilities(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+	params := marginKeeper.GetParams(ctx)
+	params.InterestRateMin = sdk.MustNewDecFromStr("0.00000001")
+	marginKeeper.SetParams(ctx, &params)
+
+	got, _ := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(100000000), sdk.OneDec())
+	require.Nil(t, got)
+
+	got, _ = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec())
+	require.EqualError(t, got, "borrowed amount is too low")
+
+	got, _ = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9))
+	require.Nil(t, got)
+
+	got, _ = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9))
+	require.EqualError(t, got, "borrowed amount is too low")
+}
+
 func TestKeeper_CalcMTPInterestLiabilities(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 

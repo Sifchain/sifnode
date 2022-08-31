@@ -6,6 +6,7 @@ package keeper
 import (
 	"fmt"
 	"math"
+	"math/big"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -550,6 +551,30 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	sQ := k.GetSQFromBlocks(ctx, pool, newInterestRate)
 
 	return newInterestRate.Add(sQ), nil
+}
+
+func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) (error, sdk.Dec) {
+	var interestRational, liabilitiesRational, rate big.Rat
+	minInterestRate := k.GetInterestRateMin(ctx)
+
+	collateralAmountDec := sdk.NewDecFromBigInt(collateralAmount.BigInt())
+	liabilitiesDec := collateralAmountDec.Mul(eta)
+
+	liabilities := sdk.NewUintFromBigInt(liabilitiesDec.TruncateInt().BigInt())
+
+	rate.SetFloat64(minInterestRate.MustFloat64())
+	liabilitiesRational.SetInt(liabilities.BigInt())
+	interestRational.Mul(&rate, &liabilitiesRational)
+
+	interestNew := interestRational.Num().Quo(interestRational.Num(), interestRational.Denom())
+
+	samplePayment := sdk.NewUintFromBigInt(interestNew)
+
+	if samplePayment.IsZero() {
+		return types.ErrBorrowTooLow, minInterestRate
+	}
+
+	return nil, sdk.ZeroDec()
 }
 
 func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {
