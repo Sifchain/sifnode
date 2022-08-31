@@ -172,9 +172,9 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	collateralAmount := msg.CollateralAmount
 
 	// check if liabilities large enough for interest payments
-	err, rateMin := k.CheckMinLiabilities(ctx, collateralAmount, eta)
+	err := k.CheckMinLiabilities(ctx, collateralAmount, eta)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, fmt.Sprintf("interestRateMin %s", rateMin.String()))
+		return nil, err
 	}
 
 	collateralAmountDec := sdk.NewDecFromBigInt(msg.CollateralAmount.BigInt())

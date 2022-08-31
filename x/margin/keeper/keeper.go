@@ -553,7 +553,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	return newInterestRate.Add(sQ), nil
 }
 
-func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) (error, sdk.Dec) {
+func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error {
 	var interestRational, liabilitiesRational, rate big.Rat
 	minInterestRate := k.GetInterestRateMin(ctx)
 
@@ -571,10 +571,10 @@ func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, 
 	samplePayment := sdk.NewUintFromBigInt(interestNew)
 
 	if samplePayment.IsZero() && !minInterestRate.IsZero() {
-		return types.ErrBorrowTooLow, minInterestRate
+		return types.ErrBorrowTooLow
 	}
 
-	return nil, sdk.ZeroDec()
+	return nil
 }
 
 func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {

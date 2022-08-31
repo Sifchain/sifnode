@@ -846,16 +846,16 @@ func TestKeeper_CheckMinLiabilities(t *testing.T) {
 	params.InterestRateMin = sdk.MustNewDecFromStr("0.00000001")
 	marginKeeper.SetParams(ctx, &params)
 
-	got, _ := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(100000000), sdk.OneDec())
+	got := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(100000000), sdk.OneDec())
 	require.Nil(t, got)
 
-	got, _ = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec())
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec())
 	require.EqualError(t, got, "borrowed amount is too low")
 
-	got, _ = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9))
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9))
 	require.Nil(t, got)
 
-	got, _ = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9))
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9))
 	require.EqualError(t, got, "borrowed amount is too low")
 }
 
