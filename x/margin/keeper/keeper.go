@@ -226,7 +226,7 @@ func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool cl
 		return sdk.Uint{}, err
 	}
 	if swapResult.IsZero() {
-		return sdk.Uint{}, clptypes.ErrUnableToSwap
+		return sdk.Uint{}, clptypes.ErrAmountTooLow
 	}
 	return swapResult, nil
 }
