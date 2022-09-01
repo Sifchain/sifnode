@@ -4,6 +4,10 @@
 package keeper
 
 import (
+	"fmt"
+
+	"github.com/cosmos/cosmos-sdk/types/errors"
+
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -50,6 +54,7 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	}()
 	h, err := k.UpdateMTPHealth(ctx, *mtp, *pool)
 	if err != nil {
+		ctx.Logger().Error(errors.Wrap(err, fmt.Sprintf("error updating mtp health: %s", mtp.String())).Error())
 		return
 	}
 	mtp.MtpHealth = h
@@ -63,5 +68,7 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	if err == nil {
 		// Emit event if position was closed
 		k.EmitForceClose(ctx, mtp, repayAmount, "")
+	} else {
+		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
 	}
 }

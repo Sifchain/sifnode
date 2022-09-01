@@ -7,6 +7,7 @@ import (
 	"fmt"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"math"
+	"math/big"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -219,13 +220,15 @@ func (k Keeper) AdminKeeper() adminkeeper.Keeper {
 
 func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error) {
 	toAsset := ToAsset(to)
-	// add liabilities? and custody to pool depth
 
 	marginEnabled := k.IsPoolEnabled(ctx, pool.String())
 
 	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool, marginEnabled)
 	if err != nil {
 		return sdk.Uint{}, err
+	}
+	if swapResult.IsZero() {
+		return sdk.Uint{}, clptypes.ErrAmountTooLow
 	}
 	return swapResult, nil
 }
@@ -321,7 +324,7 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 
 	debt, err := k.CLPSwap(ctx, xl, mtp.CustodyAsset, pool)
 	if err != nil {
-		return sdk.ZeroDec(), nil
+		return sdk.ZeroDec(), err
 	}
 
 	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
@@ -557,6 +560,30 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	sQ := k.GetSQFromBlocks(ctx, pool, newInterestRate)
 
 	return newInterestRate.Add(sQ), nil
+}
+
+func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error {
+	var interestRational, liabilitiesRational, rate big.Rat
+	minInterestRate := k.GetInterestRateMin(ctx)
+
+	collateralAmountDec := sdk.NewDecFromBigInt(collateralAmount.BigInt())
+	liabilitiesDec := collateralAmountDec.Mul(eta)
+
+	liabilities := sdk.NewUintFromBigInt(liabilitiesDec.TruncateInt().BigInt())
+
+	rate.SetFloat64(minInterestRate.MustFloat64())
+	liabilitiesRational.SetInt(liabilities.BigInt())
+	interestRational.Mul(&rate, &liabilitiesRational)
+
+	interestNew := interestRational.Num().Quo(interestRational.Num(), interestRational.Denom())
+
+	samplePayment := sdk.NewUintFromBigInt(interestNew)
+
+	if samplePayment.IsZero() && !minInterestRate.IsZero() {
+		return types.ErrBorrowTooLow
+	}
+
+	return nil
 }
 
 func (k Keeper) GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64 {
