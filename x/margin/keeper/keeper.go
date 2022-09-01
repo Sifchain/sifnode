@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"google.golang.org/grpc/codes"
@@ -435,6 +436,19 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
+func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) {
+	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
+	// if incremental payment on, pay interest
+	if incrementalInterestPaymentEnabled {
+		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool)
+		if err != nil {
+			ctx.Logger().Error(errors.Wrap(err, "error executing incremental interest payment").Error())
+		}
+	} else { // else update unpaid mtp interest
+		mtp.InterestUnpaidCollateral = interestPayment
+	}
+}
+
 func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
 	// if mtp has unpaid interest, add to payment
 	if mtp.InterestUnpaidCollateral.GT(sdk.ZeroUint()) {
@@ -620,12 +634,12 @@ func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 	return currentHeight % epochLength
 }
 
-// ForceCloseLong : InsuranceFund is the same as MarginFund . Margin Fund is used in UI for optics
 func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeInsuranceFund bool) (*types.MTP, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, mtpAddress, id)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
+
 	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
@@ -647,7 +661,9 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
-		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+		interestPayment := CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+
+		k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {
@@ -657,6 +673,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, mtpAddress)
 	}
+
 	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err

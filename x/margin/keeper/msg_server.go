@@ -223,7 +223,9 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
-		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+		interestPayment := CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+
+		k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {

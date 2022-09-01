@@ -81,6 +81,7 @@ type Keeper interface {
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
+	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool)
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 

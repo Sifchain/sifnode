@@ -27,15 +27,11 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 		name                          string
 		poolAsset                     string
 		token                         string
-		overrideSigner                string
 		overrideForceCloseThreadshold string
 		err                           error
 		errString                     error
 		err2                          error
 		errString2                    error
-		poolEnabled                   bool
-		fundedAccount                 bool
-		mtpCreateDisabled             bool
 	}{
 		{
 			name:             "admin close and take funds",
@@ -49,8 +45,6 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			forceCloseThreshold: sdk.OneDec(),
 			poolAsset:           "xxx",
 			token:               "xxx",
-			poolEnabled:         true,
-			fundedAccount:       true,
 			err2:                types.ErrMTPDoesNotExist,
 		},
 		{
@@ -65,8 +59,6 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			forceCloseThreshold: sdk.OneDec(),
 			poolAsset:           "xxx",
 			token:               "xxx",
-			poolEnabled:         true,
-			fundedAccount:       true,
 			err2:                types.ErrMTPDoesNotExist,
 		},
 	}
@@ -129,11 +121,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 					},
 				}
 
-				if tt.poolEnabled {
-					gs3.Params.Pools = []string{
-						tt.poolAsset,
-					}
-				}
+				gs3.Params.Pools = []string{tt.poolAsset}
 
 				bz, _ = app.AppCodec().MarshalJSON(gs3)
 				genesisState["margin"] = bz
@@ -197,9 +185,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			marginKeeper := app.MarginKeeper
 			msgServer := keeper.NewMsgServerImpl(marginKeeper)
 
-			if tt.poolEnabled {
-				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
-			}
+			marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 
 			var address string
 
@@ -209,14 +195,11 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			msg.Signer = address
 
 			var signer = msg.Signer
-			if tt.overrideSigner != "" {
-				signer = tt.overrideSigner
-			}
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1, sdk.NewDec(20))
 			mtp.Liabilities = sdk.NewUint(10)
 			mtp.CustodyAmount = sdk.NewUint(10000)
-			marginKeeper.SetMTP(ctx, &mtp)
+			_ = marginKeeper.SetMTP(ctx, &mtp)
 
 			_, got := msgServer.AdminCloseAll(sdk.WrapSDKContext(ctx), &msg)
 			balanceOriginal, _ := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &banktypes.QueryBalanceRequest{
@@ -238,8 +221,8 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 				Address: signer,
 				Denom:   tt.msgOpen.CollateralAsset,
 			})
-			differrenceWithoutTakingMarginFund := sdk.NewCoin("rowan", sdk.NewInt(8919))
-			assert.Equal(t, tt.msgAdminCloseAll.TakeMarginFund, balanceAfter.Balance.Sub(*balanceOriginal.Balance).IsLT(differrenceWithoutTakingMarginFund))
+			differenceWithoutTakingMarginFund := sdk.NewCoin("rowan", sdk.NewInt(8919))
+			assert.Equal(t, tt.msgAdminCloseAll.TakeMarginFund, balanceAfter.Balance.Sub(*balanceOriginal.Balance).IsLT(differenceWithoutTakingMarginFund))
 
 			if tt.errString2 != nil {
 				require.EqualError(t, got2, tt.errString2.Error())
