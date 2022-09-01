@@ -14,4 +14,5 @@ var (
 	ErrInvalidPosition  = sdkerrors.Register(ModuleName, 6, "mtp position invalid")
 	ErrMaxOpenPositions = sdkerrors.Register(ModuleName, 7, "max open positions reached")
 	ErrUnauthorised     = sdkerrors.Register(ModuleName, 8, "address not on whitelist")
+	ErrBorrowTooLow     = sdkerrors.Register(ModuleName, 9, "borrowed amount is too low")
 )

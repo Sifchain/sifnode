@@ -170,6 +170,13 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	eta := leverage.Sub(sdk.OneDec())
 
 	collateralAmount := msg.CollateralAmount
+
+	// check if liabilities large enough for interest payments
+	err := k.CheckMinLiabilities(ctx, collateralAmount, eta)
+	if err != nil {
+		return nil, err
+	}
+
 	collateralAmountDec := sdk.NewDecFromBigInt(msg.CollateralAmount.BigInt())
 
 	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, msg.Position, leverage)
