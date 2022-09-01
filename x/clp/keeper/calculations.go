@@ -10,8 +10,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-var f = big.NewRat(3, 1000)
-
 func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 	// if pmtpCurrentRunningRate.IsNil() {
 	// 	if toRowan {
@@ -119,11 +117,11 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // P - current number of pool units
 // #################
 // TODO: need to check we're not exceeding liquidity protection OR swap block switches
-// TODO: stop using f for swap fee rate
 // TODO: unit testing
 // ################
-func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint) {
+func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint) {
 	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
+	swapFeeRateR := DecToRat(&swapFeeRate)
 	symmetryType := GetLiquidityAddSymmetryType(R, r, A, a)
 	switch symmetryType {
 	case ErrorEmptyPool:
@@ -133,7 +131,7 @@ func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, pmtpCurrentRunningRate sdk.Dec
 		return r, sdk.ZeroUint()
 	case Positive:
 		// R,A,a > 0 and R/A > r/a
-		swapAmount := CalculateExternalSwapAmountAsymmetric(R, A, r, a, f, &pmtpCurrentRunningRateR)
+		swapAmount := CalculateExternalSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
 		aCorrected := a.Sub(swapAmount)
 		AProjected := A.Add(swapAmount)
 
@@ -146,7 +144,7 @@ func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, pmtpCurrentRunningRate sdk.Dec
 		return CalculatePoolUnitsSymmetric(R, r, P)
 	case Negative:
 		// R,A,r > 0 and (a==0 or R/A < r/a)
-		swapAmount := CalculateNativeSwapAmountAsymmetric(R, A, r, a, f, &pmtpCurrentRunningRateR)
+		swapAmount := CalculateNativeSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
 		rCorrected := r.Sub(swapAmount)
 		RProjected := R.Add(swapAmount)
 		return CalculatePoolUnitsSymmetric(RProjected, rCorrected, P)
