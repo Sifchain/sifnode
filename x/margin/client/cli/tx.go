@@ -32,6 +32,8 @@ func GetTxCmd() *cobra.Command {
 		GetUpdatePoolsCmd(),
 		GetDewhitelistCmd(),
 		GetWhitelistCmd(),
+		GetAdminCloseCmd(),
+		GetAdminCloseAllCmd(),
 	)
 	return cmd
 }

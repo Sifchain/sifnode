@@ -31,6 +31,32 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.
 	))
 }
 
+func (k Keeper) EmitAdminClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.Uint, closer string) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAdminClose,
+		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("position", mtp.Position.String()),
+		sdk.NewAttribute("address", mtp.Address),
+		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
+		sdk.NewAttribute("collateral_amount", mtp.CollateralAmount.String()),
+		sdk.NewAttribute("custody_asset", mtp.CustodyAsset),
+		sdk.NewAttribute("custody_amount", mtp.CustodyAmount.String()),
+		sdk.NewAttribute("repay_amount", repayAmount.String()),
+		sdk.NewAttribute("leverage", mtp.Leverage.String()),
+		sdk.NewAttribute("liabilities", mtp.Liabilities.String()),
+		sdk.NewAttribute("interest_paid_collateral", mtp.InterestPaidCollateral.String()),
+		sdk.NewAttribute("interest_paid_custody", mtp.InterestPaidCustody.String()),
+		sdk.NewAttribute("interest_unpaid_collateral", mtp.InterestUnpaidCollateral.String()),
+		sdk.NewAttribute("health", mtp.MtpHealth.String()),
+		sdk.NewAttribute("closer", closer),
+	))
+}
+
+func (k Keeper) EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAdminCloseAll,
+		sdk.NewAttribute("takeMarginFund", strconv.FormatBool(takeMarginFund)),
+	))
+}
+
 func (k Keeper) EmitInterestRateComputation(ctx sdk.Context) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventInterestRateComputation,
 		sdk.NewAttribute("block_height", strconv.FormatInt(ctx.BlockHeight(), 10))))

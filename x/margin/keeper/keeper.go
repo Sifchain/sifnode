@@ -5,6 +5,7 @@ package keeper
 
 import (
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"math"
 	"math/big"
 
@@ -374,10 +375,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 	have := repayAmount
 	owe := Liabilities.Add(InterestUnpaidCollateral)
 
-	fmt.Println("have:", have)
-	fmt.Println("owe:", owe)
-	fmt.Println("Liabilities:", Liabilities)
-
 	if have.LT(Liabilities) {
 		//can't afford principle liability
 		returnAmount = sdk.ZeroUint()
@@ -394,20 +391,17 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		debtP = sdk.ZeroUint()
 		debtI = sdk.ZeroUint()
 	}
-
-	fmt.Println("returnAmount:", returnAmount)
-
 	if !returnAmount.IsZero() {
 		actualReturnAmount := returnAmount
 		if takeInsurance {
 			takePercentage := k.GetForceCloseFundPercentage(ctx)
+
 			fundAddr := k.GetForceCloseInsuranceFundAddress(ctx)
 			takeAmount, err := k.TakeInsurance(ctx, returnAmount, mtp.CollateralAsset, takePercentage, fundAddr)
 			if err != nil {
 				return err
 			}
 			actualReturnAmount = returnAmount.Sub(takeAmount)
-
 			if !takeAmount.IsZero() {
 				k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CollateralAsset, types.EventRepayInsuranceFund)
 			}
@@ -437,7 +431,6 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool clptypes.Pool, repay
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.Liabilities)
 	}
-
 	err = k.DestroyMTP(ctx, mtp.Address, mtp.Id)
 	if err != nil {
 		return err
@@ -666,6 +659,64 @@ func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 	}
 	currentHeight := ctx.BlockHeight()
 	return currentHeight % epochLength
+}
+
+func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeInsuranceFund bool) (*types.MTP, sdk.Uint, error) {
+	mtp, err := k.GetMTP(ctx, mtpAddress, id)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+
+	var pool clptypes.Pool
+
+	nativeAsset := types.GetSettlementAsset()
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
+		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
+		if err != nil {
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
+		}
+	} else {
+		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
+		if err != nil {
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
+		}
+	}
+
+	// check MTP health against threshold
+	forceCloseThreshold := k.GetSafetyFactor(ctx)
+
+	epochLength := k.GetEpochLength(ctx)
+	epochPosition := GetEpochPosition(ctx, epochLength)
+	if epochPosition > 0 {
+		interestPayment := CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+
+		k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
+
+		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+		if err != nil {
+			return nil, sdk.ZeroUint(), err
+		}
+	}
+	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
+		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, mtpAddress)
+	}
+
+	err = k.TakeOutCustody(ctx, mtp, &pool)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+
+	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+
+	err = k.Repay(ctx, &mtp, pool, repayAmount, takeInsuranceFund)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+
+	return &mtp, repayAmount, nil
 }
 
 func (k Keeper) TakeInsurance(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
