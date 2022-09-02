@@ -1502,3 +1502,220 @@ func MustRatFromString(x string) *big.Rat {
 	}
 	return res
 }
+
+func TestKeeper_GetLiquidityAddSymmetryType(t *testing.T) {
+	testcases := []struct {
+		name          string
+		X, x, Y, y    sdk.Uint
+		expectedValue int
+	}{
+		{
+			name:          "one side of the pool empty",
+			X:             sdk.ZeroUint(),
+			x:             sdk.NewUint(11200),
+			Y:             sdk.NewUint(100),
+			y:             sdk.NewUint(100),
+			expectedValue: clpkeeper.ErrorEmptyPool,
+		},
+		{
+			name:          "nothing added",
+			X:             sdk.NewUint(11200),
+			x:             sdk.ZeroUint(),
+			Y:             sdk.NewUint(1000),
+			y:             sdk.ZeroUint(),
+			expectedValue: clpkeeper.ErrorNothingAdded,
+		},
+		{
+			name:          "negative symmetry - x zero",
+			X:             sdk.NewUint(11200),
+			x:             sdk.ZeroUint(),
+			Y:             sdk.NewUint(1000),
+			y:             sdk.NewUint(100),
+			expectedValue: clpkeeper.Negative,
+		},
+		{
+			name:          "negative symmetry - x > 0",
+			X:             sdk.NewUint(11200),
+			x:             sdk.NewUint(15),
+			Y:             sdk.NewUint(1000),
+			y:             sdk.NewUint(100),
+			expectedValue: clpkeeper.Negative,
+		},
+		{
+			name:          "symmetric",
+			X:             sdk.NewUint(11200),
+			x:             sdk.NewUint(1120),
+			Y:             sdk.NewUint(1000),
+			y:             sdk.NewUint(100),
+			expectedValue: clpkeeper.Symmetric,
+		},
+		{
+			name:          "positive symmetry",
+			X:             sdk.NewUint(11200),
+			x:             sdk.NewUint(100),
+			Y:             sdk.NewUint(1000),
+			y:             sdk.NewUint(5),
+			expectedValue: clpkeeper.Positive,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := clpkeeper.GetLiquidityAddSymmetryType(tc.X, tc.x, tc.Y, tc.y)
+
+			require.Equal(t, tc.expectedValue, res)
+		})
+	}
+}
+
+func TestKeeper_CalculatePoolUnitsV2(t *testing.T) {
+	testcases := []struct {
+		name                 string
+		oldPoolUnits         sdk.Uint
+		nativeAssetBalance   sdk.Uint
+		externalAssetBalance sdk.Uint
+		nativeAssetAmount    sdk.Uint
+		externalAssetAmount  sdk.Uint
+		expectedPoolUnits    sdk.Uint
+		expectedLPunits      sdk.Uint
+	}{
+		{
+			name:                 "empty pool",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.ZeroUint(),
+			externalAssetBalance: sdk.ZeroUint(),
+			nativeAssetAmount:    sdk.NewUint(100),
+			externalAssetAmount:  sdk.NewUint(90),
+			expectedPoolUnits:    sdk.NewUint(100),
+			expectedLPunits:      sdk.NewUint(100),
+		},
+		{
+			name:                 "add nothing",
+			oldPoolUnits:         sdk.NewUint(1000),
+			nativeAssetBalance:   sdk.NewUint(12327),
+			externalAssetBalance: sdk.NewUint(132233),
+			nativeAssetAmount:    sdk.ZeroUint(),
+			externalAssetAmount:  sdk.ZeroUint(),
+			expectedPoolUnits:    sdk.NewUint(1000),
+			expectedLPunits:      sdk.ZeroUint(),
+		},
+		{
+			name:                 "positive symmetry",
+			oldPoolUnits:         sdk.NewUint(7656454334323412),
+			nativeAssetBalance:   sdk.NewUint(16767626535600),
+			externalAssetBalance: sdk.NewUint(2345454545400),
+			nativeAssetAmount:    sdk.ZeroUint(),
+			externalAssetAmount:  sdk.NewUint(4556664545),
+			expectedPoolUnits:    sdk.NewUint(7663887695258361),
+			expectedLPunits:      sdk.NewUint(7433360934949),
+		},
+		{
+			name:                 "symmetric",
+			oldPoolUnits:         sdk.NewUint(7656454334323412),
+			nativeAssetBalance:   sdk.NewUint(16767626535600),
+			externalAssetBalance: sdk.NewUint(2345454545400),
+			nativeAssetAmount:    sdk.NewUint(167676265356),
+			externalAssetAmount:  sdk.NewUint(23454545454),
+			expectedPoolUnits:    sdk.NewUint(7733018877666646),
+			expectedLPunits:      sdk.NewUint(76564543343234),
+		},
+		{
+			name:                 "negative symmetry - zero external",
+			oldPoolUnits:         sdk.NewUint(7656454334323412),
+			nativeAssetBalance:   sdk.NewUint(16767626535600),
+			externalAssetBalance: sdk.NewUint(2345454545400),
+			nativeAssetAmount:    sdk.NewUint(167676265356),
+			externalAssetAmount:  sdk.ZeroUint(),
+			expectedPoolUnits:    sdk.NewUint(7694639456903696),
+			expectedLPunits:      sdk.NewUint(38185122580284),
+		},
+		{
+			name:                 "negative symmetry - non zero external",
+			oldPoolUnits:         sdk.NewUint(7656454334323412),
+			nativeAssetBalance:   sdk.NewUint(16767626535600),
+			externalAssetBalance: sdk.NewUint(2345454545400),
+			nativeAssetAmount:    sdk.NewUint(167676265356),
+			externalAssetAmount:  sdk.NewUint(46798998888),
+			expectedPoolUnits:    sdk.NewUint(7771026137435008),
+			expectedLPunits:      sdk.NewUint(114571803111596),
+		},
+		{
+			name:                 "very big - positive symmetry",
+			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:    sdk.NewUint(0),
+			externalAssetAmount:  sdk.NewUint(1099511627776), // 2**40
+			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
+			expectedLPunits:      sdk.NewUint(549728324722),
+		},
+		{
+			name:                 "very big - symmetric",
+			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
+			externalAssetAmount:  sdk.NewUint(1099511627776),
+			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
+			expectedLPunits:      sdk.NewUint(1099511627776),
+		},
+		{
+			name:                 "very big - negative symmetry",
+			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
+			externalAssetAmount:  sdk.ZeroUint(),
+			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
+			expectedLPunits:      sdk.NewUint(549728324722),
+		},
+	}
+
+	swapFeeRate := sdk.NewDecWithPrec(1, 4)
+	//pmtpCurrentRunningRate := sdk.NewDecWithPrec(1, 1)
+	pmtpCurrentRunningRate := sdk.ZeroDec()
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			poolUnits, lpunits := clpkeeper.CalculatePoolUnitsV2(
+				tc.oldPoolUnits,
+				tc.nativeAssetBalance,
+				tc.externalAssetBalance,
+				tc.nativeAssetAmount,
+				tc.externalAssetAmount,
+				swapFeeRate,
+				pmtpCurrentRunningRate,
+			)
+
+			require.Equal(t, tc.expectedPoolUnits.String(), poolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expectedLPunits.String(), lpunits.String())
+		})
+	}
+}
+
+func TestKeeper_CalculatePoolUnitsSymmetric(t *testing.T) {
+	testcases := []struct {
+		name              string
+		X, x, P           sdk.Uint
+		expectedPoolUnits sdk.Uint
+		expectedLPUnits   sdk.Uint
+	}{
+		{
+			name:              "test 1",
+			X:                 sdk.NewUint(167676265356),
+			x:                 sdk.NewUint(5120000099),
+			P:                 sdk.NewUint(112323227872),
+			expectedPoolUnits: sdk.NewUint(115753021209),
+			expectedLPUnits:   sdk.NewUint(3429793337),
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			poolUnits, lpUnits := clpkeeper.CalculatePoolUnitsSymmetric(tc.X, tc.x, tc.P)
+
+			require.Equal(t, tc.expectedPoolUnits.String(), poolUnits.String())
+			require.Equal(t, tc.expectedLPUnits.String(), lpUnits.String())
+		})
+	}
+}

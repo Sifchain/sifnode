@@ -117,18 +117,23 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // P - current number of pool units
 // #################
 // TODO: need to check we're not exceeding liquidity protection OR swap block switches
-// TODO: unit testing
+// TODO: replace original with V2
 // ################
 func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint) {
 	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
 	swapFeeRateR := DecToRat(&swapFeeRate)
-	symmetryType := GetLiquidityAddSymmetryType(R, r, A, a)
+
+	symmetryType := GetLiquidityAddSymmetryType(A, a, R, r)
 	switch symmetryType {
 	case ErrorEmptyPool:
+		// If both sides of the pool are empty then we start counting pool units from scratch. We can assign
+		// an arbitrary number, which we'll chose to be the amount of native asset added.
+		// If only one side of the pool is empty then it's not clear what should be done - in which case
+		// we'll default to doing the same thing.
 		return r, r
 	case ErrorNothingAdded:
-		//TODO: this is a historical misuse of this function
-		return r, sdk.ZeroUint()
+		// Keep the pool units as they were and don't give any units to the liquidity provider
+		return P, sdk.ZeroUint()
 	case Positive:
 		// R,A,a > 0 and R/A > r/a
 		swapAmount := CalculateExternalSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
@@ -189,12 +194,12 @@ func GetLiquidityAddSymmetryType(X, x, Y, y sdk.Uint) int {
 	if x.IsZero() {
 		return Negative
 	}
-	var YoverX, yOverx *big.Rat
+	var YoverX, yOverx big.Rat
 
 	YoverX.SetFrac(Y.BigInt(), X.BigInt())
 	yOverx.SetFrac(y.BigInt(), x.BigInt())
 
-	switch YoverX.Cmp(yOverx) {
+	switch YoverX.Cmp(&yOverx) {
 	case -1:
 		return Negative
 	case 0:
@@ -530,8 +535,13 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 // If more external asset is required, then due to ratio shifting the swap formula changes, in which case
 // use CalculateNativeSwapAmountAsymmetric.
 func CalculateExternalSwapAmountAsymmetric(R, A, r, a sdk.Uint, f, p *big.Rat) sdk.Uint {
-	var RRat, ARat, rRat, aRat *big.Rat
-	s := CalculateExternalSwapAmountAsymmetricRat(RRat, ARat, rRat, aRat, f, p)
+	var RRat, ARat, rRat, aRat big.Rat
+	RRat.SetInt(R.BigInt())
+	ARat.SetInt(A.BigInt())
+	rRat.SetInt(r.BigInt())
+	aRat.SetInt(a.BigInt())
+
+	s := CalculateExternalSwapAmountAsymmetricRat(&RRat, &ARat, &rRat, &aRat, f, p)
 	return sdk.NewUintFromBigInt(RatIntQuo(&s))
 }
 
@@ -606,12 +616,13 @@ func CalculateExternalSwapAmountAsymmetricRat(Y, X, y, x, f, r *big.Rat) big.Rat
 // If more native asset is required, then due to ratio shifting the swap formula changes, in which case
 // use CalculateExternalSwapAmountAsymmetric.
 func CalculateNativeSwapAmountAsymmetric(R, A, r, a sdk.Uint, f, p *big.Rat) sdk.Uint {
-	var RRat, ARat, rRat, aRat *big.Rat
+	var RRat, ARat, rRat, aRat big.Rat
 	RRat.SetInt(R.BigInt())
 	ARat.SetInt(A.BigInt())
 	rRat.SetInt(r.BigInt())
 	aRat.SetInt(a.BigInt())
-	s := CalculateNativeSwapAmountAsymmetricRat(RRat, ARat, rRat, aRat, f, p)
+
+	s := CalculateNativeSwapAmountAsymmetricRat(&RRat, &ARat, &rRat, &aRat, f, p)
 	return sdk.NewUintFromBigInt(RatIntQuo(&s))
 }
 
