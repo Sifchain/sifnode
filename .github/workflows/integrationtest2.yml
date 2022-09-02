@@ -5,7 +5,7 @@ on:
       - "ui/**"
 
 jobs:
-  test:
+  integration:
     timeout-minutes: 40
     runs-on: ubuntu-20.04
     steps:
