@@ -237,7 +237,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		}
 	}
 
-	err = k.Repay(ctx, &mtp, pool, repayAmount, false)
+	err = k.Repay(ctx, &mtp, &pool, repayAmount, false)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
@@ -336,7 +336,7 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.Signer, true, false)
+		mtp, _, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.Signer, true, false)
 		if err != nil {
 			return nil, err
 		}
