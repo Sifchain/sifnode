@@ -307,7 +307,6 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 	return H
 }
 
-// TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
 	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	xl := mtp.Liabilities
@@ -320,14 +319,13 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		xl = xl.Add(mtp.InterestUnpaidCollateral)
 	}
 
-	debt, err := k.CLPSwap(ctx, xl, mtp.CustodyAsset, pool)
+	C, err := k.CLPSwap(ctx, sdk.Uint(yc), mtp.CollateralAsset, pool)
 	if err != nil {
 		return sdk.ZeroDec(), err
 	}
+	lr := C.Quo(xl)
 
-	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
-
-	return lr, nil
+	return sdk.Dec(lr), nil
 }
 
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Pool) error {
