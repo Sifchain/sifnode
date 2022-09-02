@@ -149,13 +149,13 @@ var (
 		ibctransferoverride.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
+		margin.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
 		admin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		margin.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -275,11 +275,11 @@ func NewSifAppWithBlacklist(
 		disptypes.StoreKey,
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
+		margintypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
 		admintypes.StoreKey,
 		authzkeeper.StoreKey,
-		margintypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -509,12 +509,12 @@ func NewSifAppWithBlacklist(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		margin.NewAppModule(app.MarginKeeper, &appCodec),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
 		admin.NewAppModule(app.AdminKeeper, &appCodec),
-		margin.NewAppModule(app.MarginKeeper, &appCodec),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -541,13 +541,13 @@ func NewSifAppWithBlacklist(
 		ibchost.ModuleName,
 		disptypes.ModuleName,
 		transferModule.Name(),
+		margin.ModuleName,
 		clptypes.ModuleName,
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		dispensation.ModuleName,
 		admintypes.ModuleName,
-		margin.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
@@ -570,11 +570,11 @@ func NewSifAppWithBlacklist(
 		disptypes.ModuleName,
 		transferModule.Name(),
 		clptypes.ModuleName,
+		margin.ModuleName,
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
 		admintypes.ModuleName,
-		margin.ModuleName,
 	)
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -604,11 +604,11 @@ func NewSifAppWithBlacklist(
 		tokenregistrytypes.ModuleName,
 		admintypes.ModuleName,
 		clptypes.ModuleName,
+		margin.ModuleName,
 		ethbridgetypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-		margin.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -794,10 +794,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(clptypes.ModuleName)
+	paramsKeeper.Subspace(margintypes.ModuleName).WithKeyTable(margintypes.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(margintypes.ModuleName).WithKeyTable(margintypes.ParamKeyTable())
 	return paramsKeeper
 }

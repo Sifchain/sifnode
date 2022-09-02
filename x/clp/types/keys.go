@@ -42,7 +42,7 @@ var (
 	RewardsBlockDistributionPrefix      = []byte{0x0b}
 	SwapFeeRatePrefix                   = []byte{0x0c}
 	RemovalRequestPrefix                = []byte{0x0d}
-	RemovalQueuePrefix                  = []byte{0x0f}
+	RemovalQueuePrefix                  = []byte{0x0e}
 )
 
 // Generates a key for storing a specific pool
