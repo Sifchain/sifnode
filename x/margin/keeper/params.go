@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
@@ -122,6 +119,10 @@ func (k Keeper) IsPoolClosed(ctx sdk.Context, asset string) bool {
 
 func (k Keeper) GetSqModifier(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).SqModifier
+}
+
+func (k Keeper) IsWhitelistingEnabled(ctx sdk.Context) bool {
+	return k.GetParams(ctx).WhitelistingEnabled
 }
 
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {

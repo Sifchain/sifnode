@@ -2,8 +2,8 @@
 
 set -x
 
-sifnoded tx margin whitelist sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd \
-  --from $SIF_ACT \
+sifnoded tx margin whitelist $ADMIN_ADDRESS \
+  --from $ADMIN_KEY \
   --keyring-backend test \
   --fees 100000000000000000rowan \
   --node ${SIFNODE_NODE} \

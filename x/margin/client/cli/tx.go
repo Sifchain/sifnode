@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package cli
 
 import (
@@ -32,6 +29,8 @@ func GetTxCmd() *cobra.Command {
 		GetUpdatePoolsCmd(),
 		GetDewhitelistCmd(),
 		GetWhitelistCmd(),
+		GetAdminCloseCmd(),
+		GetAdminCloseAllCmd(),
 	)
 	return cmd
 }
@@ -219,6 +218,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 					IncrementalInterestPaymentInsuranceFundAddress: viper.GetString("incremental-interest-payment-insurance-fund-address"),
 					SqModifier:                                     sdk.MustNewDecFromStr(viper.GetString("sq-modifier")),
 					SafetyFactor:                                   sdk.MustNewDecFromStr(viper.GetString("safety-factor")),
+					WhitelistingEnabled:                            viper.GetBool("whitelisting-enabled"),
 				},
 			}
 
@@ -243,6 +243,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	cmd.Flags().String("incremental-interest-payment-insurance-fund-address", "", "address of insurance fund wallet for incremental interest payment")
 	cmd.Flags().String("sq-modifier", "", "the modifier value for the removal queue's sq formula")
 	cmd.Flags().String("safety-factor", "", "the safety factor used in liquidation ratio")
+	cmd.Flags().Bool("whitelisting-enabled", false, "Enable whitelisting")
 	_ = cmd.MarkFlagRequired("leverage-max")
 	_ = cmd.MarkFlagRequired("interest-rate-max")
 	_ = cmd.MarkFlagRequired("interest-rate-min")
@@ -259,6 +260,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("incremental-interest-payment-insurance-fund-address")
 	_ = cmd.MarkFlagRequired("sq-modifier")
 	_ = cmd.MarkFlagRequired("safety-factor")
+	_ = cmd.MarkFlagRequired("whitelisting-enabled")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

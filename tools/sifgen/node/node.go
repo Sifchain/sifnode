@@ -216,7 +216,7 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	if err = FEATURE_TOGGLE_MARGIN_CLI_ALPHA_seedGenesis(); err != nil {
+	if err := genesis.ReplaceMarginGenesis(common.DefaultNodeHome); err != nil {
 		return err
 	}
 

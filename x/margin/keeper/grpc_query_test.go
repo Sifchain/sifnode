@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper_test
 
 import (
@@ -16,7 +13,7 @@ import (
 func TestKeeper_NewQueryServer(t *testing.T) {
 	ctx, app := test.CreateTestAppMargin(false)
 
-	addMTPKey(t, ctx, app, app.MarginKeeper, "ceth", "rowan", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd", margintypes.Position_LONG, 1)
+	addMTPKey(t, ctx, app, app.MarginKeeper, "ceth", "rowan", "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd", margintypes.Position_LONG, 1, sdk.NewDec(20))
 
 	queryServer := keeper.NewQueryServer(app.MarginKeeper)
 

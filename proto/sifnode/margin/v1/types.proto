@@ -66,7 +66,7 @@ message Params {
   ];
   repeated string closed_pools = 19;
   bool incremental_interest_payment_enabled = 20;
-
+  bool whitelisting_enabled = 21;
 }
 
 enum Position {
@@ -86,27 +86,31 @@ message MTP {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string interest_paid = 5 [
+  string interest_paid_collateral = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string interest_unpaid = 6 [
+  string interest_paid_custody = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string custody_asset = 7;
-  string custody_amount = 8 [
+  string interest_unpaid_collateral = 7 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string leverage = 9 [
+  string custody_asset = 8;
+  string custody_amount = 9 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string leverage = 10 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string mtp_health = 10 [
+  string mtp_health = 11 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  Position position = 11;
-  uint64 id = 12;
+  Position position = 12;
+  uint64 id = 13;
 }

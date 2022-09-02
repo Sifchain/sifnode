@@ -30,6 +30,9 @@ service Query {
   rpc GetWhitelist(WhitelistRequest) returns (WhitelistResponse) {
     option (google.api.http).get = "/sifchain/margin/v1/whitelist";
   }
+  rpc IsWhitelisted(IsWhitelistedRequest) returns (IsWhitelistedResponse) {
+    option (google.api.http).get = "/sifchain/margin/v1/is-whitelisted";
+  }
 }
 
 message MTPRequest {
@@ -98,4 +101,13 @@ message GetSQParamsRequest {
 
 message GetSQParamsResponse {
   int64 begin_block = 1;
+}
+
+message IsWhitelistedRequest {
+  string address = 1;
+}
+
+message IsWhitelistedResponse {
+  string address = 1;
+  bool is_whitelisted = 2;
 }

@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
@@ -110,5 +107,12 @@ func (srv queryServer) GetSQParams(ctx context.Context, request *types.GetSQPara
 	}
 	return &types.GetSQParamsResponse{
 		BeginBlock: int64(srv.keeper.GetSQBeginBlock(sdk.UnwrapSDKContext(ctx), &pool)),
+	}, nil
+}
+
+func (srv queryServer) IsWhitelisted(ctx context.Context, request *types.IsWhitelistedRequest) (*types.IsWhitelistedResponse, error) {
+	return &types.IsWhitelistedResponse{
+		Address:       request.Address,
+		IsWhitelisted: srv.keeper.IsWhitelisted(sdk.UnwrapSDKContext(ctx), request.Address),
 	}, nil
 }

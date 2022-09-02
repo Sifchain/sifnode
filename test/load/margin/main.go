@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package main
 
 import (
@@ -41,7 +38,6 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use: "marginloadtest",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			initClientCtx = client.ReadHomeFlag(initClientCtx, cmd)
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
