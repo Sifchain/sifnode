@@ -815,7 +815,7 @@ func TestKeeper_Repay(t *testing.T) {
 				mtp.Address = tt.overrideAddress
 			}
 
-			got := marginKeeper.Repay(ctx, &mtp, pool, tt.repayAmount, false)
+			got := marginKeeper.Repay(ctx, &mtp, &pool, tt.repayAmount, false)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
