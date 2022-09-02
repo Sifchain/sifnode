@@ -74,7 +74,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 
 	if !k.ValidateAddress(ctx, networkIdentity, valAddr) {
 		logger.Error("ProcessClaim: ValidateAddress returned false", "networkDescriptor", networkIdentity, "valAddr", valAddr)
-		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidValidator
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, errors.New("validator not in white list")
 	}
 
 	if len(prophecyID) == 0 {
