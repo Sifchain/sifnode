@@ -41,6 +41,8 @@ var (
 	ProviderDistributionParamsPrefix    = []byte{0x0a}
 	RewardsBlockDistributionPrefix      = []byte{0x0b}
 	SwapFeeRatePrefix                   = []byte{0x0c}
+	RemovalRequestPrefix                = []byte{0x0d}
+	RemovalQueuePrefix                  = []byte{0x0f}
 )
 
 // Generates a key for storing a specific pool
@@ -84,4 +86,21 @@ func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
 		EpochLength:                     14400,
 		IsActive:                        false,
 	}
+}
+
+// GetRemovalRequestKey generates a key to store a removal request,
+// the key is in the format: lpaddress_id
+func GetRemovalRequestKey(request RemovalRequest) []byte {
+	key := []byte(fmt.Sprintf("%s_%d", request.Msg.Signer, request.Id))
+	return append(RemovalRequestPrefix, key...)
+}
+
+func GetRemovalRequestLPPrefix(lpaddress string) []byte {
+	key := []byte(fmt.Sprintf("%s", lpaddress))
+	return append(RemovalRequestPrefix, key...)
+}
+
+func GetRemovalQueueKey(symbol string) []byte {
+	key := []byte(fmt.Sprintf("_%s", symbol))
+	return append(RemovalQueuePrefix, key...)
 }
