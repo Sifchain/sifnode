@@ -1,3 +1,5 @@
+//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
 syntax = "proto3";
 package sifnode.margin.v1;
 
@@ -14,6 +16,8 @@ service Msg {
   rpc UpdatePools(MsgUpdatePools) returns (MsgUpdatePoolsResponse) {}
   rpc Whitelist(MsgWhitelist) returns (MsgWhitelistResponse) {}
   rpc Dewhitelist(MsgDewhitelist) returns (MsgDewhitelistResponse) {}
+  rpc AdminClose(MsgAdminClose) returns (MsgAdminCloseResponse) {}
+  rpc AdminCloseAll(MsgAdminCloseAll) returns (MsgAdminCloseAllResponse) {}
 }
 
 message MsgOpen {
@@ -76,3 +80,18 @@ message MsgDewhitelist {
 }
 
 message MsgDewhitelistResponse {}
+
+
+message MsgAdminCloseAll {
+  string signer = 1;
+  bool take_margin_fund = 2;
+}
+message MsgAdminCloseAllResponse {}
+
+message MsgAdminClose {
+  string signer = 1;
+  string mtp_address = 2;
+  uint64 id = 3;
+  bool take_margin_fund = 4;
+}
+message MsgAdminCloseResponse {}
