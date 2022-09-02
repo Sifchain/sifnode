@@ -3,13 +3,10 @@
 In order to run the integration tests for Margin, you need to set the following environment variables:
 
 ```bash
-export FEATURE_TOGGLE_SDK_045=1
-export FEATURE_TOGGLE_MARGIN_CLI_ALPHA=1
-export GOFLAGS="-modfile=go_FEATURE_TOGGLE_SDK_045.mod"
-export GOTAGS="FEATURE_TOGGLE_SDK_045,FEATURE_TOGGLE_MARGIN_CLI_ALPHA"
+export GOTAGS="TEST_INTEGRATION"
 ```
 
-Those variables enable the relevant feature toggles required to run the integration tests for Margin.
+Those variables enable integration tests when running tests for Margin.
 
 Then you can use the following command to run the tests:
 

@@ -166,14 +166,27 @@ type Margin struct {
 }
 
 type MarginParams struct {
-	LeverageMax          string      `json:"leverage_max"`
-	InterestRateMax      string      `json:"interest_rate_max"`
-	InterestRateMin      string      `json:"interest_rate_min"`
-	InterestRateIncrease string      `json:"interest_rate_increase"`
-	InterestRateDecrease string      `json:"interest_rate_decrease"`
-	HealthGainFactor     string      `json:"health_gain_factor"`
-	EpochLength          json.Number `json:"epoch_length,omitempty"`
-	Pools                []string    `json:"pools,omitempty"`
+	LeverageMax                                    string      `json:"leverage_max"`
+	InterestRateMax                                string      `json:"interest_rate_max"`
+	InterestRateMin                                string      `json:"interest_rate_min"`
+	InterestRateIncrease                           string      `json:"interest_rate_increase"`
+	InterestRateDecrease                           string      `json:"interest_rate_decrease"`
+	HealthGainFactor                               string      `json:"health_gain_factor"`
+	EpochLength                                    json.Number `json:"epoch_length,omitempty"`
+	Pools                                          []string    `json:"pools,omitempty"`
+	ForceCloseThreshold                            string      `json:"force_close_threshold"`
+	RemovalQueueThreshold                          string      `json:"removal_queue_threshold"`
+	MaxOpenPositions                               json.Number `json:"max_open_positions"`
+	PoolOpenThreshold                              string      `json:"pool_open_threshold"`
+	ForceCloseFundPercentage                       string      `json:"force_close_fund_percentage"`
+	ForceCloseInsuranceFundAddress                 string      `json:"force_close_insurance_fund_address"`
+	IncrementalInterestPaymentFundPercentage       string      `json:"incremental_interest_payment_fund_percentage"`
+	IncrementalInterestPaymentInsuranceFundAddress string      `json:"incremental_interest_payment_insurance_fund_address"`
+	SqModifier                                     string      `json:"sq_modifier"`
+	SafetyFactor                                   string      `json:"safety_factor"`
+	ClosedPools                                    []string    `json:"closed_pools"`
+	IncrementalInterestPaymentEnabled              bool        `json:"incremental_interest_payment_enabled"`
+	WhitelistingEnabled                            bool        `json:"whitelisting_enabled"`
 }
 
 type Dispensation struct {

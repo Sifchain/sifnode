@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper_test
 
 import (
@@ -176,7 +173,7 @@ func TestKeeper_CLPSwap(t *testing.T) {
 			denom:      "unregistred_denom",
 			decimals:   18,
 			to:         "xxx",
-			sentAmount: sdk.NewUint(0),
+			sentAmount: sdk.NewUint(100),
 		},
 		{
 			name:       "invalid sent amount",
@@ -184,7 +181,7 @@ func TestKeeper_CLPSwap(t *testing.T) {
 			decimals:   18,
 			to:         "xxx",
 			sentAmount: sdk.NewUint(0),
-			err:        nil,
+			err:        clptypes.ErrAmountTooLow,
 		},
 		{
 			name:       "no token adjustment and non-rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
@@ -838,6 +835,25 @@ func TestKeeper_Repay(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestKeeper_CheckMinLiabilities(t *testing.T) {
+	ctx, _, marginKeeper := initKeeper(t)
+	params := marginKeeper.GetParams(ctx)
+	params.InterestRateMin = sdk.MustNewDecFromStr("0.00000001")
+	marginKeeper.SetParams(ctx, &params)
+
+	got := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(100000000), sdk.OneDec())
+	require.Nil(t, got)
+
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec())
+	require.EqualError(t, got, "borrowed amount is too low")
+
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9))
+	require.Nil(t, got)
+
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9))
+	require.EqualError(t, got, "borrowed amount is too low")
 }
 
 func TestKeeper_CalcMTPInterestLiabilities(t *testing.T) {

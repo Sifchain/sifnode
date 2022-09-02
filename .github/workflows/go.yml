@@ -57,9 +57,3 @@ jobs:
       with:
         file: ./coverage.txt
         verbose: true
-
-    - name: Lint
-      uses: golangci/golangci-lint-action@v3
-      with:
-        version:
-          v1.45.2

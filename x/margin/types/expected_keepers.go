@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package types
 
 import (
@@ -81,6 +78,8 @@ type Keeper interface {
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
+	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error
+	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool)
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
@@ -91,9 +90,10 @@ type Keeper interface {
 	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
 	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose, isAdminClose bool) (*MTP, sdk.Uint, error)
+	ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeInsuranceFund bool) (*MTP, sdk.Uint, error)
 
-	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool)
 
 	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }

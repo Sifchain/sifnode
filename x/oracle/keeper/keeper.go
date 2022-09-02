@@ -293,6 +293,11 @@ func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	return store.Has(key)
 }
 
+func (k Keeper) GetProphecyIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return store.Iterator(types.ProphecyPrefix, nil)
+}
+
 // PrefixMsg prefixes a message for verification, mimics behavior of web3.eth.sign
 func PrefixMsg(msg []byte) []byte {
 	return solsha3.SoliditySHA3(solsha3.String("\x19Ethereum Signed Message:\n32"), msg)

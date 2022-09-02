@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package cli
 
 import (
@@ -32,6 +29,8 @@ func GetTxCmd() *cobra.Command {
 		GetUpdatePoolsCmd(),
 		GetDewhitelistCmd(),
 		GetWhitelistCmd(),
+		GetAdminCloseCmd(),
+		GetAdminCloseAllCmd(),
 	)
 	return cmd
 }
