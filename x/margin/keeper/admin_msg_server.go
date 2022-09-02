@@ -30,7 +30,7 @@ func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.MtpAddress, true, msg.TakeMarginFund)
+		mtp, _, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.MtpAddress, true, msg.TakeMarginFund)
 		if err != nil {
 			return nil, err
 		}
