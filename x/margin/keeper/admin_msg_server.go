@@ -1,11 +1,9 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
 	"context"
 	"fmt"
+
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

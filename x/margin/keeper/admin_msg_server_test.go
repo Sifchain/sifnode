@@ -1,9 +1,8 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper_test
 
 import (
+	"testing"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -15,7 +14,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestMsgServer_AdminCloseAll(t *testing.T) {

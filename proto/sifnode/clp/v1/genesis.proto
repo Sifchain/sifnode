@@ -7,7 +7,6 @@ option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
 import "sifnode/clp/v1/params.proto";
 import "sifnode/clp/v1/types.proto";
-import "sifnode/clp/v1/pool.proto";
 
 // GenesisState - all clp state that must be provided at genesis
 // TODO: Add parameters to Genesis state ,such as minimum liquidity required to
