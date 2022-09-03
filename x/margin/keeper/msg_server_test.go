@@ -400,7 +400,7 @@ func TestKeeper_Close(t *testing.T) {
 				require.NoError(t, err)
 
 				nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(10000)))
-				// nolint:ineffassign
+				// nolint:staticcheck,ineffassign
 				externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(10000)))
 
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
