@@ -22,7 +22,6 @@ func TestKeeper_ParamGetter(t *testing.T) {
 		InterestRateDecrease:                     sdk.NewDec(1),
 		HealthGainFactor:                         sdk.NewDec(1),
 		EpochLength:                              1,
-		ForceCloseThreshold:                      sdk.NewDec(1), //TODO get real default
 		ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
 		ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 		IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
@@ -76,11 +75,6 @@ func TestKeeper_ParamGetter(t *testing.T) {
 			name:   "EpochLength",
 			want:   fmt.Sprint(data.Params.EpochLength),
 			method: func(ctx sdk.Context) string { return fmt.Sprint(marginKeeper.GetEpochLength(ctx)) },
-		},
-		{
-			name:   "ForceCloseThreshold",
-			want:   fmt.Sprint(data.Params.ForceCloseThreshold),
-			method: func(ctx sdk.Context) string { return fmt.Sprint(marginKeeper.GetForceCloseThreshold(ctx)) },
 		},
 	}
 

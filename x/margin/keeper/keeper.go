@@ -680,7 +680,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 	}
 
 	// check MTP health against threshold
-	forceCloseThreshold := k.GetSafetyFactor(ctx)
+	safetyFactor := k.GetSafetyFactor(ctx)
 
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
@@ -694,7 +694,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 			return nil, nil, sdk.ZeroUint(), err
 		}
 	}
-	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
+	if !isAdminClose && mtp.MtpHealth.GT(safetyFactor) {
 		ctx.Logger().Error(sdkerrors.Wrap(types.ErrMTPHealthy, mtpAddress).Error())
 		return nil, nil, sdk.ZeroUint(), types.ErrMTPHealthy
 	}

@@ -174,7 +174,6 @@ type MarginParams struct {
 	HealthGainFactor                         string      `json:"health_gain_factor"`
 	EpochLength                              json.Number `json:"epoch_length,omitempty"`
 	Pools                                    []string    `json:"pools,omitempty"`
-	ForceCloseThreshold                      string      `json:"force_close_threshold"`
 	RemovalQueueThreshold                    string      `json:"removal_queue_threshold"`
 	MaxOpenPositions                         json.Number `json:"max_open_positions"`
 	PoolOpenThreshold                        string      `json:"pool_open_threshold"`

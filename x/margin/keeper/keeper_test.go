@@ -954,7 +954,6 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 				InterestRateDecrease:                     tt.interestRateDecrease,
 				HealthGainFactor:                         sdk.NewDec(1),
 				EpochLength:                              1,
-				ForceCloseThreshold:                      sdk.NewDec(1), //TODO get real default
 				ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
 				ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),

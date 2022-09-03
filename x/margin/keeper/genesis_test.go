@@ -26,7 +26,6 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		require.Equal(t, state.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
 		require.Equal(t, state.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
 		require.Equal(t, state.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
-		require.Equal(t, state.Params.ForceCloseThreshold, marginKeeper.GetForceCloseThreshold(ctx))
 	})
 
 	t.Run("prior import of genesis then export", func(t *testing.T) {
@@ -41,7 +40,6 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 			InterestRateMax:                          sdk.NewDec(3),
 			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
 			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                      sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
@@ -75,7 +73,6 @@ func TestKeeper_InitGenesis(t *testing.T) {
 			InterestRateMax:                          sdk.NewDec(3),
 			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
 			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                      sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
@@ -102,7 +99,6 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.Equal(t, got.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
 		require.Equal(t, got.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
 		require.Equal(t, got.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
-		require.Equal(t, got.Params.ForceCloseThreshold, marginKeeper.GetForceCloseThreshold(ctx))
 	})
 
 	t.Run("params fields set", func(t *testing.T) {
@@ -117,7 +113,6 @@ func TestKeeper_InitGenesis(t *testing.T) {
 			InterestRateMax:                          sdk.NewDec(3),
 			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
 			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                      sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),

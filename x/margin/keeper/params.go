@@ -36,10 +36,6 @@ func (k Keeper) GetEpochLength(ctx sdk.Context) int64 {
 	return k.GetParams(ctx).EpochLength
 }
 
-func (k Keeper) GetForceCloseThreshold(ctx sdk.Context) sdk.Dec {
-	return k.GetParams(ctx).ForceCloseThreshold
-}
-
 func (k Keeper) GetPoolOpenThreshold(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).PoolOpenThreshold
 }

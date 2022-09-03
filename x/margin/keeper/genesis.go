@@ -22,7 +22,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 			InterestRateDecrease:                     k.GetInterestRateDecrease(ctx),
 			HealthGainFactor:                         k.GetHealthGainFactor(ctx),
 			EpochLength:                              k.GetEpochLength(ctx),
-			ForceCloseThreshold:                      k.GetForceCloseThreshold(ctx),
 			ForceCloseFundPercentage:                 k.GetForceCloseFundPercentage(ctx),
 			ForceCloseFundAddress:                    k.GetForceCloseFundAddress(ctx).String(),
 			IncrementalInterestPaymentFundPercentage: k.GetIncrementalInterestPaymentFundPercentage(ctx),

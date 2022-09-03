@@ -11,7 +11,6 @@ func DefaultGenesis() *GenesisState {
 			InterestRateMax:                          sdk.NewDec(3),
 			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
 			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                      sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
 			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),

@@ -142,7 +142,6 @@ func ReplaceMarginGenesis(nodeHomeDir string) error {
 	(*genesis).AppState.Margin.Params.HealthGainFactor = gen.Params.HealthGainFactor.String()
 	(*genesis).AppState.Margin.Params.EpochLength = json.Number(fmt.Sprintf("%d", gen.Params.EpochLength))
 	(*genesis).AppState.Margin.Params.Pools = gen.Params.Pools
-	(*genesis).AppState.Margin.Params.ForceCloseThreshold = gen.Params.ForceCloseThreshold.String()
 	(*genesis).AppState.Margin.Params.RemovalQueueThreshold = gen.Params.RemovalQueueThreshold.String()
 	(*genesis).AppState.Margin.Params.MaxOpenPositions = json.Number(fmt.Sprintf("%d", gen.Params.MaxOpenPositions))
 	(*genesis).AppState.Margin.Params.PoolOpenThreshold = gen.Params.PoolOpenThreshold.String()
