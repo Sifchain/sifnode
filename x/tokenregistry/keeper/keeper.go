@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"strings"
-
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -62,7 +60,7 @@ func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry,
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	wl := k.GetRegistry(ctx)
 	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
+		if wl.Entries[i] != nil && types.StringCompare(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry
 			k.SetRegistry(ctx, wl)
 			return
@@ -76,7 +74,7 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 	registry := k.GetRegistry(ctx)
 	updated := make([]*types.RegistryEntry, 0)
 	for _, t := range registry.Entries {
-		if t != nil && !strings.EqualFold(t.Denom, denom) {
+		if t != nil && !types.StringCompare(t.Denom, denom) {
 			updated = append(updated, t)
 		}
 	}
