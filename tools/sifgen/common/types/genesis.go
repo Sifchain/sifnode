@@ -178,7 +178,7 @@ type MarginParams struct {
 	MaxOpenPositions                         json.Number `json:"max_open_positions"`
 	PoolOpenThreshold                        string      `json:"pool_open_threshold"`
 	ForceCloseFundPercentage                 string      `json:"force_close_fund_percentage"`
-	ForceCloseFundAddress                    string      `json:"force_close__fund_address"`
+	ForceCloseFundAddress                    string      `json:"force_close_fund_address"`
 	IncrementalInterestPaymentFundPercentage string      `json:"incremental_interest_payment_fund_percentage"`
 	IncrementalInterestPaymentFundAddress    string      `json:"incremental_interest_payment_fund_address"`
 	SqModifier                               string      `json:"sq_modifier"`
