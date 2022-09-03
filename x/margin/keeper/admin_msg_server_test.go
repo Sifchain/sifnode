@@ -21,7 +21,6 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 		msgOpen                       types.MsgOpen
 		msgAdminCloseAll              types.MsgAdminCloseAll
 		health                        sdk.Dec
-		forceCloseThreshold           sdk.Dec
 		name                          string
 		poolAsset                     string
 		token                         string
@@ -39,11 +38,10 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDecWithPrec(1, 2),
-			forceCloseThreshold: sdk.OneDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			err2:                types.ErrMTPDoesNotExist,
+			health:    sdk.NewDecWithPrec(1, 2),
+			poolAsset: "xxx",
+			token:     "xxx",
+			err2:      types.ErrMTPDoesNotExist,
 		},
 		{
 			name:             "admin close and not take funds",
@@ -53,11 +51,10 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDecWithPrec(1, 2),
-			forceCloseThreshold: sdk.OneDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			err2:                types.ErrMTPDoesNotExist,
+			health:    sdk.NewDecWithPrec(1, 2),
+			poolAsset: "xxx",
+			token:     "xxx",
+			err2:      types.ErrMTPDoesNotExist,
 		},
 	}
 	for _, tt := range table {
@@ -104,18 +101,17 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 						InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
 						HealthGainFactor:                         sdk.NewDecWithPrec(1, 2),
 						EpochLength:                              0,
-						ForceCloseThreshold:                      tt.forceCloseThreshold,
 						RemovalQueueThreshold:                    sdk.ZeroDec(),
 						Pools:                                    []string{},
 						ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 2),
-						ForceCloseInsuranceFundAddress:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+						ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 						IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
-						IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-						IncrementalInterestPaymentEnabled:              false,
-						PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-						MaxOpenPositions:                               10000,
-						SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-						SafetyFactor:                                   sdk.MustNewDecFromStr("0.0"),
+						IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+						IncrementalInterestPaymentEnabled:        false,
+						PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+						MaxOpenPositions:                         10000,
+						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+						SafetyFactor:                             sdk.MustNewDecFromStr("0.0"),
 					},
 				}
 

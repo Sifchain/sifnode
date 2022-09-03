@@ -33,40 +33,36 @@ message Params {
   ];
   int64 epoch_length = 7;
   repeated string pools = 8;
-  string force_close_threshold = 9 [
+  string removal_queue_threshold = 9 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string removal_queue_threshold = 10 [
+  uint64 max_open_positions = 10;
+  string pool_open_threshold = 11 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  uint64 max_open_positions = 11;
-  string pool_open_threshold = 12 [
+  string force_close_fund_percentage = 12 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string force_close_fund_percentage = 13 [
+  string force_close_fund_address = 13;
+  string incremental_interest_payment_fund_percentage = 14 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string force_close_insurance_fund_address = 14;
-  string incremental_interest_payment_fund_percentage = 15 [
+  string incremental_interest_payment_fund_address = 15;
+  string sq_modifier = 16 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string incremental_interest_payment_insurance_fund_address = 16;
-  string sq_modifier = 17 [
+  string safety_factor = 17 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string safety_factor = 18 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string closed_pools = 19;
-  bool incremental_interest_payment_enabled = 20;
-  bool whitelisting_enabled = 21;
+  repeated string closed_pools = 18;
+  bool incremental_interest_payment_enabled = 19;
+  bool whitelisting_enabled = 20;
 }
 
 enum Position {
