@@ -357,7 +357,7 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
-func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error {
+func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error {
 	// nolint:ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	Liabilities := mtp.Liabilities
@@ -390,17 +390,17 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repa
 	}
 	if !returnAmount.IsZero() {
 		actualReturnAmount := returnAmount
-		if takeInsurance {
+		if takeFundPayment {
 			takePercentage := k.GetForceCloseFundPercentage(ctx)
 
-			fundAddr := k.GetForceCloseInsuranceFundAddress(ctx)
-			takeAmount, err := k.TakeInsurance(ctx, returnAmount, mtp.CollateralAsset, takePercentage, fundAddr)
+			fundAddr := k.GetForceCloseFundAddress(ctx)
+			takeAmount, err := k.TakeFundPayment(ctx, returnAmount, mtp.CollateralAsset, takePercentage, fundAddr)
 			if err != nil {
 				return err
 			}
 			actualReturnAmount = returnAmount.Sub(takeAmount)
 			if !takeAmount.IsZero() {
-				k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CollateralAsset, types.EventRepayInsuranceFund)
+				k.EmitFundPayment(ctx, mtp, takeAmount, mtp.CollateralAsset, types.EventRepayFund)
 			}
 		}
 
@@ -486,15 +486,15 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	mtp.CustodyAmount = mtp.CustodyAmount.Sub(interestPaymentCustody)
 
 	takePercentage := k.GetIncrementalInterestPaymentFundPercentage(ctx)
-	fundAddr := k.GetIncrementalInterestPaymentInsuranceFundAddress(ctx)
-	takeAmount, err := k.TakeInsurance(ctx, interestPaymentCustody, mtp.CustodyAsset, takePercentage, fundAddr)
+	fundAddr := k.GetIncrementalInterestPaymentFundAddress(ctx)
+	takeAmount, err := k.TakeFundPayment(ctx, interestPaymentCustody, mtp.CustodyAsset, takePercentage, fundAddr)
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}
 	actualInterestPaymentCustody := interestPaymentCustody.Sub(takeAmount)
 
 	if !takeAmount.IsZero() {
-		k.EmitInsuranceFundPayment(ctx, mtp, takeAmount, mtp.CustodyAsset, types.EventIncrementalPayInsuranceFund)
+		k.EmitFundPayment(ctx, mtp, takeAmount, mtp.CustodyAsset, types.EventIncrementalPayFund)
 	}
 
 	nativeAsset := types.GetSettlementAsset()
@@ -658,7 +658,7 @@ func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 	return currentHeight % epochLength
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeInsuranceFund bool) (*types.MTP, *clptypes.Pool, sdk.Uint, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeFundPayment bool) (*types.MTP, *clptypes.Pool, sdk.Uint, error) {
 	mtp, err := k.GetMTP(ctx, mtpAddress, id)
 	if err != nil {
 		return nil, nil, sdk.ZeroUint(), err
@@ -709,7 +709,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 		return nil, nil, sdk.ZeroUint(), err
 	}
 
-	err = k.Repay(ctx, &mtp, &pool, repayAmount, takeInsuranceFund)
+	err = k.Repay(ctx, &mtp, &pool, repayAmount, takeFundPayment)
 	if err != nil {
 		return nil, nil, sdk.ZeroUint(), err
 	}
@@ -717,7 +717,7 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 	return &mtp, &pool, repayAmount, nil
 }
 
-func (k Keeper) TakeInsurance(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
+func (k Keeper) TakeFundPayment(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
 	returnAmountDec := sdk.NewDecFromBigInt(returnAmount.BigInt())
 	takeAmount := sdk.NewUintFromBigInt(takePercentage.Mul(returnAmountDec).TruncateInt().BigInt())
 

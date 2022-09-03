@@ -76,7 +76,7 @@ type Keeper interface {
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
-	Repay(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error
+	Repay(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error
 	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool)
@@ -90,7 +90,7 @@ type Keeper interface {
 	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
 	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
-	ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeInsuranceFund bool) (*MTP, *clptypes.Pool, sdk.Uint, error)
+	ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeFundPayment bool) (*MTP, *clptypes.Pool, sdk.Uint, error)
 
 	EmitAdminClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
 	EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool)
