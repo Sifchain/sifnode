@@ -175,7 +175,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 				return genesisState
 			})
 			i, _ := sdk.NewIntFromString("10000000000000000000000")
-			app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", i)))
+			_ = app.BankKeeper.MintCoins(ctx, clptypes.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", i)))
 			marginKeeper := app.MarginKeeper
 			msgServer := keeper.NewMsgServerImpl(marginKeeper)
 

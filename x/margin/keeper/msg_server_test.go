@@ -400,7 +400,7 @@ func TestKeeper_Close(t *testing.T) {
 				require.NoError(t, err)
 
 				nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(10000)))
-				// nolint:ineffassign
+				// nolint:staticcheck,ineffassign
 				externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(10000)))
 
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
@@ -954,7 +954,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				CustodyAsset:             tt.externalAsset,
 				CustodyAmount:            sdk.NewUint(1993),
 				Leverage:                 sdk.NewDec(2),
-				MtpHealth:                sdk.MustNewDecFromStr("2.001004016064257028"),
+				MtpHealth:                sdk.MustNewDecFromStr("1.987000000000000000"),
 				Position:                 types.Position_LONG,
 			}
 
@@ -1232,7 +1232,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("16616666666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148063"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1247,7 +1247,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("51158456267039810375"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180438"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422559"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1262,7 +1262,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("55427768026625260782"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1283,7 +1283,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("10000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("1661666666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333334"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148063"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1298,7 +1298,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("10000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("5115845626703981037"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180438"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422559"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1313,7 +1313,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("10000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("5542776802662526078"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1334,7 +1334,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("166166666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148059"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1349,7 +1349,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("511584562670398103"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180439"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422558"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1364,7 +1364,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("554277680266252607"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1391,7 +1391,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("16616666666666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148063"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1406,7 +1406,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("51158456267039810375815"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180438"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422559"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1421,7 +1421,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("55427768026625260782599"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1442,7 +1442,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("200000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("33233333333333333333333"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148063"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1457,7 +1457,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("200000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("102316912534079620751631"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180438"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422559"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1472,7 +1472,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("200000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("110855536053250521565198"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1493,7 +1493,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("166166666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148059"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1508,7 +1508,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("511584562670398103"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180439"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422558"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1523,7 +1523,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("554277680266252607"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1550,7 +1550,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("5000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("830833333333333333333"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148063"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1565,7 +1565,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("5000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("2557922813351990518790"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180438"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422559"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1580,7 +1580,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("5000000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("2771388401331263039130"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1601,7 +1601,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("16616666666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148063"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1616,7 +1616,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("51158456267039810375"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180438"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422559"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1631,7 +1631,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("100000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("55427768026625260782"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1652,7 +1652,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.916666666666666667"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("166166666666666666"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.833333333333333333"),
+							mtpHealth:                            sdk.MustNewDecFromStr("1.420621695012148059"),
 						},
 						{
 							chunk:                                sdk.NewUint(55),
@@ -1667,7 +1667,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.743438032763090219"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("511584562670398103"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.486876065526180439"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.640333598224422558"),
 						},
 						{
 							chunk:                                sdk.NewUint(99),
@@ -1682,7 +1682,7 @@ func TestKeeper_EC(t *testing.T) {
 							poolExternalAssetBalanceAfterClose:   sdk.NewUintFromString("1000000000000000000"),
 							poolHealthAfterClose:                 sdk.MustNewDecFromStr("0.722027241591648642"),
 							mtpCustodyAmount:                     sdk.NewUintFromString("554277680266252607"),
-							mtpHealth:                            sdk.MustNewDecFromStr("1.444054483183297284"),
+							mtpHealth:                            sdk.MustNewDecFromStr("0.567973352996916171"),
 						},
 					},
 				},
@@ -1990,7 +1990,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		CustodyAsset:             externalAsset.Symbol,
 		CustodyAmount:            sdk.NewUintFromString("1993601279744051189762"),
 		Leverage:                 sdk.NewDec(2),
-		MtpHealth:                sdk.MustNewDecFromStr("1.999800039992001600"),
+		MtpHealth:                sdk.MustNewDecFromStr("1.987224302613536154"),
 		Position:                 types.Position_LONG,
 		Id:                       1,
 	}
@@ -2024,7 +2024,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		CustodyAsset:             externalAsset.Symbol,
 		CustodyAmount:            sdk.NewUintFromString("1993601279744051189762"),
 		Leverage:                 sdk.NewDec(2),
-		MtpHealth:                sdk.MustNewDecFromStr("1.999800039992001600"),
+		MtpHealth:                sdk.MustNewDecFromStr("1.987224302613536154"),
 		Position:                 types.Position_LONG,
 		Id:                       1,
 	}
@@ -2044,7 +2044,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		CustodyAsset:             externalAsset.Symbol,
 		CustodyAmount:            sdk.NewUintFromString("996601917568895738948"),
 		Leverage:                 sdk.NewDec(2),
-		MtpHealth:                sdk.MustNewDecFromStr("1.999900019996000800"),
+		MtpHealth:                sdk.MustNewDecFromStr("1.987621111752807684"),
 		Position:                 types.Position_LONG,
 		Id:                       2,
 	}

@@ -17,6 +17,6 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func validate(i interface{}) error {
+/* func validate(i interface{}) error {
 	return nil
-}
+} */

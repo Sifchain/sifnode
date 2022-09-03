@@ -306,9 +306,7 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 	return H
 }
 
-// TODO Rename to CalcMTPHealth if not storing.
 func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
-	yc := sdk.NewDecFromBigInt(mtp.CustodyAmount.BigInt())
 	xl := mtp.Liabilities
 
 	if xl.IsZero() {
@@ -319,12 +317,12 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 		xl = xl.Add(mtp.InterestUnpaidCollateral)
 	}
 
-	debt, err := k.CLPSwap(ctx, xl, mtp.CustodyAsset, pool)
+	C, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
 	if err != nil {
 		return sdk.ZeroDec(), err
 	}
 
-	lr := yc.Quo(sdk.NewDecFromBigInt(debt.BigInt()))
+	lr := sdk.NewDecFromBigInt(C.BigInt()).Quo(sdk.NewDecFromBigInt(xl.BigInt()))
 
 	return lr, nil
 }
@@ -358,7 +356,7 @@ func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool *clptypes.Po
 }
 
 func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error {
-	// nolint:ineffassign
+	// nolint:staticcheck,ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	Liabilities := mtp.Liabilities
 	InterestUnpaidCollateral := mtp.InterestUnpaidCollateral
