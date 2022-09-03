@@ -785,9 +785,8 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 					Asymmetry:     sdk.ZeroInt(),
 				}, extRowanValue.Add(withdrawNativeAssetAmount))
 				return nil, types.ErrQueued
-			} else {
-				return nil, types.ErrRemovalsBlockedByHealth
 			}
+			return nil, types.ErrRemovalsBlockedByHealth
 		}
 	}
 
@@ -891,9 +890,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 			if k.IsRemovalQueueEnabled(ctx) {
 				k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
 				return nil, types.ErrQueued
-			} else {
-				return nil, types.ErrRemovalsBlockedByHealth
 			}
+			return nil, types.ErrRemovalsBlockedByHealth
 		}
 	}
 
