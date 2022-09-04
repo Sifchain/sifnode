@@ -142,14 +142,13 @@ func ReplaceMarginGenesis(nodeHomeDir string) error {
 	(*genesis).AppState.Margin.Params.HealthGainFactor = gen.Params.HealthGainFactor.String()
 	(*genesis).AppState.Margin.Params.EpochLength = json.Number(fmt.Sprintf("%d", gen.Params.EpochLength))
 	(*genesis).AppState.Margin.Params.Pools = gen.Params.Pools
-	(*genesis).AppState.Margin.Params.ForceCloseThreshold = gen.Params.ForceCloseThreshold.String()
 	(*genesis).AppState.Margin.Params.RemovalQueueThreshold = gen.Params.RemovalQueueThreshold.String()
 	(*genesis).AppState.Margin.Params.MaxOpenPositions = json.Number(fmt.Sprintf("%d", gen.Params.MaxOpenPositions))
 	(*genesis).AppState.Margin.Params.PoolOpenThreshold = gen.Params.PoolOpenThreshold.String()
 	(*genesis).AppState.Margin.Params.ForceCloseFundPercentage = gen.Params.ForceCloseFundPercentage.String()
-	(*genesis).AppState.Margin.Params.ForceCloseInsuranceFundAddress = gen.Params.ForceCloseInsuranceFundAddress
+	(*genesis).AppState.Margin.Params.ForceCloseFundAddress = gen.Params.ForceCloseFundAddress
 	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentFundPercentage = gen.Params.IncrementalInterestPaymentFundPercentage.String()
-	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentInsuranceFundAddress = gen.Params.IncrementalInterestPaymentInsuranceFundAddress
+	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentFundAddress = gen.Params.IncrementalInterestPaymentFundAddress
 	(*genesis).AppState.Margin.Params.SqModifier = gen.Params.SqModifier.String()
 	(*genesis).AppState.Margin.Params.SafetyFactor = gen.Params.SafetyFactor.String()
 	(*genesis).AppState.Margin.Params.ClosedPools = gen.Params.ClosedPools

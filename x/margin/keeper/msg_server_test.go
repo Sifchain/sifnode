@@ -440,22 +440,20 @@ func TestKeeper_Close(t *testing.T) {
 
 func TestKeeper_ForceClose(t *testing.T) {
 	table := []struct {
-		msgOpen                       types.MsgOpen
-		msgForceClose                 types.MsgForceClose
-		health                        sdk.Dec
-		forceCloseThreshold           sdk.Dec
-		name                          string
-		poolAsset                     string
-		token                         string
-		overrideSigner                string
-		overrideForceCloseThreadshold string
-		err                           error
-		errString                     error
-		err2                          error
-		errString2                    error
-		poolEnabled                   bool
-		fundedAccount                 bool
-		mtpCreateDisabled             bool
+		msgOpen           types.MsgOpen
+		msgForceClose     types.MsgForceClose
+		health            sdk.Dec
+		name              string
+		poolAsset         string
+		token             string
+		overrideSigner    string
+		err               error
+		errString         error
+		err2              error
+		errString2        error
+		poolEnabled       bool
+		fundedAccount     bool
+		mtpCreateDisabled bool
 	}{
 		{
 			name: "mtp does not exist",
@@ -468,12 +466,11 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "rowan",
-			token:               "somethingelse",
-			overrideSigner:      "otheraddress",
-			errString:           types.ErrMTPDoesNotExist,
+			health:         sdk.NewDec(20),
+			poolAsset:      "rowan",
+			token:          "somethingelse",
+			overrideSigner: "otheraddress",
+			errString:      types.ErrMTPDoesNotExist,
 		},
 		{
 			name: "pool does not exist",
@@ -487,11 +484,10 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "rowan",
-			token:               "somethingelse",
-			errString:           sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+			health:    sdk.NewDec(20),
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
 			name: "same collateral and native asset but pool does not exist",
@@ -505,11 +501,10 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "rowan",
-			token:               "somethingelse",
-			errString:           sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
+			health:    sdk.NewDec(20),
+			poolAsset: "rowan",
+			token:     "somethingelse",
+			errString: sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, "xxx"),
 		},
 		{
 			name: "denom does not exist does not throw error as not using token registry but MTP health above threshold",
@@ -523,11 +518,10 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "xxx",
-			token:               "somethingelse",
-			poolEnabled:         true,
+			health:      sdk.NewDec(20),
+			poolAsset:   "xxx",
+			token:       "somethingelse",
+			poolEnabled: true,
 			//err:         types.ErrMTPHealthy,
 			err2: types.ErrMTPDoesNotExist,
 		},
@@ -543,14 +537,13 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			poolEnabled:         true,
-			mtpCreateDisabled:   true,
-			errString:           errors.New("mtp not found"),
-			errString2:          errors.New("mtp not found"),
+			health:            sdk.NewDec(20),
+			poolAsset:         "xxx",
+			token:             "xxx",
+			poolEnabled:       true,
+			mtpCreateDisabled: true,
+			errString:         errors.New("mtp not found"),
+			errString2:        errors.New("mtp not found"),
 		},
 		{
 			name: "insufficient funds/mtp not found",
@@ -564,14 +557,13 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			poolEnabled:         true,
-			mtpCreateDisabled:   true,
-			errString:           errors.New("mtp not found"),
-			errString2:          errors.New("mtp not found"),
+			health:            sdk.NewDec(20),
+			poolAsset:         "xxx",
+			token:             "xxx",
+			poolEnabled:       true,
+			mtpCreateDisabled: true,
+			errString:         errors.New("mtp not found"),
+			errString2:        errors.New("mtp not found"),
 		},
 		{
 			name: "account funded and mtp healthy but MTP health above threshold",
@@ -585,12 +577,11 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			poolEnabled:         true,
-			fundedAccount:       true,
+			health:        sdk.NewDec(20),
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
 			//err:           types.ErrMTPHealthy,
 			err2: types.ErrMTPDoesNotExist,
 		},
@@ -606,13 +597,11 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:                        sdk.NewDec(20),
-			forceCloseThreshold:           sdk.ZeroDec(),
-			poolAsset:                     "xxx",
-			token:                         "xxx",
-			poolEnabled:                   true,
-			fundedAccount:                 true,
-			overrideForceCloseThreadshold: "2",
+			health:        sdk.NewDec(20),
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
 			//err:                           types.ErrMTPHealthy,
 			err2: types.ErrMTPDoesNotExist,
 		},
@@ -628,13 +617,12 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_SHORT,
 			},
-			health:              sdk.NewDec(20),
-			forceCloseThreshold: sdk.ZeroDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			poolEnabled:         true,
-			fundedAccount:       true,
-			errString:           errors.New("SHORT: mtp position invalid"),
+			health:        sdk.NewDec(20),
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
+			errString:     errors.New("SHORT: mtp position invalid"),
 		},
 		{
 			name: "admin closure does not check health",
@@ -648,13 +636,12 @@ func TestKeeper_ForceClose(t *testing.T) {
 				BorrowAsset:     "xxx",
 				Position:        types.Position_LONG,
 			},
-			health:              sdk.NewDecWithPrec(1, 2),
-			forceCloseThreshold: sdk.OneDec(),
-			poolAsset:           "xxx",
-			token:               "xxx",
-			poolEnabled:         true,
-			fundedAccount:       true,
-			err2:                types.ErrMTPDoesNotExist,
+			health:        sdk.NewDecWithPrec(1, 2),
+			poolAsset:     "xxx",
+			token:         "xxx",
+			poolEnabled:   true,
+			fundedAccount: true,
+			err2:          types.ErrMTPDoesNotExist,
 		},
 	}
 
@@ -702,18 +689,17 @@ func TestKeeper_ForceClose(t *testing.T) {
 						InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
 						HealthGainFactor:                         sdk.NewDecWithPrec(1, 2),
 						EpochLength:                              0,
-						ForceCloseThreshold:                      tt.forceCloseThreshold,
 						RemovalQueueThreshold:                    sdk.ZeroDec(),
 						Pools:                                    []string{},
 						ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
-						ForceCloseInsuranceFundAddress:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+						ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 						IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
-						IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-						IncrementalInterestPaymentEnabled:              false,
-						PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-						MaxOpenPositions:                               10000,
-						SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-						SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
+						IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+						IncrementalInterestPaymentEnabled:        false,
+						PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+						MaxOpenPositions:                         10000,
+						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+						SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 					},
 				}
 
@@ -721,10 +707,6 @@ func TestKeeper_ForceClose(t *testing.T) {
 					gs3.Params.Pools = []string{
 						tt.poolAsset,
 					}
-				}
-
-				if tt.overrideForceCloseThreadshold != "" {
-					gs3.Params.ForceCloseThreshold = sdk.MustNewDecFromStr(tt.overrideForceCloseThreadshold)
 				}
 
 				bz, _ = app.AppCodec().MarshalJSON(gs3)
@@ -858,25 +840,24 @@ func TestKeeper_OpenClose(t *testing.T) {
 			})
 
 			params := types.Params{
-				LeverageMax:                                    sdk.NewDec(2),
-				InterestRateMax:                                sdk.NewDec(1),
-				InterestRateMin:                                sdk.ZeroDec(),
-				InterestRateIncrease:                           sdk.NewDecWithPrec(1, 1),
-				InterestRateDecrease:                           sdk.NewDecWithPrec(1, 1),
-				HealthGainFactor:                               sdk.NewDecWithPrec(1, 2),
-				EpochLength:                                    0,
-				ForceCloseThreshold:                            sdk.ZeroDec(),
-				RemovalQueueThreshold:                          sdk.ZeroDec(),
-				ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-				ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-				IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				IncrementalInterestPaymentEnabled:              false,
-				PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-				MaxOpenPositions:                               10000,
-				SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
-				Pools:                                          []string{tt.externalAsset},
+				LeverageMax:                              sdk.NewDec(2),
+				InterestRateMax:                          sdk.NewDec(1),
+				InterestRateMin:                          sdk.ZeroDec(),
+				InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
+				InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
+				HealthGainFactor:                         sdk.NewDecWithPrec(1, 2),
+				EpochLength:                              0,
+				RemovalQueueThreshold:                    sdk.ZeroDec(),
+				ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+				ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+				IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentEnabled:        false,
+				PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+				MaxOpenPositions:                         10000,
+				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+				Pools:                                    []string{tt.externalAsset},
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -1049,24 +1030,23 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 
 		gs3 := &types.GenesisState{
 			Params: &types.Params{
-				LeverageMax:                                    sdk.NewDec(2),
-				HealthGainFactor:                               sdk.NewDec(2),
-				InterestRateMin:                                sdk.NewDecWithPrec(5, 3),
-				InterestRateMax:                                sdk.NewDec(3),
-				InterestRateDecrease:                           sdk.NewDecWithPrec(1, 5),
-				InterestRateIncrease:                           sdk.NewDecWithPrec(1, 5),
-				ForceCloseThreshold:                            sdk.NewDecWithPrec(1, 10),
-				RemovalQueueThreshold:                          sdk.ZeroDec(),
-				ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-				ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-				IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				IncrementalInterestPaymentEnabled:              false,
-				PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-				MaxOpenPositions:                               10000,
-				SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
-				EpochLength:                                    1,
+				LeverageMax:                              sdk.NewDec(2),
+				HealthGainFactor:                         sdk.NewDec(2),
+				InterestRateMin:                          sdk.NewDecWithPrec(5, 3),
+				InterestRateMax:                          sdk.NewDec(3),
+				InterestRateDecrease:                     sdk.NewDecWithPrec(1, 5),
+				InterestRateIncrease:                     sdk.NewDecWithPrec(1, 5),
+				RemovalQueueThreshold:                    sdk.ZeroDec(),
+				ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+				ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+				IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentEnabled:        false,
+				PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+				MaxOpenPositions:                         10000,
+				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+				EpochLength:                              1,
 				Pools: []string{
 					externalAsset,
 				},
@@ -1733,24 +1713,23 @@ func TestKeeper_EC(t *testing.T) {
 
 				gs3 := &types.GenesisState{
 					Params: &types.Params{
-						MaxOpenPositions:                               10000,
-						LeverageMax:                                    sdk.NewDec(2),
-						HealthGainFactor:                               sdk.NewDec(1),
-						InterestRateMin:                                sdk.NewDecWithPrec(5, 3),
-						InterestRateMax:                                sdk.NewDec(3),
-						InterestRateDecrease:                           sdk.NewDecWithPrec(1, 2),
-						InterestRateIncrease:                           sdk.NewDecWithPrec(1, 2),
-						ForceCloseThreshold:                            sdk.NewDecWithPrec(1, 2),
-						RemovalQueueThreshold:                          sdk.ZeroDec(),
-						ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-						ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-						IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-						IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-						IncrementalInterestPaymentEnabled:              false,
-						PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-						SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-						SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
-						EpochLength:                                    1,
+						MaxOpenPositions:                         10000,
+						LeverageMax:                              sdk.NewDec(2),
+						HealthGainFactor:                         sdk.NewDec(1),
+						InterestRateMin:                          sdk.NewDecWithPrec(5, 3),
+						InterestRateMax:                          sdk.NewDec(3),
+						InterestRateDecrease:                     sdk.NewDecWithPrec(1, 2),
+						InterestRateIncrease:                     sdk.NewDecWithPrec(1, 2),
+						RemovalQueueThreshold:                    sdk.ZeroDec(),
+						ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+						ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+						IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+						IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+						IncrementalInterestPaymentEnabled:        false,
+						PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+						SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+						EpochLength:                              1,
 						Pools: []string{
 							ec.externalAsset,
 						},

@@ -26,7 +26,6 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		require.Equal(t, state.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
 		require.Equal(t, state.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
 		require.Equal(t, state.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
-		require.Equal(t, state.Params.ForceCloseThreshold, marginKeeper.GetForceCloseThreshold(ctx))
 	})
 
 	t.Run("prior import of genesis then export", func(t *testing.T) {
@@ -35,23 +34,22 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:                                    sdk.NewDec(2),
-			HealthGainFactor:                               sdk.NewDec(1),
-			InterestRateMin:                                sdk.NewDecWithPrec(5, 3),
-			InterestRateMax:                                sdk.NewDec(3),
-			InterestRateDecrease:                           sdk.NewDecWithPrec(1, 1),
-			InterestRateIncrease:                           sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                            sdk.NewDecWithPrec(1, 1),
-			ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-			ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-			IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-			RemovalQueueThreshold:                          sdk.NewDecWithPrec(1, 1),
-			EpochLength:                                    1,
-			MaxOpenPositions:                               10000,
-			SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
+			LeverageMax:                              sdk.NewDec(2),
+			HealthGainFactor:                         sdk.NewDec(1),
+			InterestRateMin:                          sdk.NewDecWithPrec(5, 3),
+			InterestRateMax:                          sdk.NewDec(3),
+			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
+			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
+			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+			IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+			RemovalQueueThreshold:                    sdk.NewDecWithPrec(1, 1),
+			EpochLength:                              1,
+			MaxOpenPositions:                         10000,
+			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 		}
 		want := types.GenesisState{Params: &params}
 		marginKeeper.InitGenesis(ctx, want)
@@ -69,24 +67,23 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:                                    sdk.NewDec(2),
-			HealthGainFactor:                               sdk.NewDec(1),
-			InterestRateMin:                                sdk.NewDecWithPrec(5, 3),
-			InterestRateMax:                                sdk.NewDec(3),
-			InterestRateDecrease:                           sdk.NewDecWithPrec(1, 1),
-			InterestRateIncrease:                           sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                            sdk.NewDecWithPrec(1, 1),
-			ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-			ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-			IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-			RemovalQueueThreshold:                          sdk.NewDecWithPrec(1, 1),
-			EpochLength:                                    1,
-			MaxOpenPositions:                               10000,
-			Pools:                                          []string{},
-			SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
+			LeverageMax:                              sdk.NewDec(2),
+			HealthGainFactor:                         sdk.NewDec(1),
+			InterestRateMin:                          sdk.NewDecWithPrec(5, 3),
+			InterestRateMax:                          sdk.NewDec(3),
+			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
+			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
+			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+			IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+			RemovalQueueThreshold:                    sdk.NewDecWithPrec(1, 1),
+			EpochLength:                              1,
+			MaxOpenPositions:                         10000,
+			Pools:                                    []string{},
+			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)
@@ -102,7 +99,6 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.Equal(t, got.Params.InterestRateDecrease, marginKeeper.GetInterestRateDecrease(ctx))
 		require.Equal(t, got.Params.HealthGainFactor, marginKeeper.GetHealthGainFactor(ctx))
 		require.Equal(t, got.Params.EpochLength, marginKeeper.GetEpochLength(ctx))
-		require.Equal(t, got.Params.ForceCloseThreshold, marginKeeper.GetForceCloseThreshold(ctx))
 	})
 
 	t.Run("params fields set", func(t *testing.T) {
@@ -111,23 +107,22 @@ func TestKeeper_InitGenesis(t *testing.T) {
 		require.NotNil(t, marginKeeper)
 
 		params := types.Params{
-			LeverageMax:                                    sdk.NewDec(2),
-			HealthGainFactor:                               sdk.NewDec(1),
-			InterestRateMin:                                sdk.NewDecWithPrec(5, 3),
-			InterestRateMax:                                sdk.NewDec(3),
-			InterestRateDecrease:                           sdk.NewDecWithPrec(1, 1),
-			InterestRateIncrease:                           sdk.NewDecWithPrec(1, 1),
-			ForceCloseThreshold:                            sdk.NewDecWithPrec(1, 1),
-			ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-			ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-			IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-			RemovalQueueThreshold:                          sdk.NewDecWithPrec(1, 1),
-			EpochLength:                                    1,
-			MaxOpenPositions:                               10000,
-			SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
+			LeverageMax:                              sdk.NewDec(2),
+			HealthGainFactor:                         sdk.NewDec(1),
+			InterestRateMin:                          sdk.NewDecWithPrec(5, 3),
+			InterestRateMax:                          sdk.NewDec(3),
+			InterestRateDecrease:                     sdk.NewDecWithPrec(1, 1),
+			InterestRateIncrease:                     sdk.NewDecWithPrec(1, 1),
+			ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+			IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+			RemovalQueueThreshold:                    sdk.NewDecWithPrec(1, 1),
+			EpochLength:                              1,
+			MaxOpenPositions:                         10000,
+			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)
