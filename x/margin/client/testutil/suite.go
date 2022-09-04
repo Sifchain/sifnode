@@ -90,7 +90,6 @@ func (s *IntegrationTestSuite) TestA1_MarginParams() {
 		InterestRateMax:       sdk.MustNewDecFromStr("3.0"),
 		InterestRateDecrease:  sdk.MustNewDecFromStr("0.001"),
 		InterestRateIncrease:  sdk.MustNewDecFromStr("0.001"),
-		ForceCloseThreshold:   sdk.MustNewDecFromStr("0.01"),
 		RemovalQueueThreshold: sdk.MustNewDecFromStr("0.1"),
 		EpochLength:           1,
 		MaxOpenPositions:      10000,

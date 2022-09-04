@@ -23,7 +23,6 @@ func TestKeeper_BeginBlocker(t *testing.T) {
 			InterestRateDecrease: sdk.NewDec(1),
 			HealthGainFactor:     sdk.NewDec(1),
 			EpochLength:          1,
-			ForceCloseThreshold:  sdk.NewDec(1), //TODO Determine real default
 		}
 		want := types.GenesisState{Params: &params}
 		marginKeeper.InitGenesis(ctx, want)

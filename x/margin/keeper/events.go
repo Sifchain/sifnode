@@ -59,11 +59,11 @@ func (k Keeper) EmitInterestRateComputation(ctx sdk.Context) {
 		sdk.NewAttribute("block_height", strconv.FormatInt(ctx.BlockHeight(), 10))))
 }
 
-func (k Keeper) EmitInsuranceFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
+func (k Keeper) EmitFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(paymentType,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
-		sdk.NewAttribute("insurance_payment_amount", takeAmount.String()),
-		sdk.NewAttribute("insurance_payment_asset", takeAsset),
+		sdk.NewAttribute("payment_amount", takeAmount.String()),
+		sdk.NewAttribute("payment_asset", takeAsset),
 	))
 }
 
