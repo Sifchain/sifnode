@@ -4,12 +4,10 @@ import (
 	"context"
 
 	"fmt"
-	"math"
-	"strconv"
-	"strings"
-
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/pkg/errors"
+	"math"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -185,7 +183,7 @@ func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdateP
 	params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
 	params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
 
-	if !strings.EqualFold(msg.PmtpPeriodGovernanceRate, "") {
+	if !types.StringCompare(msg.PmtpPeriodGovernanceRate, "") {
 		rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
 		if err != nil {
 			return response, err
@@ -223,7 +221,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	rateParams := k.GetPmtpRateParams(ctx)
 
 	// Set Block Rate is needed only if no policy is presently executing
-	if !strings.EqualFold(msg.BlockRate, "") && !k.IsInsidePmtpWindow(ctx) {
+	if !types.StringCompare(msg.BlockRate, "") && !k.IsInsidePmtpWindow(ctx) {
 		blockRate, err := sdk.NewDecFromStr(msg.BlockRate)
 		if err != nil {
 			return response, err
@@ -232,7 +230,7 @@ func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPm
 	}
 
 	// Set Running Rate if Needed only if no policy is presently executing
-	if !strings.EqualFold(msg.RunningRate, "") && !k.IsInsidePmtpWindow(ctx) {
+	if !types.StringCompare(msg.RunningRate, "") && !k.IsInsidePmtpWindow(ctx) {
 		runningRate, err := sdk.NewDecFromStr(msg.RunningRate)
 		if err != nil {
 			return response, err
@@ -484,8 +482,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	)
 
 	// if liquidity protection is active and selling rowan
-	if liquidityProtectionParams.IsActive && strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
-		if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+	if liquidityProtectionParams.IsActive && types.StringCompare(sAsset.Denom, types.NativeSymbol) {
+		if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
 			sentValue = msg.SentAmount
 		} else {
 			pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
@@ -622,7 +620,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 	if liquidityProtectionParams.IsActive {
 		// if sell rowan
-		if strings.EqualFold(sAsset.Denom, types.NativeSymbol) {
+		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
 			// we know that sentValue < currentRowanLiquidityThreshold so we can do the
 			// substitution knowing it won't panic
 			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Sub(sentValue)
@@ -630,9 +628,9 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 
 		// if buy rowan
-		if strings.EqualFold(rAsset.Denom, types.NativeSymbol) {
+		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
 			var emitValue sdk.Uint
-			if strings.EqualFold(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+			if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
 				emitValue = emitAmount
 			} else {
 				pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
