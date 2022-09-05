@@ -37,7 +37,7 @@ func GetAdminCloseAllCmd() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().String("take_margin_fund", "", "boolean value to indicate weather margin fund will be deducted on close")
+	cmd.Flags().Bool("take_margin_fund", true, "boolean value to indicate weather margin fund will be deducted on close")
 	_ = cmd.MarkFlagRequired("take_margin_fund")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
@@ -87,7 +87,7 @@ func GetAdminCloseCmd() *cobra.Command {
 	cmd.Flags().Uint64("id", 0, "id of the position")
 	_ = cmd.MarkFlagRequired("mtp_address")
 	_ = cmd.MarkFlagRequired("id")
-	cmd.Flags().String("take_margin_fund", "", "boolean value to indicate weather margin fund will be deducted on close")
+	cmd.Flags().Bool("take_margin_fund", true, "boolean value to indicate weather margin fund will be deducted on close")
 	_ = cmd.MarkFlagRequired("take_margin_fund")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
