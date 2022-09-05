@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package types
 
 import (
@@ -65,7 +62,6 @@ type Keeper interface {
 	GetInterestRateDecrease(ctx sdk.Context) sdk.Dec
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
-	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
 	GetPoolOpenThreshold(ctx sdk.Context) sdk.Dec
 	GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec
 	GetMaxOpenPositions(ctx sdk.Context) uint64
@@ -79,8 +75,10 @@ type Keeper interface {
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
-	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error
+	Repay(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
+	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error
+	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool)
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
@@ -91,9 +89,10 @@ type Keeper interface {
 	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
 	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose, isAdminClose bool) (*MTP, sdk.Uint, error)
+	ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeFundPayment bool) (*MTP, *clptypes.Pool, sdk.Uint, error)
 
-	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool)
 
 	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
 }

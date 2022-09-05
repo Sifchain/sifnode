@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package types
 
 import (
@@ -20,7 +17,9 @@ var (
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgOpen{}, "margin/MsgOpen", nil)
 	cdc.RegisterConcrete(&MsgClose{}, "margin/MsgClose", nil)
-	cdc.RegisterConcrete(&MsgForceClose{}, "margin/MsgForceClose", nil)
+	cdc.RegisterConcrete(&MsgAdminClose{}, "margin/AdminClose", nil)
+	cdc.RegisterConcrete(&MsgAdminCloseAll{}, "margin/AdminCloseAll", nil)
+
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -28,7 +27,8 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgOpen{},
 		&MsgClose{},
-		&MsgForceClose{},
+		&MsgAdminClose{},
+		&MsgAdminCloseAll{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

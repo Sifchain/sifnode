@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
@@ -131,45 +128,19 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 	return &types.MsgCloseResponse{}, nil
 }
 
-func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return nil, err
-	}
-	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
-		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
-	}
-
-	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	var mtp *types.MTP
-	var repayAmount sdk.Uint
-	switch mtpToClose.Position {
-	case types.Position_LONG:
-		mtp, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg, true)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
-	}
-
-	k.EmitForceClose(ctx, mtp, repayAmount, msg.Signer)
-
-	return &types.MsgForceCloseResponse{}, nil
-}
-
 func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, error) {
 	maxLeverage := k.GetMaxLeverageParam(ctx)
 	leverage := sdk.MinDec(msg.Leverage, maxLeverage)
 	eta := leverage.Sub(sdk.OneDec())
 
 	collateralAmount := msg.CollateralAmount
+
+	// check if liabilities large enough for interest payments
+	err := k.CheckMinLiabilities(ctx, collateralAmount, eta)
+	if err != nil {
+		return nil, err
+	}
+
 	collateralAmountDec := sdk.NewDecFromBigInt(msg.CollateralAmount.BigInt())
 
 	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, msg.Position, leverage)
@@ -256,7 +227,9 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
-		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+		interestPayment := CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+
+		k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {
@@ -264,63 +237,7 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		}
 	}
 
-	err = k.Repay(ctx, &mtp, pool, repayAmount, false)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
-	return &mtp, repayAmount, nil
-}
-
-func (k Keeper) ForceCloseLong(ctx sdk.Context, msg *types.MsgForceClose, isAdminClose bool) (*types.MTP, sdk.Uint, error) {
-	mtp, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
-	var pool clptypes.Pool
-
-	nativeAsset := types.GetSettlementAsset()
-	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
-		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
-		if err != nil {
-			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
-		}
-	} else {
-		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
-		if err != nil {
-			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
-		}
-	}
-
-	// check MTP health against threshold
-	forceCloseThreshold := k.GetSafetyFactor(ctx)
-
-	epochLength := k.GetEpochLength(ctx)
-	epochPosition := GetEpochPosition(ctx, epochLength)
-	if epochPosition > 0 {
-		mtp.InterestUnpaidCollateral = CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
-
-		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
-		if err != nil {
-			return nil, sdk.ZeroUint(), err
-		}
-	}
-	if !isAdminClose && mtp.MtpHealth.GT(forceCloseThreshold) {
-		return nil, sdk.ZeroUint(), sdkerrors.Wrap(types.ErrMTPHealthy, msg.MtpAddress)
-	}
-
-	err = k.TakeOutCustody(ctx, mtp, &pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
-	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
-	err = k.Repay(ctx, &mtp, pool, repayAmount, true)
+	err = k.Repay(ctx, &mtp, &pool, repayAmount, false)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
@@ -396,4 +313,38 @@ func (k msgServer) Dewhitelist(goCtx context.Context, msg *types.MsgDewhitelist)
 	k.DewhitelistAddress(ctx, msg.WhitelistedAddress)
 
 	return &types.MsgDewhitelistResponse{}, nil
+}
+
+// ForceClose is deprecated replaced by AdminClose
+func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (*types.MsgForceCloseResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	var mtp *types.MTP
+	var repayAmount sdk.Uint
+	switch mtpToClose.Position {
+	case types.Position_LONG:
+		mtp, _, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.Signer, true, false)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
+	}
+
+	k.EmitAdminClose(ctx, mtp, repayAmount, msg.Signer)
+
+	return &types.MsgForceCloseResponse{}, nil
 }
