@@ -27,22 +27,21 @@ func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (
 		return nil, err
 	}
 
-	var mtp *types.MTP
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
 		var pool clptypes.Pool
 
 		nativeAsset := types.GetSettlementAsset()
-		if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
-			pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
+		if types.StringCompare(mtpToClose.CollateralAsset, nativeAsset) {
+			pool, err = k.ClpKeeper().GetPool(ctx, mtpToClose.CustodyAsset)
 			if err != nil {
-				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
+				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtpToClose.CustodyAsset)
 			}
 		} else {
-			pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
+			pool, err = k.ClpKeeper().GetPool(ctx, mtpToClose.CollateralAsset)
 			if err != nil {
-				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
+				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtpToClose.CollateralAsset)
 			}
 		}
 		repayAmount, err = k.ForceCloseLong(ctx, &mtpToClose, &pool, true, msg.TakeMarginFund)
@@ -53,7 +52,7 @@ func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (
 		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
 
-	k.EmitAdminClose(ctx, mtp, repayAmount, msg.Signer)
+	k.EmitAdminClose(ctx, &mtpToClose, repayAmount, msg.Signer)
 
 	return &types.MsgAdminCloseResponse{}, nil
 }
