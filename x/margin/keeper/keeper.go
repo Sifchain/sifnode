@@ -438,7 +438,7 @@ func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint,
 	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
 	// if incremental payment on, pay interest
 	if incrementalInterestPaymentEnabled {
-		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool)
+		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, pool)
 		if err != nil {
 			ctx.Logger().Error(sdkerrors.Wrap(err, "error executing incremental interest payment").Error())
 		}
@@ -447,14 +447,14 @@ func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint,
 	}
 }
 
-func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
+func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) (sdk.Uint, error) {
 	// if mtp has unpaid interest, add to payment
 	if mtp.InterestUnpaidCollateral.GT(sdk.ZeroUint()) {
 		interestPayment = interestPayment.Add(mtp.InterestUnpaidCollateral)
 	}
 
 	// swap interest payment to custody asset for payment
-	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, pool)
+	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, *pool)
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}
@@ -465,7 +465,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	// edge case, not enough custody to cover payment
 	if interestPaymentCustody.GT(mtp.CustodyAmount) {
 		// swap custody amount to collateral for updating interest unpaid
-		custodyAmountCollateral, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool) // may need spot price here to not deduct fee
+		custodyAmountCollateral, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, *pool) // may need spot price here to not deduct fee
 		if err != nil {
 			return sdk.ZeroUint(), err
 		}
@@ -510,7 +510,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 		return sdk.ZeroUint(), err
 	}
 
-	return interestPayment, k.ClpKeeper().SetPool(ctx, &pool)
+	return interestPayment, k.ClpKeeper().SetPool(ctx, pool)
 }
 
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {
@@ -656,63 +656,45 @@ func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 	return currentHeight % epochLength
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeFundPayment bool) (*types.MTP, *clptypes.Pool, sdk.Uint, error) {
-	mtp, err := k.GetMTP(ctx, mtpAddress, id)
-	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
-	}
-
-	var pool clptypes.Pool
-
-	nativeAsset := types.GetSettlementAsset()
-	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
-		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
-		if err != nil {
-			return nil, nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
-		}
-	} else {
-		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
-		if err != nil {
-			return nil, nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
-		}
-	}
+func (k Keeper) ForceCloseLong(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, isAdminClose bool, takeFundPayment bool) (sdk.Uint, error) {
 
 	// check MTP health against threshold
 	safetyFactor := k.GetSafetyFactor(ctx)
 
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
+
+	var err error
 	if epochPosition > 0 {
-		interestPayment := CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
+		interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, epochPosition, epochLength)
 
-		k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
+		k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
 
-		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, *pool)
 		if err != nil {
-			return nil, nil, sdk.ZeroUint(), err
+			return sdk.ZeroUint(), err
 		}
 	}
 	if !isAdminClose && mtp.MtpHealth.GT(safetyFactor) {
-		ctx.Logger().Error(sdkerrors.Wrap(types.ErrMTPHealthy, mtpAddress).Error())
-		return nil, nil, sdk.ZeroUint(), types.ErrMTPHealthy
+		return sdk.ZeroUint(), types.ErrMTPHealthy
 	}
 
-	err = k.TakeOutCustody(ctx, mtp, &pool)
+	err = k.TakeOutCustody(ctx, *mtp, pool)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return sdk.ZeroUint(), err
 	}
 
-	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
+	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, *pool)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return sdk.ZeroUint(), err
 	}
 
-	err = k.Repay(ctx, &mtp, &pool, repayAmount, takeFundPayment)
+	err = k.Repay(ctx, mtp, pool, repayAmount, takeFundPayment)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return sdk.ZeroUint(), err
 	}
 
-	return &mtp, &pool, repayAmount, nil
+	return repayAmount, nil
 }
 
 func (k Keeper) TakeFundPayment(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
