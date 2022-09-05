@@ -676,7 +676,6 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, mtp *types.MTP, pool *clptypes.P
 		}
 	}
 	if !isAdminClose && mtp.MtpHealth.GT(safetyFactor) {
-		ctx.Logger().Error(sdkerrors.Wrap(types.ErrMTPHealthy, mtp.Address).Error())
 		return sdk.ZeroUint(), types.ErrMTPHealthy
 	}
 
