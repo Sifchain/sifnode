@@ -332,19 +332,18 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 		return nil, err
 	}
 
-	var mtp *types.MTP
-	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, _, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.Signer, true, false)
+		mtp, _, repayAmount, err, isForceCloseTriggered := k.Keeper.ForceCloseLong(ctx, msg.Id, msg.Signer, true, false)
 		if err != nil {
 			return nil, err
+		}
+		if isForceCloseTriggered {
+			k.EmitAdminClose(ctx, mtp, repayAmount, msg.Signer)
 		}
 	default:
 		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
-
-	k.EmitAdminClose(ctx, mtp, repayAmount, msg.Signer)
 
 	return &types.MsgForceCloseResponse{}, nil
 }

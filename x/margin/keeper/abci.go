@@ -57,17 +57,15 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	mtp.MtpHealth = h
 	// compute interest
 	interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, 0, 0)
-
 	k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
 
 	_ = k.SetMTP(ctx, mtp)
-	_, pool, repayAmount, err := k.ForceCloseLong(ctx, mtp.Id, mtp.Address, false, true)
-
-	if err == nil {
-		// Emit event if position was closed
-		k.EmitForceClose(ctx, mtp, repayAmount, "")
-	} else if err != types.ErrMTPHealthy {
+	_, pool, repayAmount, err, forceCloseTriggered := k.ForceCloseLong(ctx, mtp.Id, mtp.Address, false, true)
+	if err != nil {
 		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
+	}
+	if forceCloseTriggered {
+		k.EmitForceClose(ctx, mtp, repayAmount, "")
 	}
 	return pool
 }

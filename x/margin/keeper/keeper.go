@@ -656,10 +656,11 @@ func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 	return currentHeight % epochLength
 }
 
-func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeFundPayment bool) (*types.MTP, *clptypes.Pool, sdk.Uint, error) {
+func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, isAdminClose bool, takeFundPayment bool) (*types.MTP, *clptypes.Pool, sdk.Uint, error, bool) {
+	forceCloseTriggered := false
 	mtp, err := k.GetMTP(ctx, mtpAddress, id)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return nil, nil, sdk.ZeroUint(), err, forceCloseTriggered
 	}
 
 	var pool clptypes.Pool
@@ -668,12 +669,12 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
 		if err != nil {
-			return nil, nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
+			return nil, nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset), forceCloseTriggered
 		}
 	} else {
 		pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
 		if err != nil {
-			return nil, nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
+			return nil, nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset), forceCloseTriggered
 		}
 	}
 
@@ -689,30 +690,29 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, id uint64, mtpAddress string, is
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {
-			return nil, nil, sdk.ZeroUint(), err
+			return nil, nil, sdk.ZeroUint(), err, forceCloseTriggered
 		}
 	}
 	if !isAdminClose && mtp.MtpHealth.GT(safetyFactor) {
-		ctx.Logger().Error(sdkerrors.Wrap(types.ErrMTPHealthy, mtpAddress).Error())
-		return nil, nil, sdk.ZeroUint(), types.ErrMTPHealthy
+		return nil, nil, sdk.ZeroUint(), nil, forceCloseTriggered
 	}
-
+	forceCloseTriggered = true
 	err = k.TakeOutCustody(ctx, mtp, &pool)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return nil, nil, sdk.ZeroUint(), err, forceCloseTriggered
 	}
 
 	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return nil, nil, sdk.ZeroUint(), err, forceCloseTriggered
 	}
 
 	err = k.Repay(ctx, &mtp, &pool, repayAmount, takeFundPayment)
 	if err != nil {
-		return nil, nil, sdk.ZeroUint(), err
+		return nil, nil, sdk.ZeroUint(), err, forceCloseTriggered
 	}
 
-	return &mtp, &pool, repayAmount, nil
+	return &mtp, &pool, repayAmount, nil, forceCloseTriggered
 }
 
 func (k Keeper) TakeFundPayment(ctx sdk.Context, returnAmount sdk.Uint, returnAsset string, takePercentage sdk.Dec, fundAddr sdk.AccAddress) (sdk.Uint, error) {
