@@ -336,7 +336,21 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, _, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.Signer, true, false)
+		var pool clptypes.Pool
+
+		nativeAsset := types.GetSettlementAsset()
+		if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
+			pool, err = k.ClpKeeper().GetPool(ctx, mtp.CustodyAsset)
+			if err != nil {
+				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CustodyAsset)
+			}
+		} else {
+			pool, err = k.ClpKeeper().GetPool(ctx, mtp.CollateralAsset)
+			if err != nil {
+				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtp.CollateralAsset)
+			}
+		}
+		repayAmount, err = k.Keeper.ForceCloseLong(ctx, &mtpToClose, &pool, true, false)
 		if err != nil {
 			return nil, err
 		}
