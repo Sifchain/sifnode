@@ -438,7 +438,7 @@ func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint,
 	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
 	// if incremental payment on, pay interest
 	if incrementalInterestPaymentEnabled {
-		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool)
+		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, pool)
 		if err != nil {
 			ctx.Logger().Error(sdkerrors.Wrap(err, "error executing incremental interest payment").Error())
 		}
@@ -447,14 +447,14 @@ func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint,
 	}
 }
 
-func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
+func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) (sdk.Uint, error) {
 	// if mtp has unpaid interest, add to payment
 	if mtp.InterestUnpaidCollateral.GT(sdk.ZeroUint()) {
 		interestPayment = interestPayment.Add(mtp.InterestUnpaidCollateral)
 	}
 
 	// swap interest payment to custody asset for payment
-	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, pool)
+	interestPaymentCustody, err := k.CLPSwap(ctx, interestPayment, mtp.CustodyAsset, *pool)
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}
@@ -465,7 +465,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 	// edge case, not enough custody to cover payment
 	if interestPaymentCustody.GT(mtp.CustodyAmount) {
 		// swap custody amount to collateral for updating interest unpaid
-		custodyAmountCollateral, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool) // may need spot price here to not deduct fee
+		custodyAmountCollateral, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, *pool) // may need spot price here to not deduct fee
 		if err != nil {
 			return sdk.ZeroUint(), err
 		}
@@ -510,7 +510,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 		return sdk.ZeroUint(), err
 	}
 
-	return interestPayment, k.ClpKeeper().SetPool(ctx, &pool)
+	return interestPayment, k.ClpKeeper().SetPool(ctx, pool)
 }
 
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {
