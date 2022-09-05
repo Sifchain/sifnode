@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"fmt"
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
-	"github.com/pkg/errors"
 	"math"
 	"strconv"
+
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -401,15 +402,11 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		return nil, types.ErrUnableToCreatePool
 	}
 
-	nativeBalance := msg.NativeAssetAmount
-	externalBalance := msg.ExternalAssetAmount
-	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
-	if err != nil {
-		return nil, err
-	}
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
 	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
-		nativeBalance, externalBalance, externalDecimals, k.GetSymmetryThreshold(ctx), k.GetSymmetryRatio(ctx))
+		msg.NativeAssetAmount, msg.ExternalAssetAmount, swapFeeRate, pmtpCurrentRunningRate)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -675,10 +672,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		return nil, types.ErrPoolDoesNotExist
 	}
 
-	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
-	if err != nil {
-		return nil, err
-	}
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
@@ -686,9 +681,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		pool.ExternalAssetBalance,
 		msg.NativeAssetAmount,
 		msg.ExternalAssetAmount,
-		externalDecimals,
-		k.GetSymmetryThreshold(ctx),
-		k.GetSymmetryRatio(ctx))
+		swapFeeRate,
+		pmtpCurrentRunningRate)
 	if err != nil {
 		return nil, err
 	}

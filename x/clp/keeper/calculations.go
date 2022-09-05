@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
@@ -117,9 +116,8 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // P - current number of pool units
 // #################
 // TODO: need to check we're not exceeding liquidity protection OR swap block switches
-// TODO: replace original with V2
 // ################
-func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, error) {
+func CalculatePoolUnits(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, error) {
 	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
 	swapFeeRateR := DecToRat(&swapFeeRate)
 
@@ -215,136 +213,6 @@ func GetLiquidityAddSymmetryState(X, x, Y, y sdk.Uint) int {
 	default:
 		panic("Expect not to reach here!")
 	}
-}
-
-// More details on the formula
-// https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-
-//native asset balance  : currently in pool before adding
-//external asset balance : currently in pool before adding
-//native asset to added  : the amount the user sends
-//external asset amount to be added : the amount the user sends
-
-// R = native Balance (before)
-// A = external Balance (before)
-// r = native asset added;
-// a = external asset added
-// P = existing Pool Units
-// slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
-// units = ((P (a R + A r))/(2 A R))*slidAdjustment
-
-func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, externalDecimals uint8, symmetryThreshold, ratioThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
-
-	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
-		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
-	}
-
-	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
-		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
-	}
-	if externalAssetBalance.Add(externalAssetAmount).IsZero() {
-		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, externalAssetAmount.String())
-	}
-	if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
-		return nativeAssetAmount, nativeAssetAmount, nil
-	}
-
-	slipAdjustmentValues := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
-		nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
-
-	one := big.NewRat(1, 1)
-	symmetryThresholdRat := DecToRat(&symmetryThreshold)
-
-	var diff big.Rat
-	diff.Sub(one, slipAdjustmentValues.slipAdjustment)
-	if diff.Cmp(&symmetryThresholdRat) == 1 { // this is: if diff > symmetryThresholdRat
-		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricAdd
-	}
-
-	ratioThresholdRat := DecToRat(&ratioThreshold)
-	normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
-	ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
-	ratioDiff, err := CalculateRatioDiff(externalAssetBalance.BigInt(), nativeAssetBalance.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
-	if err != nil {
-		return sdk.ZeroUint(), sdk.ZeroUint(), err
-	}
-	if ratioDiff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
-		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
-	}
-
-	stakeUnits := calculateStakeUnits(oldPoolUnits.BigInt(), nativeAssetBalance.BigInt(),
-		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), slipAdjustmentValues)
-
-	var newPoolUnit big.Int
-	newPoolUnit.Add(oldPoolUnits.BigInt(), stakeUnits)
-
-	return sdk.NewUintFromBigInt(&newPoolUnit), sdk.NewUintFromBigInt(stakeUnits), nil
-}
-
-// | A/R - a/r |
-func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
-	if R.Cmp(big.NewInt(0)) == 0 || r.Cmp(big.NewInt(0)) == 0 { // check for zeros
-		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
-	}
-	var AdivR, adivr, diff big.Rat
-
-	AdivR.SetFrac(A, R)
-	adivr.SetFrac(a, r)
-	diff.Sub(&AdivR, &adivr)
-	diff.Abs(&diff)
-
-	return diff, nil
-}
-
-// units = ((P (a R + A r))/(2 A R))*slidAdjustment
-func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int {
-	var add, numerator big.Int
-	add.Add(slipAdjustmentValues.RTimesa, slipAdjustmentValues.rTimesA)
-	numerator.Mul(P, &add)
-
-	var denominator big.Int
-	denominator.Mul(big.NewInt(2), A)
-	denominator.Mul(&denominator, R)
-
-	var n, d, stakeUnits big.Rat
-	n.SetInt(&numerator)
-	d.SetInt(&denominator)
-	stakeUnits.Quo(&n, &d)
-	stakeUnits.Mul(&stakeUnits, slipAdjustmentValues.slipAdjustment)
-
-	return RatIntQuo(&stakeUnits)
-}
-
-// slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
-type slipAdjustmentValues struct {
-	slipAdjustment *big.Rat
-	RTimesa        *big.Int
-	rTimesA        *big.Int
-}
-
-func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
-	var denominator, rPlusR, aPlusA big.Int
-	rPlusR.Add(r, R)
-	aPlusA.Add(a, A)
-	denominator.Mul(&rPlusR, &aPlusA)
-
-	var RTimesa, rTimesA, nominator big.Int
-	RTimesa.Mul(R, a)
-	rTimesA.Mul(r, A)
-	nominator.Sub(&RTimesa, &rTimesA)
-
-	var one, nom, denom, slipAdjustment big.Rat
-	one.SetInt64(1)
-
-	nom.SetInt(&nominator)
-	denom.SetInt(&denominator)
-
-	slipAdjustment.Quo(&nom, &denom)
-	slipAdjustment.Abs(&slipAdjustment)
-	slipAdjustment.Sub(&one, &slipAdjustment)
-
-	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
 func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
