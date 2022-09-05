@@ -119,40 +119,51 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // TODO: need to check we're not exceeding liquidity protection OR swap block switches
 // TODO: replace original with V2
 // ################
-func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint) {
+func CalculatePoolUnitsV2(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, error) {
 	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
 	swapFeeRateR := DecToRat(&swapFeeRate)
 
-	symmetryType := GetLiquidityAddSymmetryType(A, a, R, r)
-	switch symmetryType {
+	symmetryState := GetLiquidityAddSymmetryState(A, a, R, r)
+	switch symmetryState {
 	case ErrorEmptyPool:
+		// At least one side of the pool is empty.
+		//
 		// If both sides of the pool are empty then we start counting pool units from scratch. We can assign
-		// an arbitrary number, which we'll chose to be the amount of native asset added.
+		// an arbitrary number, which we'll choose to be the amount of native asset added. However this
+		// should only be done if adding to both sides of the pool, otherwise one side will still be empty.
+		//
 		// If only one side of the pool is empty then it's not clear what should be done - in which case
 		// we'll default to doing the same thing.
-		return r, r
+
+		if a.IsZero() || r.IsZero() {
+			return sdk.Uint{}, sdk.Uint{}, types.ErrInValidAmount
+		}
+
+		return r, r, nil
 	case ErrorNothingAdded:
 		// Keep the pool units as they were and don't give any units to the liquidity provider
-		return P, sdk.ZeroUint()
-	case Positive:
-		// R,A,a > 0 and R/A > r/a
+		return P, sdk.ZeroUint(), nil
+	case NeedMoreY:
+		// Need more native token to make R/A == r/a
 		swapAmount := CalculateExternalSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
 		aCorrected := a.Sub(swapAmount)
 		AProjected := A.Add(swapAmount)
 
 		// external or native asset can be used to calculate pool units since now r/R = a/A. for convenience
 		// use external asset
-		return CalculatePoolUnitsSymmetric(AProjected, aCorrected, P)
+		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(AProjected, aCorrected, P)
+		return poolUnits, lpUnits, nil
 	case Symmetric:
-		// symmetric add
-		// R,A,a > 0 and R/A == r/a
-		return CalculatePoolUnitsSymmetric(R, r, P)
-	case Negative:
-		// R,A,r > 0 and (a==0 or R/A < r/a)
+		// R/A == r/a
+		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(R, r, P)
+		return poolUnits, lpUnits, nil
+	case NeedMoreX:
+		// Need more external token to make R/A == r/a
 		swapAmount := CalculateNativeSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
 		rCorrected := r.Sub(swapAmount)
 		RProjected := R.Add(swapAmount)
-		return CalculatePoolUnitsSymmetric(RProjected, rCorrected, P)
+		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(RProjected, rCorrected, P)
+		return poolUnits, lpUnits, nil
 	default:
 		panic("Expect not to reach here!")
 	}
@@ -170,19 +181,14 @@ func CalculatePoolUnitsSymmetric(X, x, P sdk.Uint) (sdk.Uint, sdk.Uint) {
 const (
 	ErrorEmptyPool = iota
 	ErrorNothingAdded
-	Positive
-	Symmetric
-	Negative
+	NeedMoreY // Need more y token to make Y/X == y/x
+	Symmetric // Y/X == y/x
+	NeedMoreX // Need more x token to make Y/X == y/x
 )
 
 // Determines how the amount of assets added to a pool, x, y, compare to the current
 // pool ratio, Y/X
-// If Y,X,y > 0 and (x==0 or Y/X < y/x), returns Negative
-// If Y,X   > 0 and Y/X==y/x, returns Symmetric
-// If Y,X,x > 0 and Y/X > y/x, returns Positive
-// If X==0 or Y==0, returns ErrorEmptyPool
-// If x==0 and y==0, returns ErrorNothingAdded
-func GetLiquidityAddSymmetryType(X, x, Y, y sdk.Uint) int {
+func GetLiquidityAddSymmetryState(X, x, Y, y sdk.Uint) int {
 	if X.IsZero() || Y.IsZero() {
 		return ErrorEmptyPool
 	}
@@ -192,7 +198,7 @@ func GetLiquidityAddSymmetryType(X, x, Y, y sdk.Uint) int {
 	}
 
 	if x.IsZero() {
-		return Negative
+		return NeedMoreX
 	}
 	var YoverX, yOverx big.Rat
 
@@ -201,11 +207,11 @@ func GetLiquidityAddSymmetryType(X, x, Y, y sdk.Uint) int {
 
 	switch YoverX.Cmp(&yOverx) {
 	case -1:
-		return Negative
+		return NeedMoreX
 	case 0:
 		return Symmetric
 	case 1:
-		return Positive
+		return NeedMoreY
 	default:
 		panic("Expect not to reach here!")
 	}

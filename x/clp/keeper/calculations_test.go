@@ -1531,7 +1531,7 @@ func TestKeeper_GetLiquidityAddSymmetryType(t *testing.T) {
 			x:             sdk.ZeroUint(),
 			Y:             sdk.NewUint(1000),
 			y:             sdk.NewUint(100),
-			expectedValue: clpkeeper.Negative,
+			expectedValue: clpkeeper.NeedMoreX,
 		},
 		{
 			name:          "negative symmetry - x > 0",
@@ -1539,7 +1539,7 @@ func TestKeeper_GetLiquidityAddSymmetryType(t *testing.T) {
 			x:             sdk.NewUint(15),
 			Y:             sdk.NewUint(1000),
 			y:             sdk.NewUint(100),
-			expectedValue: clpkeeper.Negative,
+			expectedValue: clpkeeper.NeedMoreX,
 		},
 		{
 			name:          "symmetric",
@@ -1555,13 +1555,13 @@ func TestKeeper_GetLiquidityAddSymmetryType(t *testing.T) {
 			x:             sdk.NewUint(100),
 			Y:             sdk.NewUint(1000),
 			y:             sdk.NewUint(5),
-			expectedValue: clpkeeper.Positive,
+			expectedValue: clpkeeper.NeedMoreY,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			res := clpkeeper.GetLiquidityAddSymmetryType(tc.X, tc.x, tc.Y, tc.y)
+			res := clpkeeper.GetLiquidityAddSymmetryState(tc.X, tc.x, tc.Y, tc.y)
 
 			require.Equal(t, tc.expectedValue, res)
 		})
@@ -1578,6 +1578,7 @@ func TestKeeper_CalculatePoolUnitsV2(t *testing.T) {
 		externalAssetAmount  sdk.Uint
 		expectedPoolUnits    sdk.Uint
 		expectedLPunits      sdk.Uint
+		expectedError        error
 	}{
 		{
 			name:                 "empty pool",
@@ -1588,6 +1589,15 @@ func TestKeeper_CalculatePoolUnitsV2(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(90),
 			expectedPoolUnits:    sdk.NewUint(100),
 			expectedLPunits:      sdk.NewUint(100),
+		},
+		{
+			name:                 "empty pool - no external asset added",
+			oldPoolUnits:         sdk.ZeroUint(),
+			nativeAssetBalance:   sdk.ZeroUint(),
+			externalAssetBalance: sdk.ZeroUint(),
+			nativeAssetAmount:    sdk.NewUint(100),
+			externalAssetAmount:  sdk.ZeroUint(),
+			expectedError:        errors.New("amount is invalid"),
 		},
 		{
 			name:                 "add nothing",
@@ -1677,7 +1687,7 @@ func TestKeeper_CalculatePoolUnitsV2(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			poolUnits, lpunits := clpkeeper.CalculatePoolUnitsV2(
+			poolUnits, lpunits, err := clpkeeper.CalculatePoolUnitsV2(
 				tc.oldPoolUnits,
 				tc.nativeAssetBalance,
 				tc.externalAssetBalance,
@@ -1686,6 +1696,12 @@ func TestKeeper_CalculatePoolUnitsV2(t *testing.T) {
 				swapFeeRate,
 				pmtpCurrentRunningRate,
 			)
+
+			if tc.expectedError != nil {
+				require.EqualError(t, err, tc.expectedError.Error())
+				return
+			}
+			require.NoError(t, err)
 
 			require.Equal(t, tc.expectedPoolUnits.String(), poolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
 			require.Equal(t, tc.expectedLPunits.String(), lpunits.String())
