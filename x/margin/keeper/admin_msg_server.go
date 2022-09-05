@@ -28,11 +28,11 @@ func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (
 
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, _, repayAmount, err, isForceCloseTriggered := k.Keeper.ForceCloseLong(ctx, msg.Id, msg.MtpAddress, true, msg.TakeMarginFund)
+		mtp, _, repayAmount, err, forceCloseTriggered := k.Keeper.ForceCloseLong(ctx, msg.Id, msg.MtpAddress, true, msg.TakeMarginFund)
 		if err != nil {
 			return nil, err
 		}
-		if isForceCloseTriggered {
+		if forceCloseTriggered {
 			k.EmitAdminClose(ctx, mtp, repayAmount, msg.Signer)
 		}
 	default:
