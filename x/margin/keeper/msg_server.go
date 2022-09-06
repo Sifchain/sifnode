@@ -169,12 +169,32 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 
 	ctx.Logger().Info(fmt.Sprintf("leveragedAmount: %s", leveragedAmount.String()))
 
+	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
+		if leveragedAmount.GT(pool.NativeAssetBalance) {
+			return nil, sdkerrors.Wrap(types.ErrBorrowTooHigh, leveragedAmount.String())
+		}
+	} else {
+		if leveragedAmount.GT(pool.ExternalAssetBalance) {
+			return nil, sdkerrors.Wrap(types.ErrBorrowTooHigh, leveragedAmount.String())
+		}
+	}
+
 	custodyAmount, err := k.CLPSwap(ctx, leveragedAmount, msg.BorrowAsset, pool)
 	if err != nil {
 		return nil, err
 	}
 
 	ctx.Logger().Info(fmt.Sprintf("custodyAmount: %s", custodyAmount.String()))
+
+	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
+		if custodyAmount.GT(pool.ExternalAssetBalance) {
+			return nil, sdkerrors.Wrap(types.ErrCustodyTooHigh, custodyAmount.String())
+		}
+	} else {
+		if custodyAmount.GT(pool.NativeAssetBalance) {
+			return nil, sdkerrors.Wrap(types.ErrCustodyTooHigh, custodyAmount.String())
+		}
+	}
 
 	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, custodyAmount, mtp, &pool, eta)
 	if err != nil {
