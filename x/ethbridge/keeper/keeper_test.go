@@ -503,3 +503,17 @@ func TestRescueCrossChainFees(t *testing.T) {
 	err = keeper.RescueCrossChainFees(ctx, &msg)
 	require.NoError(t, err)
 }
+
+func TestAppendValidatorToSucceededProphecyReturnsErr(t *testing.T) {
+	ctx, _, _, _, keeper, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	testProphecyId := []byte{1, 2, 3, 4, 5}
+	testProphecy := oracletypes.Prophecy{
+		Id:     testProphecyId,
+		Status: oracletypes.StatusText_STATUS_TEXT_SUCCESS,
+	}
+	keeper.SetProphecy(ctx, testProphecy)
+
+	status, err := keeper.AppendValidatorToProphecy(ctx, oracletypes.NetworkDescriptor(9999), testProphecyId, validatorAddresses[0])
+	require.ErrorIs(t, err, oracletypes.ErrProphecyFinalized)
+	require.Equal(t, oracletypes.StatusText_STATUS_TEXT_SUCCESS, status)
+}
