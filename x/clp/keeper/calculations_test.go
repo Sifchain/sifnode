@@ -543,7 +543,7 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 }
 
 // nolint
-func TestKeeper_CalcSpotPriceX(t *testing.T) {
+func TestKeeper_CalcPriceX(t *testing.T) {
 
 	testcases := []struct {
 		name                   string
@@ -651,7 +651,7 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
+			price, err := clpkeeper.CalcPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -664,7 +664,7 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcSpotPriceNative(t *testing.T) {
+func TestKeeper_CalcPriceNative(t *testing.T) {
 
 	testcases := []struct {
 		name                   string
@@ -756,7 +756,7 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -769,7 +769,7 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
+func TestKeeper_CalcPriceExternal(t *testing.T) {
 
 	testcases := []struct {
 		name                   string
@@ -861,7 +861,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -874,12 +874,12 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
+func TestKeeper_CalcRowanPrice(t *testing.T) {
 	testcases := []struct {
 		name                          string
 		rowanBalance, externalBalance sdk.Uint
 		pmtpCurrentRunningRate        sdk.Dec
-		expectedSpotPrice             sdk.Dec
+		expectedPrice                 sdk.Dec
 		expectedError                 error
 	}{
 		{
@@ -887,14 +887,14 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 			rowanBalance:           sdk.NewUint(1),
 			externalBalance:        sdk.NewUint(1),
 			pmtpCurrentRunningRate: sdk.NewDec(1),
-			expectedSpotPrice:      sdk.MustNewDecFromStr("2"),
+			expectedPrice:          sdk.MustNewDecFromStr("2"),
 		},
 		{
 			name:                   "success small",
 			rowanBalance:           sdk.NewUint(1000000000123),
 			externalBalance:        sdk.NewUint(20000000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
-			expectedSpotPrice:      sdk.MustNewDecFromStr("0.000047999999994096"),
+			expectedPrice:          sdk.MustNewDecFromStr("0.000047999999994096"),
 		},
 
 		{
@@ -902,7 +902,7 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 			rowanBalance:           sdk.NewUint(1000),
 			externalBalance:        sdk.NewUint(2000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
-			expectedSpotPrice:      sdk.MustNewDecFromStr("4.8"),
+			expectedPrice:          sdk.MustNewDecFromStr("4.8"),
 		},
 		{
 			name:                   "fail - rowan balance zero",
@@ -920,73 +920,35 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 				ExternalAssetBalance: tc.externalBalance,
 			}
 
-			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
+			calcPrice, err := clpkeeper.CalcRowanPrice(&pool, tc.pmtpCurrentRunningRate)
 			if tc.expectedError != nil {
 				require.EqualError(t, tc.expectedError, err.Error())
 				return
 			}
 			require.NoError(t, err)
-			require.Equal(t, tc.expectedSpotPrice, spotPrice)
+			require.Equal(t, tc.expectedPrice, calcPrice)
 		})
 	}
 }
 
 func TestKeeper_CalcRowanValue(t *testing.T) {
 	testcases := []struct {
-		name                          string
-		rowanBalance, externalBalance sdk.Uint
-		rowanAmount                   sdk.Uint
-		pmtpCurrentRunningRate        sdk.Dec
-		expectedValue                 sdk.Uint
-		expectedError                 error
+		name          string
+		rowanAmount   sdk.Uint
+		price         sdk.Dec
+		expectedValue sdk.Uint
 	}{
 		{
-			name:                   "success simple",
-			rowanBalance:           sdk.NewUint(1),
-			externalBalance:        sdk.NewUint(1),
-			pmtpCurrentRunningRate: sdk.NewDec(1),
-			rowanAmount:            sdk.NewUint(100),
-			expectedValue:          sdk.NewUint(200),
-		},
-		{
-			name:                   "success zero",
-			rowanBalance:           sdk.NewUint(1000000000123),
-			externalBalance:        sdk.NewUint(20000000),
-			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
-			rowanAmount:            sdk.NewUint(100),
-			expectedValue:          sdk.NewUint(0),
-		},
-		{
-			name:                   "success",
-			rowanBalance:           sdk.NewUint(1000),
-			externalBalance:        sdk.NewUint(2000),
-			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
-			rowanAmount:            sdk.NewUint(100),
-			expectedValue:          sdk.NewUint(480),
-		},
-		{
-			name:                   "fail - rowan balance zero",
-			rowanBalance:           sdk.NewUint(0),
-			externalBalance:        sdk.NewUint(2000),
-			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.4"),
-			rowanAmount:            sdk.NewUint(100),
-			expectedError:          errors.New("amount is invalid"),
+			name:          "success simple",
+			rowanAmount:   sdk.NewUint(100),
+			price:         sdk.NewDecWithPrec(232, 2),
+			expectedValue: sdk.NewUint(232),
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pool := types.Pool{
-				NativeAssetBalance:   tc.rowanBalance,
-				ExternalAssetBalance: tc.externalBalance,
-			}
-
-			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount)
-			if tc.expectedError != nil {
-				require.EqualError(t, tc.expectedError, err.Error())
-				return
-			}
-			require.NoError(t, err)
+			rowanValue := clpkeeper.CalcRowanValue(tc.rowanAmount, tc.price)
 			require.Equal(t, tc.expectedValue.String(), rowanValue.String())
 		})
 	}
@@ -1258,6 +1220,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		externalAssetAmount  sdk.Uint
 		expectedPoolUnits    sdk.Uint
 		expectedLPunits      sdk.Uint
+		expectedSwapStatus   int
+		expectedSwapAmount   sdk.Uint
 		expectedError        error
 	}{
 		{
@@ -1269,6 +1233,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(90),
 			expectedPoolUnits:    sdk.NewUint(100),
 			expectedLPunits:      sdk.NewUint(100),
+			expectedSwapStatus:   clpkeeper.NoSwap,
 		},
 		{
 			name:                 "empty pool - no external asset added",
@@ -1288,6 +1253,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.ZeroUint(),
 			expectedPoolUnits:    sdk.NewUint(1000),
 			expectedLPunits:      sdk.ZeroUint(),
+			expectedSwapStatus:   clpkeeper.NoSwap,
 		},
 		{
 			name:                 "positive symmetry",
@@ -1298,6 +1264,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(4556664545),
 			expectedPoolUnits:    sdk.NewUint(7663887695258361),
 			expectedLPunits:      sdk.NewUint(7433360934949),
+			expectedSwapStatus:   clpkeeper.BuyNative,
+			expectedSwapAmount:   sdk.NewUint(2277340758),
 		},
 		{
 			name:                 "symmetric",
@@ -1308,6 +1276,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(23454545454),
 			expectedPoolUnits:    sdk.NewUint(7733018877666646),
 			expectedLPunits:      sdk.NewUint(76564543343234),
+			expectedSwapStatus:   clpkeeper.NoSwap,
 		},
 		{
 			name:                 "negative symmetry - zero external",
@@ -1318,9 +1287,11 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.ZeroUint(),
 			expectedPoolUnits:    sdk.NewUint(7694639456903696),
 			expectedLPunits:      sdk.NewUint(38185122580284),
+			expectedSwapStatus:   clpkeeper.SellNative,
+			expectedSwapAmount:   sdk.NewUint(83633781363),
 		},
 		{
-			name:                 "negative symmetry - non zero external",
+			name:                 "positive symmetry - non zero external",
 			oldPoolUnits:         sdk.NewUint(7656454334323412),
 			nativeAssetBalance:   sdk.NewUint(16767626535600),
 			externalAssetBalance: sdk.NewUint(2345454545400),
@@ -1328,6 +1299,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(46798998888),
 			expectedPoolUnits:    sdk.NewUint(7771026137435008),
 			expectedLPunits:      sdk.NewUint(114571803111596),
+			expectedSwapStatus:   clpkeeper.BuyNative,
+			expectedSwapAmount:   sdk.NewUint(11528907497),
 		},
 		{
 			name:                 "very big - positive symmetry",
@@ -1338,6 +1311,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(1099511627776), // 2**40
 			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
 			expectedLPunits:      sdk.NewUint(549728324722),
+			expectedSwapStatus:   clpkeeper.BuyNative,
+			expectedSwapAmount:   sdk.NewUint(549783303053),
 		},
 		{
 			name:                 "very big - symmetric",
@@ -1348,6 +1323,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.NewUint(1099511627776),
 			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
 			expectedLPunits:      sdk.NewUint(1099511627776),
+			expectedSwapStatus:   clpkeeper.NoSwap,
 		},
 		{
 			name:                 "very big - negative symmetry",
@@ -1358,16 +1334,17 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetAmount:  sdk.ZeroUint(),
 			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
 			expectedLPunits:      sdk.NewUint(549728324722),
+			expectedSwapStatus:   clpkeeper.SellNative,
+			expectedSwapAmount:   sdk.NewUint(549783303053),
 		},
 	}
 
 	swapFeeRate := sdk.NewDecWithPrec(1, 4)
-	//pmtpCurrentRunningRate := sdk.NewDecWithPrec(1, 1)
 	pmtpCurrentRunningRate := sdk.ZeroDec()
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			poolUnits, lpunits, err := clpkeeper.CalculatePoolUnits(
+			poolUnits, lpunits, swapStatus, swapAmount, err := clpkeeper.CalculatePoolUnits(
 				tc.oldPoolUnits,
 				tc.nativeAssetBalance,
 				tc.externalAssetBalance,
@@ -1385,6 +1362,9 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 
 			require.Equal(t, tc.expectedPoolUnits.String(), poolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
 			require.Equal(t, tc.expectedLPunits.String(), lpunits.String())
+			require.Equal(t, tc.expectedSwapStatus, swapStatus)
+			require.Equal(t, tc.expectedSwapAmount.String(), swapAmount.String())
+
 		})
 	}
 }

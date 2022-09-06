@@ -23,7 +23,6 @@ import (
 )
 
 // Constants for test scripts only .
-//
 const (
 	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
 	AddressKey2 = "A58856F0FD53BF058B4909A21AEC019107BA7"
@@ -56,6 +55,7 @@ func CreateTestAppClpWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) (
 			{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 			{Denom: "atom", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "rowan"},
 		},
 	})
 	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{

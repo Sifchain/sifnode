@@ -108,16 +108,19 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt())
 }
 
+const (
+	SellNative = iota
+	BuyNative
+	NoSwap
+)
+
 // Calculate pool units taking into account the current pmtpCurrentRunningRate
 // R - native asset balance
 // A - external asset balance
 // r - native asset amount
 // a - external asset amount
 // P - current number of pool units
-// #################
-// TODO: need to check we're not exceeding liquidity protection OR swap block switches
-// ################
-func CalculatePoolUnits(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, error) {
+func CalculatePoolUnits(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Uint, sdk.Uint, int, sdk.Uint, error) {
 	pmtpCurrentRunningRateR := DecToRat(&pmtpCurrentRunningRate)
 	swapFeeRateR := DecToRat(&swapFeeRate)
 
@@ -134,13 +137,13 @@ func CalculatePoolUnits(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningR
 		// we'll default to doing the same thing.
 
 		if a.IsZero() || r.IsZero() {
-			return sdk.Uint{}, sdk.Uint{}, types.ErrInValidAmount
+			return sdk.Uint{}, sdk.Uint{}, 0, sdk.Uint{}, types.ErrInValidAmount
 		}
 
-		return r, r, nil
+		return r, r, NoSwap, sdk.Uint{}, nil
 	case ErrorNothingAdded:
 		// Keep the pool units as they were and don't give any units to the liquidity provider
-		return P, sdk.ZeroUint(), nil
+		return P, sdk.ZeroUint(), NoSwap, sdk.Uint{}, nil
 	case NeedMoreY:
 		// Need more native token to make R/A == r/a
 		swapAmount := CalculateExternalSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
@@ -150,20 +153,20 @@ func CalculatePoolUnits(P, R, A, r, a sdk.Uint, swapFeeRate, pmtpCurrentRunningR
 		// external or native asset can be used to calculate pool units since now r/R = a/A. for convenience
 		// use external asset
 		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(AProjected, aCorrected, P)
-		return poolUnits, lpUnits, nil
+		return poolUnits, lpUnits, BuyNative, swapAmount, nil
 	case Symmetric:
 		// R/A == r/a
 		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(R, r, P)
-		return poolUnits, lpUnits, nil
+		return poolUnits, lpUnits, NoSwap, sdk.Uint{}, nil
 	case NeedMoreX:
 		// Need more external token to make R/A == r/a
 		swapAmount := CalculateNativeSwapAmountAsymmetric(R, A, r, a, &swapFeeRateR, &pmtpCurrentRunningRateR)
 		rCorrected := r.Sub(swapAmount)
 		RProjected := R.Add(swapAmount)
 		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(RProjected, rCorrected, P)
-		return poolUnits, lpUnits, nil
+		return poolUnits, lpUnits, SellNative, swapAmount, nil
 	default:
-		panic("Expect not to reach here!")
+		panic("expect not to reach here!")
 	}
 }
 
@@ -211,7 +214,7 @@ func GetLiquidityAddSymmetryState(X, x, Y, y sdk.Uint) int {
 	case 1:
 		return NeedMoreY
 	default:
-		panic("Expect not to reach here!")
+		panic("expect not to reach here!")
 	}
 }
 
@@ -299,17 +302,17 @@ func calcPmtpFactor(r sdk.Dec) big.Rat {
 	return *one
 }
 
-func CalcSpotPriceNative(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
-	return CalcSpotPriceX(pool.NativeAssetBalance, pool.ExternalAssetBalance, types.NativeAssetDecimals, decimalsExternal, pmtpCurrentRunningRate, true)
+func CalcPriceNative(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+	return CalcPriceX(pool.NativeAssetBalance, pool.ExternalAssetBalance, types.NativeAssetDecimals, decimalsExternal, pmtpCurrentRunningRate, true)
 }
 
-func CalcSpotPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
-	return CalcSpotPriceX(pool.ExternalAssetBalance, pool.NativeAssetBalance, decimalsExternal, types.NativeAssetDecimals, pmtpCurrentRunningRate, false)
+func CalcPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+	return CalcPriceX(pool.ExternalAssetBalance, pool.NativeAssetBalance, decimalsExternal, types.NativeAssetDecimals, pmtpCurrentRunningRate, false)
 }
 
-// Calculates the spot price of asset X in the preferred denominations accounting for PMTP.
+// Calculates the price of asset X in the preferred denominations accounting for PMTP.
 // Since this method applies PMTP adjustment, one of X, Y must be the native asset.
-func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) {
+func CalcPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) {
 	if X.Equal(sdk.ZeroUint()) {
 		return sdk.ZeroDec(), types.ErrInValidAmount
 	}
@@ -330,17 +333,14 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 	return RatToDec(&pmtpPrice)
 }
-func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
-	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
-	if err != nil {
-		return sdk.ZeroUint(), err
-	}
-	value := spotPrice.Mul(sdk.NewDecFromBigInt(rowanAmount.BigInt()))
-	return sdk.NewUintFromBigInt(value.RoundInt().BigInt()), nil
+
+func CalcRowanValue(rowanAmount sdk.Uint, price sdk.Dec) sdk.Uint {
+	value := price.Mul(sdk.NewDecFromBigInt(rowanAmount.BigInt()))
+	return sdk.NewUintFromBigInt(value.RoundInt().BigInt())
 }
 
-// Calculates spot price of Rowan accounting for PMTP
-func CalcRowanSpotPrice(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
+// Calculates price of Rowan accounting for PMTP
+func CalcRowanPrice(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
 	rowanBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
 	if rowanBalance.Equal(sdk.ZeroDec()) {
 		return sdk.ZeroDec(), types.ErrInValidAmount
