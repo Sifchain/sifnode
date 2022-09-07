@@ -1034,7 +1034,7 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate, false)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -1140,7 +1140,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate, false)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -1254,7 +1254,7 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 				ExternalAssetBalance: tc.externalBalance,
 			}
 
-			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
+			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate, false)
 			if tc.expectedError != nil {
 				require.EqualError(t, tc.expectedError, err.Error())
 				return
@@ -1316,7 +1316,7 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 				ExternalAssetBalance: tc.externalBalance,
 			}
 
-			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount)
+			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount, false)
 			if tc.expectedError != nil {
 				require.EqualError(t, tc.expectedError, err.Error())
 				return
