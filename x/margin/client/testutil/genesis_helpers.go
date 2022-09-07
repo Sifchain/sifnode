@@ -1,5 +1,5 @@
-//go:build FEATURE_TOGGLE_SDK_045 && FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_SDK_045,FEATURE_TOGGLE_MARGIN_CLI_ALPHA
+//go:build TEST_INTEGRATION
+// +build TEST_INTEGRATION
 
 package testutil
 
@@ -100,7 +100,6 @@ func GetMarginGenesisState(cfg network.Config) ([]byte, error) {
 			InterestRateMax:       sdk.MustNewDecFromStr("3.0"),
 			InterestRateDecrease:  sdk.MustNewDecFromStr("0.001"),
 			InterestRateIncrease:  sdk.MustNewDecFromStr("0.001"),
-			ForceCloseThreshold:   sdk.MustNewDecFromStr("0.01"),
 			RemovalQueueThreshold: sdk.MustNewDecFromStr("0.1"),
 			EpochLength:           1,
 			MaxOpenPositions:      10000,

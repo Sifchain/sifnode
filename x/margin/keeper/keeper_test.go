@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper_test
 
 import (
@@ -818,7 +815,7 @@ func TestKeeper_Repay(t *testing.T) {
 				mtp.Address = tt.overrideAddress
 			}
 
-			got := marginKeeper.Repay(ctx, &mtp, pool, tt.repayAmount, false)
+			got := marginKeeper.Repay(ctx, &mtp, &pool, tt.repayAmount, false)
 
 			if tt.errString != nil {
 				require.EqualError(t, got, tt.errString.Error())
@@ -950,25 +947,24 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 			})
 
 			data := types.GenesisState{Params: &types.Params{
-				LeverageMax:                                    sdk.NewDec(10),
-				InterestRateMax:                                tt.interestRateMax,
-				InterestRateMin:                                sdk.NewDec(1),
-				InterestRateIncrease:                           tt.interestRateIncrease,
-				InterestRateDecrease:                           tt.interestRateDecrease,
-				HealthGainFactor:                               sdk.NewDec(1),
-				EpochLength:                                    1,
-				ForceCloseThreshold:                            sdk.NewDec(1), //TODO get real default
-				ForceCloseFundPercentage:                       sdk.NewDecWithPrec(1, 1),
-				ForceCloseInsuranceFundAddress:                 "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				IncrementalInterestPaymentFundPercentage:       sdk.NewDecWithPrec(1, 1),
-				IncrementalInterestPaymentInsuranceFundAddress: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				IncrementalInterestPaymentEnabled:              false,
-				PoolOpenThreshold:                              sdk.NewDecWithPrec(1, 1),
-				RemovalQueueThreshold:                          sdk.NewDecWithPrec(1, 1),
-				MaxOpenPositions:                               10000,
-				Pools:                                          []string{},
-				SqModifier:                                     sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:                                   sdk.MustNewDecFromStr("1.05"),
+				LeverageMax:                              sdk.NewDec(10),
+				InterestRateMax:                          tt.interestRateMax,
+				InterestRateMin:                          sdk.NewDec(1),
+				InterestRateIncrease:                     tt.interestRateIncrease,
+				InterestRateDecrease:                     tt.interestRateDecrease,
+				HealthGainFactor:                         sdk.NewDec(1),
+				EpochLength:                              1,
+				ForceCloseFundPercentage:                 sdk.NewDecWithPrec(1, 1),
+				ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentFundPercentage: sdk.NewDecWithPrec(1, 1),
+				IncrementalInterestPaymentFundAddress:    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				IncrementalInterestPaymentEnabled:        false,
+				PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
+				RemovalQueueThreshold:                    sdk.NewDecWithPrec(1, 1),
+				MaxOpenPositions:                         10000,
+				Pools:                                    []string{},
+				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 			}}
 			marginKeeper.InitGenesis(ctx, data)
 

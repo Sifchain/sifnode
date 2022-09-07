@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
@@ -64,11 +61,13 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
 
 	_ = k.SetMTP(ctx, mtp)
-	_, repayAmount, err := k.ForceCloseLong(ctx, mtp.Id, mtp.Address, false, true)
+	repayAmount, err := k.ForceCloseLong(ctx, mtp, pool, false, true)
+
 	if err == nil {
 		// Emit event if position was closed
 		k.EmitForceClose(ctx, mtp, repayAmount, "")
-	} else {
+	} else if err != types.ErrMTPHealthy {
 		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
 	}
+
 }
