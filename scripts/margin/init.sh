@@ -3,7 +3,7 @@
 ### chain init script for development purposes only ###
 
 cd ../..
-FEATURE_TOGGLE_MARGIN_CLI_ALPHA=1 make clean install
+make clean install
 rm -rf ~/.sifnoded
 sifnoded init test --chain-id=localnet -o
 

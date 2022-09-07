@@ -3,7 +3,6 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
-import "sifnode/clp/v1/pool.proto";
 import "sifnode/clp/v1/params.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
