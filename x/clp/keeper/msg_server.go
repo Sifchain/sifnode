@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"fmt"
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
-	"github.com/pkg/errors"
 	"math"
 	"strconv"
+
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -490,7 +491,9 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 			if err != nil {
 				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
 			}
-			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount)
+			marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+
+			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount, marginEnabled)
 
 			if err != nil {
 				return nil, err
@@ -637,7 +640,9 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 				if err != nil {
 					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
 				}
-				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount)
+				marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+
+				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount, marginEnabled)
 
 				if err != nil {
 					return nil, err
