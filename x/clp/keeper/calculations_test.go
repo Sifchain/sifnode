@@ -543,7 +543,7 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 }
 
 // nolint
-func TestKeeper_CalcPriceX(t *testing.T) {
+func TestKeeper_CalcSpotPriceX(t *testing.T) {
 
 	testcases := []struct {
 		name                   string
@@ -651,7 +651,7 @@ func TestKeeper_CalcPriceX(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			price, err := clpkeeper.CalcPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
+			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -664,7 +664,7 @@ func TestKeeper_CalcPriceX(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcPriceNative(t *testing.T) {
+func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 
 	testcases := []struct {
 		name                   string
@@ -756,7 +756,7 @@ func TestKeeper_CalcPriceNative(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -769,7 +769,7 @@ func TestKeeper_CalcPriceNative(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcPriceExternal(t *testing.T) {
+func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 
 	testcases := []struct {
 		name                   string
@@ -861,7 +861,7 @@ func TestKeeper_CalcPriceExternal(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -874,7 +874,7 @@ func TestKeeper_CalcPriceExternal(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcRowanPrice(t *testing.T) {
+func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 	testcases := []struct {
 		name                          string
 		rowanBalance, externalBalance sdk.Uint
@@ -920,7 +920,7 @@ func TestKeeper_CalcRowanPrice(t *testing.T) {
 				ExternalAssetBalance: tc.externalBalance,
 			}
 
-			calcPrice, err := clpkeeper.CalcRowanPrice(&pool, tc.pmtpCurrentRunningRate)
+			calcPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
 			if tc.expectedError != nil {
 				require.EqualError(t, tc.expectedError, err.Error())
 				return

@@ -70,7 +70,7 @@ func (k Keeper) GetNativePrice(ctx sdk.Context) (sdk.Dec, error) {
 			return sdk.Dec{}, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
 		}
 
-		return CalcRowanPrice(&pool, k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate)
+		return CalcRowanSpotPrice(&pool, k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate)
 	}
 }
 
