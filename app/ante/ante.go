@@ -1,6 +1,7 @@
 package ante
 
 import (
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"strings"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -91,7 +92,7 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	fees := feeTx.GetFee()
 	rowanFee := sdk.ZeroInt()
 	for j := range fees {
-		if strings.EqualFold("rowan", fees[j].Denom) {
+		if clptypes.StringCompare(clptypes.GetSettlementAsset().Symbol, fees[j].Denom) {
 			rowanFee = fees[j].Amount
 		}
 	}

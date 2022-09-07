@@ -3,7 +3,6 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
-import "sifnode/clp/v1/pool.proto";
 import "sifnode/clp/v1/params.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
@@ -34,6 +33,7 @@ service Msg {
   rpc UpdateLiquidityProtectionParams(MsgUpdateLiquidityProtectionParams) returns (MsgUpdateLiquidityProtectionParamsResponse);
   rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
   rpc AddProviderDistributionPeriod(MsgAddProviderDistributionPeriodRequest) returns (MsgAddProviderDistributionPeriodResponse);
+  rpc UpdateSwapFeeRate(MsgUpdateSwapFeeRateRequest) returns (MsgUpdateSwapFeeRateResponse);
 }
 
 // message MsgUpdateStakingRewardParams{
@@ -270,3 +270,13 @@ message MsgAddProviderDistributionPeriodRequest {
 }
 
 message MsgAddProviderDistributionPeriodResponse {}
+
+message MsgUpdateSwapFeeRateRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string swap_fee_rate = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgUpdateSwapFeeRateResponse {}

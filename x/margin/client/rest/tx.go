@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package rest
 
 import (
@@ -44,7 +41,7 @@ type (
 	CloseReq struct {
 		BaseReq rest.BaseReq `json:"base_req"`
 		Signer  string       `json:"signer"` // User who is trying to close margin position
-		// nolint:golint
+		// nolint:revive
 		Id uint64 `json:"id"` // Id of the mtp
 
 	}
@@ -53,7 +50,7 @@ type (
 		BaseReq    rest.BaseReq `json:"base_req"`
 		Signer     string       `json:"signer"`      // User who is trying to close margin position
 		MtpAddress string       `json:"mtp_address"` // MtpAddress for position to force close
-		// nolint:golint
+		// nolint:revive
 		Id uint64 `json:"id"` // Id of the mtp
 
 	}

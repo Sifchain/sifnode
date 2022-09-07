@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package types_test
 
 import (
@@ -27,6 +24,4 @@ func TestTypes_DefaultGenesis(t *testing.T) {
 	require.Equal(t, "1.000000000000000000", got.Params.HealthGainFactor.String())
 	require.NotNil(t, got.Params.EpochLength)
 	require.Equal(t, int64(1), got.Params.EpochLength)
-	require.NotNil(t, got.Params.ForceCloseThreshold)
-	require.Equal(t, "0.100000000000000000", got.Params.ForceCloseThreshold.String())
 }

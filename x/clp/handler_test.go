@@ -398,13 +398,15 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	_, err = app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {
-		swapResult, _, _, _, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, clptypes.GetSettlementAsset(), swapAmount, asset, pool, sdk.OneDec())
+		marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount.Add(swapResult)))
 		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
 	}
 	if asymmetry.IsNegative() {
-		swapResult, _, _, _, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, asset, swapAmount, clptypes.GetSettlementAsset(), pool, sdk.OneDec())
+		marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		swapResult, _, _, _, err := clpkeeper.SwapOne(asset, swapAmount, clptypes.GetSettlementAsset(), pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
 		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount.Add(swapResult)))
@@ -424,11 +426,12 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryK
 	registry := tokenRegistryKeeper.GetRegistry(ctx)
 	_, err = tokenRegistryKeeper.GetEntry(registry, inPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
-	emitAmount, _, _, _, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, keeper, assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, sdk.OneDec())
+	marginEnabled := keeper.GetMarginKeeper().IsPoolEnabled(ctx, inPool.String())
+	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 	assert.NoError(t, err)
 	_, err = tokenRegistryKeeper.GetEntry(registry, outPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
-	emitAmount2, _, _, _, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, keeper, clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, sdk.OneDec())
+	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 	assert.NoError(t, err)
 	return emitAmount2
 }
