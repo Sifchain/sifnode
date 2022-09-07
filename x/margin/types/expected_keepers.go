@@ -95,4 +95,5 @@ type Keeper interface {
 	EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool)
 
 	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
+	GetSafetyFactor(ctx sdk.Context) sdk.Dec
 }
