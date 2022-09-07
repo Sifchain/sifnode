@@ -2,7 +2,7 @@ import argparse
 import sys
 import time
 
-from siftool import test_utils, run_env, cosmos, diagnostics, sifchain, frontend
+from siftool import test_utils, run_env, cosmos, diagnostics, sifchain, frontend, test_utils2
 from siftool.run_env import Integrator, UIStackEnvironment, Peggy2Environment, IBCEnvironment, IntegrationTestsEnvironment
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
@@ -192,6 +192,11 @@ def main(argv):
         lines = ["{},{:.3f}".format(t[0], t[1]) for t in block_times]
         with open(args.file, "w") as f:
             f.write(joinlines(lines))
+    elif what == "create-wallets":
+        argparser.add_argument("count", type=int)
+        argparser.add_argument("--home", type=str)
+        args = argparser.parse_args(argv[1:])
+        test_utils2.PredefinedWallets.create(cmd, args.count, args.home)
     elif what == "run-ui":
         frontend.run_local_ui(cmd)
     else:
