@@ -236,8 +236,7 @@ func (k Keeper) ParseToInt(nu string) (sdk.Int, bool) {
 }
 
 func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveLiquidity) (sdk.Int, sdk.Int, sdk.Uint, error) {
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	_, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	_, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return sdk.ZeroInt(), sdk.ZeroInt(), sdk.ZeroUint(), types.ErrTokenNotSupported
 	}
