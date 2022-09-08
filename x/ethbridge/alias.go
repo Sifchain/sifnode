@@ -40,9 +40,9 @@ var (
 )
 
 type (
-	Keeper                                = keeper.Keeper
-	EthBridgeClaim               = types.EthBridgeClaim //nolint:revive
-	OracleClaimContent           = types.OracleClaimContent
+	Keeper         = keeper.Keeper
+	EthBridgeClaim = types.EthBridgeClaim //nolint:revive
+	//OracleClaimContent           = types.OracleClaimContent
 	EthereumAddress                       = types.EthereumAddress
 	MsgCreateEthBridgeClaim               = types.MsgCreateEthBridgeClaim
 	MsgBurn                               = types.MsgBurn
