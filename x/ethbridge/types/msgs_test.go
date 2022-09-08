@@ -118,7 +118,7 @@ func TestComputeProphecyID(t *testing.T) {
 func TestMsgSetBlacklistValidateBasic(t *testing.T) {
 	msgSetBlacklist := MsgSetBlacklist{
 		From:      "",
-		Addresses: []string{"0x000000000000"},
+		Addresses: []string{"0xa98cea040E91e28D71b883b88d6c6445b486124D"},
 	}
 
 	assert.Error(t, msgSetBlacklist.ValidateBasic(), "invalid address")
