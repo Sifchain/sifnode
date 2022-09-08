@@ -52,10 +52,10 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 	// Send newly minted tokens to EcosystemPool
 	err = k.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, ModuleName, ecoPoolAddress, mintCoins)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to send %s coins to address %s", mintCoins.String(), ecoPoolAddress.String()))
+		ctx.Logger().Error(fmt.Sprintf("Unable to send %s coins to address %s", mintCoins.String(), ecoPoolAddress.String()))
 	}
 	err = k.AddMintAmount(ctx, mintCoins[0])
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(fmt.Sprintf("Unable to set Mint controller | Err : %s", err.Error()))
 	}
 }

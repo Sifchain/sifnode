@@ -218,7 +218,7 @@ func (k Keeper) AdminKeeper() adminkeeper.Keeper {
 func (k Keeper) CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error) {
 	toAsset := ToAsset(to)
 
-	marginEnabled := k.IsPoolEnabled(ctx, pool.String())
+	marginEnabled := k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 
 	swapResult, err := k.ClpKeeper().CLPCalcSwap(ctx, sentAmount, toAsset, pool, marginEnabled)
 	if err != nil {
