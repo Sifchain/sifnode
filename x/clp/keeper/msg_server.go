@@ -565,7 +565,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 	}
 	// Calculating amount user receives
-	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, inPool.ExternalAsset.Symbol)
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, outPool.ExternalAsset.Symbol)
 	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 	if err != nil {
 		return nil, err
