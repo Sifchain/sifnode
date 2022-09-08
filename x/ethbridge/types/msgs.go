@@ -2,13 +2,14 @@ package types
 
 import (
 	"encoding/json"
+	"math/big"
+
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	gethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"math/big"
 )
 
 // NewMsgLock is a constructor function for MsgLock
@@ -671,6 +672,20 @@ func (msg MsgSetBlacklist) GetSignBytes() []byte {
 }
 
 func (msg *MsgSetBlacklist) ValidateBasic() error {
+	if msg.From == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.From)
+	}
+
+	if len(msg.Addresses) == 0 {
+		return ErrEmptyBlackList
+	}
+
+	for _, address := range msg.Addresses {
+		if !gethCommon.IsHexAddress(address) {
+			return ErrInvalidEthAddress
+		}
+	}
+
 	return nil
 }
 

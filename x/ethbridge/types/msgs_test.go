@@ -114,3 +114,34 @@ func TestComputeProphecyID(t *testing.T) {
 	// Verify the hash of prophecy ID matches the expected hash value
 	assert.Equal(t, expectedProphecyID, prophecy)
 }
+
+func TestMsgSetBlacklistValidateBasic(t *testing.T) {
+	msgSetBlacklist := MsgSetBlacklist{
+		From:      "",
+		Addresses: []string{"0x000000000000"},
+	}
+
+	assert.Error(t, msgSetBlacklist.ValidateBasic(), "invalid address")
+
+	msgSetBlacklist = MsgSetBlacklist{
+		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
+		Addresses: []string{},
+	}
+
+	assert.Equal(t, msgSetBlacklist.ValidateBasic(), ErrEmptyBlackList)
+
+	msgSetBlacklist = MsgSetBlacklist{
+		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
+		Addresses: []string{"0x12"},
+	}
+
+	assert.Equal(t, msgSetBlacklist.ValidateBasic(), ErrInvalidEthAddress)
+
+	msgSetBlacklist = MsgSetBlacklist{
+		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
+		Addresses: []string{"0xa98cea040E91e28D71b883b88d6c6445b486124D"},
+	}
+
+	assert.NoError(t, msgSetBlacklist.ValidateBasic())
+
+}
