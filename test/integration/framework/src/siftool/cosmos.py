@@ -8,6 +8,7 @@ LegacyBalance = List[List[Union[int, str]]]  # e.g. [[3, "rowan"], [2, "ibc/xxxx
 Balance = Mapping[str, int]
 CompatBalance = Union[LegacyBalance, Balance]
 Address = str
+Bank = Mapping[Address, Balance]
 BechAddress = str
 KeyName = str  # Name of key in the keyring
 
@@ -72,6 +73,16 @@ def balance_exceeds(bal: Balance, min_changes: Balance) -> bool:
         else:
             assert False
     return have_all
+
+
+def balance_sum_by_address(*maps_of_balances: Bank) -> Bank:
+    totals = {}
+    for item in maps_of_balances:
+        for address, balance in item.items():
+            if address not in totals:
+                totals[address] = {}
+                totals[address] = balance_add(totals[address], balance)
+    return totals
 
 
 _iso_time_patterm = re.compile("(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.)(\\d+)Z$")

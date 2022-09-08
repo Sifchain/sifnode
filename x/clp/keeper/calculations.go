@@ -323,12 +323,22 @@ func calcPmtpFactor(r sdk.Dec) big.Rat {
 	return *one
 }
 
-func CalcSpotPriceNative(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
-	return CalcSpotPriceX(pool.NativeAssetBalance, pool.ExternalAssetBalance, types.NativeAssetDecimals, decimalsExternal, pmtpCurrentRunningRate, true)
+func CalcSpotPriceNative(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec, marginEnabled bool) (sdk.Dec, error) {
+	X := pool.NativeAssetBalance
+	Y := pool.ExternalAssetBalance
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, false)
+	}
+	return CalcSpotPriceX(X, Y, types.NativeAssetDecimals, decimalsExternal, pmtpCurrentRunningRate, true)
 }
 
-func CalcSpotPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
-	return CalcSpotPriceX(pool.ExternalAssetBalance, pool.NativeAssetBalance, decimalsExternal, types.NativeAssetDecimals, pmtpCurrentRunningRate, false)
+func CalcSpotPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrentRunningRate sdk.Dec, marginEnabled bool) (sdk.Dec, error) {
+	X := pool.ExternalAssetBalance
+	Y := pool.NativeAssetBalance
+	if marginEnabled {
+		X, Y = pool.ExtractDebt(X, Y, true)
+	}
+	return CalcSpotPriceX(X, Y, decimalsExternal, types.NativeAssetDecimals, pmtpCurrentRunningRate, false)
 }
 
 // Calculates the spot price of asset X in the preferred denominations accounting for PMTP.
@@ -354,8 +364,8 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 	return RatToDec(&pmtpPrice)
 }
-func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
-	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
+func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint, marginEnabled bool) (sdk.Uint, error) {
+	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate, marginEnabled)
 	if err != nil {
 		return sdk.ZeroUint(), err
 	}
@@ -364,12 +374,17 @@ func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmoun
 }
 
 // Calculates spot price of Rowan accounting for PMTP
-func CalcRowanSpotPrice(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, error) {
-	rowanBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+func CalcRowanSpotPrice(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, marginEnabled bool) (sdk.Dec, error) {
+	rowanBal := pool.NativeAssetBalance
+	externalAssetBal := pool.ExternalAssetBalance
+	if marginEnabled {
+		rowanBal, externalAssetBal = pool.ExtractDebt(rowanBal, externalAssetBal, false)
+	}
+	rowanBalance := sdk.NewDecFromBigInt(rowanBal.BigInt())
 	if rowanBalance.Equal(sdk.ZeroDec()) {
 		return sdk.ZeroDec(), types.ErrInValidAmount
 	}
-	externalAssetBalance := sdk.NewDecFromBigInt(pool.ExternalAssetBalance.BigInt())
+	externalAssetBalance := sdk.NewDecFromBigInt(externalAssetBal.BigInt())
 	unadjusted := externalAssetBalance.Quo(rowanBalance)
 	return unadjusted.Mul(pmtpCurrentRunningRate.Add(sdk.OneDec())), nil
 }
