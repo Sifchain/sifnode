@@ -32,6 +32,11 @@ func getMTP(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
+		if r.URL.Query().Get("id") == "" {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "id required")
+			return
+		}
+
 		id, err := strconv.ParseUint(r.URL.Query().Get("id"), 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
