@@ -40,6 +40,33 @@ SIFNODED_DEFAULT_GRPC_PORT = 9090  # In config/app.toml, section [grpc]
 SIFNODED_DEFAULT_GRPC_WEB_PORT = 9091  # In config/app.toml, section [grpc-web]
 
 
+# Fees for sifchain -> sifchain transactions, paid by the sender.
+# TODO This should be dynamic (per-Sifnoded)
+sif_tx_fee_in_rowan = 1 * 10**17
+
+# Fees for "ethbridge burn" transactions. Determined experimentally
+# TODO This should be dynamic (per-Sifnoded)
+sif_tx_burn_fee_in_rowan = 100000
+sif_tx_burn_fee_in_ceth = 1
+
+# TODO This should be dynamic (per-Sifnoded)
+# There seems to be a minimum amount of rowan that a sif account needs to own in order for the bridge to do an
+# "ethbridge burn". This amount does not seem to be actually used. For example, if you fund the account just with
+# sif_tx_burn_fee_in_rowan, We observed that if you try to fund sif accounts with just the exact amount of rowan
+# needed to pay fees (sif_tx_burn_fee_in_rowan * number_of_transactions), the bridge would stop forwarding after
+# approx. 200 transactions, and you would see in sifnoded logs this message:
+# {"level":"debug","module":"mempool","err":null,"peerID":"","res":{"check_tx":{"code":5,"data":null,"log":"0rowan is smaller than 500000000000000000rowan: insufficient funds: insufficient funds","info":"","gas_wanted":"1000000000000000000","gas_used":"19773","events":[],"codespace":"sdk"}},"tx":"...","time":"2022-03-26T10:09:26+01:00","message":"rejected bad transaction"}
+# TODO This should be dynamic (per-Sifnoded)
+sif_tx_burn_fee_buffer_in_rowan = 5 * sif_tx_fee_in_rowan
+
+# Fee for transfering ERC20 tokens from an ethereum account to sif account (approve + lock). This is the maximum cost
+# for a single transfer (regardless of amount) that the sender needs to have in his account in order for transaction to
+# be processed. This value was determined experimentally with hardhat. Typical effective fee is 210542 GWEI per
+# transaction, but for some reason the logic requires sender to have more funds in his account.
+# TODO This should be dynamic (per-Sifnoded)
+max_eth_transfer_fee = 10000000 * eth.GWEI
+
+
 def sifchain_denom_hash(network_descriptor: int, token_contract_address: eth.Address) -> str:
     assert on_peggy2_branch
     assert token_contract_address.startswith("0x")
@@ -97,6 +124,17 @@ def format_peer_address(node_id: str, hostname: str, p2p_port: int) -> str:
 def format_node_url(hostname: str, p2p_port: int) -> str:
     return "tcp://{}:{}".format(hostname, p2p_port)
 
+# Use this to check the output of sifnoded commands if transaction was successful. This can only be used with
+# "--broadcast-mode block" when the stack trace is returned in standard output (json/yaml) field `raw_log`.
+# @TODO Sometimes, raw_log is also json file, c.f. Sifnoded.send()
+def check_raw_log(res: JsonDict):
+    if res["code"] == 0:
+        assert res["height"] != 0
+        return
+    lines = res["raw_log"].splitlines()
+    last_line = lines[-1]
+    raise SifnodedException(last_line)
+
 def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
     multipliers: Iterable[Tuple[str, int]], allocation: int, reward_period_default_multiplier: float,
     reward_period_distribute: bool, reward_period_mod: int
@@ -125,13 +163,25 @@ def create_lppd_params(start_block: int, end_block: int, rate: float, mod: int) 
 
 
 class Sifnoded:
-    def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None):
+    def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None,
+        binary: Optional[str] = None
+    ):
         self.cmd = cmd
-        self.binary = "sifnoded"
+        self.binary = binary or "sifnoded"
         self.home = home
         self.node = node
         self.chain_id = chain_id
         self.keyring_backend = "test"
+
+        self.fees = sif_tx_fee_in_rowan
+        self.gas = None
+        self.gas_adjustment = 1.5
+        self.gas_prices = "0.5rowan"
+
+        # Some transactions such as adding tokens to token registry or adding liquidity pools need a lot of gas and
+        # will exceed the default implicit value of 200000.  According to Brandon the problem is in the code that loops
+        # over existing entries resulting in gas that is proportional to the number of existing entries.
+        self.high_gas = 200000 * 10000
 
         # Firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
         # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
@@ -144,6 +194,7 @@ class Sifnoded:
         self.broadcast_mode = None
         # self.sifnoded_burn_gas_cost = 16 * 10**10 * 393000  # see x/ethbridge/types/msgs.go for gas
         # self.sifnoded_lock_gas_cost = 16 * 10**10 * 393000
+        # TODO Rename, this is now shared among all callers of _paged_read()
         self.get_balance_default_retries = 0
 
         # Defaults
@@ -178,16 +229,20 @@ class Sifnoded:
         assert result == expected
         return result
 
-    def keys_add(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
-        moniker = self.__fill_in_moniker(moniker)
+    def _keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Tuple[JsonDict, Iterable[str]]:
         if mnemonic is None:
             args = ["keys", "add", moniker] + self._home_args() + self._keyring_backend_args()
             res = self.sifnoded_exec(args, stdin=["y"])
-            _unused_mnemonic = stderr(res).splitlines()[-1].split(" ")
+            mnemonic = stderr(res).splitlines()[-1].split(" ")
         else:
             args = ["keys", "add", moniker, "--recover"] + self._home_args() + self._keyring_backend_args()
             res = self.sifnoded_exec(args, stdin=[" ".join(mnemonic)])
         account = exactly_one(yaml_load(stdout(res)))
+        return account, mnemonic
+
+    def keys_add(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
+        moniker = self.__fill_in_moniker(moniker)
+        account, _ = self._keys_add(moniker, mnemonic=mnemonic)
         return account
 
     def generate_mnemonic(self) -> List[str]:
@@ -342,8 +397,8 @@ class Sifnoded:
     def staking_create_validator(self, amount: cosmos.Balance, pubkey: JsonDict, moniker: str, commission_rate: float,
         commission_max_rate: float, commission_max_change_rate: float, min_self_delegation: int,
         from_acct: cosmos.Address, broadcast_mode: Optional[str] = None
-    ):
-        assert len(amount) == 1  # Maybe not? We haven't seen staking with more than one denom yet though.
+    ) -> JsonDict:
+        assert len(amount) == 1  # Maybe not? We haven't seen staking with more than one denom yet...
         assert cosmos.balance_exceeds(self.get_balance(from_acct), amount)
         assert pubkey["@type"] == "/cosmos.crypto.ed25519.PubKey"
         args = ["tx", "staking", "create-validator", "--amount", cosmos.balance_format(amount), "--pubkey",
@@ -355,14 +410,29 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
-    def query_staking_validators(self) -> JsonObj:
-        args = ["query", "staking", "validators", "--output", "json"] + self._home_args() + self._node_args()
+    def staking_delegate(self, validator_addr, amount: cosmos.Balance, from_addr: cosmos.Balance,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "staking", "delegate", validator_addr, cosmos.balance_format(amount), "--from", from_addr] + \
+            self._home_args() + self._keyring_backend_args() + self._node_args() + self._chain_id_args() + \
+            self._fees_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
+            self._yes_args()
         res = self.sifnoded_exec(args)
-        res = json.loads(stdout(res))
-        # TODO Implement paging (here we don't have "block" so we can't use self._paged_read())
-        #      But probably have to go the same way as self.get_balance()
-        assert res["pagination"]["next_key"] is None, "TODO: Implement pagination"
-        return res["validators"]
+        return yaml_load(stdout(res))
+
+    def staking_edit_validator(self, commission_rate: float, from_acct: cosmos.Address,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "staking", "edit-validator", "--from", from_acct, "--commission-rate", str(commission_rate)] + \
+            self._chain_id_args() + self._home_args() + self._node_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def query_staking_validators(self) -> JsonObj:
+        args = ["query", "staking", "validators"] + self._home_args() + self._node_args()
+        res = self._paged_read(args, "validators")
+        return res
 
     # See scripts/ibc/tokenregistration for more information and examples.
     # JSON file can be generated with "sifnoded q tokenregistry generate"
@@ -396,7 +466,8 @@ class Sifnoded:
     # If you are calling this for several tokens, you need to call it synchronously
     # (i.e. wait_for_current_block_to_be_mined(), or broadcast_mode="block"). Otherwise this will silently fail.
     # This is used in test_many_pools_and_liquidity_providers.py
-    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address, broadcast_mode=None
+    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address,
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None
     ) -> JsonDict:
         # Check that we have the private key in test keyring. This will throw an exception if we don't.
         assert self.keys_show(from_sif_addr)
@@ -406,7 +477,8 @@ class Sifnoded:
         with self._with_temp_json_file(token_data) as tmp_registry_json:
             args = ["tx", "tokenregistry", "register", tmp_registry_json, "--from", from_sif_addr, "--output",
                 "json"] + self._home_args() + self._keyring_backend_args() + self._chain_id_args() + \
-                self._node_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
+                self._account_number_and_sequence_args(account_seq) + \
+                self._node_args() + self._high_gas_prices_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
                 self._yes_args()
             res = self.sifnoded_exec(args)
             res = json.loads(stdout(res))
@@ -415,7 +487,21 @@ class Sifnoded:
                 raise Exception(res["raw_log"])
             if res["raw_log"].startswith("failed to execute message"):
                 raise Exception(res["raw_log"])
+            check_raw_log(res)
             return res
+
+    def token_registry_register_batch(self, from_sif_addr: cosmos.Address, entries: Iterable[TokenRegistryParams]):
+        account_number, account_sequence = self.get_acct_seq(from_sif_addr)
+        token_registry_entries_before = set(e["denom"] for e in self.query_tokenregistry_entries())
+        for entry in entries:
+            res = self.token_registry_register(entry, from_sif_addr, account_seq=(account_number, account_sequence))
+            check_raw_log(res)
+            account_sequence += 1
+        self.wait_for_last_transaction_to_be_mined()
+        token_registry_entries_after = set(e["denom"] for e in self.query_tokenregistry_entries())
+        token_registry_entries_added = token_registry_entries_after.difference(token_registry_entries_before)
+        assert token_registry_entries_added == set(e["denom"] for e in entries), \
+            "Some tokenregistry registration have failed"
 
     def query_tokenregistry_entries(self):
         args = ["query", "tokenregistry", "entries"] + self._node_args() + self._chain_id_args()
@@ -423,10 +509,17 @@ class Sifnoded:
         return json.loads(stdout(res))["entries"]
 
     # Creates file config/gentx/gentx-*.json
-    def gentx(self, name: str, stake: cosmos.Balance):
+    def gentx(self, name: str, stake: cosmos.Balance, keyring_dir: Optional[str] = None,
+        commission_rate: Optional[float] = None, commission_max_rate: Optional[float] = None,
+        commission_max_change_rate: Optional[float] = None\
+    ):
         # TODO Make chain_id an attribute
-        args = ["gentx", name, cosmos.balance_format(stake)] + self._home_args() + self._keyring_backend_args() + \
-            self._chain_id_args()
+        args = ["gentx", name, cosmos.balance_format(stake)] + \
+            (["--keyring-dir", keyring_dir] if keyring_dir is not None else []) + \
+            (["--commission-rate", str(commission_rate)] if commission_rate is not None else []) + \
+            (["--commission-max-rate", str(commission_max_rate)] if commission_max_rate is not None else []) + \
+            (["--commission-max-change-rate", str(commission_max_change_rate)] if commission_max_change_rate is not None else []) + \
+            self._home_args() + self._keyring_backend_args() + self._chain_id_args()
         res = self.sifnoded_exec(args)
         return exactly_one(stderr(res).splitlines())
 
@@ -521,7 +614,9 @@ class Sifnoded:
             self._home_args()
         return command.buildcmd(args)
 
-    def send(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address, amounts: cosmos.Balance) -> Mapping:
+    def send(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address, amounts: cosmos.Balance,
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
         amounts = cosmos.balance_normalize(amounts)
         assert len(amounts) > 0
         # TODO Implement batching (factor it out of inflate_token and put here)
@@ -531,67 +626,40 @@ class Sifnoded:
         amounts_string = cosmos.balance_format(amounts)
         args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string, "--output", "json"] + \
             self._home_args() + self._keyring_backend_args() + self._chain_id_args() + self._node_args() + \
-            self._fees_args() + self._broadcast_mode_args() + self._yes_args()
+            self._fees_args() + self._account_number_and_sequence_args(account_seq) + \
+            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         retval = json.loads(stdout(res))
-        raw_log = retval["raw_log"]
-        for bad_thing in ["insufficient funds", "signature verification failed"]:
-            if bad_thing in raw_log:
-                raise Exception(raw_log)
+        # raw_log = retval["raw_log"]
+        # for bad_thing in ["insufficient funds", "signature verification failed"]:
+        #     if bad_thing in raw_log:
+        #         raise Exception(raw_log)
+        check_raw_log(retval)
         return retval
+
+    def send_and_check(self, from_addr: cosmos.Address, to_addr: cosmos.Address, amounts: cosmos.Balance
+    ) -> cosmos.Balance:
+        from_balance_before = self.get_balance(from_addr)
+        assert cosmos.balance_exceeds(from_balance_before, amounts), \
+            "Source account has insufficient balance (excluding transaction fee)"
+        to_balance_before = self.get_balance(to_addr)
+        expected_balance = cosmos.balance_add(to_balance_before, amounts)
+        self.send(from_addr, to_addr, amounts)
+        self.wait_for_balance_change(to_addr, to_balance_before, expected_balance=expected_balance)
+        from_balance_after = self.get_balance(from_addr)
+        to_balance_after = self.get_balance(to_addr)
+        expected_tx_fee = {ROWAN: sif_tx_fee_in_rowan}
+        assert cosmos.balance_equal(cosmos.balance_sub(from_balance_before, from_balance_after, expected_tx_fee), amounts)
+        assert cosmos.balance_equal(to_balance_after, expected_balance)
+        return to_balance_after
 
     def get_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
         disable_log: bool = False, retries_on_error: Optional[int] = None, delay_on_error: int = 3
     ) -> cosmos.Balance:
-        retries_on_error = retries_on_error if retries_on_error is not None else self.get_balance_default_retries
-        all_balances = {}
-        # The actual limit might be capped to a lower value (100), in this case everything will still work but we'll get
-        # fewer results
-        desired_page_size = 5000
-        page_key = None
-        while True:
-            args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
-                (["--height", str(height)] if height is not None else []) + \
-                (["--limit", str(desired_page_size)] if desired_page_size is not None else []) + \
-                (["--page-key", page_key] if page_key is not None else []) + \
-                self._home_args() + \
-                self._chain_id_args() + \
-                self._node_args()
-            retries_left = retries_on_error
-            while True:
-                try:
-                    res = self.sifnoded_exec(args, disable_log=disable_log)
-                    break
-                except Exception as e:
-                    if retries_left == 0:
-                        raise e
-                    else:
-                        retries_left -= 1
-                        log.error("Error reading balances, retries left: {}".format(retries_left))
-                        time.sleep(delay_on_error)
-            res = json.loads(stdout(res))
-            balances = res["balances"]
-            next_key = res["pagination"]["next_key"]
-            if next_key is not None:
-                if height is None:
-                    # There are more results than fit on a page. To ensure we get all balances as a consistent
-                    # snapshot, retry with "--height" fised to the current block. This wastes one request.
-                    # We could optimize this by starting with explicit "--height" in the first place, but the current
-                    # assumption is that most of results will fit on one page and that this will be faster without
-                    # "--height".
-                    height = self.get_current_block()
-                    log.debug("Large balance result, switching to paged mode using height of {}.".format(height))
-                    continue
-                page_key = base64.b64decode(next_key).decode("UTF-8")
-            for bal in balances:
-                denom, amount = bal["denom"], int(bal["amount"])
-                assert denom not in all_balances
-                all_balances[denom] = amount
-            log.debug("Read {} balances, all={}, first='{}', next_key={}".format(len(balances), len(all_balances),
-                balances[0]["denom"] if len(balances) > 0 else None, next_key))
-            if next_key is None:
-                break
-        return all_balances
+        base_args = ["query", "bank", "balances", sif_addr]
+        tmp_result = self._paged_read(base_args, "balances", height=height, limit=5000, disable_log=disable_log,
+            retries_on_error=retries_on_error, delay_on_error=delay_on_error)
+        return {b["denom"]: int(b["amount"]) for b in tmp_result}
 
     # Unless timed out, this function will exit:
     # - if min_changes are given: when changes are greater.
@@ -626,7 +694,7 @@ class Sifnoded:
                 return new_balance
             now = time.time()
             if (timeout is not None) and (timeout > 0) and (now - start_time > timeout):
-                raise Exception("Timeout waiting for sif balance to change ({}s)".format(timeout))
+                raise SifnodedException("Timeout waiting for sif account {} balance to change ({}s)".format(sif_addr, timeout))
             if last_change_time is None:
                 last_changed_balance = new_balance
                 last_change_time = now
@@ -637,12 +705,14 @@ class Sifnoded:
                     last_change_time = now
                     log.debug("New state detected ({} denoms changed)".format(len(delta)))
                 if (change_timeout is not None) and (change_timeout > 0) and (now - last_change_time > change_timeout):
-                    raise Exception("Timeout waiting for sif balance to change ({}s)".format(change_timeout))
+                    raise SifnodedException("Timeout waiting for sif account {} balance to change ({}s)".format(sif_addr, change_timeout))
             time.sleep(polling_time)
 
     # TODO Refactor - consolidate with test_inflate_tokens.py
     def send_batch(self, from_addr: cosmos.Address, to_addr: cosmos.Address, amounts: cosmos.Balance):
         to_go = list(amounts.keys())
+        account_number, account_sequence = self.get_acct_seq(from_addr)
+        balance_before = self.get_balance(to_addr)
         while to_go:
             cnt = len(to_go)
             if (self.max_send_batch_size > 0) and (cnt > self.max_send_batch_size):
@@ -650,10 +720,10 @@ class Sifnoded:
             batch_denoms = to_go[:cnt]
             to_go = to_go[cnt:]
             batch_balance = {denom: amounts.get(denom, 0) for denom in batch_denoms}
-            balance_before = self.get_balance(to_addr)
-            self.send(from_addr, to_addr, batch_balance)
-            expected_balance = cosmos.balance_add(balance_before, batch_balance)
-            self.wait_for_balance_change(to_addr, balance_before, expected_balance=expected_balance)
+            self.send(from_addr, to_addr, batch_balance, account_seq=(account_number, account_sequence))
+            account_sequence += 1
+        expected_balance = cosmos.balance_add(balance_before, amounts)
+        self.wait_for_balance_change(to_addr, balance_before, expected_balance=expected_balance)
 
     def get_current_block(self):
         return int(self.status()["SyncInfo"]["latest_block_height"])
@@ -676,122 +746,140 @@ class Sifnoded:
         return json.loads(stdout(res))
 
     def query_pools(self, height: Optional[int] = None) -> List[JsonDict]:
-        return self._paged_read(["query", "clp", "pools"], "pools", height)
+        return self._paged_read(["query", "clp", "pools"], "pools", height=height)
+
+    def query_pools_sorted(self, height: Optional[int] = None) -> Mapping[str, JsonDict]:
+        pools = self.query_pools(height=height)
+        result = {p["external_asset"]["symbol"]: p for p in pools}
+        assert len(result) == len(pools)
+        return result
 
     def query_clp_liquidity_providers(self, denom: str, height: Optional[int] = None) -> List[JsonDict]:
         # Note: this paged result is slightly different than `query bank balances`. Here we always get "height"
-        return self._paged_read(["query", "clp", "lplist", denom], "liquidity_providers", height)
+        return self._paged_read(["query", "clp", "lplist", denom], "liquidity_providers", height=height)
 
-    def _paged_read(self, base_args: List[str], result_key: str, height: Optional[int]) -> List[JsonDict]:
-        # Note: this paged result is slightly different than `query bank balances`. Here we always get "height"
+    def _paged_read(self, base_args: List[str], result_key: str, height: Optional[int] = None,
+        limit: Optional[int] = None, disable_log: bool = False, retries_on_error: Optional[int] = None,
+        delay_on_error: int = 3
+    ) -> List[JsonObj]:
+        retries_on_error = retries_on_error if retries_on_error is not None else self.get_balance_default_retries
         all_results = []
         page_key = None
         while True:
-            args = base_args + \
+            args = base_args + ["--output", "json"] + \
                 (["--height", str(height)] if height is not None else []) + \
+                (["--limit", str(limit)] if limit is not None else []) + \
                 (["--page-key", page_key] if page_key is not None else []) + \
-               self._chain_id_args() + self._node_args()
-            res = self.sifnoded_exec(args)
-            res = yaml_load(stdout(res))
-            all_results.extend(res[result_key])
+                self._home_args() + self._chain_id_args() + self._node_args()
+            retries_left = retries_on_error
+            while True:
+                try:
+                    res = self.sifnoded_exec(args, disable_log=disable_log)
+                    break
+                except Exception as e:
+                    if retries_left == 0:
+                        raise e
+                    else:
+                        retries_left -= 1
+                        log.error("Error reading query result for '{}' ({}), retries left: {}".format(repr(base_args), repr(e), retries_left))
+                        time.sleep(delay_on_error)
+            res = json.loads(stdout(res))
             next_key = res["pagination"]["next_key"]
+            if next_key is not None:
+                if height is None:
+                    # There are more results than fit on a page. To ensure we get all balances as a consistent
+                    # snapshot, retry with "--height" fixed to the current block.
+                    if "height" in res:
+                        # In some cases such as "query clp pools" the response already contains a "height" and we can
+                        # use it without incurring a separate request.
+                        height = int(res["height"])
+                        log.debug("Large query result, continuing in paged mode using height of {}.".format(height))
+                    else:
+                        # In some cases there is no "height" in the response and we must restart the query which wastes
+                        # one request. We could optimize this by starting with explicit "--height" in the first place,
+                        # but the assumption is that most of results will fit on one page and that this will be faster
+                        # without "--height").
+                        height = self.get_current_block()
+                        log.debug("Large query result, restarting in paged mode using height of {}.".format(height))
+                        continue
+                page_key = base64.b64decode(next_key).decode("UTF-8")
+            chunk = res[result_key]
+            all_results.extend(chunk)
+            log.debug("Read {} items, all={}, next_key={}".format(len(chunk), len(all_results), next_key))
             if next_key is None:
                 break
-            page_key = base64.b64decode(next_key)
-            if height is None:
-                height = int(res["height"])
         return all_results
 
-    def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int
+    def tx_clp_create_pool(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int,
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None,
     ) -> JsonDict:
         # For more examples see ticket #2470, e.g.
         args = ["tx", "clp", "create-pool", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
             str(native_amount), "--externalAmount", str(external_amount)] + self._chain_id_args() + \
-            self._node_args() + self._fees_args() + self._home_args() + self._keyring_backend_args() + \
-            self._broadcast_mode_args() + self._yes_args()
+            self._node_args() + self._high_gas_prices_args() + self._home_args() + self._keyring_backend_args() + \
+            self._account_number_and_sequence_args(account_seq) + \
+            self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
+    # Items: (denom, native_amount, external_amount)
+    # clp_admin has to have enough balances for the (native? / external?) amounts
+    def create_liquidity_pools_batch(self, clp_admin: cosmos.Address, entries: Iterable[Tuple[str, int, int]]):
+        account_number, account_sequence = self.get_acct_seq(clp_admin)
+        for denom, native_amount, external_amount in entries:
+            res = self.tx_clp_create_pool(clp_admin, denom, native_amount, external_amount,
+                account_seq=(account_number, account_sequence))
+            check_raw_log(res)
+            account_sequence += 1
+        self.wait_for_last_transaction_to_be_mined()
+        assert set(p["external_asset"]["symbol"] for p in self.query_pools()) == set(e[0] for e in entries), \
+            "Failed to create one or more liquidity pools"
+
     def tx_clp_add_liquidity(self, from_addr: cosmos.Address, symbol: str, native_amount: int, external_amount: int, /,
-        account_seq: Optional[Tuple[int, int]] = None
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None
     ) -> JsonDict:
         args = ["tx", "clp", "add-liquidity", "--from", from_addr, "--symbol", symbol, "--nativeAmount",
             str(native_amount), "--externalAmount", str(external_amount)] + self._home_args() + \
             self._keyring_backend_args() + self._chain_id_args() + self._node_args() + self._fees_args() + \
-            self._account_number_and_sequence_args(account_seq) + self._broadcast_mode_args() + \
-            self._yes_args()
+            self._account_number_and_sequence_args(account_seq) + \
+            self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
         res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
+
+    # asymmetry: -10000 = 100% of native asset, 0 = 50% of native asset and 50% of external asset, 10000 = 100% of external asset
+    # w_basis 0 = 0%, 10000 = 100%, Remove 0-100% of liquidity symmetrically for both assets of the pair
+    # See https://github.com/Sifchain/sifnode/blob/master/docs/tutorials/clp%20tutorial.md
+    def tx_clp_remove_liquidity(self, from_addr: cosmos.Address, w_basis: int, asymmetry: int) -> JsonDict:
+        assert (w_basis >= 0) and (w_basis <= 10000)
+        assert (asymmetry >= -10000) and (asymmetry <= 10000)
+        args = ["tx", "clp", "remove-liquidity", "--from", from_addr, "--wBasis", int(w_basis), "--asymmetry",
+            str(asymmetry)] + self._node_args() + self._chain_id_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(res)
+        check_raw_log(res)
+        return res
 
     def tx_clp_unbond_liquidity(self, from_addr: cosmos.Address, symbol: str, units: int) -> JsonDict:
         args = ["tx", "clp", "unbond-liquidity", "--from", from_addr, "--symbol", symbol, "--units", str(units)] + \
             self._home_args() + self._keyring_backend_args() + self._chain_id_args() + self._node_args() + \
             self._fees_args() + self._broadcast_mode_args() + self._yes_args()
         res = self.sifnoded_exec(args)
-        return yaml_load(stdout(res))
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
 
-    # TODO
-    #
-    # CANCEL-UNBOND-LIQUIDITY
-    # ===========================
-    # sifnoded tx clp cancel-unbond\
-    #   --from $SIF_ACT \
-    #   --keyring-backend test \
-    #   --symbol cusdc \
-    #   --units 77971121144444445014456057 \
-    #   --fees 100000000000000000rowan \
-    #   --chain-id $SIFNODE_CHAIN_ID \
-    #   --broadcast-mode block \
-    #   -y
-
-    # REMOVE-LIQUIDITY
-    # ===========================
-    # sifnoded tx clp remove-liquidity-units \
-    #   --from $SIF_ACT \
-    #   --keyring-backend test \
-    #   --symbol cusdc \
-    #   --withdrawUnits 77971121144444445014456057 \
-    #   --fees 100000000000000000rowan \
-    #   --chain-id $SIFNODE_CHAIN_ID \
-    #   --broadcast-mode block \
-    #   -y
-
-    # SWAP-IN
-    # ============================
-    # sifnoded tx clp swap \
-    #   --from $SIF_ACT \
-    #   --keyring-backend test \
-    #   --sentSymbol cusdc \
-    #   --receivedSymbol rowan \
-    #   --sentAmount 184515000000 \
-    #   --minReceivingAmount 0 \
-    #   --fees 100000000000000000rowan \
-    #   --chain-id $SIFNODE_CHAIN_ID \
-    #   --broadcast-mode block \
-    #   -y
-
-    # SWAP-OUT
-    # ============================
-    # sifnoded tx clp swap \
-    #   --from $SIF_ACT \
-    #   --keyring-backend test \
-    #   --sentSymbol rowan \
-    #   --receivedSymbol cusdc \
-    #   --sentAmount 77971121000000000000000000 \
-    #   --minReceivingAmount 0 \
-    #   --fees 100000000000000000rowan \
-    #   --chain-id $SIFNODE_CHAIN_ID \
-    #   --broadcast-mode block \
-    #   -y
-
-    def tx_clp_cancel_unbound(self):
-        assert False, "Not implemented yet"  # TODO
-
-    def tx_clp_remove_liquidity_units(self):
-        assert False, "Not implemented yet"  # TODO
-
-    def tx_clp_swap(self):
-        assert False, "Not implemented yet"  # TODO
+    def tx_clp_swap(self, from_addr: cosmos.Address, sent_symbol: str, sent_amount: int, received_symbol: str,
+        min_receiving_amount: int, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "clp", "swap", "--from", from_addr, "--sentSymbol", sent_symbol, "--sentAmount", str(sent_amount),
+            "--receivedSymbol", received_symbol, "--minReceivingAmount", str(min_receiving_amount)] + \
+            self._node_args() + self._chain_id_args() + self._home_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
 
     def clp_reward_period(self, from_addr: cosmos.Address, rewards_params: RewardsParams):
         with self._with_temp_json_file([rewards_params]) as tmp_rewards_json:
@@ -834,6 +922,43 @@ class Sifnoded:
             encoded_tx = base64.b64decode(stdout(res))
             return encoded_tx
 
+    def version(self) -> str:
+        return exactly_one(stderr(self.sifnoded_exec(["version"])).splitlines())
+
+    def gov_submit_software_upgrade(self, version: str, from_acct: cosmos.Address, deposit: cosmos.Balance,
+        upgrade_height: int, upgrade_info: str, title: str, description: str, broadcast_mode: Optional[str] = None
+    ):
+        args = ["tx", "gov", "submit-proposal", "software-upgrade", version, "--from", from_acct, "--deposit",
+            cosmos.balance_format(deposit), "--upgrade-height", str(upgrade_height), "--upgrade-info", upgrade_info,
+            "--title", title, "--description", description] + self._home_args() +  self._keyring_backend_args() + \
+            self._node_args() + self._chain_id_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode=broadcast_mode) + self._yes_args()
+        res = yaml_load(stdout(self.sifnoded_exec(args)))
+        return res
+
+    def query_gov_proposals(self) -> JsonObj:
+        args = ["query", "gov", "proposals"] + self._node_args() + self._chain_id_args()
+        # Check if there are no active proposals, in this case we don't get an empty result but an error
+        res = self.sifnoded_exec(args, check_exit=False)
+        if res[0] == 1:
+            error_lines = stderr(res).splitlines()
+            if len(error_lines) > 0:
+                if error_lines[0] == "Error: no proposals found":
+                    return []
+        elif res[0] == 0:
+            assert len(stderr(res)) == 0
+            # TODO Pagination without initial block
+            res = yaml_load(stdout(self.sifnoded_exec(args)))
+            assert res["pagination"]["next_key"] is None
+            return res["proposals"]
+
+    def gov_vote(self, proposal_id: int, vote: bool, from_acct: cosmos.Address, broadcast_mode: Optional[str] = None):
+        args = ["tx", "gov", "vote", str(proposal_id), "yes" if vote else "no", "--from", from_acct] + \
+            self._home_args() + self._keyring_backend_args() + self._node_args() + self._chain_id_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = yaml_load(stdout(self.sifnoded_exec(args)))
+        return res
+
     @contextlib.contextmanager
     def _with_temp_json_file(self, json_obj: JsonObj) -> str:
         with self.cmd.with_temp_file() as tmpfile:
@@ -841,10 +966,10 @@ class Sifnoded:
             yield tmpfile
 
     def sifnoded_exec(self, args: List[str], stdin: Union[str, bytes, Sequence[str], None] = None,
-        cwd: Optional[str] = None, disable_log: bool = False
+        cwd: Optional[str] = None, disable_log: bool = False, check_exit: bool = True
     ) -> command.ExecResult:
         args = [self.binary] + args
-        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log)
+        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log, check_exit=check_exit)
         return res
 
     # Block has to be mined, does not work for block 0
@@ -882,6 +1007,10 @@ class Sifnoded:
             if time.time() - start_time > timeout:
                 raise Exception("Timeout expired while waiting for last sifnode transaction to be mined")
 
+    def wait_for_block(self, height: int):
+        while self.get_current_block() < height:
+            time.sleep(1)
+
     # TODO Refactor wait_up() / _wait_up()
     def wait_up(self, host, port):
         from urllib.error import URLError
@@ -892,7 +1021,7 @@ class Sifnoded:
                 time.sleep(1)
 
     # TODO Refactor wait_up() / _wait_up()
-    def _wait_up(self, timeout: int=30):
+    def _wait_up(self, timeout: int = 30):
         host, port = self._get_host_and_port()
         from urllib.error import URLError
         start_time = time.time()
@@ -900,11 +1029,15 @@ class Sifnoded:
             try:
                 response = self._rpc_get(host, port, "status")
                 result = response["result"]
-                return result
+                if not result["sync_info"]["catching_up"]:
+                    return result
             except URLError:
-                if time.time() - start_time > timeout:
-                    raise Exception("Timeout waiting for sifnoded to come up")
-                time.sleep(1)
+                pass
+            if time.time() - start_time > timeout:
+                raise SifnodedException("Timeout waiting for sifnoded to come up. Check if the process is running. "
+                    "If it didn't start, ther should be some information in the log file. If the process is slow to "
+                    "start or if the validator needs more time to catch up, increase the timeout.")
+            time.sleep(1)
 
     def _home_args(self) -> Optional[List[str]]:
         return ["--home", self.home] if self.home else []
@@ -913,14 +1046,17 @@ class Sifnoded:
         return ["--keyring-backend", self.keyring_backend] if self.keyring_backend else []
 
     def _gas_prices_args(self) -> List[str]:
-        return ["--gas-prices", "0.5rowan", "--gas-adjustment", "1.5"]
+        return ["--gas-prices", self.gas_prices, "--gas-adjustment", str(self.gas_adjustment)] + \
+            (["--gas", str(self.gas)] if self.gas is not None else [])
 
+    def _high_gas_prices_args(self) -> List[str]:
+        return ["--gas-prices", self.gas_prices, "--gas-adjustment", str(self.gas_adjustment),
+            "--gas", str(self.high_gas)]
+
+    # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+    # However, this is needed for "sifnoded tx bank send" which does not work with "--gas"
     def _fees_args(self) -> List[str]:
-        sifnode_tx_fees = [10 ** 17, "rowan"]
-        return [
-            # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
-            # "--gas-prices", "0.5rowan", "--gas-adjustment", "1.5",
-            "--fees", sif_format_amount(*sifnode_tx_fees)]
+        return ["--fees", sif_format_amount(self.fees, ROWAN)]
 
     def _chain_id_args(self) -> List[str]:
         assert self.chain_id
@@ -972,7 +1108,7 @@ class SifnodeClient:
                 "--output", "json",
             ] + \
             (["--generate-only"] if generate_only else []) + \
-            self.sifnode._gas_prices_args() + \
+            self.sifnode._fees_args() + \
             self.sifnode._home_args() + \
             (self.sifnode._keyring_backend_args() if not generate_only else []) + \
             self.sifnode._chain_id_args() + \
@@ -1086,6 +1222,24 @@ class Ebrelayer:
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--trace"] if trace else [])
         return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+
+
+class SifnodedException(Exception):
+    def __init__(self, message = None):
+        super().__init__(message)
+        self.message = message
+
+
+def is_min_commission_too_low_exception(e: Exception):
+    patt = re.compile("^validator commission [\d.]+ cannot be lower than minimum of [\d.]+: invalid request$")
+    return (type(e) == SifnodedException) and patt.match(e.message)
+
+
+def is_max_voting_power_limit_exceeded_exception(e: Exception):
+    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a validator whose "
+        "post-delegation voting power is more than [\d.]+%. Please delegate to a validator with less bonded tokens: "
+        "invalid request$")
+    return (type(e) == SifnodedException) and patt.match(e.message)
 
 
 class RateLimiter:

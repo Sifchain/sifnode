@@ -127,7 +127,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			poolUnits := sdk.NewUint(2000) //don't care
 			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
 
-			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3), marginEnabled)
 
 			if tc.errString != nil {
@@ -181,21 +181,19 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+	marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 	assert.Equal(t, "1", swapResult.String())
 }
 
 func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
 	pool := types.Pool{
 		NativeAssetBalance:   sdk.NewUint(10),
 		ExternalAssetBalance: sdk.NewUint(100),
 	}
 	asset := types.Asset{}
 
-	marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3), marginEnabled)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3), false)
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -1034,7 +1032,7 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate, false)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -1140,7 +1138,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 				ExternalAssetBalance: tc.externalAssetBalance,
 			}
 
-			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
+			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate, false)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -1254,7 +1252,7 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 				ExternalAssetBalance: tc.externalBalance,
 			}
 
-			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
+			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate, false)
 			if tc.expectedError != nil {
 				require.EqualError(t, tc.expectedError, err.Error())
 				return
@@ -1316,7 +1314,7 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 				ExternalAssetBalance: tc.externalBalance,
 			}
 
-			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount)
+			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount, false)
 			if tc.expectedError != nil {
 				require.EqualError(t, tc.expectedError, err.Error())
 				return
@@ -2241,7 +2239,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
 
-			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3), marginEnabled)
 
 			if tc.errString != nil {
