@@ -25,7 +25,6 @@ linters:
     - prealloc
     - scopelint
 #    - exportloopref : this is replacement for scopelint which is deprecated
-    - staticcheck
     - structcheck
     - typecheck
     - unconvert
