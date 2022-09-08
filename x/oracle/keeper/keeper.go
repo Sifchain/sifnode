@@ -149,6 +149,8 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 /*
 Updates Prophecy.Status to SUCCESS if voting power in ClaimValidators is
 higher than Consensus needed for networkDescriptor
+
+NetworkDescriptor is used to look up consensus threshold needed for network
 */
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
@@ -194,7 +196,10 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 }
 
 // ProcessSignProphecy deal with the signature from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	prophecyID []byte,
+	cosmosSender, tokenAddress, ethereumAddress, signature string) error {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.ErrProphecyNotFound
