@@ -161,6 +161,33 @@ type CLP struct {
 	LiquidityProviders []interface{} `json:"liquidity_providers"`
 }
 
+type Margin struct {
+	Params MarginParams `json:"params"`
+}
+
+type MarginParams struct {
+	LeverageMax                              string      `json:"leverage_max"`
+	InterestRateMax                          string      `json:"interest_rate_max"`
+	InterestRateMin                          string      `json:"interest_rate_min"`
+	InterestRateIncrease                     string      `json:"interest_rate_increase"`
+	InterestRateDecrease                     string      `json:"interest_rate_decrease"`
+	HealthGainFactor                         string      `json:"health_gain_factor"`
+	EpochLength                              json.Number `json:"epoch_length,omitempty"`
+	Pools                                    []string    `json:"pools,omitempty"`
+	RemovalQueueThreshold                    string      `json:"removal_queue_threshold"`
+	MaxOpenPositions                         json.Number `json:"max_open_positions"`
+	PoolOpenThreshold                        string      `json:"pool_open_threshold"`
+	ForceCloseFundPercentage                 string      `json:"force_close_fund_percentage"`
+	ForceCloseFundAddress                    string      `json:"force_close_fund_address"`
+	IncrementalInterestPaymentFundPercentage string      `json:"incremental_interest_payment_fund_percentage"`
+	IncrementalInterestPaymentFundAddress    string      `json:"incremental_interest_payment_fund_address"`
+	SqModifier                               string      `json:"sq_modifier"`
+	SafetyFactor                             string      `json:"safety_factor"`
+	ClosedPools                              []string    `json:"closed_pools"`
+	IncrementalInterestPaymentEnabled        bool        `json:"incremental_interest_payment_enabled"`
+	WhitelistingEnabled                      bool        `json:"whitelisting_enabled"`
+}
+
 type Dispensation struct {
 	DistributionRecords interface{} `json:"distribution_records"`
 	Distributions       interface{} `json:"distributions"`
@@ -431,6 +458,7 @@ type AppState struct {
 	AuthZ         AuthZ         `json:"authz"`
 	Bank          Bank          `json:"bank"`
 	CLP           CLP           `json:"clp"`
+	Margin        Margin        `json:"margin"`
 	Transfer      Transfer      `json:"transfer"`
 	Capability    Capability    `json:"capability"`
 	Dispensation  Dispensation  `json:"dispensation"`

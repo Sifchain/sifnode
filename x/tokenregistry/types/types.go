@@ -26,3 +26,7 @@ func GetPermissionFromString(s string) Permission {
 		return Permission_UNSPECIFIED
 	}
 }
+
+func StringCompare(a, b string) bool {
+	return a == b
+}

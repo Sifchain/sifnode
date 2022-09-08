@@ -1,3 +1,4 @@
+import datetime
 from typing import Union, Iterable, Mapping, List
 from siftool.common import *
 
@@ -7,6 +8,9 @@ LegacyBalance = List[List[Union[int, str]]]  # e.g. [[3, "rowan"], [2, "ibc/xxxx
 Balance = Mapping[str, int]
 CompatBalance = Union[LegacyBalance, Balance]
 Address = str
+Bank = Mapping[Address, Balance]
+BechAddress = str
+KeyName = str  # Name of key in the keyring
 
 
 def balance_normalize(bal: CompatBalance = None) -> Balance:
@@ -70,6 +74,24 @@ def balance_exceeds(bal: Balance, min_changes: Balance) -> bool:
             assert False
     return have_all
 
+
+def balance_sum_by_address(*maps_of_balances: Bank) -> Bank:
+    totals = {}
+    for item in maps_of_balances:
+        for address, balance in item.items():
+            if address not in totals:
+                totals[address] = {}
+                totals[address] = balance_add(totals[address], balance)
+    return totals
+
+
+_iso_time_patterm = re.compile("(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.)(\\d+)Z$")
+
+def parse_iso_timestamp(strtime: str):
+    m = _iso_time_patterm.match(strtime)
+    assert m
+    strtime = m[1] + (m[2] + "000")[:3] + "+00:00"
+    return datetime.datetime.fromisoformat(strtime)
 
 # <editor-fold>
 
