@@ -70,7 +70,7 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 			ctx.Logger().Error(errors.Wrap(err, "error calculating pool spot price").Error())
 			continue
 		}
-		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 
 		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate, marginEnabled)
 		if err != nil {
