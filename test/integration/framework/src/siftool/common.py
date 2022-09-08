@@ -7,7 +7,7 @@ import random
 import time
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List, Any, Callable, Dict
+from typing import Optional, Mapping, Sequence, Set, IO, Union, Iterable, List, Any, Callable, Dict
 
 
 ANY_ADDR = "0.0.0.0"
@@ -28,7 +28,7 @@ def stdout_lines(res):
 def joinlines(lines):
     return "".join([x + os.linesep for x in lines])
 
-def zero_or_one(items):
+def zero_or_one(items: Sequence[Any]) -> Any:
     if len(items) == 0:
         return None
     elif len(items) > 1:
@@ -36,13 +36,13 @@ def zero_or_one(items):
     else:
         return items[0]
 
-def exactly_one(items):
+def exactly_one(items: Union[Sequence[Any], Set[Any]]) -> Any:
     if len(items) == 0:
         raise ValueError("Zero items")
     elif len(items) > 1:
         raise ValueError("Multiple items")
     else:
-        return items[0]
+        return next(iter(items))
 
 def find_by_value(list_of_dicts, field, value):
     return [t for t in list_of_dicts if t[field] == value]
@@ -51,6 +51,7 @@ def random_string(length):
     chars = string.ascii_letters + string.digits
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
+# Choose m out of n in random order
 def random_choice(m: int, n: int, rnd: Optional[random.Random] = None):
     rnd = rnd if rnd is not None else random
     a = [x for x in range(n)]
