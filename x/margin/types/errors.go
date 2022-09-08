@@ -14,4 +14,5 @@ var (
 	ErrBorrowTooLow     = sdkerrors.Register(ModuleName, 9, "borrowed amount is too low")
 	ErrBorrowTooHigh    = sdkerrors.Register(ModuleName, 10, "borrowed amount is higher than pool depth")
 	ErrCustodyTooHigh   = sdkerrors.Register(ModuleName, 11, "custody amount is higher than pool depth")
+	ErrMTPUnhealthy     = sdkerrors.Register(ModuleName, 12, "mtp health would be too low for safety factor")
 )
