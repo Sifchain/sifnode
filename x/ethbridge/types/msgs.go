@@ -672,12 +672,9 @@ func (msg MsgSetBlacklist) GetSignBytes() []byte {
 }
 
 func (msg *MsgSetBlacklist) ValidateBasic() error {
-	if msg.From == "" {
+	_, err := sdk.AccAddressFromBech32(msg.From)
+	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.From)
-	}
-
-	if len(msg.Addresses) == 0 {
-		return ErrEmptyBlackList
 	}
 
 	for _, address := range msg.Addresses {

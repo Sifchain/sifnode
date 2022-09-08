@@ -116,6 +116,8 @@ func TestComputeProphecyID(t *testing.T) {
 }
 
 func TestMsgSetBlacklistValidateBasic(t *testing.T) {
+
+	// empty from address
 	msgSetBlacklist := MsgSetBlacklist{
 		From:      "",
 		Addresses: []string{"0xa98cea040E91e28D71b883b88d6c6445b486124D"},
@@ -123,13 +125,15 @@ func TestMsgSetBlacklistValidateBasic(t *testing.T) {
 
 	assert.Error(t, msgSetBlacklist.ValidateBasic(), "invalid address")
 
+	// wrong from address
 	msgSetBlacklist = MsgSetBlacklist{
-		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
-		Addresses: []string{},
+		From:      "abcdef",
+		Addresses: []string{"0xa98cea040E91e28D71b883b88d6c6445b486124D"},
 	}
 
-	assert.Equal(t, msgSetBlacklist.ValidateBasic(), ErrEmptyBlackList)
+	assert.Error(t, msgSetBlacklist.ValidateBasic(), "invalid address")
 
+	// wrong Ethereum address
 	msgSetBlacklist = MsgSetBlacklist{
 		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
 		Addresses: []string{"0x12"},
@@ -137,11 +141,11 @@ func TestMsgSetBlacklistValidateBasic(t *testing.T) {
 
 	assert.Equal(t, msgSetBlacklist.ValidateBasic(), ErrInvalidEthAddress)
 
+	// validate data
 	msgSetBlacklist = MsgSetBlacklist{
 		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
 		Addresses: []string{"0xa98cea040E91e28D71b883b88d6c6445b486124D"},
 	}
 
 	assert.NoError(t, msgSetBlacklist.ValidateBasic())
-
 }
