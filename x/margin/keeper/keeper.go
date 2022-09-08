@@ -293,13 +293,15 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
 	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
 	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
+	UnsettledExternalLiabilities := sdk.NewDecFromBigInt(pool.UnsettledExternalLiabilities.BigInt())
+	UnsettledNativeLiabilities := sdk.NewDecFromBigInt(pool.UnsettledNativeLiabilities.BigInt())
 
 	if ExternalAssetBalance.Add(ExternalLiabilities).IsZero() || NativeAssetBalance.Add(NativeLiabilities).IsZero() {
 		return sdk.ZeroDec()
 	}
 
-	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities))
-	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities))
+	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities.Add(UnsettledExternalLiabilities)))
+	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities.Add(UnsettledNativeLiabilities)))
 
 	H := mul1.Mul(mul2)
 
@@ -420,11 +422,13 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repa
 	nativeAsset := types.GetSettlementAsset()
 
 	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.Liabilities)
+		pool.UnsettledNativeLiabilities = pool.UnsettledNativeLiabilities.Add(debtI).Add(debtP)
 	} else {
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.Liabilities)
+		pool.UnsettledExternalLiabilities = pool.UnsettledExternalLiabilities.Add(debtI).Add(debtP)
 	}
 	err = k.DestroyMTP(ctx, mtp.Address, mtp.Id)
 	if err != nil {
@@ -526,9 +530,11 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
 	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
 	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
+	UnsettledExternalLiabilities := sdk.NewDecFromBigInt(pool.UnsettledExternalLiabilities.BigInt())
+	UnsettledNativeLiabilities := sdk.NewDecFromBigInt(pool.UnsettledNativeLiabilities.BigInt())
 
-	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
-	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
+	mul1 := externalAssetBalance.Add(ExternalLiabilities.Add(UnsettledExternalLiabilities)).Quo(externalAssetBalance)
+	mul2 := NativeAssetBalance.Add(NativeLiabilities.Add(UnsettledNativeLiabilities)).Quo(NativeAssetBalance)
 
 	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
 

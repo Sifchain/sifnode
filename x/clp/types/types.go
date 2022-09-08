@@ -87,11 +87,11 @@ func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rat
 func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) {
 
 	if toRowan {
-		Y = Y.Add(p.NativeCustody).Add(p.NativeLiabilities)
-		X = X.Add(p.ExternalCustody).Add(p.ExternalLiabilities)
+		Y = Y.Add(p.NativeCustody).Add(p.NativeLiabilities.Add(p.UnsettledNativeLiabilities))
+		X = X.Add(p.ExternalCustody).Add(p.ExternalLiabilities.Add(p.UnsettledExternalLiabilities))
 	} else {
-		X = X.Add(p.NativeCustody).Add(p.NativeLiabilities)
-		Y = Y.Add(p.ExternalCustody).Add(p.ExternalLiabilities)
+		X = X.Add(p.NativeCustody).Add(p.NativeLiabilities.Add(p.UnsettledNativeLiabilities))
+		Y = Y.Add(p.ExternalCustody).Add(p.ExternalLiabilities.Add(p.UnsettledExternalLiabilities))
 	}
 
 	return X, Y
