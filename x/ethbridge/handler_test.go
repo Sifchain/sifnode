@@ -361,6 +361,18 @@ func TestBurnEthSuccess(t *testing.T) {
 	res, err = handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+	// Third message failed since pegged token can be lock.
+	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount, coinsToBurnSymbolPrefixed)
+	_, err = handler(ctx, &lockMsg)
+	require.NotNil(t, err)
+	require.Equal(t, "pegged token cether can't be locked", err.Error())
+	// Fourth message OK
+	_, err = handler(ctx, &burnMsg)
+	require.Nil(t, err)
+	// Fifth message fails, not enough eth
+	res, err = handler(ctx, &burnMsg)
+	require.Error(t, err)
+	require.Nil(t, res)
 }
 
 func TestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T) {

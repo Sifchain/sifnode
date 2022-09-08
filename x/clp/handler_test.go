@@ -397,14 +397,14 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	_, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {
-		marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount.Add(swapResult)))
 		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
 	}
 	if asymmetry.IsNegative() {
-		marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
+		marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 		swapResult, _, _, _, err := clpkeeper.SwapOne(asset, swapAmount, clptypes.GetSettlementAsset(), pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
@@ -424,7 +424,7 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryK
 	assert.NoError(t, err)
 	_, err = tokenRegistryKeeper.GetRegistryEntry(ctx, inPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
-	marginEnabled := keeper.GetMarginKeeper().IsPoolEnabled(ctx, inPool.String())
+	marginEnabled := keeper.GetMarginKeeper().IsPoolEnabled(ctx, inPool.ExternalAsset.Symbol)
 	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
 	assert.NoError(t, err)
 	_, err = tokenRegistryKeeper.GetRegistryEntry(ctx, outPool.ExternalAsset.Symbol)

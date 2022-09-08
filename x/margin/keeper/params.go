@@ -36,10 +36,6 @@ func (k Keeper) GetEpochLength(ctx sdk.Context) int64 {
 	return k.GetParams(ctx).EpochLength
 }
 
-func (k Keeper) GetForceCloseThreshold(ctx sdk.Context) sdk.Dec {
-	return k.GetParams(ctx).ForceCloseThreshold
-}
-
 func (k Keeper) GetPoolOpenThreshold(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).PoolOpenThreshold
 }
@@ -52,8 +48,8 @@ func (k Keeper) GetForceCloseFundPercentage(ctx sdk.Context) sdk.Dec {
 	return k.GetParams(ctx).ForceCloseFundPercentage
 }
 
-func (k Keeper) GetForceCloseInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).ForceCloseInsuranceFundAddress)
+func (k Keeper) GetForceCloseFundAddress(ctx sdk.Context) sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).ForceCloseFundAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -65,8 +61,8 @@ func (k Keeper) GetIncrementalInterestPaymentFundPercentage(ctx sdk.Context) sdk
 	return k.GetParams(ctx).IncrementalInterestPaymentFundPercentage
 }
 
-func (k Keeper) GetIncrementalInterestPaymentInsuranceFundAddress(ctx sdk.Context) sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).IncrementalInterestPaymentInsuranceFundAddress)
+func (k Keeper) GetIncrementalInterestPaymentFundAddress(ctx sdk.Context) sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(k.GetParams(ctx).IncrementalInterestPaymentFundAddress)
 	if err != nil {
 		panic(err)
 	}

@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   build:
+    if: ${{ false }}
     name: Build Stack
     defaults:
       run:

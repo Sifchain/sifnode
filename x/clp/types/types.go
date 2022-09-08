@@ -96,3 +96,7 @@ func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) {
 
 	return X, Y
 }
+
+func StringCompare(a, b string) bool {
+	return a == b
+}
