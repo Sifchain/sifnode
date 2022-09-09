@@ -24,13 +24,13 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc           codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
-	oracleKeeper  types.OracleKeeper
+	cdc                 codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	accountKeeper       types.AccountKeeper
+	bankKeeper          types.BankKeeper
+	oracleKeeper        types.OracleKeeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
 	adminKeeper         types.AdminKeeper
-	storeKey      sdk.StoreKey
+	storeKey            sdk.StoreKey
 }
 
 // GetAccountKeeper
@@ -52,13 +52,13 @@ func NewKeeper(
 	adminKeeper types.AdminKeeper,
 	storeKey sdk.StoreKey) Keeper {
 	return Keeper{
-		cdc:           cdc,
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
-		oracleKeeper:  oracleKeeper,
+		cdc:                 cdc,
+		accountKeeper:       accountKeeper,
+		bankKeeper:          bankKeeper,
+		oracleKeeper:        oracleKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
 		adminKeeper:         adminKeeper,
-		storeKey:      storeKey,
+		storeKey:            storeKey,
 	}
 }
 
@@ -180,17 +180,14 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.SendCoinsFromAccountToModule, "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
 
-	// not burn the token if it is sifchain native token
-	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
-		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
-		if err != nil {
-			logger.Error("failed to burn locked coin.",
-				errorMessageKey, err.Error())
-			return []byte{}, err
-		}
-		instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
+	coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
+	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		logger.Error("failed to burn locked coin.",
+			errorMessageKey, err.Error())
+		return []byte{}, err
 	}
+	instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
 
 	prophecyID := msg.GetProphecyID(senderSequence, tokenMetadata.TokenAddress, tokenMetadata.Name, tokenMetadata.Symbol, uint8(tokenMetadata.Decimals), bridgeToken, k.GetGlobalSequence(ctx, msg.NetworkDescriptor))
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
