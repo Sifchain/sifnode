@@ -147,6 +147,8 @@ func TestMsgSetBlacklistValidateBasic(t *testing.T) {
 		Addresses: []string{},
 	}
 
+	assert.NoError(t, msgSetBlacklist.ValidateBasic())
+
 	// validate data
 	msgSetBlacklist = MsgSetBlacklist{
 		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
