@@ -11,7 +11,6 @@ import (
 )
 
 func TestBankMigration(t *testing.T) {
-	sifapp.SetConfig(true)
 	app, ctx := test.CreateTestApp(false)
 	addrs, _ := test.CreateTestAddrs(1000)
 	// Create Peggy 1 balances for all denoms in map
