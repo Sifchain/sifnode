@@ -532,7 +532,7 @@ func TestProcessSignProphecySucceedOnSuccessProphecy(t *testing.T) {
 		Status: oracletypes.StatusText_STATUS_TEXT_SUCCESS,
 	}
 	oracleKeeper.SetProphecy(ctx, testProphecy)
-	oracleKeeper.SetProphecyInfo(ctx,
+	err := oracleKeeper.SetProphecyInfo(ctx,
 		testProphecyId,
 		testNetworkDescriptor,
 		string(cosmosSender),
@@ -547,6 +547,9 @@ func TestProcessSignProphecySucceedOnSuccessProphecy(t *testing.T) {
 		1,
 		"",
 		"")
+	if err != nil {
+		panic("Couldn't persist prophecyInfo, test cannot continue")
+	}
 
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
