@@ -141,6 +141,12 @@ func TestMsgSetBlacklistValidateBasic(t *testing.T) {
 
 	assert.Equal(t, msgSetBlacklist.ValidateBasic(), ErrInvalidEthAddress)
 
+	// validate data with empty black list
+	msgSetBlacklist = MsgSetBlacklist{
+		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
+		Addresses: []string{},
+	}
+
 	// validate data
 	msgSetBlacklist = MsgSetBlacklist{
 		From:      "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv",
