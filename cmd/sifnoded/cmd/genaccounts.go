@@ -68,9 +68,15 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			if err != nil {
 				return err
 			}
+			if vestingStart < 0 {
+				return fmt.Errorf("vestingStart is negative")
+			}
 			vestingEnd, err := cmd.Flags().GetInt64(flagVestingEnd)
 			if err != nil {
 				return err
+			}
+			if vestingEnd < 0 {
+				return fmt.Errorf("vestingEnd is negative")
 			}
 			vestingAmtStr, err := cmd.Flags().GetString(flagVestingAmt)
 			if err != nil {
