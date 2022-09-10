@@ -293,15 +293,13 @@ func (k Keeper) CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec {
 	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
 	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
 	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
-	UnsettledExternalLiabilities := sdk.NewDecFromBigInt(pool.UnsettledExternalLiabilities.BigInt())
-	UnsettledNativeLiabilities := sdk.NewDecFromBigInt(pool.UnsettledNativeLiabilities.BigInt())
 
 	if ExternalAssetBalance.Add(ExternalLiabilities).IsZero() || NativeAssetBalance.Add(NativeLiabilities).IsZero() {
 		return sdk.ZeroDec()
 	}
 
-	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities.Add(UnsettledExternalLiabilities)))
-	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities.Add(UnsettledNativeLiabilities)))
+	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities))
+	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities))
 
 	H := mul1.Mul(mul2)
 
@@ -530,11 +528,9 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	ExternalLiabilities := sdk.NewDecFromBigInt(pool.ExternalLiabilities.BigInt())
 	NativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
 	NativeLiabilities := sdk.NewDecFromBigInt(pool.NativeLiabilities.BigInt())
-	UnsettledExternalLiabilities := sdk.NewDecFromBigInt(pool.UnsettledExternalLiabilities.BigInt())
-	UnsettledNativeLiabilities := sdk.NewDecFromBigInt(pool.UnsettledNativeLiabilities.BigInt())
 
-	mul1 := externalAssetBalance.Add(ExternalLiabilities.Add(UnsettledExternalLiabilities)).Quo(externalAssetBalance)
-	mul2 := NativeAssetBalance.Add(NativeLiabilities.Add(UnsettledNativeLiabilities)).Quo(NativeAssetBalance)
+	mul1 := externalAssetBalance.Add(ExternalLiabilities).Quo(externalAssetBalance)
+	mul2 := NativeAssetBalance.Add(NativeLiabilities).Quo(NativeAssetBalance)
 
 	targetInterestRate := healthGainFactor.Mul(mul1).Mul(mul2)
 
