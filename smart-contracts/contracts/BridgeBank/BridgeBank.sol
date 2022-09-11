@@ -452,7 +452,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param token The bridgeToken's address
    * @return The balance of the bridgebanks account with the bridge token
    */
-  function getBalance(address token) private returns (uint256) {
+  function getBalance(address token) private view returns (uint256) {
     uint256 balance;
     try BridgeToken(token).balanceOf(address(this)) returns (uint256 _balance) {
       balance = _balance;
@@ -580,7 +580,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
       unchecked { ++i; }
     }
 
-    // If we get any reentrant calls from the _{burn,lock}Tokens functions, 
+    // If we get any reentrant calls from the _{burn,lock}Tokens functions,
     // make sure that lockBurnNonce is what we expect it to be.
     require(lockBurnNonce == startingLockBurnNonce - 1 + recipientLength, "M_P");
   }
@@ -650,7 +650,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     tokenToTransfer.burnFrom(msg.sender, tokenAmount);
 
     string memory denom = getDenom(tokenAddress);
-    
+
     // Explicitly check that the denom is not the empty string
     require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
 
