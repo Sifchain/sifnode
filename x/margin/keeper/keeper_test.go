@@ -391,15 +391,17 @@ func TestKeeper_Borrow(t *testing.T) {
 func TestKeeper_UpdatePoolHealth(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{
-		ExternalAsset:        &asset,
-		NativeAssetBalance:   sdk.NewUint(1000000000),
-		NativeLiabilities:    sdk.NewUint(1000000000),
-		ExternalCustody:      sdk.NewUint(1000000000),
-		ExternalAssetBalance: sdk.NewUint(1000000000),
-		ExternalLiabilities:  sdk.NewUint(1000000000),
-		NativeCustody:        sdk.NewUint(1000000000),
-		PoolUnits:            sdk.NewUint(1),
-		Health:               sdk.NewDec(1),
+		ExternalAsset:                &asset,
+		NativeAssetBalance:           sdk.NewUint(1000000000),
+		NativeLiabilities:            sdk.NewUint(1000000000),
+		ExternalCustody:              sdk.NewUint(1000000000),
+		ExternalAssetBalance:         sdk.NewUint(1000000000),
+		ExternalLiabilities:          sdk.NewUint(1000000000),
+		UnsettledExternalLiabilities: sdk.ZeroUint(),
+		UnsettledNativeLiabilities:   sdk.ZeroUint(),
+		NativeCustody:                sdk.NewUint(1000000000),
+		PoolUnits:                    sdk.NewUint(1),
+		Health:                       sdk.NewDec(1),
 	}
 
 	ctx, _, marginKeeper := initKeeper(t)
@@ -647,15 +649,17 @@ func TestKeeper_TakeOutCustody(t *testing.T) {
 func TestKeeper_Repay(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{
-		ExternalAsset:        &asset,
-		NativeAssetBalance:   sdk.NewUint(1000000000),
-		NativeLiabilities:    sdk.NewUint(1000000000),
-		ExternalCustody:      sdk.NewUint(1000000000),
-		ExternalAssetBalance: sdk.NewUint(1000000000),
-		ExternalLiabilities:  sdk.NewUint(1000000000),
-		NativeCustody:        sdk.NewUint(1000000000),
-		PoolUnits:            sdk.NewUint(1),
-		Health:               sdk.NewDec(1),
+		ExternalAsset:                &asset,
+		NativeAssetBalance:           sdk.NewUint(1000000000),
+		NativeLiabilities:            sdk.NewUint(1000000000),
+		ExternalCustody:              sdk.NewUint(1000000000),
+		ExternalAssetBalance:         sdk.NewUint(1000000000),
+		ExternalLiabilities:          sdk.NewUint(1000000000),
+		NativeCustody:                sdk.NewUint(1000000000),
+		UnsettledExternalLiabilities: sdk.ZeroUint(),
+		UnsettledNativeLiabilities:   sdk.ZeroUint(),
+		PoolUnits:                    sdk.NewUint(1),
+		Health:                       sdk.NewDec(1),
 	}
 
 	repayTests := []struct {
@@ -970,16 +974,18 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 
 			asset := clptypes.Asset{Symbol: "rowan"}
 			pool := clptypes.Pool{
-				ExternalAsset:        &asset,
-				NativeAssetBalance:   sdk.NewUint(1000000000),
-				NativeLiabilities:    sdk.NewUint(1000000000),
-				ExternalCustody:      sdk.NewUint(1000000000),
-				ExternalAssetBalance: sdk.NewUint(1000000000),
-				ExternalLiabilities:  sdk.NewUint(1000000000),
-				NativeCustody:        sdk.NewUint(1000000000),
-				PoolUnits:            sdk.NewUint(1),
-				Health:               sdk.NewDec(1),
-				InterestRate:         tt.interestRate,
+				ExternalAsset:                &asset,
+				NativeAssetBalance:           sdk.NewUint(1000000000),
+				NativeLiabilities:            sdk.NewUint(1000000000),
+				ExternalCustody:              sdk.NewUint(1000000000),
+				ExternalAssetBalance:         sdk.NewUint(1000000000),
+				ExternalLiabilities:          sdk.NewUint(1000000000),
+				NativeCustody:                sdk.NewUint(1000000000),
+				UnsettledExternalLiabilities: sdk.ZeroUint(),
+				UnsettledNativeLiabilities:   sdk.ZeroUint(),
+				PoolUnits:                    sdk.NewUint(1),
+				Health:                       sdk.NewDec(1),
+				InterestRate:                 tt.interestRate,
 			}
 
 			_, got := marginKeeper.InterestRateComputation(ctx, pool)

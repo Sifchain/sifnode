@@ -420,11 +420,13 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repa
 	nativeAsset := types.GetSettlementAsset()
 
 	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
-		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(returnAmount)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.Liabilities)
+		pool.UnsettledNativeLiabilities = pool.UnsettledNativeLiabilities.Add(debtI).Add(debtP)
 	} else {
-		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount).Sub(debtI).Sub(debtP)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(returnAmount)
 		pool.ExternalLiabilities = pool.ExternalLiabilities.Sub(mtp.Liabilities)
+		pool.UnsettledExternalLiabilities = pool.UnsettledExternalLiabilities.Add(debtI).Add(debtP)
 	}
 	err = k.DestroyMTP(ctx, mtp.Address, mtp.Id)
 	if err != nil {
