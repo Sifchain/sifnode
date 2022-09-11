@@ -2,8 +2,7 @@
 
 This document keeps track of all existing feature toggles (also known as feature flags) that can be enabled using the relevant environment variables. Setting any of the following flag will enable the corresponding feature.
 
-- `FEATURE_TOGGLE_SDK_045`: Switch to Cosmos SDK v0.45.1
-- `FEATURE_TOGGLE_MARGIN_CLI_ALPHA`: Enable Margin CLI Alpha
+- `FEATURE_TOGGLE_XXXX`: Description of the Feature Toggle
 
 ## Example
 
@@ -27,9 +26,7 @@ If you are a VSCode user, you will need to set the Feature Toggles you want to u
 {
   // [...]
   "gopls": {
-    "build.buildFlags": [
-      "--tags=FEATURE_TOGGLE_SDK_045,FEATURE_TOGGLE_MARGIN_CLI_ALPHA"
-    ]
+    "build.buildFlags": ["--tags=FEATURE_TOGGLE_SDK_045"]
   }
   // [...]
 }

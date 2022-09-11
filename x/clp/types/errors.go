@@ -40,4 +40,6 @@ var (
 	ErrTypeCast                                        = sdkerrors.Register(ModuleName, 38, "Could not perform type cast")
 	ErrReachedMaxRowanLiquidityThreshold               = sdkerrors.Register(ModuleName, 39, "Unable to swap, reached maximum rowan liquidity threshold")
 	ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist = sdkerrors.Register(ModuleName, 40, "Unable to swap, max rowan liquidity threshold asset pool does not exist")
+	ErrQueued                                          = sdkerrors.Register(ModuleName, 41, "Cannot process immediately, request has been queued")
+	ErrRemovalsBlockedByHealth                         = sdkerrors.Register(ModuleName, 42, "Cannot remove liquidity due to low pool health")
 )

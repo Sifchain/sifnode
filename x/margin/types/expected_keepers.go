@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package types
 
 import (
@@ -23,7 +20,6 @@ type CLPKeeper interface {
 	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
-	GetNormalizationFactorFromAsset(ctx sdk.Context, asset clptypes.Asset) (sdk.Dec, bool, error)
 
 	CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to clptypes.Asset, pool clptypes.Pool, marginEnabled bool) (sdk.Uint, error)
 
@@ -66,7 +62,6 @@ type Keeper interface {
 	GetInterestRateDecrease(ctx sdk.Context) sdk.Dec
 	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
 	GetEpochLength(ctx sdk.Context) int64
-	GetForceCloseThreshold(ctx sdk.Context) sdk.Dec
 	GetPoolOpenThreshold(ctx sdk.Context) sdk.Dec
 	GetRemovalQueueThreshold(ctx sdk.Context) sdk.Dec
 	GetMaxOpenPositions(ctx sdk.Context) uint64
@@ -80,8 +75,10 @@ type Keeper interface {
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
-	Repay(ctx sdk.Context, mtp *MTP, pool clptypes.Pool, repayAmount sdk.Uint, takeInsurance bool) error
+	Repay(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
+	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error
+	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool)
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
@@ -92,9 +89,11 @@ type Keeper interface {
 	GetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) uint64
 	SetSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool, height uint64)
 
-	ForceCloseLong(ctx sdk.Context, msg *MsgForceClose) (*MTP, sdk.Uint, error)
+	ForceCloseLong(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, isAdminClose bool, takeFundPayment bool) (sdk.Uint, error)
 
-	EmitForceClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminClose(ctx sdk.Context, mtp *MTP, repayAmount sdk.Uint, closer string)
+	EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool)
 
 	GetSQFromQueue(ctx sdk.Context, pool clptypes.Pool) sdk.Dec
+	GetSafetyFactor(ctx sdk.Context) sdk.Dec
 }
