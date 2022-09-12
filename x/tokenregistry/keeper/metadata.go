@@ -61,7 +61,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 	// Verify the Registry Entry is empty before adding token metadata
 	// If it is not, simply return the current denomHash without updating
 	// If any other error is returned, panic.
-	entry, err := k.GetRegistryEntry(ctx, denomHash)
+	_, err := k.GetRegistryEntry(ctx, denomHash)
 	// If entry was found since no error was returned
 	if err == nil {
 		return denomHash
@@ -70,7 +70,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 		panic("Unexpected error from GetRegistryEntry")
 	}
 
-	entry = &types.RegistryEntry{}
+	entry := &types.RegistryEntry{}
 	entry.Decimals = metadata.Decimals
 	entry.DisplayName = metadata.Name
 	entry.DisplaySymbol = metadata.Symbol

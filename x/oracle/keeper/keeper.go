@@ -12,7 +12,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -201,12 +200,12 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
-	pubKey, err := crypto.UnmarshalPubkey(publicKey)
+	pubKey, err := gethCrypto.UnmarshalPubkey(publicKey)
 	if err != nil {
 		return err
 	}
 
-	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
+	recoveredAddr := gethCrypto.PubkeyToAddress(*pubKey)
 
 	if recoveredAddr.String() != ethereumAddress {
 		return errors.New("incorrect ethereum signature")

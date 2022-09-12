@@ -75,22 +75,22 @@ func (m msgServer) DeregisterAll(ctx context.Context, req *types.MsgDeregisterAl
 	return &types.MsgDeregisterAllResponse{}, nil
 }
 
-func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMetadataAddRequest) (*types.TokenMetadataAddResponse, error) {
+func (m msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMetadataAddRequest) (*types.TokenMetadataAddResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	logger := srv.keeper.Logger(ctx)
+	logger := m.keeper.Logger(ctx)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		return nil, err
 	}
 
-	account := srv.accountKeeper.GetAccount(ctx, cosmosSender)
+	account := m.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	denom := srv.keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
+	denom := m.keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
 
 	return &types.TokenMetadataAddResponse{
 		Denom: denom,

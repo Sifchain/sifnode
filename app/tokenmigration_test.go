@@ -15,7 +15,7 @@ func TestBankMigration(t *testing.T) {
 	addrs, _ := test.CreateTestAddrs(1000)
 	// Create Peggy 1 balances for all denoms in map
 	tokenMap := sifapp.ReadTokenMapJSON()
-	for peggy1, _ := range tokenMap {
+	for peggy1 := range tokenMap {
 		err := app.BankKeeper.MintCoins(ctx, ethbridge.ModuleName, sdk.NewCoins(sdk.NewCoin(peggy1, sdk.NewInt(1))))
 		require.NoError(t, err)
 		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin(peggy1, sdk.NewInt(1))))

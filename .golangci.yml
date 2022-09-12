@@ -25,10 +25,9 @@ linters:
     - prealloc
 #    - scopelint
     - exportloopref
-#    - staticcheck
-    - scopelint
-#    - exportloopref : this is replacement for scopelint which is deprecated
+    - staticcheck
     - structcheck
+    - stylecheck
     - typecheck
     - unconvert
     - unused
@@ -36,8 +35,6 @@ linters:
     - errcheck
   disable:
     - gosimple
-    - staticcheck
-    - stylecheck
 
 issues:
   exclude-rules:
@@ -53,9 +50,18 @@ issues:
     - text: "don't use an underscore in package name"
       linters:
         - revive
+    - text: "var-naming"
+      linters:
+        - revive
+    - text: "receiver-naming"
+      linters:
+        - revive
     - text: "ST1003:"
       linters:
         - stylecheck
+    - text: "ST1016:"
+      linters:
+        - staticcheck
     - text: "SA1019:"
       linters:
         - staticcheck
