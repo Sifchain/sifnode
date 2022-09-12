@@ -8,12 +8,11 @@ import (
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
-
 	"strconv"
 	"testing"
 
 	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
@@ -61,8 +60,15 @@ const (
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
-func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper,
-	simappparams.EncodingConfig, oracleTypes.ValidatorWhiteList, []sdk.ValAddress) {
+func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
+	sdk.Context,
+	ethbridgekeeper.Keeper,
+	bankkeeper.Keeper,
+	authkeeper.AccountKeeper,
+	oraclekeeper.Keeper,
+	simappparams.EncodingConfig,
+	oracleTypes.ValidatorWhiteList,
+	[]sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -152,7 +158,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
 	require.NoError(t, err)
 
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler,
+	ethbridgeKeeper := ethbridgekeeper.NewKeeper(encCfg.Marshaler,
 		bankKeeper,
 		oracleKeeper,
 		accountKeeper,
@@ -247,7 +253,7 @@ const (
 	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
 )
 
-//// returns context and app with params set on account keeper
+// // returns context and app with params set on account keeper
 func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
 	sifapp := app.Setup(isCheckTx)
 	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
@@ -257,7 +263,7 @@ func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
 	return sifapp, ctx
 }
 
-func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, ethbridgekeeper.Keeper) {
 	sifapp, ctx := CreateTestApp(isCheckTx)
 	return ctx, sifapp.EthbridgeKeeper
 }

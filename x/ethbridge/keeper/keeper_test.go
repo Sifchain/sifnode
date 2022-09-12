@@ -6,10 +6,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -502,4 +504,72 @@ func TestRescueCrossChainFees(t *testing.T) {
 
 	err = keeper.RescueCrossChainFees(ctx, &msg)
 	require.NoError(t, err)
+}
+
+func TestAppendValidatorToSucceededProphecyReturnsErr(t *testing.T) {
+	ctx, _, _, _, oracleKeeper, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	testProphecyId := []byte{1, 2, 3, 4, 5}
+	testProphecy := oracletypes.Prophecy{
+		Id:     testProphecyId,
+		Status: oracletypes.StatusText_STATUS_TEXT_SUCCESS,
+	}
+	oracleKeeper.SetProphecy(ctx, testProphecy)
+
+	status, err := oracleKeeper.AppendValidatorToProphecy(ctx, oracletypes.NetworkDescriptor(9999), testProphecyId, validatorAddresses[0])
+	require.ErrorIs(t, err, oracletypes.ErrProphecyFinalized)
+	require.Equal(t, oracletypes.StatusText_STATUS_TEXT_SUCCESS, status)
+}
+
+func TestProcessSignProphecySucceedOnSuccessProphecy(t *testing.T) {
+	ctx, _, _, _, oracleKeeper, _, _, valAddresses :=
+		test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	cosmosSender, _ := sdk.AccAddressFromBech32(types.TestAddress)
+	testNetworkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM //oracletypes.NetworkDescriptor(9999)
+	testProphecyId := []byte{1, 2, 3, 4, 5}
+	testProphecy := oracletypes.Prophecy{
+		Id:     testProphecyId,
+		Status: oracletypes.StatusText_STATUS_TEXT_SUCCESS,
+	}
+	oracleKeeper.SetProphecy(ctx, testProphecy)
+	err := oracleKeeper.SetProphecyInfo(ctx,
+		testProphecyId,
+		testNetworkDescriptor,
+		string(cosmosSender),
+		15,
+		ethereumSender.String(),
+		"",
+		"",
+		sdk.NewInt(1),
+		sdk.NewInt(1),
+		false,
+		1,
+		1,
+		"",
+		"")
+	if err != nil {
+		panic("Couldn't persist prophecyInfo, test cannot continue")
+	}
+
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		panic("Couldn't create test Ethereum PrivateKey, test cannot continue")
+	}
+
+	pubKey := privateKey.PublicKey
+	testEthereumSender := crypto.PubkeyToAddress(pubKey)
+
+	signatureData, err := crypto.Sign(oraclekeeper.PrefixMsg(testProphecyId), privateKey)
+	if err != nil {
+		panic("Couldn't sign test data with PrivateKey, test cannot continue")
+	}
+
+	errOut := oracleKeeper.ProcessSignProphecy(ctx,
+		testNetworkDescriptor,
+		testProphecyId,
+		valAddresses[0].String(),
+		testRopstenToken.TokenAddress,
+		testEthereumSender.Hex(), string(signatureData))
+
+	require.NoError(t, errOut, "Signing on a success prophecy shouldnt error out")
 }

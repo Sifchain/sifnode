@@ -85,8 +85,17 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 }
 
-// AppendValidatorToProphecy append the validator's signature to prophecy
-func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator sdk.ValAddress) (types.StatusText, error) {
+/*
+AppendValidatorToProphecy append the validator's signature to prophecy
+
+If ProphecyStatus is SUCCESS when called, it will
+1. Add validator to ClaimValidator array, and persist.
+2. Returns ErrProphecyFinalized
+*/
+func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	prophecyID []byte,
+	validator sdk.ValAddress) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		prophecy.Id = prophecyID
@@ -97,7 +106,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
-
+		k.Logger(ctx).Debug("Processing pending prophecy")
 		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
@@ -110,6 +119,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
+		k.Logger(ctx).Debug("Processing succeeded prophecy")
 
 		err := prophecy.AddClaim(validator)
 		if err != nil {
@@ -119,6 +129,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		return prophecy.Status, types.ErrProphecyFinalized
 
 	default:
+		// This is possible IFF GetProphecy returned with UNSPECIFIED
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
 }
@@ -135,7 +146,12 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 	return nil
 }
 
-// processCompletion looks at a given prophecy
+/*
+Updates Prophecy.Status to SUCCESS if voting power in ClaimValidators is
+higher than Consensus needed for networkDescriptor
+
+NetworkDescriptor is used to look up consensus threshold needed for network
+*/
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
 	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
@@ -180,7 +196,10 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 }
 
 // ProcessSignProphecy deal with the signature from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	prophecyID []byte,
+	cosmosSender, tokenAddress, ethereumAddress, signature string) error {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.ErrProphecyNotFound
@@ -234,7 +253,8 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	oldStatus := prophecy.Status
 
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
-	if err != nil {
+	if err != nil && err != types.ErrProphecyFinalized {
+		k.Logger(ctx).Error("Error appending validator to Prophecy", "Error", err)
 		return err
 	}
 
