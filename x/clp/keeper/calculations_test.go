@@ -2210,6 +2210,8 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				ExternalLiabilities:           sdk.ZeroUint(),
 				UnsettledExternalLiabilities:  sdk.ZeroUint(),
 				UnsettledNativeLiabilities:    sdk.ZeroUint(),
+				BlockInterestExternal:         sdk.ZeroUint(),
+				BlockInterestNative:           sdk.ZeroUint(),
 				Health:                        sdk.ZeroDec(),
 				InterestRate:                  sdk.NewDecWithPrec(1, 1),
 				SwapPriceNative:               &SwapPriceNative,
