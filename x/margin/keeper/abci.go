@@ -38,9 +38,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 			}
 			_ = k.clpKeeper.SetPool(ctx, pool)
 		}
-		k.EmitInterestRateComputation(ctx)
 	}
-
 }
 
 func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) {
