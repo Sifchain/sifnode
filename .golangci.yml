@@ -26,7 +26,6 @@ linters:
 #    - scopelint
     - exportloopref
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
