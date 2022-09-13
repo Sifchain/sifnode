@@ -124,10 +124,8 @@ class Project:
         pass
 
     # Top-level "make install" should build everything, such as after git clone. If it does not, it's a bug.
-    # "Official" way is "make clean install"
-    def make_all(self, output_dir: Optional[str] = None):
-        env = None if output_dir is None else {"GOBIN": output_dir}
-        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False, env=env)
+    def make_all(self):
+        self.cmd.execst(["make"], cwd=project_dir(), pipe=False)
 
     # IntegrationEnvironment
     # TODO Merge
@@ -141,10 +139,9 @@ class Project:
     # TODO Merge
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
     # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    def make_go_binaries_2(self, feature_toggles: Optional[Iterable[str]] = None):
+    def make_go_binaries_2(self):
         # Original: cd smart-contracts; make -C .. install
-        extra_env = {feature: "1" for feature in feature_toggles}
-        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False, env=extra_env)
+        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
 
     def install_smart_contracts_dependencies(self):
         self.cmd.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
@@ -305,11 +302,9 @@ class Project:
             cache = cache[:max_cache_items]
         self.cmd.write_text_file(cache_index, json.dumps(cache))
 
-    def get_project_venv_dir(self):
-        return project_dir("test", "integration", "framework", "venv")
-
     def project_python(self):
-        return os.path.join(self.get_project_venv_dir(), "bin", "python3")
+        project_venv_dir = project_dir("test", "integration", "framework", "venv")
+        return os.path.join(project_venv_dir, "bin", "python3")
 
     def _ensure_build_dirs(self):
         for d in ["build", "build/repos", "build/generated"]:
