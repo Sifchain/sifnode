@@ -19,6 +19,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 		currentHeight := ctx.BlockHeight()
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
+			pool.BlockInterestExternal = sdk.ZeroUint()
+			pool.BlockInterestNative = sdk.ZeroUint()
 			if k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol) {
 				rate, err := k.InterestRateComputation(ctx, *pool)
 				if err != nil {
@@ -29,12 +31,12 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				pool.LastHeightInterestRateComputed = currentHeight
 				_ = k.UpdatePoolHealth(ctx, pool)
 				k.TrackSQBeginBlock(ctx, pool)
-				_ = k.clpKeeper.SetPool(ctx, pool)
 				mtps, _, _ := k.GetMTPsForPool(ctx, pool.ExternalAsset.Symbol, nil)
 				for _, mtp := range mtps {
 					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
 			}
+			_ = k.clpKeeper.SetPool(ctx, pool)
 		}
 		k.EmitInterestRateComputation(ctx)
 	}
@@ -58,7 +60,15 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	// compute interest
 	interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, 0, 0)
 
-	k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+	finalInterestPayment := k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+
+	nativeAsset := types.GetSettlementAsset()
+
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // custody is external, payment is custody
+		pool.BlockInterestExternal = pool.BlockInterestExternal.Add(finalInterestPayment)
+	} else { // custody is native, payment is custody
+		pool.BlockInterestNative = pool.BlockInterestNative.Add(finalInterestPayment)
+	}
 
 	_ = k.SetMTP(ctx, mtp)
 	repayAmount, err := k.ForceCloseLong(ctx, mtp, pool, false, true)
