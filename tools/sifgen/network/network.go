@@ -3,7 +3,7 @@ package network
 import (
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -201,7 +201,7 @@ func (n *Network) generateKey(validator *Validator) error {
 		return err
 	}
 
-	yml, err := ioutil.ReadAll(strings.NewReader(*output))
+	yml, err := io.ReadAll(strings.NewReader(*output))
 	if err != nil {
 		return err
 	}
@@ -390,7 +390,7 @@ func (n *Network) copyGenesis(validators []*Validator) error {
 				return err
 			}
 
-			err = ioutil.WriteFile(
+			err = os.WriteFile(
 				fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.GenesisFile),
 				input,
 				0600,

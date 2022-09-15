@@ -7,7 +7,6 @@ import (
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/utils"
 
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -23,7 +22,7 @@ func createInput(t *testing.T, filename string) {
 	list := types.Registry{Entries: denomEntryList}
 	file, err := json.MarshalIndent(list, "", " ")
 	assert.NoError(t, err)
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = os.WriteFile(filename, file, 0600)
 }
 
 func TestParseDenoms(t *testing.T) {

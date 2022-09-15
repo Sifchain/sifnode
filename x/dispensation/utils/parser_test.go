@@ -3,7 +3,6 @@ package utils_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -44,14 +43,14 @@ func createInput(t *testing.T, filename string) {
 	inputList := []types.Input{types.NewInput(in, coin), types.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = os.WriteFile(filename, file, 0600)
 }
 
 func createOutput(filename string, count int) {
 	outputList := test.CreatOutputList(count, "10000000000000000000")
 	tempInput := utils.TempOutput{Out: outputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = os.WriteFile(filename, file, 0600)
 }
 
 func removeFile(t *testing.T, filename string) {
@@ -142,5 +141,5 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	assert.True(t, totalPercentage == 100.00, "Total Percentage is not 100%")
 	tempInput := utils.TempInput{In: inputList}
 	f, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile("input.json", f, 0600)
+	_ = os.WriteFile("input.json", f, 0600)
 }
