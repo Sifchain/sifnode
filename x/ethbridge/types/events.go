@@ -15,7 +15,6 @@ const (
 	AttributeKeyEthereumSenderSequence       = "ethereum_sender_sequence"
 	AttributeKeyCosmosReceiver               = "cosmos_receiver"
 	AttributeKeyAmount                       = "amount"
-	AttributeKeycrossChainFee                = "cross_chain_fee_amount"
 	AttributeKeySymbol                       = "symbol"
 	AttributeKeyCoins                        = "coins"
 	AttributeKeyStatus                       = "status"

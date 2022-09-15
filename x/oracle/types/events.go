@@ -5,7 +5,7 @@ var (
 	EventTypeProphecyCompleted = "prophecy_completed"
 
 	AttributeKeyAmount               = "amount"
-	AttributeKeycrossChainFee        = "cross_chain_fee_amount"
+	AttributeKeyCrossChainFee        = "cross_chain_fee_amount"
 	AttributeKeyTokenContractAddress = "token_contract_address"
 	AttributeKeyCosmosSender         = "cosmos_sender"
 	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"
