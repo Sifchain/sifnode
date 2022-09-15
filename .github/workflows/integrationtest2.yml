@@ -42,9 +42,12 @@ jobs:
           sleep 30
           pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_eth_transfers.py src/peggy2/test_peggy2_wrong_signature.py
 
-      - name: Archive logs from test
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: testlogs2
-          path: test/integration
+      # This is commented out because logs no longer outputs to that dir.
+      # Will update with new location
+      # - name: Archive logs from test
+      #   uses: actions/upload-artifact@v2
+      #   # The path is not where the logs reside. This is a temporary change to disable this action
+      #   if: always()
+      #   with:
+      #     name: testlogs2
+      #     path: test/integration
