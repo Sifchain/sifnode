@@ -94,6 +94,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyTokenRegistry, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(adminKey, sdk.StoreTypeIAVL, db)
+
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 	ctx := sdk.NewContext(ms, tmproto.Header{ChainID: "foochainid"}, false, nil)
