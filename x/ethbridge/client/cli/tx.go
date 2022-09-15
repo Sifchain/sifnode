@@ -103,7 +103,7 @@ func GetCmdLock() *cobra.Command {
 	//nolint:lll
 	cmd := &cobra.Command{
 		Use:   "lock [ethereum-receiver-address] [amount] [symbol] [crossChainFee] --network-descriptor [network-descriptor]",
-		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
+		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Ethereum to you!",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
