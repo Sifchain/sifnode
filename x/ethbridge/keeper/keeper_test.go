@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
@@ -284,6 +285,7 @@ func TestProcessBurn(t *testing.T) {
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+
 	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
@@ -294,7 +296,7 @@ func TestProcessBurn(t *testing.T) {
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins.String(), string(""))
+	require.Equal(t, receiverCoins.String(), string(""), "Balance should be empty after sending all funds")
 }
 
 func TestProcessBurnCrossChainFee(t *testing.T) {
@@ -306,6 +308,7 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataCeth)
 
 	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+
 	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, doubleAmount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
@@ -316,6 +319,53 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
+}
+
+func TestProcessBurnErrOnBlacklistedEthereumDestination(t *testing.T) {
+	ctx, ethbridgeKeeper,
+		bankKeeper, _,
+		oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	testCosmosSender := test.GenerateAddress("")
+	testBlacklistedEthereumReceiver := types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
+
+	// Blacklisting ethereumSender address
+	testAdminAddress := test.GenerateAddress("")
+	admin := &admintypes.AdminAccount{
+		AdminType:    admintypes.AdminType_ETHBRIDGE,
+		AdminAddress: testAdminAddress.String(),
+	}
+	ethbridgeKeeper.GetTokenRegistryKeeper().GetAdminKeeper().SetAdminAccount(ctx, admin)
+	msgSetBlacklist := types.MsgSetBlacklist{From: testAdminAddress.String(), Addresses: []string{testBlacklistedEthereumReceiver.String()}}
+	if err := ethbridgeKeeper.SetBlacklist(ctx, &msgSetBlacklist); err != nil {
+		panic("Test setup failed, cannot proceed")
+	}
+
+	// Setting up cross-chain fee
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
+	crossChainFee := crossChainFeeConfig.FeeCurrency
+	denomHash := ethbridgeKeeper.AddTokenMetadata(ctx, testMetadataStake)
+
+	// Funding test account with test token and cross-chain fee
+	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testCosmosSender, coins)
+
+	account := ethbridgeKeeper.GetAccountKeeper().GetAccount(ctx, testCosmosSender)
+
+	testMsgBurn := types.NewMsgBurn(networkDescriptor,
+		testCosmosSender,
+		testBlacklistedEthereumReceiver,
+		amount, denomHash, amount)
+
+	prophecyId, err := ethbridgeKeeper.ProcessBurn(ctx, testCosmosSender,
+		account.GetSequence(),
+		&testMsgBurn, testMetadataStake, false, false)
+
+	require.Error(t, err, "Should have errored out because destination is in blacklist")
+	require.ErrorIs(t, err, types.ErrBlacklistedAddress)
+	require.Empty(t, prophecyId, "Should receive empty byte slice for ProphecyId")
 }
 
 func TestProcessLock(t *testing.T) {
@@ -330,7 +380,7 @@ func TestProcessLock(t *testing.T) {
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataRowan)
 
-	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+	msg := types.NewMsgLock(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
 
 	_, err := keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
@@ -345,6 +395,45 @@ func TestProcessLock(t *testing.T) {
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), "")
+}
+
+func TestProcessLockErrOnBlacklistedEthereumDestination(t *testing.T) {
+	ctx, ethbridgeKeeper,
+		bankKeeper, _,
+		oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	testCosmosSender := test.GenerateAddress("")
+	testBlacklistedEthereumReceiver := types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
+
+	// Blacklisting ethereumSender address
+	testAdminAddress := test.GenerateAddress("")
+	admin := &admintypes.AdminAccount{
+		AdminType:    admintypes.AdminType_ETHBRIDGE,
+		AdminAddress: testAdminAddress.String(),
+	}
+	ethbridgeKeeper.GetTokenRegistryKeeper().GetAdminKeeper().SetAdminAccount(ctx, admin)
+	msgSetBlacklist := types.MsgSetBlacklist{From: testAdminAddress.String(), Addresses: []string{testBlacklistedEthereumReceiver.String()}}
+	if err := ethbridgeKeeper.SetBlacklist(ctx, &msgSetBlacklist); err != nil {
+		panic("Test setup failed, cannot proceed")
+	}
+
+	// Setting up cross-chain fee
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
+	crossChainFee := crossChainFeeConfig.FeeCurrency
+
+	denomHash := ethbridgeKeeper.AddTokenMetadata(ctx, testMetadataRowan)
+
+	// Funding test account with test token and cross chain fee
+	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testCosmosSender, coins)
+
+	msg := types.NewMsgLock(networkDescriptor, testCosmosSender, testBlacklistedEthereumReceiver, amount, denomHash, amount)
+	prophecyId, err := ethbridgeKeeper.ProcessLock(ctx, testCosmosSender, 1, &msg, testMetadataRowan, true)
+	require.Error(t, err, "Should have errored out because destination is in blacklist")
+	require.ErrorIs(t, err, types.ErrBlacklistedAddress)
+	require.Empty(t, prophecyId, "Should receive empty byte slice for ProphecyId")
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
