@@ -1,6 +1,3 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package keeper
 
 import (
@@ -15,7 +12,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -223,12 +219,12 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
 		return err
 	}
 
-	pubKey, err := crypto.UnmarshalPubkey(publicKey)
+	pubKey, err := gethCrypto.UnmarshalPubkey(publicKey)
 	if err != nil {
 		return err
 	}
 
-	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
+	recoveredAddr := gethCrypto.PubkeyToAddress(*pubKey)
 
 	if recoveredAddr.String() != ethereumAddress {
 		return errors.New("incorrect ethereum signature")
@@ -314,6 +310,11 @@ func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.A
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
+}
+
+func (k Keeper) GetProphecyIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return store.Iterator(types.ProphecyPrefix, nil)
 }
 
 // PrefixMsg prefixes a message for verification, mimics behavior of web3.eth.sign

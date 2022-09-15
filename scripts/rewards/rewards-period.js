@@ -91,6 +91,23 @@ async function createAssetRewardsFile(periodId, startBlock, endBlock) {
 async function start() {
   const rewardPeriods = [
     await createAssetRewardsFileFromParams({
+      periodId: "RP_7",
+      startBlock: 7081749,
+      endBlock: 7180679,
+      allocation: "32938034",
+      defaultMultiplier: "0.585",
+      pools: [
+        { pool: "atom", multiplier: "1.085" },
+        { pool: "eth", multiplier: "1.085" },
+        { pool: "usdc", multiplier: "1.085" },
+        { pool: "juno", multiplier: "1.085" },
+        { pool: "uscrt", multiplier: "1.085" },
+        { pool: "luna", multiplier: "0.0" },
+        { pool: "ust", multiplier: "0.0" },
+        { pool: "usd", multiplier: "0.0" },
+      ],
+    }),
+    await createAssetRewardsFileFromParams({
       periodId: "RP_6",
       startBlock: 6982961,
       endBlock: 7081748,
@@ -107,7 +124,7 @@ async function start() {
         { pool: "usd", multiplier: "0.0" },
       ],
     }),
-    await createAssetRewardsFile("RP_5", 6885850, 6982960),
+    // await createAssetRewardsFile("RP_5", 6885850, 6982960),
     // await createAssetRewardsFile("RP_4", 6788531, 6885841),
     // await createAssetRewardsFile("RP_3", 6687731, 6788530),
     // await createAssetRewardsFile("RP_2", 6586931, 6687730),

@@ -10,15 +10,15 @@ import (
 
 const maxPageSize = 100
 
-type queryServer struct {
+type QueryServer struct {
 	bankkeeper.Keeper
 }
 
-func NewSifQueryServer(keeper bankkeeper.Keeper) queryServer {
-	return queryServer{keeper}
+func NewSifQueryServer(keeper bankkeeper.Keeper) QueryServer {
+	return QueryServer{keeper}
 }
 
-func (srv queryServer) AllBalances(ctx context.Context, req *types.QueryAllBalancesRequest) (*types.QueryAllBalancesResponse, error) {
+func (srv QueryServer) AllBalances(ctx context.Context, req *types.QueryAllBalancesRequest) (*types.QueryAllBalancesResponse, error) {
 	if req.Pagination == nil {
 		req.Pagination = &query.PageRequest{}
 	}

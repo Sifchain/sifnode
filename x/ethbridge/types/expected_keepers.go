@@ -3,7 +3,6 @@ package types
 import (
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	types "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -43,8 +42,8 @@ type OracleKeeper interface {
 		tokenAmount sdk.Int, crosschainFee sdk.Int, bridgeToken bool, globalNonce uint64,
 		tokenDecimal uint8, tokenName, tokenSymbol string) error
 	GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
-	GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64
-	ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor types.NetworkDescriptor, ConsensusNeeded uint32) error
+	GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) uint64
+	ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, ConsensusNeeded uint32) error
 }
 
 type AdminKeeper interface {
