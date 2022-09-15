@@ -3,7 +3,7 @@ package clp_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -47,8 +47,8 @@ func TestScenarios(t *testing.T) {
 		ErrString              error                           `json:"err_string,omitempty"`
 	}
 
-	file, err := ioutil.ReadFile("scenarios.json")
-	// file, err := ioutil.ReadFile("../../scripts/pmtp/scenarios.json")
+	file, err := os.ReadFile("scenarios.json")
+	// file, err := os.ReadFile("../../scripts/pmtp/scenarios.json")
 	require.Nil(t, err, "some error occurred while reading file. Error: %s", err)
 	var scenarios Scenarios
 	err = json.Unmarshal(file, &scenarios)

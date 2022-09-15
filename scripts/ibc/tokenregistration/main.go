@@ -62,7 +62,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				panic(err)
 			}

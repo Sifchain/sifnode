@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -131,7 +132,7 @@ func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 
 	genesisPath := fmt.Sprintf("%s/config/%s", nodeHomeDir, utils.GenesisFile)
 
-	body, err := ioutil.ReadFile(genesisPath)
+	body, err := os.ReadFile(genesisPath)
 	if err != nil {
 		return nil, err
 	}

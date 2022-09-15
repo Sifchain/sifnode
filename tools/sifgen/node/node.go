@@ -370,7 +370,7 @@ func (n *Node) replaceAppTOML() error {
 func (n *Node) parseConfigTOML() (common.ConfigTOML, error) {
 	var config common.ConfigTOML
 
-	content, err := ioutil.ReadFile(n.CLI.ConfigFilePath())
+	content, err := os.ReadFile(n.CLI.ConfigFilePath())
 	if err != nil {
 		return config, err
 	}
@@ -385,7 +385,7 @@ func (n *Node) parseConfigTOML() (common.ConfigTOML, error) {
 func (n *Node) parseAppTOML() (common.AppTOML, error) {
 	var config common.AppTOML
 
-	content, err := ioutil.ReadFile(n.CLI.AppFilePath())
+	content, err := os.ReadFile(n.CLI.AppFilePath())
 	if err != nil {
 		return config, err
 	}

@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -419,7 +419,7 @@ func GetCmdSetBlacklist() *cobra.Command {
 				return err
 			}
 
-			contents, err := ioutil.ReadFile(file)
+			contents, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}

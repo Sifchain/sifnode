@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -336,7 +336,7 @@ func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Po
 	if err != nil {
 		panic(err)
 	}
-	input, err := ioutil.ReadFile(file)
+	input, err := os.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}

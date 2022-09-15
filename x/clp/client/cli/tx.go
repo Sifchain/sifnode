@@ -3,7 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -67,7 +67,7 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}
@@ -418,7 +418,7 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}
@@ -433,7 +433,7 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				input, err = ioutil.ReadFile(file)
+				input, err = os.ReadFile(file)
 				if err != nil {
 					return err
 				}
@@ -722,7 +722,7 @@ func GetCmdSetProviderDistributionPeriods() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}

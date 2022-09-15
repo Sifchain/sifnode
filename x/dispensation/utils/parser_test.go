@@ -88,7 +88,7 @@ func TestAddressFilter(t *testing.T) {
 	if err != nil {
 		panic("Err getting filepath :" + err.Error())
 	}
-	o, err := ioutil.ReadFile(file)
+	o, err := os.ReadFile(file)
 	if err != nil {
 		panic("Err Reading file :" + err.Error())
 	}
