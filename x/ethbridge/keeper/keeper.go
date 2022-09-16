@@ -119,6 +119,8 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
+//
+// Returns ProphecyID in byte slice
 func (k Keeper) ProcessBurn(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
@@ -129,6 +131,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return []byte{}, types.ErrBlacklistedAddress
+	}
+
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
@@ -205,6 +212,11 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return []byte{}, types.ErrBlacklistedAddress
+	}
+
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
