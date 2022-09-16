@@ -78,7 +78,7 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 			withdrawWBasisPoints := ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, withdrawUnits)
 
 			// Reuse removal logic using withdrawWBasisPoints
-			_, _, totalRowanValue, err := k.ProcessRemoveLiquidityMsg(ctx, &types.MsgRemoveLiquidity{
+			_, _, _, err = k.ProcessRemoveLiquidityMsg(ctx, &types.MsgRemoveLiquidity{
 				Signer:        request.Msg.Signer,
 				ExternalAsset: msg.ExternalAsset,
 				WBasisPoints:  withdrawWBasisPoints,
@@ -94,7 +94,7 @@ func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity,
 			}
 
 			// Update the queued request
-			k.SetProcessedRemovalRequest(ctx, request, withdrawWBasisPoints, totalRowanValue)
+			k.SetProcessedRemovalRequest(ctx, request, withdrawWBasisPoints, request.Value)
 		}
 	}
 }
