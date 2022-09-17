@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	body, err = ioutil.ReadAll(conRes.Body)
+	body, err = io.ReadAll(conRes.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -80,7 +80,7 @@ func GetClientState(clientID string) ClientResponse {
 	if err != nil {
 		panic(err)
 	}
-	body, err := ioutil.ReadAll(clientsRes.Body)
+	body, err := io.ReadAll(clientsRes.Body)
 	if err != nil {
 		panic(err)
 	}

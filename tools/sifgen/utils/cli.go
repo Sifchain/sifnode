@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -69,7 +68,7 @@ func NewCLI(chainID, keyringBackend string) CLI {
 
 func (c CLI) Reset(paths []string) error {
 	for _, _path := range paths {
-		dir, err := ioutil.ReadDir(_path)
+		dir, err := os.ReadDir(_path)
 		for _, d := range dir {
 			_ = os.RemoveAll(path.Join([]string{_path, d.Name()}...))
 		}
