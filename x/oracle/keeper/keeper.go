@@ -279,7 +279,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
 			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
 			sdk.NewAttribute(types.AttributeKeyBridgeToken, strconv.FormatBool(prophecyInfo.BridgeToken)),
 			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
-			sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
 			sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
 			sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),
 		)
