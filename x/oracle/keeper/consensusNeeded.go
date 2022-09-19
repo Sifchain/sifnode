@@ -38,3 +38,32 @@ func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.Networ
 	}
 	return consensusNeeded, nil
 }
+
+// GetAllConsensusNeeded get consensus needed for all network descriptors
+func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) map[uint32]uint32 {
+	consensuses := make(map[uint32]uint32)
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.ConsensusNeededPrefix)
+
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+
+		network_descriptor, err := types.GetFromPrefix(key)
+		if err != nil {
+			panic(err)
+		}
+		binary.BigEndian.Uint32(value)
+
+		consensuses[uint32(network_descriptor.NetworkDescriptor)] = binary.BigEndian.Uint32(value)
+	}
+	return consensuses
+}

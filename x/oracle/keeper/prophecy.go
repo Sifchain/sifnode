@@ -89,10 +89,6 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	tokenName string,
 	tokenSymbol string) error {
 
-	store := ctx.KVStore(k.storeKey)
-
-	storePrefix := append(types.SignaturePrefix, prophecyID[:]...)
-
 	prophecyInfo := types.ProphecyInfo{
 		ProphecyId:           prophecyID,
 		NetworkDescriptor:    networkDescriptor,
@@ -115,9 +111,16 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)
 
-	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalSequence, prophecyID)
-	store.Set(storePrefix, k.cdc.MustMarshal(&prophecyInfo))
+	k.SetProphecyInfoObj(ctx, &prophecyInfo)
 	return nil
+}
+
+func (k Keeper) SetProphecyInfoObj(ctx sdk.Context, prophecyInfo *types.ProphecyInfo) {
+	store := ctx.KVStore(k.storeKey)
+	storePrefix := append(types.SignaturePrefix, prophecyInfo.ProphecyId[:]...)
+
+	k.SetGlobalNonceProphecyID(ctx, prophecyInfo.NetworkDescriptor, prophecyInfo.GlobalSequence, prophecyInfo.ProphecyId)
+	store.Set(storePrefix, k.cdc.MustMarshal(prophecyInfo))
 }
 
 // AppendSignature add a new ethereum address and signature to prophecy
@@ -243,4 +246,28 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 		result = append(result, &prophecyInfo)
 	}
 	return result
+}
+
+// GetProphecyInfo return a prophecy's signatures
+func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) map[string]*types.ProphecyInfo {
+	store := ctx.KVStore(k.storeKey)
+	prophecyInfos := make(map[string]*types.ProphecyInfo)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
+	var prophecyInfo types.ProphecyInfo
+
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+		k.cdc.MustUnmarshal(value, &prophecyInfo)
+		prophecyInfos[string(key)] = &prophecyInfo
+	}
+
+	return prophecyInfos
 }
