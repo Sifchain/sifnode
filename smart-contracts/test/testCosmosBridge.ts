@@ -97,12 +97,15 @@ describe("Test Cosmos Bridge", function () {
       const newThreshold = 35;
 
       let status = await state.cosmosBridge.getProphecyStatus(50);
-      expect(status).to.equal(false);
+      expect(status).to.equal(false, "Expected not to pass, 50 is below default of 75");
 
-      state.cosmosBridge.updateConsensusThreshold(newThreshold);
+      state.cosmosBridge.connect(operator).updateConsensusThreshold(newThreshold);
 
       status = await state.cosmosBridge.getProphecyStatus(50);
-      expect(status).to.equal(true);
+      expect(status).to.equal(
+        true,
+        "signedPower of 50 should now pass because it is above newThreshold"
+      );
     });
 
     it("should not allow non-operator to update consensus threshold", async function () {
@@ -111,18 +114,24 @@ describe("Test Cosmos Bridge", function () {
       ).to.be.revertedWith("Must be the operator.");
     });
 
+    it("should allows updating consensus threshold to 100", async function () {
+      const newThreshold = 100;
+      let status = await state.cosmosBridge.connect(operator).getProphecyStatus(newThreshold);
+      expect(status).to.equal(true);
+    });
+
     it("should not allow updating consensus threshold to lte 0", async function () {
       const newThreshold = 0;
-      await expect(state.cosmosBridge.updateConsensusThreshold(newThreshold)).to.be.revertedWith(
-        "Consensus threshold must be positive."
-      );
+      await expect(
+        state.cosmosBridge.connect(operator).updateConsensusThreshold(newThreshold)
+      ).to.be.revertedWith("Consensus threshold must be positive.");
     });
 
     it("should not allow updating consensus threshold to value greater than 100", async function () {
       const newThreshold = 101;
-      await expect(state.cosmosBridge.updateConsensusThreshold(newThreshold)).to.be.revertedWith(
-        "Invalid consensus threshold."
-      );
+      await expect(
+        state.cosmosBridge.connect(operator).updateConsensusThreshold(newThreshold)
+      ).to.be.revertedWith("Invalid consensus threshold.");
     });
   });
 
