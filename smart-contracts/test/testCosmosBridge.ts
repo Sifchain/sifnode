@@ -99,7 +99,8 @@ describe("Test Cosmos Bridge", function () {
       let status = await state.cosmosBridge.getProphecyStatus(50);
       expect(status).to.equal(false, "Expected not to pass, 50 is below default of 75");
 
-      state.cosmosBridge.connect(operator).updateConsensusThreshold(newThreshold);
+      await expect(state.cosmosBridge.connect(operator).updateConsensusThreshold(newThreshold)).to
+        .not.be.reverted;
 
       status = await state.cosmosBridge.getProphecyStatus(50);
       expect(status).to.equal(
