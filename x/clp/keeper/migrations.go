@@ -84,5 +84,20 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
 	m.keeper.SetParams(ctx, types.DefaultParams())
 
+	pools := m.keeper.GetPools(ctx)
+
+	params := types.GetDefaultLiquidityProtectionParams()
+	m.keeper.SetLiquidityProtectionParams(ctx, params)
+
+	for _, pool := range pools {
+		nativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+		maxRowanLiquidityThreshold := nativeAssetBalance.Mul(params.MaxThresholdPercentage)
+		pool.CurrentNativeLiquidityThreshold = sdk.NewUintFromBigInt(maxRowanLiquidityThreshold.TruncateInt().BigInt())
+		err := m.keeper.SetPool(ctx, pool)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	return nil
 }

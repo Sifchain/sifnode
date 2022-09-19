@@ -25,7 +25,6 @@ var (
 	_ sdk.Msg = &MsgSetSymmetryThreshold{}
 	_ sdk.Msg = &MsgCancelUnlock{}
 	_ sdk.Msg = &MsgUpdateLiquidityProtectionParams{}
-	_ sdk.Msg = &MsgModifyLiquidityProtectionRates{}
 	_ sdk.Msg = &MsgAddProviderDistributionPeriodRequest{}
 	_ sdk.Msg = &MsgUpdateSwapFeeRateRequest{}
 
@@ -572,34 +571,6 @@ func (m MsgUpdateLiquidityProtectionParams) Type() string {
 }
 
 func (m MsgUpdateLiquidityProtectionParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
-}
-
-func (m *MsgModifyLiquidityProtectionRates) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(m.Signer)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *MsgModifyLiquidityProtectionRates) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(m.Signer)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{addr}
-}
-
-func (m MsgModifyLiquidityProtectionRates) Route() string {
-	return RouterKey
-}
-
-func (m MsgModifyLiquidityProtectionRates) Type() string {
-	return "modify_liquidity_protection_rates"
-}
-
-func (m MsgModifyLiquidityProtectionRates) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 

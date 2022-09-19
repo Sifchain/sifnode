@@ -35,9 +35,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 
 	// Set initial liquidity protection states
 	k.SetLiquidityProtectionParams(ctx, types.GetDefaultLiquidityProtectionParams())
-	k.SetLiquidityProtectionRateParams(ctx, types.LiquidityProtectionRateParams{
-		CurrentRowanLiquidityThreshold: types.GetDefaultLiquidityProtectionParams().MaxRowanLiquidityThreshold,
-	})
 
 	wl := make([]sdk.AccAddress, len(data.AddressWhitelist))
 	if data.AddressWhitelist != nil {

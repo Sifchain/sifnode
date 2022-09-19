@@ -48,7 +48,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "1.100000000000000089",
                 "swap_price_external": "0.909090909090909017",
@@ -77,7 +78,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "1.210000000000000196",
                 "swap_price_external": "0.826446280991735403",
@@ -106,7 +108,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "2.593742460100002100",
                 "swap_price_external": "0.385543289429531435",
@@ -135,7 +138,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "6.727499949325610983",
                 "swap_price_external": "0.148643628024143445",
@@ -164,7 +168,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "45.259255568176098344",
                 "swap_price_external": "0.022094928152179922",
@@ -193,7 +198,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "45.259255568176098344",
                 "swap_price_external": "0.022094928152179922",
@@ -222,7 +228,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "45.259255568176098344",
                 "swap_price_external": "0.022094928152179922",
@@ -283,7 +290,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000031941093682791",
                 "swap_price_external": "31307.631790289924870327",
@@ -312,7 +320,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000031941093682791",
                 "swap_price_external": "31307.631790289924870327",
@@ -341,7 +350,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000031941137607653",
                 "swap_price_external": "31307.588736613703191542",
@@ -370,7 +380,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000031941181532575",
                 "swap_price_external": "31307.545682996688143772",
@@ -399,7 +410,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000031945047162275",
                 "swap_price_external": "31303.757196542919506312",
@@ -428,7 +440,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000031975813155780",
                 "swap_price_external": "31273.637831450397661999",
@@ -457,7 +470,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000032396293283183",
                 "swap_price_external": "30867.728948455950679816",
@@ -486,7 +500,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000032570508215981",
                 "swap_price_external": "30702.621935427036598312",
@@ -515,7 +530,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000032570553006403",
                 "swap_price_external": "30702.579713749178015579",
@@ -544,7 +560,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000033221918380312",
                 "swap_price_external": "30100.609740604138666411",
@@ -573,7 +590,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000033886356747931",
                 "swap_price_external": "29510.401706464250553313",
@@ -602,7 +620,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000035265548368445",
                 "swap_price_external": "28356.286695226170023638",
@@ -631,7 +650,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000035265548368445",
                 "swap_price_external": "28356.286695226170023638",
@@ -660,7 +680,8 @@
                     "block_interest_external": "0",
                     "health": "0",
                     "interest_rate": "0.000000000000000000",
-                    "reward_period_native_distributed": "0"
+                    "reward_period_native_distributed": "0",
+                    "current_native_liquidity_threshold": "0"
                 },
                 "swap_price_native": "0.000035265548368445",
                 "swap_price_external": "28356.286695226170023638",

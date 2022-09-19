@@ -475,33 +475,30 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
-	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
-	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
-	currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+	maxThresholdPercentage := liquidityProtectionParams.MaxThresholdPercentage
 	var (
-		sentValue sdk.Uint
+		liqpPool types.Pool
 	)
 
-	// if liquidity protection is active and selling rowan
-	if liquidityProtectionParams.IsActive && types.StringCompare(sAsset.Denom, types.NativeSymbol) {
-		if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
-			sentValue = msg.SentAmount
-		} else {
-			pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+	// if liquidity protection is active
+	if liquidityProtectionParams.IsActive {
+		// if selling rowan
+		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
+			liqpPool, err = k.GetPool(ctx, rAsset.Denom)
 			if err != nil {
-				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+				return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, rAsset.Denom)
 			}
-			marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
-
-			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount, marginEnabled)
-
-			if err != nil {
-				return nil, err
+			if liqpPool.CurrentNativeLiquidityThreshold.LT(msg.SentAmount) {
+				return nil, types.ErrReachedMaxRowanLiquidityThreshold
 			}
 		}
 
-		if currentRowanLiquidityThreshold.LT(sentValue) {
-			return nil, types.ErrReachedMaxRowanLiquidityThreshold
+		// if buying rowan
+		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
+			liqpPool, err = k.GetPool(ctx, sAsset.Denom)
+			if err != nil {
+				return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, sAsset.Denom)
+			}
 		}
 	}
 
@@ -626,38 +623,25 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
 			// we know that sentValue < currentRowanLiquidityThreshold so we can do the
 			// substitution knowing it won't panic
-			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Sub(sentValue)
-			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+			liqpPool.CurrentNativeLiquidityThreshold = liqpPool.CurrentNativeLiquidityThreshold.Sub(msg.SentAmount)
+
+			k.SetPool(ctx, &liqpPool)
 		}
 
 		// if buy rowan
 		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
-			var emitValue sdk.Uint
-			if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
-				emitValue = emitAmount
+			nativeAssetBalance := sdk.NewDecFromBigInt(liqpPool.NativeAssetBalance.BigInt())
+			maxRowanLiquidityThreshold := sdk.NewUintFromBigInt(nativeAssetBalance.Mul(maxThresholdPercentage).TruncateInt().BigInt())
+
+			// This is equivalent to currentNativeLiquidityThreshold := sdk.MinUint(currentNativeLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
+			// except it prevents any overflows when adding the emitAmount
+			if liqpPool.CurrentNativeLiquidityThreshold.GT(maxRowanLiquidityThreshold) || maxRowanLiquidityThreshold.Sub(liqpPool.CurrentNativeLiquidityThreshold).LT(emitAmount) {
+				liqpPool.CurrentNativeLiquidityThreshold = maxRowanLiquidityThreshold
 			} else {
-				pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
-				if err != nil {
-					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
-				}
-				marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
-
-				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount, marginEnabled)
-
-				if err != nil {
-					return nil, err
-				}
+				liqpPool.CurrentNativeLiquidityThreshold = liqpPool.CurrentNativeLiquidityThreshold.Add(emitAmount)
 			}
 
-			// This is equivalent to currentRowanLiquidityThreshold := sdk.MinUint(currentRowanLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
-			// except it prevents any overflows when adding the emitValue
-			if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(emitValue) {
-				currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
-			} else {
-				currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(emitValue)
-			}
-
-			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+			k.SetPool(ctx, &liqpPool)
 		}
 	}
 
@@ -998,12 +982,20 @@ func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *t
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetLiquidityProtectionParams(ctx)
-	params.MaxRowanLiquidityThreshold = msg.MaxRowanLiquidityThreshold
-	params.MaxRowanLiquidityThresholdAsset = msg.MaxRowanLiquidityThresholdAsset
+	previouslyNonActive := params.IsActive == false
 	params.EpochLength = msg.EpochLength
 	params.IsActive = msg.IsActive
+	params.MaxThresholdPercentage = msg.MaxThresholdPercentage
 	k.SetLiquidityProtectionParams(ctx, params)
-	k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, params.MaxRowanLiquidityThreshold)
+	if previouslyNonActive && msg.IsActive {
+		pools := k.GetPools(ctx)
+		for _, pool := range pools {
+			nativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+			maxRowanLiquidityThreshold := nativeAssetBalance.Mul(params.MaxThresholdPercentage)
+			pool.CurrentNativeLiquidityThreshold = sdk.NewUintFromBigInt(maxRowanLiquidityThreshold.TruncateInt().BigInt())
+			k.SetPool(ctx, pool)
+		}
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeUpdateLiquidityProtectionParams,
@@ -1017,36 +1009,6 @@ func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *t
 		),
 	})
 	return &types.MsgUpdateLiquidityProtectionParamsResponse{}, nil
-}
-
-func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *types.MsgModifyLiquidityProtectionRates) (*types.MsgModifyLiquidityProtectionRatesResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	response := &types.MsgModifyLiquidityProtectionRatesResponse{}
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return response, err
-	}
-	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
-		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
-	}
-	rateParams := k.GetLiquidityProtectionRateParams(ctx)
-	rateParams.CurrentRowanLiquidityThreshold = msg.CurrentRowanLiquidityThreshold
-	k.SetLiquidityProtectionRateParams(ctx, rateParams)
-	events := sdk.EmptyEvents()
-	events = events.AppendEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeUpdateLiquidityProtectionRateParams,
-			sdk.NewAttribute(types.AttributeKeyLiquidityProtectionRateParams, rateParams.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-		),
-	})
-	ctx.EventManager().EmitEvents(events)
-	return response, nil
 }
 
 func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdateSwapFeeRateRequest) (*types.MsgUpdateSwapFeeRateResponse, error) {

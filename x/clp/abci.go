@@ -54,25 +54,32 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 		Liquidity protection current rowan liquidity threshold update
 	*/
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
-	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
-	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
+	maxThresholdPercentage := liquidityProtectionParams.MaxThresholdPercentage
 	if liquidityProtectionParams.IsActive {
-		currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
-		// Validation check ensures that Epoch length =/= zero
-		replenishmentAmount := maxRowanLiquidityThreshold.QuoUint64(liquidityProtectionParams.EpochLength)
+		pools := k.GetPools(ctx)
+		for _, pool := range pools {
+			nativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
+			currentNativeLiquidityThreshold := sdk.NewDecFromBigInt(pool.CurrentNativeLiquidityThreshold.BigInt())
+			maxRowanLiquidityThreshold := nativeAssetBalance.Mul(maxThresholdPercentage)
 
-		// This is equivalent to:
-		//    proposedThreshold := currentRowanLiquidityThreshold.Add(replenishmentAmount)
-		//    currentRowanLiquidityThreshold = sdk.MinUint(proposedThreshold, maxRowanLiquidityThreshold)
-		// except it prevents any overflows when adding the replenishmentAmount
-		if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(replenishmentAmount) {
-			currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
-		} else {
-			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(replenishmentAmount)
+			// Validation check ensures that Epoch length =/= zero
+			replenishmentAmount := maxRowanLiquidityThreshold.QuoInt64(int64(liquidityProtectionParams.EpochLength))
+
+			// This is equivalent to:
+			//    proposedThreshold := currentNativeLiquidityThreshold.Add(replenishmentAmount)
+			//    currentNativeLiquidityThreshold = sdk.MinUint(proposedThreshold, maxRowanLiquidityThreshold)
+			// except it prevents any overflows when adding the replenishmentAmount
+			if currentNativeLiquidityThreshold.GT(maxRowanLiquidityThreshold) || maxRowanLiquidityThreshold.Sub(currentNativeLiquidityThreshold).LT(replenishmentAmount) {
+				currentNativeLiquidityThreshold = maxRowanLiquidityThreshold
+			} else {
+				currentNativeLiquidityThreshold = currentNativeLiquidityThreshold.Add(replenishmentAmount)
+			}
+
+			pool.CurrentNativeLiquidityThreshold = sdk.NewUintFromBigInt(currentNativeLiquidityThreshold.TruncateInt().BigInt())
+			k.SetPool(ctx, pool)
+
+			k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | pool: %s | maxRowanLiquidityThreshold: %s (%s) | currentNativeLiquidityThreshold: %s | maxPerBlock: %s", pool.ExternalAsset.Symbol, maxRowanLiquidityThreshold, maxThresholdPercentage, pool.CurrentNativeLiquidityThreshold, replenishmentAmount))
 		}
-
-		k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
-		k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | maxRowanLiquidityThreshold: %s | asset: %s | currentRowanLiquidityThreshold: %s | maxPerBlock: %s", maxRowanLiquidityThreshold, maxRowanLiquidityThresholdAsset, k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold, replenishmentAmount))
 	}
 
 	// get PMTP period params

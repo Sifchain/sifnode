@@ -88,10 +88,11 @@ func TestScenarios(t *testing.T) {
 			if tc.CreatePool {
 				pools := []*types.Pool{
 					{
-						ExternalAsset:        &types.Asset{Symbol: tc.PoolAsset},
-						NativeAssetBalance:   tc.NativeAssetAmount,
-						ExternalAssetBalance: tc.ExternalAssetAmount,
-						PoolUnits:            tc.PoolUnits,
+						ExternalAsset:                   &types.Asset{Symbol: tc.PoolAsset},
+						NativeAssetBalance:              tc.NativeAssetAmount,
+						ExternalAssetBalance:            tc.ExternalAssetAmount,
+						PoolUnits:                       tc.PoolUnits,
+						CurrentNativeLiquidityThreshold: sdk.ZeroUint(),
 					},
 				}
 				clpGs := types.DefaultGenesisState()
