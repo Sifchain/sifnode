@@ -44,7 +44,7 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 }
 
 func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
-	if ctx.BlockHeight() == 8654226 {
+	if ctx.BlockHeight() == 1900 {
 		fixAtomPool(ctx, k)
 	}
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
@@ -146,7 +146,7 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 fixAtomPool :
 */
 func fixAtomPool(ctx sdk.Context, k kpr.Keeper) {
-	atomIbcHash := "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2"
+	atomIbcHash := "cusdc"
 	// Get Rowan Balance from CLP Module
 	clpModuleTotalNativeBalance := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), types.GetSettlementAsset().Symbol)
 	// Get Atom Balance from CLP Module

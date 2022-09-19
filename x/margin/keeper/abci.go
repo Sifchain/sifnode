@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -10,7 +11,7 @@ import (
 )
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
-	if ctx.BlockHeight() == 8654226 {
+	if ctx.BlockHeight() == 1900 {
 		fixAtomPool(ctx, k)
 	}
 	//check if epoch has passed then execute
