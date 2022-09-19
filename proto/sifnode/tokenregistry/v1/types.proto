@@ -6,7 +6,6 @@ import "sifnode/oracle/v1/network_descriptor.proto";
 option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
 
 message GenesisState {
-  string admin_account = 1;
   Registry registry = 2;
 }
 
@@ -18,6 +17,8 @@ enum Permission {
   CLP = 1;
   IBCEXPORT = 2;
   IBCIMPORT = 3;
+  DISABLE_BUY = 4;
+  DISABLE_SELL = 5;
 }
 
 message RegistryEntry {

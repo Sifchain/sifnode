@@ -68,19 +68,26 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   bool private _reinitialized;
 
   /**
+   * @dev The address of the Rowan Token
+   */
+   address public rowanTokenAddress;
+
+  /**
    * @notice Initializer
    * @param _operator Manages the contract
    * @param _cosmosBridgeAddress The CosmosBridge contract's address
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
    * @param _networkDescriptor Indentifies the connected network
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
    */
   function initialize(
     address _operator,
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
-    int32 _networkDescriptor
+    int32 _networkDescriptor,
+    address _rowanTokenAddress
   ) public {
     require(!_initialized, "Init");
 
@@ -92,7 +99,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
 
     _initialized = true;
 
-    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor);
+    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor, _rowanTokenAddress);
   }
 
   /**
@@ -102,19 +109,21 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
    * @param _networkDescriptor Indentifies the connected network
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
    */
   function reinitialize(
     address _operator,
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
-    int32 _networkDescriptor
+    int32 _networkDescriptor,
+    address _rowanTokenAddress
   ) public onlyOperator {
     require(!_reinitialized, "Already reinitialized");
 
     _reinitialized = true;
 
-    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor);
+    _initialize(_operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor, _rowanTokenAddress);
   }
 
   /**
@@ -124,13 +133,15 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param _owner Manages whitelists
    * @param _pauser Can pause the system
    * @param _networkDescriptor Indentifies the connected network
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
    */
   function _initialize(
     address _operator,
     address _cosmosBridgeAddress,
     address _owner,
     address _pauser,
-    int32 _networkDescriptor
+    int32 _networkDescriptor,
+    address _rowanTokenAddress
   ) private {
     Pausable._pausableInitialize(_pauser);
 
@@ -138,7 +149,17 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     cosmosBridge = _cosmosBridgeAddress;
     owner = _owner;
     networkDescriptor = _networkDescriptor;
+    rowanTokenAddress = _rowanTokenAddress;
   }
+
+  /**
+   * @dev Set or update the rowanTokenAddress Only the operator can call this function
+   * @param _rowanTokenAddress The address of the Rowan ERC20 contract on this network
+   * @notice Can be set to null address if Rowan on this network is a standard BridgeToken
+   */
+   function setRowanTokenAddress(address _rowanTokenAddress) public onlyOperator {
+    rowanTokenAddress = _rowanTokenAddress;
+   }
 
   /**
    * @dev Modifier to restrict access to operator
@@ -349,27 +370,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     onlyNotBlocklisted(msg.sender)
     whenNotPaused
   {
-    // burn the tokens
-    BridgeToken(token).burnFrom(msg.sender, amount);
+    uint256 currentLockBurnNonce = lockBurnNonce + 1;
+    lockBurnNonce = currentLockBurnNonce;
 
-    // decimals defaults to 18 if call to decimals fails
-    uint8 decimals = getDecimals(token);
-
-    // Denom defaults to "" (empty string) if call to cosmosDenom fails
-    string memory denom = getDenom(token);
-
-    lockBurnNonce = lockBurnNonce + 1;
-
-    emit LogBurn(
-      msg.sender,
-      recipient,
-      token,
-      amount,
-      lockBurnNonce,
-      decimals,
-      networkDescriptor,
-      denom
-    );
+    _burnTokens(recipient, token, amount, currentLockBurnNonce);
   }
 
   /**
@@ -448,7 +452,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @param token The bridgeToken's address
    * @return The balance of the bridgebanks account with the bridge token
    */
-  function getBalance(address token) private returns (uint256) {
+  function getBalance(address token) private view returns (uint256) {
     uint256 balance;
     try BridgeToken(token).balanceOf(address(this)) returns (uint256 _balance) {
       balance = _balance;
@@ -493,6 +497,11 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
    * @return The bridgeTokens's denom or ''
    */
   function getDenom(address token) private returns (string memory) {
+    if (token == rowanTokenAddress) {
+      // If it's the old erowan token, set the denom to 'rowan' and move forward
+      return "rowan";
+    }
+
     string memory denom = contractDenom[token];
 
     // check to see if we already have this denom stored in the smart contract
@@ -571,7 +580,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
       unchecked { ++i; }
     }
 
-    // If we get any reentrant calls from the _{burn,lock}Tokens functions, 
+    // If we get any reentrant calls from the _{burn,lock}Tokens functions,
     // make sure that lockBurnNonce is what we expect it to be.
     require(lockBurnNonce == startingLockBurnNonce - 1 + recipientLength, "M_P");
   }
@@ -640,15 +649,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     // burn tokens
     tokenToTransfer.burnFrom(msg.sender, tokenAmount);
 
-    string memory denom;
-    if (tokenAddress == 0x07baC35846e5eD502aA91AdF6A9e7aA210F2DcbE) {
-      // If it's the old erowan token, set the denom to 'rowan' and move forward
-      denom = "rowan";
-    } else {
-      // revert if the token doesn't have a denom
-      denom = getDenom(tokenAddress);
-      require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
-    }
+    string memory denom = getDenom(tokenAddress);
+
+    // Explicitly check that the denom is not the empty string
+    require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
 
     // decimals defaults to 18 if call to decimals fails
     uint8 decimals = getDecimals(tokenAddress);
@@ -707,12 +711,11 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   ) internal {
     // Transfer funds to intended recipient
     if (token == address(0)) {
-      (bool success, ) = recipient.call{ value: amount }("");
+      bool success = recipient.send(amount);
       require(success, "error sending ether");
     } else {
       IERC20 tokenToTransfer = IERC20(token);
 
-      // TODO: try/catch
       tokenToTransfer.safeTransfer(recipient, amount);
     }
 

@@ -134,7 +134,7 @@ export async function checkEvmLockState(
               }
             case "EbRelayerEvmStateTransition":
               switch ((v.data as any).kind) {
-                case "EthereumProphecyClaim":
+                case "EthereumBridgeClaim":
                   const d = v.data as any
                   if (
                     d.prophecyClaim.ethereum_sender == acc.fromEthereumAddress &&

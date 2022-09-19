@@ -29,6 +29,7 @@ type Keeper struct {
 	bankKeeper          types.BankKeeper
 	oracleKeeper        types.OracleKeeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
+	adminKeeper         types.AdminKeeper
 	storeKey            sdk.StoreKey
 }
 
@@ -42,12 +43,13 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
-// NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryCodec,
+func NewKeeper(
+	cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
 	accountKeeper types.AccountKeeper,
 	tokenRegistryKeeper tokenregistrytypes.Keeper,
+	adminKeeper types.AdminKeeper,
 	storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:                 cdc,
@@ -55,6 +57,7 @@ func NewKeeper(cdc codec.BinaryCodec,
 		bankKeeper:          bankKeeper,
 		oracleKeeper:        oracleKeeper,
 		tokenRegistryKeeper: tokenRegistryKeeper,
+		adminKeeper:         adminKeeper,
 		storeKey:            storeKey,
 	}
 }
@@ -116,6 +119,8 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
+//
+// Returns ProphecyID in byte slice
 func (k Keeper) ProcessBurn(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
@@ -126,6 +131,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return []byte{}, types.ErrBlacklistedAddress
+	}
+
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
@@ -177,17 +187,14 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.SendCoinsFromAccountToModule, "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
 
-	// not burn the token if it is sifchain native token
-	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
-		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
-		if err != nil {
-			logger.Error("failed to burn locked coin.",
-				errorMessageKey, err.Error())
-			return []byte{}, err
-		}
-		instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
+	coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
+	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		logger.Error("failed to burn locked coin.",
+			errorMessageKey, err.Error())
+		return []byte{}, err
 	}
+	instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
 
 	prophecyID := msg.GetProphecyID(senderSequence, tokenMetadata.TokenAddress, tokenMetadata.Name, tokenMetadata.Symbol, uint8(tokenMetadata.Decimals), bridgeToken, k.GetGlobalSequence(ctx, msg.NetworkDescriptor))
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
@@ -205,6 +212,11 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return []byte{}, types.ErrBlacklistedAddress
+	}
+
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 

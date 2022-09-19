@@ -1,9 +1,9 @@
 package app
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
@@ -16,6 +16,9 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
+//go:embed denom_mapping_peggy1_to_peggy2.json
+var tokenMap string
+
 // GetTokenMigrationFunc return a function to migrate token denom
 func GetTokenMigrationFunc(app *SifchainApp) func(ctx sdk.Context, plan upgradetypes.Plan) {
 	return func(ctx sdk.Context, plan upgradetypes.Plan) {
@@ -23,70 +26,69 @@ func GetTokenMigrationFunc(app *SifchainApp) func(ctx sdk.Context, plan upgradet
 
 		ExportAppState("changePoolFormula", app, ctx)
 
-		tokenMap := readTokenMapJSON()
+		tokenMap := ReadTokenMapJSON()
 
-		migrateBalance(ctx, tokenMap, app.BankKeeper)
+		MigrateBalance(ctx, tokenMap, app.BankKeeper)
 		migratePool(ctx, tokenMap, app.ClpKeeper)
 		migrateLiquidity(ctx, tokenMap, app.ClpKeeper)
 	}
 }
 
-func readTokenMapJSON() map[string]string {
-	data, err := ioutil.ReadFile("./token_migration.json")
-	if err != nil {
-		panic(err)
-	}
-
+func ReadTokenMapJSON() map[string]string {
 	jsonData := map[string]string{}
-	err = json.Unmarshal(data, &jsonData)
+	err := json.Unmarshal([]byte(tokenMap), &jsonData)
 	if err != nil {
 		panic("fail to parse token migration file")
 	}
 	return jsonData
 }
 
-func getAll(addresses *[]sdk.AccAddress, coins *[]sdk.Coin) func(address sdk.AccAddress, coin sdk.Coin) bool {
-	return func(address sdk.AccAddress, coin sdk.Coin) bool {
-		*addresses = append(*addresses, address)
-		*coins = append(*coins, coin)
-		return true
-	}
-}
-
-func migrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bankkeeper.Keeper) {
+func MigrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bankkeeper.Keeper) {
 	addresses := []sdk.AccAddress{}
 	coins := []sdk.Coin{}
 
-	bankKeeper.IterateAllBalances(ctx, getAll(&addresses, &coins))
+	bankKeeper.IterateAllBalances(ctx, func(address sdk.AccAddress, coin sdk.Coin) (stop bool) {
+		addresses = append(addresses, address)
+		coins = append(coins, coin)
+		return false
+	})
 
 	for index, address := range addresses {
 
 		coin := coins[index]
 		amount := coin.Amount
 
-		// send old coins to module
-		err := bankKeeper.SendCoinsFromAccountToModule(ctx, address, ethbridge.ModuleName, coins)
-
-		if err != nil {
-			panic("failed to set balance during token migration")
-		}
-
 		// set the balance for new denom
-		if value, ok := tokenMap[coin.Denom]; ok {
-			coin := sdk.NewCoins(sdk.NewCoin(value, amount))
+		if newDenom, ok := tokenMap[coin.Denom]; ok {
+			if newDenom == coin.Denom {
+				continue
+			}
+
+			// send old coins to module
+			err := bankKeeper.SendCoinsFromAccountToModule(ctx, address, ethbridge.ModuleName, sdk.NewCoins(coin))
+			if err != nil {
+				panic(err)
+			}
+
+			err = bankKeeper.BurnCoins(ctx, ethbridge.ModuleName, sdk.NewCoins(coin))
+			if err != nil {
+				panic(err)
+			}
+
+			newCoins := sdk.NewCoins(sdk.NewCoin(newDenom, amount))
 
 			// can't set balance directly, we mint to module, then transfer to address
-			err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, coin)
+			err = bankKeeper.MintCoins(ctx, ethbridge.ModuleName, newCoins)
 			if err != nil {
 				panic("failed to mint coins during token migration")
 			}
 
-			err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, address, coin)
+			err = bankKeeper.SendCoinsFromModuleToAccount(ctx, ethbridge.ModuleName, address, newCoins)
 			if err != nil {
 				panic("failed to set balance during token migration")
 			}
 		} else {
-			panic(fmt.Sprintf("new denom for %s not found\n", coin.Denom))
+			ctx.Logger().Error("new denom for %s not found\n", coin.Denom)
 		}
 	}
 

@@ -2,9 +2,13 @@ package keeper
 
 import (
 	"context"
-	"errors"
+
+	"fmt"
 	"math"
 	"strconv"
+
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -18,6 +22,21 @@ type msgServer struct {
 	Keeper
 }
 
+func (k msgServer) SetSymmetryThreshold(goCtx context.Context, threshold *types.MsgSetSymmetryThreshold) (*types.MsgSetSymmetryThresholdResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(threshold.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", threshold.Signer))
+	}
+
+	k.Keeper.SetSymmetryThreshold(sdk.UnwrapSDKContext(goCtx), threshold)
+
+	return &types.MsgSetSymmetryThresholdResponse{}, nil
+}
+
 // NewMsgServerImpl returns an implementation of the clp MsgServer interface
 // for the provided Keeper.
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
@@ -25,6 +44,267 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 var _ types.MsgServer = msgServer{}
+
+func (k msgServer) CancelUnlockLiquidity(goCtx context.Context, request *types.MsgCancelUnlock) (*types.MsgCancelUnlockResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	lp, err := k.Keeper.GetLiquidityProvider(ctx, request.ExternalAsset.Symbol, request.Signer)
+	if err != nil {
+		return nil, types.ErrLiquidityProviderDoesNotExist
+	}
+	// Prune unlocks
+	params := k.GetRewardsParams(ctx)
+	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+
+	err = k.UseUnlockedLiquidity(ctx, lp, request.Units, true)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCancelUnlock,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
+			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, request.Signer),
+		),
+	})
+	return &types.MsgCancelUnlockResponse{}, nil
+}
+
+func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.MsgUpdateStakingRewardParams) (*types.MsgUpdateStakingRewardParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return nil, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	if !(msg.Minter.AnnualProvisions.IsZero() && msg.Minter.Inflation.IsZero()) {
+		k.mintKeeper.SetMinter(ctx, msg.Minter)
+	}
+	k.mintKeeper.SetParams(ctx, msg.Params)
+
+	return &types.MsgUpdateStakingRewardParamsResponse{}, err
+
+}
+
+func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpdateRewardsParamsRequest) (*types.MsgUpdateRewardsParamsResponse, error) {
+	response := &types.MsgUpdateRewardsParamsResponse{}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetRewardsParams(ctx)
+	params.LiquidityRemovalLockPeriod = msg.LiquidityRemovalLockPeriod
+	params.LiquidityRemovalCancelPeriod = msg.LiquidityRemovalCancelPeriod
+	k.SetRewardParams(ctx, params)
+	return response, err
+}
+
+func (k msgServer) AddRewardPeriod(goCtx context.Context, msg *types.MsgAddRewardPeriodRequest) (*types.MsgAddRewardPeriodResponse, error) {
+	response := &types.MsgAddRewardPeriodResponse{}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetRewardsParams(ctx)
+	params.RewardPeriods = msg.RewardPeriods
+	k.SetRewardParams(ctx, params)
+	return response, nil
+}
+
+func (k msgServer) AddProviderDistributionPeriod(goCtx context.Context, msg *types.MsgAddProviderDistributionPeriodRequest) (*types.MsgAddProviderDistributionPeriodResponse, error) {
+	response := &types.MsgAddProviderDistributionPeriodResponse{}
+
+	// defensive programming
+	if msg == nil {
+		return response, errors.Errorf("msg was nil")
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return response, err
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	params := &types.ProviderDistributionParams{}
+	params.DistributionPeriods = msg.DistributionPeriods
+	k.SetProviderDistributionParams(ctx, params)
+
+	eventMsg := CreateEventMsg(msg.Signer)
+	attribute := sdk.NewAttribute(types.AttributeKeyProviderDistributionParams, params.String())
+	providerDistributionPolicyEvent := CreateEventBlockHeight(ctx, types.EventTypeAddNewProviderDistributionPolicy, attribute)
+	ctx.EventManager().EmitEvents(sdk.Events{providerDistributionPolicyEvent, eventMsg})
+
+	return response, nil
+}
+
+func (k msgServer) UpdatePmtpParams(goCtx context.Context, msg *types.MsgUpdatePmtpParams) (*types.MsgUpdatePmtpParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	response := &types.MsgUpdatePmtpParamsResponse{}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetPmtpParams(ctx)
+	// Check to see if a policy is still running
+	if k.IsInsidePmtpWindow(ctx) {
+		return response, types.ErrCannotStartPolicy
+	}
+	// Check to make sure new policy starts in the future so that PolicyStart from begin-block can be triggered
+	if msg.PmtpPeriodStartBlock <= ctx.BlockHeight() {
+		return response, errors.New("Start block cannot be in the past/current block")
+	}
+	params.PmtpPeriodStartBlock = msg.PmtpPeriodStartBlock
+	params.PmtpPeriodEndBlock = msg.PmtpPeriodEndBlock
+	params.PmtpPeriodEpochLength = msg.PmtpPeriodEpochLength
+
+	if !types.StringCompare(msg.PmtpPeriodGovernanceRate, "") {
+		rGov, err := sdk.NewDecFromStr(msg.PmtpPeriodGovernanceRate)
+		if err != nil {
+			return response, err
+		}
+		params.PmtpPeriodGovernanceRate = rGov
+	}
+
+	k.SetPmtpParams(ctx, params)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeAddNewPmtpPolicy,
+			sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+	return &types.MsgUpdatePmtpParamsResponse{}, nil
+}
+
+func (k msgServer) ModifyPmtpRates(goCtx context.Context, msg *types.MsgModifyPmtpRates) (*types.MsgModifyPmtpRatesResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	response := &types.MsgModifyPmtpRatesResponse{}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+	params := k.GetPmtpParams(ctx)
+	rateParams := k.GetPmtpRateParams(ctx)
+
+	// Set Block Rate is needed only if no policy is presently executing
+	if !types.StringCompare(msg.BlockRate, "") && !k.IsInsidePmtpWindow(ctx) {
+		blockRate, err := sdk.NewDecFromStr(msg.BlockRate)
+		if err != nil {
+			return response, err
+		}
+		rateParams.PmtpPeriodBlockRate = blockRate
+	}
+
+	// Set Running Rate if Needed only if no policy is presently executing
+	if !types.StringCompare(msg.RunningRate, "") && !k.IsInsidePmtpWindow(ctx) {
+		runningRate, err := sdk.NewDecFromStr(msg.RunningRate)
+		if err != nil {
+			return response, err
+		}
+		rateParams.PmtpCurrentRunningRate = runningRate
+		// inter policy rate should always equal running rate between policies
+		rateParams.PmtpInterPolicyRate = runningRate
+	}
+	k.SetPmtpRateParams(ctx, rateParams)
+	events := sdk.EmptyEvents()
+	// End Policy If Needed , returns if not policy is presently
+	if msg.EndPolicy && k.IsInsidePmtpWindow(ctx) {
+		params.PmtpPeriodEndBlock = ctx.BlockHeight()
+		k.SetPmtpParams(ctx, params)
+		k.SetPmtpEpoch(ctx, types.PmtpEpoch{
+			EpochCounter: 0,
+			BlockCounter: 0,
+		})
+		k.SetPmtpInterPolicyRate(ctx, rateParams.PmtpCurrentRunningRate)
+		events = events.AppendEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeEndPmtpPolicy,
+				sdk.NewAttribute(types.AttributeKeyPmtpPolicyParams, params.String()),
+				sdk.NewAttribute(types.AttributeKeyPmtpRateParams, rateParams.String()),
+				sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+			),
+		})
+	}
+	ctx.EventManager().EmitEvents(events)
+	return response, nil
+}
+
+func (k msgServer) UnlockLiquidity(goCtx context.Context, request *types.MsgUnlockLiquidityRequest) (*types.MsgUnlockLiquidityResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	lp, err := k.Keeper.GetLiquidityProvider(ctx, request.ExternalAsset.Symbol, request.Signer)
+	if err != nil {
+		return nil, types.ErrLiquidityProviderDoesNotExist
+	}
+	// Prune unlocks
+	params := k.GetRewardsParams(ctx)
+	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+	totalUnlocks := sdk.ZeroUint()
+	for _, unlock := range lp.Unlocks {
+		totalUnlocks = totalUnlocks.Add(unlock.Units)
+	}
+	if totalUnlocks.Add(request.Units).GT(lp.LiquidityProviderUnits) {
+		return nil, types.ErrBalanceNotAvailable
+	}
+	lp.Unlocks = append(lp.Unlocks, &types.LiquidityUnlock{
+		RequestHeight: ctx.BlockHeight(),
+		Units:         request.Units,
+	})
+	k.Keeper.SetLiquidityProvider(ctx, &lp)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRequestUnlock,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyPool, lp.Asset.Symbol),
+			sdk.NewAttribute(types.AttributeKeyUnits, request.Units.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, request.Signer),
+		),
+	})
+	return &types.MsgUnlockLiquidityResponse{}, nil
+}
 
 func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommissionPool) (*types.MsgDecommissionPoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -36,6 +316,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if err != nil {
 		return nil, err
 	}
+	// TODO : Deprecate this Admin in favor of TokenRegistry
 	if !k.Keeper.ValidateAddress(ctx, addAddr) {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "user does not have permission to decommission pool")
 	}
@@ -100,6 +381,68 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	return &types.MsgDecommissionPoolResponse{}, nil
 }
 
+func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (*types.MsgCreatePoolResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	// Verify min threshold
+	MinThreshold := sdk.NewUintFromString(types.PoolThrehold)
+	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
+		return nil, types.ErrTotalAmountTooLow
+	}
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
+
+	// Check if pool already exists
+	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
+		return nil, types.ErrUnableToCreatePool
+	}
+
+	nativeBalance := msg.NativeAssetAmount
+	externalBalance := msg.ExternalAssetAmount
+	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
+	if err != nil {
+		return nil, err
+	}
+
+	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
+		nativeBalance, externalBalance, externalDecimals, k.GetSymmetryThreshold(ctx), k.GetSymmetryRatio(ctx))
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
+	}
+
+	pool, err := k.Keeper.CreatePool(ctx, poolUnits, msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
+	accAddr, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	lp := k.Keeper.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpunits, accAddr)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCreatePool,
+			sdk.NewAttribute(types.AttributeKeyPool, pool.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			types.EventTypeCreateLiquidityProvider,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+	return &types.MsgCreatePoolResponse{}, nil
+}
+
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	var (
@@ -119,10 +462,50 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
-	decimals := sAsset.Decimals
+	if k.tokenRegistryKeeper.CheckEntryPermissions(sAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_SELL}) {
+		return nil, tokenregistrytypes.ErrNotAllowedToSellAsset
+	}
+	if k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_BUY}) {
+		return nil, tokenregistrytypes.ErrNotAllowedToBuyAsset
+	}
+
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+
+	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
+	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
+	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
+	currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+	var (
+		sentValue sdk.Uint
+	)
+
+	// if liquidity protection is active and selling rowan
+	if liquidityProtectionParams.IsActive && types.StringCompare(sAsset.Denom, types.NativeSymbol) {
+		if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+			sentValue = msg.SentAmount
+		} else {
+			pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+			if err != nil {
+				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+			}
+			marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+
+			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount, marginEnabled)
+
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if currentRowanLiquidityThreshold.LT(sentValue) {
+			return nil, types.ErrReachedMaxRowanLiquidityThreshold
+		}
+	}
+
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
-	totalLiquidityFee := sdk.ZeroUint()
+	totalLiquidityFee := sdk.ZeroUint() // nolint:staticcheck
 	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
@@ -153,8 +536,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if !msg.SentAsset.Equals(nativeAsset) && !msg.ReceivedAsset.Equals(nativeAsset) {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(decimals)
-		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, nativeAsset, inPool, normalizationFactor, adjustExternalToken)
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, inPool.ExternalAsset.Symbol)
+		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, nativeAsset, inPool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 		if err != nil {
 			return nil, err
 		}
@@ -173,17 +556,15 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
 		}
-		decimals = sAsset.Decimals
 	} else {
 		outPool, err = k.Keeper.GetPool(ctx, msg.ReceivedAsset.Symbol)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
 		}
-		decimals = rAsset.Decimals
 	}
 	// Calculating amount user receives
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(decimals)
-	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool, normalizationFactor, adjustExternalToken)
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, outPool.ExternalAsset.Symbol)
+	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +593,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 	if liquidityFeeNative.GT(sdk.ZeroUint()) {
 		liquidityFeeExternal = liquidityFeeExternal.Add(lp)
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(decimals)
-		firstSwapFeeInOutputAsset := GetSwapFee(liquidityFeeNative, *msg.ReceivedAsset, outPool, normalizationFactor, adjustExternalToken)
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, outPool.ExternalAsset.Symbol)
+		firstSwapFeeInOutputAsset := GetSwapFee(liquidityFeeNative, *msg.ReceivedAsset, outPool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
 		totalLiquidityFee = liquidityFeeExternal.Add(firstSwapFeeInOutputAsset)
 	} else {
 		totalLiquidityFee = liquidityFeeNative.Add(lp)
@@ -227,6 +608,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 			sdk.NewAttribute(types.AttributeKeyPriceImpact, priceImpact.String()),
 			sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
 			sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
+			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
+			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(
@@ -235,10 +618,113 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
+
+	if liquidityProtectionParams.IsActive {
+		// if sell rowan
+		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
+			// we know that sentValue < currentRowanLiquidityThreshold so we can do the
+			// substitution knowing it won't panic
+			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Sub(sentValue)
+			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+		}
+
+		// if buy rowan
+		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
+			var emitValue sdk.Uint
+			if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
+				emitValue = emitAmount
+			} else {
+				pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+				if err != nil {
+					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+				}
+				marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+
+				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount, marginEnabled)
+
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			// This is equivalent to currentRowanLiquidityThreshold := sdk.MinUint(currentRowanLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
+			// except it prevents any overflows when adding the emitValue
+			if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(emitValue) {
+				currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
+			} else {
+				currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(emitValue)
+			}
+
+			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+		}
+	}
+
 	return &types.MsgSwapResponse{}, nil
 }
 
-func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
+func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
+	// Get pool
+	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrPoolDoesNotExist
+	}
+
+	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
+	if err != nil {
+		return nil, err
+	}
+
+	newPoolUnits, lpUnits, err := CalculatePoolUnits(
+		pool.PoolUnits,
+		pool.NativeAssetBalance,
+		pool.ExternalAssetBalance,
+		msg.NativeAssetAmount,
+		msg.ExternalAssetAmount,
+		externalDecimals,
+		k.GetSymmetryThreshold(ctx),
+		k.GetSymmetryRatio(ctx))
+	if err != nil {
+		return nil, err
+	}
+	// Get lp , if lp doesnt exist create lp
+	lp, err := k.Keeper.AddLiquidity(ctx, msg, pool, newPoolUnits, lpUnits)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrUnableToAddLiquidity, err.Error())
+	}
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeAddLiquidity,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyUnits, lpUnits.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+
+	// Skip when queueing is disabled, and for pools that are not margin enabled.
+	if !k.GetMarginKeeper().IsPoolEnabled(ctx, msg.ExternalAsset.Symbol) || !k.IsRemovalQueueEnabled(ctx) {
+		return &types.MsgAddLiquidityResponse{}, nil
+	}
+	if k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol).Count > 0 {
+		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
+	}
+
+	return &types.MsgAddLiquidityResponse{}, nil
+}
+
+func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRemoveLiquidityUnits) (*types.MsgRemoveLiquidityUnitsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
@@ -256,12 +742,157 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
+
+	// ensure requested removal amount is less than available - what is already on the queue
+	lpQueuedUnits := k.GetRemovalQueueUnitsForLP(ctx, lp)
+	if msg.WithdrawUnits.GT(lp.LiquidityProviderUnits.Sub(lpQueuedUnits)) {
+		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msg.WithdrawUnits, lp.LiquidityProviderUnits))
+	}
+
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	// Prune pools
+	params := k.GetRewardsParams(ctx)
+	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+
+	//Calculate amount to withdraw
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := CalculateWithdrawalFromUnits(pool.PoolUnits,
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
+		msg.WithdrawUnits)
+
+	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
+	if err != nil {
+		return nil, err
+	}
+
+	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
+	if k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+		extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
+
+		futurePool := pool
+		futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
+		futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
+		if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
+			if k.IsRemovalQueueEnabled(ctx) {
+				k.QueueRemoval(ctx, &types.MsgRemoveLiquidity{
+					Signer:        msg.Signer,
+					ExternalAsset: msg.ExternalAsset,
+					WBasisPoints:  ConvUnitsToWBasisPoints(lp.LiquidityProviderUnits, msg.WithdrawUnits),
+					Asymmetry:     sdk.ZeroInt(),
+				}, extRowanValue.Add(withdrawNativeAssetAmount))
+				return nil, types.ErrQueued
+			}
+			return nil, types.ErrRemovalsBlockedByHealth
+		}
+	}
+
+	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
+	if !ok {
+		return nil, types.ErrUnableToParseInt
+	}
+	withdrawNativeAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawNativeAssetAmount.String())
+	if !ok {
+		return nil, types.ErrUnableToParseInt
+	}
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, withdrawExternalAssetAmountInt)
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetAmountInt)
+	// Subtract Value from pool
+	pool.PoolUnits = pool.PoolUnits.Sub(lp.LiquidityProviderUnits).Add(lpUnitsLeft)
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
+	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
+
+	// Check and  remove Liquidity
+	err = k.Keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, poolOriginalEB, poolOriginalNB)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
+	}
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRemoveLiquidity,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
+			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
+			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+	return &types.MsgRemoveLiquidityUnitsResponse{}, nil
+}
+
+func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
+	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrPoolDoesNotExist
+	}
+	//Get LP
+	lp, err := k.Keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
+
+	if err != nil {
+		return nil, types.ErrLiquidityProviderDoesNotExist
+	}
+
+	poolOriginalEB := pool.ExternalAssetBalance
+	poolOriginalNB := pool.NativeAssetBalance
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	// Prune pools
+	params := k.GetRewardsParams(ctx)
+	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
+
+	if !msg.Asymmetry.IsZero() {
+		return nil, types.ErrAsymmetricRemove
+	}
+
+	// ensure requested removal amount is less than available - what is already on the queue
+	lpQueuedUnits := k.GetRemovalQueueUnitsForLP(ctx, lp)
+	msgUnits := ConvWBasisPointsToUnits(lp.LiquidityProviderUnits, msg.WBasisPoints)
+	if msgUnits.GT(lp.LiquidityProviderUnits.Sub(lpQueuedUnits)) {
+		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msgUnits, lp.LiquidityProviderUnits))
+	}
+
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
+
+	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
+	if err != nil {
+		return nil, err
+	}
+
+	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
+	if k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+		extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
+
+		futurePool := pool
+		futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
+		futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
+		if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
+			if k.IsRemovalQueueEnabled(ctx) {
+				k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
+				return nil, types.ErrQueued
+			}
+			return nil, types.ErrRemovalsBlockedByHealth
+		}
+	}
+
 	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
@@ -279,11 +910,13 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
 	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
 		return nil, sdkerrors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
+
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, normalizationFactor, adjustExternalToken)
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
+
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -304,8 +937,9 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken)
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate, marginEnabled)
+
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -334,6 +968,9 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		sdk.NewEvent(
 			types.EventTypeRemoveLiquidity,
 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
+			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
+			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(
@@ -345,50 +982,27 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	return &types.MsgRemoveLiquidityResponse{}, nil
 }
 
-func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (*types.MsgCreatePoolResponse, error) {
+func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *types.MsgUpdateLiquidityProtectionParams) (*types.MsgUpdateLiquidityProtectionParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	// Verify min threshold
-	MinThreshold := sdk.NewUintFromString(types.PoolThrehold)
-	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
-		return nil, types.ErrTotalAmountTooLow
-	}
-	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
+	response := &types.MsgUpdateLiquidityProtectionParamsResponse{}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
-		return nil, types.ErrTokenNotSupported
+		return response, err
 	}
-	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
-		return nil, tokenregistrytypes.ErrPermissionDenied
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
-	// Check if pool already exists
-	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
-		return nil, types.ErrUnableToCreatePool
-	}
-	nativeBalance := msg.NativeAssetAmount
-	externalBalance := msg.ExternalAssetAmount
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance, normalizationFactor, adjustExternalToken)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
-	}
-	// Create Pool
-	pool, err := k.Keeper.CreatePool(ctx, poolUnits, msg)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
-	}
-	accAddr, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return nil, err
-	}
-	lp := k.Keeper.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpunits, accAddr)
+	params := k.GetLiquidityProtectionParams(ctx)
+	params.MaxRowanLiquidityThreshold = msg.MaxRowanLiquidityThreshold
+	params.MaxRowanLiquidityThresholdAsset = msg.MaxRowanLiquidityThresholdAsset
+	params.EpochLength = msg.EpochLength
+	params.IsActive = msg.IsActive
+	k.SetLiquidityProtectionParams(ctx, params)
+	k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, params.MaxRowanLiquidityThreshold)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeCreatePool,
-			sdk.NewAttribute(types.AttributeKeyPool, pool.String()),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			types.EventTypeCreateLiquidityProvider,
-			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			types.EventTypeUpdateLiquidityProtectionParams,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProtectionParams, params.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(
@@ -397,44 +1011,27 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
-	return &types.MsgCreatePoolResponse{}, nil
+	return &types.MsgUpdateLiquidityProtectionParamsResponse{}, nil
 }
 
-func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
+func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *types.MsgModifyLiquidityProtectionRates) (*types.MsgModifyLiquidityProtectionRatesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
+	response := &types.MsgModifyLiquidityProtectionRatesResponse{}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
-		return nil, types.ErrTokenNotSupported
+		return response, err
 	}
-	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
-		return nil, tokenregistrytypes.ErrPermissionDenied
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
-	// Get pool
-	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
-	if err != nil {
-		return nil, types.ErrPoolDoesNotExist
-	}
-	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(eAsset.Decimals)
-	newPoolUnits, lpUnits, err := CalculatePoolUnits(
-		pool.PoolUnits,
-		pool.NativeAssetBalance,
-		pool.ExternalAssetBalance,
-		msg.NativeAssetAmount,
-		msg.ExternalAssetAmount,
-		normalizationFactor,
-		adjustExternalToken)
-	if err != nil {
-		return nil, err
-	}
-	// Get lp , if lp doesnt exist create lp
-	lp, err := k.Keeper.AddLiquidity(ctx, msg, pool, newPoolUnits, lpUnits)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrUnableToAddLiquidity, err.Error())
-	}
-	ctx.EventManager().EmitEvents(sdk.Events{
+	rateParams := k.GetLiquidityProtectionRateParams(ctx)
+	rateParams.CurrentRowanLiquidityThreshold = msg.CurrentRowanLiquidityThreshold
+	k.SetLiquidityProtectionRateParams(ctx, rateParams)
+	events := sdk.EmptyEvents()
+	events = events.AppendEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeAddLiquidity,
-			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			types.EventTypeUpdateLiquidityProtectionRateParams,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProtectionRateParams, rateParams.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(
@@ -443,5 +1040,33 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
-	return &types.MsgAddLiquidityResponse{}, nil
+	ctx.EventManager().EmitEvents(events)
+	return response, nil
+}
+
+func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdateSwapFeeRateRequest) (*types.MsgUpdateSwapFeeRateResponse, error) {
+	response := &types.MsgUpdateSwapFeeRateResponse{}
+
+	// defensive programming
+	if msg == nil {
+		return response, errors.Errorf("msg was nil")
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return response, err
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_PMTPREWARDS, signer) {
+		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
+	}
+
+	k.SetSwapFeeRate(ctx, &types.SwapFeeRate{SwapFeeRate: msg.SwapFeeRate})
+
+	return response, nil
 }

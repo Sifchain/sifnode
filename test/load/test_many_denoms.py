@@ -114,9 +114,12 @@ def test(ctx: test_utils.EnvCtx):
     _parametric_test(ctx, 2)
 
 
-def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report_lines: Union[List[str], None] = None):
+def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, sample_loop_size: int = 20,
+    report_lines: Optional[List[str]] = None
+):
     report_lines = [] if report_lines is None else report_lines
     assert number_of_erc20_tokens > 1
+    assert sample_loop_size > 0
 
     token_name_base = random_string(4)
     owner = ctx.operator
@@ -126,13 +129,17 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
     fat_sif_wallet = ctx.create_sifchain_addr()
     slim_sif_wallet = ctx.create_sifchain_addr()
 
+    report(report_lines, "Number of tokens: {}".format(number_of_erc20_tokens))
+    log.info("Fat sif wallet ({} denoms): {}".format(number_of_erc20_tokens, fat_sif_wallet))
+    log.info("Slim sif wallet (1 denom): {}".format(slim_sif_wallet))
+
     def token_data_provider(i: int) -> Tuple[str, str, int]:
         token_name = "{}{}".format(token_name_base, i)
         token_symbol = "eth-symbol-{}".format(i)
         token_decimals = 6
         return token_name, token_symbol, token_decimals
 
-    report(report_lines, "Number of tokens: {}".format(number_of_erc20_tokens))
+    log.info("Current phase: deploy sample ERC20 smart contracts (batch_deploy_erc20_tokens)")
 
     setup_start_time = time.time()
     time_before = time.time()
@@ -144,7 +151,10 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
 
     sif_denoms = [sifchain.sifchain_denom_hash(ctx.eth.ethereum_network_descriptor, addr) for addr in contract_addresses]
 
-    amount = 123456  # Must be > test_loop_count
+    amount = 123456
+    assert amount > sample_loop_size
+
+    log.info("Current phase: mint sample tokens (batch_approve_and_lock_erc20_tokens)")
 
     time_before = time.time()
     batch_mint_erc20_tokens(ctx, owner, eth_sender, amount, contract_addresses)
@@ -152,6 +162,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
 
     report(report_lines, "batch_mint_erc20_tokens(): {:.2f} s, {:.2f} items/s".format(mint_time,
         number_of_erc20_tokens / mint_time if mint_time > 0 else 0))
+
+    log.info("Current phase: send sample tokens from Ethereum to Sifchain (batch_approve_and_lock_erc20_tokens)")
 
     eth_balance_before = ctx.eth.get_eth_balance(eth_sender)
     sif_balance_before = ctx.get_sifchain_balance(fat_sif_wallet)
@@ -161,6 +173,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
     approve_and_lock_time = time.time() - time_before
     report(report_lines, "batch_approve_and_lock_erc20_tokens(): {:.2f} s, {:.2f} items/s".format(approve_and_lock_time,
         number_of_erc20_tokens / approve_and_lock_time if approve_and_lock_time > 0 else 0))
+
+    log.info("Current phase: wait for sif balance to change (wait_for_sif_balance_change)")
 
     fat_balance = {denom: amount for denom in sif_denoms}
     time_before = time.time()
@@ -172,6 +186,8 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
         number_of_erc20_tokens / balance_change_time if balance_change_time > 0 else 0))
 
     setup_time = time.time() - setup_start_time
+
+    check_and_reopen_web3_connection_due_to_possible_timeout(ctx)
 
     eth_balance_after = ctx.eth.get_eth_balance(eth_sender)
     report(report_lines, "Cost of approve+lock: {:.2f} gwei".format(
@@ -191,26 +207,26 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
     ctx.wait_for_sif_balance_change(slim_sif_wallet, sif_balance_before, expected_balance=expected_slim_balance)
     assert cosmos.balance_equal(ctx.get_sifchain_balance(slim_sif_wallet), expected_slim_balance)
 
+    log.info("Current phase: timing send and burn operations for fat vs. slim wallet")
+
     # We do few transfers and burns to get the average time per transaction for fat wallet.
     # We assert that the fees are equal to the fee of a single transaction as given by get_sif_tx_fees() and
     # get_sif_burn_fees().
 
-    test_loop_count = 10
-
     tmp_sif_account = ctx.create_sifchain_addr()
     tmp_eth_account = ctx.create_and_fund_eth_account()
 
-    sif_send_time_fat = timed_tx_send_loop(ctx, fat_sif_wallet, tmp_sif_account, {denom0: 1}, test_loop_count)
-    report(report_lines, "Average tx_send time for fat_sif_wallet: {:.2f} s".format(sif_send_time_fat / test_loop_count))
+    sif_send_time_fat = timed_tx_send_loop(ctx, fat_sif_wallet, tmp_sif_account, {denom0: 1}, sample_loop_size)
+    report(report_lines, "Average tx_send time for fat_sif_wallet: {:.2f} s".format(sif_send_time_fat / sample_loop_size))
 
-    sif_burn_time_fat = timed_tx_burn_loop(ctx, fat_sif_wallet, tmp_eth_account, denom0, 1, test_loop_count)
-    report(report_lines, "Average tx_burn time for fat_sif_wallet: {:.2f} s".format(sif_burn_time_fat / test_loop_count))
+    sif_burn_time_fat = timed_tx_burn_loop(ctx, fat_sif_wallet, tmp_eth_account, denom0, 1, sample_loop_size)
+    report(report_lines, "Average tx_burn time for fat_sif_wallet: {:.2f} s".format(sif_burn_time_fat / sample_loop_size))
 
-    sif_send_time_slim = timed_tx_send_loop(ctx, slim_sif_wallet, tmp_sif_account, {denom0: 1}, test_loop_count)
-    report(report_lines, "Average tx_send time for slim_sif_wallet: {:.2f} s".format(sif_send_time_slim / test_loop_count))
+    sif_send_time_slim = timed_tx_send_loop(ctx, slim_sif_wallet, tmp_sif_account, {denom0: 1}, sample_loop_size)
+    report(report_lines, "Average tx_send time for slim_sif_wallet: {:.2f} s".format(sif_send_time_slim / sample_loop_size))
 
-    sif_burn_time_slim = timed_tx_burn_loop(ctx, slim_sif_wallet, tmp_eth_account, denom0, 1, test_loop_count)
-    report(report_lines, "Average tx_burn time for slim_sif_wallet: {:.2f} s".format(sif_burn_time_slim / test_loop_count))
+    sif_burn_time_slim = timed_tx_burn_loop(ctx, slim_sif_wallet, tmp_eth_account, denom0, 1, sample_loop_size)
+    report(report_lines, "Average tx_burn time for slim_sif_wallet: {:.2f} s".format(sif_burn_time_slim / sample_loop_size))
 
     report(report_lines, "Relative fat/slim speed for tx_send: {:.2f}".format(sif_send_time_fat / sif_send_time_slim))
     report(report_lines, "Relative fat/slim speed for tx_burn: {:.2f}".format(sif_burn_time_fat / sif_burn_time_slim))
@@ -219,16 +235,31 @@ def _parametric_test(ctx: test_utils.EnvCtx, number_of_erc20_tokens: int, report
     report(report_lines, "Total test time: {:.2f} s".format(test_total_time))
 
 
+# Workaround for web3 connections that don't work for 30+ hours of the test duration
+def check_and_reopen_web3_connection_due_to_possible_timeout(ctx: test_utils.EnvCtx):
+    try:
+        ctx.eth.get_eth_balance(ctx.operator)
+    except:
+        log.warning("w3_conn appears to be closed, forcing reassing")
+        uri = ctx.eth.w3_conn.provider.endpoint_uri
+        w3_conn = eth.web3_connect(uri)
+        ctx.eth.w3_conn = w3_conn
+
+
 # Enable running directly, i.e. without pytest
 if __name__ == "__main__":
     basic_logging_setup()
     ctx = test_utils.get_env_ctx()
+    ctx.wait_for_sif_balance_change_default_timeout = 0
+    ctx.wait_for_sif_balance_change_default_change_timeout = 600
+    ctx.wait_for_sif_balance_change_default_polling_time = 60
     parser = argparse.ArgumentParser()
     parser.add_argument("--count", type=int, default=2)
+    parser.add_argument("--sample-loop-size", type=int, default=10)
     parser.add_argument("--report")
     args = parser.parse_args(sys.argv[1:])
     report_lines = []
-    _parametric_test(ctx, args.count, report_lines=report_lines)
+    _parametric_test(ctx, args.count, sample_loop_size=args.sample_loop_size, report_lines=report_lines)
     if args.report:
         command.Command().write_text_file(args.report, joinlines(report_lines))
     log.info("Finished successfully")

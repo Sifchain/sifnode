@@ -10,10 +10,12 @@ import (
 )
 
 const (
-	// ProphecyLiftTime is used to clean outdated prophecy info from keeper
-	ProphecyLiftTime = 520000
+	// ProphecyLifeTime is used to clean outdated prophecy info from keeper
+	ProphecyLifeTime = 520000
 	// Max prophecy returned in one query
 	MaxProphecyQueryResult = 10
+	// Clean up outdated prophecies every 1000 blocks
+	CleanUpFrequency = 1000
 )
 
 // GetProphecies returns all prophecies
@@ -137,8 +139,13 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 	return nil
 }
 
-// CleanUpProphecy clean up outdated prophecy
+// CleanUpProphecy clean up outdated prophecy, not check the status of prophecy
+// since ProphecyLifeTime is big enough for relayers to handle prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
+	// it is low efficient to check outdated prophecy each block
+	if k.currentHeight % CleanUpFrequency != 0 {
+		return
+	}
 	var prophecyInfo types.ProphecyInfo
 	currentHeight := uint64(k.currentHeight)
 
@@ -146,13 +153,19 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
 		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
-		if prophecyInfo.BlockNumber-currentHeight > ProphecyLiftTime {
-			storePrefix := append(types.SignaturePrefix, prophecyInfo.ProphecyId[:]...)
-			store.Delete(storePrefix)
-			storePrefix = k.getKeyViaNetworkDescriptorGlobalNonce(prophecyInfo.NetworkDescriptor, prophecyInfo.GlobalSequence)
-			store.Delete(storePrefix)
+		if currentHeight > prophecyInfo.BlockNumber + ProphecyLifeTime {
+			k.DeleteProphecyInfo(ctx, prophecyInfo)
 		}
 	}
+}
+
+// DeleteProphecyInfo remove both signatures and global sequence in keeper
+func (k Keeper) DeleteProphecyInfo(ctx sdk.Context, prophecyInfo types.ProphecyInfo) {
+	storePrefix := prophecyInfo.GetSignaturePrefix()
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(storePrefix)
+	storePrefix = k.getKeyViaNetworkDescriptorGlobalNonce(prophecyInfo.NetworkDescriptor, prophecyInfo.GlobalSequence)
+	store.Delete(storePrefix)
 }
 
 // GetProphecyIDByNetworkDescriptorGlobalNonce get the prophecy id via network descriptor + global sequence

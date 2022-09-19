@@ -53,7 +53,6 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 			return
 
 		case <-t.C:
-			sub.SugaredLogger.Info("timer triggered, start to check cosmos message")
 			sub.handleNewProphecyCompleted(client)
 		}
 	}
@@ -164,7 +163,7 @@ func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryPropheciesCompletedRequest{

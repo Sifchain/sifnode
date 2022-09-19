@@ -6,11 +6,13 @@ import (
 	"math/rand"
 	"time"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"strconv"
 	"testing"
 
 	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
@@ -58,8 +60,15 @@ const (
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
-func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper,
-	simappparams.EncodingConfig, oracleTypes.ValidatorWhiteList, []sdk.ValAddress) {
+func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
+	sdk.Context,
+	ethbridgekeeper.Keeper,
+	bankkeeper.Keeper,
+	authkeeper.AccountKeeper,
+	oraclekeeper.Keeper,
+	simappparams.EncodingConfig,
+	oracleTypes.ValidatorWhiteList,
+	[]sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -73,6 +82,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
 	keyTokenRegistry := sdk.NewKVStoreKey(tokenregistrytypes.StoreKey)
 
+	adminKey := sdk.NewKVStoreKey(admintypes.StoreKey)
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 	ms.MountStoreWithDB(tkeyStaking, sdk.StoreTypeTransient, nil)
@@ -84,6 +94,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyTokenRegistry, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(adminKey, sdk.StoreTypeIAVL, db)
+
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 	ctx := sdk.NewContext(ms, tmproto.Header{ChainID: "foochainid"}, false, nil)
@@ -129,13 +141,14 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		paramsKeeper.Subspace(banktypes.ModuleName),
 		blacklistedAddrs,
 	)
+	adminKeeper := adminkeeper.NewKeeper(encCfg.Marshaler, adminKey)
 	initTokens := sdk.TokensFromConsensusPower(10000, sdk.DefaultPowerReduction)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(100))))
 	// bankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
 	stakingKeeper := stakingkeeper.NewKeeper(encCfg.Marshaler, keyStaking, accountKeeper, bankKeeper, paramsKeeper.Subspace(stakingtypes.ModuleName))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oraclekeeper.NewKeeper(encCfg.Marshaler, keyOracle, stakingKeeper, consensusNeeded)
-	tokenRegistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keyTokenRegistry)
+	tokenRegistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keyTokenRegistry, adminKeeper)
 
 	// set module accounts
 	accountKeeper.SetModuleAccount(ctx, bridgeAccount)
@@ -146,9 +159,17 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	require.NoError(t, err)
 	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
 	require.NoError(t, err)
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenRegistryKeeper, keyEthBridge)
+
+	ethbridgeKeeper := ethbridgekeeper.NewKeeper(encCfg.Marshaler,
+		bankKeeper,
+		oracleKeeper,
+		accountKeeper,
+		tokenRegistryKeeper,
+		adminKeeper,
+		keyEthBridge)
 	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
 	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
+
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
 	valAddrs := make(map[string]uint32)
@@ -234,7 +255,7 @@ const (
 	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
 )
 
-//// returns context and app with params set on account keeper
+// // returns context and app with params set on account keeper
 func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
 	sifapp := app.Setup(isCheckTx)
 	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
@@ -244,7 +265,7 @@ func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
 	return sifapp, ctx
 }
 
-func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, ethbridgekeeper.Keeper) {
 	sifapp, ctx := CreateTestApp(isCheckTx)
 	return ctx, sifapp.EthbridgeKeeper
 }
