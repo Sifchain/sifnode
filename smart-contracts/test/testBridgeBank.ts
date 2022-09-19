@@ -63,7 +63,7 @@ describe("Test Bridge Bank", function () {
       userThree,
       pauser,
       networkDescriptor,
-      true
+      true,
     );
   });
 
@@ -79,9 +79,8 @@ describe("Test Bridge Bank", function () {
       await state.token.connect(userOne).approve(state.bridgeBank.address, state.amount);
 
       // Attempt to lock tokens
-      await expect(
-        state.bridgeBank.connect(userOne).lock(state.sender, state.token.address, state.amount)
-      ).to.not.be.reverted;
+      await expect(state.bridgeBank.connect(userOne).lock(state.sender, state.token.address, state.amount))
+        .to.not.be.reverted;
 
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(await state.token.balanceOf(userOne.address));
@@ -100,7 +99,8 @@ describe("Test Bridge Bank", function () {
       // Approve and lock tokens
       await expect(
         state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount)
-      ).to.be.revertedWith("No Balance Transferred");
+      )
+        .to.be.revertedWith("No Balance Transferred");
     });
 
     it("should allow users to lock Ethereum in the bridge bank", async function () {
@@ -112,9 +112,9 @@ describe("Test Bridge Bank", function () {
       await tx.wait();
 
       const contractBalanceWei = await getBalance(state.bridgeBank.address);
-      const expectedBalance = BigNumber.from(state.weiAmount);
+      const expectedBalance = BigNumber.from(state.weiAmount)
 
-      expect(contractBalanceWei).to.equal(expectedBalance);
+      expect(contractBalanceWei).to.equal(expectedBalance)
     });
 
     it("should not allow users to lock Ethereum in the bridge bank if the sent amount and amount param are different", async function () {
@@ -195,13 +195,13 @@ describe("Test Bridge Bank", function () {
       await token.mint(userOne.address, state.amount);
       await token.connect(userOne).approve(state.bridgeBank.address, state.amount);
 
-      await expect(
-        state.bridgeBank.connect(userOne).burn(state.sender, token.address, state.amount)
-      ).to.be.revertedWith("INV_DENOM");
+      await expect(state.bridgeBank.connect(userOne).burn(state.sender, token.address, state.amount))
+        .to.be.revertedWith("INV_DENOM");
 
       let afterUserBalance = Number(await token.balanceOf(userOne.address));
       expect(afterUserBalance).to.equal(state.amount);
     });
+
 
     it("should NOT allow a blocklisted user to burn bridgetoken", async function () {
       const BridgeToken = await ethers.getContractFactory("BridgeToken");
@@ -228,6 +228,7 @@ describe("Test Bridge Bank", function () {
       const afterUserBalance = Number(await bridgeToken.balanceOf(userOne.address));
       expect(afterUserBalance).to.equal(beforeUserBalance);
     });
+
   });
 
   describe("BridgeBank administration of Bridgetokens", function () {
@@ -670,11 +671,16 @@ describe("Test Bridge Bank", function () {
 
       // only owner can add existing bridge token
       await expect(
-        state.bridgeBank.connect(userOne).addExistingBridgeToken(state.token1.address)
+        state.bridgeBank
+          .connect(userOne)
+          .addExistingBridgeToken(state.token1.address)
       ).to.be.revertedWith("!owner");
 
-      await expect(state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address)).to
-        .not.be.reverted;
+      await expect(
+        state.bridgeBank
+          .connect(owner)
+          .addExistingBridgeToken(state.token1.address)
+      ).to.not.be.reverted;
 
       inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
       expect(inWhiteList).to.be.equal(true);
@@ -684,12 +690,16 @@ describe("Test Bridge Bank", function () {
 
       // only owner can batch add existing bridge token
       await expect(
-        state.bridgeBank.connect(userOne).batchAddExistingBridgeTokens([state.token2.address])
+        state.bridgeBank
+          .connect(userOne)
+          .batchAddExistingBridgeTokens([state.token2.address])
       ).to.be.revertedWith("!owner");
 
       await expect(
-        state.bridgeBank.connect(owner).batchAddExistingBridgeTokens([state.token2.address])
-      ).to.not.be.reverted;
+        state.bridgeBank
+          .connect(owner)
+          .batchAddExistingBridgeTokens([state.token2.address])
+      ).to.not.be.reverted;;
 
       inWhiteList = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
       expect(inWhiteList).to.be.equal(true);
@@ -698,18 +708,10 @@ describe("Test Bridge Bank", function () {
   describe("Bridgebank should let operators set and change the rowan address", () => {
     it("should NOT allow a standard user to change the rowanAddress", async () => {
       const startingRowanAddress = await state.bridgeBank.rowanTokenAddress();
-      await expect(
-        state.bridgeBank.connect(userOne).setRowanTokenAddress(state.rowan.address)
-      ).to.be.revertedWith("!operator");
-      await expect(
-        state.bridgeBank.connect(userTwo).setRowanTokenAddress(state.rowan.address)
-      ).to.be.revertedWith("!operator");
-      await expect(
-        state.bridgeBank.connect(userThree).setRowanTokenAddress(state.rowan.address)
-      ).to.be.revertedWith("!operator");
-      await expect(
-        state.bridgeBank.connect(userFour).setRowanTokenAddress(state.rowan.address)
-      ).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userOne).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userTwo).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userThree).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
+      await expect(state.bridgeBank.connect(userFour).setRowanTokenAddress(state.rowan.address)).to.be.revertedWith("!operator");
       const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
       expect(startingRowanAddress).to.equal(endingRowanAddress);
     });
@@ -718,8 +720,7 @@ describe("Test Bridge Bank", function () {
       const rowanAddress = state.rowan.address;
       const newRowanAddress = state.token.address;
       expect(startingRowanAddress).to.equal(rowanAddress); // Assert at the start of the test the rowan address is set
-      await expect(state.bridgeBank.connect(operator).setRowanTokenAddress(newRowanAddress)).to.not
-        .be.reverted;
+      await expect(state.bridgeBank.connect(operator).setRowanTokenAddress(newRowanAddress)).to.not.be.reverted;
       const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
       expect(endingRowanAddress).to.not.equal(startingRowanAddress);
       expect(endingRowanAddress).to.equal(newRowanAddress);
@@ -728,37 +729,25 @@ describe("Test Bridge Bank", function () {
       const startingRowanAddress = await state.bridgeBank.rowanTokenAddress();
       const rowanAddress = state.rowan.address;
       expect(startingRowanAddress).to.equal(rowanAddress); // Assert at the start of the test the rowan address is set
-      await expect(
-        state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress)
-      ).to.not.be.reverted;
+      await expect(state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress)).to.not.be.reverted;
       const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
-      expect(endingRowanAddress).to.equal(state.constants.zeroAddress); // The address should now be null
+      expect(endingRowanAddress).to.equal(state.constants.zeroAddress); // The address should now be null 
     });
   });
   describe("Bridgebank should treat rowan differently from other bridgetokens or ERC20 tokens", () => {
     this.beforeEach(async () => {
       // Set Rowan token address on bridgebank and then mint some rowan and other tokens for each user
       await state.bridgeBank.connect(operator).setRowanTokenAddress(state.rowan.address);
-      const tokens = [
-        state.token,
-        state.token1,
-        state.token2,
-        state.token3,
-        state.token_ibc,
-        state.rowan as unknown as BridgeToken,
-      ];
+      const tokens = [state.token, state.token1, state.token2, state.token3, state.token_ibc, state.rowan as unknown as BridgeToken];
       await prefundAccount(userOne, state.amount, state.operator, tokens);
       await preApproveAccount(state.bridgeBank, userOne, state.amount, tokens);
     });
     it("should override the rowan token denom on a single burn", async () => {
-      const nonce = await state.bridgeBank.lockBurnNonce();
-      const amount = state.amount / 2 - 1; // burn slightly less then half
-      // Should return a event emitting "rowan" as the correct denom
-      await expect(
-        state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount)
-      )
-        .to.emit(state.bridgeBank, "LogBurn")
-        .withArgs(
+      const nonce = await state.bridgeBank.lockBurnNonce()
+      const amount = (state.amount / 2) - 1 // burn slightly less then half
+      // Should return a event emitting "rowan" as the correct denom 
+      await expect(state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount))
+        .to.emit(state.bridgeBank, 'LogBurn').withArgs(
           userOne.address,
           state.sender,
           state.rowan.address,
@@ -769,24 +758,18 @@ describe("Test Bridge Bank", function () {
           "rowan" // overridden from default
         );
 
-      // Should revert a burn on rowan if the rowanAddress is not set since it does not have a valid denom
-      // otherwise
-      await state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress);
-      await expect(
-        state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount)
-      ).to.be.revertedWith("INV_DENOM");
+        // Should revert a burn on rowan if the rowanAddress is not set since it does not have a valid denom
+        // otherwise
+        await state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress);
+        await expect(state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount))
+          .to.be.revertedWith("INV_DENOM");
     });
     it("should override the rowan token denom on a multiburn", async () => {
-      const nonce = await state.bridgeBank.lockBurnNonce();
-      const amount = state.amount / 2 - 1; // burn slightly less then half
-      // Should return a event emitting "rowan" as the correct denom
-      await expect(
-        state.bridgeBank
-          .connect(userOne)
-          .multiLockBurn([state.sender], [state.rowan.address], [amount], [true])
-      )
-        .to.emit(state.bridgeBank, "LogBurn")
-        .withArgs(
+      const nonce = await state.bridgeBank.lockBurnNonce()
+      const amount = (state.amount / 2) - 1 // burn slightly less then half
+      // Should return a event emitting "rowan" as the correct denom 
+      await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [amount], [true]))
+        .to.emit(state.bridgeBank, 'LogBurn').withArgs(
           userOne.address,
           state.sender,
           state.rowan.address,
@@ -797,26 +780,19 @@ describe("Test Bridge Bank", function () {
           "rowan" // overridden from default
         );
 
-      // Should revert a burn on rowan if the rowanAddress is not set since it does not have a valid denom
-      // otherwise
-      await state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress);
-      await expect(
-        state.bridgeBank
-          .connect(userOne)
-          .multiLockBurn([state.sender], [state.rowan.address], [amount], [true])
-      ).to.be.revertedWith("INV_DENOM");
+        // Should revert a burn on rowan if the rowanAddress is not set since it does not have a valid denom
+        // otherwise
+        await state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress);
+        await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [amount], [true]))
+          .to.be.revertedWith("INV_DENOM");
     });
     it("should still refuse to lock rowan tokens", async () => {
-      await expect(
-        state.bridgeBank.connect(userOne).lock(state.sender, state.rowan.address, state.amount)
-      ).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
+      await expect(state.bridgeBank.connect(userOne).lock(state.sender, state.rowan.address, state.amount))
+        .to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
     it("should still refuse to multilock rowan tokens", async () => {
-      await expect(
-        state.bridgeBank
-          .connect(userOne)
-          .multiLockBurn([state.sender], [state.rowan.address], [state.amount], [false])
-      ).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
-    });
+      await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [state.amount], [false]))
+        .to.be.revertedWith("Only token not in cosmos whitelist can be locked");
+    })
   });
 });
