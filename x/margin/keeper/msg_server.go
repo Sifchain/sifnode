@@ -261,7 +261,13 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	if epochPosition > 0 {
 		interestPayment := CalcMTPInterestLiabilities(&mtp, pool.InterestRate, epochPosition, epochLength)
 
-		k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
+		finalInterestPayment := k.HandleInterestPayment(ctx, interestPayment, &mtp, &pool)
+
+		if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // custody is external, payment is custody
+			pool.BlockInterestExternal = pool.BlockInterestExternal.Add(finalInterestPayment)
+		} else { // custody is native, payment is custody
+			pool.BlockInterestNative = pool.BlockInterestNative.Add(finalInterestPayment)
+		}
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
 		if err != nil {

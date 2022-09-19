@@ -54,11 +54,6 @@ func (k Keeper) EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool) {
 	))
 }
 
-func (k Keeper) EmitInterestRateComputation(ctx sdk.Context) {
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventInterestRateComputation,
-		sdk.NewAttribute("block_height", strconv.FormatInt(ctx.BlockHeight(), 10))))
-}
-
 func (k Keeper) EmitFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(paymentType,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
