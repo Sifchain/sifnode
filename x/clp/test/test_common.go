@@ -77,8 +77,7 @@ func CreateTestAppClpWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) (
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
-	liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
-	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()
+	liquidityProtectionParam := types.GetDefaultLiquidityProtectionParams()
 	app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
 		DistributionPeriods: nil,
@@ -110,6 +109,8 @@ func CreateTestAppClpFromGenesis(isCheckTx bool, genesisTransformer func(*sifapp
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
 	})
+	liquidityProtectionParam := types.GetDefaultLiquidityProtectionParams()
+	app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
 	app.ClpKeeper.SetProviderDistributionParams(ctx, &types.ProviderDistributionParams{
 		DistributionPeriods: nil,
 	})

@@ -256,8 +256,7 @@ func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*
 func (k Querier) GetLiquidityProtectionParams(c context.Context, _ *types.LiquidityProtectionParamsReq) (*types.LiquidityProtectionParamsRes, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	params := k.Keeper.GetLiquidityProtectionParams(ctx)
-	rateParams := k.Keeper.GetLiquidityProtectionRateParams(ctx)
-	response := types.NewLiquidityProtectionParamsResponse(params, rateParams, ctx.BlockHeight())
+	response := types.NewLiquidityProtectionParamsResponse(params, ctx.BlockHeight())
 	return &response, nil
 }
 

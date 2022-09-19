@@ -80,8 +80,8 @@ func NewPmtpParamsResponse(params *PmtpParams, pmtpRateParams PmtpRateParams, pm
 	return PmtpParamsRes{Params: params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
 }
 
-func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rateParams LiquidityProtectionRateParams, height int64) LiquidityProtectionParamsRes {
-	return LiquidityProtectionParamsRes{Params: params, RateParams: &rateParams, Height: height}
+func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, height int64) LiquidityProtectionParamsRes {
+	return LiquidityProtectionParamsRes{Params: params, Height: height}
 }
 
 func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) {

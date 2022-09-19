@@ -45,7 +45,6 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
 		GetCmdUpdateLiquidityProtectionParams(),
-		GetCmdModifyLiquidityProtectionRates(),
 		GetCmdSetProviderDistributionPeriods(),
 		GetCmdSetSwapFeeRate(),
 	)
@@ -682,11 +681,10 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 			}
 			signer := clientCtx.GetFromAddress()
 			msg := types.MsgUpdateLiquidityProtectionParams{
-				Signer:                          signer.String(),
-				MaxRowanLiquidityThreshold:      sdk.NewUintFromString(viper.GetString(FlagMaxRowanLiquidityThreshold)),
-				MaxRowanLiquidityThresholdAsset: viper.GetString(FlagMaxRowanLiquidityThresholdAsset),
-				EpochLength:                     viper.GetUint64(FlagLiquidityProtectionEpochLength),
-				IsActive:                        viper.GetBool(FlagLiquidityProtectionIsActive),
+				Signer:                 signer.String(),
+				EpochLength:            viper.GetUint64(FlagLiquidityProtectionEpochLength),
+				IsActive:               viper.GetBool(FlagLiquidityProtectionIsActive),
+				MaxThresholdPercentage: sdk.MustNewDecFromStr(viper.GetString(FlagMaxThresholdPercentage)),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -694,51 +692,19 @@ func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThreshold)
-	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThresholdAsset)
 	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
 	cmd.Flags().AddFlagSet(FsLiquidityThresholdIsActive)
+	cmd.Flags().AddFlagSet(FsMaxThresholdPercentage)
 	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThreshold); err != nil {
-		log.Println("MarkFlagRequired  failed: ", err.Error())
-	}
-	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThresholdAsset); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagLiquidityProtectionIsActive); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
-
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
-func GetCmdModifyLiquidityProtectionRates() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "liquidity-protection-rates",
-		Short: "Modify liquidity protection current rowan liquidity threshold",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			signer := clientCtx.GetFromAddress()
-			msg := types.MsgModifyLiquidityProtectionRates{
-				Signer:                         signer.String(),
-				CurrentRowanLiquidityThreshold: sdk.NewUintFromString(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
-			}
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-	cmd.Flags().AddFlagSet(FsCurrentRowanLiquidityThreshold)
-	if err := cmd.MarkFlagRequired(FlagCurrentRowanLiquidityThreshold); err != nil {
+	if err := cmd.MarkFlagRequired(FlagMaxThresholdPercentage); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
+
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

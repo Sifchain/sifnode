@@ -183,7 +183,6 @@ message LiquidityProtectionParamsReq {}
 
 message LiquidityProtectionParamsRes {
   sifnode.clp.v1.LiquidityProtectionParams params = 1;
-  sifnode.clp.v1.LiquidityProtectionRateParams rate_params = 2;
   int64 height = 3;
 }
 

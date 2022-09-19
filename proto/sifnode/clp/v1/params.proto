@@ -67,17 +67,10 @@ message PoolMultiplier {
 }
 
 message LiquidityProtectionParams {
-  string max_rowan_liquidity_threshold = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
-    (gogoproto.nullable) = false
-  ];
-  string max_rowan_liquidity_threshold_asset = 2;
-  uint64 epoch_length = 3;
-  bool is_active = 4;
-}
-message LiquidityProtectionRateParams {
-  string current_rowan_liquidity_threshold = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+  uint64 epoch_length = 1;
+  bool is_active = 2;
+  string max_threshold_percentage = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
 }

@@ -58,9 +58,6 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgUpdateLiquidityProtectionParams:
 			res, err := msgServer.UpdateLiquidityProtectionParams(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgModifyLiquidityProtectionRates:
-			res, err := msgServer.ModifyLiquidityProtectionRates(sdk.WrapSDKContext(ctx), msg)
-			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgAddProviderDistributionPeriodRequest:
 			res, err := msgServer.AddProviderDistributionPeriod(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

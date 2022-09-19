@@ -5,40 +5,39 @@ import (
 )
 
 const (
-	FlagAssetSymbol                     = "symbol"
-	FlagUnits                           = "units"
-	FlagSentAssetSymbol                 = "sentSymbol"
-	FlagReceivedAssetSymbol             = "receivedSymbol"
-	FlagNativeAssetAmount               = "nativeAmount"
-	FlagExternalAssetAmount             = "externalAmount"
-	FlagWBasisPoints                    = "wBasis"
-	FlagAsymmetry                       = "asymmetry"
-	FlagWithdrawUnits                   = "withdrawUnits"
-	FlagAmount                          = "sentAmount"
-	FlagMinimumReceivingAmount          = "minReceivingAmount"
-	FlagLiquidityRemovalLockPeriod      = "lockPeriod"
-	FlagLiquidityRemovalCancelPeriod    = "cancelPeriod"
-	FlagDefaultMultiplier               = "defaultMultiplier"
-	FlagRewardPeriods                   = "path"
-	FlagBlockRate                       = "blockRate"
-	FlagRunningRate                     = "runningRate"
-	FlagEndCurrentPolicy                = "endPolicy"
-	FlagPeriodGovernanceRate            = "rGov"
-	FlagPmtpPeriodEpochLength           = "epochLength"
-	FlagPmtpPeriodStartBlock            = "pmtp_start"
-	FlagPmtpPeriodEndBlock              = "pmtp_end"
-	FlagNewPolicy                       = "newPolicy"
-	FlagMintParams                      = "mint-params"
-	FlagMinter                          = "minter"
-	FlagSymmetryThreshold               = "threshold"
-	FlagSymmetryRatioThreshold          = "ratio"
-	FlagMaxRowanLiquidityThreshold      = "maxRowanLiquidityThreshold"
-	FlagMaxRowanLiquidityThresholdAsset = "maxRowanLiquidityThresholdAsset"
-	FlagLiquidityProtectionEpochLength  = "epochLength"
-	FlagCurrentRowanLiquidityThreshold  = "currentRowanLiquidityThreshold"
-	FlagLiquidityProtectionIsActive     = "isActive"
-	FlagProviderDistributionPeriods     = "path"
-	FlagSwapFeeRate                     = "swapFeeRate"
+	FlagAssetSymbol                    = "symbol"
+	FlagUnits                          = "units"
+	FlagSentAssetSymbol                = "sentSymbol"
+	FlagReceivedAssetSymbol            = "receivedSymbol"
+	FlagNativeAssetAmount              = "nativeAmount"
+	FlagExternalAssetAmount            = "externalAmount"
+	FlagWBasisPoints                   = "wBasis"
+	FlagAsymmetry                      = "asymmetry"
+	FlagWithdrawUnits                  = "withdrawUnits"
+	FlagAmount                         = "sentAmount"
+	FlagMinimumReceivingAmount         = "minReceivingAmount"
+	FlagLiquidityRemovalLockPeriod     = "lockPeriod"
+	FlagLiquidityRemovalCancelPeriod   = "cancelPeriod"
+	FlagDefaultMultiplier              = "defaultMultiplier"
+	FlagRewardPeriods                  = "path"
+	FlagBlockRate                      = "blockRate"
+	FlagRunningRate                    = "runningRate"
+	FlagEndCurrentPolicy               = "endPolicy"
+	FlagPeriodGovernanceRate           = "rGov"
+	FlagPmtpPeriodEpochLength          = "epochLength"
+	FlagPmtpPeriodStartBlock           = "pmtp_start"
+	FlagPmtpPeriodEndBlock             = "pmtp_end"
+	FlagNewPolicy                      = "newPolicy"
+	FlagMintParams                     = "mint-params"
+	FlagMinter                         = "minter"
+	FlagSymmetryThreshold              = "threshold"
+	FlagSymmetryRatioThreshold         = "ratio"
+	FlagLiquidityProtectionEpochLength = "epochLength"
+	FlagCurrentRowanLiquidityThreshold = "currentRowanLiquidityThreshold"
+	FlagLiquidityProtectionIsActive    = "isActive"
+	FlagProviderDistributionPeriods    = "path"
+	FlagSwapFeeRate                    = "swapFeeRate"
+	FlagMaxThresholdPercentage         = "maxThresholdPercentage"
 )
 
 // common flagsets to add to various functions
@@ -70,13 +69,12 @@ var (
 	FsFlagMinter                      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsSymmetryThreshold               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsSymmetryRatioThreshold          = flag.NewFlagSet("", flag.ContinueOnError)
-	FsMaxRowanLiquidityThreshold      = flag.NewFlagSet("", flag.ContinueOnError)
-	FsMaxRowanLiquidityThresholdAsset = flag.NewFlagSet("", flag.ContinueOnError)
 	FsLiquidityThresholdIsActive      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsLiquidityProtectionEpochLength  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsCurrentRowanLiquidityThreshold  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagProviderDistributionPeriods = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagSwapFeeRate                 = flag.NewFlagSet("", flag.ContinueOnError)
+	FsMaxThresholdPercentage          = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -108,11 +106,10 @@ func init() {
 	FsFlagMinter.String(FlagMinter, "", "Inflation Max")
 	FsSymmetryThreshold.String(FlagSymmetryThreshold, "", "Set slippage adjustement threshold for symmetric liquitidy add")
 	FsSymmetryRatioThreshold.String(FlagSymmetryRatioThreshold, "", "Set ratio threshold for symmetric liquitidy add")
-	FsMaxRowanLiquidityThreshold.String(FlagMaxRowanLiquidityThreshold, "", "Set max rowan liquidity threshold value according to asset used in maxRowanLiquidityThresholdAsset")
-	FsMaxRowanLiquidityThresholdAsset.String(FlagMaxRowanLiquidityThresholdAsset, "", "Set max rowan liquidity threshold asset to use to determine native price (if set to 'rowan' the threshold can be define as rowan)")
 	FsLiquidityProtectionEpochLength.String(FlagLiquidityProtectionEpochLength, "", "Set liquidity protection epoch length")
 	FsLiquidityThresholdIsActive.String(FlagLiquidityProtectionIsActive, "", "Set liquidity protection isActive")
 	FsCurrentRowanLiquidityThreshold.String(FlagCurrentRowanLiquidityThreshold, "", "Set current rowan liquidity threshold value")
 	FsFlagProviderDistributionPeriods.String(FlagProviderDistributionPeriods, "", "Path to Json File containing LP provider distribution periods")
 	FsFlagSwapFeeRate.String(FlagSwapFeeRate, "", "Set swap fee rate")
+	FsMaxThresholdPercentage.String(FlagMaxThresholdPercentage, "", "Set max rowan liquidity threshold value as a percentage to use for each pool")
 }
