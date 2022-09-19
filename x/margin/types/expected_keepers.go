@@ -78,7 +78,7 @@ type Keeper interface {
 	Repay(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error
-	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool)
+	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool) sdk.Uint
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec
 
