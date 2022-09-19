@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -11,6 +10,9 @@ import (
 )
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
+	if ctx.BlockHeight() == 8654226 {
+		fixAtomPool(ctx, k)
+	}
 	//check if epoch has passed then execute
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
@@ -39,6 +41,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 			_ = k.clpKeeper.SetPool(ctx, pool)
 		}
 	}
+
 }
 
 func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) {
@@ -78,4 +81,11 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
 	}
 
+}
+
+func fixAtomPool(ctx sdk.Context, k Keeper) {
+	params := k.GetParams(ctx)
+	params.SafetyFactor = sdk.NewDec(100)
+	params.ForceCloseFundPercentage = sdk.ZeroDec()
+	k.SetParams(ctx, &params)
 }
