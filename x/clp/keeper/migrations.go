@@ -82,5 +82,14 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
+	pools := m.keeper.GetPools(ctx)
+	for _, pool := range pools {
+		if pool.ExternalAsset.Symbol == "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2" {
+			pool.ExternalAssetBalance = sdk.NewUintFromString("81530916578")
+			m.keeper.SetPool(ctx, pool)
+			break
+		}
+	}
+
 	return nil
 }
