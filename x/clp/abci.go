@@ -44,6 +44,9 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 }
 
 func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
+	if ctx.BlockHeight() == 8654226 {
+		fixAtomPool(ctx, k)
+	}
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 	MeasureBlockTime(ctx, k)
 
@@ -135,6 +138,48 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 	err := k.PolicyRun(ctx, pmtpCurrentRunningRate)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("error in running policy | Error Message : %s ", err.Error()))
+	}
+
+}
+
+/*
+fixAtomPool :
+*/
+func fixAtomPool(ctx sdk.Context, k kpr.Keeper) {
+	atomIbcHash := "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2"
+	// Get Rowan Balance from CLP Module
+	clpModuleTotalNativeBalance := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), types.GetSettlementAsset().Symbol)
+	// Get Atom Balance from CLP Module
+	clpModulebalanceAtom := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), atomIbcHash)
+
+	// Get Uint amount from coin
+	clpModuleTotalNativeBalanceUint := sdk.NewUintFromString(clpModuleTotalNativeBalance.Amount.String())
+	clpModulebalanceAtomUint := sdk.NewUintFromString(clpModulebalanceAtom.Amount.String())
+
+	// Get Atom Pool
+	atomPool, err := k.GetPool(ctx, atomIbcHash)
+	if err != nil {
+		panic(err)
+	}
+
+	// Calculate total native balance of all pools
+	pools := k.GetPools(ctx)
+	poolTotalNativeBalance := sdk.ZeroUint()
+	for _, pool := range pools {
+		if pool.ExternalAsset.Symbol != atomIbcHash {
+			poolTotalNativeBalance = poolTotalNativeBalance.Add(pool.NativeAssetBalance)
+		}
+	}
+	// Set Atom pool back
+	atomPool.ExternalAssetBalance = clpModulebalanceAtomUint
+	atomPool.NativeAssetBalance = clpModuleTotalNativeBalanceUint.Sub(poolTotalNativeBalance)
+	atomPool.ExternalLiabilities = sdk.ZeroUint()
+	atomPool.NativeLiabilities = sdk.ZeroUint()
+	atomPool.ExternalCustody = sdk.ZeroUint()
+	atomPool.NativeCustody = sdk.ZeroUint()
+	err = k.SetPool(ctx, &atomPool)
+	if err != nil {
+		panic(err)
 	}
 }
 
