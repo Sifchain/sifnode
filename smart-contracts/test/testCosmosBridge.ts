@@ -68,7 +68,7 @@ describe("Test Cosmos Bridge", function () {
       userThree,
       pauser,
       networkDescriptor,
-      false
+      false,
     );
   });
 
@@ -134,16 +134,15 @@ describe("Test Cosmos Bridge", function () {
         state.cosmosBridge.connect(operator).updateConsensusThreshold(newThreshold)
       ).to.be.revertedWith("Invalid consensus threshold.");
     });
+
   });
 
   describe("CosmosBridge", function () {
     it("Can update the valset", async function () {
       // Operator resets the valset
-      await expect(
-        state.cosmosBridge
-          .connect(operator)
-          .updateValset([userOne.address, userTwo.address], [50, 50])
-      ).not.to.be.reverted;
+      await expect(state.cosmosBridge
+        .connect(operator)
+        .updateValset([userOne.address, userTwo.address], [50, 50])).not.to.be.reverted;
 
       // Confirm that both initial validators are now active validators
       const isUserOneValidator = await state.cosmosBridge.isActiveValidator(userOne.address);
@@ -164,8 +163,7 @@ describe("Test Cosmos Bridge", function () {
       expect(originalOperator).to.be.equal(operator.address);
 
       // Operator resets the valset
-      await expect(state.cosmosBridge.connect(operator).changeOperator(userOne.address)).not.to.be
-        .reverted;
+      await expect(state.cosmosBridge.connect(operator).changeOperator(userOne.address)).not.to.be.reverted;
 
       // Confirm that the operator has changed
       const newOperator = await state.cosmosBridge.operator();
@@ -190,11 +188,9 @@ describe("Test Cosmos Bridge", function () {
     it("Can update the validator set", async function () {
       // Also make sure everything runs fourth time after switching validators a second time.
       // Operator resets the valset
-      await expect(
-        state.cosmosBridge
-          .connect(operator)
-          .updateValset([userThree.address, userFour.address], [50, 50])
-      ).not.to.be.reverted;
+      await expect(state.cosmosBridge
+        .connect(operator)
+        .updateValset([userThree.address, userFour.address], [50, 50])).not.to.be.reverted;
 
       // Confirm that both initial validators are no longer an active validators
       const isUserOneValidator2 = await state.cosmosBridge.isActiveValidator(userOne.address);
@@ -255,7 +251,7 @@ describe("Test Cosmos Bridge", function () {
     it("should unlock tokens upon the successful processing of a burn prophecy claim", async function () {
       // Bridgebank should have a balance of tokens that would be unlocked when processing the claim
       await state.token.connect(operator).mint(state.bridgeBank.address, state.amount);
-
+      
       const beforeUserBalance = Number(await state.token.balanceOf(state.recipient.address));
       expect(beforeUserBalance).to.equal(Number(0));
 
@@ -278,14 +274,12 @@ describe("Test Cosmos Bridge", function () {
         false,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
-      await expect(
-        state.cosmosBridge
-          .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
-      ).not.to.be.reverted;
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)).not.to.be.reverted;
 
       // Last nonce should now be 1
       lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
@@ -321,7 +315,7 @@ describe("Test Cosmos Bridge", function () {
         false,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       await state.cosmosBridge
@@ -340,11 +334,13 @@ describe("Test Cosmos Bridge", function () {
     it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
       // Send balance that can be unlocked first
       const seedEtherBalance = ethers.utils.parseEther("1");
-      await state.bridgeBank
-        .connect(operator)
-        .lock(state.sender, state.constants.zeroAddress, seedEtherBalance, {
-          value: seedEtherBalance,
-        });
+      await state.bridgeBank.connect(operator)
+        .lock(
+          state.sender, 
+          state.constants.zeroAddress, 
+          seedEtherBalance, 
+          {value: seedEtherBalance}
+        )
 
       // assert recipient balance before receiving proceeds from newProphecyClaim is correct
       const startingBalance = await getBalance(state.recipient.address, true);
@@ -364,7 +360,7 @@ describe("Test Cosmos Bridge", function () {
         false,
         state.nonce,
         state.constants.denom.ether,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
@@ -398,7 +394,7 @@ describe("Test Cosmos Bridge", function () {
         false,
         state.nonce,
         state.constants.denom.ether,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       // get the prophecyID:
@@ -414,7 +410,7 @@ describe("Test Cosmos Bridge", function () {
         state.networkDescriptor, // networkDescriptor
         false, // bridge token
         state.nonce, // nonce
-        state.constants.denom.ether // cosmos denom
+        state.constants.denom.ether, // cosmos denom
       );
 
       // Doesn't revert, but user doesn't get the funds either
@@ -427,7 +423,7 @@ describe("Test Cosmos Bridge", function () {
         .withArgs(prophecyID, false); // the second argument here is 'success'
 
       // Make sure the balance didn't change
-      const endingBalance = await getBalance(state.recipient.address, true);
+      const endingBalance = await getBalance(state.recipient.address, true); 
       expect(endingBalance).to.be.equal(startingBalance);
     });
 
@@ -447,7 +443,7 @@ describe("Test Cosmos Bridge", function () {
         true,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       const expectedAddress = ethers.utils.getContractAddress({
@@ -505,7 +501,7 @@ describe("Test Cosmos Bridge", function () {
         true,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       // get the prophecyID:
@@ -521,7 +517,7 @@ describe("Test Cosmos Bridge", function () {
         state.networkDescriptor, // networkDescriptor
         true, // bridge token
         state.nonce, // nonce
-        state.constants.denom.one // cosmos denom
+        state.constants.denom.one, // cosmos denom
       );
 
       const expectedAddress = ethers.utils.getContractAddress({
@@ -572,7 +568,7 @@ describe("Test Cosmos Bridge", function () {
         false,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       await state.cosmosBridge
@@ -605,7 +601,7 @@ describe("Test Cosmos Bridge", function () {
         true,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       const expectedAddress = ethers.utils.getContractAddress({
@@ -651,7 +647,7 @@ describe("Test Cosmos Bridge", function () {
         true,
         state.nonce + 1,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
       await expect(
@@ -690,19 +686,19 @@ describe("Test Cosmos Bridge", function () {
         false,
         state.nonce,
         state.constants.denom.one,
-        [userOne, userTwo, userFour]
+        [userOne, userTwo, userFour],
       );
 
-      const outOfOrderSignatures: SignedData[] = [];
-      outOfOrderSignatures.push(signatures[2]);
-      outOfOrderSignatures.push(signatures[1]);
-      outOfOrderSignatures.push(signatures[0]);
+      const outOfOrderSignatures: SignedData[] = []
+      outOfOrderSignatures.push(signatures[2])
+      outOfOrderSignatures.push(signatures[1])
+      outOfOrderSignatures.push(signatures[0])
 
       await expect(
         state.cosmosBridge
-          .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(digest, claimData, outOfOrderSignatures)
-      ).to.be.revertedWith("custom error 'OutOfOrderSigner(0)'");
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest, claimData, outOfOrderSignatures)
+      ).to.be.revertedWith("custom error 'OutOfOrderSigner(0)'"); 
     });
   });
 });
