@@ -44,9 +44,9 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 }
 
 func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
-	// if ctx.BlockHeight() == 20 {
-	// 	fixAtomPool(ctx, k)
-	// }
+	if ctx.BlockHeight() == 1900 {
+		fixAtomPool(ctx, k)
+	}
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 	MeasureBlockTime(ctx, k)
 
