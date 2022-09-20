@@ -7,7 +7,7 @@ func (m *CrossChainFeeConfig) IsValid() bool {
 		m.MinimumBurnCost.IsNegative() ||
 		m.MinimumLockCost.IsNegative() {
 		return false
-	} else {
-		return true
 	}
+
+	return true
 }
