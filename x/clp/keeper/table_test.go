@@ -26,7 +26,7 @@ package keeper_test
 //	type Test struct {
 //		TestType []TestCase `json:"PoolUnits"`
 //	}
-//	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
+//	file, err := os.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 //	assert.NoError(t, err)
 //	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 //	var test Test
@@ -62,7 +62,7 @@ package keeper_test
 //	type Test struct {
 //		TestType []TestCase `json:"SingleSwapResult"`
 //	}
-//	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_result.json")
+//	file, err := os.ReadFile("../../../test/test-tables/singleswap_result.json")
 //	assert.NoError(t, err)
 //	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 //	var test Test
@@ -97,7 +97,7 @@ package keeper_test
 //	type Test struct {
 //		TestType []TestCase `json:"SingleSwapLiquidityFee"`
 //	}
-//	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_liquidityfees.json")
+//	file, err := os.ReadFile("../../../test/test-tables/singleswap_liquidityfees.json")
 //	assert.NoError(t, err)
 //	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 //	var test Test
@@ -134,7 +134,7 @@ package keeper_test
 //	type Test struct {
 //		TestType []TestCase `json:"DoubleSwap"`
 //	}
-//	file, err := ioutil.ReadFile("../../../test/test-tables/doubleswap_result.json")
+//	file, err := os.ReadFile("../../../test/test-tables/doubleswap_result.json")
 //	assert.NoError(t, err)
 //	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 //	var test Test
@@ -180,7 +180,7 @@ package keeper_test
 //	type Test struct {
 //		TestType []TestCase `json:"PoolUnitsAfterUpgrade"`
 //	}
-//	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
+//	file, err := os.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 //	assert.NoError(t, err)
 //	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 //	var test Test

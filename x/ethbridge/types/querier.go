@@ -2,7 +2,6 @@ package types
 
 import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	types "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // query endpoints supported by the oracle Querier
@@ -101,7 +100,7 @@ func NewPropheciesCompletedRequest(networkDescriptor oracletypes.NetworkDescript
 }
 
 // NewQueryPropheciesCompletedResponse creates a new QueryWitnessLockBurnSequenceResponse instance
-func NewQueryPropheciesCompletedResponse(prophecyInfo []*types.ProphecyInfo) QueryPropheciesCompletedResponse {
+func NewQueryPropheciesCompletedResponse(prophecyInfo []*oracletypes.ProphecyInfo) QueryPropheciesCompletedResponse {
 	return QueryPropheciesCompletedResponse{
 		ProphecyInfo: prophecyInfo,
 	}

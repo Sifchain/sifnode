@@ -3,7 +3,7 @@ package network
 import (
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -33,7 +33,7 @@ func Reset(chainID, networkDir string) error {
 	}
 	file := fmt.Sprintf("%x", s.Sum(nil))
 
-	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.yml", networkDir, file))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s.yml", networkDir, file))
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (n *Network) generateKey(validator *Validator) error {
 		return err
 	}
 
-	yml, err := ioutil.ReadAll(strings.NewReader(*output))
+	yml, err := io.ReadAll(strings.NewReader(*output))
 	if err != nil {
 		return err
 	}
@@ -352,7 +352,7 @@ func (n *Network) setPeers(validators []*Validator) error {
 
 		configFile := fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.ConfigTOML)
 
-		content, err := ioutil.ReadFile(configFile)
+		content, err := os.ReadFile(configFile)
 		if err != nil {
 			return err
 		}
@@ -385,12 +385,12 @@ func (n *Network) copyGenesis(validators []*Validator) error {
 
 	for _, validator := range validators {
 		if !validator.Seed {
-			input, err := ioutil.ReadFile(srcFile)
+			input, err := os.ReadFile(srcFile)
 			if err != nil {
 				return err
 			}
 
-			err = ioutil.WriteFile(
+			err = os.WriteFile(
 				fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.GenesisFile),
 				input,
 				0600,

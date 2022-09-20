@@ -53,6 +53,9 @@ service Query {
   rpc GetProviderDistributionParams(ProviderDistributionParamsReq) returns (ProviderDistributionParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/provider_distribution_params";
   };
+  rpc GetSwapFeeRate(SwapFeeRateReq) returns (SwapFeeRateRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/swap_fee_rate";
+  };
 }
 
 message PoolReq {
@@ -188,4 +191,13 @@ message ProviderDistributionParamsReq {}
 
 message ProviderDistributionParamsRes {
   ProviderDistributionParams params = 1;
+}
+
+message SwapFeeRateReq {}
+
+message SwapFeeRateRes {
+  string swap_fee_rate = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }

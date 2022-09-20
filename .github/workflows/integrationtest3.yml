@@ -6,7 +6,7 @@ on:
       - "**" # This is added to disable this github workflow. execute_integration_tests_against_test_chain_clp is deprecated
 
 jobs:
-  test:
+  integration:
     timeout-minutes: 40
     runs-on: ubuntu-20.04
     steps:

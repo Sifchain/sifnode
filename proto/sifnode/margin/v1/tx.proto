@@ -1,0 +1,95 @@
+syntax = "proto3";
+package sifnode.margin.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/margin/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/margin/types";
+
+service Msg {
+  rpc Open(MsgOpen) returns (MsgOpenResponse) {}
+  rpc Close(MsgClose) returns (MsgCloseResponse) {}
+  rpc ForceClose(MsgForceClose) returns (MsgForceCloseResponse) {}
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {}
+  rpc UpdatePools(MsgUpdatePools) returns (MsgUpdatePoolsResponse) {}
+  rpc Whitelist(MsgWhitelist) returns (MsgWhitelistResponse) {}
+  rpc Dewhitelist(MsgDewhitelist) returns (MsgDewhitelistResponse) {}
+  rpc AdminClose(MsgAdminClose) returns (MsgAdminCloseResponse) {}
+  rpc AdminCloseAll(MsgAdminCloseAll) returns (MsgAdminCloseAllResponse) {}
+}
+
+message MsgOpen {
+  string signer = 1;
+  string collateral_asset = 2;
+  string collateral_amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string borrow_asset = 4;
+  Position position = 5;
+  string leverage = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgOpenResponse {}
+
+message MsgClose {
+  string signer = 1;
+  uint64 id = 2;
+}
+
+message MsgCloseResponse {}
+
+message MsgForceClose {
+  string signer = 1;
+  string mtp_address = 2;
+  uint64 id = 3;
+}
+
+message MsgForceCloseResponse {}
+
+message MsgUpdateParams {
+  string signer = 1;
+  Params params = 2;
+}
+
+message MsgUpdateParamsResponse {}
+
+message MsgUpdatePools {
+  string signer = 1;
+  repeated string pools = 2;
+  repeated string closed_pools = 3;
+}
+
+message MsgUpdatePoolsResponse {}
+
+message MsgWhitelist {
+  string signer = 1;
+  string whitelisted_address = 2;
+}
+
+message MsgWhitelistResponse {}
+
+message MsgDewhitelist {
+  string signer = 1;
+  string whitelisted_address = 2;
+}
+
+message MsgDewhitelistResponse {}
+
+
+message MsgAdminCloseAll {
+  string signer = 1;
+  bool take_margin_fund = 2;
+}
+message MsgAdminCloseAllResponse {}
+
+message MsgAdminClose {
+  string signer = 1;
+  string mtp_address = 2;
+  uint64 id = 3;
+  bool take_margin_fund = 4;
+}
+message MsgAdminCloseResponse {}

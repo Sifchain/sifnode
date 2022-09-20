@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"strings"
-
 	"github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -53,7 +51,7 @@ func (k Keeper) IsAdminAccount(ctx sdk.Context, adminType types.AdminType, admin
 		return false
 	}
 	for _, account := range accounts {
-		if strings.EqualFold(account.AdminAddress, adminAccount.String()) {
+		if types.StringCompare(account.AdminAddress, adminAccount.String()) {
 			return true
 		}
 	}
