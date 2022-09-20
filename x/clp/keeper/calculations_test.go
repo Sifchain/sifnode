@@ -69,6 +69,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 		fromAsset                    types.Asset
 		toAsset                      types.Asset
 		pmtpCurrentRunningRate       sdk.Dec
+		marginEnabled                bool
 		errString                    error
 		expectedSwapResult           sdk.Uint
 		expectedLiquidityFee         sdk.Uint
@@ -84,6 +85,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			marginEnabled:                false,
 			expectedSwapResult:           sdk.NewUint(41),
 			expectedLiquidityFee:         sdk.NewUint(0),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -98,6 +100,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			marginEnabled:                false,
 			expectedSwapResult:           sdk.NewUint(43500),
 			expectedLiquidityFee:         sdk.NewUint(130),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -112,23 +115,42 @@ func TestKeeper_SwapOne(t *testing.T) {
 			toAsset:                      types.GetSettlementAsset(),
 			fromAsset:                    types.NewAsset("cusdt"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			marginEnabled:                false,
 			expectedSwapResult:           sdk.NewUintFromString("11704434254784015637542"),
 			expectedLiquidityFee:         sdk.NewUintFromString("35218959643281892590"),
 			expectedPriceImpact:          sdk.ZeroUint(),
 			expectedExternalAssetBalance: sdk.NewUint(2674823482959),
 			expectedNativeAssetBalance:   sdk.NewUintFromString("156995796064471436224541544"),
 		},
+		{
+			name:                         "margin enabled",
+			nativeAssetBalance:           sdk.NewUint(10000000),
+			externalAssetBalance:         sdk.NewUint(8770000),
+			sentAmount:                   sdk.NewUint(50000),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			marginEnabled:                true,
+			expectedSwapResult:           sdk.NewUint(43507),
+			expectedLiquidityFee:         sdk.NewUint(130),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(8726493),
+			expectedNativeAssetBalance:   sdk.NewUint(10050000),
+		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, app := test.CreateTestAppClp(false)
+			//ctx, app := test.CreateTestAppClp(false)
 			poolUnits := sdk.NewUint(2000) //don't care
 			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
+			pool.NativeCustody = sdk.NewUint(10000)
+			pool.ExternalCustody = sdk.ZeroUint()
+			pool.NativeLiabilities = sdk.ZeroUint()
+			pool.ExternalLiabilities = sdk.NewUint(10000)
 
-			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
-			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3), marginEnabled)
+			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3), tc.marginEnabled)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())

@@ -472,13 +472,19 @@ func SwapOne(from types.Asset,
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
+	var Xincl, Yincl sdk.Uint
+	// TODO: should this include debt regardless of pool being enabled?
+	// i.e always include if there is a debt amount present.
 	if marginEnabled {
-		X, Y = pool.ExtractDebt(X, Y, toRowan)
+		Xincl, Yincl = pool.ExtractDebt(X, Y, toRowan)
+	} else {
+		Xincl = X
+		Yincl = Y
 	}
 
-	liquidityFee := CalcLiquidityFee(toRowan, X, sentAmount, Y, swapFeeRate, pmtpCurrentRunningRate)
-	priceImpact := calcPriceImpact(X, sentAmount)
-	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
+	liquidityFee := CalcLiquidityFee(toRowan, Xincl, sentAmount, Yincl, swapFeeRate, pmtpCurrentRunningRate)
+	priceImpact := calcPriceImpact(Xincl, sentAmount)
+	swapResult := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeRate)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
