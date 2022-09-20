@@ -14,13 +14,14 @@ import (
 )
 
 func GetBankGenesisState(cfg network.Config, address string) ([]byte, error) {
-	amount, _ := sdk.NewIntFromString("999000000000000000000000000000000")
+	externalAmount, _ := sdk.NewIntFromString("100000000000")
+	nativeAmount, _ := sdk.NewIntFromString("100000000000000000000000")
 	balances := []banktypes.Balance{
 		{
 			Address: address,
 			Coins: sdk.Coins{
-				sdk.NewCoin("cusdt", amount),
-				sdk.NewCoin("rowan", amount),
+				sdk.NewCoin("cusdc", externalAmount),
+				sdk.NewCoin("rowan", nativeAmount),
 			},
 		},
 	}
@@ -39,6 +40,10 @@ func GetAdminGenesisState(cfg network.Config, address string) ([]byte, error) {
 			},
 			{
 				AdminType:    admintypes.AdminType_CLPDEX,
+				AdminAddress: address,
+			},
+			{
+				AdminType:    admintypes.AdminType_MARGIN,
 				AdminAddress: address,
 			},
 			{
@@ -64,7 +69,7 @@ func GetTokenRegistryGenesisState(cfg network.Config, address string) ([]byte, e
 		Registry: &tokenregistrytypes.Registry{
 			Entries: []*tokenregistrytypes.RegistryEntry{
 				{Denom: "node0token", BaseDenom: "node0token", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_IBCEXPORT, tokenregistrytypes.Permission_IBCIMPORT}},
-				{Denom: "cusdt", BaseDenom: "cusdt", Decimals: 6, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_IBCEXPORT, tokenregistrytypes.Permission_IBCIMPORT}},
+				{Denom: "cusdc", BaseDenom: "cusdc", Decimals: 6, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_IBCEXPORT, tokenregistrytypes.Permission_IBCIMPORT}},
 				{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_IBCEXPORT, tokenregistrytypes.Permission_IBCIMPORT}},
 			},
 		},
@@ -76,10 +81,10 @@ func GetTokenRegistryGenesisState(cfg network.Config, address string) ([]byte, e
 func GetClpGenesisState(cfg network.Config) ([]byte, error) {
 	pools := []*clptypes.Pool{
 		{
-			ExternalAsset:                 &clptypes.Asset{Symbol: "cusdt"},
-			NativeAssetBalance:            sdk.NewUintFromString("1550459183129248235861408"),
-			ExternalAssetBalance:          sdk.NewUintFromString("174248776094"),
-			PoolUnits:                     sdk.NewUintFromString("1550459183129248235861408"),
+			ExternalAsset:                 &clptypes.Asset{Symbol: "cusdc"},
+			NativeAssetBalance:            sdk.NewUintFromString("100000000000000000000000000"),
+			ExternalAssetBalance:          sdk.NewUintFromString("1000000000000"),
+			PoolUnits:                     sdk.NewUintFromString("100000000000000000000000000"),
 			SwapPriceNative:               nil,
 			SwapPriceExternal:             nil,
 			RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -94,16 +99,26 @@ func GetClpGenesisState(cfg network.Config) ([]byte, error) {
 func GetMarginGenesisState(cfg network.Config) ([]byte, error) {
 	gs := &margintypes.GenesisState{
 		Params: &margintypes.Params{
-			LeverageMax:           sdk.MustNewDecFromStr("2.0"),
-			HealthGainFactor:      sdk.MustNewDecFromStr("1.0"),
-			InterestRateMin:       sdk.MustNewDecFromStr("0.005"),
-			InterestRateMax:       sdk.MustNewDecFromStr("3.0"),
-			InterestRateDecrease:  sdk.MustNewDecFromStr("0.001"),
-			InterestRateIncrease:  sdk.MustNewDecFromStr("0.001"),
-			RemovalQueueThreshold: sdk.MustNewDecFromStr("0.1"),
-			EpochLength:           1,
-			MaxOpenPositions:      10000,
-			Pools:                 []string{"cusdt"},
+			HealthGainFactor:                         sdk.MustNewDecFromStr("0.000000022"),
+			InterestRateDecrease:                     sdk.MustNewDecFromStr("0.000000000333333333"),
+			InterestRateIncrease:                     sdk.MustNewDecFromStr("0.000000000333333333"),
+			InterestRateMin:                          sdk.MustNewDecFromStr("0.00000021"),
+			InterestRateMax:                          sdk.MustNewDecFromStr("0.00000001"),
+			LeverageMax:                              sdk.MustNewDecFromStr("10.0"),
+			EpochLength:                              1,
+			RemovalQueueThreshold:                    sdk.MustNewDecFromStr("0.35"),
+			MaxOpenPositions:                         10000,
+			ForceCloseFundPercentage:                 sdk.MustNewDecFromStr("1.0"),
+			ForceCloseFundAddress:                    "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			IncrementalInterestPaymentEnabled:        true,
+			IncrementalInterestPaymentFundPercentage: sdk.MustNewDecFromStr("0.35"),
+			IncrementalInterestPaymentFundAddress:    "sif15ky9du8a2wlstz6fpx3p4mqpjyrm5cgqhns3lt",
+			PoolOpenThreshold:                        sdk.MustNewDecFromStr("0.65"),
+			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
+			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+			WhitelistingEnabled:                      false,
+			Pools:                                    []string{"cusdc"},
+			ClosedPools:                              []string{},
 		},
 	}
 	bz, err := cfg.Codec.MarshalJSON(gs)
