@@ -58,7 +58,7 @@ lint-pre: ${smart_contract_file}
 	# test -z "$(shell gofmt -l .)"
 	GOFLAGS=${GOFLAGS} go mod verify
 
-lint: lint-pre
+lint: lint-pre $(go_proto_files)
 	golangci-lint run
 
 lint-verbose: lint-pre

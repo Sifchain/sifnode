@@ -8,6 +8,5 @@ func (m *CrossChainFeeConfig) IsValid() bool {
 		m.MinimumLockCost.IsNegative() {
 		return false
 	}
-
 	return true
 }
