@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
@@ -15,6 +12,8 @@ func NewLegacyQuerier(k types.Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 	querier := queryServer{k}
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
+		case types.QueryMTP:
+			return queryMtp(ctx, req, cdc, querier)
 		case types.QueryMTPsForAddress:
 			return queryMtpsForAddress(ctx, req, cdc, querier)
 		case types.QueryParams:
@@ -51,10 +50,33 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgDewhitelist:
 			res, err := msgServer.Dewhitelist(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgAdminClose:
+			res, err := msgServer.AdminClose(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgAdminCloseAll:
+			res, err := msgServer.AdminCloseAll(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized margin message type: %T", msg)
 		}
 	}
+}
+
+func queryMtp(ctx sdk.Context, req abci.RequestQuery, cdc *codec.LegacyAmino, querier queryServer) ([]byte, error) {
+	params := types.MTPRequest{}
+	err := cdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	res, err := querier.GetMTP(sdk.WrapSDKContext(ctx), &params)
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(cdc, res)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
 }
 
 func queryMtpsForAddress(ctx sdk.Context, req abci.RequestQuery, cdc *codec.LegacyAmino, querier queryServer) ([]byte, error) {

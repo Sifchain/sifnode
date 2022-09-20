@@ -33,10 +33,6 @@ message Params {
   ];
   int64 epoch_length = 7;
   repeated string pools = 8;
-  string force_close_threshold = 9 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
   string removal_queue_threshold = 10 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
@@ -50,12 +46,12 @@ message Params {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string force_close_insurance_fund_address = 14;
+  string force_close_fund_address = 14;
   string incremental_interest_payment_fund_percentage = 15 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string incremental_interest_payment_insurance_fund_address = 16;
+  string incremental_interest_payment_fund_address = 16;
   string sq_modifier = 17 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
@@ -86,27 +82,31 @@ message MTP {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string interest_paid = 5 [
+  string interest_paid_collateral = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string interest_unpaid = 6 [
+  string interest_paid_custody = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string custody_asset = 7;
-  string custody_amount = 8 [
+  string interest_unpaid_collateral = 7 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string leverage = 9 [
+  string custody_asset = 8;
+  string custody_amount = 9 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string leverage = 10 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  string mtp_health = 10 [
+  string mtp_health = 11 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  Position position = 11;
-  uint64 id = 12;
+  Position position = 12;
+  uint64 id = 13;
 }

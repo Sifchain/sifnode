@@ -3,7 +3,6 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
-import "sifnode/clp/v1/pool.proto";
 import "sifnode/clp/v1/params.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
@@ -53,6 +52,9 @@ service Query {
   };
   rpc GetProviderDistributionParams(ProviderDistributionParamsReq) returns (ProviderDistributionParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/provider_distribution_params";
+  };
+  rpc GetSwapFeeRate(SwapFeeRateReq) returns (SwapFeeRateRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/swap_fee_rate";
   };
 }
 
@@ -189,4 +191,13 @@ message ProviderDistributionParamsReq {}
 
 message ProviderDistributionParamsRes {
   ProviderDistributionParams params = 1;
+}
+
+message SwapFeeRateReq {}
+
+message SwapFeeRateRes {
+  string swap_fee_rate = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
