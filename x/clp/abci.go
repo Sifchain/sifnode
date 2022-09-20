@@ -138,7 +138,7 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 	}
 }
 
-var blockTime *time.Time = nil
+var blockTime *time.Time
 
 func MeasureBlockTime(ctx sdk.Context, k kpr.Keeper) {
 	now := time.Now()
