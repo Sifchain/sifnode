@@ -10,6 +10,10 @@ message GenesisState {
   map<uint32, ValidatorWhiteList> address_whitelist = 1;
   string admin_address = 2;
   repeated Prophecy prophecies = 3;
+  map<uint32, uint32> consensus_needed = 4;
+  map<uint32, CrossChainFeeConfig> cross_chain_fee = 5;
+  map<string, uint64> witness_lock_burn_sequence = 6;
+  map<string, ProphecyInfo> prophecy_info = 7;
 }
 
 // Claim contains an arbitrary claim with arbitrary content made by a given

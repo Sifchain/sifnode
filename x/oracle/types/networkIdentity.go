@@ -33,11 +33,11 @@ func (n NetworkIdentity) GetConsensusNeededPrefix(cdc codec.BinaryCodec) []byte 
 }
 
 // GetFromPrefix return a NetworkIdentity from key which include the WhiteListValidatorPrefix and encoded NetworkIdentity
-func GetFromPrefix(cdc codec.BinaryCodec, key []byte) (NetworkIdentity, error) {
+func GetFromPrefix(cdc codec.BinaryCodec, key []byte, prefix []byte) (NetworkIdentity, error) {
 	// check the key which correct prefix
-	if bytes.HasPrefix(key, WhiteListValidatorPrefix) {
+	if bytes.HasPrefix(key, prefix) {
 		var networkIdentity NetworkIdentity
-		err := cdc.Unmarshal(key[len(WhiteListValidatorPrefix):], &networkIdentity)
+		err := cdc.Unmarshal(key[len(prefix):], &networkIdentity)
 
 		if err == nil {
 			return networkIdentity, nil

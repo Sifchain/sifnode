@@ -46,3 +46,35 @@ func (k Keeper) GetWitnessLockBurnSequencePrefix(networkDescriptor types.Network
 
 	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
 }
+
+// GetAllWitnessLockBurnSequence get all witnessLockBurnSequence needed for all validators
+func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) map[string]uint64 {
+	sequences := make(map[string]uint64)
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.WitnessLockBurnNoncePrefix)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+		var lockBurnNonce types.LockBurnNonce
+		k.cdc.MustUnmarshal(value, &lockBurnNonce)
+		sequences[string(key)] = lockBurnNonce.LockBurnNonce
+	}
+	return sequences
+}
+
+func (k Keeper) SetWitnessLockBurnNonceViaRawKey(ctx sdk.Context, key []byte, nonce uint64) {
+
+	store := ctx.KVStore(k.storeKey)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+		LockBurnNonce: nonce,
+	})
+
+	store.Set(key, bs)
+}

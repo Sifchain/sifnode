@@ -12,7 +12,7 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[types.NetworkDescriptor]typ
 	iterator := sdk.KVStorePrefixIterator(store, types.WhiteListValidatorPrefix)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		networkDescriptor, err := types.GetFromPrefix(k.cdc, iterator.Key())
+		networkDescriptor, err := types.GetFromPrefix(k.cdc, iterator.Key(), types.WhiteListValidatorPrefix)
 		if err != nil {
 			panic(err.Error())
 		}
