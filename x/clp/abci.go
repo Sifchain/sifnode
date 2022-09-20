@@ -40,6 +40,11 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 		}
 	}
 
+	res, stop := kpr.BalanceModuleAccountCheck(keeper)(ctx)
+	if stop {
+		panic(res)
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
