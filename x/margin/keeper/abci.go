@@ -11,9 +11,9 @@ import (
 )
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
-	if ctx.BlockHeight() == 1900 {
-		fixAtomPool(ctx, k)
-	}
+	// if ctx.BlockHeight() == 20 {
+	// 	fixAtomPool(ctx, k)
+	// }
 	//check if epoch has passed then execute
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)

@@ -44,9 +44,9 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 }
 
 func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
-	if ctx.BlockHeight() == 1900 {
-		fixAtomPool(ctx, k)
-	}
+	// if ctx.BlockHeight() == 20 {
+	// 	fixAtomPool(ctx, k)
+	// }
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 	MeasureBlockTime(ctx, k)
 
@@ -150,11 +150,11 @@ func fixAtomPool(ctx sdk.Context, k kpr.Keeper) {
 	// Get Rowan Balance from CLP Module
 	clpModuleTotalNativeBalance := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), types.GetSettlementAsset().Symbol)
 	// Get Atom Balance from CLP Module
-	clpModulebalanceAtom := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), atomIbcHash)
+	clpModuleBalanceAtom := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), atomIbcHash)
 
 	// Get Uint amount from coin
 	clpModuleTotalNativeBalanceUint := sdk.NewUintFromString(clpModuleTotalNativeBalance.Amount.String())
-	clpModulebalanceAtomUint := sdk.NewUintFromString(clpModulebalanceAtom.Amount.String())
+	clpModuleBalanceAtomUint := sdk.NewUintFromString(clpModuleBalanceAtom.Amount.String())
 
 	// Get Atom Pool
 	atomPool, err := k.GetPool(ctx, atomIbcHash)
@@ -171,12 +171,12 @@ func fixAtomPool(ctx sdk.Context, k kpr.Keeper) {
 		}
 	}
 	// Set Atom pool back
-	atomPool.ExternalAssetBalance = clpModulebalanceAtomUint
+	atomPool.ExternalAssetBalance = clpModuleBalanceAtomUint
 	atomPool.NativeAssetBalance = clpModuleTotalNativeBalanceUint.Sub(poolTotalNativeBalance)
-	atomPool.ExternalLiabilities = sdk.ZeroUint()
-	atomPool.NativeLiabilities = sdk.ZeroUint()
-	atomPool.ExternalCustody = sdk.ZeroUint()
-	atomPool.NativeCustody = sdk.ZeroUint()
+	// atomPool.ExternalLiabilities = sdk.ZeroUint()
+	// atomPool.NativeLiabilities = sdk.ZeroUint()
+	// atomPool.ExternalCustody = sdk.ZeroUint()
+	// atomPool.NativeCustody = sdk.ZeroUint()
 	err = k.SetPool(ctx, &atomPool)
 	if err != nil {
 		panic(err)

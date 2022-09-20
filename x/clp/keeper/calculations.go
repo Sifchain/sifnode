@@ -484,6 +484,7 @@ func SwapOne(from types.Asset,
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
+	X, Y, toRowan = pool.ExtractValues(to)
 
 	pool.UpdateBalances(toRowan, X, sentAmount, Y, swapResult)
 
