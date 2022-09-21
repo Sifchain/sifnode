@@ -17,7 +17,7 @@ import (
 
 func TestEndBlocker(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	_ = test.GeneratePoolsFromFile(app.ClpKeeper, ctx)
+	_ = test.GeneratePoolsFromFile(app, app.ClpKeeper, ctx)
 	SetRewardParams(app.ClpKeeper, ctx)
 
 	_ = clp.EndBlocker(ctx, app.ClpKeeper)

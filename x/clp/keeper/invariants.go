@@ -29,7 +29,7 @@ func BalanceModuleAccountCheck(k Keeper) sdk.Invariant {
 
 			ok := pool.ExternalAssetBalance.Add(pool.ExternalCustody).Equal(clpModuleTotalExternalBalanceUint)
 			if !ok {
-				return fmt.Sprintf("external balance mismatch in pool %s: %s != %s",
+				return fmt.Sprintf("external balance mismatch in pool %s (module: %s != pool: %s)",
 					pool.ExternalAsset.Symbol,
 					clpModuleTotalExternalBalanceUint.String(),
 					pool.ExternalAssetBalance.String()), true
@@ -38,9 +38,9 @@ func BalanceModuleAccountCheck(k Keeper) sdk.Invariant {
 
 		ok := poolsTotalNativeBalanceUint.Add(poolsTotalNativeCustodyUint).Equal(clpModuleTotalNativeBalanceUint)
 		if !ok {
-			return fmt.Sprintf("native balance mismatch across all pools: %s != %s",
-				poolsTotalNativeBalanceUint.String(),
-				clpModuleTotalNativeBalanceUint.String()), true
+			return fmt.Sprintf("native balance mismatch across all pools (module: %s != pools: %s)",
+				clpModuleTotalNativeBalanceUint.String(),
+				poolsTotalNativeBalanceUint.String()), true
 		}
 
 		return "pool and module account balances match", false
