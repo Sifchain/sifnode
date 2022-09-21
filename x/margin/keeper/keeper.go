@@ -436,17 +436,20 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repa
 	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
-func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) {
+func (k Keeper) HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) sdk.Uint {
 	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
 	// if incremental payment on, pay interest
 	if incrementalInterestPaymentEnabled {
-		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, pool)
+		finalInterestPayment, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, pool)
 		if err != nil {
 			ctx.Logger().Error(sdkerrors.Wrap(err, "error executing incremental interest payment").Error())
+		} else {
+			return finalInterestPayment
 		}
 	} else { // else update unpaid mtp interest
 		mtp.InterestUnpaidCollateral = interestPayment
 	}
+	return sdk.ZeroUint()
 }
 
 func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *types.MTP, pool *clptypes.Pool) (sdk.Uint, error) {
@@ -512,7 +515,7 @@ func (k Keeper) IncrementalInterestPayment(ctx sdk.Context, interestPayment sdk.
 		return sdk.ZeroUint(), err
 	}
 
-	return interestPayment, k.ClpKeeper().SetPool(ctx, pool)
+	return actualInterestPaymentCustody, k.ClpKeeper().SetPool(ctx, pool)
 }
 
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {
@@ -670,7 +673,15 @@ func (k Keeper) ForceCloseLong(ctx sdk.Context, mtp *types.MTP, pool *clptypes.P
 	if epochPosition > 0 {
 		interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, epochPosition, epochLength)
 
-		k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+		finalInterestPayment := k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+
+		nativeAsset := types.GetSettlementAsset()
+
+		if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // custody is external, payment is custody
+			pool.BlockInterestExternal = pool.BlockInterestExternal.Add(finalInterestPayment)
+		} else { // custody is native, payment is custody
+			pool.BlockInterestNative = pool.BlockInterestNative.Add(finalInterestPayment)
+		}
 
 		mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, *mtp, *pool)
 		if err != nil {
