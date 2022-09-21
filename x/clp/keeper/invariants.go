@@ -34,7 +34,6 @@ func BalanceModuleAccountCheck(k Keeper) sdk.Invariant {
 					clpModuleTotalExternalBalanceUint.String(),
 					pool.ExternalAssetBalance.String()), true
 			}
-			poolsTotalNativeBalanceUint = poolsTotalNativeBalanceUint.Add(pool.NativeAssetBalance)
 		}
 
 		ok := poolsTotalNativeBalanceUint.Add(poolsTotalNativeCustodyUint).Equal(clpModuleTotalNativeBalanceUint)
