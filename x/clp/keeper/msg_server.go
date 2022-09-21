@@ -685,10 +685,20 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		return nil, err
 	}
 
+	nativeAssetDepth := pool.NativeAssetBalance
+	externalAssetDepth := pool.ExternalAssetBalance
+
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+
+	if marginEnabled {
+		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeCustody)
+		externalAssetDepth = externalAssetDepth.Add(pool.ExternalCustody)
+	}
+
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
-		pool.NativeAssetBalance,
-		pool.ExternalAssetBalance,
+		nativeAssetDepth,
+		externalAssetDepth,
 		msg.NativeAssetAmount,
 		msg.ExternalAssetAmount,
 		externalDecimals,

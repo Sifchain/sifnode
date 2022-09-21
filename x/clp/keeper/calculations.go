@@ -125,24 +125,24 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
-func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
+func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nativeAssetAmount,
 	externalAssetAmount sdk.Uint, externalDecimals uint8, symmetryThreshold, ratioThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
 
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
 
-	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
+	if nativeAssetDepth.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
 	}
-	if externalAssetBalance.Add(externalAssetAmount).IsZero() {
+	if externalAssetDepth.Add(externalAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, externalAssetAmount.String())
 	}
-	if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
+	if nativeAssetDepth.IsZero() || externalAssetDepth.IsZero() {
 		return nativeAssetAmount, nativeAssetAmount, nil
 	}
 
-	slipAdjustmentValues := calculateSlipAdjustment(nativeAssetBalance.BigInt(), externalAssetBalance.BigInt(),
+	slipAdjustmentValues := calculateSlipAdjustment(nativeAssetDepth.BigInt(), externalAssetDepth.BigInt(),
 		nativeAssetAmount.BigInt(), externalAssetAmount.BigInt())
 
 	one := big.NewRat(1, 1)
@@ -157,7 +157,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 	ratioThresholdRat := DecToRat(&ratioThreshold)
 	normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
 	ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
-	ratioDiff, err := CalculateRatioDiff(externalAssetBalance.BigInt(), nativeAssetBalance.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
+	ratioDiff, err := CalculateRatioDiff(externalAssetDepth.BigInt(), nativeAssetDepth.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
 	if err != nil {
 		return sdk.ZeroUint(), sdk.ZeroUint(), err
 	}
@@ -165,8 +165,8 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, 
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
-	stakeUnits := calculateStakeUnits(oldPoolUnits.BigInt(), nativeAssetBalance.BigInt(),
-		externalAssetBalance.BigInt(), nativeAssetAmount.BigInt(), slipAdjustmentValues)
+	stakeUnits := calculateStakeUnits(oldPoolUnits.BigInt(), nativeAssetDepth.BigInt(),
+		externalAssetDepth.BigInt(), nativeAssetAmount.BigInt(), slipAdjustmentValues)
 
 	var newPoolUnit big.Int
 	newPoolUnit.Add(oldPoolUnits.BigInt(), stakeUnits)
