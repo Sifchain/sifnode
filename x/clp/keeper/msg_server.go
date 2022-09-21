@@ -691,8 +691,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 
 	if marginEnabled {
-		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeCustody)
-		externalAssetDepth = externalAssetDepth.Add(pool.ExternalCustody)
+		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeLiabilities).Add(pool.NativeCustody)
+		externalAssetDepth = externalAssetDepth.Add(pool.ExternalLiabilities).Add(pool.ExternalCustody)
 	}
 
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
@@ -771,9 +771,19 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 
+	nativeAssetDepth := pool.NativeAssetBalance
+	externalAssetDepth := pool.ExternalAssetBalance
+
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+
+	if marginEnabled {
+		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeLiabilities).Add(pool.NativeCustody)
+		externalAssetDepth = externalAssetDepth.Add(pool.ExternalLiabilities).Add(pool.ExternalCustody)
+	}
+
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := CalculateWithdrawalFromUnits(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
+		nativeAssetDepth.String(), externalAssetDepth.String(), lp.LiquidityProviderUnits.String(),
 		msg.WithdrawUnits)
 
 	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
@@ -881,9 +891,19 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msgUnits, lp.LiquidityProviderUnits))
 	}
 
+	nativeAssetDepth := pool.NativeAssetBalance
+	externalAssetDepth := pool.ExternalAssetBalance
+
+	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
+
+	if marginEnabled {
+		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeLiabilities).Add(pool.NativeCustody)
+		externalAssetDepth = externalAssetDepth.Add(pool.ExternalLiabilities).Add(pool.ExternalCustody)
+	}
+
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
+		nativeAssetDepth.String(), externalAssetDepth.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
 	err = k.Keeper.UseUnlockedLiquidity(ctx, lp, lp.LiquidityProviderUnits.Sub(lpUnitsLeft), false)
