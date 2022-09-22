@@ -32,7 +32,7 @@ jobs:
         run: |
           source ~/.bash_profile
           export PATH=./test/integration/framework/venv/bin/python3:$PATH
-          ./test/integration/framework/siftool run-env
+          ./test/integration/framework/siftool run-env --geth
 
       # This sleep is needed for the tests to work
       - name: Run integration tests
