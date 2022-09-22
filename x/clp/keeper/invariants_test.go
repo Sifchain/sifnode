@@ -138,3 +138,76 @@ func TestBalanceModuleAccountCheck(t *testing.T) {
 
 	}
 }
+
+func TestUnitsCheck(t *testing.T) {
+	tt := []struct {
+		name  string
+		Pools []*types.Pool
+		lps   []*types.LiquidityProvider
+		stop  bool
+	}{
+		{
+			name: "ok",
+			Pools: []*types.Pool{
+				{
+					ExternalAsset: &types.Asset{Symbol: "ceth"},
+					PoolUnits:     sdk.NewUint(2000),
+				},
+			},
+			lps: []*types.LiquidityProvider{
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif123",
+				},
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif456",
+				},
+			},
+			stop: false,
+		},
+		{
+			name: "not ok",
+			Pools: []*types.Pool{
+				{
+					ExternalAsset: &types.Asset{Symbol: "ceth"},
+					PoolUnits:     sdk.NewUint(3000),
+				},
+			},
+			lps: []*types.LiquidityProvider{
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif123",
+				},
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif456",
+				},
+			},
+			stop: true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			app, ctx := test.CreateTestApp(false)
+
+			for _, pool := range tc.Pools {
+				err := app.ClpKeeper.SetPool(ctx, pool)
+				require.NoError(t, err)
+			}
+
+			for _, lp := range tc.lps {
+				app.ClpKeeper.SetLiquidityProvider(ctx, lp)
+			}
+
+			_, stop := app.ClpKeeper.UnitsCheck()(ctx)
+			require.Equal(t, tc.stop, stop)
+		})
+
+	}
+}
