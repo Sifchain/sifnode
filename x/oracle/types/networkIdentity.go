@@ -32,7 +32,7 @@ func (n NetworkIdentity) GetConsensusNeededPrefix(cdc codec.BinaryCodec) []byte 
 	return append(ConsensusNeededPrefix, bytebuf...)
 }
 
-// GetFromPrefix return a NetworkIdentity from key which include the WhiteListValidatorPrefix and encoded NetworkIdentity
+// GetFromPrefix return a NetworkIdentity from key which include the storage Prefix and encoded NetworkIdentity
 func GetFromPrefix(cdc codec.BinaryCodec, key []byte, prefix []byte) (NetworkIdentity, error) {
 	// check the key which correct prefix
 	if bytes.HasPrefix(key, prefix) {
