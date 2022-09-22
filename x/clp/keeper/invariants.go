@@ -8,10 +8,10 @@ import (
 )
 
 func RegisterInvariants(registry sdk.InvariantRegistry, k Keeper) {
-	// registry.RegisterRoute(types.ModuleName, "balance-module-account-check", BalanceModuleAccountCheck(k))
+	// registry.RegisterRoute(types.ModuleName, "balance-module-account-check", k.BalanceModuleAccountCheck())
 }
 
-func BalanceModuleAccountCheck(k Keeper) sdk.Invariant {
+func (k Keeper) BalanceModuleAccountCheck() sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		// Get Rowan Balance from CLP Module
 		clpModuleTotalNativeBalance := k.GetBankKeeper().GetBalance(ctx, types.GetCLPModuleAddress(), types.GetSettlementAsset().Symbol)
