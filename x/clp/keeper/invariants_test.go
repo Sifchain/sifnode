@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -133,7 +132,7 @@ func TestBalanceModuleAccountCheck(t *testing.T) {
 			err := app.BankKeeper.MintCoins(ctx, types.ModuleName, tc.moduleBalances)
 			require.NoError(t, err)
 
-			_, stop := keeper.BalanceModuleAccountCheck(app.ClpKeeper)(ctx)
+			_, stop := app.ClpKeeper.BalanceModuleAccountCheck()(ctx)
 			require.Equal(t, tc.stop, stop)
 		})
 
