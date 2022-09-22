@@ -109,7 +109,9 @@ func (AppModule) Name() string {
 }
 
 // RegisterInvariants registers the clp module invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
+	keeper.RegisterInvariants(registry, am.keeper)
+}
 
 // Route returns the message routing key for the staking module.
 func (am AppModule) Route() sdk.Route {

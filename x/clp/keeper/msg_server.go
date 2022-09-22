@@ -378,6 +378,12 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
+
+	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	}
+
 	return &types.MsgDecommissionPoolResponse{}, nil
 }
 
@@ -441,6 +447,12 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
+
+	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	}
+
 	return &types.MsgCreatePoolResponse{}, nil
 }
 
@@ -656,6 +668,11 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 	}
 
+	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	}
+
 	return &types.MsgSwapResponse{}, nil
 }
 
@@ -717,6 +734,11 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	}
 	if k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol).Count > 0 {
 		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
+	}
+
+	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
 	}
 
 	return &types.MsgAddLiquidityResponse{}, nil
@@ -822,6 +844,12 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
+
+	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	}
+
 	return &types.MsgRemoveLiquidityUnitsResponse{}, nil
 }
 
@@ -975,6 +1003,12 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
+
+	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	}
+
 	return &types.MsgRemoveLiquidityResponse{}, nil
 }
 
