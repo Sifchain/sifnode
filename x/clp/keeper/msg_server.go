@@ -680,15 +680,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		return nil, err
 	}
 
-	nativeAssetDepth := pool.NativeAssetBalance
-	externalAssetDepth := pool.ExternalAssetBalance
-
-	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
-
-	if marginEnabled {
-		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeLiabilities).Add(pool.NativeCustody)
-		externalAssetDepth = externalAssetDepth.Add(pool.ExternalLiabilities).Add(pool.ExternalCustody)
-	}
+	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
@@ -758,23 +750,13 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msg.WithdrawUnits, lp.LiquidityProviderUnits))
 	}
 
-	poolOriginalEB := pool.ExternalAssetBalance
-	poolOriginalNB := pool.NativeAssetBalance
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
 
-	nativeAssetDepth := pool.NativeAssetBalance
-	externalAssetDepth := pool.ExternalAssetBalance
-
-	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
-
-	if marginEnabled {
-		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeLiabilities).Add(pool.NativeCustody)
-		externalAssetDepth = externalAssetDepth.Add(pool.ExternalLiabilities).Add(pool.ExternalCustody)
-	}
+	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := CalculateWithdrawalFromUnits(pool.PoolUnits,
@@ -823,7 +805,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 
 	// Check and  remove Liquidity
-	err = k.Keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, poolOriginalEB, poolOriginalNB)
+	err = k.Keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, externalAssetDepth, nativeAssetDepth)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
 	}
@@ -866,8 +848,6 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
 
-	poolOriginalEB := pool.ExternalAssetBalance
-	poolOriginalNB := pool.NativeAssetBalance
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 	// Prune pools
@@ -885,15 +865,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, fmt.Sprintf("WithdrawUnits %s greater than total LP units %s minus queued removals", msgUnits, lp.LiquidityProviderUnits))
 	}
 
-	nativeAssetDepth := pool.NativeAssetBalance
-	externalAssetDepth := pool.ExternalAssetBalance
-
-	marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
-
-	if marginEnabled {
-		nativeAssetDepth = nativeAssetDepth.Add(pool.NativeLiabilities).Add(pool.NativeCustody)
-		externalAssetDepth = externalAssetDepth.Add(pool.ExternalLiabilities).Add(pool.ExternalCustody)
-	}
+	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
@@ -986,7 +958,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	// Check and  remove Liquidity
-	err = k.Keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, poolOriginalEB, poolOriginalNB)
+	err = k.Keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, externalAssetDepth, nativeAssetDepth)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
 	}
