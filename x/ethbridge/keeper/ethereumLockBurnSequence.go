@@ -1,9 +1,6 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -15,8 +12,9 @@ func (k Keeper) SetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	store := ctx.KVStore(k.storeKey)
 	key := k.GetEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
 
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newSequence)
+	bs := k.cdc.MustMarshal(&oracletypes.LockBurnNonce{
+		LockBurnNonce: newSequence,
+	})
 
 	store.Set(key, bs)
 }
@@ -31,17 +29,20 @@ func (k Keeper) GetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	if !store.Has(key) {
 		return 0
 	}
+	var lockBurnNonce oracletypes.LockBurnNonce
+	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
 
-	bz := store.Get(key)
-	return binary.BigEndian.Uint64(bz)
+	return lockBurnNonce.LockBurnNonce
 }
 
 // GetEthereumLockBurnSequencePrefix return storage prefix
 func (k Keeper) GetEthereumLockBurnSequencePrefix(networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
-	tmpKey := append(types.EthereumLockBurnSequencePrefix, bytebuf.Bytes()...)
-	return append(tmpKey, valAccount...)
+
+	bs := k.cdc.MustMarshal(&oracletypes.LockBurnNonceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	})
+	return append(types.EthereumLockBurnSequencePrefix, bs[:]...)
 }
 
 func (k Keeper) getEthereumLockBurnSequenceIterator(ctx sdk.Context) sdk.Iterator {
@@ -62,31 +63,17 @@ func (k Keeper) GetEthereumLockBurnSequences(ctx sdk.Context) map[string]uint64 
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 		value := iterator.Value()
-		sequences[string(key)] = binary.BigEndian.Uint64(value)
+		var lockBurnNonce oracletypes.LockBurnNonce
+		k.cdc.MustUnmarshal(value, &lockBurnNonce)
+		sequences[string(key)] = lockBurnNonce.LockBurnNonce
 	}
 	return sequences
 }
 
 // SetSequenceViaRawKey used in import sequence from genesis
 func (k Keeper) SetSequenceViaRawKey(ctx sdk.Context, key []byte, newSequence uint64) {
-	network, address := DecodeKey(key)
-	k.SetEthereumLockBurnSequence(ctx, network, address, newSequence)
-}
-
-// DecodeKey extract the NetworkDescriptor and ValAddress from raw key
-func DecodeKey(key []byte) (oracletypes.NetworkDescriptor, sdk.ValAddress) {
-	prefixLen := len(types.EthereumLockBurnSequencePrefix)
-
-	// the length must larger than 5
-	if len(key) < prefixLen+4 {
-		panic("key for EthereumLockBurnSequence with wrong length")
-	}
-
-	networkDescriptorKey := key[prefixLen : prefixLen+4]
-	addressKey := key[prefixLen+4:]
-
-	networkDescriptor := binary.BigEndian.Uint32(networkDescriptorKey)
-	address := sdk.ValAddress(addressKey)
-
-	return oracletypes.NetworkDescriptor(networkDescriptor), address
+	// network, address := DecodeKey(key)
+	var lockBurnNonceKey oracletypes.LockBurnNonceKey
+	k.cdc.MustUnmarshal(key[len(types.EthereumLockBurnSequencePrefix):], &lockBurnNonceKey)
+	k.SetEthereumLockBurnSequence(ctx, lockBurnNonceKey.NetworkDescriptor, lockBurnNonceKey.ValidatorAddress, newSequence)
 }

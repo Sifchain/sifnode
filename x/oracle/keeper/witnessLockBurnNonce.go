@@ -1,9 +1,6 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
-
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -15,8 +12,9 @@ func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types
 	store := ctx.KVStore(k.storeKey)
 	key := k.GetWitnessLockBurnSequencePrefix(networkDescriptor, valAccount)
 
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newNonce)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+		LockBurnNonce: newNonce,
+	})
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetWitnessLockBurnNonce, "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
 
@@ -33,19 +31,20 @@ func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor ty
 		return 0
 	}
 
-	bz := store.Get(key)
-	return binary.BigEndian.Uint64(bz)
+	var lockBurnNonce types.LockBurnNonce
+	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
+
+	return lockBurnNonce.LockBurnNonce
 }
 
 // GetWitnessLockBurnSequencePrefix return storage prefix
 func (k Keeper) GetWitnessLockBurnSequencePrefix(networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	err := binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
-	if err != nil {
-		panic(err.Error())
-	}
-	tmpKey := append(types.WitnessLockBurnNoncePrefix, bytebuf.Bytes()...)
-	return append(tmpKey, valAccount...)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	})
+
+	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
 }
 
 // GetAllWitnessLockBurnSequence get all witnessLockBurnSequence needed for all validators
@@ -63,31 +62,19 @@ func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) map[string]uint64
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 		value := iterator.Value()
-		sequences[string(key)] = binary.BigEndian.Uint64(value)
+		var lockBurnNonce types.LockBurnNonce
+		k.cdc.MustUnmarshal(value, &lockBurnNonce)
+		sequences[string(key)] = lockBurnNonce.LockBurnNonce
 	}
 	return sequences
 }
 
-// DecodeWitnessLockBurnNonceKey extract the NetworkDescriptor and ValAddress from raw key
-func DecodeWitnessLockBurnNonceKey(key []byte) (types.NetworkDescriptor, sdk.ValAddress) {
-	prefixLen := len(types.WitnessLockBurnNoncePrefix)
-
-	// the length must larger than 5
-	if len(key) < prefixLen+4 {
-		panic("key for WitnessLockBurnSequence with wrong length")
-	}
-
-	networkDescriptorKey := key[prefixLen : prefixLen+4]
-	addressKey := key[prefixLen+4:]
-
-	networkDescriptor := binary.BigEndian.Uint32(networkDescriptorKey)
-	address := sdk.ValAddress(addressKey)
-
-	return types.NetworkDescriptor(networkDescriptor), address
-}
-
 func (k Keeper) SetWitnessLockBurnNonceViaRawKey(ctx sdk.Context, key []byte, nonce uint64) {
-	networkDescriptor, valAddress := DecodeWitnessLockBurnNonceKey(key)
 
-	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddress, nonce)
+	store := ctx.KVStore(k.storeKey)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+		LockBurnNonce: nonce,
+	})
+
+	store.Set(key, bs)
 }

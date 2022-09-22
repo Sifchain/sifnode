@@ -15,6 +15,7 @@ func (k Keeper) SetCrossChainFee(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
 	token string,
 	gas, lockCost, burnCost, firstBurnDoublePeggyCost sdk.Int) {
+
 	crossChainFee := types.CrossChainFeeConfig{
 		FeeCurrency:              token,
 		FeeCurrencyGas:           gas,
@@ -31,14 +32,14 @@ func (k Keeper) SetCrossChainFeeObj(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
 	crossChainFee *types.CrossChainFeeConfig) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetCrossChainFeePrefix()
+	key := networkIdentity.GetCrossChainFeePrefix(k.cdc)
 	store.Set(key, k.cdc.MustMarshal(crossChainFee))
 }
 
 // GetCrossChainFeeConfig return crosschain fee config
 func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.NetworkIdentity) (types.CrossChainFeeConfig, error) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetCrossChainFeePrefix()
+	key := networkIdentity.GetCrossChainFeePrefix(k.cdc)
 
 	if !store.Has(key) {
 		return types.CrossChainFeeConfig{}, fmt.Errorf("%s%s", "crosschain fee not set for ", networkIdentity.NetworkDescriptor.String())
@@ -82,7 +83,7 @@ func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) map[uint32]*types.Cro
 		var config types.CrossChainFeeConfig
 		value := iterator.Value()
 
-		network_descriptor, err := types.GetFromPrefix(key)
+		network_descriptor, err := types.GetFromPrefix(k.cdc, key, types.CrossChainFeePrefix)
 		if err != nil {
 			panic(err)
 		}
