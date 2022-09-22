@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -133,6 +134,127 @@ func TestBalanceModuleAccountCheck(t *testing.T) {
 			require.NoError(t, err)
 
 			_, stop := app.ClpKeeper.BalanceModuleAccountCheck()(ctx)
+			require.Equal(t, tc.stop, stop)
+		})
+
+	}
+}
+
+func TestUnitsCheck(t *testing.T) {
+
+	poolUnitsOnCreate, stakeUnitsOnCreate, err := keeper.CalculatePoolUnits(
+		sdk.ZeroUint(),
+		sdk.ZeroUint(),
+		sdk.ZeroUint(),
+		sdk.NewUint(1000),
+		sdk.NewUint(1000),
+		uint8(6),
+		sdk.NewDecWithPrec(5, 5),
+		sdk.NewDecWithPrec(5, 4),
+	)
+	require.NoError(t, err)
+
+	poolUnitsOnErroneousAdd, stakeUnitsOnErroneousAdd, err := keeper.CalculatePoolUnits(
+		poolUnitsOnCreate,
+		sdk.NewUint(2000),  // 1000 more than should be - simulating bug
+		sdk.NewUint(10000), // 4000 more than should be - simulating bug
+		sdk.NewUint(2000),
+		sdk.NewUint(10000),
+		uint8(6),
+		sdk.NewDecWithPrec(5, 5),
+		sdk.NewDecWithPrec(5, 4),
+	)
+	require.NoError(t, err)
+
+	tt := []struct {
+		name  string
+		Pools []*types.Pool
+		lps   []*types.LiquidityProvider
+		stop  bool
+	}{
+		{
+			name: "ok",
+			Pools: []*types.Pool{
+				{
+					ExternalAsset: &types.Asset{Symbol: "ceth"},
+					PoolUnits:     sdk.NewUint(2000),
+				},
+			},
+			lps: []*types.LiquidityProvider{
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif123",
+				},
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif456",
+				},
+			},
+			stop: false,
+		},
+		{
+			name: "not ok",
+			Pools: []*types.Pool{
+				{
+					ExternalAsset: &types.Asset{Symbol: "ceth"},
+					PoolUnits:     sdk.NewUint(3000),
+				},
+			},
+			lps: []*types.LiquidityProvider{
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif123",
+				},
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   sdk.NewUint(1000),
+					LiquidityProviderAddress: "sif456",
+				},
+			},
+			stop: true,
+		},
+		{
+			name: "does not catch error",
+			Pools: []*types.Pool{
+				{
+					ExternalAsset: &types.Asset{Symbol: "ceth"},
+					PoolUnits:     poolUnitsOnErroneousAdd,
+				},
+			},
+			lps: []*types.LiquidityProvider{
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   stakeUnitsOnCreate,
+					LiquidityProviderAddress: "sif123",
+				},
+				{
+					Asset:                    &types.Asset{Symbol: "ceth"},
+					LiquidityProviderUnits:   stakeUnitsOnErroneousAdd,
+					LiquidityProviderAddress: "sif456",
+				},
+			},
+			// note: does not catch error that occurred.
+			stop: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			app, ctx := test.CreateTestApp(false)
+
+			for _, pool := range tc.Pools {
+				err := app.ClpKeeper.SetPool(ctx, pool)
+				require.NoError(t, err)
+			}
+
+			for _, lp := range tc.lps {
+				app.ClpKeeper.SetLiquidityProvider(ctx, lp)
+			}
+
+			_, stop := app.ClpKeeper.UnitsCheck()(ctx)
 			require.Equal(t, tc.stop, stop)
 		})
 
