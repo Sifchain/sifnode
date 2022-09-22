@@ -27,3 +27,5 @@ enum NetworkDescriptor {
   // Hardhat local testnet
   NETWORK_DESCRIPTOR_HARDHAT = 9999;
 }
+
+message NetworkIdentity { NetworkDescriptor network_descriptor = 1; }

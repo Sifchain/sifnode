@@ -21,7 +21,7 @@ func (ethAddr EthereumAddress) String() string {
 	return gethCommon.Address(ethAddr).String()
 }
 
-// MarshalJSON marshals the etherum address to JSON
+// MarshalJSON marshals the ethereum address to JSON
 func (ethAddr EthereumAddress) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%v\"", ethAddr.String())), nil
 }

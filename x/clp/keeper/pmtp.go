@@ -54,11 +54,12 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	return pmtpCurrentRunningRate
 }
 
+// NOTE: the code in this method must not panic otherwise the chain will halt
+// see: https://bytemeta.vip/repo/osmosis-labs/osmosis/issues/1305
 func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error {
 	pools := k.GetPools(ctx)
 
-	// NOTE: the code in this loop must not panic otherwise the remaining pools will not be updated
-	// similarly if an error occurs we must continue to update the remaining pools
+	// NOTE: if an error occurs in this loop we must continue to update the remaining pools
 	for _, pool := range pools {
 		decimalsExternal, err := k.GetAssetDecimals(ctx, *pool.ExternalAsset)
 		if err != nil {
@@ -69,15 +70,16 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 			ctx.Logger().Error(errors.Wrap(err, "error calculating pool spot price").Error())
 			continue
 		}
+		marginEnabled := k.getMarginKeeper().IsPoolEnabled(ctx, pool.ExternalAsset.Symbol)
 
-		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate)
+		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate, marginEnabled)
 		if err != nil {
-			// Error occurs if native asset pool depth is zero
+			// Error occurs if native asset pool depth is zero or result overflows
 			spotPriceNative = sdk.ZeroDec()
 		}
-		spotPriceExternal, err := CalcSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
+		spotPriceExternal, err := CalcSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate, marginEnabled)
 		if err != nil {
-			// Error occurs if external asset pool depth is zero
+			// Error occurs if external asset pool depth is zero or result overflows
 			spotPriceExternal = sdk.ZeroDec()
 		}
 

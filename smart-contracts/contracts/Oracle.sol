@@ -67,4 +67,10 @@ contract Oracle is OracleStorage, Valset {
 
     return hasReachedThreshold;
   }
+
+  function updateConsensusThreshold(uint256 _consensusThreshold) public onlyOperator {
+    require(_consensusThreshold > 0, "Consensus threshold must be positive.");
+    require(_consensusThreshold <= 100, "Invalid consensus threshold.");
+    consensusThreshold = _consensusThreshold;
+  }
 }

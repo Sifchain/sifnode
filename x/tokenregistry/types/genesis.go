@@ -11,18 +11,6 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) (res []abci.ValidatorUpdate) {
-	/**
-	TODO: This is commented out because it no longer works after merging release/13.4.
-	This code might not be needed
-	*/
-	// if len(strings.TrimSpace(data.AdminAccount)) != 0 {
-	// 	adminAddress, err := sdk.AccAddressFromBech32(data.AdminAccount)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	keeper.SetAdminAccount(ctx, adminAddress)
-	// }
-
 	return []abci.ValidatorUpdate{}
 }
 
@@ -36,6 +24,7 @@ func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisS
 	}
 	return genesisState
 }
+
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Registry: InitialRegistry(),

@@ -5,7 +5,7 @@ import { use, expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { preApproveAccount, prefundAccount, setup, TestFixtureState } from "./helpers/testFixture";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BridgeToken } from "../build";
+import { BridgeToken, BridgeToken__factory } from "../build";
 
 use(solidity);
 const BigNumber = ethers.BigNumber;
@@ -201,6 +201,31 @@ describe("Test Bridge Bank", function () {
       let afterUserBalance = Number(await token.balanceOf(userOne.address));
       expect(afterUserBalance).to.equal(state.amount);
     });
+
+
+    it("should NOT allow a blocklisted user to burn bridgetoken", async function () {
+      const bridgeToken = await new BridgeToken__factory(operator).deploy(
+        "rowan",
+        "rowan",
+        18,
+        state.constants.denom.rowan
+      );
+
+      await bridgeToken.connect(operator).grantRole(state.constants.roles.minter, operator.address);
+      await bridgeToken.connect(operator).mint(userOne.address, state.amount);
+      await bridgeToken.connect(userOne).approve(state.bridgeBank.address, state.amount);
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(bridgeToken.address);
+
+      await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be
+        .reverted;
+
+      await expect(async () => {
+        await expect(
+          state.bridgeBank.connect(userOne).burn(state.sender, bridgeToken.address, state.amount)
+        ).to.be.revertedWith("Address is blocklisted");
+      }).to.changeTokenBalance(bridgeToken, userOne, 0)
+    });
+
   });
 
   describe("BridgeBank administration of Bridgetokens", function () {
@@ -703,7 +728,7 @@ describe("Test Bridge Bank", function () {
       expect(startingRowanAddress).to.equal(rowanAddress); // Assert at the start of the test the rowan address is set
       await expect(state.bridgeBank.connect(operator).setRowanTokenAddress(state.constants.zeroAddress)).to.not.be.reverted;
       const endingRowanAddress = await state.bridgeBank.rowanTokenAddress();
-      expect(endingRowanAddress).to.equal(state.constants.zeroAddress); // The address should now be null 
+      expect(endingRowanAddress).to.equal(state.constants.zeroAddress); // The address should now be null
     });
   });
   describe("Bridgebank should treat rowan differently from other bridgetokens or ERC20 tokens", () => {
@@ -717,7 +742,7 @@ describe("Test Bridge Bank", function () {
     it("should override the rowan token denom on a single burn", async () => {
       const nonce = await state.bridgeBank.lockBurnNonce()
       const amount = (state.amount / 2) - 1 // burn slightly less then half
-      // Should return a event emitting "rowan" as the correct denom 
+      // Should return a event emitting "rowan" as the correct denom
       await expect(state.bridgeBank.connect(userOne).burn(state.sender, state.rowan.address, amount))
         .to.emit(state.bridgeBank, 'LogBurn').withArgs(
           userOne.address,
@@ -739,7 +764,7 @@ describe("Test Bridge Bank", function () {
     it("should override the rowan token denom on a multiburn", async () => {
       const nonce = await state.bridgeBank.lockBurnNonce()
       const amount = (state.amount / 2) - 1 // burn slightly less then half
-      // Should return a event emitting "rowan" as the correct denom 
+      // Should return a event emitting "rowan" as the correct denom
       await expect(state.bridgeBank.connect(userOne).multiLockBurn([state.sender], [state.rowan.address], [amount], [true]))
         .to.emit(state.bridgeBank, 'LogBurn').withArgs(
           userOne.address,

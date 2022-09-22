@@ -12,15 +12,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const MessagesInBatch = 5
-
 var (
 	errorMessageKey = "errorMessage"
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCtx client.Context, maxMessagesInSifnodeTransaction int, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow(
@@ -44,7 +42,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		} else {
 			messages = append(messages, &msg)
 			// to avoid too many data in single transaction, send out by batch
-			if len(messages) == MessagesInBatch {
+			if len(messages) == maxMessagesInSifnodeTransaction {
 				err = SendMessagesToCosmos(factory, cliCtx, messages, sugaredLogger)
 				if err != nil {
 					return err

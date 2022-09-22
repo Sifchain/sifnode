@@ -3,7 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -47,6 +47,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdateLiquidityProtectionParams(),
 		GetCmdModifyLiquidityProtectionRates(),
 		GetCmdSetProviderDistributionPeriods(),
+		GetCmdSetSwapFeeRate(),
 	)
 
 	return clpTxCmd
@@ -67,7 +68,7 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}
@@ -154,6 +155,42 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(FsSymmetryThreshold)
 	cmd.Flags().AddFlagSet(FsSymmetryRatioThreshold)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetSwapFeeRate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-swap-fee-rate",
+		Short: "Set swap fee rate",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			swapFeeRate, err := sdk.NewDecFromStr(viper.GetString(FlagSwapFeeRate))
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgUpdateSwapFeeRateRequest{
+				Signer:      signer.String(),
+				SwapFeeRate: swapFeeRate,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsFlagSwapFeeRate)
+	if err := cmd.MarkFlagRequired(FlagSwapFeeRate); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -418,7 +455,7 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}
@@ -433,7 +470,7 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				input, err = ioutil.ReadFile(file)
+				input, err = os.ReadFile(file)
 				if err != nil {
 					return err
 				}
@@ -722,7 +759,7 @@ func GetCmdSetProviderDistributionPeriods() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}

@@ -3,8 +3,8 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -208,11 +208,11 @@ func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
 		ctx.Logger().Error("failed to marshal application genesis state", "error:", err.Error())
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0600)
+	err = os.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0600)
 	if err != nil {
 		ctx.Logger().Error("failed to write state to file", "err", err.Error())
 	}
-	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0600)
+	err = os.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0600)
 	if err != nil {
 		ctx.Logger().Error("failed to write Validator List to file", "err", err.Error())
 	}
