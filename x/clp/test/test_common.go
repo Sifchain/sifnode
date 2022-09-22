@@ -23,7 +23,6 @@ import (
 )
 
 // Constants for test scripts only .
-//
 const (
 	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
 	AddressKey2 = "A58856F0FD53BF058B4909A21AEC019107BA7"
@@ -329,7 +328,7 @@ func GenerateWhitelistAddress(key string) sdk.AccAddress {
 	return res
 }
 
-func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Pool {
+func GeneratePoolsFromFile(app *sifapp.SifchainApp, keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Pool {
 	var poolList types.PoolsRes
 
 	file, err := filepath.Abs("test/pools_input.json")
@@ -351,7 +350,10 @@ func GeneratePoolsFromFile(keeper clpkeeper.Keeper, ctx sdk.Context) []*types.Po
 		if err != nil {
 			panic(err)
 		}
-
+		app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(
+			sdk.NewCoin("rowan", sdk.NewIntFromBigInt(pool.NativeAssetBalance.BigInt())),
+			sdk.NewCoin(pool.ExternalAsset.Symbol, sdk.NewIntFromBigInt(pool.ExternalAssetBalance.BigInt())),
+		))
 	}
 	return poolList.Pools
 }

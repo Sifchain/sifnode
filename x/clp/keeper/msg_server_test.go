@@ -897,6 +897,13 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 				if tc.createBalance {
 					balances := []banktypes.Balance{
 						{
+							Address: "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
+							Coins: sdk.Coins{
+								sdk.NewCoin(tc.poolAsset, sdk.Int(tc.externalAssetAmount)),
+								sdk.NewCoin("rowan", sdk.Int(tc.nativeAssetAmount)),
+							},
+						},
+						{
 							Address: tc.address,
 							Coins: sdk.Coins{
 								sdk.NewCoin(tc.poolAsset, tc.externalBalance),

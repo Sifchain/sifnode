@@ -284,6 +284,7 @@ func TestKeeper_Close(t *testing.T) {
 			poolAsset:   "xxx",
 			token:       "somethingelse",
 			poolEnabled: true,
+			errString:   errors.New("external balance mismatch in pool xxx (module: 0 != pool: 1000001000): Balance of module account check failed"),
 		},
 		{
 			name: "wrong address/mtp not found",
@@ -335,6 +336,7 @@ func TestKeeper_Close(t *testing.T) {
 			poolEnabled:   true,
 			fundedAccount: true,
 			err:           nil,
+			errString:     errors.New("external balance mismatch in pool xxx (module: 1000000000000 != pool: 1000001000): Balance of module account check failed"),
 		},
 		{
 			name: "mtp position invalid",
@@ -522,8 +524,8 @@ func TestKeeper_ForceClose(t *testing.T) {
 			poolAsset:   "xxx",
 			token:       "somethingelse",
 			poolEnabled: true,
-			//err:         types.ErrMTPHealthy,
-			err2: types.ErrMTPDoesNotExist,
+			errString:   errors.New("external balance mismatch in pool xxx (module: 0 != pool: 1000001000): Balance of module account check failed"),
+			err2:        types.ErrMTPDoesNotExist,
 		},
 		{
 			name: "wrong address/mtp not found",
@@ -582,8 +584,8 @@ func TestKeeper_ForceClose(t *testing.T) {
 			token:         "xxx",
 			poolEnabled:   true,
 			fundedAccount: true,
-			//err:           types.ErrMTPHealthy,
-			err2: types.ErrMTPDoesNotExist,
+			errString:     errors.New("external balance mismatch in pool xxx (module: 0 != pool: 1000001000): Balance of module account check failed"),
+			err2:          types.ErrMTPDoesNotExist,
 		},
 		{
 			name: "account funded and mtp not healthy but MTP health above threshold",
@@ -602,8 +604,8 @@ func TestKeeper_ForceClose(t *testing.T) {
 			token:         "xxx",
 			poolEnabled:   true,
 			fundedAccount: true,
-			//err:                           types.ErrMTPHealthy,
-			err2: types.ErrMTPDoesNotExist,
+			errString:     errors.New("external balance mismatch in pool xxx (module: 0 != pool: 1000001000): Balance of module account check failed"),
+			err2:          types.ErrMTPDoesNotExist,
 		},
 		{
 			name: "mtp position invalid",
@@ -641,6 +643,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 			token:         "xxx",
 			poolEnabled:   true,
 			fundedAccount: true,
+			errString:     errors.New("external balance mismatch in pool xxx (module: 0 != pool: 1000001000): Balance of module account check failed"),
 			err2:          types.ErrMTPDoesNotExist,
 		},
 	}
@@ -1067,15 +1070,19 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 		bz, _ = app.AppCodec().MarshalJSON(gs3)
 		genesisState["margin"] = bz
 
-		nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUintFromString("100000000000000000000000000")))
-		externalCoin := sdk.NewCoin(externalAsset, sdk.Int(sdk.NewUintFromString("100000000000000000000000000")))
-
 		balances := []banktypes.Balance{
+			{
+				Address: "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
+				Coins: sdk.Coins{
+					sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUintFromString("1000000000000000000000000000000"))),
+					sdk.NewCoin(externalAsset, sdk.Int(sdk.NewUintFromString("1000000000000000000000000000000"))),
+				},
+			},
 			{
 				Address: signer,
 				Coins: sdk.Coins{
-					nativeCoin,
-					externalCoin,
+					sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUintFromString("100000000000000000000000000"))),
+					sdk.NewCoin(externalAsset, sdk.Int(sdk.NewUintFromString("100000000000000000000000000"))),
 				},
 			},
 		}
@@ -1772,6 +1779,13 @@ func TestKeeper_EC(t *testing.T) {
 				externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("100000000000000000000000000000000")))
 
 				balances := []banktypes.Balance{
+					{
+						Address: "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
+						Coins: sdk.Coins{
+							sdk.NewCoin(nativeAsset, sdk.Int(testItem.X_A)),
+							sdk.NewCoin(asset.Symbol, sdk.Int(testItem.Y_A)),
+						},
+					},
 					{
 						Address: signer,
 						Coins: sdk.Coins{

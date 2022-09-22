@@ -223,6 +223,11 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, types.ErrMTPUnhealthy
 	}
 
+	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	}
+
 	return mtp, nil
 }
 
@@ -278,6 +283,11 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 	err = k.Repay(ctx, &mtp, &pool, repayAmount, false)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
+	}
+
+	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
 	}
 
 	return &mtp, repayAmount, nil
@@ -396,6 +406,11 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 	}
 
 	k.EmitAdminClose(ctx, &mtpToClose, repayAmount, msg.Signer)
+
+	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
+	if stop {
+		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	}
 
 	return &types.MsgForceCloseResponse{}, nil
 }
