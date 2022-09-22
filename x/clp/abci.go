@@ -47,6 +47,11 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 		keeper.Logger(ctx).Error(res)
 	}
 
+	res, stop = keeper.UnitsCheck()(ctx)
+	if stop {
+		keeper.Logger(ctx).Error(res)
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 

@@ -46,3 +46,34 @@ func (k Keeper) BalanceModuleAccountCheck() sdk.Invariant {
 		return "pool and module account balances match", false
 	}
 }
+
+func (k Keeper) UnitsCheck() sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		pools := k.GetPools(ctx)
+		for _, pool := range pools {
+			totalLPUnits := sdk.ZeroUint()
+
+			lps, err := k.GetAllLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
+			if err != nil {
+				ctx.Logger().Error("error looking up LPs for pool during UnitsCheck",
+					"pool", pool.ExternalAsset.Symbol,
+				)
+				continue
+			}
+
+			for _, lp := range lps {
+				totalLPUnits = totalLPUnits.Add(lp.LiquidityProviderUnits)
+			}
+
+			ok := pool.PoolUnits.Equal(totalLPUnits)
+			if !ok {
+				return fmt.Sprintf("pool units vs total lp units mismatch in pool %s (pool: %s != lps: %s)",
+					pool.ExternalAsset.Symbol,
+					pool.PoolUnits.String(),
+					totalLPUnits.String(),
+				), true
+			}
+		}
+		return "all pool units vs total lp units match", false
+	}
+}
