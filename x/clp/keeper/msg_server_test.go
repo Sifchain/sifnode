@@ -663,7 +663,7 @@ func TestMsgServer_Swap(t *testing.T) {
 							{
 								Asset:                    &types.Asset{Symbol: tc.poolAsset},
 								LiquidityProviderAddress: tc.address,
-								LiquidityProviderUnits:   tc.nativeAssetAmount,
+								LiquidityProviderUnits:   tc.poolUnits,
 							},
 						}
 						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
