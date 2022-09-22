@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
 	"errors"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
@@ -206,13 +205,13 @@ func (k Keeper) SetGlobalNonceProphecyID(ctx sdk.Context,
 
 func (k Keeper) getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor types.NetworkDescriptor,
 	globalSequence uint64) []byte {
-	bs1 := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs1, uint32(networkDescriptor))
 
-	bs2 := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs2, globalSequence)
+	bs := k.cdc.MustMarshal(&types.GlobalSequenceKey{
+		NetworkDescriptor: networkDescriptor,
+		GlobalSequence:    globalSequence,
+	})
 
-	storeKey := append(append(types.GlobalNonceProphecyIDPrefix, bs1[:]...), bs2[:]...)
+	storeKey := append(types.GlobalNonceProphecyIDPrefix, bs[:]...)
 	return storeKey
 }
 
