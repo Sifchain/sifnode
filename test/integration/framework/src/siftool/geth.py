@@ -163,7 +163,7 @@ class Geth:
         rpc_allow_unprotected_txs: bool = False, dev: bool = False, dev_gas_limit: Optional[int] = None,
         dev_period: Optional[int] = None, rpcvhosts: Optional[str] = None, mine: bool = False,
         miner_gas_price: Optional[int] = None, miner_gas_limit: Optional[int] = None,
-        miner_threads: Optional[int] = None, no_discover: bool = False, verbosity: Optional[str] = None
+        miner_threads: Optional[int] = 1, no_discover: bool = False, verbosity: Optional[str] = None
      ):
         args = [self.program] + \
             ([command] if command else []) + \
