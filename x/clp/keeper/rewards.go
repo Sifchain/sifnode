@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -320,7 +318,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 
 func GetPoolMultiplier(asset string, period *types.RewardPeriod) sdk.Dec {
 	for _, m := range period.RewardPeriodPoolMultipliers {
-		if strings.EqualFold(asset, m.PoolMultiplierAsset) {
+		if types.StringCompare(asset, m.PoolMultiplierAsset) {
 			if m.Multiplier != nil && !m.Multiplier.IsNil() {
 				return *m.Multiplier
 			}

@@ -1,9 +1,7 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package types
 
 const (
+	QueryMTP            = "mtp"
 	QueryMTPsForAddress = "mtps-for-address"
 	QueryParams         = "params"
 )

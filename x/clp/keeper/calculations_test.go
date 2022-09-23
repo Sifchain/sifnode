@@ -8,6 +8,7 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -61,10 +62,14 @@ func TestKeeper_CheckBalances(t *testing.T) {
 
 func TestKeeper_SwapOne(t *testing.T) {
 	testcases := []struct {
-		name                         string
-		nativeAssetBalance           sdk.Uint
-		externalAssetBalance         sdk.Uint
-		sentAmount                   sdk.Uint
+		name                 string
+		nativeAssetBalance   sdk.Uint
+		externalAssetBalance sdk.Uint
+		nativeCustody        sdk.Uint
+		externalCustody      sdk.Uint
+		nativeLiabilities    sdk.Uint
+		externalLiabilities,
+		sentAmount sdk.Uint
 		fromAsset                    types.Asset
 		toAsset                      types.Asset
 		pmtpCurrentRunningRate       sdk.Dec
@@ -79,6 +84,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			name:                         "test1",
 			nativeAssetBalance:           sdk.NewUint(1000),
 			externalAssetBalance:         sdk.NewUint(877),
+			nativeCustody:                sdk.ZeroUint(),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.ZeroUint(),
 			sentAmount:                   sdk.NewUint(50),
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
@@ -93,6 +102,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			name:                         "test2",
 			nativeAssetBalance:           sdk.NewUint(10000000),
 			externalAssetBalance:         sdk.NewUint(8770000),
+			nativeCustody:                sdk.ZeroUint(),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.ZeroUint(),
 			sentAmount:                   sdk.NewUint(50000),
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
@@ -107,6 +120,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			name:                         "test3",
 			nativeAssetBalance:           sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance:         sdk.NewUint(2674623482959),
+			nativeCustody:                sdk.ZeroUint(),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.ZeroUint(),
 			sentAmount:                   sdk.NewUint(200000000),
 			toAsset:                      types.GetSettlementAsset(),
 			fromAsset:                    types.NewAsset("cusdt"),
@@ -117,16 +134,38 @@ func TestKeeper_SwapOne(t *testing.T) {
 			expectedExternalAssetBalance: sdk.NewUint(2674823482959),
 			expectedNativeAssetBalance:   sdk.NewUintFromString("156995796064471436224541544"),
 		},
+		{
+			name:                         "margin enabled",
+			nativeAssetBalance:           sdk.NewUint(10000000),
+			externalAssetBalance:         sdk.NewUint(8770000),
+			nativeCustody:                sdk.NewUint(10000),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.NewUint(10000),
+			sentAmount:                   sdk.NewUint(50000),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUint(43507),
+			expectedLiquidityFee:         sdk.NewUint(130),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(8726493),
+			expectedNativeAssetBalance:   sdk.NewUint(10050000),
+		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, app := test.CreateTestAppClp(false)
+			//ctx, app := test.CreateTestAppClp(false)
 			poolUnits := sdk.NewUint(2000) //don't care
 			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
+			pool.NativeCustody = tc.nativeCustody
+			pool.ExternalCustody = tc.externalCustody
+			pool.NativeLiabilities = tc.nativeLiabilities
+			pool.ExternalLiabilities = tc.externalLiabilities
 
-			swapResult, liquidityFee, priceImpact, pool, err := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_SwapOne(ctx, app.ClpKeeper, tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -179,19 +218,22 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3))
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3))
 	assert.Equal(t, "1", swapResult.String())
 }
 
 func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
 	pool := types.Pool{
 		NativeAssetBalance:   sdk.NewUint(10),
 		ExternalAssetBalance: sdk.NewUint(100),
+		NativeLiabilities:    sdk.ZeroUint(),
+		NativeCustody:        sdk.ZeroUint(),
+		ExternalLiabilities:  sdk.ZeroUint(),
+		ExternalCustody:      sdk.ZeroUint(),
 	}
 	asset := types.Asset{}
 
-	swapResult := FEATURE_TOGGLE_MARGIN_CLI_ALPHA_GetSwapFee(ctx, app.ClpKeeper, &asset, sdk.NewUint(1), pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3))
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3))
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -1028,6 +1070,10 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.nativeAssetBalance,
 				ExternalAssetBalance: tc.externalAssetBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
@@ -1134,6 +1180,10 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.nativeAssetBalance,
 				ExternalAssetBalance: tc.externalAssetBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
@@ -1248,6 +1298,10 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.rowanBalance,
 				ExternalAssetBalance: tc.externalBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			spotPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
@@ -1310,6 +1364,10 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.rowanBalance,
 				ExternalAssetBalance: tc.externalBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			rowanValue, err := clpkeeper.CalcRowanValue(&pool, tc.pmtpCurrentRunningRate, tc.rowanAmount)
@@ -1319,6 +1377,944 @@ func TestKeeper_CalcRowanValue(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Equal(t, tc.expectedValue.String(), rowanValue.String())
+		})
+	}
+}
+
+func TestKeeper_SwapOneFromGenesis(t *testing.T) {
+	const address = "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	SwapPriceNative := sdk.ZeroDec()
+	SwapPriceExternal := sdk.ZeroDec()
+
+	testcases := []struct {
+		name                   string
+		poolAsset              string
+		address                string
+		calculateWithdraw      bool
+		adjustExternalToken    bool
+		nativeBalance          sdk.Int
+		externalBalance        sdk.Int
+		wBasis                 sdk.Int
+		asymmetry              sdk.Int
+		nativeAssetAmount      sdk.Uint
+		externalAssetAmount    sdk.Uint
+		poolUnits              sdk.Uint
+		swapAmount             sdk.Uint
+		swapResult             sdk.Uint
+		liquidityFee           sdk.Uint
+		priceImpact            sdk.Uint
+		normalizationFactor    sdk.Dec
+		pmtpCurrentRunningRate sdk.Dec
+		from                   types.Asset
+		to                     types.Asset
+		expectedPool           types.Pool
+		err                    error
+		errString              error
+	}{
+		{
+			name:                   "successful swap with equal amount of pool units",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(181),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(817),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "failed swap with empty pool",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(0),
+			externalAssetAmount:    sdk.NewUint(0),
+			poolUnits:              sdk.NewUint(0),
+			calculateWithdraw:      false,
+			normalizationFactor:    sdk.NewDec(0),
+			adjustExternalToken:    true,
+			swapAmount:             sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(166),
+			liquidityFee:           sdk.NewUint(8),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(833),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+			errString: errors.New("not enough received asset tokens to swap"),
+		},
+		{
+			name:                   "successful swap by inversing from/to assets",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			from:                   types.Asset{Symbol: "eth"},
+			to:                     types.Asset{Symbol: "rowan"},
+			pmtpCurrentRunningRate: sdk.OneDec(),
+			swapResult:             sdk.NewUint(45),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(953),
+				ExternalAssetBalance:          sdk.NewUint(1098),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.0"),
+			swapResult:             sdk.NewUint(90),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(908),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.1",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.1"),
+			swapResult:             sdk.NewUint(99),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(899),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.2",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.2"),
+			swapResult:             sdk.NewUint(108),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(890),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.3",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.3"),
+			swapResult:             sdk.NewUint(117),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(881),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.4",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.4"),
+			swapResult:             sdk.NewUint(126),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(872),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.5",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.5"),
+			swapResult:             sdk.NewUint(135),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(863),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.6",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.6"),
+			swapResult:             sdk.NewUint(144),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(854),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.7",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.7"),
+			swapResult:             sdk.NewUint(154),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(844),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.8",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.8"),
+			swapResult:             sdk.NewUint(163),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(835),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 0.9",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.9"),
+			swapResult:             sdk.NewUint(172),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(826),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 1.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("1.0"),
+			swapResult:             sdk.NewUint(181),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(817),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 2.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("2.0"),
+			swapResult:             sdk.NewUint(271),
+			liquidityFee:           sdk.NewUint(0),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(727),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 3.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("3.0"),
+			swapResult:             sdk.NewUint(362),
+			liquidityFee:           sdk.NewUint(1),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(636),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 4.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("4.0"),
+			swapResult:             sdk.NewUint(453),
+			liquidityFee:           sdk.NewUint(1),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(545),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 5.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("5.0"),
+			swapResult:             sdk.NewUint(543),
+			liquidityFee:           sdk.NewUint(1),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(455),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 6.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("6.0"),
+			swapResult:             sdk.NewUint(634),
+			liquidityFee:           sdk.NewUint(1),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(364),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 7.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("7.0"),
+			swapResult:             sdk.NewUint(724),
+			liquidityFee:           sdk.NewUint(2),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(274),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 8.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("8.0"),
+			swapResult:             sdk.NewUint(815),
+			liquidityFee:           sdk.NewUint(2),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(183),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 9.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("9.0"),
+			swapResult:             sdk.NewUint(906),
+			liquidityFee:           sdk.NewUint(2),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(92),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "successful swap with pmtp current running rate value at 10.0",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("10.0"),
+			swapResult:             sdk.NewUint(996),
+			liquidityFee:           sdk.NewUint(2),
+			priceImpact:            sdk.ZeroUint(),
+			expectedPool: types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: "eth"},
+				NativeAssetBalance:            sdk.NewUint(1098),
+				ExternalAssetBalance:          sdk.NewUint(2),
+				PoolUnits:                     sdk.NewUint(998),
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			},
+		},
+		{
+			name:                   "failed swap with bigger pmtp current running rate value",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.NewDec(20),
+			errString:              errors.New("not enough received asset tokens to swap"),
+		},
+		{
+			name:                   "failed swap with bigger pmtp current running rate value",
+			poolAsset:              "eth",
+			address:                address,
+			nativeBalance:          sdk.NewInt(10000),
+			externalBalance:        sdk.NewInt(10000),
+			nativeAssetAmount:      sdk.NewUint(998),
+			externalAssetAmount:    sdk.NewUint(998),
+			poolUnits:              sdk.NewUint(998),
+			calculateWithdraw:      true,
+			wBasis:                 sdk.NewInt(1000),
+			asymmetry:              sdk.NewInt(10000),
+			pmtpCurrentRunningRate: sdk.NewDec(20),
+			errString:              errors.New("not enough received asset tokens to swap"),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+				trGs := &tokenregistrytypes.GenesisState{
+					Registry: &tokenregistrytypes.Registry{
+						Entries: []*tokenregistrytypes.RegistryEntry{
+							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+						},
+					},
+				}
+				bz, _ := app.AppCodec().MarshalJSON(trGs)
+				genesisState["tokenregistry"] = bz
+
+				balances := []banktypes.Balance{
+					{
+						Address: tc.address,
+						Coins: sdk.Coins{
+							sdk.NewCoin(tc.poolAsset, tc.externalBalance),
+							sdk.NewCoin("rowan", tc.nativeBalance),
+						},
+					},
+				}
+				bankGs := banktypes.DefaultGenesisState()
+				bankGs.Balances = append(bankGs.Balances, balances...)
+				bz, _ = app.AppCodec().MarshalJSON(bankGs)
+				genesisState["bank"] = bz
+
+				pools := []*types.Pool{
+					{
+						ExternalAsset:                 &types.Asset{Symbol: tc.poolAsset},
+						NativeAssetBalance:            tc.nativeAssetAmount,
+						ExternalAssetBalance:          tc.externalAssetAmount,
+						PoolUnits:                     tc.poolUnits,
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
+						SwapPriceNative:               &SwapPriceNative,
+						SwapPriceExternal:             &SwapPriceExternal,
+						RewardPeriodNativeDistributed: sdk.ZeroUint(),
+					},
+				}
+				lps := []*types.LiquidityProvider{
+					{
+						Asset:                    &types.Asset{Symbol: tc.poolAsset},
+						LiquidityProviderAddress: tc.address,
+						LiquidityProviderUnits:   tc.nativeAssetAmount,
+					},
+				}
+				clpGs := types.DefaultGenesisState()
+				clpGs.Params = types.Params{
+					MinCreatePoolThreshold: 100,
+				}
+				clpGs.AddressWhitelist = append(clpGs.AddressWhitelist, tc.address)
+				clpGs.PoolList = append(clpGs.PoolList, pools...)
+				clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
+				bz, _ = app.AppCodec().MarshalJSON(clpGs)
+				genesisState["clp"] = bz
+
+				return genesisState
+			})
+
+			pool, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
+			lp, _ := app.ClpKeeper.GetLiquidityProvider(ctx, tc.poolAsset, tc.address)
+
+			SwapPriceNative := sdk.ZeroDec()
+			SwapPriceExternal := sdk.ZeroDec()
+
+			require.Equal(t, pool, types.Pool{
+				ExternalAsset:                 &types.Asset{Symbol: tc.poolAsset},
+				NativeAssetBalance:            tc.nativeAssetAmount,
+				ExternalAssetBalance:          tc.externalAssetAmount,
+				PoolUnits:                     tc.poolUnits,
+				NativeCustody:                 sdk.ZeroUint(),
+				ExternalCustody:               sdk.ZeroUint(),
+				NativeLiabilities:             sdk.ZeroUint(),
+				ExternalLiabilities:           sdk.ZeroUint(),
+				UnsettledExternalLiabilities:  sdk.ZeroUint(),
+				UnsettledNativeLiabilities:    sdk.ZeroUint(),
+				BlockInterestExternal:         sdk.ZeroUint(),
+				BlockInterestNative:           sdk.ZeroUint(),
+				Health:                        sdk.ZeroDec(),
+				InterestRate:                  sdk.NewDecWithPrec(1, 1),
+				SwapPriceNative:               &SwapPriceNative,
+				SwapPriceExternal:             &SwapPriceExternal,
+				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+			})
+
+			var swapAmount sdk.Uint
+
+			if tc.calculateWithdraw {
+				_, _, _, swapAmount = clpkeeper.CalculateWithdrawal(
+					pool.PoolUnits,
+					pool.NativeAssetBalance.String(),
+					pool.ExternalAssetBalance.String(),
+					lp.LiquidityProviderUnits.String(),
+					tc.wBasis.String(),
+					tc.asymmetry,
+				)
+			} else {
+				swapAmount = tc.swapAmount
+			}
+
+			from := tc.from
+			if from == (types.Asset{}) {
+				from = types.GetSettlementAsset()
+			}
+			to := tc.to
+			if to == (types.Asset{}) {
+				to = types.Asset{Symbol: tc.poolAsset}
+			}
+
+			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
+			}
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.swapResult.String(), swapResult.String(), "swapResult")
+			require.Equal(t, tc.liquidityFee.String(), liquidityFee.String())
+			require.Equal(t, tc.priceImpact.String(), priceImpact.String())
+			require.Equal(t, tc.expectedPool.String(), newPool.String())
 		})
 	}
 }

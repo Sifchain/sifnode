@@ -80,3 +80,9 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 
 	return nil
 }
+
+func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
+	m.keeper.SetParams(ctx, types.DefaultParams())
+
+	return nil
+}

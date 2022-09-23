@@ -1,9 +1,8 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -20,6 +19,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 		currentHeight := ctx.BlockHeight()
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
+			pool.BlockInterestExternal = sdk.ZeroUint()
+			pool.BlockInterestNative = sdk.ZeroUint()
 			if k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol) {
 				rate, err := k.InterestRateComputation(ctx, *pool)
 				if err != nil {
@@ -30,16 +31,14 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				pool.LastHeightInterestRateComputed = currentHeight
 				_ = k.UpdatePoolHealth(ctx, pool)
 				k.TrackSQBeginBlock(ctx, pool)
-				_ = k.clpKeeper.SetPool(ctx, pool)
 				mtps, _, _ := k.GetMTPsForPool(ctx, pool.ExternalAsset.Symbol, nil)
 				for _, mtp := range mtps {
 					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
 			}
+			_ = k.clpKeeper.SetPool(ctx, pool)
 		}
-		k.EmitInterestRateComputation(ctx)
 	}
-
 }
 
 func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) {
@@ -52,25 +51,31 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	}()
 	h, err := k.UpdateMTPHealth(ctx, *mtp, *pool)
 	if err != nil {
+		ctx.Logger().Error(errors.Wrap(err, fmt.Sprintf("error updating mtp health: %s", mtp.String())).Error())
 		return
 	}
 	mtp.MtpHealth = h
 	// compute interest
 	interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, 0, 0)
-	incrementalInterestPaymentEnabled := k.GetIncrementalInterestPaymentEnabled(ctx)
-	// if incremental payment on, pay interest
-	if incrementalInterestPaymentEnabled {
-		_, err := k.IncrementalInterestPayment(ctx, interestPayment, mtp, *pool)
-		if err != nil {
-			ctx.Logger().Error(errors.Wrap(err, "error executing incremental interest payment").Error())
-		}
-	} else { // else update unpaid mtp interest
-		mtp.InterestUnpaidCollateral = interestPayment
+
+	finalInterestPayment := k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+
+	nativeAsset := types.GetSettlementAsset()
+
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // custody is external, payment is custody
+		pool.BlockInterestExternal = pool.BlockInterestExternal.Add(finalInterestPayment)
+	} else { // custody is native, payment is custody
+		pool.BlockInterestNative = pool.BlockInterestNative.Add(finalInterestPayment)
 	}
+
 	_ = k.SetMTP(ctx, mtp)
-	_, repayAmount, err := k.ForceCloseLong(ctx, &types.MsgForceClose{Id: mtp.Id, MtpAddress: mtp.Address}, false)
+	repayAmount, err := k.ForceCloseLong(ctx, mtp, pool, false, true)
+
 	if err == nil {
 		// Emit event if position was closed
 		k.EmitForceClose(ctx, mtp, repayAmount, "")
+	} else if err != types.ErrMTPHealthy {
+		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
 	}
+
 }
