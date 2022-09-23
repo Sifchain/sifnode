@@ -2098,7 +2098,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 		InterestPaidCustody:      sdk.ZeroUint(),
 		InterestUnpaidCollateral: sdk.ZeroUint(),
 		CustodyAsset:             externalAsset.Symbol,
-		CustodyAmount:            sdk.NewUintFromString("996700989703089073278"),
+		CustodyAmount:            sdk.NewUintFromString("996502287266229649201"),
 		Leverage:                 sdk.NewDec(2),
 		MtpHealth:                sdk.MustNewDecFromStr("1.987621151425775118"),
 		Position:                 types.Position_LONG,
