@@ -49,7 +49,7 @@ func TestKeeper_ExportGenesis(t *testing.T) {
 			EpochLength:                              1,
 			MaxOpenPositions:                         10000,
 			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+			DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 		}
 		want := types.GenesisState{Params: &params}
 		marginKeeper.InitGenesis(ctx, want)
@@ -83,7 +83,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 			MaxOpenPositions:                         10000,
 			Pools:                                    []string{},
 			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+			DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)
@@ -122,7 +122,7 @@ func TestKeeper_InitGenesis(t *testing.T) {
 			EpochLength:                              1,
 			MaxOpenPositions:                         10000,
 			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+			DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 		}
 		want := types.GenesisState{Params: &params}
 		validatorUpdate := marginKeeper.InitGenesis(ctx, want)

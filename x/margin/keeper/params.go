@@ -78,7 +78,7 @@ func (k Keeper) GetIncrementalInterestPaymentEnabled(ctx sdk.Context) bool {
 	return k.GetParams(ctx).IncrementalInterestPaymentEnabled
 }
 func (k Keeper) GetSafetyFactor(ctx sdk.Context) sdk.Dec {
-	return k.GetParams(ctx).SafetyFactor
+	return k.GetParams(ctx).DefaultSafetyFactor
 }
 
 func (k Keeper) GetEnabledPools(ctx sdk.Context) []string {

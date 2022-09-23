@@ -150,7 +150,7 @@ func ReplaceMarginGenesis(nodeHomeDir string) error {
 	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentFundPercentage = gen.Params.IncrementalInterestPaymentFundPercentage.String()
 	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentFundAddress = gen.Params.IncrementalInterestPaymentFundAddress
 	(*genesis).AppState.Margin.Params.SqModifier = gen.Params.SqModifier.String()
-	(*genesis).AppState.Margin.Params.SafetyFactor = gen.Params.SafetyFactor.String()
+	(*genesis).AppState.Margin.Params.SafetyFactor = gen.Params.DefaultSafetyFactor.String()
 	(*genesis).AppState.Margin.Params.ClosedPools = gen.Params.ClosedPools
 	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentEnabled = gen.Params.IncrementalInterestPaymentEnabled
 	(*genesis).AppState.Margin.Params.WhitelistingEnabled = gen.Params.WhitelistingEnabled

@@ -972,7 +972,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 				MaxOpenPositions:                         10000,
 				Pools:                                    []string{},
 				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+				DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 			}}
 			marginKeeper.InitGenesis(ctx, data)
 

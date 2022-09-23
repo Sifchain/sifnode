@@ -68,7 +68,7 @@ func (k msgServer) AdminCloseAll(goCtx context.Context, msg *types.MsgAdminClose
 	}
 
 	params := k.GetParams(ctx)
-	params.SafetyFactor = sdk.NewDec(100)
+	params.DefaultSafetyFactor = sdk.NewDec(100)
 	if !msg.TakeMarginFund {
 		params.ForceCloseFundPercentage = sdk.ZeroDec()
 	}

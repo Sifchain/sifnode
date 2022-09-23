@@ -702,7 +702,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 						PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
 						MaxOpenPositions:                         10000,
 						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-						SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+						DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 					},
 				}
 
@@ -859,7 +859,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
 				MaxOpenPositions:                         10000,
 				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+				DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 				Pools:                                    []string{tt.externalAsset},
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
@@ -1060,7 +1060,7 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 				PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
 				MaxOpenPositions:                         10000,
 				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+				DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 				EpochLength:                              1,
 				Pools: []string{
 					externalAsset,
@@ -1765,7 +1765,7 @@ func TestKeeper_EC(t *testing.T) {
 						IncrementalInterestPaymentEnabled:        false,
 						PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
 						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-						SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+						DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 						EpochLength:                              1,
 						Pools: []string{
 							ec.externalAsset,

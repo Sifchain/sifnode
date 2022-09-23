@@ -31,7 +31,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 			MaxOpenPositions:                         k.GetMaxOpenPositions(ctx),
 			Pools:                                    k.GetEnabledPools(ctx),
 			SqModifier:                               k.GetSqModifier(ctx),
-			SafetyFactor:                             k.GetSafetyFactor(ctx),
+			DefaultSafetyFactor:                      k.GetSafetyFactor(ctx),
 		},
 	}
 }

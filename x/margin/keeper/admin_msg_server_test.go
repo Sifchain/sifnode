@@ -111,7 +111,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 						PoolOpenThreshold:                        sdk.NewDecWithPrec(1, 1),
 						MaxOpenPositions:                         10000,
 						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-						SafetyFactor:                             sdk.MustNewDecFromStr("0.0"),
+						DefaultSafetyFactor:                      sdk.MustNewDecFromStr("0.0"),
 					},
 				}
 

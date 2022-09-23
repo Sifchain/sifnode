@@ -21,7 +21,7 @@ func DefaultGenesis() *GenesisState {
 			MaxOpenPositions:                         10000,
 			Pools:                                    []string{},
 			SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
-			SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+			DefaultSafetyFactor:                      sdk.MustNewDecFromStr("1.05"),
 			IncrementalInterestPaymentEnabled:        true,
 			ClosedPools:                              []string{},
 			WhitelistingEnabled:                      false,

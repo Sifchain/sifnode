@@ -217,7 +217,7 @@ func GetUpdateParamsCmd() *cobra.Command {
 					IncrementalInterestPaymentFundPercentage: sdk.MustNewDecFromStr(viper.GetString("incremental-interest-payment-fund-percentage")),
 					IncrementalInterestPaymentFundAddress:    viper.GetString("incremental-interest-payment-fund-address"),
 					SqModifier:                               sdk.MustNewDecFromStr(viper.GetString("sq-modifier")),
-					SafetyFactor:                             sdk.MustNewDecFromStr(viper.GetString("safety-factor")),
+					DefaultSafetyFactor:                      sdk.MustNewDecFromStr(viper.GetString("safety-factor")),
 					WhitelistingEnabled:                      viper.GetBool("whitelisting-enabled"),
 				},
 			}
