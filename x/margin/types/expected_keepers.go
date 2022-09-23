@@ -26,6 +26,8 @@ type CLPKeeper interface {
 	GetPmtpRateParams(ctx sdk.Context) clptypes.PmtpRateParams
 
 	GetRemovalQueue(ctx sdk.Context, symbol string) clptypes.RemovalQueue
+
+	BalanceModuleAccountCheck() sdk.Invariant
 }
 
 type Keeper interface {

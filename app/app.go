@@ -171,7 +171,7 @@ var (
 		sctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
-		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName:        {authtypes.Minter},
 		margintypes.ModuleName:         {authtypes.Burner, authtypes.Minter},
 	}
 )
