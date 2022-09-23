@@ -146,10 +146,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			expectedSwapResult:           sdk.NewUint(43507),
-			expectedLiquidityFee:         sdk.NewUint(130),
+			expectedSwapResult:           sdk.NewUint(43550),
+			expectedLiquidityFee:         sdk.NewUint(131),
 			expectedPriceImpact:          sdk.ZeroUint(),
-			expectedExternalAssetBalance: sdk.NewUint(8726493),
+			expectedExternalAssetBalance: sdk.NewUint(8726450),
 			expectedNativeAssetBalance:   sdk.NewUint(10050000),
 		},
 	}
