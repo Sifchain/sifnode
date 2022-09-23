@@ -194,6 +194,13 @@ describe("Test Valset", function () {
           state.initialPowers[0] + state.userTwoPower + state.userThreePower + 100 // (23 + 77)
         );
       });
+
+      it("should not let you add the same validator twice", async function () {
+        await expect(state.cosmosBridge.
+            connect(operator)
+            .addValidator(userOne.address, state.userThreePower))
+            .to.be.revertedWith("Already a validator");
+      })
     });
 
     describe("Updating validator's power", function () {

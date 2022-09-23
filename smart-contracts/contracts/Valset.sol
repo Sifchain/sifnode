@@ -234,6 +234,8 @@ contract Valset is ValsetStorage {
    * @param _validatorPower The power this validator has
    */
   function _addValidatorInternal(address _validatorAddress, uint256 _validatorPower) internal {
+    require(validators[_validatorAddress][currentValsetVersion] == false, "Already a validator");
+    
     validatorCount = validatorCount + 1;
     totalPower = totalPower + _validatorPower;
 
