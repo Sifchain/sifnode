@@ -25,7 +25,14 @@ func TestEndBlock(t *testing.T) {
 		{RewardPeriodId: "Test 1", RewardPeriodStartBlock: 1, RewardPeriodEndBlock: 10, RewardPeriodAllocation: &allocation, RewardPeriodDefaultMultiplier: &oneDec},
 	}
 	app.ClpKeeper.SetRewardParams(ctx, params)
-	err := app.ClpKeeper.SetPool(ctx, &types.Pool{
+	err := app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(
+		sdk.NewCoin("rowan", sdk.NewInt(3000)),
+		sdk.NewCoin("atom", sdk.NewInt(1000)),
+		sdk.NewCoin("cusdc", sdk.NewInt(1000)),
+		sdk.NewCoin("ceth", sdk.NewInt(1000)),
+	))
+	require.NoError(t, err)
+	err = app.ClpKeeper.SetPool(ctx, &types.Pool{
 		ExternalAsset:                 &types.Asset{Symbol: "atom"},
 		NativeAssetBalance:            sdk.NewUint(1000),
 		ExternalAssetBalance:          sdk.NewUint(1000),
@@ -212,7 +219,7 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	require.Equal(t, startBalance.Add(diffBalance).String(), moduleBalance2.String())
 }
 
-//nolint
+// nolint
 func createRewardsDistributeEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
 	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
 	return []sdk.Event{sdk.NewEvent("rewards/distribution",
