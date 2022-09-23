@@ -41,10 +41,6 @@ const (
 	errorMessageKey      = "errorMessage"
 	cosmosSleepDuration  = 30
 	maxCosmosQueryBlocks = 5000
-	// ProphecyLifeTime signature info life time on chain
-	blockTimeInSecond = 5
-	secondsPerDay     = 60 * 60 * 24
-	daysPerMonth      = 30
 )
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
