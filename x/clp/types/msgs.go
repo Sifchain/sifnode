@@ -27,6 +27,7 @@ var (
 	_ sdk.Msg = &MsgUpdateLiquidityProtectionParams{}
 	_ sdk.Msg = &MsgModifyLiquidityProtectionRates{}
 	_ sdk.Msg = &MsgAddProviderDistributionPeriodRequest{}
+	_ sdk.Msg = &MsgUpdateSwapFeeRateRequest{}
 
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidity{}
 	_ legacytx.LegacyMsg = &MsgRemoveLiquidityUnits{}
@@ -43,6 +44,7 @@ var (
 	_ legacytx.LegacyMsg = &MsgSetSymmetryThreshold{}
 	_ legacytx.LegacyMsg = &MsgCancelUnlock{}
 	_ legacytx.LegacyMsg = &MsgAddProviderDistributionPeriodRequest{}
+	_ legacytx.LegacyMsg = &MsgUpdateSwapFeeRateRequest{}
 )
 
 func (m MsgCancelUnlock) Route() string {
@@ -637,6 +639,42 @@ func (m MsgAddProviderDistributionPeriodRequest) GetSignBytes() []byte {
 }
 
 func (m MsgAddProviderDistributionPeriodRequest) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgUpdateSwapFeeRateRequest) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateSwapFeeRateRequest) Type() string {
+	return "update_swap_fee_rate"
+}
+
+func (m MsgUpdateSwapFeeRateRequest) ValidateBasic() error {
+	if m.Signer == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	if m.SwapFeeRate.LT(sdk.ZeroDec()) {
+		return fmt.Errorf("swap rate fee must be greater than or equal to zero")
+	}
+
+	if m.SwapFeeRate.GT(sdk.OneDec()) {
+		return fmt.Errorf("swap rate fee must be less than or equal to one")
+	}
+
+	return nil
+}
+
+func (m MsgUpdateSwapFeeRateRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateSwapFeeRateRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

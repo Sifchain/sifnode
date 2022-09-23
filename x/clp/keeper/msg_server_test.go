@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -357,12 +356,12 @@ func TestMsgServer_Swap(t *testing.T) {
 			nativeAssetAmount:               sdk.NewUint(1000),
 			externalAssetAmount:             sdk.NewUint(1000),
 			poolUnits:                       sdk.NewUint(1000),
-			nativeBalanceEnd:                sdk.NewInt(10082),
+			nativeBalanceEnd:                sdk.NewInt(10090),
 			externalBalanceEnd:              sdk.NewInt(9900),
 			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
-			expectedRunningThresholdEnd:     sdk.NewUint(1082),
+			expectedRunningThresholdEnd:     sdk.NewUint(1090),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
 			msg: &types.MsgSwap{
@@ -664,7 +663,7 @@ func TestMsgServer_Swap(t *testing.T) {
 							{
 								Asset:                    &types.Asset{Symbol: tc.poolAsset},
 								LiquidityProviderAddress: tc.address,
-								LiquidityProviderUnits:   tc.nativeAssetAmount,
+								LiquidityProviderUnits:   tc.poolUnits,
 							},
 						}
 						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
@@ -897,6 +896,13 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 
 				if tc.createBalance {
 					balances := []banktypes.Balance{
+						{
+							Address: "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
+							Coins: sdk.Coins{
+								sdk.NewCoin(tc.poolAsset, sdk.Int(tc.externalAssetAmount)),
+								sdk.NewCoin("rowan", sdk.Int(tc.nativeAssetAmount)),
+							},
+						},
 						{
 							Address: tc.address,
 							Coins: sdk.Coins{
@@ -1548,9 +1554,6 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			pool, _ := app.ClpKeeper.GetPool(ctx, tc.poolAsset)
 
 			require.Equal(t, tc.expectedPoolUnits.String(), pool.PoolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
-
-			fmt.Printf("LP units: %s\n", lp.LiquidityProviderUnits.String())
-			fmt.Printf("Expected pool units: %s\n", tc.expectedPoolUnits.String())
 			require.Equal(t, tc.expectedLPUnits.String(), lp.LiquidityProviderUnits.String())
 		})
 	}

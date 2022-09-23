@@ -44,6 +44,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
+		EnableRemovalQueue:     false,
 	}
 }
 

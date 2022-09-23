@@ -1,6 +1,3 @@
-//go:build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-// +build FEATURE_TOGGLE_MARGIN_CLI_ALPHA
-
 package rest
 
 import (
@@ -17,8 +14,56 @@ import (
 )
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
+	r.HandleFunc("/margin/mtp", getMTP(cliCtx))
 	r.HandleFunc("/margin/mtps-by-address", getMTPsForAddress(cliCtx))
 	r.HandleFunc("/margin/params", getParams(cliCtx))
+}
+
+func getMTP(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		address, err := sdk.AccAddressFromBech32(r.URL.Query().Get("address"))
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if r.URL.Query().Get("id") == "" {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "id required")
+			return
+		}
+
+		id, err := strconv.ParseUint(r.URL.Query().Get("id"), 10, 64)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		params := types.MTPRequest{
+			Address: address.String(),
+			Id:      id,
+		}
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryMTP)
+		res, height, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
 }
 
 func getMTPsForAddress(cliCtx client.Context) http.HandlerFunc {

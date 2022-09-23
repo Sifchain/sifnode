@@ -295,7 +295,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 					conversionDenom := ""
 					if strings.HasPrefix(entry.Denom, "c") {
 						conversionDenom = "x" + strings.TrimPrefix(entry.Denom, "c")
-					} else if strings.EqualFold(entry.Denom, "rowan") {
+					} else if types.StringCompare(entry.Denom, "rowan") {
 						conversionDenom = "xrowan"
 					}
 					entryForConversion.IbcCounterpartyDenom = conversionDenom
