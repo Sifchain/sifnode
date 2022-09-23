@@ -115,7 +115,6 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		if !diff.IsZero() {
 			k.BurnRowan(ctx, diff) // nolint:errcheck
 		}
-
 		coinsMinted := sdk.NewIntFromBigInt(coinsToMint.BigInt()).Sub(diff)
 		fireRewardsEvent(ctx, "rewards/distribution", coinsMinted, PoolRowanMapToLPPools(poolRowanMap))
 	} else {

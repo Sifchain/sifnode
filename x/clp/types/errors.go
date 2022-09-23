@@ -42,4 +42,6 @@ var (
 	ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist = sdkerrors.Register(ModuleName, 40, "Unable to swap, max rowan liquidity threshold asset pool does not exist")
 	ErrQueued                                          = sdkerrors.Register(ModuleName, 41, "Cannot process immediately, request has been queued")
 	ErrRemovalsBlockedByHealth                         = sdkerrors.Register(ModuleName, 42, "Cannot remove liquidity due to low pool health")
+	ErrBalanceModuleAccountCheck                       = sdkerrors.Register(ModuleName, 43, "Balance of module account check failed")
+	ErrUnitsCheck                                      = sdkerrors.Register(ModuleName, 44, "Pool vs LP units check failed")
 )
