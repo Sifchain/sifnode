@@ -135,12 +135,6 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 
 	collateralAmount := msg.CollateralAmount
 
-	// check if liabilities large enough for interest payments
-	err := k.CheckMinLiabilities(ctx, collateralAmount, eta)
-	if err != nil {
-		return nil, err
-	}
-
 	collateralAmountDec := sdk.NewDecFromBigInt(msg.CollateralAmount.BigInt())
 
 	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, msg.Position, leverage)
@@ -177,6 +171,12 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		if leveragedAmount.GT(pool.ExternalAssetBalance) {
 			return nil, sdkerrors.Wrap(types.ErrBorrowTooHigh, leveragedAmount.String())
 		}
+	}
+
+	// check if liabilities large enough for interest payments
+	err = k.CheckMinLiabilities(ctx, collateralAmount, eta, pool, msg.BorrowAsset)
+	if err != nil {
+		return nil, err
 	}
 
 	custodyAmount, err := k.CLPSwap(ctx, leveragedAmount, msg.BorrowAsset, pool)
