@@ -148,6 +148,7 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("error in running policy | Error Message : %s ", err.Error()))
 	}
+
 }
 
 var blockTime *time.Time = nil
