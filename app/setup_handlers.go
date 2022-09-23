@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+
 	kpr "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
@@ -38,7 +39,7 @@ func SetupHandlers(app *SifchainApp) {
 }
 
 func fixAtomPool(ctx sdk.Context, k kpr.Keeper) {
-	atomIbcHash := ""
+	atomIbcHash := "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2"
 	// Get Rowan Balance from CLP Module
 	clpModuleTotalNativeBalance := k.GetBankKeeper().GetBalance(ctx, clptypes.GetCLPModuleAddress(), clptypes.GetSettlementAsset().Symbol)
 	// Get Atom Balance from CLP Module
