@@ -113,6 +113,25 @@ func (k Keeper) GetMTPIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.MTPPrefix)
 }
 
+func (k Keeper) GetAllMTPS(ctx sdk.Context) []types.MTP {
+	var mtpList []types.MTP
+	iterator := k.GetMTPIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+
+	for ; iterator.Valid(); iterator.Next() {
+		var mtp types.MTP
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshal(bytesValue, &mtp)
+		mtpList = append(mtpList, mtp)
+	}
+	return mtpList
+}
+
 func (k Keeper) GetMTPs(ctx sdk.Context, pagination *query.PageRequest) ([]*types.MTP, *query.PageResponse, error) {
 	var mtpList []*types.MTP
 	store := ctx.KVStore(k.storeKey)
@@ -562,7 +581,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	return newInterestRate.Add(sQ), nil
 }
 
-func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error {
+func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec, pool clptypes.Pool, custodyAsset string) error {
 	var interestRational, liabilitiesRational, rate big.Rat
 	minInterestRate := k.GetInterestRateMin(ctx)
 
@@ -580,6 +599,12 @@ func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, 
 	samplePayment := sdk.NewUintFromBigInt(interestNew)
 
 	if samplePayment.IsZero() && !minInterestRate.IsZero() {
+		return types.ErrBorrowTooLow
+	}
+
+	// swap interest payment to custody asset
+	_, err := k.CLPSwap(ctx, samplePayment, custodyAsset, pool)
+	if err != nil {
 		return types.ErrBorrowTooLow
 	}
 
