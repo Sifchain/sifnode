@@ -379,14 +379,9 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		),
 	})
 
-	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.Symbol)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
-
-	res, stop = k.UnitsCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrUnitsCheck, res)
 	}
 
 	return &types.MsgDecommissionPoolResponse{}, nil
@@ -453,14 +448,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		),
 	})
 
-	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
-
-	res, stop = k.UnitsCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrUnitsCheck, res)
 	}
 
 	return &types.MsgCreatePoolResponse{}, nil
@@ -678,14 +668,17 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 	}
 
-	res, stop := k.BalanceModuleAccountCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	if !msg.SentAsset.Equals(types.GetSettlementAsset()) {
+		res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.SentAsset.Symbol)(ctx)
+		if stop {
+			return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+		}
 	}
-
-	res, stop = k.UnitsCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrUnitsCheck, res)
+	if !msg.ReceivedAsset.Equals(types.GetSettlementAsset()) {
+		res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ReceivedAsset.Symbol)(ctx)
+		if stop {
+			return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+		}
 	}
 
 	return &types.MsgSwapResponse{}, nil
@@ -753,14 +746,9 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
 	}
 
-	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
-
-	res, stop = k.UnitsCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrUnitsCheck, res)
 	}
 
 	return &types.MsgAddLiquidityResponse{}, nil
@@ -867,14 +855,9 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		),
 	})
 
-	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
-
-	res, stop = k.UnitsCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrUnitsCheck, res)
 	}
 
 	return &types.MsgRemoveLiquidityUnitsResponse{}, nil
@@ -1031,14 +1014,9 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		),
 	})
 
-	res, stop := k.BalanceModuleAccountCheck()(ctx)
+	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
-
-	res, stop = k.UnitsCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrUnitsCheck, res)
 	}
 
 	return &types.MsgRemoveLiquidityResponse{}, nil
