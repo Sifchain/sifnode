@@ -27,7 +27,7 @@ type CLPKeeper interface {
 
 	GetRemovalQueue(ctx sdk.Context, symbol string) clptypes.RemovalQueue
 
-	BalanceModuleAccountCheck() sdk.Invariant
+	SingleExternalBalanceModuleAccountCheck(externalAsset string) sdk.Invariant
 }
 
 type Keeper interface {

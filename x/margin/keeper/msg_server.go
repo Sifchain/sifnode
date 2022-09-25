@@ -223,7 +223,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, types.ErrMTPUnhealthy
 	}
 
-	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
+	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(externalAsset)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
 	}
@@ -285,9 +285,16 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		return nil, sdk.ZeroUint(), err
 	}
 
-	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
-	if stop {
-		return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CustodyAsset)(ctx)
+		if stop {
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
+	} else {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CollateralAsset)(ctx)
+		if stop {
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
 	}
 
 	return &mtp, repayAmount, nil
@@ -407,9 +414,16 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 
 	k.EmitAdminClose(ctx, &mtpToClose, repayAmount, msg.Signer)
 
-	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	if types.StringCompare(mtpToClose.CollateralAsset, types.GetSettlementAsset()) {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CustodyAsset)(ctx)
+		if stop {
+			return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
+	} else {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CollateralAsset)(ctx)
+		if stop {
+			return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
 	}
 
 	return &types.MsgForceCloseResponse{}, nil
