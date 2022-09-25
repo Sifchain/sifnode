@@ -850,17 +850,32 @@ func TestKeeper_CheckMinLiabilities(t *testing.T) {
 	params := marginKeeper.GetParams(ctx)
 	params.InterestRateMin = sdk.MustNewDecFromStr("0.00000001")
 	marginKeeper.SetParams(ctx, &params)
-
-	got := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(100000000), sdk.OneDec())
+	pool := clptypes.Pool{
+		ExternalAsset:                &clptypes.Asset{Symbol: "cusdc"},
+		NativeAssetBalance:           sdk.NewUintFromString("1000000000000000000000"),
+		NativeLiabilities:            sdk.NewUint(0),
+		ExternalCustody:              sdk.NewUint(0),
+		ExternalAssetBalance:         sdk.NewUint(1000000000),
+		ExternalLiabilities:          sdk.NewUint(0),
+		NativeCustody:                sdk.NewUint(0),
+		UnsettledExternalLiabilities: sdk.ZeroUint(),
+		UnsettledNativeLiabilities:   sdk.ZeroUint(),
+		BlockInterestExternal:        sdk.ZeroUint(),
+		BlockInterestNative:          sdk.ZeroUint(),
+		PoolUnits:                    sdk.NewUint(1),
+		Health:                       sdk.NewDec(1),
+		InterestRate:                 sdk.NewDec(1),
+	}
+	got := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(200000000), sdk.OneDec(), pool, "rowan")
 	require.Nil(t, got)
 
-	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec())
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec(), pool, "rowan")
 	require.EqualError(t, got, "borrowed amount is too low")
 
-	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9))
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9), pool, "rowan")
 	require.Nil(t, got)
 
-	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9))
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9), pool, "rowan")
 	require.EqualError(t, got, "borrowed amount is too low")
 }
 
