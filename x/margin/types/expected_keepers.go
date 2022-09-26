@@ -27,7 +27,7 @@ type CLPKeeper interface {
 
 	GetRemovalQueue(ctx sdk.Context, symbol string) clptypes.RemovalQueue
 
-	BalanceModuleAccountCheck() sdk.Invariant
+	SingleExternalBalanceModuleAccountCheck(externalAsset string) sdk.Invariant
 }
 
 type Keeper interface {
@@ -79,7 +79,7 @@ type Keeper interface {
 	TakeOutCustody(ctx sdk.Context, mtp MTP, pool *clptypes.Pool) error
 	Repay(ctx sdk.Context, mtp *MTP, pool *clptypes.Pool, repayAmount sdk.Uint, takeFundPayment bool) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
-	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error
+	CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec, pool clptypes.Pool, custodyAsset string) error
 	HandleInterestPayment(ctx sdk.Context, interestPayment sdk.Uint, mtp *MTP, pool *clptypes.Pool) sdk.Uint
 
 	CalculatePoolHealth(pool *clptypes.Pool) sdk.Dec

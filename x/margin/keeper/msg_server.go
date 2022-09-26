@@ -135,12 +135,6 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 
 	collateralAmount := msg.CollateralAmount
 
-	// check if liabilities large enough for interest payments
-	err := k.CheckMinLiabilities(ctx, collateralAmount, eta)
-	if err != nil {
-		return nil, err
-	}
-
 	collateralAmountDec := sdk.NewDecFromBigInt(msg.CollateralAmount.BigInt())
 
 	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.BorrowAsset, msg.Position, leverage)
@@ -177,6 +171,12 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		if leveragedAmount.GT(pool.ExternalAssetBalance) {
 			return nil, sdkerrors.Wrap(types.ErrBorrowTooHigh, leveragedAmount.String())
 		}
+	}
+
+	// check if liabilities large enough for interest payments
+	err = k.CheckMinLiabilities(ctx, collateralAmount, eta, pool, msg.BorrowAsset)
+	if err != nil {
+		return nil, err
 	}
 
 	custodyAmount, err := k.CLPSwap(ctx, leveragedAmount, msg.BorrowAsset, pool)
@@ -223,7 +223,7 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, types.ErrMTPUnhealthy
 	}
 
-	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
+	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(externalAsset)(ctx)
 	if stop {
 		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
 	}
@@ -285,9 +285,16 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		return nil, sdk.ZeroUint(), err
 	}
 
-	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
-	if stop {
-		return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CustodyAsset)(ctx)
+		if stop {
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
+	} else {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CollateralAsset)(ctx)
+		if stop {
+			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
 	}
 
 	return &mtp, repayAmount, nil
@@ -407,9 +414,16 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 
 	k.EmitAdminClose(ctx, &mtpToClose, repayAmount, msg.Signer)
 
-	res, stop := k.ClpKeeper().BalanceModuleAccountCheck()(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	if types.StringCompare(mtpToClose.CollateralAsset, types.GetSettlementAsset()) {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CustodyAsset)(ctx)
+		if stop {
+			return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
+	} else {
+		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CollateralAsset)(ctx)
+		if stop {
+			return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+		}
 	}
 
 	return &types.MsgForceCloseResponse{}, nil

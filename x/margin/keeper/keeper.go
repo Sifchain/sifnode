@@ -581,7 +581,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 	return newInterestRate.Add(sQ), nil
 }
 
-func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec) error {
+func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, eta sdk.Dec, pool clptypes.Pool, custodyAsset string) error {
 	var interestRational, liabilitiesRational, rate big.Rat
 	minInterestRate := k.GetInterestRateMin(ctx)
 
@@ -599,6 +599,12 @@ func (k Keeper) CheckMinLiabilities(ctx sdk.Context, collateralAmount sdk.Uint, 
 	samplePayment := sdk.NewUintFromBigInt(interestNew)
 
 	if samplePayment.IsZero() && !minInterestRate.IsZero() {
+		return types.ErrBorrowTooLow
+	}
+
+	// swap interest payment to custody asset
+	_, err := k.CLPSwap(ctx, samplePayment, custodyAsset, pool)
+	if err != nil {
 		return types.ErrBorrowTooLow
 	}
 
