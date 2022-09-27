@@ -319,7 +319,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		maxMessagesInSifnodeTransaction,
 	)
 
-	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
+	bigNetworkDescriptor := big.NewInt(networkDescriptor)
 	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
@@ -528,7 +528,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		maxMessagesInSifnodeTransaction,
 	)
 
-	bigNetworkDescriptor := big.NewInt(int64(networkDescriptor))
+	bigNetworkDescriptor := big.NewInt(networkDescriptor)
 	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
