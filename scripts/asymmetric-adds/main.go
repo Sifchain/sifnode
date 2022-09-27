@@ -5,44 +5,35 @@ import (
 	"math"
 )
 
-func getData() (float64, float64, float64, float64, float64, float64, float64, float64, float64) {
+func getData() (float64, float64, float64, float64, float64) {
 
 	//-----------------------------------------
 	// Real looking data
-	// var Y, X, P float64 = 94031960239698233561402555, 984870852540, 12285414478722416018888701 // USDC pool 8 June 15:03
-	// var yPrice, xPrice, yDecimals, xDecimals float64 = 0.01033, 1, 18, 6                       // Rowan price $0.01033 8 June 15:03
+	var Y, X, P float64 = 94031960239698233561402555, 984870852540, 12285414478722416018888701 // USDC pool 8 June 15:03
 
-	// //var y, x float64 = 0, 100000000 // asymmetric $100 USDC
-	// //var y, x float64 = 10000 * math.Pow(10, 18), 0 // asymmetric $103 rowan
-	// //var y, x float64 = 10000 * math.Pow(10, 18), 10000 * math.Pow(10, 18) * X / Y // symmetric
-	// var y, x float64 = 0, 10_000_000_000 // asymmetric $10,000 USDC
+	//var y, x float64 = 0, 100000000 // asymmetric $100 USDC
+	//var y, x float64 = 10000 * math.Pow(10, 18), 0 // asymmetric $103 rowan
+	//var y, x float64 = 10000 * math.Pow(10, 18), 10000 * math.Pow(10, 18) * X / Y // symmetric
+	var y, x float64 = 0, 10_000_000_000 // asymmetric $10,000 USDC
 
 	//------------------------------------------
 	// Very shallow pool
 
-	var Y, X, P float64 = 50, 50, 50
-	var yPrice, xPrice, yDecimals, xDecimals float64 = 1, 1, 1, 1
-	var y, x float64 = 10, 0
+	// var Y, X, P float64 = 50, 50, 50
+	// var y, x float64 = 10, 0
 
-	return Y, X, P, y, x, yPrice, xPrice, yDecimals, xDecimals
+	return Y, X, P, y, x
 
 }
 
 func main() {
-	var f, r float64 = 0.003, 0.05
+	var f, r float64 = 0.003, 0.0
 
-	Y, X, P, y, x, yPrice, xPrice, yDecimals, xDecimals := getData()
-
-	val := calcValue(y, x, yPrice, xPrice, yDecimals, xDecimals)
-	fmt.Printf("Starting value: $%f\n", val)
+	Y, X, P, y, x := getData()
 
 	YAdd, XAdd, PAdd, LPUnits := addLiquidity(Y, X, y, x, f, r, P)
 
 	xRemoved, yRemoved := removeAllLiquidity(YAdd, XAdd, PAdd, LPUnits)
-
-	val = calcValue(yRemoved, xRemoved, yPrice, xPrice, yDecimals, xDecimals)
-
-	fmt.Printf("End value: $%f\n", val)
 
 	if xRemoved < x {
 		// We have less x than we used to have
@@ -76,10 +67,6 @@ func main() {
 
 }
 
-func calcValue(y, x, yPrice, xPrice, yDecimals, xDecimals float64) float64 {
-	return x*xPrice/math.Pow(10, xDecimals) + y*yPrice/math.Pow(10, yDecimals)
-}
-
 func removeAllLiquidity(Y, X, P, LPUnits float64) (float64, float64) {
 	frac := LPUnits / P
 
@@ -99,10 +86,16 @@ func addLiquidity(Y, X, y, x, f, r, P float64) (float64, float64, float64, float
 
 	if sellX {
 		xCorrected = x - s
-		yCorrected = y + calculateSwap(s, X, Y, f, r)
+		swapResult := calculateSwap(s, X, Y, f, r)
+		yCorrected = y + swapResult
+		X = X + s
+		Y = Y - swapResult
 	} else {
-		xCorrected = x + calculateSwap(s, Y, X, f, r)
+		swapResult := calculateSwap(s, Y, X, f, r)
+		xCorrected = x + swapResult
 		yCorrected = y - s
+		X = X - swapResult
+		Y = Y + s
 	}
 
 	fmt.Printf("x after swap: %f\n", xCorrected)
@@ -113,21 +106,14 @@ func addLiquidity(Y, X, y, x, f, r, P float64) (float64, float64, float64, float
 	LPUnits := calculateLPPoolUnits(P, X, Y, xCorrected, yCorrected)
 	P = P + LPUnits
 
-	return Y + y, X + x, P, LPUnits
+	return Y + yCorrected, X + xCorrected, P, LPUnits
 }
 
 func calculateSwapAmount(Y, X, y, x, f, r float64) (bool, float64) {
 	if Y/X > y/x {
-		return true, math.Abs(1 / (2 * (r + 1) * Y) * (math.Sqrt(math.Pow((-1*f*X*Y-r*x*Y+r*X*y+r*X*Y-x*Y+X*y+2*X*Y), 2)-4*(r*Y+Y)*(-1*r*x*X*Y+r*X*X*y-x*X*Y+X*X*y)) + f*X*Y + r*x*Y - r*X*y - r*X*Y + x*Y - X*y - 2*X*Y))
+		return true, math.Abs((math.Sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
 	} else {
-		tmp := X
-		X = Y
-		Y = tmp
-		tmp = x
-		x = y
-		y = tmp
-		//return false, math.Abs((math.Sqrt(math.Pow((-1*f*r*X*Y-f*X*Y+r*X*Y+x*Y-X*y+2*X*Y), 2)-4*X*(x*Y*Y-X*y*Y)) + f*r*X*Y + f*X*Y - r*X*Y - x*Y + X*y - 2*X*Y) / (2 * X))
-		return false, math.Abs(1 / (2 * (r + 1) * Y) * (math.Sqrt(math.Pow((-1*f*X*Y-r*x*Y+r*X*y+r*X*Y-x*Y+X*y+2*X*Y), 2)-4*(r*Y+Y)*(-1*r*x*X*Y+r*X*X*y-x*X*Y+X*X*y)) + f*X*Y + r*x*Y - r*X*y - r*X*Y + x*Y - X*y - 2*X*Y))
+		return false, math.Abs((math.Sqrt(math.Pow((-1*f*r*X*y-f*r*X*Y-f*X*y-f*X*Y+r*X*y+r*X*Y+2*x*Y+2*X*Y), 2)-4*(x+X)*(x*Y*Y-X*y*Y)) + f*r*X*y + f*r*X*Y + f*X*y + f*X*Y - r*X*y - r*X*Y - 2*x*Y - 2*X*Y) / (2 * (x + X)))
 	}
 }
 
