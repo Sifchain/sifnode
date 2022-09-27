@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+
 	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,26 +14,6 @@ import (
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
-
-// ConvertCoinsForTransfer Converts the coins requested for transfer into an amount that should be deducted from requested denom,
-// and the Coins that should be minted in the new denom.
-
-//TODO only used in tests , remove this function completely
-func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntry *tokenregistrytypes.RegistryEntry,
-	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
-	// calculate the conversion difference and reduce precision
-	po := uint64(sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals)
-	decAmount := sdk.NewDecFromInt(msg.Token.Amount)
-	convAmountDec := ReducePrecision(decAmount, po)
-	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
-	// create converted and Sifchain tokens with corresponding denoms and amounts
-	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterpartyDenom, convAmount)
-	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
-	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
-	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
-	token := sdk.NewCoin(msg.Token.Denom, tokenAmount)
-	return token, convToken
-}
 
 // PrepareToSendConvertedCoins moves outgoing tokens into the denom that will be sent via IBC.
 // The requested tokens will be escrowed, and the new denom to send over IBC will be minted in the senders account.
