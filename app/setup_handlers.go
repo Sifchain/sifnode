@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 
+	"github.com/Sifchain/sifnode/seed"
 	kpr "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
@@ -12,15 +13,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "1.0-beta.12"
+const releaseVersion = "1.0-testnet.13"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
-		// This is part of the scheduled process , directly doing state transitions here instead to migrating consensus version
-		// The following functions fix the state of sifnode caused by unexpected swap behaviour triggered by margin logic.
-		fixAtomPool(ctx, app.ClpKeeper)
-		closeMtp(ctx, app.MarginKeeper)
+
+		err := seed.Seed(app.ClpKeeper, app.BankKeeper, ctx, 10000, []string{"ceth", "cusd", "cfrax"})
+		if err != nil {
+			panic(err)
+		}
+
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 
