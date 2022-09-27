@@ -21,7 +21,7 @@ import (
 )
 
 func parseNetworkDescriptor(networkDescriptorStr string) (oracletypes.NetworkDescriptor, error) {
-	networkDescriptor, err := strconv.Atoi(networkDescriptorStr)
+	networkDescriptor, err := strconv.ParseInt(networkDescriptorStr, 10, 32)
 	if err != nil {
 		return -1, err
 	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
@@ -175,7 +175,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -185,7 +185,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			power, err := strconv.Atoi(args[2])
+			power, err := strconv.ParseUint(args[2], 10, 32)
 			if err != nil {
 				return err
 			}
@@ -285,7 +285,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -338,7 +338,7 @@ func GetCmdSignProphecy() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -373,7 +373,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}

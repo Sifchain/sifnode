@@ -52,7 +52,7 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return err
 			}
@@ -85,7 +85,7 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return err
 			}
@@ -119,7 +119,7 @@ func GetWitnessLockBurnSequence() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return err
 			}
@@ -153,12 +153,12 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return err
 			}
 
-			globalSequence, err := strconv.Atoi(args[1])
+			globalSequence, err := strconv.ParseInt(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
@@ -192,12 +192,12 @@ func GetProphecyCompleted() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
 			if err != nil {
 				return err
 			}
 
-			globalSequence, err := strconv.Atoi(args[1])
+			globalSequence, err := strconv.ParseInt(args[1], 10, 64)
 			if err != nil {
 				return err
 			}

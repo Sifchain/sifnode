@@ -181,7 +181,7 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 			return
 		}
 
-		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(req.NetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -229,7 +229,7 @@ func signProphecyHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(req.NetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -264,7 +264,7 @@ func getCrosschainFeeConfigHandler(cliCtx client.Context, storeName string) http
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(restNetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
@@ -292,7 +292,7 @@ func getEthereumLockBurnSequenceHandler(cliCtx client.Context, storeName string)
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(restNetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
@@ -321,7 +321,7 @@ func getWitnessLockBurnSequenceHandler(cliCtx client.Context, storeName string) 
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(restNetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
@@ -350,11 +350,11 @@ func getQueryGlobalSequenceBlockNumberHandler(cliCtx client.Context, storeName s
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(restNetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
-		globalSequence, err := strconv.Atoi(restSequence)
+		globalSequence, err := strconv.ParseInt(restNetworkDescriptor, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
@@ -382,11 +382,11 @@ func getProphciesCompletedHandler(cliCtx client.Context, storeName string) http.
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := strconv.ParseInt(restNetworkDescriptor, 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
-		globalSequence, err := strconv.Atoi(restSequence)
+		globalSequence, err := strconv.ParseInt(restSequence, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
