@@ -17,7 +17,7 @@ import (
 
 func TestEndBlocker(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	_ = test.GeneratePoolsFromFile(app.ClpKeeper, ctx)
+	_ = test.GeneratePoolsFromFile(app, app.ClpKeeper, ctx)
 	SetRewardParams(app.ClpKeeper, ctx)
 
 	_ = clp.EndBlocker(ctx, app.ClpKeeper)
@@ -415,6 +415,10 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						ExternalCustody:               sdk.ZeroUint(),
 						NativeLiabilities:             sdk.ZeroUint(),
 						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
 						Health:                        sdk.ZeroDec(),
 						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -438,6 +442,10 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						ExternalCustody:               sdk.ZeroUint(),
 						NativeLiabilities:             sdk.ZeroUint(),
 						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
 						Health:                        sdk.ZeroDec(),
 						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -461,6 +469,10 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						ExternalCustody:               sdk.ZeroUint(),
 						NativeLiabilities:             sdk.ZeroUint(),
 						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
 						Health:                        sdk.ZeroDec(),
 						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -484,6 +496,10 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						ExternalCustody:               sdk.ZeroUint(),
 						NativeLiabilities:             sdk.ZeroUint(),
 						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
 						Health:                        sdk.ZeroDec(),
 						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
@@ -535,16 +551,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				if tc.createPool {
 					pools := []*types.Pool{
 						{
-							ExternalAsset:        &types.Asset{Symbol: tc.poolAsset},
-							NativeAssetBalance:   tc.nativeAssetAmount,
-							ExternalAssetBalance: tc.externalAssetAmount,
-							PoolUnits:            tc.poolUnits,
-							NativeCustody:        sdk.ZeroUint(),
-							ExternalCustody:      sdk.ZeroUint(),
-							NativeLiabilities:    sdk.ZeroUint(),
-							ExternalLiabilities:  sdk.ZeroUint(),
-							Health:               sdk.ZeroDec(),
-							InterestRate:         sdk.NewDecWithPrec(1, 1),
+							ExternalAsset:                &types.Asset{Symbol: tc.poolAsset},
+							NativeAssetBalance:           tc.nativeAssetAmount,
+							ExternalAssetBalance:         tc.externalAssetAmount,
+							PoolUnits:                    tc.poolUnits,
+							NativeCustody:                sdk.ZeroUint(),
+							ExternalCustody:              sdk.ZeroUint(),
+							NativeLiabilities:            sdk.ZeroUint(),
+							ExternalLiabilities:          sdk.ZeroUint(),
+							UnsettledExternalLiabilities: sdk.ZeroUint(),
+							UnsettledNativeLiabilities:   sdk.ZeroUint(),
+							BlockInterestExternal:        sdk.ZeroUint(),
+							BlockInterestNative:          sdk.ZeroUint(),
+							Health:                       sdk.ZeroDec(),
+							InterestRate:                 sdk.NewDecWithPrec(1, 1),
 						},
 					}
 					clpGs := types.DefaultGenesisState()

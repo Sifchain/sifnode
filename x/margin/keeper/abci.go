@@ -19,6 +19,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 		currentHeight := ctx.BlockHeight()
 		pools := k.ClpKeeper().GetPools(ctx)
 		for _, pool := range pools {
+			pool.BlockInterestExternal = sdk.ZeroUint()
+			pool.BlockInterestNative = sdk.ZeroUint()
 			if k.IsPoolEnabled(ctx, pool.ExternalAsset.Symbol) {
 				rate, err := k.InterestRateComputation(ctx, *pool)
 				if err != nil {
@@ -29,19 +31,18 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				pool.LastHeightInterestRateComputed = currentHeight
 				_ = k.UpdatePoolHealth(ctx, pool)
 				k.TrackSQBeginBlock(ctx, pool)
-				_ = k.clpKeeper.SetPool(ctx, pool)
 				mtps, _, _ := k.GetMTPsForPool(ctx, pool.ExternalAsset.Symbol, nil)
 				for _, mtp := range mtps {
-					pool = BeginBlockerProcessMTP(ctx, k, mtp, pool)
+					BeginBlockerProcessMTP(ctx, k, mtp, pool)
 				}
 			}
+			_ = k.clpKeeper.SetPool(ctx, pool)
 		}
-		k.EmitInterestRateComputation(ctx)
 	}
 
 }
 
-func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) *clptypes.Pool {
+func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) {
 	defer func() {
 		if r := recover(); r != nil {
 			if msg, ok := r.(string); ok {
@@ -52,16 +53,24 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	h, err := k.UpdateMTPHealth(ctx, *mtp, *pool)
 	if err != nil {
 		ctx.Logger().Error(errors.Wrap(err, fmt.Sprintf("error updating mtp health: %s", mtp.String())).Error())
-		return pool
+		return
 	}
 	mtp.MtpHealth = h
 	// compute interest
 	interestPayment := CalcMTPInterestLiabilities(mtp, pool.InterestRate, 0, 0)
 
-	k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+	finalInterestPayment := k.HandleInterestPayment(ctx, interestPayment, mtp, pool)
+
+	nativeAsset := types.GetSettlementAsset()
+
+	if types.StringCompare(mtp.CollateralAsset, nativeAsset) { // custody is external, payment is custody
+		pool.BlockInterestExternal = pool.BlockInterestExternal.Add(finalInterestPayment)
+	} else { // custody is native, payment is custody
+		pool.BlockInterestNative = pool.BlockInterestNative.Add(finalInterestPayment)
+	}
 
 	_ = k.SetMTP(ctx, mtp)
-	_, pool, repayAmount, err := k.ForceCloseLong(ctx, mtp.Id, mtp.Address, false, true)
+	repayAmount, err := k.ForceCloseLong(ctx, mtp, pool, false, true)
 
 	if err == nil {
 		// Emit event if position was closed
@@ -69,5 +78,5 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	} else if err != types.ErrMTPHealthy {
 		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
 	}
-	return pool
+
 }

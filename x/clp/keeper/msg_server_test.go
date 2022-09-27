@@ -663,7 +663,7 @@ func TestMsgServer_Swap(t *testing.T) {
 							{
 								Asset:                    &types.Asset{Symbol: tc.poolAsset},
 								LiquidityProviderAddress: tc.address,
-								LiquidityProviderUnits:   tc.nativeAssetAmount,
+								LiquidityProviderUnits:   tc.poolUnits,
 							},
 						}
 						clpGs.LiquidityProviders = append(clpGs.LiquidityProviders, lps...)
@@ -896,6 +896,13 @@ func TestMsgServer_RemoveLiquidity(t *testing.T) {
 
 				if tc.createBalance {
 					balances := []banktypes.Balance{
+						{
+							Address: "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
+							Coins: sdk.Coins{
+								sdk.NewCoin(tc.poolAsset, sdk.Int(tc.externalAssetAmount)),
+								sdk.NewCoin("rowan", sdk.Int(tc.nativeAssetAmount)),
+							},
+						},
 						{
 							Address: tc.address,
 							Coins: sdk.Coins{

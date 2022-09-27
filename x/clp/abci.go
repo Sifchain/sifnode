@@ -40,6 +40,18 @@ func EndBlocker(ctx sdk.Context, keeper kpr.Keeper) []abci.ValidatorUpdate {
 		}
 	}
 
+	res, stop := keeper.BalanceModuleAccountCheck()(ctx)
+	if stop {
+		// replace panic with an error log
+		// panic(res)
+		keeper.Logger(ctx).Error(res)
+	}
+
+	res, stop = keeper.UnitsCheck()(ctx)
+	if stop {
+		keeper.Logger(ctx).Error(res)
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
@@ -134,11 +146,12 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 
 	err := k.PolicyRun(ctx, pmtpCurrentRunningRate)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(fmt.Sprintf("error in running policy | Error Message : %s ", err.Error()))
 	}
+
 }
 
-var blockTime *time.Time = nil
+var blockTime *time.Time
 
 func MeasureBlockTime(ctx sdk.Context, k kpr.Keeper) {
 	now := time.Now()

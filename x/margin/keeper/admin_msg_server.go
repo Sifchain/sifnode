@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -21,16 +22,29 @@ func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (
 		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
 	}
 
-	mtpToClose, err := k.GetMTP(ctx, msg.Signer, msg.Id)
+	mtpToClose, err := k.GetMTP(ctx, msg.MtpAddress, msg.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	var mtp *types.MTP
 	var repayAmount sdk.Uint
 	switch mtpToClose.Position {
 	case types.Position_LONG:
-		mtp, _, repayAmount, err = k.Keeper.ForceCloseLong(ctx, msg.Id, msg.MtpAddress, true, msg.TakeMarginFund)
+		var pool clptypes.Pool
+
+		nativeAsset := types.GetSettlementAsset()
+		if types.StringCompare(mtpToClose.CollateralAsset, nativeAsset) {
+			pool, err = k.ClpKeeper().GetPool(ctx, mtpToClose.CustodyAsset)
+			if err != nil {
+				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtpToClose.CustodyAsset)
+			}
+		} else {
+			pool, err = k.ClpKeeper().GetPool(ctx, mtpToClose.CollateralAsset)
+			if err != nil {
+				return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, mtpToClose.CollateralAsset)
+			}
+		}
+		repayAmount, err = k.ForceCloseLong(ctx, &mtpToClose, &pool, true, msg.TakeMarginFund)
 		if err != nil {
 			return nil, err
 		}
@@ -38,7 +52,7 @@ func (k msgServer) AdminClose(goCtx context.Context, msg *types.MsgAdminClose) (
 		return nil, sdkerrors.Wrap(types.ErrInvalidPosition, mtpToClose.Position.String())
 	}
 
-	k.EmitAdminClose(ctx, mtp, repayAmount, msg.Signer)
+	k.EmitAdminClose(ctx, &mtpToClose, repayAmount, msg.Signer)
 
 	return &types.MsgAdminCloseResponse{}, nil
 }

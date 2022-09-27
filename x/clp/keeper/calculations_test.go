@@ -62,10 +62,14 @@ func TestKeeper_CheckBalances(t *testing.T) {
 
 func TestKeeper_SwapOne(t *testing.T) {
 	testcases := []struct {
-		name                         string
-		nativeAssetBalance           sdk.Uint
-		externalAssetBalance         sdk.Uint
-		sentAmount                   sdk.Uint
+		name                 string
+		nativeAssetBalance   sdk.Uint
+		externalAssetBalance sdk.Uint
+		nativeCustody        sdk.Uint
+		externalCustody      sdk.Uint
+		nativeLiabilities    sdk.Uint
+		externalLiabilities,
+		sentAmount sdk.Uint
 		fromAsset                    types.Asset
 		toAsset                      types.Asset
 		pmtpCurrentRunningRate       sdk.Dec
@@ -80,6 +84,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			name:                         "test1",
 			nativeAssetBalance:           sdk.NewUint(1000),
 			externalAssetBalance:         sdk.NewUint(877),
+			nativeCustody:                sdk.ZeroUint(),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.ZeroUint(),
 			sentAmount:                   sdk.NewUint(50),
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
@@ -94,6 +102,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			name:                         "test2",
 			nativeAssetBalance:           sdk.NewUint(10000000),
 			externalAssetBalance:         sdk.NewUint(8770000),
+			nativeCustody:                sdk.ZeroUint(),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.ZeroUint(),
 			sentAmount:                   sdk.NewUint(50000),
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
@@ -108,6 +120,10 @@ func TestKeeper_SwapOne(t *testing.T) {
 			name:                         "test3",
 			nativeAssetBalance:           sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance:         sdk.NewUint(2674623482959),
+			nativeCustody:                sdk.ZeroUint(),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.ZeroUint(),
 			sentAmount:                   sdk.NewUint(200000000),
 			toAsset:                      types.GetSettlementAsset(),
 			fromAsset:                    types.NewAsset("cusdt"),
@@ -118,17 +134,38 @@ func TestKeeper_SwapOne(t *testing.T) {
 			expectedExternalAssetBalance: sdk.NewUint(2674823482959),
 			expectedNativeAssetBalance:   sdk.NewUintFromString("156995796064471436224541544"),
 		},
+		{
+			name:                         "margin enabled",
+			nativeAssetBalance:           sdk.NewUint(10000000),
+			externalAssetBalance:         sdk.NewUint(8770000),
+			nativeCustody:                sdk.NewUint(10000),
+			externalCustody:              sdk.ZeroUint(),
+			nativeLiabilities:            sdk.ZeroUint(),
+			externalLiabilities:          sdk.NewUint(10000),
+			sentAmount:                   sdk.NewUint(50000),
+			fromAsset:                    types.GetSettlementAsset(),
+			toAsset:                      types.NewAsset("eth"),
+			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			expectedSwapResult:           sdk.NewUint(43550),
+			expectedLiquidityFee:         sdk.NewUint(131),
+			expectedPriceImpact:          sdk.ZeroUint(),
+			expectedExternalAssetBalance: sdk.NewUint(8726450),
+			expectedNativeAssetBalance:   sdk.NewUint(10050000),
+		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, app := test.CreateTestAppClp(false)
+			//ctx, app := test.CreateTestAppClp(false)
 			poolUnits := sdk.NewUint(2000) //don't care
 			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
+			pool.NativeCustody = tc.nativeCustody
+			pool.ExternalCustody = tc.externalCustody
+			pool.NativeLiabilities = tc.nativeLiabilities
+			pool.ExternalLiabilities = tc.externalLiabilities
 
-			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
-			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3), marginEnabled)
+			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -181,21 +218,22 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3), marginEnabled)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3))
 	assert.Equal(t, "1", swapResult.String())
 }
 
 func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
-	ctx, app := test.CreateTestAppClp(false)
 	pool := types.Pool{
 		NativeAssetBalance:   sdk.NewUint(10),
 		ExternalAssetBalance: sdk.NewUint(100),
+		NativeLiabilities:    sdk.ZeroUint(),
+		NativeCustody:        sdk.ZeroUint(),
+		ExternalLiabilities:  sdk.ZeroUint(),
+		ExternalCustody:      sdk.ZeroUint(),
 	}
 	asset := types.Asset{}
 
-	marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3), marginEnabled)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3))
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -754,6 +792,10 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.nativeAssetBalance,
 				ExternalAssetBalance: tc.externalAssetBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			price, err := clpkeeper.CalcSpotPriceNative(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
@@ -859,6 +901,10 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.nativeAssetBalance,
 				ExternalAssetBalance: tc.externalAssetBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			price, err := clpkeeper.CalcSpotPriceExternal(&pool, tc.decimalsExternal, tc.pmtpCurrentRunningRate)
@@ -918,6 +964,10 @@ func TestKeeper_CalcRowanSpotPrice(t *testing.T) {
 			pool := types.Pool{
 				NativeAssetBalance:   tc.rowanBalance,
 				ExternalAssetBalance: tc.externalBalance,
+				NativeLiabilities:    sdk.ZeroUint(),
+				NativeCustody:        sdk.ZeroUint(),
+				ExternalLiabilities:  sdk.ZeroUint(),
+				ExternalCustody:      sdk.ZeroUint(),
 			}
 
 			calcPrice, err := clpkeeper.CalcRowanSpotPrice(&pool, tc.pmtpCurrentRunningRate)
@@ -2279,6 +2329,10 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				ExternalCustody:               sdk.ZeroUint(),
 				NativeLiabilities:             sdk.ZeroUint(),
 				ExternalLiabilities:           sdk.ZeroUint(),
+				UnsettledExternalLiabilities:  sdk.ZeroUint(),
+				UnsettledNativeLiabilities:    sdk.ZeroUint(),
+				BlockInterestExternal:         sdk.ZeroUint(),
+				BlockInterestNative:           sdk.ZeroUint(),
 				Health:                        sdk.ZeroDec(),
 				InterestRate:                  sdk.NewDecWithPrec(1, 1),
 				SwapPriceNative:               &SwapPriceNative,
@@ -2310,8 +2364,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
 
-			marginEnabled := app.ClpKeeper.GetMarginKeeper().IsPoolEnabled(ctx, pool.String())
-			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3), marginEnabled)
+			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
