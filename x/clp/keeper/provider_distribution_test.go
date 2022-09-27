@@ -54,6 +54,13 @@ func TestKeeper_FindActivePeriod(t *testing.T) {
 	currentHeight = 30
 	period = keeper.FindProviderDistributionPeriod(currentHeight, periods)
 	require.Nil(t, period)
+
+	replacementThirdPeriod := types.ProviderDistributionPeriod{DistributionPeriodStartBlock: 30, DistributionPeriodEndBlock: 18446744073709551615, DistributionPeriodBlockRate: sdk.NewDec(1)}
+	periods[2] = &replacementThirdPeriod
+
+	currentHeight = 800
+	period = keeper.FindProviderDistributionPeriod(currentHeight, periods)
+	require.Equal(t, &replacementThirdPeriod, period)
 }
 
 func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
@@ -120,7 +127,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Subset(t, ctx.EventManager().Events(), createDistributeEvent(lps[len(lps)-1].LiquidityProviderAddress))
 }
 
-//nolint
+// nolint
 func createDistributeEvent(address string) []sdk.Event {
 	return []sdk.Event{sdk.NewEvent("lppd/distribution",
 		sdk.NewAttribute("recipient", address),

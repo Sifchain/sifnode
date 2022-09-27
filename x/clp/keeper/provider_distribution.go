@@ -100,7 +100,7 @@ func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr str
 	ctx.EventManager().EmitEvents(sdk.Events{failureEvent})
 }
 
-//nolint
+// nolint
 func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(
@@ -114,8 +114,11 @@ func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
 }
 
 func FindProviderDistributionPeriod(currentHeight int64, periods []*types.ProviderDistributionPeriod) *types.ProviderDistributionPeriod {
+	if currentHeight < 0 {
+		panic("expect current block height to be >= 0")
+	}
 	for _, period := range periods {
-		if isActivePeriod(currentHeight, period.DistributionPeriodStartBlock, period.DistributionPeriodEndBlock) {
+		if isActivePeriod(uint64(currentHeight), period.DistributionPeriodStartBlock, period.DistributionPeriodEndBlock) {
 			return period
 		}
 	}
@@ -123,8 +126,8 @@ func FindProviderDistributionPeriod(currentHeight int64, periods []*types.Provid
 	return nil
 }
 
-func isActivePeriod(current int64, start, end uint64) bool {
-	return current >= int64(start) && current <= int64(end)
+func isActivePeriod(current, start, end uint64) bool {
+	return current >= start && current <= end
 }
 
 func (k Keeper) CollectProviderDistributions(ctx sdk.Context, pools []*types.Pool, blockRate sdk.Dec) (PoolRowanMap, LpRowanMap, LpPoolMap) {
