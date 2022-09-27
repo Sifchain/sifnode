@@ -211,7 +211,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.New("network descriptor is empty")
 	}
 
-	networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+	networkDescriptor, err := strconv.ParseInt(networkDescriptorString, 10, 32)
 	if err != nil {
 		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
 	}
