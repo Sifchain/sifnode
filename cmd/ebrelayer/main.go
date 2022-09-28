@@ -427,11 +427,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
 	}
 
-	// check if the networkDescriptor is valid
-	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
-		return errors.Errorf("network id: %d is invalid", networkDescriptor)
-	}
-
 	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
 	if err != nil {
 		return errors.Errorf("tendermint node is invalid: %s", err.Error())

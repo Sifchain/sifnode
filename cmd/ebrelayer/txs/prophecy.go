@@ -23,7 +23,7 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 	var ethereumReceiver common.Address
 	var symbol string
 	var amount big.Int
-	var networkDescriptor uint32
+	var networkDescriptor oracletypes.NetworkDescriptor
 	var doublePeg bool
 	var globalSequence uint64
 
@@ -44,17 +44,13 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 
 		case types.NetworkDescriptor.String():
 			attributeNumber++
-			tempNetworkDescriptor, err := strconv.ParseUint(val, 10, 32)
+
+			tmpNetworkDescriptor, err := oracletypes.ParseNetworkDescriptor(val)
 			if err != nil {
 				sugaredLogger.Errorw("network id can't parse", "networkDescriptor", val)
-				return types.ProphecyInfo{}, errors.New("network id can't parse")
-			}
-			networkDescriptor = uint32(tempNetworkDescriptor)
-
-			// check if the networkDescriptor is valid
-			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 				return types.ProphecyInfo{}, errors.New("network id is invalid")
 			}
+			networkDescriptor = tmpNetworkDescriptor
 
 		case types.CosmosSender.String():
 			cosmosSender = []byte(val)
