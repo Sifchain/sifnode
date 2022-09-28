@@ -6,6 +6,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/common"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 )
@@ -246,7 +247,7 @@ func (msg TokenMetadataAddRequest) ValidateBasic() error {
 		return ErrInvalidMetadataSymbol
 	}
 
-	if msg.Metadata.TokenAddress == "" {
+	if !common.IsHexAddress(msg.Metadata.TokenAddress) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.TokenAddress)
 	}
 
