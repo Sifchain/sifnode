@@ -52,7 +52,7 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -85,7 +85,7 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -119,7 +119,7 @@ func GetWitnessLockBurnSequence() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -153,7 +153,7 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -192,7 +192,7 @@ func GetProphecyCompleted() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}

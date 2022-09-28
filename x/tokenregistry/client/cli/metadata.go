@@ -86,7 +86,7 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 				return errors.New("Token must have a positive number of decimals")
 			}
 
-			networkDescriptorRaw, err := strconv.ParseInt(args[5], 10, 32)
+			networkDescriptorRaw, err := oracletypes.ParseNetworkDescriptor(args[5])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}

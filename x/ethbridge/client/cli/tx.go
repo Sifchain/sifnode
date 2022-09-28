@@ -20,18 +20,6 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-func parseNetworkDescriptor(networkDescriptorStr string) (oracletypes.NetworkDescriptor, error) {
-	networkDescriptor, err := strconv.ParseInt(networkDescriptorStr, 10, 32)
-	if err != nil {
-		return -1, err
-	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
-		return -1, errors.Errorf("Invalid %s. Valid range: [0-9999], received %d", types.FlagEthereumChainID, networkDescriptor)
-	} else if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
-		return -1, errors.Errorf("Invalid %s. Invalid value, received %d", types.FlagEthereumChainID, networkDescriptor)
-	}
-	return oracletypes.NetworkDescriptor(networkDescriptor), nil
-}
-
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
@@ -54,7 +42,7 @@ func GetCmdBurn() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -118,7 +106,7 @@ func GetCmdLock() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -175,7 +163,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -285,7 +273,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -338,7 +326,7 @@ func GetCmdSignProphecy() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -373,7 +361,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.ParseInt(args[0], 10, 32)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
