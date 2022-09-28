@@ -125,7 +125,7 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 
 	return types.ProphecyInfo{
 		ProphecyID:              prophecyID,
-		NetworkDescriptor:       oracletypes.NetworkDescriptor(networkDescriptor),
+		NetworkDescriptor:       networkDescriptor,
 		CosmosSender:            string(cosmosSender),
 		CosmosSenderSequence:    cosmosSenderSequence.Uint64(),
 		EthereumReceiver:        ethereumReceiver.String(),

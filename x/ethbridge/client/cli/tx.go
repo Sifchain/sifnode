@@ -178,7 +178,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(oracletypes.NetworkDescriptor(networkDescriptor), clientCtx.FromAddress, validatorAddress, uint32(power))
+			msg := types.NewMsgUpdateWhiteListValidator(networkDescriptor, clientCtx.FromAddress, validatorAddress, uint32(power))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -296,7 +296,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 			}
 
 			msg := types.NewMsgSetFeeInfo(clientCtx.FromAddress,
-				oracletypes.NetworkDescriptor(networkDescriptor),
+				networkDescriptor,
 				feeCurrency,
 				feeCurrencyGas,
 				minimumLockCost,
@@ -335,7 +335,7 @@ func GetCmdSignProphecy() *cobra.Command {
 			ethereumAddress := args[2]
 			signature := args[3]
 
-			msg := types.NewMsgSignProphecy(clientCtx.FromAddress.String(), oracletypes.NetworkDescriptor(networkDescriptor), []byte(prophecyID), ethereumAddress, signature)
+			msg := types.NewMsgSignProphecy(clientCtx.FromAddress.String(), networkDescriptor, []byte(prophecyID), ethereumAddress, signature)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -375,7 +375,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 				return errors.New("Error consensus needed value too large")
 			}
 
-			msg := types.NewMsgUpdateConsensusNeeded(clientCtx.FromAddress.String(), oracletypes.NetworkDescriptor(networkDescriptor), uint32(consensusNeeded))
+			msg := types.NewMsgUpdateConsensusNeeded(clientCtx.FromAddress.String(), networkDescriptor, uint32(consensusNeeded))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

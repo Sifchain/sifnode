@@ -318,7 +318,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+	cosmosSub := relayer.NewCosmosSub(networkDescriptor,
 		privateKey,
 		tendermintNode,
 		web3Provider,

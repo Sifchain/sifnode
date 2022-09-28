@@ -60,7 +60,7 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryCrosschainFeeConfigRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 			}
 
 			res, err := queryClient.CrosschainFeeConfig(context.Background(), req)
@@ -93,7 +93,7 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryEthereumLockBurnSequenceRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 				RelayerValAddress: args[1],
 			}
 
@@ -127,7 +127,7 @@ func GetWitnessLockBurnSequence() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryWitnessLockBurnSequenceRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 				RelayerValAddress: args[1],
 			}
 
@@ -166,7 +166,7 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryGlobalSequenceBlockNumberRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 				GlobalSequence:    uint64(globalSequence),
 			}
 
@@ -205,7 +205,7 @@ func GetProphecyCompleted() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryPropheciesCompletedRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 				GlobalSequence:    uint64(globalSequence),
 			}
 
