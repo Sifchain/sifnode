@@ -1064,6 +1064,12 @@ func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *ty
 	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_CLPDEX, signer) {
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
+
+	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
+	if msg.CurrentRowanLiquidityThreshold.GT(liquidityProtectionParams.MaxRowanLiquidityThreshold) {
+		return response, types.ErrCurrentGTMaxLiqProt
+	}
+
 	rateParams := k.GetLiquidityProtectionRateParams(ctx)
 	rateParams.CurrentRowanLiquidityThreshold = msg.CurrentRowanLiquidityThreshold
 	k.SetLiquidityProtectionRateParams(ctx, rateParams)

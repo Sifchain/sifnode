@@ -1611,3 +1611,61 @@ func TestMsgServer_AddProviderDistribution(t *testing.T) {
 	require.Equal(t, 1, len(cbp.DistributionPeriods))
 	require.Equal(t, *cbp.DistributionPeriods[0], validPeriod)
 }
+
+func TestMsgServer_ModifyLiquidityProtectionRates(t *testing.T) {
+	testcases := []struct {
+		name                           string
+		maxRowanLiquidityThreshold     sdk.Uint
+		currentRowanLiquidityThreshold sdk.Uint
+		expectedError                  error
+	}{
+		{
+			name:                           "fail - current > max",
+			maxRowanLiquidityThreshold:     sdk.NewUint(100),
+			currentRowanLiquidityThreshold: sdk.NewUint(200),
+			expectedError:                  types.ErrCurrentGTMaxLiqProt,
+		},
+	}
+
+	for _, tc := range testcases {
+
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			admin := "sif1gy2ne7m62uer4h5s4e7xlfq7aeem5zpwx6nu9q"
+			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
+				adminGs := &admintypes.GenesisState{
+					AdminAccounts: admintest.GetAdmins(admin),
+				}
+				bz, _ := app.AppCodec().MarshalJSON(adminGs)
+				genesisState["admin"] = bz
+				trGs := &tokenregistrytypes.GenesisState{
+					Registry: nil,
+				}
+				bz, _ = app.AppCodec().MarshalJSON(trGs)
+				genesisState["tokenregistry"] = bz
+
+				return genesisState
+			})
+			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
+
+			liquidityProtectionParams := types.LiquidityProtectionParams{
+				MaxRowanLiquidityThreshold:      tc.maxRowanLiquidityThreshold,
+				MaxRowanLiquidityThresholdAsset: "usdc",
+				EpochLength:                     123,
+				IsActive:                        true,
+			}
+
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, &liquidityProtectionParams)
+
+			msg := types.MsgModifyLiquidityProtectionRates{Signer: admin, CurrentRowanLiquidityThreshold: tc.currentRowanLiquidityThreshold}
+			_, err := msgServer.ModifyLiquidityProtectionRates(sdk.WrapSDKContext(ctx), &msg)
+
+			if tc.expectedError != nil {
+				require.EqualError(t, err, tc.expectedError.Error())
+				return
+			}
+			require.NoError(t, err)
+
+		})
+	}
+}
