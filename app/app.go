@@ -15,9 +15,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/Sifchain/sifnode/x/dispensation"
-	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -152,7 +149,6 @@ var (
 		margin.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
-		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
 		admin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
@@ -169,7 +165,6 @@ var (
 		sctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
-		dispensation.ModuleName:        {authtypes.Minter},
 		margintypes.ModuleName:         {authtypes.Burner, authtypes.Minter},
 	}
 )
@@ -228,7 +223,6 @@ type SifchainApp struct {
 	MarginKeeper        marginkeeper.Keeper
 	OracleKeeper        oraclekeeper.Keeper
 	EthbridgeKeeper     ethbridgekeeper.Keeper
-	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
 	AdminKeeper         adminkeeper.Keeper
 
@@ -272,7 +266,6 @@ func NewSifAppWithBlacklist(
 		ibctransfertypes.StoreKey,
 		feegrant.StoreKey,
 		capabilitytypes.StoreKey,
-		disptypes.StoreKey,
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
 		margintypes.StoreKey,
@@ -457,13 +450,6 @@ func NewSifAppWithBlacklist(
 		keys[ethbridgetypes.StoreKey],
 	)
 
-	app.DispensationKeeper = dispkeeper.NewKeeper(
-		appCodec,
-		keys[disptypes.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.GetSubspace(disptypes.ModuleName),
-	)
 	mockModule := ibcmock.NewAppModule(scopedIBCMockKeeper, &app.IBCKeeper.PortKeeper)
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
@@ -512,7 +498,6 @@ func NewSifAppWithBlacklist(
 		margin.NewAppModule(app.MarginKeeper, &appCodec),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
-		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
 		admin.NewAppModule(app.AdminKeeper, &appCodec),
 	)
@@ -539,14 +524,12 @@ func NewSifAppWithBlacklist(
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
-		disptypes.ModuleName,
 		transferModule.Name(),
 		margin.ModuleName,
 		clptypes.ModuleName,
 		ethbridgetypes.ModuleName,
 		tokenregistrytypes.ModuleName,
 		oracletypes.ModuleName,
-		dispensation.ModuleName,
 		admintypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
@@ -567,7 +550,6 @@ func NewSifAppWithBlacklist(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
-		disptypes.ModuleName,
 		transferModule.Name(),
 		clptypes.ModuleName,
 		margin.ModuleName,
@@ -599,7 +581,6 @@ func NewSifAppWithBlacklist(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
-		disptypes.ModuleName,
 		transferModule.Name(),
 		tokenregistrytypes.ModuleName,
 		admintypes.ModuleName,
@@ -608,7 +589,6 @@ func NewSifAppWithBlacklist(
 		ethbridgetypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
-		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

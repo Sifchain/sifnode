@@ -6,7 +6,6 @@ import (
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -55,18 +54,6 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
-		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
-		minGasPrice := sdk.DecCoin{
-			Denom:  "rowan",
-			Amount: sdk.MustNewDecFromStr("0.00000005"),
-		}
-		if !minGasPrice.IsValid() {
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
-		}
-		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
-		return next(ctx, tx, simulate)
-	}
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
 		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))

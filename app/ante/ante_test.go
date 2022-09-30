@@ -4,7 +4,6 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/app/ante"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
-	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -32,8 +31,8 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 		Amount: sdk.MustNewDecFromStr("0.00000005"),
 	}
 	ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(highGasPrice))
-	dispensationCreateMsg := dispensationtypes.NewMsgCreateDistribution(addrs[0], dispensationtypes.DistributionType_DISTRIBUTION_TYPE_AIRDROP, []banktypes.Output{}, "")
-	dispensationRunMsg := dispensationtypes.NewMsgRunDistribution(addrs[0].String(), "airdrop", dispensationtypes.DistributionType_DISTRIBUTION_TYPE_AIRDROP, 10)
+	//dispensationCreateMsg := dispensationtypes.NewMsgCreateDistribution(addrs[0], dispensationtypes.DistributionType_DISTRIBUTION_TYPE_AIRDROP, []banktypes.Output{}, "")
+	//dispensationRunMsg := dispensationtypes.NewMsgRunDistribution(addrs[0].String(), "airdrop", dispensationtypes.DistributionType_DISTRIBUTION_TYPE_AIRDROP, 10)
 	otherMsg := banktypes.NewMsgSend(addrs[0], addrs[1], sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewIntFromUint64(100))))
 	// next doesn't accept err, it is only called if decorator does not return error, it passes ctx to decorator caller
 	next := func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) { return ctx, nil }
