@@ -59,11 +59,11 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 		pools := k.GetPools(ctx)
 		for _, pool := range pools {
 			nativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
-			currentNativeLiquidityThreshold := sdk.NewDecFromBigInt(pool.CurrentNativeLiquidityThreshold.BigInt())
-			maxRowanLiquidityThreshold := nativeAssetBalance.Mul(maxThresholdPercentage)
+			currentNativeLiquidityThreshold := pool.CurrentNativeLiquidityThreshold
+			maxRowanLiquidityThreshold := sdk.NewUintFromBigInt(nativeAssetBalance.Mul(maxThresholdPercentage).TruncateInt().BigInt())
 
 			// Validation check ensures that Epoch length =/= zero
-			replenishmentAmount := maxRowanLiquidityThreshold.QuoInt64(int64(liquidityProtectionParams.EpochLength))
+			replenishmentAmount := maxRowanLiquidityThreshold.QuoUint64(liquidityProtectionParams.EpochLength)
 
 			// This is equivalent to:
 			//    proposedThreshold := currentNativeLiquidityThreshold.Add(replenishmentAmount)
@@ -75,7 +75,7 @@ func BeginBlocker(ctx sdk.Context, k kpr.Keeper) {
 				currentNativeLiquidityThreshold = currentNativeLiquidityThreshold.Add(replenishmentAmount)
 			}
 
-			pool.CurrentNativeLiquidityThreshold = sdk.NewUintFromBigInt(currentNativeLiquidityThreshold.TruncateInt().BigInt())
+			pool.CurrentNativeLiquidityThreshold = currentNativeLiquidityThreshold
 			k.SetPool(ctx, pool)
 
 			k.Logger(ctx).Info(fmt.Sprintf("Liquidity Protection | pool: %s | maxRowanLiquidityThreshold: %s (%s) | currentNativeLiquidityThreshold: %s | maxPerBlock: %s", pool.ExternalAsset.Symbol, maxRowanLiquidityThreshold, maxThresholdPercentage, pool.CurrentNativeLiquidityThreshold, replenishmentAmount))
