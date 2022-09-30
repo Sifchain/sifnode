@@ -475,12 +475,10 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
-	maxThresholdPercentage := liquidityProtectionParams.MaxThresholdPercentage
 	var (
 		liqpPool types.Pool
 	)
 
-	// if liquidity protection is active
 	if liquidityProtectionParams.IsActive {
 		// if selling rowan
 		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
@@ -631,6 +629,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		// if buy rowan
 		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
 			nativeAssetBalance := sdk.NewDecFromBigInt(liqpPool.NativeAssetBalance.BigInt())
+			maxThresholdPercentage := liquidityProtectionParams.MaxThresholdPercentage
 			maxRowanLiquidityThreshold := sdk.NewUintFromBigInt(nativeAssetBalance.Mul(maxThresholdPercentage).TruncateInt().BigInt())
 
 			// This is equivalent to currentNativeLiquidityThreshold := sdk.MinUint(currentNativeLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
@@ -982,12 +981,12 @@ func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *t
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 	params := k.GetLiquidityProtectionParams(ctx)
-	previouslyNonActive := params.IsActive == false
+	previouslyActive := params.IsActive
 	params.EpochLength = msg.EpochLength
 	params.IsActive = msg.IsActive
 	params.MaxThresholdPercentage = msg.MaxThresholdPercentage
 	k.SetLiquidityProtectionParams(ctx, params)
-	if previouslyNonActive && msg.IsActive {
+	if !previouslyActive && msg.IsActive {
 		pools := k.GetPools(ctx)
 		for _, pool := range pools {
 			nativeAssetBalance := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt())
