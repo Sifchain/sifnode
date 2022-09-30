@@ -19,7 +19,7 @@ func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
 
-		err := seed.Seed(app.ClpKeeper, app.BankKeeper, ctx, 10000, []string{"ceth", "cusdc", "cfrax"})
+		err := seed.Seed(app.ClpKeeper, app.BankKeeper, app.TokenRegistryKeeper, ctx, 10000, 3)
 		if err != nil {
 			panic(err)
 		}
