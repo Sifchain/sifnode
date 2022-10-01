@@ -13,7 +13,7 @@ package keeper_test
 //	return ctx, app
 //}
 //
-//func TestCalculatePoolUnits(t *testing.T) {
+// func TestCalculatePoolUnits(t *testing.T) {
 //	type TestCase struct {
 //		Symbol           string `json:"symbol"`
 //		NativeAdded      string `json:"r"`
@@ -52,7 +52,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculateSwapResult(t *testing.T) {
+// func TestCalculateSwapResult(t *testing.T) {
 //	type TestCase struct {
 //		Xx       string `json:"x"`
 //		X        string `json:"X"`
@@ -87,7 +87,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculateSwapLiquidityFee(t *testing.T) {
+// func TestCalculateSwapLiquidityFee(t *testing.T) {
 //	type TestCase struct {
 //		Xx       string `json:"x"`
 //		X        string `json:"X"`

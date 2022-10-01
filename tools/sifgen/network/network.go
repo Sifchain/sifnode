@@ -33,7 +33,7 @@ func Reset(chainID, networkDir string) error {
 	}
 	file := fmt.Sprintf("%x", s.Sum(nil))
 
-	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.yml", networkDir, file))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s.yml", networkDir, file))
 	if err != nil {
 		return err
 	}

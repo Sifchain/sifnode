@@ -5,9 +5,9 @@ import (
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-type SentTx struct{} //nolint
+type SentTx struct{}
 
-func getSendTxArgs() Args { //nolint
+func getSendTxArgs() Args {
 	defaultArgs := getDefaultArgs()
 	setNetwork(&defaultArgs, LocalNet)
 	return defaultArgs

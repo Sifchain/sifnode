@@ -75,7 +75,7 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 		m.keeper.SetLiquidityProvider(ctx, &l)
 
 		pool.PoolUnits = pool.PoolUnits.Sub(lp.units)
-		// nolint:errcheck
+		//nolint:errcheck
 		m.keeper.SetPool(ctx, &pool)
 	}
 

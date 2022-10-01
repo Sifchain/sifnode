@@ -24,9 +24,9 @@ func GetMTPPrefixForAddress(address string) []byte {
 }
 
 // GetUint64Bytes returns the byte representation of the ID
-func GetUint64Bytes(ID uint64) []byte {
+func GetUint64Bytes(id uint64) []byte {
 	IDBz := make([]byte, 8)
-	binary.BigEndian.PutUint64(IDBz, ID)
+	binary.BigEndian.PutUint64(IDBz, id)
 	return IDBz
 }
 

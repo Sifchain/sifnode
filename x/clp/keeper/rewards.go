@@ -105,7 +105,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 			}
 
 			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(rowan)
-			k.SetPool(ctx, pool) // nolint:errcheck
+			k.SetPool(ctx, pool) //nolint:errcheck
 		}
 
 		// As we have already minted all coins we wanted to distribute, check if we could distribute them all.
@@ -114,7 +114,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
 
 		if !diff.IsZero() {
-			k.BurnRowan(ctx, diff) // nolint:errcheck
+			k.BurnRowan(ctx, diff) //nolint:errcheck
 		}
 		coinsMinted := sdk.NewIntFromBigInt(coinsToMint.BigInt()).Sub(diff)
 		fireRewardsEvent(ctx, "rewards/distribution", coinsMinted, PoolRowanMapToLPPools(poolRowanMap))

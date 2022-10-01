@@ -70,9 +70,9 @@ func TestEndBlock(t *testing.T) {
 	// TODO : Modify reward policy so that the numbers asserted match with expected
 	// pool, err := app.ClpKeeper.GetPool(ctx, "atom")
 	// require.NoError(t, err)
-	//require.Equal(t, "66666666666666666600001000", pool.NativeAssetBalance.String())
-	//expected := sdk.NewUintFromString("66666666666666666666667666")
-	//accuracy := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Quo(sdk.NewDecFromBigInt(expected.BigInt()))
+	// require.Equal(t, "66666666666666666600001000", pool.NativeAssetBalance.String())
+	// expected := sdk.NewUintFromString("66666666666666666666667666")
+	// accuracy := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Quo(sdk.NewDecFromBigInt(expected.BigInt()))
 	//require.True(t, accuracy.GT(sdk.MustNewDecFromStr("0.99")))
 	//// TODO continue through another portion of the period and ensure supply is increased.
 	//// continue through a non reward period

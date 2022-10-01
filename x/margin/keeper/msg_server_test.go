@@ -169,7 +169,7 @@ func TestKeeper_Open(t *testing.T) {
 				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
-			// nolint:errcheck
+			//nolint:errcheck
 			marginKeeper.ClpKeeper().SetPool(ctx, &pool)
 
 			var address string
@@ -387,7 +387,7 @@ func TestKeeper_Close(t *testing.T) {
 				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
-			// nolint:errcheck
+			//nolint:errcheck
 			marginKeeper.ClpKeeper().SetPool(ctx, &pool)
 
 			var address string
@@ -402,7 +402,7 @@ func TestKeeper_Close(t *testing.T) {
 				require.NoError(t, err)
 
 				nativeCoin = sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUint(10000)))
-				// nolint:staticcheck,ineffassign
+				//nolint:staticcheck,ineffassign
 				externalCoin = sdk.NewCoin(externalAsset.Symbol, sdk.Int(sdk.NewUint(10000)))
 
 				_signer := clptest.GenerateAddress(clptest.AddressKey1)
@@ -896,7 +896,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 			}
 
 			marginKeeper.SetEnabledPools(ctx, []string{tt.externalAsset})
-			// nolint:errcheck
+			//nolint:errcheck
 			marginKeeper.ClpKeeper().SetPool(ctx, &pool)
 
 			nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(sdk.NewUintFromString("100000000000000000000000000")))
@@ -1229,9 +1229,9 @@ func TestKeeper_EC(t *testing.T) {
 		closeError                           error
 	}
 	type Test struct {
-		// nolint:golint
+		//nolint:golint
 		X_A sdk.Uint
-		// nolint:golint
+		//nolint:golint
 		Y_A    sdk.Uint
 		chunks []Chunk
 	}
@@ -2019,7 +2019,7 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 	}
 
 	marginKeeper.SetEnabledPools(ctx, []string{externalAsset.Symbol})
-	// nolint:errcheck
+	//nolint:errcheck
 	marginKeeper.ClpKeeper().SetPool(ctx, &pool)
 
 	nativeCoin := sdk.NewCoin(nativeAsset, sdk.Int(pool.NativeAssetBalance))

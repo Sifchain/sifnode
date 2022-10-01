@@ -476,7 +476,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.panicErr != "" {
-				// nolint:errcheck
+				//nolint:errcheck
 				require.PanicsWithError(t, tc.panicErr, func() {
 					clpkeeper.CalculatePoolUnits(
 						tc.oldPoolUnits,

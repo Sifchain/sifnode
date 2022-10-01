@@ -9,7 +9,7 @@ import (
 )
 
 // RegisterCodec registers concrete types on codec
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateDistribution{}, "dispensation/MsgCreateDistribution", nil)
 	cdc.RegisterConcrete(&Distribution{}, "dispensation/Distribution", nil)
 	cdc.RegisterConcrete(&MsgCreateUserClaim{}, "dispensation/claim", nil)

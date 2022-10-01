@@ -190,7 +190,7 @@ var (
 
 type SifchainApp struct {
 	*baseapp.BaseApp
-	legacyAmino       *codec.LegacyAmino //nolint
+	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
 
@@ -285,7 +285,7 @@ func NewSifAppWithBlacklist(
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 	app := &SifchainApp{
 		BaseApp:           bApp,
-		legacyAmino:       legacyAmino, //nolint
+		legacyAmino:       legacyAmino,
 		appCodec:          appCodec,
 		interfaceRegistry: interfaceRegistry,
 		invCheckPeriod:    invCheckPeriod,
@@ -297,7 +297,7 @@ func NewSifAppWithBlacklist(
 	if homePath == "" {
 		homePath = DefaultNodeHome
 	}
-	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey]) //nolint
+	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 	// set the BaseApp's parameter store
 	bApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
 
@@ -678,7 +678,7 @@ func (app *SifchainApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) ab
 	return app.mm.EndBlock(ctx, req)
 }
 
-func (app *SifchainApp) LegacyAmino() *codec.LegacyAmino { //nolint
+func (app *SifchainApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
@@ -785,7 +785,7 @@ func RegisterSwaggerAPI(_ client.Context, rtr *mux.Router) {
 	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
 
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramskeeper.Keeper { //nolint
+func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramskeeper.Keeper {
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)

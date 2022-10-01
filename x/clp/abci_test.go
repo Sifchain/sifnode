@@ -57,7 +57,7 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 }
 
 func TestBeginBlocker(t *testing.T) {
-	testcases := []struct { //nolint
+	testcases := []struct {
 		name                           string
 		createBalance                  bool
 		createPool                     bool

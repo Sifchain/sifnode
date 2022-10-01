@@ -22,7 +22,7 @@ func TestInitGenesis(t *testing.T) {
 			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 
-			if len(tc.genesis.AdminAddress) <= 0 {
+			if len(tc.genesis.AdminAddress) == 0 {
 				require.Nil(t, keeper.GetAdminAccount(ctx))
 			} else {
 				require.Equal(t, tc.genesis.AdminAddress, keeper.GetAdminAccount(ctx).String())

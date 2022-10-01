@@ -45,7 +45,7 @@ func (am AppModuleBasic) Name() string {
 	return am.cosmosAppModule.Name()
 }
 
-func (am AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func (am AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	am.cosmosAppModule.RegisterLegacyAminoCodec(cdc)
 }
 
@@ -149,7 +149,7 @@ func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper to
 }
 
 // IBC does not support a legacy querier
-func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier { //nolint
+func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 	return am.cosmosAppModule.LegacyQuerierHandler(amino)
 }
 

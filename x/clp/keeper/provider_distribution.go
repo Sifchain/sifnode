@@ -40,7 +40,7 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 
 	for pool, sub := range poolRowanMap {
 		// will never fail
-		k.RemoveRowanFromPool(ctx, pool, sub) // nolint:errcheck
+		k.RemoveRowanFromPool(ctx, pool, sub) //nolint:errcheck
 	}
 }
 
@@ -102,7 +102,7 @@ func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr str
 	ctx.EventManager().EmitEvents(sdk.Events{failureEvent})
 }
 
-// nolint
+//nolint
 func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(

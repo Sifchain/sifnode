@@ -111,9 +111,8 @@ func TestTypes_MsgOpenValidateBasic(t *testing.T) {
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
-			} else {
-				require.ErrorIs(t, got, tt.err)
 			}
+			require.ErrorIs(t, got, tt.err)
 		})
 	}
 }
