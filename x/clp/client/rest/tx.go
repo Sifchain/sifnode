@@ -54,7 +54,6 @@ type (
 		ExternalAsset types.Asset  `json:"external_asset"` // ExternalAsset in the pool pair (ex rwn:ceth)
 		WBasisPoints  sdk.Int      `json:"w_basis_points"` // WBasisPoints determines the amount of asset being withdrawn
 		Asymmetry     sdk.Int      `json:"asymmetry"`      // Asymmetry decides the type of asset being withdrawn asymmetry means equal amounts of native and external
-
 	}
 
 	RemoveLiquidityUnitsReq struct {
@@ -62,7 +61,6 @@ type (
 		Signer        string       `json:"signer"`         // User who is trying to remove liquidity to the pool
 		ExternalAsset types.Asset  `json:"external_asset"` // ExternalAsset in the pool pair (ex rwn:ceth)
 		WithdrawUnits sdk.Uint     `json:"withdraw_units"` // WithdrawUnits determines the amount of asset being withdrawn
-
 	}
 	CreatePoolReq struct {
 		BaseReq             rest.BaseReq `json:"base_req"`
@@ -86,9 +84,9 @@ type (
 	}
 )
 
-//   wallet  < - > abci <-mempool-> tendermint
-//   storage > tx
-//   /tx hash= []
+// wallet  < - > abci <-mempool-> tendermint
+// storage > tx
+// /tx hash= []
 func createPoolHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreatePoolReq

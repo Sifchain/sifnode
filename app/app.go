@@ -283,7 +283,7 @@ func NewSifAppWithBlacklist(
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-	var app = &SifchainApp{
+	app := &SifchainApp{
 		BaseApp:           bApp,
 		legacyAmino:       legacyAmino, //nolint
 		appCodec:          appCodec,

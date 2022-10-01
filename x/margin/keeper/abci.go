@@ -11,7 +11,7 @@ import (
 )
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) {
-	//check if epoch has passed then execute
+	// check if epoch has passed then execute
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 
@@ -39,7 +39,6 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 			_ = k.clpKeeper.SetPool(ctx, pool)
 		}
 	}
-
 }
 
 func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clptypes.Pool) {
@@ -78,5 +77,4 @@ func BeginBlockerProcessMTP(ctx sdk.Context, k Keeper, mtp *types.MTP, pool *clp
 	} else if err != types.ErrMTPHealthy {
 		ctx.Logger().Error(errors.Wrap(err, "error executing force close").Error())
 	}
-
 }

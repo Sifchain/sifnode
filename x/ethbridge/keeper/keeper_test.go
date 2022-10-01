@@ -23,7 +23,7 @@ var (
 	tokenContractAddress = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
 	ethBridgeAddress     = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
 	ethereumSender       = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
-	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
+	// BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
 )
 
 func TestProcessClaimLock(t *testing.T) {
@@ -33,10 +33,10 @@ func TestProcessClaimLock(t *testing.T) {
 
 	nonce := int64(1)
 	// TODO(timlind): This default does not seem to be in any version history.
-	//invalid claim defaults to lock
-	//claimType, err := types.StringToClaimType("lkfjdsk")
-	//require.Equal(t, claimType.String(), "lock")
-	//require.Error(t, err)
+	// invalid claim defaults to lock
+	// claimType, err := types.StringToClaimType("lkfjdsk")
+	// require.Equal(t, claimType.String(), "lock")
+	// require.Error(t, err)
 
 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -80,7 +80,6 @@ func TestProcessClaimLock(t *testing.T) {
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
-
 }
 
 func TestProcessClaimBurn(t *testing.T) {
@@ -131,7 +130,6 @@ func TestProcessClaimBurn(t *testing.T) {
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
-
 }
 
 func TestProcessSuccessfulClaimLock(t *testing.T) {
@@ -238,7 +236,6 @@ func TestProcessLock(t *testing.T) {
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
-
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
@@ -300,7 +297,6 @@ func TestProcessLockWithReceiver(t *testing.T) {
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
-
 }
 
 func TestProcessUpdateCethReceiverAccount(t *testing.T) {

@@ -22,7 +22,6 @@ func TestQueryRecordsByRecipientAddr(t *testing.T) {
 }
 
 func TestQueryUserClaims(t *testing.T) {
-
 	userClaimtype := types.DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED
 	result := types.NewQueryUserClaims(userClaimtype)
 	assert.Equal(t, userClaimtype, result.UserClaimType)

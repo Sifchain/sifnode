@@ -82,47 +82,46 @@ func TestKeeper_GetBankKeeper(t *testing.T) {
 
 // nolint
 func TestKeeper_GetAssetDecimals(t *testing.T) {
-	testcases :=
-		[]struct {
-			name        string
-			denom       string
-			asset       types.Asset
-			decimals    int64
-			createToken bool
-			errString   error
-			expected    uint8
-		}{
-			{
-				name:        "big decimals number throws error",
-				asset:       types.Asset{Symbol: "xxx"},
-				createToken: true,
-				denom:       "xxx",
-				decimals:    256,
-				errString:   errors.New("Could not perform type cast"),
-			},
-			{
-				name:        "negative decimals number throws error",
-				asset:       types.Asset{Symbol: "xxx"},
-				createToken: true,
-				denom:       "xxx",
-				decimals:    -200,
-				errString:   errors.New("Could not perform type cast"),
-			},
-			{
-				name:        "unknown symbol",
-				createToken: false,
-				asset:       types.Asset{Symbol: "xxx"},
-				errString:   errors.New("registry entry not found: key not found"),
-			},
-			{
-				name:        "success",
-				asset:       types.Asset{Symbol: "xxx"},
-				createToken: true,
-				denom:       "xxx",
-				decimals:    73,
-				expected:    73,
-			},
-		}
+	testcases := []struct {
+		name        string
+		denom       string
+		asset       types.Asset
+		decimals    int64
+		createToken bool
+		errString   error
+		expected    uint8
+	}{
+		{
+			name:        "big decimals number throws error",
+			asset:       types.Asset{Symbol: "xxx"},
+			createToken: true,
+			denom:       "xxx",
+			decimals:    256,
+			errString:   errors.New("Could not perform type cast"),
+		},
+		{
+			name:        "negative decimals number throws error",
+			asset:       types.Asset{Symbol: "xxx"},
+			createToken: true,
+			denom:       "xxx",
+			decimals:    -200,
+			errString:   errors.New("Could not perform type cast"),
+		},
+		{
+			name:        "unknown symbol",
+			createToken: false,
+			asset:       types.Asset{Symbol: "xxx"},
+			errString:   errors.New("registry entry not found: key not found"),
+		},
+		{
+			name:        "success",
+			asset:       types.Asset{Symbol: "xxx"},
+			createToken: true,
+			denom:       "xxx",
+			decimals:    73,
+			expected:    73,
+		},
+	}
 
 	for _, tc := range testcases {
 		tc := tc

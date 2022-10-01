@@ -92,7 +92,8 @@ type ProphecyClaimEvent struct {
 
 // NewProphecyClaimEvent creates a new ProphecyClaimEvent
 func NewProphecyClaimEvent(cosmosSender []byte, symbol string, prophecyID *big.Int, amount sdk.Int, ethereumReceiver,
-	validatorAddress, tokenAddress common.Address, claimType uint8) ProphecyClaimEvent {
+	validatorAddress, tokenAddress common.Address, claimType uint8,
+) ProphecyClaimEvent {
 	return ProphecyClaimEvent{
 		CosmosSender:     cosmosSender,
 		Symbol:           symbol,
@@ -125,7 +126,8 @@ type CosmosMsg struct {
 
 // NewCosmosMsg creates a new CosmosMsg
 func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
-	amount sdk.Int) CosmosMsg {
+	amount sdk.Int,
+) CosmosMsg {
 	return CosmosMsg{
 		ClaimType:            claimType,
 		CosmosSender:         cosmosSender,

@@ -104,7 +104,6 @@ func GetOpenCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("leverage")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
-
 }
 
 func GetCloseCmd() *cobra.Command {

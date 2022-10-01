@@ -39,7 +39,8 @@ func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
 }
 
 func (k Keeper) GetAssetsForLiquidityProviderPaginated(ctx sdk.Context, lpAddress sdk.AccAddress,
-	pagination *query.PageRequest) ([]*types.Asset, *query.PageResponse, error) {
+	pagination *query.PageRequest,
+) ([]*types.Asset, *query.PageResponse, error) {
 	var assetList []*types.Asset
 	store := ctx.KVStore(k.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
@@ -140,7 +141,8 @@ func partitionLPsbyAsset(lps []*types.LiquidityProvider) map[types.Asset][]*type
 }
 
 func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset,
-	pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
+	pagination *query.PageRequest,
+) ([]*types.LiquidityProvider, *query.PageResponse, error) {
 	var lpList []*types.LiquidityProvider
 	store := ctx.KVStore(k.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
@@ -171,7 +173,8 @@ func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset ty
 }
 
 func (k Keeper) GetAllLiquidityProvidersPaginated(ctx sdk.Context,
-	pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
+	pagination *query.PageRequest,
+) ([]*types.LiquidityProvider, *query.PageResponse, error) {
 	var lpList []*types.LiquidityProvider
 	store := ctx.KVStore(k.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)

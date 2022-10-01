@@ -20,8 +20,8 @@ func NewQuerier(k Keeper) Querier {
 var _ types.QueryServer = Querier{}
 
 func (q Querier) AllDistributions(ctx context.Context,
-	_ *types.QueryAllDistributionsRequest) (*types.QueryAllDistributionsResponse, error) {
-
+	_ *types.QueryAllDistributionsRequest,
+) (*types.QueryAllDistributionsResponse, error) {
 	list := q.keeper.GetDistributions(sdk.UnwrapSDKContext(ctx))
 
 	return &types.QueryAllDistributionsResponse{
@@ -30,7 +30,8 @@ func (q Querier) AllDistributions(ctx context.Context,
 }
 
 func (q Querier) ClaimsByType(ctx context.Context,
-	request *types.QueryClaimsByTypeRequest) (*types.QueryClaimsResponse, error) {
+	request *types.QueryClaimsByTypeRequest,
+) (*types.QueryClaimsResponse, error) {
 	claims := q.keeper.GetClaimsByType(sdk.UnwrapSDKContext(ctx), request.UserClaimType)
 	return &types.QueryClaimsResponse{
 		Claims: claims.UserClaims,

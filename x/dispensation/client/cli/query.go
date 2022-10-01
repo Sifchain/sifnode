@@ -28,9 +28,8 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	return dispensationQueryCmd
 }
 
-//GetCmdDistributions returns a list of all distributions ever created
+// GetCmdDistributions returns a list of all distributions ever created
 func GetCmdDistributions(queryRoute string) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "distributions-all",
 		Short: "get a list of all distributions ",
@@ -72,7 +71,8 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 				return err
 			}
 			params := types.QueryRecordsByRecipientAddrRequest{
-				Address: recipientAddress.String()}
+				Address: recipientAddress.String(),
+			}
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -92,7 +92,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 	return cmd
 }
 
-//GetCmdDistributionRecordForDistName returns all records for a given distribution name
+// GetCmdDistributionRecordForDistName returns all records for a given distribution name
 func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
@@ -110,7 +110,8 @@ func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 			}
 			params := types.QueryRecordsByDistributionNameRequest{
 				DistributionName: name,
-				Status:           status}
+				Status:           status,
+			}
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err

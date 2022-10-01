@@ -38,7 +38,7 @@ func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string, ou
 		return
 	}
 
-	if err = ioutil.WriteFile(outputFile, []byte(*summary), 0600); err != nil {
+	if err = ioutil.WriteFile(outputFile, []byte(*summary), 0o600); err != nil {
 		log.Fatal(err)
 		return
 	}

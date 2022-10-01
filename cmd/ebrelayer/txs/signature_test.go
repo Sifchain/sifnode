@@ -44,7 +44,7 @@ func TestSignClaim(t *testing.T) {
 
 	// Call load functions
 	_, err := LoadPrivateKey()
-	//require.Equal(t, rawKey, key)
+	// require.Equal(t, rawKey, key)
 	require.NoError(t, err)
 	address, err := LoadSender()
 	require.NoError(t, err)

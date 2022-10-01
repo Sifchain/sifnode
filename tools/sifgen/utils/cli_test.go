@@ -1,12 +1,13 @@
 package utils
 
 import (
+	"io/ioutil"
+	"testing"
+
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"testing"
 )
 
 const (

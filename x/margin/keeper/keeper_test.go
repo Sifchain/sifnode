@@ -1063,6 +1063,7 @@ func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	require.NotNil(t, marginKeeper)
 	return ctx, app, marginKeeper
 }
+
 func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string, position types.Position, id uint64, health sdk.Dec) types.MTP {
 	storeKey := app.GetKey(types.StoreKey)
 	store := ctx.KVStore(storeKey)

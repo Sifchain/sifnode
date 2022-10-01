@@ -50,6 +50,7 @@ func GetDistributionRecordKey(status DistributionStatus, name string, recipient 
 		return append(DistributionRecordPrefixCompleted, key...)
 	}
 }
+
 func GetDistributionsKey(name string, distributionType DistributionType, authorizedRunner string) []byte {
 	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, authorizedRunner))
 	return append(DistributionsPrefix, key...)

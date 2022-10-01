@@ -186,7 +186,7 @@ func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 
 func writeGenesis(nodeHomeDir string, content []byte) error {
 	genesisPath := fmt.Sprintf("%s/config/%s", nodeHomeDir, utils.GenesisFile)
-	if err := ioutil.WriteFile(genesisPath, content, 0600); err != nil {
+	if err := ioutil.WriteFile(genesisPath, content, 0o600); err != nil {
 		return err
 	}
 

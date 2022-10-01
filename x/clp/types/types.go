@@ -10,10 +10,12 @@ func (p Pool) Validate() bool {
 
 // NewPool returns a new Pool
 func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) Pool {
-	pool := Pool{ExternalAsset: externalAsset,
+	pool := Pool{
+		ExternalAsset:        externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
-		PoolUnits:            poolUnits}
+		PoolUnits:            poolUnits,
+	}
 
 	return pool
 }
@@ -45,11 +47,12 @@ func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) {
 	}
 }
 
-type Pools []Pool
-type LiquidityProviders []LiquidityProvider
+type (
+	Pools              []Pool
+	LiquidityProviders []LiquidityProvider
+)
 
 func (l LiquidityProvider) Validate() bool {
-
 	if !l.Asset.Validate() {
 		return false
 	}
@@ -85,7 +88,6 @@ func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rat
 }
 
 func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) {
-
 	if toRowan {
 		Y = Y.Add(p.NativeLiabilities)
 		X = X.Add(p.ExternalLiabilities)

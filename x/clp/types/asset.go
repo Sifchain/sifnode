@@ -43,14 +43,13 @@ func (a Asset) IsEmpty() bool {
 }
 
 func (a *Asset) IsSettlementAsset() bool {
-  return *a == GetSettlementAsset()
+	return *a == GetSettlementAsset()
 }
 
 func GetSettlementAsset() Asset {
 	return Asset{
 		Symbol: NativeSymbol,
 	}
-
 }
 
 func GetCLPModuleAddress() sdk.AccAddress {

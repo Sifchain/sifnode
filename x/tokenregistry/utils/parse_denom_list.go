@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
-
-	"io/ioutil"
+	"os"
 	"path/filepath"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -15,7 +15,7 @@ func ParseDenoms(codec codec.JSONCodec, dir string) (tokenregistrytypes.Registry
 	if err != nil {
 		return denoms, err
 	}
-	o, err := ioutil.ReadFile(file)
+	o, err := os.ReadFile(file)
 	if err != nil {
 		return denoms, err
 	}

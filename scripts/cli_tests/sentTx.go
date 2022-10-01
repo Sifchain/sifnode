@@ -17,8 +17,8 @@ func (SentTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getSendTxArgs()
 	sendReq := bank.NewMsgSend(args.Sender, args.SifchainReceiver, args.Amount)
 	return sendReq, args
-
 }
+
 func (SentTx) GetName() string {
 	return "SEND"
 }

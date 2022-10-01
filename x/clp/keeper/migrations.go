@@ -55,7 +55,8 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 		{"sif1uk77p6he26undp9wjjav6ygtu53kswl60cd5va", sdk.NewUintFromString("54301402049261093257216")},
 		{"sif1hspkfnzexvn4drk9dlfpg8n0ppw8sxsl00t65a", sdk.NewUintFromString("55396192200751201648640")},
 		{"sif1y2rfrgh374gd40gj0yusjasw2paaysahu9qk5j", sdk.NewUintFromString("138696029054663414251520")},
-		{"sif1ra9563z5tn2lmqhydt2atrgzftk2d7umyr4vqw", sdk.NewUintFromString("139123862445111950442496")}}
+		{"sif1ra9563z5tn2lmqhydt2atrgzftk2d7umyr4vqw", sdk.NewUintFromString("139123862445111950442496")},
+	}
 
 	symbol := "cusdc"
 
