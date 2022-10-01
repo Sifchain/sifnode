@@ -9,9 +9,6 @@ import (
 func NewLegacyQuerier(keeper Keeper) sdk.Querier {
 	_ = Querier{keeper}
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
-		switch path[0] {
-		default:
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown query endpoint")
-		}
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown query endpoint")
 	}
 }
