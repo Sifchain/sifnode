@@ -115,8 +115,9 @@ class ScriptRunner:
         return self.hardhat.project.npx(args, cwd=self.hardhat.project.smart_contracts_dir, env=env, pipe=pipe)
 
 class HardhatAbiProvider:
-    def __init__(self, cmd, deployed_contract_addresses):
+    def __init__(self, cmd: Command, abi_files_root: str, deployed_contract_addresses: Mapping[str, eth.Address]):
         self.cmd = cmd
+        self.abi_files_root = abi_files_root
         self.deployed_contract_addresses = deployed_contract_addresses
 
     def get_descriptor(self, sc_name):
@@ -131,7 +132,7 @@ class HardhatAbiProvider:
             "CommissionToken": ["Mocks"],
             "RandomTrollToken": ["Mocks"],
         }.get(sc_name, []) + [f"{sc_name}.sol", f"{sc_name}.json"]
-        path = os.path.join(self.cmd.project.project_dir("smart-contracts/artifacts/contracts"), *relpath)
+        path = os.path.join(self.abi_files_root, *relpath)
         tmp = json.loads(self.cmd.read_text_file(path))
         abi = tmp["abi"]
         bytecode = tmp["bytecode"]
