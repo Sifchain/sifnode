@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
@@ -16,7 +16,7 @@ const (
 )
 
 func SafeTempDir(dir string, pattern string, t *testing.T) string {
-	result, err := ioutil.TempDir(dir, pattern)
+	result, err := os.MkdirTemp(dir, pattern)
 	if err != nil {
 		t.Errorf("failed to create temporary directory %v with pattern %v", dir, pattern)
 	}

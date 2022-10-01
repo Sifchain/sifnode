@@ -3,7 +3,7 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -164,7 +164,7 @@ func (n *Node) seedGenesis() error {
 		}
 	}
 
-	gentxDir, err := ioutil.TempDir("", "gentx")
+	gentxDir, err := os.MkdirTemp("", "gentx")
 	if err != nil {
 		return err
 	}
@@ -251,7 +251,7 @@ func (n *Node) generateNodeKeyAddress() error {
 			return err
 		}
 
-		yml, err := ioutil.ReadAll(strings.NewReader(*output))
+		yml, err := io.ReadAll(strings.NewReader(*output))
 		if err != nil {
 			return err
 		}
@@ -286,7 +286,7 @@ func (n *Node) downloadGenesis() (types.Genesis, error) {
 
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return genesis, err
 	}
@@ -299,7 +299,7 @@ func (n *Node) downloadGenesis() (types.Genesis, error) {
 }
 
 func (n *Node) saveGenesis(genesis types.Genesis) error {
-	err := ioutil.WriteFile(n.CLI.GenesisFilePath(), *genesis.Result.Genesis, 0o600)
+	err := os.WriteFile(n.CLI.GenesisFilePath(), *genesis.Result.Genesis, 0o600)
 	if err != nil {
 		return err
 	}
@@ -374,7 +374,7 @@ func (n *Node) replaceAppTOML() error {
 func (n *Node) parseConfigTOML() (common.ConfigTOML, error) {
 	var config common.ConfigTOML
 
-	content, err := ioutil.ReadFile(n.CLI.ConfigFilePath())
+	content, err := os.ReadFile(n.CLI.ConfigFilePath())
 	if err != nil {
 		return config, err
 	}
@@ -389,7 +389,7 @@ func (n *Node) parseConfigTOML() (common.ConfigTOML, error) {
 func (n *Node) parseAppTOML() (common.AppTOML, error) {
 	var config common.AppTOML
 
-	content, err := ioutil.ReadFile(n.CLI.AppFilePath())
+	content, err := os.ReadFile(n.CLI.AppFilePath())
 	if err != nil {
 		return config, err
 	}
@@ -440,7 +440,7 @@ func (n *Node) summary() string {
 func (n *Node) cleanup() error {
 	if n.Standalone {
 		_path := fmt.Sprintf("%v/%v", common.DefaultNodeHome, "keyring-test")
-		dir, err := ioutil.ReadDir(_path)
+		dir, err := os.ReadDir(_path)
 		for _, d := range dir {
 			_ = os.RemoveAll(path.Join([]string{_path, d.Name()}...))
 		}

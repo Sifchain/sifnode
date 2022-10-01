@@ -96,7 +96,7 @@ func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) ([]*types.LiquidityPro
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 	_, err := query.FilteredPaginate(lpStore, &pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var lp types.LiquidityProvider
-		if len(value) <= 0 {
+		if len(value) == 0 {
 			return false, nil
 		}
 		err := k.cdc.Unmarshal(value, &lp)
@@ -148,7 +148,7 @@ func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset ty
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 	pageRes, err := query.FilteredPaginate(lpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var lp types.LiquidityProvider
-		if len(value) <= 0 {
+		if len(value) == 0 {
 			return false, nil
 		}
 		err := k.cdc.Unmarshal(value, &lp)

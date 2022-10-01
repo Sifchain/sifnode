@@ -198,7 +198,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 				Address: signer,
 				Denom:   tt.msgOpen.CollateralAsset,
 			})
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -216,7 +216,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			differenceWithoutTakingMarginFund := sdk.NewCoin("rowan", sdk.NewInt(8919))
 			assert.Equal(t, tt.msgAdminCloseAll.TakeMarginFund, balanceAfter.Balance.Sub(*balanceOriginal.Balance).IsLT(differenceWithoutTakingMarginFund))
 
-			if tt.errString2 != nil {
+			if tt.errString2 != nil { //nolint:gocritic
 				require.EqualError(t, got2, tt.errString2.Error())
 			} else if tt.err2 == nil {
 				require.NoError(t, got2)

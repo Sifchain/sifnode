@@ -54,7 +54,7 @@ func TestTypes_MtpValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.mtp.Validate()
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)

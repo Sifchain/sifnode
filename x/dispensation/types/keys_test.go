@@ -17,7 +17,7 @@ func TestGetDistributionRecordKey_statusCompleted(t *testing.T) {
 	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, recipient))
 	DistributionRecordPrefixCompleted := []byte{0x011}
 	result := types.GetDistributionRecordKey(status, name, recipient, distributionType)
-	output := append(DistributionRecordPrefixCompleted, key...)
+	output := append(DistributionRecordPrefixCompleted, key...) //nolint:gocritic
 	assert.Equal(t, result, output)
 }
 
@@ -29,7 +29,7 @@ func TestGetDistributionRecordKey_statusPending(t *testing.T) {
 	DistributionRecordPrefixPending := []byte{0x000}
 	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, recipient))
 	result := types.GetDistributionRecordKey(status, name, recipient, distributionType)
-	output := append(DistributionRecordPrefixPending, key...)
+	output := append(DistributionRecordPrefixPending, key...) //nolint:gocritic
 	assert.Equal(t, result, output)
 }
 
@@ -41,7 +41,7 @@ func TestGetDistributionRecordKey_statusFailed(t *testing.T) {
 	DistributionRecordPrefixFailed := []byte{0x012}
 	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, recipient))
 	result := types.GetDistributionRecordKey(status, name, recipient, distributionType)
-	output := append(DistributionRecordPrefixFailed, key...)
+	output := append(DistributionRecordPrefixFailed, key...) //nolint:gocritic
 	assert.Equal(t, result, output)
 }
 
@@ -53,7 +53,7 @@ func TestGetDistributionRecordKey_statusDefault(t *testing.T) {
 	DistributionRecordPrefixCompleted := []byte{0x011}
 	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, recipient))
 	result := types.GetDistributionRecordKey(status, name, recipient, distributionType)
-	output := append(DistributionRecordPrefixCompleted, key...)
+	output := append(DistributionRecordPrefixCompleted, key...) //nolint:gocritic
 	assert.Equal(t, result, output)
 }
 
@@ -64,7 +64,7 @@ func TestGetDistributionsKey(t *testing.T) {
 	DistributionsPrefix := []byte{0x01}
 	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, authorizedRunner))
 	result := types.GetDistributionsKey(name, distributionType, authorizedRunner)
-	output := append(DistributionsPrefix, key...)
+	output := append(DistributionsPrefix, key...) //nolint:gocritic
 	assert.Equal(t, result, output)
 }
 
@@ -74,7 +74,7 @@ func TestGetUserClaimKey(t *testing.T) {
 	UserClaimPrefix := []byte{0x02}
 	key := []byte(fmt.Sprintf("%s_%d", userAddress, userClaimType))
 	result := types.GetUserClaimKey(userAddress, userClaimType)
-	output := append(UserClaimPrefix, key...)
+	output := append(UserClaimPrefix, key...) //nolint:gocritic
 
 	assert.Equal(t, result, output)
 }

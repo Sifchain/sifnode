@@ -200,7 +200,7 @@ func TestKeeper_Open(t *testing.T) {
 
 			_, got := msgServer.Open(sdk.WrapSDKContext(ctx), &msg)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -429,7 +429,7 @@ func TestKeeper_Close(t *testing.T) {
 
 			_, got := msgServer.Close(sdk.WrapSDKContext(ctx), &msg)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -793,7 +793,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 			_, got := msgServer.ForceClose(sdk.WrapSDKContext(ctx), &msg)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -803,7 +803,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 
 			_, got2 := marginKeeper.GetMTP(ctx, signer, 1)
 
-			if tt.errString2 != nil {
+			if tt.errString2 != nil { //nolint:gocritic
 				require.EqualError(t, got2, tt.errString2.Error())
 			} else if tt.err2 == nil {
 				require.NoError(t, got2)
@@ -1876,7 +1876,7 @@ func TestKeeper_EC(t *testing.T) {
 					marginKeeper.WhitelistAddress(ctx, msgOpen.Signer)
 
 					_, openError := msgServer.Open(sdk.WrapSDKContext(ctx), &msgOpen)
-					if chunkItem.openErrorString != nil {
+					if chunkItem.openErrorString != nil { //nolint:gocritic
 						require.EqualError(t, openError, chunkItem.openErrorString.Error())
 						return
 					} else if chunkItem.openError != nil {
@@ -1940,7 +1940,7 @@ func TestKeeper_EC(t *testing.T) {
 					require.NotNil(t, openExpectedPool)
 
 					_, closeError := msgServer.Close(sdk.WrapSDKContext(ctx), &msgClose)
-					if chunkItem.closeErrorString != nil {
+					if chunkItem.closeErrorString != nil { //nolint:gocritic
 						require.EqualError(t, closeError, chunkItem.closeErrorString.Error())
 						return
 					} else if chunkItem.closeError != nil {

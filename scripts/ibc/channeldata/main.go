@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -29,7 +28,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	body, err = ioutil.ReadAll(conRes.Body)
+	body, err = io.ReadAll(conRes.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +80,7 @@ func GetClientState(clientID string) ClientResponse {
 	if err != nil {
 		panic(err)
 	}
-	body, err := ioutil.ReadAll(clientsRes.Body)
+	body, err := io.ReadAll(clientsRes.Body)
 	if err != nil {
 		panic(err)
 	}

@@ -389,7 +389,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repa
 	have := repayAmount
 	owe := Liabilities.Add(InterestUnpaidCollateral)
 
-	if have.LT(Liabilities) {
+	if have.LT(Liabilities) { //nolint:gocritic
 		// can't afford principle liability
 		returnAmount = sdk.ZeroUint()
 		debtP = Liabilities.Sub(have)
@@ -558,7 +558,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 
 	interestRateChange := targetInterestRate.Sub(prevInterestRate)
 	interestRate := prevInterestRate
-	if interestRateChange.GTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
+	if interestRateChange.GTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) { //nolint:gocritic
 		interestRate = targetInterestRate
 	} else if interestRateChange.GT(interestRateIncrease) {
 		interestRate = prevInterestRate.Add(interestRateIncrease)

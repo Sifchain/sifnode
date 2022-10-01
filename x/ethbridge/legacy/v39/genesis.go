@@ -1,4 +1,4 @@
-package _39
+package _39 //nolint:stylecheck
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"

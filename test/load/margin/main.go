@@ -74,7 +74,7 @@ func run(cmd *cobra.Command, args []string) error {
 	positions := 1000
 
 	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
-	key, err := txf.Keybase().Key(clientCtx.GetFromName())
+	key, _ := txf.Keybase().Key(clientCtx.GetFromName())
 
 	accountNumber, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, key.GetAddress())
 	if err != nil {

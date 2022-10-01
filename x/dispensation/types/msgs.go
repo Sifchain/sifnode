@@ -7,11 +7,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []types.Output, authorizedRunner string) MsgCreateDistribution {
+func NewMsgCreateDistribution(distributor sdk.AccAddress, distributionType DistributionType, output []types.Output, authorizedRunner string) MsgCreateDistribution {
 	return MsgCreateDistribution{
 		Distributor:      distributor.String(),
 		AuthorizedRunner: authorizedRunner,
-		DistributionType: DistributionType,
+		DistributionType: distributionType,
 		Output:           output,
 	}
 }

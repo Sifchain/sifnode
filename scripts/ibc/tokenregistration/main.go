@@ -28,7 +28,7 @@ type RegistryEntryParser struct {
 	Permissions              []string `json:"permissions"`
 	UnitDenom                string   `json:"unit_denom"`
 	IbcCounterpartyDenom     string   `json:"ibc_counterparty_denom"`
-	IbcCounterpartyChainId   string   `json:"ibc_counterparty_chain_id"`
+	IbcCounterpartyChainId   string   `json:"ibc_counterparty_chain_id"` //nolint:revive,stylecheck
 }
 
 type File struct {

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func TestMigrateGenesisDataCmd(t *testing.T) {
-	homeDir, err := ioutil.TempDir("", "")
+	homeDir, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(homeDir)
 	cmd, _ := NewRootCmd()
@@ -27,6 +26,6 @@ func TestMigrateGenesisDataCmd(t *testing.T) {
 	cmd.SetArgs([]string{"init", "test", "--home=" + homeDir})
 	err = svrcmd.Execute(cmd, homeDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(homeDir+"/config/genesis.json", migrateOutputBuf.Bytes(), 0o600)
+	err = os.WriteFile(homeDir+"/config/genesis.json", migrateOutputBuf.Bytes(), 0o600)
 	require.NoError(t, err)
 }

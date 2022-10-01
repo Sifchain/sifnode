@@ -102,7 +102,7 @@ func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr str
 	ctx.EventManager().EmitEvents(sdk.Events{failureEvent})
 }
 
-func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
+func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) { //nolint:unused
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(
 		types.EventTypeProviderDistributionDistribution,
@@ -173,7 +173,7 @@ func PoolRowanMapToLPPools(poolRowanMap PoolRowanMap) []LPPool {
 }
 
 func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvider) []ValidLiquidityProvider {
-	var valid []ValidLiquidityProvider
+	var valid []ValidLiquidityProvider //nolint:prealloc
 
 	for _, lp := range lps {
 		address, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
