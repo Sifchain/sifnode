@@ -282,7 +282,7 @@ func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
 // MessageProcessed check if cosmogs message already processed
 func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyClaimUnique) bool {
 	for _, prophecyClaim := range prophecyClaims {
-		if bytes.Compare(message.CosmosSender, prophecyClaim.CosmosSender) == 0 &&
+		if bytes.Equal(message.CosmosSender, prophecyClaim.CosmosSender) &&
 			message.CosmosSenderSequence.Cmp(prophecyClaim.CosmosSenderSequence) == 0 {
 			return true
 		}

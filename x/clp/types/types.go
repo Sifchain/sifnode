@@ -38,6 +38,7 @@ func (p *Pool) ExtractValues(to Asset) (sdk.Uint, sdk.Uint, bool) {
 }
 
 // UpdateBalances updates the balances of the pool
+// TODO: It is unclear what the inputs are here.  We should document this function.
 func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) {
 	if toRowan {
 		p.ExternalAssetBalance = X.Add(x)
@@ -85,6 +86,7 @@ func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rat
 	return LiquidityProtectionParamsRes{Params: params, RateParams: &rateParams, Height: height}
 }
 
+// todo: document
 func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) {
 	if toRowan {
 		Y = Y.Add(p.NativeLiabilities)

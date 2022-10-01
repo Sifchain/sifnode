@@ -191,6 +191,7 @@ func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
 	return diff, nil
 }
 
+// TODO: this function needs clarification.
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int {
 	var add, numerator big.Int

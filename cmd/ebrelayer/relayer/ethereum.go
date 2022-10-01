@@ -122,7 +122,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 	// get the bridgebank address from the registry contract
 	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
 	if err != nil {
-		log.Fatal("Error getting bridgebank address: ", err.Error())
+		log.Fatal("Error getting bridgebank address: ", err.Error()) //nolint:gocritic
 	}
 
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)

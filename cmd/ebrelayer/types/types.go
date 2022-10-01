@@ -35,7 +35,7 @@ const (
 
 const (
 	FlagSymbolTranslatorFile = "symbol-translator-file"
-	FlagRelayerDbPath        = "relayerdb-path"
+	FlagRelayerDBPath        = "relayerdb-path"
 )
 
 // String returns the event type as a string

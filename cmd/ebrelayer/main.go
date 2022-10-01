@@ -76,7 +76,7 @@ func buildRootCmd() *cobra.Command {
 		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
 	)
 	rootCmd.PersistentFlags().String(
-		ebrelayertypes.FlagRelayerDbPath,
+		ebrelayertypes.FlagRelayerDBPath,
 		"./relayerdb",
 		"Path to the relayerdb directory",
 	)
@@ -131,7 +131,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
-	levelDBFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
+	levelDBFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDBPath)
 	if err != nil {
 		return err
 	}
