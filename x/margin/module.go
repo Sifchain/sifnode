@@ -86,7 +86,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModuleSimulation defines the module simulation functions.
 type AppModuleSimulation struct{}

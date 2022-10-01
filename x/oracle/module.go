@@ -76,7 +76,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return nil
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModule implements an application module for the oracle module.
 type AppModule struct {

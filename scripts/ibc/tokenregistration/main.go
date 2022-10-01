@@ -80,7 +80,7 @@ func main() {
 				panic(err)
 			}
 			_ = ioutil.WriteFile(file, f, 0o600)
-			//_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
+			// _ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
 		}
 	}
 }

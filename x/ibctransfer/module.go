@@ -85,7 +85,7 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return am.cosmosAppModule.GetQueryCmd()
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModule implements an application module for the ibctransfer module.
 type AppModule struct {

@@ -1,10 +1,10 @@
 package keeper_test
 
-//func getDenomWhiteListEntries() tokenregistrytypes.Registry {
+// func getDenomWhiteListEntries() tokenregistrytypes.Registry {
 //	return tokenregistrytypes.InitialRegistry()
 //}
 //
-//func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
+// func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
 //	wl := getDenomWhiteListEntries()
 //	ctx, app := clptest.CreateTestAppClp(false)
 //	for _, entry := range wl.Entries {

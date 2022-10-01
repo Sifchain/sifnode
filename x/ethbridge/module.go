@@ -82,7 +82,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return client.GetQueryCmd()
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModuleSimulation defines the module simulation functions used by the ethbridge module.
 type AppModuleSimulation struct{}

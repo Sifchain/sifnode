@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	//"github.com/Sifchain/sifnode/x/tokenregistry/handler"
+	// "github.com/Sifchain/sifnode/x/tokenregistry/handler"
 	"github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/Sifchain/sifnode/x/admin/types"
 )
@@ -64,8 +64,8 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, _ sdkclient.T
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *runtime.ServeMux) {
-	//err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
-	//if err != nil {
+	// err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	// if err != nil {
 	//	panic(err)
 	//}
 }
@@ -85,7 +85,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModuleSimulation defines the module simulation functions.
 type AppModuleSimulation struct{}
@@ -101,8 +101,8 @@ type AppModule struct {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
-	//m := keeper.NewMigrator(am.Keeper)
-	//err := cfg.RegisterMigration(types.ModuleName, 0, m.InitialMigration)
+	// m := keeper.NewMigrator(am.Keeper)
+	// err := cfg.RegisterMigration(types.ModuleName, 0, m.InitialMigration)
 	//if err != nil {
 	//	panic(err)
 	//}

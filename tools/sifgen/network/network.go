@@ -366,7 +366,7 @@ func (n *Network) setPeers(validators []*Validator) error {
 			return err
 		}
 
-		config.P2P.PersistentPeers = strings.Join(n.generatePeerList(validators, i)[:], ",")
+		config.P2P.PersistentPeers = strings.Join(n.generatePeerList(validators, i), ",")
 		if err := toml.NewEncoder(file).Encode(config); err != nil {
 			return err
 		}

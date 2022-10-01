@@ -5,35 +5,26 @@ run:
 linters:
   enable:
     - bodyclose
-    - deadcode
     - depguard
-    - dogsled
     - goconst
-#    - gocritic
-#    - gofmt
-#    - goimports
-#    - golint
+    - gocritic
     - revive
     - gosec
+    - gofumpt
     - govet
     - ineffassign
-#    - interfacer
-# this is deprecated/obsolete
-#    - maligned
     - misspell
     - nakedret
     - prealloc
-#    - scopelint
     - exportloopref
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unused
     - misspell
+    - nolintlint
     - errcheck
-  disable:
     - gosimple
 
 issues:
@@ -41,39 +32,9 @@ issues:
     - text: "Use of weak random number generator"
       linters:
         - gosec
-    - text: "comment on exported var"
-      linters:
-        - revive
     - text: "don't use underscores in Go names"
       linters:
         - revive
     - text: "don't use an underscore in package name"
       linters:
         - revive
-    - text: "ST1003:"
-      linters:
-        - stylecheck
-    - text: "SA1019:"
-      linters:
-        - staticcheck
-    - path: test/
-      linters:
-        - deadcode
-        - unused
-        - ineffassign
-        - prealloc
-        - staticcheck
-# Not a real issue here, so ignore
-    - path: x/clp/keeper/pureCalculation_test.go
-      text: "G113:"
-      linters:
-        - gosec
-
-linters-settings:
-  goconst:
-    min-occurrences: 4
-  dogsled:
-    max-blank-identifiers: 7
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true

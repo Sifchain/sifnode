@@ -320,7 +320,7 @@ func (n *Node) replaceConfigTOML() error {
 
 	if !n.Standalone {
 		addressList := []string{n.PeerAddress}
-		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
+		config.P2P.PersistentPeers = strings.Join(addressList, ",")
 	}
 
 	if n.IPAddr != "" {

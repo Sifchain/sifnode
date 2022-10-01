@@ -84,7 +84,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd(types.StoreKey)
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModule implements an application module for the clp module.
 type AppModule struct {

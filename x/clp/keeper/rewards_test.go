@@ -68,8 +68,8 @@ func TestEndBlock(t *testing.T) {
 	require.True(t, periodOneSupply.IsGTE(startingSupply))
 	// check pool has expected increase
 	// TODO : Modify reward policy so that the numbers asserted match with expected
-	//pool, err := app.ClpKeeper.GetPool(ctx, "atom")
-	//require.NoError(t, err)
+	// pool, err := app.ClpKeeper.GetPool(ctx, "atom")
+	// require.NoError(t, err)
 	//require.Equal(t, "66666666666666666600001000", pool.NativeAssetBalance.String())
 	//expected := sdk.NewUintFromString("66666666666666666666667666")
 	//accuracy := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Quo(sdk.NewDecFromBigInt(expected.BigInt()))

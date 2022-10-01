@@ -85,7 +85,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd(StoreKey)
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModule implements an application module for the dispensation module.
 type AppModule struct {

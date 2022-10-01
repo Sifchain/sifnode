@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	//"github.com/Sifchain/sifnode/x/clp"
+	// "github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 )
