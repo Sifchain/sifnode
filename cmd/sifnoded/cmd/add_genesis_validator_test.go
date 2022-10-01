@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -20,7 +19,7 @@ import (
 )
 
 func TestAddGenesisValidatorCmd(t *testing.T) {
-	homeDir, err := ioutil.TempDir("", "")
+	homeDir, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	defer func(path string) {
 		err := os.RemoveAll(path)

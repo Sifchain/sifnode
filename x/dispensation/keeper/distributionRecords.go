@@ -204,7 +204,7 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 			dr.AuthorizedRunner == authorizedRunner &&
 			dr.DistributionType == distributionType {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
-			count = count + 1
+			count++
 		}
 	}
 	return &res

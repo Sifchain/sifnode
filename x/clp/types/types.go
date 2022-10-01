@@ -37,6 +37,7 @@ func (p *Pool) ExtractValues(to Asset) (sdk.Uint, sdk.Uint, bool) {
 	return X, Y, toRowan
 }
 
+// UpdateBalances updates the balances of the pool
 func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) {
 	if toRowan {
 		p.ExternalAssetBalance = X.Add(x)
@@ -53,10 +54,7 @@ type (
 )
 
 func (l LiquidityProvider) Validate() bool {
-	if !l.Asset.Validate() {
-		return false
-	}
-	return true
+	return l.Asset.Validate()
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider

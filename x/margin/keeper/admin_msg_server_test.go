@@ -181,9 +181,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 
 			marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 
-			var address string
-
-			address = tt.msgAdminCloseAll.Signer
+			address := tt.msgAdminCloseAll.Signer
 
 			msg := tt.msgAdminCloseAll
 			msg.Signer = address

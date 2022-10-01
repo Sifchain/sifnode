@@ -568,7 +568,7 @@ func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sd
 
 	newInterestRate := interestRate
 
-	if interestRate.GT(interestRateMin) && interestRate.LT(interestRateMax) {
+	if interestRate.GT(interestRateMin) && interestRate.LT(interestRateMax) { //nolint:gocritic
 		newInterestRate = interestRate
 	} else if interestRate.LTE(interestRateMin) {
 		newInterestRate = interestRateMin

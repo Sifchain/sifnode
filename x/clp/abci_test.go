@@ -331,7 +331,7 @@ func TestBeginBlocker(t *testing.T) {
 			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
 
 			if tc.panicErr != "" {
-				// nolint:errcheck
+
 				require.PanicsWithError(t, tc.panicErr, func() {
 					clp.BeginBlocker(ctx, app.ClpKeeper)
 				})

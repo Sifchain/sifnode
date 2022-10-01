@@ -16,7 +16,7 @@ func (CreateDispensationTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 }
 
 func (CreateDispensationTx) GetName() string {
-	return "CREATE-DISPENSATION"
+	return "CREATE-DISPENSATION" //nolint:goconst
 }
 
 func (s CreateDispensationTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {

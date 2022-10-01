@@ -131,12 +131,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
-	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
+	levelDBFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
 	if err != nil {
 		return err
 	}
 	// Open the level db
-	db, err := leveldb.OpenFile(levelDbFile, nil)
+	db, err := leveldb.OpenFile(levelDBFile, nil)
 	if err != nil {
 		log.Fatal("Error opening leveldb: ", err)
 	}
@@ -182,7 +182,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	logConfig.Sampling = nil
 	logger, err := logConfig.Build()
 	if err != nil {
-		log.Fatalln("failed to init zap logging")
+		log.Fatalln("failed to init zap logging") //nolint:gocritic
 	}
 	defer func() {
 		if err := logger.Sync(); err != nil {

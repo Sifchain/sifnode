@@ -120,7 +120,6 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Subset(t, ctx.EventManager().Events(), createDistributeEvent(lps[len(lps)-1].LiquidityProviderAddress))
 }
 
-// nolint
 func createDistributeEvent(address string) []sdk.Event {
 	return []sdk.Event{
 		sdk.NewEvent("lppd/distribution",

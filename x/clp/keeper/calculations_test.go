@@ -854,7 +854,6 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 	}
 }
 
-// nolint
 func TestKeeper_CalcSpotPriceX(t *testing.T) {
 	testcases := []struct {
 		name                   string

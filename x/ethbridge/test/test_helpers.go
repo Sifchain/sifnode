@@ -159,7 +159,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, valAddrs
 }
 
-//nolint: unparam
+// nolint: unparam
 func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	var addresses []sdk.AccAddress
 	var valAddresses []sdk.ValAddress
@@ -178,7 +178,7 @@ func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	return addresses, valAddresses
 }
 
-//nolint: unparam
+// nolint: unparam
 func CreateTestPubKeys(numPubKeys int) []cryptotypes.PubKey {
 	var publicKeys []cryptotypes.PubKey
 	var buffer bytes.Buffer

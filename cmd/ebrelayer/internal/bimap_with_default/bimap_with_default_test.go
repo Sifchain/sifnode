@@ -1,4 +1,4 @@
-package bimap_with_default
+package bimap_with_default //nolint:stylecheck
 
 import (
 	"testing"

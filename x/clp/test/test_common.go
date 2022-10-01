@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -337,7 +337,7 @@ func GeneratePoolsFromFile(app *sifapp.SifchainApp, keeper clpkeeper.Keeper, ctx
 	if err != nil {
 		panic(err)
 	}
-	input, err := ioutil.ReadFile(file)
+	input, err := os.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}

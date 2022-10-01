@@ -187,7 +187,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 				err = sub.DB.Put([]byte(cosmosLevelDBKey), big.NewInt(lastProcessedBlock).Bytes(), nil)
 				if err != nil {
 					// if you can't write to leveldb, then error out as something is seriously amiss
-					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
+					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err) //nolint:gocritic
 				}
 				blockNumber++
 			}
@@ -237,7 +237,7 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 			}
 
 			// compare method id to check if it is NewProphecyClaim method
-			if bytes.Compare(tx.Data()[0:4], methodID) != 0 {
+			if !bytes.Equal(tx.Data()[0:4], methodID) {
 				continue
 			}
 
@@ -374,6 +374,7 @@ func (sub CosmosSub) Replay(symbolTranslator *symbol_translator.SymbolTranslator
 // getOracleClaimType sets the OracleClaim's claim type based upon the witnessed event type
 func getOracleClaimType(eventType string) types.Event {
 	var claimType types.Event
+
 	switch eventType {
 	case types.MsgBurn.String():
 		claimType = types.MsgBurn

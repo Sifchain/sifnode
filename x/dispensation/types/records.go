@@ -55,10 +55,7 @@ func NewUserClaim(userAddress string, userClaimType DistributionType, t time.Tim
 }
 
 func (uc UserClaim) Validate() bool {
-	if len(uc.UserAddress) == 0 {
-		return false
-	}
-	return true
+	return len(uc.UserAddress) != 0
 }
 
 func NewDistribution(t DistributionType, name string, authorizedRunner string) Distribution {
@@ -66,10 +63,7 @@ func NewDistribution(t DistributionType, name string, authorizedRunner string) D
 }
 
 func (ar Distribution) Validate() bool {
-	if ar.DistributionName == "" {
-		return false
-	}
-	return true
+	return ar.DistributionName == ""
 }
 
 func GetDistributionStatus(status string) (DistributionStatus, bool) {

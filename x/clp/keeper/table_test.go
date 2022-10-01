@@ -122,7 +122,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculateDoubleSwapResult(t *testing.T) {
+// func TestCalculateDoubleSwapResult(t *testing.T) {
 //	type TestCase struct {
 //		Ax       string `json:"ax"`
 //		AX       string `json:"aX"`
@@ -167,7 +167,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
+// func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 //	type TestCase struct {
 //		Symbol           string `json:"symbol"`
 //		NativeAdded      string `json:"r"`

@@ -1,4 +1,4 @@
-package symbol_translator
+package symbol_translator //nolint:stylecheck
 
 import (
 	"testing"

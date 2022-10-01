@@ -38,10 +38,12 @@ issues:
     - text: "don't use an underscore in package name"
       linters:
         - revive
+    - text: "should be written without leading space"
+      linters:
+        - nolintlint
 
 linters-settings:
   nolintlint:
-    allow-unused: false
     allow-leading-space: true
     require-explanation: false
     require-specific: true

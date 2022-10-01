@@ -165,7 +165,7 @@ type PoolReward struct {
 
 func CollectPoolRewardTuples(pools []*types.Pool, blockDistribution sdk.Uint, totalDepth sdk.Dec, period *types.RewardPeriod) ([]PoolReward, sdk.Uint) {
 	coinsToMint := sdk.ZeroUint()
-	var tuples []PoolReward //nolint
+	var tuples []PoolReward
 
 	remaining := blockDistribution
 	for _, pool := range pools {

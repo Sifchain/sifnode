@@ -2,7 +2,6 @@ package utils_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -22,7 +21,7 @@ func createInput(t *testing.T, filename string) {
 	list := types.Registry{Entries: denomEntryList}
 	file, err := json.MarshalIndent(list, "", " ")
 	assert.NoError(t, err)
-	_ = ioutil.WriteFile(filename, file, 0o600)
+	_ = os.WriteFile(filename, file, 0o600)
 }
 
 func TestParseDenoms(t *testing.T) {

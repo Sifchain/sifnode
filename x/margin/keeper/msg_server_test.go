@@ -776,9 +776,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 				marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 			}
 
-			var address string
-
-			address = tt.msgForceClose.Signer
+			address := tt.msgForceClose.Signer
 
 			msg := tt.msgForceClose
 			msg.Signer = address
@@ -1229,10 +1227,8 @@ func TestKeeper_EC(t *testing.T) {
 		closeError                           error
 	}
 	type Test struct {
-		//nolint:golint
-		X_A sdk.Uint
-		//nolint:golint
-		Y_A    sdk.Uint
+		XA     sdk.Uint
+		YA     sdk.Uint
 		chunks []Chunk
 	}
 	type Table struct {
@@ -1247,8 +1243,8 @@ func TestKeeper_EC(t *testing.T) {
 			externalAsset: "xxx",
 			tests: []Test{
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("100000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("100000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1300,8 +1296,8 @@ func TestKeeper_EC(t *testing.T) {
 					},
 				},
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("10000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("10000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1353,8 +1349,8 @@ func TestKeeper_EC(t *testing.T) {
 					},
 				},
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("1000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("1000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1412,8 +1408,8 @@ func TestKeeper_EC(t *testing.T) {
 			externalAsset: "xxx",
 			tests: []Test{
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("100000000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("100000000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1465,8 +1461,8 @@ func TestKeeper_EC(t *testing.T) {
 					},
 				},
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("200000000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("200000000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1518,8 +1514,8 @@ func TestKeeper_EC(t *testing.T) {
 					},
 				},
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("1000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("1000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1577,8 +1573,8 @@ func TestKeeper_EC(t *testing.T) {
 			externalAsset: "xxx",
 			tests: []Test{
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("5000000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("5000000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1630,8 +1626,8 @@ func TestKeeper_EC(t *testing.T) {
 					},
 				},
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("100000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("100000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1683,8 +1679,8 @@ func TestKeeper_EC(t *testing.T) {
 					},
 				},
 				{
-					X_A: sdk.NewUintFromString("100000000000000000000000"),
-					Y_A: sdk.NewUintFromString("1000000000000000000"),
+					XA: sdk.NewUintFromString("100000000000000000000000"),
+					YA: sdk.NewUintFromString("1000000000000000000"),
 					chunks: []Chunk{
 						{
 							chunk:                                sdk.NewUint(10),
@@ -1794,8 +1790,8 @@ func TestKeeper_EC(t *testing.T) {
 					{
 						Address: "sif1pjm228rsgwqf23arkx7lm9ypkyma7mzr3y2n85",
 						Coins: sdk.Coins{
-							sdk.NewCoin(nativeAsset, sdk.Int(testItem.X_A)),
-							sdk.NewCoin(asset.Symbol, sdk.Int(testItem.Y_A)),
+							sdk.NewCoin(nativeAsset, sdk.Int(testItem.XA)),
+							sdk.NewCoin(asset.Symbol, sdk.Int(testItem.YA)),
 						},
 					},
 					{
@@ -1825,8 +1821,8 @@ func TestKeeper_EC(t *testing.T) {
 					PoolList: []*clptypes.Pool{
 						{
 							ExternalAsset:                 &asset,
-							NativeAssetBalance:            testItem.X_A,
-							ExternalAssetBalance:          testItem.Y_A,
+							NativeAssetBalance:            testItem.XA,
+							ExternalAssetBalance:          testItem.YA,
 							NativeCustody:                 sdk.ZeroUint(),
 							ExternalCustody:               sdk.ZeroUint(),
 							NativeLiabilities:             sdk.ZeroUint(),
@@ -1862,12 +1858,12 @@ func TestKeeper_EC(t *testing.T) {
 			for i, chunkItem := range testItem.chunks {
 				i := i
 				chunkItem := chunkItem
-				name := fmt.Sprintf("%v, X_A=%v, Y_A=%v, delta x=%v%%", ec.name, testItem.X_A, testItem.Y_A, chunkItem.chunk)
+				name := fmt.Sprintf("%v, XA=%v, YA=%v, delta x=%v%%", ec.name, testItem.XA, testItem.YA, chunkItem.chunk)
 				t.Run(name, func(t *testing.T) {
 					msgOpen := types.MsgOpen{
 						Signer:           signer,
 						CollateralAsset:  nativeAsset,
-						CollateralAmount: testItem.X_A.Mul(chunkItem.chunk).Quo(sdk.NewUint(100)),
+						CollateralAmount: testItem.XA.Mul(chunkItem.chunk).Quo(sdk.NewUint(100)),
 						BorrowAsset:      ec.externalAsset,
 						Position:         types.Position_LONG,
 						Leverage:         sdk.NewDec(2),
