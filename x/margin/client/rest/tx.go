@@ -41,18 +41,15 @@ type (
 	CloseReq struct {
 		BaseReq rest.BaseReq `json:"base_req"`
 		Signer  string       `json:"signer"` // User who is trying to close margin position
-		// nolint:revive
-		Id uint64 `json:"id"` // Id of the mtp
-
+		Id      uint64       `json:"id"`     //nolint:stylecheck,revive // Id of the mtp
 	}
 
 	ForceCloseReq struct {
 		BaseReq    rest.BaseReq `json:"base_req"`
 		Signer     string       `json:"signer"`      // User who is trying to close margin position
 		MtpAddress string       `json:"mtp_address"` // MtpAddress for position to force close
-		// nolint:revive
-		Id uint64 `json:"id"` // Id of the mtp
-
+		//nolint:revive
+		Id uint64 `json:"id"` //nolint:stylecheck // Id of the mtp
 	}
 )
 

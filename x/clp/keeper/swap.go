@@ -6,7 +6,6 @@ import (
 )
 
 func (k Keeper) CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to types.Asset, pool types.Pool, marginEnabled bool) (sdk.Uint, error) {
-
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	if marginEnabled {

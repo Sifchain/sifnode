@@ -43,7 +43,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the module's types for the given codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
@@ -86,7 +86,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModuleSimulation defines the module simulation functions.
 type AppModuleSimulation struct{}
@@ -144,7 +144,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
-func (am AppModule) LegacyQuerierHandler(aminoCodec *codec.LegacyAmino) sdk.Querier { //nolint
+func (am AppModule) LegacyQuerierHandler(aminoCodec *codec.LegacyAmino) sdk.Querier {
 	return keeper.NewLegacyQuerier(am.keeper, aminoCodec)
 }
 

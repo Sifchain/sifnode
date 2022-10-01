@@ -24,7 +24,6 @@ func TestMsgCreateDistribution(t *testing.T) {
 	assert.Equal(t, distributionType, result.DistributionType)
 	assert.Equal(t, output, result.Output)
 	assert.Equal(t, authorizedRunner.String(), result.GetAuthorizedRunner())
-
 }
 
 func TestMsgCreateDistribution_Route(t *testing.T) {
@@ -66,7 +65,6 @@ func TestMsgCreateDistribution_GetSigners(t *testing.T) {
 	output := []sdk.AccAddress{addr}
 	assert.Equal(t, result, output)
 	assert.NoError(t, err)
-
 }
 
 func TestMsgCreateDistribution_GetSignBytes(t *testing.T) {
@@ -81,7 +79,6 @@ func TestMsgCreateDistribution_GetSignBytes(t *testing.T) {
 	byt := msg.GetSignBytes()
 	byt1 := sdk.MustSortJSON(types.ModuleCdc.MustMarshalJSON(&msg))
 	assert.Equal(t, byt, byt1)
-
 }
 
 func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {
@@ -173,7 +170,6 @@ func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
 }
 
 func TestMsgCreateDistribution_ValidateBasic_InvalidDistributionAddress(t *testing.T) {
-
 	distributor := sdk.AccAddress("")
 	authorizedRunner := sdk.AccAddress("addr2_______________")
 	msg := types.MsgCreateDistribution{
@@ -187,7 +183,6 @@ func TestMsgCreateDistribution_ValidateBasic_InvalidDistributionAddress(t *testi
 }
 
 func TestMsgCreateDistribution_ValidateBasic_InvalidauthorizedAddress(t *testing.T) {
-
 	distributor := sdk.AccAddress("addr1_______________")
 	authorizedRunner := sdk.AccAddress("")
 	msg := types.MsgCreateDistribution{
@@ -251,8 +246,10 @@ func TestMsgCreateDistribution_ValidateBasic_invalidCoins(t *testing.T) {
 	outputlist := test.CreatOutputList(2000, "1")
 	authorizedRunner := sdk.AccAddress("addr2_______________")
 	outputlist = append(outputlist, banktypes.NewOutput(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()),
-		sdk.Coins{sdk.Coin{Denom: sdk.ErrInvalidLengthCoin.Error(),
-			Amount: sdk.NewInt(20)}}))
+		sdk.Coins{sdk.Coin{
+			Denom:  sdk.ErrInvalidLengthCoin.Error(),
+			Amount: sdk.NewInt(20),
+		}}))
 	msg := types.MsgCreateDistribution{
 		Distributor:      distributor.String(),
 		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
@@ -282,6 +279,7 @@ func TestMsgCreateClaim_ValidateBasic_InvalidAddress(t *testing.T) {
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
 }
+
 func TestMsgCreateClaim_ValidateBasic(t *testing.T) {
 	claimer := sdk.AccAddress("addr1_______________")
 	msg := types.MsgCreateUserClaim{
@@ -330,7 +328,6 @@ func TestMsgCreateUserClaim_GetSignBytes(t *testing.T) {
 	byt := msg.GetSignBytes()
 	byt1 := sdk.MustSortJSON(types.ModuleCdc.MustMarshalJSON(&msg))
 	assert.Equal(t, byt, byt1)
-
 }
 
 func TestMsgCreateUserClaim_GetSigners(t *testing.T) {
@@ -344,7 +341,6 @@ func TestMsgCreateUserClaim_GetSigners(t *testing.T) {
 	output := []sdk.AccAddress{addr}
 	assert.Equal(t, result, output)
 	assert.NoError(t, err)
-
 }
 
 func TestMsgRunDistribution(t *testing.T) {
@@ -356,7 +352,6 @@ func TestMsgRunDistribution(t *testing.T) {
 	assert.Equal(t, runner.String(), result.GetAuthorizedRunner())
 	assert.Equal(t, distributionName, result.DistributionName)
 	assert.Equal(t, distributionType, result.DistributionType)
-
 }
 
 func TestMsgRunDistribution_Route(t *testing.T) {
@@ -368,7 +363,6 @@ func TestMsgRunDistribution_Route(t *testing.T) {
 	key := result.Route()
 	key1 := types.RouterKey
 	assert.Equal(t, key, key1)
-
 }
 
 func TestMsgRunDistribution_Type(t *testing.T) {
@@ -469,7 +463,6 @@ func TestMsgRunDistribution_GetSignBytes(t *testing.T) {
 	byt := msg.GetSignBytes()
 	byt1 := sdk.MustSortJSON(types.ModuleCdc.MustMarshalJSON(&msg))
 	assert.Equal(t, byt, byt1)
-
 }
 
 func TestMsgRunDistribution_GetSigners(t *testing.T) {

@@ -111,9 +111,8 @@ func TestTypes_MsgOpenValidateBasic(t *testing.T) {
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
-			} else {
-				require.ErrorIs(t, got, tt.err)
 			}
+			require.ErrorIs(t, got, tt.err)
 		})
 	}
 }
@@ -200,7 +199,7 @@ func TestTypes_MsgCloseValidateBasic(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.msgClose.ValidateBasic()
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -293,7 +292,7 @@ func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.msgForceClose.ValidateBasic()
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)

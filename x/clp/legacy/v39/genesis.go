@@ -20,8 +20,10 @@ type Params struct {
 	MinCreatePoolThreshold uint `json:"min_create_pool_threshold"`
 }
 
-type Pools []Pool
-type LiquidityProviders []LiquidityProvider
+type (
+	Pools              []Pool
+	LiquidityProviders []LiquidityProvider
+)
 
 type Pool struct {
 	ExternalAsset        Asset    `json:"external_asset"`
@@ -40,6 +42,6 @@ type Asset struct {
 	Symbol string `json:"symbol"`
 }
 
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cryptocodec.RegisterCrypto(cdc)
 }

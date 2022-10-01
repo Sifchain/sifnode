@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,8 +17,8 @@ type RegistryEntryParser struct {
 	Denom                    string   `json:"denom"`
 	BaseDenom                string   `json:"base_denom"`
 	Path                     string   `json:"path"`
-	IbcChannelId             string   `json:"ibc_channel_id"`              //nolint
-	IbcCounterpartyChannelId string   `json:"ibc_counterparty_channel_id"` //nolint
+	IbcChannelId             string   `json:"ibc_channel_id"`              //nolint:revive,stylecheck
+	IbcCounterpartyChannelId string   `json:"ibc_counterparty_channel_id"` //nolint:revive,stylecheck
 	DisplayName              string   `json:"display_name"`
 	DisplaySymbol            string   `json:"display_symbol"`
 	Network                  string   `json:"network"`
@@ -29,7 +28,7 @@ type RegistryEntryParser struct {
 	Permissions              []string `json:"permissions"`
 	UnitDenom                string   `json:"unit_denom"`
 	IbcCounterpartyDenom     string   `json:"ibc_counterparty_denom"`
-	IbcCounterpartyChainId   string   `json:"ibc_counterparty_chain_id"` //nolint
+	IbcCounterpartyChainId   string   `json:"ibc_counterparty_chain_id"` //nolint:revive,stylecheck
 }
 
 type File struct {
@@ -62,7 +61,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				panic(err)
 			}
@@ -73,14 +72,14 @@ func main() {
 			newReg := Migration(inputs.Entries)
 			updatedList := Wrapper{Entries: newReg}
 			f, _ := json.MarshalIndent(updatedList, "", " ")
-			//outpath := filepath.Join(basepath, chain.chain, filename)
+			// outpath := filepath.Join(basepath, chain.chain, filename)
 			// Uncomment these lines to replace old files
 			err = os.Remove(file)
 			if err != nil {
 				panic(err)
 			}
-			_ = ioutil.WriteFile(file, f, 0600)
-			//_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
+			_ = os.WriteFile(file, f, 0o600)
+			// _ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
 		}
 	}
 }

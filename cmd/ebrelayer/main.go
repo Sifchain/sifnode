@@ -76,7 +76,7 @@ func buildRootCmd() *cobra.Command {
 		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
 	)
 	rootCmd.PersistentFlags().String(
-		ebrelayertypes.FlagRelayerDbPath,
+		ebrelayertypes.FlagRelayerDBPath,
 		"./relayerdb",
 		"Path to the relayerdb directory",
 	)
@@ -93,7 +93,7 @@ func buildRootCmd() *cobra.Command {
 	return rootCmd
 }
 
-//	initRelayerCmd
+// initRelayerCmd
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
@@ -103,13 +103,13 @@ func initRelayerCmd() *cobra.Command {
 		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
-	//flags.AddQueryFlagsToCmd(initRelayerCmd)
+	// flags.AddQueryFlagsToCmd(initRelayerCmd)
 	flags.AddTxFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
 }
 
-//	generateBindingsCmd : Generates ABIs and bindings for Bridge smart contracts which facilitate contract interaction
+// generateBindingsCmd : Generates ABIs and bindings for Bridge smart contracts which facilitate contract interaction
 func generateBindingsCmd() *cobra.Command {
 	generateBindingsCmd := &cobra.Command{
 		Use:     "generate",
@@ -131,12 +131,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
-	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
+	levelDBFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDBPath)
 	if err != nil {
 		return err
 	}
 	// Open the level db
-	db, err := leveldb.OpenFile(levelDbFile, nil)
+	db, err := leveldb.OpenFile(levelDBFile, nil)
 	if err != nil {
 		log.Fatal("Error opening leveldb: ", err)
 	}
@@ -181,9 +181,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
 	logger, err := logConfig.Build()
-
 	if err != nil {
-		log.Fatalln("failed to init zap logging")
+		log.Fatalln("failed to init zap logging") //nolint:gocritic
 	}
 	defer func() {
 		if err := logger.Sync(); err != nil {

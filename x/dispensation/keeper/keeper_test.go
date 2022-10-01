@@ -23,7 +23,6 @@ func TestKeeper_Logger(t *testing.T) {
 	result := keeper.NewKeeper(cdc, key, bankkeeper, accountKeeper, ps)
 	res := result.Logger(ctx)
 	assert.Equal(t, res, result.Logger(ctx))
-
 }
 
 func TestKeeper_Codec(t *testing.T) {
@@ -52,7 +51,6 @@ func TestKeeper_GetAccountKeeper(t *testing.T) {
 
 	res := result.GetAccountKeeper()
 	t.Log(res)
-
 }
 
 func TestKeeper_HasCoin(t *testing.T) {
@@ -67,5 +65,4 @@ func TestKeeper_HasCoin(t *testing.T) {
 	user := sdk.AccAddress("addr1_____")
 	res := result.HasCoins(ctx, user, sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(1000000))))
 	t.Log(res)
-
 }

@@ -6,7 +6,7 @@ import (
 )
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateEthBridgeClaim{}, "ethbridge/MsgCreateEthBridgeClaim", nil)
 	cdc.RegisterConcrete(&MsgBurn{}, "ethbridge/MsgBurn", nil)
 	cdc.RegisterConcrete(&MsgLock{}, "ethbridge/MsgLock", nil)

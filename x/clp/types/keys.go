@@ -96,7 +96,7 @@ func GetRemovalRequestKey(request RemovalRequest) []byte {
 }
 
 func GetRemovalRequestLPPrefix(lpaddress string) []byte {
-	key := []byte(fmt.Sprintf("%s", lpaddress))
+	key := []byte(fmt.Sprintf("%s", lpaddress)) //nolint:gosimple
 	return append(RemovalRequestPrefix, key...)
 }
 

@@ -27,7 +27,7 @@ func TestNewQuerier(t *testing.T) {
 
 	querier := ethbridgekeeper.NewLegacyQuerier(keeper, encCfg.Amino)
 
-	//Test wrong paths
+	// Test wrong paths
 	bz, err := querier(ctx, []string{"other"}, query)
 	require.Error(t, err)
 	require.Nil(t, bz)
@@ -50,7 +50,7 @@ func TestQueryEthProphecy(t *testing.T) {
 
 	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 
-	//Test query String()
+	// Test query String()
 	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)
 	require.NoError(t, err)
 	require.Equal(t, TestResponseJSON, string(testJSON))
@@ -66,7 +66,7 @@ func TestQueryEthProphecy(t *testing.T) {
 		Data: bz,
 	}
 
-	//Test query
+	// Test query
 	querier := ethbridgekeeper.NewLegacyQuerier(keeper, encCfg.Amino)
 	res, err3 := querier(ctx, []string{types.QueryEthProphecy}, query)
 	require.Nil(t, err3)

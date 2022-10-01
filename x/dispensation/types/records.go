@@ -7,8 +7,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 )
 
-//This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
-
+// This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 func NewDistributionRecord(status DistributionStatus, distributionType DistributionType, distributionName string, recipientAddress string, coins sdk.Coins, start int64, end int64, runner string) DistributionRecord {
 	return DistributionRecord{
 		DistributionStatus:          status,
@@ -20,7 +19,6 @@ func NewDistributionRecord(status DistributionStatus, distributionType Distribut
 		DistributionStartHeight:     start,
 		DistributionCompletedHeight: end,
 	}
-
 }
 
 func (dr DistributionRecord) Validate() bool {
@@ -57,10 +55,7 @@ func NewUserClaim(userAddress string, userClaimType DistributionType, t time.Tim
 }
 
 func (uc UserClaim) Validate() bool {
-	if len(uc.UserAddress) == 0 {
-		return false
-	}
-	return true
+	return len(uc.UserAddress) != 0
 }
 
 func NewDistribution(t DistributionType, name string, authorizedRunner string) Distribution {
@@ -68,11 +63,9 @@ func NewDistribution(t DistributionType, name string, authorizedRunner string) D
 }
 
 func (ar Distribution) Validate() bool {
-	if ar.DistributionName == "" {
-		return false
-	}
-	return true
+	return ar.DistributionName == ""
 }
+
 func GetDistributionStatus(status string) (DistributionStatus, bool) {
 	switch status {
 	case "Completed":
@@ -109,6 +102,7 @@ func GetDistributionTypeFromShortString(distributionType string) (DistributionTy
 		return DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED, false
 	}
 }
+
 func IsValidDistributionType(distributionType string) (DistributionType, bool) {
 	switch distributionType {
 	case "DISTRIBUTION_TYPE_AIRDROP":

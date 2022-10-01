@@ -1,6 +1,8 @@
 package ante_test
 
 import (
+	"testing"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/app/ante"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -12,8 +14,6 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
-	"testing"
 )
 
 func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {

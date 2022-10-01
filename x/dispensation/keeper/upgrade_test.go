@@ -1,4 +1,3 @@
-//nolint
 package keeper_test
 
 /* TODO update this for 42 branch

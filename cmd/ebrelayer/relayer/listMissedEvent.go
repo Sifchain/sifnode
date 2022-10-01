@@ -4,8 +4,9 @@ package relayer
 
 import (
 	"context"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -27,7 +28,8 @@ type ListMissedCosmosEvent struct {
 
 // NewListMissedCosmosEvent initializes a new CosmosSub
 func NewListMissedCosmosEvent(tmProvider, ethProvider string, registryContractAddress common.Address,
-	ethereumAddress common.Address, days int64, sugaredLogger *zap.SugaredLogger) ListMissedCosmosEvent {
+	ethereumAddress common.Address, days int64, sugaredLogger *zap.SugaredLogger,
+) ListMissedCosmosEvent {
 	return ListMissedCosmosEvent{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,

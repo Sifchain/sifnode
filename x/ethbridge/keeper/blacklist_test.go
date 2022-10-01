@@ -19,7 +19,8 @@ func TestIsBlacklisted(t *testing.T) {
 		check     string
 		expected  bool
 	}{
-		{"basic true",
+		{
+			"basic true",
 			[]string{
 				"0x782D10cC8c352D0524a1639eD261d29F47023922",
 				"0x782D10cC8c352D0524a1639eD261d29F47023923",
@@ -27,7 +28,8 @@ func TestIsBlacklisted(t *testing.T) {
 			"0x782D10cC8c352D0524a1639eD261d29F47023922",
 			true,
 		},
-		{"basic false",
+		{
+			"basic false",
 			[]string{
 				"0x782D10cC8c352D0524a1639eD261d29F47023922",
 				"0x782D10cC8c352D0524a1639eD261d29F47023923",
@@ -67,7 +69,8 @@ func TestSetBlacklist(t *testing.T) {
 		expectFalse []string
 		expectTrue  []string
 	}{
-		{"replace all",
+		{
+			"replace all",
 			[]string{
 				"0x782D10cC8c352D0524a1639eD261d29F47023922",
 				"0x782D10cC8c352D0524a1639eD261d29F47023923",
@@ -79,7 +82,8 @@ func TestSetBlacklist(t *testing.T) {
 			[]string{"0x782D10cC8c352D0524a1639eD261d29F47023922", "0x782D10cC8c352D0524a1639eD261d29F47023923"},
 			[]string{"0x782D10cC8c352D0524a1639eD261d29F47023924", "0x782D10cC8c352D0524a1639eD261d29F47023925"},
 		},
-		{"replace one",
+		{
+			"replace one",
 			[]string{
 				"0x782D10cC8c352D0524a1639eD261d29F47023922",
 				"0x782D10cC8c352D0524a1639eD261d29F47023923",
@@ -91,7 +95,8 @@ func TestSetBlacklist(t *testing.T) {
 			[]string{"0x782D10cC8c352D0524a1639eD261d29F47023923"},
 			[]string{"0x782D10cC8c352D0524a1639eD261d29F47023924", "0x782D10cC8c352D0524a1639eD261d29F47023922"},
 		},
-		{"remove all",
+		{
+			"remove all",
 			[]string{
 				"0x782D10cC8c352D0524a1639eD261d29F47023922",
 				"0x782D10cC8c352D0524a1639eD261d29F47023923",
@@ -124,8 +129,8 @@ func TestSetBlacklist(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		//list := app.EthbridgeKeeper.GetBlacklist(ctx)
-		//fmt.Println(list)
+		// list := app.EthbridgeKeeper.GetBlacklist(ctx)
+		// fmt.Println(list)
 		for _, address := range tc.expectTrue {
 			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}

@@ -29,7 +29,8 @@ type Keeper struct {
 
 // NewKeeper creates a clp keeper
 func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper,
-	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, getMarginKeeper func() margintypes.Keeper, ps paramtypes.Subspace) Keeper {
+	tokenRegistryKeeper tokenregistrytypes.Keeper, adminKeeper types.AdminKeeper, mintKeeper mintkeeper.Keeper, getMarginKeeper func() margintypes.Keeper, ps paramtypes.Subspace,
+) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())

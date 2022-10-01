@@ -40,6 +40,7 @@ require (
 	github.com/vishalkuo/bimap v0.0.0-20180703190407-09cff2814645
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	go.uber.org/zap v1.19.1
+	pgregory.net/rapid v0.4.7
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
 	google.golang.org/grpc v1.45.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -150,8 +151,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
 )
-
-require pgregory.net/rapid v0.4.7
 
 replace (
 	github.com/cosmos/ibc-go/v2 => github.com/Sifchain/ibc-go/v2 v2.0.3-issue.850

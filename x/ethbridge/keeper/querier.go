@@ -15,8 +15,7 @@ import (
 // TODO: move to x/oracle
 
 // NewLegacyQuerier is the module level router for state queries
-func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier { //nolint
-
+func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case types.QueryEthProphecy:
@@ -29,7 +28,7 @@ func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier { //nol
 	}
 }
 
-func legacyQueryEthProphecy(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) { //nolint
+func legacyQueryEthProphecy(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var req types.QueryEthProphecyRequest
 
 	if err := cdc.UnmarshalJSON(query.Data, &req); err != nil {
@@ -45,7 +44,7 @@ func legacyQueryEthProphecy(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.
 	return cdc.MarshalJSONIndent(response, "", "  ")
 }
 
-func legacyQueryBlacklist(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) { //nolint
+func legacyQueryBlacklist(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var req types.QueryBlacklistRequest
 
 	if err := cdc.UnmarshalJSON(query.Data, &req); err != nil {

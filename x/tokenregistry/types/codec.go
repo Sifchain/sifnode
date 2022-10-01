@@ -14,7 +14,7 @@ var (
 )
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgRegister{}, "MsgRegister", nil)
 	cdc.RegisterConcrete(&MsgRegisterResponse{}, "MsgRegisterResponse", nil)
 	cdc.RegisterConcrete(&MsgDeregister{}, "MsgDeregister", nil)

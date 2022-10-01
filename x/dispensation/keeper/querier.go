@@ -64,7 +64,7 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	//RecordsByRecipient cannot return error
+	// RecordsByRecipient cannot return error
 	res, _ := querier.RecordsByRecipient(sdk.WrapSDKContext(ctx), &params)
 
 	bz, err := types.ModuleCdc.MarshalJSON(res.DistributionRecords)

@@ -1,10 +1,10 @@
 package keeper_test
 
-//func getDenomWhiteListEntries() tokenregistrytypes.Registry {
+// func getDenomWhiteListEntries() tokenregistrytypes.Registry {
 //	return tokenregistrytypes.InitialRegistry()
 //}
 //
-//func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
+// func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
 //	wl := getDenomWhiteListEntries()
 //	ctx, app := clptest.CreateTestAppClp(false)
 //	for _, entry := range wl.Entries {
@@ -13,7 +13,7 @@ package keeper_test
 //	return ctx, app
 //}
 //
-//func TestCalculatePoolUnits(t *testing.T) {
+// func TestCalculatePoolUnits(t *testing.T) {
 //	type TestCase struct {
 //		Symbol           string `json:"symbol"`
 //		NativeAdded      string `json:"r"`
@@ -52,7 +52,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculateSwapResult(t *testing.T) {
+// func TestCalculateSwapResult(t *testing.T) {
 //	type TestCase struct {
 //		Xx       string `json:"x"`
 //		X        string `json:"X"`
@@ -87,7 +87,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculateSwapLiquidityFee(t *testing.T) {
+// func TestCalculateSwapLiquidityFee(t *testing.T) {
 //	type TestCase struct {
 //		Xx       string `json:"x"`
 //		X        string `json:"X"`
@@ -122,7 +122,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculateDoubleSwapResult(t *testing.T) {
+// func TestCalculateDoubleSwapResult(t *testing.T) {
 //	type TestCase struct {
 //		Ax       string `json:"ax"`
 //		AX       string `json:"aX"`
@@ -167,7 +167,7 @@ package keeper_test
 //	}
 //}
 //
-//func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
+// func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 //	type TestCase struct {
 //		Symbol           string `json:"symbol"`
 //		NativeAdded      string `json:"r"`

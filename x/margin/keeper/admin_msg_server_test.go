@@ -181,14 +181,12 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 
 			marginKeeper.SetEnabledPools(ctx, []string{tt.poolAsset})
 
-			var address string
-
-			address = tt.msgAdminCloseAll.Signer
+			address := tt.msgAdminCloseAll.Signer
 
 			msg := tt.msgAdminCloseAll
 			msg.Signer = address
 
-			var signer = msg.Signer
+			signer := msg.Signer
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1, sdk.NewDec(20))
 			mtp.Liabilities = sdk.NewUint(10)
@@ -200,7 +198,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 				Address: signer,
 				Denom:   tt.msgOpen.CollateralAsset,
 			})
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -218,7 +216,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			differenceWithoutTakingMarginFund := sdk.NewCoin("rowan", sdk.NewInt(8919))
 			assert.Equal(t, tt.msgAdminCloseAll.TakeMarginFund, balanceAfter.Balance.Sub(*balanceOriginal.Balance).IsLT(differenceWithoutTakingMarginFund))
 
-			if tt.errString2 != nil {
+			if tt.errString2 != nil { //nolint:gocritic
 				require.EqualError(t, got2, tt.errString2.Error())
 			} else if tt.err2 == nil {
 				require.NoError(t, got2)

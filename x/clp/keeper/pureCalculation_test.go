@@ -13,7 +13,6 @@ import (
 )
 
 func TestKeeper_DecRatIdentity(t *testing.T) {
-
 	// Test for: dec == RatToDec(DecToRat(dec))
 	// NOTE: rat == DecToRat(RatToDec(rat)) does not hold for all rat in big.Rat due to loss of precision when converting to sdk.Dec
 	// E.g rat 1/3 becomes dec 0.333333... which then becomes 1000.../3000... and not 1/3
@@ -95,7 +94,6 @@ func TestKeeper_RatToDec(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			var rat big.Rat
 			rat.SetFrac(tc.num, tc.denom)
 			y, err := clpkeeper.RatToDec(&rat)
@@ -135,7 +133,6 @@ func TestKeeper_RatToDec_Overflow(t *testing.T) {
 }
 
 func TestKeeper_Int64ToUint8Safe(t *testing.T) {
-
 	testcases := []struct {
 		name      string
 		x         int64
@@ -172,7 +169,6 @@ func TestKeeper_Int64ToUint8Safe(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			y, err := clpkeeper.Int64ToUint8Safe(tc.x)
 
 			if tc.errString != nil {
@@ -187,7 +183,6 @@ func TestKeeper_Int64ToUint8Safe(t *testing.T) {
 }
 
 func TestKeeper_Abs(t *testing.T) {
-
 	testcases := []struct {
 		name     string
 		x        int16
@@ -213,7 +208,6 @@ func TestKeeper_Abs(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			y := clpkeeper.Abs(tc.x)
 
 			require.Equal(t, tc.expected, y)
@@ -245,7 +239,7 @@ func TestKeeper_DecToRat(t *testing.T) {
 		{
 			name:     "big numbers",
 			dec:      sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333", 10)), 18),
-			expected: getFirstArgRat(new(big.Rat).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333/1000000000000000000")),
+			expected: getFirstArgRat(new(big.Rat).SetString("860749959362302863218639724001003958109901930943074504276886452180215874005613731543215117760045943811967723990915831125333333333333333333/1000000000000000000")), //nolint:gosec
 		},
 	}
 

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-
 	"fmt"
 	"math"
 	"strconv"
@@ -91,7 +90,6 @@ func (k msgServer) UpdateStakingRewardParams(goCtx context.Context, msg *types.M
 	k.mintKeeper.SetParams(ctx, msg.Params)
 
 	return &types.MsgUpdateStakingRewardParamsResponse{}, err
-
 }
 
 func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpdateRewardsParamsRequest) (*types.MsgUpdateRewardsParamsResponse, error) {
@@ -458,9 +456,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	var (
-		priceImpact sdk.Uint
-	)
+	var priceImpact sdk.Uint
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	sAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.SentAsset.Symbol)
 	if err != nil {
@@ -490,9 +486,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
 	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
 	currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
-	var (
-		sentValue sdk.Uint
-	)
+	var sentValue sdk.Uint
 
 	// if liquidity protection is active and selling rowan
 	if liquidityProtectionParams.IsActive && types.StringCompare(sAsset.Denom, types.NativeSymbol) {
@@ -518,7 +512,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
-	totalLiquidityFee := sdk.ZeroUint() // nolint:staticcheck
+	totalLiquidityFee := sdk.ZeroUint() //nolint:staticcheck
 	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
@@ -768,7 +762,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	//Get LP
+	// Get LP
 	lp, err := k.Keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
@@ -788,7 +782,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 
 	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
-	//Calculate amount to withdraw
+	// Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := CalculateWithdrawalFromUnits(pool.PoolUnits,
 		nativeAssetDepth.String(), externalAssetDepth.String(), lp.LiquidityProviderUnits.String(),
 		msg.WithdrawUnits)
@@ -877,9 +871,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	//Get LP
+	// Get LP
 	lp, err := k.Keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Symbol, msg.Signer)
-
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
@@ -903,7 +896,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
-	//Calculate amount to withdraw
+	// Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		nativeAssetDepth.String(), externalAssetDepth.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
@@ -946,12 +939,10 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
 	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
 		return nil, sdkerrors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
-
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
 		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, swapFeeRate)
-
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -973,7 +964,6 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 	if msg.Asymmetry.IsNegative() {
 		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate)
-
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}

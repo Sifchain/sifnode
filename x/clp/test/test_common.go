@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -38,6 +38,7 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
+
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	return CreateTestAppClpWithBlacklist(isCheckTx, []sdk.AccAddress{})
 }
@@ -156,8 +157,9 @@ func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
 
 	return lpList
 }
+
 func genTokens(n int) []string {
-	var runes = []rune("abcdefghijklmnopqrstuvwxyz")
+	runes := []rune("abcdefghijklmnopqrstuvwxyz")
 	set := make(map[string]bool, n)
 
 	for len(set) != n {
@@ -168,7 +170,7 @@ func genTokens(n int) []string {
 		set[string(token)] = true
 	}
 
-	var strings = make([]string, n)
+	strings := make([]string, n)
 	i := 0
 	for str := range set {
 		strings[i] = str
@@ -335,7 +337,7 @@ func GeneratePoolsFromFile(app *sifapp.SifchainApp, keeper clpkeeper.Keeper, ctx
 	if err != nil {
 		panic(err)
 	}
-	input, err := ioutil.ReadFile(file)
+	input, err := os.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}

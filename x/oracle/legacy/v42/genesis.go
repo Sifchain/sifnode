@@ -6,7 +6,7 @@ import (
 )
 
 func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
-	var addressWhiteList = make([]string, len(genesis.AddressWhitelist))
+	addressWhiteList := make([]string, len(genesis.AddressWhitelist))
 	for i, addr := range genesis.AddressWhitelist {
 		addressWhiteList[i] = addr.String()
 	}
@@ -14,7 +14,7 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 	prophecies := make([]*types.DBProphecy, len(genesis.Prophecies))
 	for i, legacy := range genesis.Prophecies {
 		statusText := types.StatusText_STATUS_TEXT_UNSPECIFIED
-		if legacy.Status.Text == v039oracle.PendingStatusText {
+		if legacy.Status.Text == v039oracle.PendingStatusText { //nolint:gocritic
 			statusText = types.StatusText_STATUS_TEXT_PENDING
 		} else if legacy.Status.Text == v039oracle.FailedStatusText {
 			statusText = types.StatusText_STATUS_TEXT_FAILED

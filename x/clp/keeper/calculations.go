@@ -26,7 +26,8 @@ func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int,
+) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
 	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
@@ -55,18 +56,18 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
 
 	swapAmount := sdk.NewDec(0)
-	//if asymmetry is positive we need to swap from native to external
+	// if asymmetry is positive we need to swap from native to external
 	if asymmetry.IsPositive() {
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
 		swapAmount = nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
-	//if asymmetry is negative we need to swap from external to native
+	// if asymmetry is negative we need to swap from external to native
 	if asymmetry.IsNegative() {
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
 		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 
-	//if asymmetry is 0 we don't need to swap
+	// if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
 
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
@@ -78,7 +79,8 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, withdrawUnits sdk.Uint) (sdk.Uint, sdk.Uint, sdk.Uint) {
+	externalAssetBalance string, lpUnits string, withdrawUnits sdk.Uint,
+) (sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
 	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
@@ -101,7 +103,7 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
 	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
 
-	//if asymmetry is 0 we don't need to swap
+	// if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(withdrawUnitsF)
 
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
@@ -112,10 +114,10 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 
-//native asset balance  : currently in pool before adding
-//external asset balance : currently in pool before adding
-//native asset to added  : the amount the user sends
-//external asset amount to be added : the amount the user sends
+// native asset balance  : currently in pool before adding
+// external asset balance : currently in pool before adding
+// native asset to added  : the amount the user sends
+// external asset amount to be added : the amount the user sends
 
 // R = native Balance (before)
 // A = external Balance (before)
@@ -126,8 +128,8 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nativeAssetAmount,
-	externalAssetAmount sdk.Uint, externalDecimals uint8, symmetryThreshold, ratioThreshold sdk.Dec) (sdk.Uint, sdk.Uint, error) {
-
+	externalAssetAmount sdk.Uint, externalDecimals uint8, symmetryThreshold, ratioThreshold sdk.Dec,
+) (sdk.Uint, sdk.Uint, error) {
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
@@ -161,7 +163,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 	if err != nil {
 		return sdk.ZeroUint(), sdk.ZeroUint(), err
 	}
-	if ratioDiff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
+	if ratioDiff.Cmp(&ratioThresholdRat) == 1 { // if ratioDiff > ratioThreshold
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
@@ -175,7 +177,10 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 }
 
 // | A/R - a/r |
-func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
+// TODO: DETERMINE IF THIS FUNCTION IS NEEDED.
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) { //nolint:gocritic
 	if R.Cmp(big.NewInt(0)) == 0 || r.Cmp(big.NewInt(0)) == 0 { // check for zeros
 		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
 	}
@@ -189,8 +194,12 @@ func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
 	return diff, nil
 }
 
+// TODO: this function needs clarification.
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
-func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int {
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+
+func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int { //nolint:gocritic
 	var add, numerator big.Int
 	add.Add(slipAdjustmentValues.RTimesa, slipAdjustmentValues.rTimesA)
 	numerator.Mul(P, &add)
@@ -215,7 +224,10 @@ type slipAdjustmentValues struct {
 	rTimesA        *big.Int
 }
 
-func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+// TODO: this function needs clarification.
+func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues { //nolint:gocritic
 	var denominator, rPlusR, aPlusA big.Int
 	rPlusR.Add(r, R)
 	aPlusA.Add(a, A)
@@ -239,7 +251,10 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
-func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+// TODO: this function needs clarification.
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint { // nolint:gocritic
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
@@ -264,10 +279,13 @@ func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRu
 	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
 }
 
+// TODO: this function needs clarification.
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
 func CalcSwapResult(toRowan bool,
-	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
-
+	X, x, Y sdk.Uint, //nolint:gocritic
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec,
+) sdk.Uint {
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
@@ -289,7 +307,8 @@ func CalcSwapResult(toRowan bool,
 }
 
 // y = (1-f)*x*Y/(x+X)
-func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
+// todo: don't use capital letters for local variables.
+func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat { //nolint:gocritic
 	var diff big.Rat
 	one := big.NewRat(1, 1)
 	diff.Sub(one, swapFeeRate) // diff = 1 - f
@@ -300,7 +319,8 @@ func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
 	return diff
 }
 
-func calcRawXYK(x, X, Y *big.Int) big.Rat {
+// TODO: don't use capitaln letters for local variables.
+func calcRawXYK(x, X, Y *big.Int) big.Rat { //nolint:gocritic
 	var numerator, denominator, xR, XR, YR, y big.Rat
 
 	xR.SetInt(x)
@@ -337,7 +357,8 @@ func CalcSpotPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrent
 
 // Calculates the spot price of asset X in the preferred denominations accounting for PMTP.
 // Since this method applies PMTP adjustment, one of X, Y must be the native asset.
-func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) {
+// TODO: don't use capital letters for local  variables.
+func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) { //nolint:gocritic
 	if X.Equal(sdk.ZeroUint()) {
 		return sdk.ZeroDec(), types.ErrInValidAmount
 	}
@@ -358,6 +379,7 @@ func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunnin
 
 	return RatToDec(&pmtpPrice)
 }
+
 func CalcRowanValue(pool *types.Pool, pmtpCurrentRunningRate sdk.Dec, rowanAmount sdk.Uint) (sdk.Uint, error) {
 	spotPrice, err := CalcRowanSpotPrice(pool, pmtpCurrentRunningRate)
 	if err != nil {
@@ -392,7 +414,7 @@ func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
 	return *res.SetFrac(big.NewInt(1), dec)
 }
 
-func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
+func calcPriceImpact(X, x sdk.Uint) sdk.Uint { //nolint:gocritic
 	if x.IsZero() {
 		return sdk.ZeroUint()
 	}
@@ -443,8 +465,8 @@ func CalculateWithdrawalRowanValue(
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
-
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec,
+) sdk.Uint {
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
@@ -456,8 +478,8 @@ func SwapOne(from types.Asset,
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
-
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec,
+) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	var Xincl, Yincl sdk.Uint
@@ -481,7 +503,8 @@ func SwapOne(from types.Asset,
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec,
+) sdk.Uint {
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)

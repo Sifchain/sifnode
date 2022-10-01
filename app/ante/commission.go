@@ -9,8 +9,10 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-var MinCommission = sdk.NewDecWithPrec(5, 2)   // 5% as a fraction
-var maxVotingPower = sdk.NewDecWithPrec(66, 1) // 6.6%
+var (
+	MinCommission  = sdk.NewDecWithPrec(5, 2)  // 5% as a fraction
+	maxVotingPower = sdk.NewDecWithPrec(66, 1) // 6.6%
+)
 
 // TODO: remove once Cosmos SDK is upgraded to v0.46, refer to https://github.com/cosmos/cosmos-sdk/pull/10529#issuecomment-1026320612
 

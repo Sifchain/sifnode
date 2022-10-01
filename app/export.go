@@ -3,8 +3,8 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,7 +19,6 @@ import (
 func (app *SifchainApp) ExportAppStateAndValidators(
 	forZeroHeight bool, jailAllowedAddrs []string,
 ) (servertypes.ExportedApp, error) {
-
 	// as if they could withdraw from the start of the next block
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
@@ -49,11 +48,12 @@ func (app *SifchainApp) ExportAppStateAndValidators(
 
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
-//      in favour of export at a block height
+//
+//	in favour of export at a block height
 func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
-	//Check if there is a whitelist
+	// Check if there is a whitelist
 	if len(jailWhiteList) > 0 {
 		applyWhiteList = true
 	}
@@ -104,7 +104,6 @@ func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList 
 
 	// reinitialize all validators
 	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-
 		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
 		scraps := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, val.GetOperator())
 		feePool := app.DistrKeeper.GetFeePool(ctx)
@@ -208,11 +207,11 @@ func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
 		ctx.Logger().Error("failed to marshal application genesis state", "error:", err.Error())
 	}
 
-	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0600)
+	err = os.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0o600)
 	if err != nil {
 		ctx.Logger().Error("failed to write state to file", "err", err.Error())
 	}
-	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0600)
+	err = os.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0o600)
 	if err != nil {
 		ctx.Logger().Error("failed to write Validator List to file", "err", err.Error())
 	}

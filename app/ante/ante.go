@@ -1,8 +1,9 @@
 package ante
 
 import (
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"strings"
+
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
@@ -19,7 +20,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if options.SignModeHandler == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}
-	var sigGasConsumer = options.SigGasConsumer
+	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
@@ -40,12 +41,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 	), nil
-
 }
 
 // AdjustGasPriceDecorator is a custom decorator to reduce fee prices .
-type AdjustGasPriceDecorator struct {
-}
+type AdjustGasPriceDecorator struct{}
 
 // NewAdjustGasPriceDecorator create a new instance of AdjustGasPriceDecorator
 func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {

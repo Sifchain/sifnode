@@ -99,7 +99,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	msgAirdropOutput := msgAirdrop.Output
 	assert.Equal(t, recipients, len(msgAirdropOutput))
 	for i := 0; i < len(msgAirdropOutput); i++ {
-		//(testing) So users should get random catk or ceth coins here.
+		// (testing) So users should get random catk or ceth coins here.
 		assert.True(t, msgAirdropOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgAirdropOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)) || msgAirdropOutput[i].Coins.AmountOf("rowan").Equal(sdk.NewInt(10)))
 	}
@@ -136,7 +136,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	msgLiquidityMiningOutput := msgLiquidityMining.Output
 	assert.Equal(t, recipients, len(msgLiquidityMiningOutput))
 	for i := 0; i < len(msgLiquidityMiningOutput); i++ {
-		//(testing) So users should get random catk or ceth coins here.
+		// (testing) So users should get random catk or ceth coins here.
 		assert.True(t, msgLiquidityMiningOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgLiquidityMiningOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)) || msgLiquidityMiningOutput[i].Coins.AmountOf("rowan").Equal(sdk.NewInt(10)))
 	}
@@ -157,7 +157,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	msgUnspecifiedOutput := msgUnspecified.Output
 	assert.Equal(t, recipients, len(msgUnspecifiedOutput))
 	for i := 0; i < len(msgUnspecifiedOutput); i++ {
-		//(testing) So users should get random catk or ceth coins here.
+		// (testing) So users should get random catk or ceth coins here.
 		assert.True(t, msgUnspecifiedOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgUnspecifiedOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)) || msgUnspecifiedOutput[i].Coins.AmountOf("rowan").Equal(sdk.NewInt(10)))
 	}
@@ -172,7 +172,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	msgValidatorSubsidyOutput := msgValidatorSubsidy.Output
 	assert.Equal(t, recipients, len(msgValidatorSubsidyOutput))
 	for i := 0; i < len(msgValidatorSubsidyOutput); i++ {
-		//(testing) So users should get random catk or ceth coins here.
+		// (testing) So users should get random catk or ceth coins here.
 		assert.True(t, msgValidatorSubsidyOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgValidatorSubsidyOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)) || msgValidatorSubsidyOutput[i].Coins.AmountOf("rowan").Equal(sdk.NewInt(10)))
 	}

@@ -214,7 +214,6 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	safetyFactor := k.GetSafetyFactor(ctx)
 
 	lr, err := k.UpdateMTPHealth(ctx, *mtp, pool)
-
 	if err != nil {
 		return nil, err
 	}

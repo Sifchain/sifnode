@@ -5,8 +5,8 @@ type NodeConfig struct {
 	FastSync               bool            `toml:"fast_sync"`
 	ProxyApp               string          `toml:"proxy_app"`
 	Moniker                string          `toml:"moniker"`
-	DbBackend              string          `toml:"db_backend"`
-	DbDir                  string          `toml:"db_dir"`
+	DbBackend              string          `toml:"db_backend"` //nolint:stylecheck
+	DbDir                  string          `toml:"db_dir"`     //nolint:stylecheck
 	LogLevel               string          `toml:"log_level"`
 	LogFormat              string          `toml:"log_format"`
 	GenesisFile            string          `toml:"genesis_file"`
@@ -128,8 +128,8 @@ type ConfigTOML struct {
 	FilterPeers            bool            `toml:"filter_peers"`
 	ProxyApp               string          `toml:"proxy_app"`
 	Moniker                string          `toml:"moniker"`
-	DbBackend              string          `toml:"db_backend"`
-	DbDir                  string          `toml:"db_dir"`
+	DbBackend              string          `toml:"db_backend"` //nolint:stylecheck
+	DbDir                  string          `toml:"db_dir"`     //nolint:stylecheck
 	LogLevel               string          `toml:"log_level"`
 	LogFormat              string          `toml:"log_format"`
 	GenesisFile            string          `toml:"genesis_file"`

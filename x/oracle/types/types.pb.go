@@ -182,8 +182,9 @@ func (m *Claim) GetContent() string {
 }
 
 // DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables
-//  into bytes.
+//
+//	Tendermint/Amino does not support maps so we must serialize those variables
+//	into bytes.
 type DBProphecy struct {
 	Id              string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status          Status `protobuf:"bytes,2,opt,name=status,proto3" json:"status"`

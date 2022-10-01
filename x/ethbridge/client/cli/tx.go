@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -20,6 +20,7 @@ import (
 )
 
 // GetCmdCreateEthBridgeClaim is the CLI command for creating a claim on an ethereum prophecy
+//
 //nolint:lll
 func GetCmdCreateEthBridgeClaim() *cobra.Command {
 	return &cobra.Command{
@@ -80,7 +81,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 				return err
 			}
 
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
+			digitCheck := regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[6]) {
 				return types.ErrInvalidAmount
 			}
@@ -114,6 +115,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 }
 
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
+//
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
@@ -150,7 +152,7 @@ func GetCmdBurn() *cobra.Command {
 			}
 			ethereumReceiver := types.NewEthereumAddress(args[1])
 
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
+			digitCheck := regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[2]) {
 				return types.ErrInvalidAmount
 			}
@@ -222,7 +224,7 @@ func GetCmdLock() *cobra.Command {
 			}
 			ethereumReceiver := types.NewEthereumAddress(args[1])
 
-			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
+			digitCheck := regexp.MustCompile(`^[0-9]+$`)
 			if !digitCheck.MatchString(args[2]) {
 				return types.ErrInvalidAmount
 			}
@@ -393,7 +395,7 @@ func GetCmdSetBlacklist() *cobra.Command {
 				return err
 			}
 
-			contents, err := ioutil.ReadFile(file)
+			contents, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}

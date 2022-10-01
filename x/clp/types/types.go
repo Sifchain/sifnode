@@ -10,10 +10,12 @@ func (p Pool) Validate() bool {
 
 // NewPool returns a new Pool
 func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) Pool {
-	pool := Pool{ExternalAsset: externalAsset,
+	pool := Pool{
+		ExternalAsset:        externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
-		PoolUnits:            poolUnits}
+		PoolUnits:            poolUnits,
+	}
 
 	return pool
 }
@@ -35,7 +37,11 @@ func (p *Pool) ExtractValues(to Asset) (sdk.Uint, sdk.Uint, bool) {
 	return X, Y, toRowan
 }
 
-func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) {
+// UpdateBalances updates the balances of the pool
+// TODO: It is unclear what the inputs are here.  We should document this function.
+// TODO: DOCUMENT THIS
+// TODO: CAPITAL LETTERS ARE GLOBAL VARIABLES.
+func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) { //nolint:gocritic
 	if toRowan {
 		p.ExternalAssetBalance = X.Add(x)
 		p.NativeAssetBalance = Y.Sub(swapResult)
@@ -45,15 +51,13 @@ func (p *Pool) UpdateBalances(toRowan bool, X, x, Y, swapResult sdk.Uint) {
 	}
 }
 
-type Pools []Pool
-type LiquidityProviders []LiquidityProvider
+type (
+	Pools              []Pool
+	LiquidityProviders []LiquidityProvider
+)
 
 func (l LiquidityProvider) Validate() bool {
-
-	if !l.Asset.Validate() {
-		return false
-	}
-	return true
+	return l.Asset.Validate()
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider
@@ -84,8 +88,8 @@ func NewLiquidityProtectionParamsResponse(params *LiquidityProtectionParams, rat
 	return LiquidityProtectionParamsRes{Params: params, RateParams: &rateParams, Height: height}
 }
 
-func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) {
-
+// todo: document
+func (p *Pool) ExtractDebt(X, Y sdk.Uint, toRowan bool) (sdk.Uint, sdk.Uint) { //nolint:gocritic
 	if toRowan {
 		Y = Y.Add(p.NativeLiabilities)
 		X = X.Add(p.ExternalLiabilities)

@@ -54,8 +54,8 @@ type CosmosSub struct {
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
 	key *ecdsa.PrivateKey,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
-
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger,
+) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
@@ -151,7 +151,6 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 
 				ctx := context.Background()
 				block, err := client.BlockResults(ctx, &tmpBlockNumber)
-
 				if err != nil {
 					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
 						errorMessageKey, err.Error())
@@ -188,7 +187,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 				err = sub.DB.Put([]byte(cosmosLevelDBKey), big.NewInt(lastProcessedBlock).Bytes(), nil)
 				if err != nil {
 					// if you can't write to leveldb, then error out as something is seriously amiss
-					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
+					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err) //nolint:gocritic
 				}
 				blockNumber++
 			}
@@ -238,7 +237,7 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 			}
 
 			// compare method id to check if it is NewProphecyClaim method
-			if bytes.Compare(tx.Data()[0:4], methodID) != 0 {
+			if !bytes.Equal(tx.Data()[0:4], methodID) {
 				continue
 			}
 
@@ -283,7 +282,7 @@ func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
 // MessageProcessed check if cosmogs message already processed
 func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyClaimUnique) bool {
 	for _, prophecyClaim := range prophecyClaims {
-		if bytes.Compare(message.CosmosSender, prophecyClaim.CosmosSender) == 0 &&
+		if bytes.Equal(message.CosmosSender, prophecyClaim.CosmosSender) &&
 			message.CosmosSenderSequence.Cmp(prophecyClaim.CosmosSenderSequence) == 0 {
 			return true
 		}
@@ -375,6 +374,7 @@ func (sub CosmosSub) Replay(symbolTranslator *symbol_translator.SymbolTranslator
 // getOracleClaimType sets the OracleClaim's claim type based upon the witnessed event type
 func getOracleClaimType(eventType string) types.Event {
 	var claimType types.Event
+
 	switch eventType {
 	case types.MsgBurn.String():
 		claimType = types.MsgBurn
@@ -387,7 +387,6 @@ func getOracleClaimType(eventType string) types.Event {
 }
 
 func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
-
 	for i := 0; i < 5; i++ {
 		client, auth, target, err := txs.InitRelayConfig(
 			sub.EthProvider,
@@ -396,7 +395,6 @@ func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client
 			sub.PrivateKey,
 			sub.SugaredLogger,
 		)
-
 		if err != nil {
 			sub.SugaredLogger.Errorw("failed in init relay config.",
 				errorMessageKey, err.Error())

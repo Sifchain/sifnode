@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -15,12 +14,12 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/app"
-	//sifnodedcmd "github.com/Sifchain/sifnode/cmd/sifnoded/cmd"
+	// sifnodedcmd "github.com/Sifchain/sifnode/cmd/sifnoded/cmd"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 func TestAddGenesisValidatorCmd(t *testing.T) {
-	homeDir, err := ioutil.TempDir("", "")
+	homeDir, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	defer func(path string) {
 		err := os.RemoveAll(path)

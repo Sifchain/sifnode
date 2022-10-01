@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -21,7 +20,7 @@ func TestGenerateEntry(t *testing.T) {
 		"--token_decimals", "6",
 	})
 	app.SetConfig(false)
-	homeDir, err := ioutil.TempDir("", "")
+	homeDir, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(homeDir)
 	err = svrcmd.Execute(cmd, homeDir)

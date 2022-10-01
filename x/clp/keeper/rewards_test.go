@@ -68,23 +68,23 @@ func TestEndBlock(t *testing.T) {
 	require.True(t, periodOneSupply.IsGTE(startingSupply))
 	// check pool has expected increase
 	// TODO : Modify reward policy so that the numbers asserted match with expected
-	//pool, err := app.ClpKeeper.GetPool(ctx, "atom")
-	//require.NoError(t, err)
-	//require.Equal(t, "66666666666666666600001000", pool.NativeAssetBalance.String())
-	//expected := sdk.NewUintFromString("66666666666666666666667666")
-	//accuracy := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Quo(sdk.NewDecFromBigInt(expected.BigInt()))
-	//require.True(t, accuracy.GT(sdk.MustNewDecFromStr("0.99")))
+	// pool, err := app.ClpKeeper.GetPool(ctx, "atom")
+	// require.NoError(t, err)
+	// require.Equal(t, "66666666666666666600001000", pool.NativeAssetBalance.String())
+	// expected := sdk.NewUintFromString("66666666666666666666667666")
+	// accuracy := sdk.NewDecFromBigInt(pool.NativeAssetBalance.BigInt()).Quo(sdk.NewDecFromBigInt(expected.BigInt()))
+	// require.True(t, accuracy.GT(sdk.MustNewDecFromStr("0.99")))
 	//// TODO continue through another portion of the period and ensure supply is increased.
 	//// continue through a non reward period
-	//for block := 11; block <= 20; block++ {
+	// for block := 11; block <= 20; block++ {
 	//	app.BeginBlock(abci.RequestBeginBlock{Header: tenderminttypes.Header{Height: int64(block)}})
 	//	app.EndBlock(abci.RequestEndBlock{Height: int64(block)})
 	//	app.Commit()
 	//}
 	//// check total supply is unchanged
-	//supplyCheck := app.BankKeeper.GetSupply(ctx, "rowan")
-	////log.Printf("starting supply: %s final supply: %s after period one: %s", startingSupply.String(), supplyCheck.String(), periodOneSupply.String())
-	//require.True(t, supplyCheck.Equal(periodOneSupply))
+	// supplyCheck := app.BankKeeper.GetSupply(ctx, "rowan")
+	//// log.Printf("starting supply: %s final supply: %s after period one: %s", startingSupply.String(), supplyCheck.String(), periodOneSupply.String())
+	// require.True(t, supplyCheck.Equal(periodOneSupply))
 }
 
 func TestUseUnlockedLiquidity(t *testing.T) {
@@ -101,7 +101,8 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 			height:   1,
 			use:      sdk.NewUint(1000),
 			expected: types.ErrBalanceNotAvailable,
-		}, {
+		},
+		{
 			name:     "Unlock not ready",
 			height:   5,
 			use:      sdk.NewUint(1000),
@@ -177,7 +178,8 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	period := types.RewardPeriod{
 		RewardPeriodId: "Test 1", RewardPeriodStartBlock: 0, RewardPeriodEndBlock: 0, RewardPeriodAllocation: &allocation,
 		RewardPeriodDefaultMultiplier: &oneDec, RewardPeriodDistribute: true, RewardPeriodMod: 0,
-		RewardPeriodPoolMultipliers: nil}
+		RewardPeriodPoolMultipliers: nil,
+	}
 
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, 1, 1)
 	pool := pools[0]
@@ -219,20 +221,21 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	require.Equal(t, startBalance.Add(diffBalance).String(), moduleBalance2.String())
 }
 
-// nolint
 func createRewardsDistributeEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
 	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
-	return []sdk.Event{sdk.NewEvent("rewards/distribution",
-		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
-		sdk.NewAttribute("amounts", amountsStr)),
+	return []sdk.Event{
+		sdk.NewEvent("rewards/distribution",
+			sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+			sdk.NewAttribute("amounts", amountsStr)),
 	}
 }
 
 func createRewardsAccumEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
 	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
-	return []sdk.Event{sdk.NewEvent("rewards/accumulation",
-		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
-		sdk.NewAttribute("amounts", amountsStr)),
+	return []sdk.Event{
+		sdk.NewEvent("rewards/accumulation",
+			sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+			sdk.NewAttribute("amounts", amountsStr)),
 	}
 }
 
@@ -252,7 +255,8 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	period := types.RewardPeriod{
 		RewardPeriodId: "Test 1", RewardPeriodStartBlock: 0, RewardPeriodEndBlock: 0, RewardPeriodAllocation: &allocation,
 		RewardPeriodDefaultMultiplier: &oneDec, RewardPeriodDistribute: true, RewardPeriodMod: 0,
-		RewardPeriodPoolMultipliers: nil}
+		RewardPeriodPoolMultipliers: nil,
+	}
 
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, 1, 1)
 	pool := pools[0]
@@ -281,9 +285,10 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 }
 
 func createFailedEvent(receiver sdk.AccAddress) []sdk.Event {
-	return []sdk.Event{sdk.NewEvent("rewards/distribution_error",
-		sdk.NewAttribute("liquidity_provider", receiver.String()),
-		sdk.NewAttribute("error", fmt.Sprint(receiver.String(), " is not allowed to receive funds: unauthorized")),
-		sdk.NewAttribute("height", "0")),
+	return []sdk.Event{
+		sdk.NewEvent("rewards/distribution_error",
+			sdk.NewAttribute("liquidity_provider", receiver.String()),
+			sdk.NewAttribute("error", fmt.Sprint(receiver.String(), " is not allowed to receive funds: unauthorized")),
+			sdk.NewAttribute("height", "0")),
 	}
 }

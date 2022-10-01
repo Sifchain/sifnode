@@ -8,9 +8,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type PoolRowanMap map[*types.Pool]sdk.Uint
-type LpRowanMap map[string]sdk.Uint
-type LpPoolMap map[string][]LPPool
+type (
+	PoolRowanMap map[*types.Pool]sdk.Uint
+	LpRowanMap   map[string]sdk.Uint
+	LpPoolMap    map[string][]LPPool
+)
 
 func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
 	a, b, c := k.doProviderDistribution(ctx)
@@ -38,7 +40,7 @@ func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolR
 
 	for pool, sub := range poolRowanMap {
 		// will never fail
-		k.RemoveRowanFromPool(ctx, pool, sub) // nolint:errcheck
+		k.RemoveRowanFromPool(ctx, pool, sub) //nolint:errcheck
 	}
 }
 
@@ -47,7 +49,7 @@ func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMa
 		addr, _ := sdk.AccAddressFromBech32(lpAddress) // We know this can't fail as we previously filtered out invalid strings
 		coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(totalRowan.BigInt()))
 
-		//TransferCoinsFromPool(pool, provider_rowan, provider_address)
+		// TransferCoinsFromPool(pool, provider_rowan, provider_address)
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(coin))
 		if err != nil {
 			fireLPPayoutErrorEvent(ctx, addr, typeStr, err)
@@ -79,7 +81,7 @@ type FormattedPool struct {
 }
 
 func PrintPools(pools []LPPool) string {
-	var formattedPools = make([]FormattedPool, len(pools))
+	formattedPools := make([]FormattedPool, len(pools))
 
 	for i, pool := range pools {
 		formattedPools[i] = FormattedPool{Pool: pool.Pool.ExternalAsset.Symbol, Amount: pool.Amount}
@@ -100,8 +102,7 @@ func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr str
 	ctx.EventManager().EmitEvents(sdk.Events{failureEvent})
 }
 
-//nolint
-func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
+func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) { //nolint:unused
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(
 		types.EventTypeProviderDistributionDistribution,
@@ -172,12 +173,12 @@ func PoolRowanMapToLPPools(poolRowanMap PoolRowanMap) []LPPool {
 }
 
 func FilterValidLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvider) []ValidLiquidityProvider {
-	var valid []ValidLiquidityProvider //nolint
+	var valid []ValidLiquidityProvider //nolint:prealloc
 
 	for _, lp := range lps {
 		address, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 		if err != nil {
-			//k.Logger(ctx).Error(fmt.Sprintf("Liquidity provider address %s error %s", lp.LiquidityProviderAddress, err.Error()))
+			// k.Logger(ctx).Error(fmt.Sprintf("Liquidity provider address %s error %s", lp.LiquidityProviderAddress, err.Error()))
 			fireLPAddressErrorEvent(ctx, lp.LiquidityProviderAddress, err)
 			continue
 		}
@@ -248,10 +249,10 @@ func fireLPAddressErrorEvent(ctx sdk.Context, address string, err error) {
 }
 
 func CalcProviderDistributionAmount(rowanProviderDistribution sdk.Dec, totalPoolUnits, providerPoolUnits sdk.Uint) sdk.Uint {
-	//provider_percentage = provider_units / total_pool_units
+	// provider_percentage = provider_units / total_pool_units
 	providerPercentage := sdk.NewDecFromBigInt(providerPoolUnits.BigInt()).Quo(sdk.NewDecFromBigInt(totalPoolUnits.BigInt()))
 
-	//provider_rowan = provider_percentage * rowan_provider_distribution
+	// provider_rowan = provider_percentage * rowan_provider_distribution
 	providerRowan := providerPercentage.Mul(rowanProviderDistribution)
 
 	return sdk.Uint(providerRowan.RoundInt())

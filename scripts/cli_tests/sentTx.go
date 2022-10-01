@@ -5,9 +5,9 @@ import (
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-type SentTx struct{} //nolint
+type SentTx struct{}
 
-func getSendTxArgs() Args { //nolint
+func getSendTxArgs() Args {
 	defaultArgs := getDefaultArgs()
 	setNetwork(&defaultArgs, LocalNet)
 	return defaultArgs
@@ -17,8 +17,8 @@ func (SentTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getSendTxArgs()
 	sendReq := bank.NewMsgSend(args.Sender, args.SifchainReceiver, args.Amount)
 	return sendReq, args
-
 }
+
 func (SentTx) GetName() string {
 	return "SEND"
 }

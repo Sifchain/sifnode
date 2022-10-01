@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -22,9 +21,7 @@ const (
 	AppTOML     = "app.toml"
 )
 
-var (
-	DefaultNodeHome = app.DefaultNodeHome
-)
+var DefaultNodeHome = app.DefaultNodeHome
 
 type CLIUtils interface {
 	Reset([]string) error
@@ -69,7 +66,7 @@ func NewCLI(chainID, keyringBackend string) CLI {
 
 func (c CLI) Reset(paths []string) error {
 	for _, _path := range paths {
-		dir, err := ioutil.ReadDir(_path)
+		dir, err := os.ReadDir(_path)
 		for _, d := range dir {
 			_ = os.RemoveAll(path.Join([]string{_path, d.Name()}...))
 		}
@@ -91,7 +88,7 @@ func (c CLI) ResetState(nodeDir string) (*string, error) {
 }
 
 func (c CLI) CreateDir(path string) error {
-	return os.MkdirAll(path, 0755)
+	return os.MkdirAll(path, 0o755)
 }
 
 func (c CLI) MoveFile(src, dest string) (*string, error) {
@@ -126,7 +123,7 @@ func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error)
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
-	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
+	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins, ","), "--home", nodeDir)
 }
 
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {

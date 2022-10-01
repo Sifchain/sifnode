@@ -62,7 +62,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	totalProviderDistributioned := sdk.NewUint(628) // blockRate * poolDepthRowan
 	// only used for events collection
 	ctx, app := test.CreateTestAppClp(false)
-	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.NativeSymbol, sdk.NewInt(2*628)))) //x2 since there's 2 pools
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.NativeSymbol, sdk.NewInt(2*628)))) // x2 since there's 2 pools
 	// clear MintCoins events
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 
@@ -92,16 +92,16 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 
 	for i, providerDistribution := range providerDistributions {
 		addr := lps[i].LiquidityProviderAddress
-		//addr, _ := sdk.AccAddressFromBech32(lps[i].LiquidityProviderAddress)
-		//tuple := findTupleByAddress(addr, tuples)
+		// addr, _ := sdk.AccAddressFromBech32(lps[i].LiquidityProviderAddress)
+		// tuple := findTupleByAddress(addr, tuples)
 		require.Equal(t, providerDistribution, lpRowanMap[addr])
 
 		// We clear the EventManager before every call as Events accumulate throughout calls
-		//ctx = ctx.WithEventManager(sdk.NewEventManager())
+		// ctx = ctx.WithEventManager(sdk.NewEventManager())
 
-		//transferEvents := createTransferEvents(providerDistribution, addr)
+		// transferEvents := createTransferEvents(providerDistribution, addr)
 		// NOTE: we use Subset here as bankKeeper.SendCoinsFromModuleToAccount does fire Events itself which we do not care for at this point
-		//require.Subset(t, ctx.EventManager().Events(), transferEvents)
+		// require.Subset(t, ctx.EventManager().Events(), transferEvents)
 	}
 
 	// repeat for a second pool
@@ -120,12 +120,12 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Subset(t, ctx.EventManager().Events(), createDistributeEvent(lps[len(lps)-1].LiquidityProviderAddress))
 }
 
-//nolint
 func createDistributeEvent(address string) []sdk.Event {
-	return []sdk.Event{sdk.NewEvent("lppd/distribution",
-		sdk.NewAttribute("recipient", address),
-		sdk.NewAttribute("total_amount", "502"),
-		sdk.NewAttribute("amounts", "[{\"pool\":\"cusdc\",\"amount\":\"251\"},{\"pool\":\"ceth\",\"amount\":\"251\"}]")),
+	return []sdk.Event{
+		sdk.NewEvent("lppd/distribution",
+			sdk.NewAttribute("recipient", address),
+			sdk.NewAttribute("total_amount", "502"),
+			sdk.NewAttribute("amounts", "[{\"pool\":\"cusdc\",\"amount\":\"251\"},{\"pool\":\"ceth\",\"amount\":\"251\"}]")),
 	}
 }
 

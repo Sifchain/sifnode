@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -104,7 +105,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 			}
 
 			pool.RewardPeriodNativeDistributed = pool.RewardPeriodNativeDistributed.Add(rowan)
-			k.SetPool(ctx, pool) // nolint:errcheck
+			k.SetPool(ctx, pool) //nolint:errcheck
 		}
 
 		// As we have already minted all coins we wanted to distribute, check if we could distribute them all.
@@ -113,7 +114,7 @@ func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Ui
 		diff := moduleBalancePostTransfer.Sub(moduleBalancePreMinting).Amount // post is always >= pre
 
 		if !diff.IsZero() {
-			k.BurnRowan(ctx, diff) // nolint:errcheck
+			k.BurnRowan(ctx, diff) //nolint:errcheck
 		}
 		coinsMinted := sdk.NewIntFromBigInt(coinsToMint.BigInt()).Sub(diff)
 		fireRewardsEvent(ctx, "rewards/distribution", coinsMinted, PoolRowanMapToLPPools(poolRowanMap))
@@ -164,7 +165,7 @@ type PoolReward struct {
 
 func CollectPoolRewardTuples(pools []*types.Pool, blockDistribution sdk.Uint, totalDepth sdk.Dec, period *types.RewardPeriod) ([]PoolReward, sdk.Uint) {
 	coinsToMint := sdk.ZeroUint()
-	var tuples []PoolReward //nolint
+	var tuples []PoolReward //nolint:prealloc
 
 	remaining := blockDistribution
 	for _, pool := range pools {
@@ -261,7 +262,7 @@ func (k Keeper) UseUnlockedLiquidity(ctx sdk.Context, lp types.LiquidityProvider
 	}
 
 	// prune records.
-	//var records []*types.LiquidityUnlock
+	// var records []*types.LiquidityUnlock
 	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
 		/* move to begin blocker
@@ -286,7 +287,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 	currentHeight := ctx.BlockHeight()
 
 	var write bool
-	//var records []*types.LiquidityUnlock
+	// var records []*types.LiquidityUnlock
 	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
 		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) {

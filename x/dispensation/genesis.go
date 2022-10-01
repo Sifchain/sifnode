@@ -2,6 +2,7 @@ package dispensation
 
 import (
 	"fmt"
+
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -56,7 +57,6 @@ func ValidateGenesis(data GenesisState) error {
 				return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Record is invalid : %s", record.String()))
 			}
 		}
-
 	}
 	if data.Distributions != nil {
 		for _, dist := range data.Distributions.Distributions {

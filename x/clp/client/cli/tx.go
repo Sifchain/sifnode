@@ -3,12 +3,11 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"log"
+	"os"
 	"path/filepath"
 
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	"log"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -52,6 +51,7 @@ func GetTxCmd() *cobra.Command {
 
 	return clpTxCmd
 }
+
 func GetCmdAddRewardPeriod() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reward-period",
@@ -68,7 +68,7 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}
@@ -455,7 +455,7 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}
@@ -470,7 +470,7 @@ func GetCmdUpdateStakingRewards() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				input, err = ioutil.ReadFile(file)
+				input, err = os.ReadFile(file)
 				if err != nil {
 					return err
 				}
@@ -759,7 +759,7 @@ func GetCmdSetProviderDistributionPeriods() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				return err
 			}

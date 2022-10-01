@@ -1,8 +1,9 @@
-package symbol_translator
+package symbol_translator //nolint:stylecheck
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (

@@ -1,4 +1,4 @@
-package _39
+package _39 //nolint:stylecheck
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -14,6 +14,6 @@ type GenesisState struct {
 	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account"`
 }
 
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cryptocodec.RegisterCrypto(cdc)
 }

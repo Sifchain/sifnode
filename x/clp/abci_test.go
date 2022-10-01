@@ -27,7 +27,6 @@ func TestEndBlocker(t *testing.T) {
 	poolceth, err := app.ClpKeeper.GetPool(ctx, "ceth")
 	assert.NoError(t, err)
 	assert.True(t, poolceth.NativeAssetBalance.GT(pooldash.NativeAssetBalance))
-
 }
 
 func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
@@ -43,10 +42,11 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 			RewardPeriodStartBlock: 0,
 			RewardPeriodEndBlock:   2,
 			RewardPeriodAllocation: &allocations,
-			RewardPeriodPoolMultipliers: []*types.PoolMultiplier{{
-				PoolMultiplierAsset: "cdash",
-				Multiplier:          &multiplierDec1,
-			},
+			RewardPeriodPoolMultipliers: []*types.PoolMultiplier{
+				{
+					PoolMultiplierAsset: "cdash",
+					Multiplier:          &multiplierDec1,
+				},
 				{
 					PoolMultiplierAsset: "ceth",
 					Multiplier:          &multiplierDec2,
@@ -57,7 +57,7 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 }
 
 func TestBeginBlocker(t *testing.T) {
-	testcases := []struct { //nolint
+	testcases := []struct {
 		name                           string
 		createBalance                  bool
 		createPool                     bool
@@ -331,7 +331,7 @@ func TestBeginBlocker(t *testing.T) {
 			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
 
 			if tc.panicErr != "" {
-				// nolint:errcheck
+
 				require.PanicsWithError(t, tc.panicErr, func() {
 					clp.BeginBlocker(ctx, app.ClpKeeper)
 				})

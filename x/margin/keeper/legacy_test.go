@@ -79,7 +79,7 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, got := handler(ctx, tt.msg)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)

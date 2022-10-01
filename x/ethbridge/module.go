@@ -43,7 +43,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the ethbridge module's types for the given codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
@@ -82,7 +82,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return client.GetQueryCmd()
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 
 // AppModuleSimulation defines the module simulation functions used by the ethbridge module.
 type AppModuleSimulation struct{}
@@ -107,7 +107,8 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func NewAppModule(
 	oracleKeeper types.OracleKeeper, bankKeeper types.BankKeeper,
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
-	cdc *codec.Codec) AppModule {
+	cdc *codec.Codec,
+) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
@@ -144,7 +145,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
-func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier { //nolint
+func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 	return NewQuerier(am.BridgeKeeper, amino)
 }
 

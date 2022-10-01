@@ -8,7 +8,6 @@ import (
 )
 
 func Migrate(state v039dispensation.GenesisState) *types.GenesisState {
-
 	records := make([]*types.DistributionRecord, 0)
 	for _, d := range state.DistributionRecords {
 		records = append(records, &types.DistributionRecord{
@@ -65,7 +64,7 @@ func migrateDistributionRecordStatus(status v039dispensation.DistributionStatus)
 }
 
 func migrateDistributionType(t v039dispensation.DistributionType) types.DistributionType {
-	if t == v039dispensation.Airdrop {
+	if t == v039dispensation.Airdrop { //nolint:gocritic
 		return types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
 	} else if t == v039dispensation.LiquidityMining {
 		return types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING

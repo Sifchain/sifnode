@@ -14,19 +14,23 @@ const (
 
 var (
 	// BaseABIBINGenCmd is the base command for contract compilation to ABI and BIN
-	BaseABIBINGenCmd = strings.Join([]string{"solc ",
+	BaseABIBINGenCmd = strings.Join([]string{
+		"solc ",
 		fmt.Sprintf("--%s ./contracts/%s%s.sol ", SolcCmdText, DirectoryText, ContractText),
 		fmt.Sprintf("-o ../cmd/ebrelayer/contract/generated/%s/%s ", SolcCmdText, ContractText),
 		"--overwrite ",
-		"--allow-paths *,"},
+		"--allow-paths *,",
+	},
 		"")
 	// BaseBindingGenCmd is the base command for contract binding generation
-	BaseBindingGenCmd = strings.Join([]string{"abigen ",
+	BaseBindingGenCmd = strings.Join([]string{
+		"abigen ",
 		fmt.Sprintf("--bin ../cmd/ebrelayer/contract/generated/bin/%s/%s.bin ", ContractText, ContractText),
 		fmt.Sprintf("--abi ../cmd/ebrelayer/contract/generated/abi/%s/%s.abi ", ContractText, ContractText),
 		fmt.Sprintf("--pkg %s ", ContractText),
 		fmt.Sprintf("--type %s ", ContractText),
-		fmt.Sprintf("--out ../cmd/ebrelayer/contract/generated/bindings/%s/%s.go", ContractText, ContractText)},
+		fmt.Sprintf("--out ../cmd/ebrelayer/contract/generated/bindings/%s/%s.go", ContractText, ContractText),
+	},
 		"")
 )
 
@@ -38,17 +42,17 @@ func CompileContracts(contracts BridgeContracts) error {
 		if contract.String() == BridgeBank.String() {
 			baseDirectory = contract.String() + "/"
 		}
-		dirABIBINGenCmd := strings.Replace(BaseABIBINGenCmd, DirectoryText, baseDirectory, -1)
-		contractABIBINGenCmd := strings.Replace(dirABIBINGenCmd, ContractText, contract.String(), -1)
+		dirABIBINGenCmd := strings.Replace(BaseABIBINGenCmd, DirectoryText, baseDirectory, -1)        //nolint:gocritic
+		contractABIBINGenCmd := strings.Replace(dirABIBINGenCmd, ContractText, contract.String(), -1) //nolint:gocritic
 
 		// Segment BIN and ABI generation cmds
-		contractBINGenCmd := strings.Replace(contractABIBINGenCmd, SolcCmdText, "bin", -1)
+		contractBINGenCmd := strings.Replace(contractABIBINGenCmd, SolcCmdText, "bin", -1) //nolint:gocritic
 		err := execCmd(contractBINGenCmd)
 		if err != nil {
 			return err
 		}
 
-		contractABIGenCmd := strings.Replace(contractABIBINGenCmd, SolcCmdText, "abi", -1)
+		contractABIGenCmd := strings.Replace(contractABIBINGenCmd, SolcCmdText, "abi", -1) //nolint:gocritic
 		err = execCmd(contractABIGenCmd)
 		if err != nil {
 			return err
@@ -60,7 +64,7 @@ func CompileContracts(contracts BridgeContracts) error {
 // GenerateBindings generates bindings for each contract
 func GenerateBindings(contracts BridgeContracts) error {
 	for _, contract := range contracts {
-		genBindingCmd := strings.Replace(BaseBindingGenCmd, ContractText, contract.String(), -1)
+		genBindingCmd := strings.Replace(BaseBindingGenCmd, ContractText, contract.String(), -1) //nolint:gocritic
 		err := execCmd(genBindingCmd)
 		if err != nil {
 			return err

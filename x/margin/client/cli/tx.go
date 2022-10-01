@@ -3,7 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"os"
 
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/spf13/viper"
@@ -104,7 +104,6 @@ func GetOpenCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("leverage")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
-
 }
 
 func GetCloseCmd() *cobra.Command {
@@ -308,7 +307,7 @@ func GetUpdatePoolsCmd() *cobra.Command {
 
 func readPoolsJSON(filename string) ([]string, error) {
 	var pools []string
-	bz, err := ioutil.ReadFile(filename)
+	bz, err := os.ReadFile(filename)
 	if err != nil {
 		return []string{}, err
 	}

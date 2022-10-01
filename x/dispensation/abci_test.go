@@ -1,6 +1,8 @@
 package dispensation_test
 
 import (
+	"testing"
+
 	types2 "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
@@ -8,11 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_BeginBlocker(t *testing.T) {
-
 	// Basic Setup
 	app, ctx := test.CreateTestApp(false)
 	ecoPoolAddress, err := sdk.AccAddressFromBech32(types.EcoPool)
@@ -57,5 +57,4 @@ func Test_BeginBlocker(t *testing.T) {
 	// Checking BeginBlocker After failed Conditional
 	dispensation.BeginBlocker(ctx, app.DispensationKeeper)
 	assert.Equal(t, app.DispensationKeeper.GetBankKeeper().GetBalance(ctx, ecoPoolAddress, rowan).Amount, totalMintAmount)
-
 }

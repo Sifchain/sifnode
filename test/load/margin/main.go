@@ -74,7 +74,7 @@ func run(cmd *cobra.Command, args []string) error {
 	positions := 1000
 
 	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
-	key, err := txf.Keybase().Key(clientCtx.GetFromName())
+	key, _ := txf.Keybase().Key(clientCtx.GetFromName())
 
 	accountNumber, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, key.GetAddress())
 	if err != nil {
@@ -94,7 +94,8 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num int) {
+// TODO: DETERMINE IF THIS FINCTION IS NEEDED.
+func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num int) { //nolint:unused
 	for a := 0; a < num; a++ {
 		info, _, err := keys.NewMnemonic("funded_"+strconv.Itoa(a), keyring.English, hd.CreateHDPath(118, 0, 0).String(), keyring.DefaultBIP39Passphrase, hd.Secp256k1)
 		if err != nil {
@@ -105,7 +106,8 @@ func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num in
 	}
 }
 
-func newAccountFunder(funded chan keyring.Info, clientCtx client.Context, txf tx.Factory, fromAddress sdk.AccAddress, coins sdk.Coins) func(keyring.Info) {
+// TODO: DETERMINE IF THIS FUNCTION IS NEEDED.
+func newAccountFunder(funded chan keyring.Info, clientCtx client.Context, txf tx.Factory, fromAddress sdk.AccAddress, coins sdk.Coins) func(keyring.Info) { //nolint:unused
 	accountNumber, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, fromAddress)
 	if err != nil {
 		panic(err)
@@ -147,16 +149,16 @@ func newAccountFunder(funded chan keyring.Info, clientCtx client.Context, txf tx
 	}
 }
 
-func newFaucet(keys keyring.Keyring, from, mnemonic string) (keyring.Info, error) {
+func newFaucet(keys keyring.Keyring, from, mnemonic string) (keyring.Info, error) { //nolint:unused
 	return keys.NewAccount(from, mnemonic, keyring.DefaultBIP39Passphrase, hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
 }
 
-func buildMsgs(traders []sdk.AccAddress) []*types.MsgOpen {
+func buildMsgs(traders []sdk.AccAddress) []*types.MsgOpen { //nolint:unused
 	collateralAsset := "rowan"
 	collateralAmount := uint64(100)
 	borrowAsset := "ceth"
 
-	var msgs []*types.MsgOpen
+	var msgs []*types.MsgOpen //nolint:prealloc
 	for i := range traders {
 		log.Printf("%s", traders[i].String())
 		msgs = append(msgs, &types.MsgOpen{
@@ -171,8 +173,8 @@ func buildMsgs(traders []sdk.AccAddress) []*types.MsgOpen {
 	return msgs
 }
 
-func buildTxs(txf tx.Factory, msgs []*types.MsgOpen) []client.TxBuilder {
-	var txs []client.TxBuilder
+func buildTxs(txf tx.Factory, msgs []*types.MsgOpen) []client.TxBuilder { //nolint:unused
+	var txs []client.TxBuilder //nolint:prealloc
 	for i := range msgs {
 		txb, err := tx.BuildUnsignedTx(txf, msgs[i])
 		if err != nil {
@@ -187,7 +189,7 @@ func buildTxs(txf tx.Factory, msgs []*types.MsgOpen) []client.TxBuilder {
 	return txs
 }
 
-func sendTxs(clientCtx client.Context, txs []client.TxBuilder) {
+func sendTxs(clientCtx client.Context, txs []client.TxBuilder) { //nolint:unused
 	for t := range txs {
 		txBytes, err := clientCtx.TxConfig.TxEncoder()(txs[t].GetTx())
 		if err != nil {

@@ -6,7 +6,7 @@ package contract
 // -------------------------------------------------------
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -38,7 +38,7 @@ func LoadABI(contractType txs.ContractRegistry) abi.ABI {
 	}
 
 	// Read the file containing the contract's ABI
-	contractRaw, err := ioutil.ReadFile(dir + filePath)
+	contractRaw, err := os.ReadFile(dir + filePath)
 	if err != nil {
 		panic(err)
 	}

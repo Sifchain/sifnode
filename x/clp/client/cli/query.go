@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	//"github.com/Sifchain/sifnode/x/clp"
+	// "github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 )
@@ -64,7 +64,6 @@ $ %s pool ETH ROWAN`,
 			params := types.NewQueryReqGetPool(ticker)
 
 			result, err := queryClient.GetPool(context.Background(), &params)
-
 			if err != nil {
 				return err
 			}
@@ -98,7 +97,6 @@ func GetCmdPools(queryRoute string) *cobra.Command {
 			result, err := queryClient.GetPools(context.Background(), &types.PoolsReq{
 				Pagination: pageReq,
 			})
-
 			if err != nil {
 				return err
 			}

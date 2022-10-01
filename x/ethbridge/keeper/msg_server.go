@@ -129,8 +129,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	})
 
 	return &types.MsgBurnResponse{}, nil
-
 }
+
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -186,8 +186,8 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 }
 
 func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
-	msg *types.MsgUpdateWhiteListValidator) (*types.MsgUpdateWhiteListValidatorResponse, error) {
-
+	msg *types.MsgUpdateWhiteListValidator,
+) (*types.MsgUpdateWhiteListValidatorResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
@@ -239,8 +239,8 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 }
 
 func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
-	msg *types.MsgUpdateCethReceiverAccount) (*types.MsgUpdateCethReceiverAccountResponse, error) {
-
+	msg *types.MsgUpdateCethReceiverAccount,
+) (*types.MsgUpdateCethReceiverAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 

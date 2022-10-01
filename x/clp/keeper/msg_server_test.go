@@ -608,7 +608,6 @@ func TestMsgServer_Swap(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
-
 				trGs := &tokenregistrytypes.GenesisState{
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
@@ -733,7 +732,6 @@ func TestMsgServer_Swap(t *testing.T) {
 
 			runningThreshold := app.ClpKeeper.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
 			require.Equal(t, tc.expectedRunningThresholdEnd.String(), runningThreshold.String())
-
 		})
 	}
 }

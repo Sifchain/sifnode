@@ -62,7 +62,7 @@ func TestKeeper_SetMTP(t *testing.T) {
 			ctx, _, marginKeeper := initKeeper(t)
 			got := marginKeeper.SetMTP(ctx, &tt.mtp)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -377,7 +377,7 @@ func TestKeeper_Borrow(t *testing.T) {
 
 			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.custodyAmount, &mtp, &pool, tt.leverage)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -536,7 +536,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 
 			_, got := marginKeeper.UpdateMTPHealth(ctx, mtp, pool)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -545,7 +545,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			}
 
 			got = mtp.Validate()
-			if tt.errString2 != nil {
+			if tt.errString2 != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString2.Error())
 			} else if tt.err2 == nil {
 				require.NoError(t, got)
@@ -825,7 +825,7 @@ func TestKeeper_Repay(t *testing.T) {
 
 			got := marginKeeper.Repay(ctx, &mtp, &pool, tt.repayAmount, false)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -834,7 +834,7 @@ func TestKeeper_Repay(t *testing.T) {
 			}
 
 			got = mtp.Validate()
-			if tt.errString2 != nil {
+			if tt.errString2 != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString2.Error())
 			} else if tt.err2 == nil {
 				require.NoError(t, got)
@@ -1013,7 +1013,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 
 			t.Logf("got %v", got)
 
-			if tt.errString != nil {
+			if tt.errString != nil { //nolint:gocritic
 				require.EqualError(t, got, tt.errString.Error())
 			} else if tt.err == nil {
 				require.NoError(t, got)
@@ -1063,6 +1063,7 @@ func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	require.NotNil(t, marginKeeper)
 	return ctx, app, marginKeeper
 }
+
 func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string, position types.Position, id uint64, health sdk.Dec) types.MTP {
 	storeKey := app.GetKey(types.StoreKey)
 	store := ctx.KVStore(storeKey)

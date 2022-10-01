@@ -135,7 +135,6 @@ func TestBalanceModuleAccountCheck(t *testing.T) {
 			_, stop := app.ClpKeeper.BalanceModuleAccountCheck()(ctx)
 			require.Equal(t, tc.stop, stop)
 		})
-
 	}
 }
 
@@ -208,6 +207,5 @@ func TestUnitsCheck(t *testing.T) {
 			_, stop := app.ClpKeeper.UnitsCheck()(ctx)
 			require.Equal(t, tc.stop, stop)
 		})
-
 	}
 }
