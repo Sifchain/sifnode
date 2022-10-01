@@ -94,7 +94,8 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num int) {
+// TODO: DETERMINE IF THIS FINCTION IS NEEDED.
+func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num int) { //nolint:unused
 	for a := 0; a < num; a++ {
 		info, _, err := keys.NewMnemonic("funded_"+strconv.Itoa(a), keyring.English, hd.CreateHDPath(118, 0, 0).String(), keyring.DefaultBIP39Passphrase, hd.Secp256k1)
 		if err != nil {
@@ -105,7 +106,8 @@ func generateAddresses(addresses chan keyring.Info, keys keyring.Keyring, num in
 	}
 }
 
-func newAccountFunder(funded chan keyring.Info, clientCtx client.Context, txf tx.Factory, fromAddress sdk.AccAddress, coins sdk.Coins) func(keyring.Info) {
+// TODO: DETERMINE IF THIS FUNCTION IS NEEDED.
+func newAccountFunder(funded chan keyring.Info, clientCtx client.Context, txf tx.Factory, fromAddress sdk.AccAddress, coins sdk.Coins) func(keyring.Info) { //nolint:unused
 	accountNumber, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, fromAddress)
 	if err != nil {
 		panic(err)
@@ -156,7 +158,7 @@ func buildMsgs(traders []sdk.AccAddress) []*types.MsgOpen { //nolint:unused
 	collateralAmount := uint64(100)
 	borrowAsset := "ceth"
 
-	var msgs []*types.MsgOpen
+	var msgs []*types.MsgOpen //nolint:prealloc
 	for i := range traders {
 		log.Printf("%s", traders[i].String())
 		msgs = append(msgs, &types.MsgOpen{

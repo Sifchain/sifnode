@@ -177,7 +177,10 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 }
 
 // | A/R - a/r |
-func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
+// TODO: DETERMINE IF THIS FUNCTION IS NEEDED.
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) { //nolint:gocritic
 	if R.Cmp(big.NewInt(0)) == 0 || r.Cmp(big.NewInt(0)) == 0 { // check for zeros
 		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
 	}
@@ -193,7 +196,10 @@ func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
 
 // TODO: this function needs clarification.
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
-func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int {
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+
+func calculateStakeUnits(P, R, A, r *big.Int, slipAdjustmentValues *slipAdjustmentValues) *big.Int { //nolint:gocritic
 	var add, numerator big.Int
 	add.Add(slipAdjustmentValues.RTimesa, slipAdjustmentValues.rTimesA)
 	numerator.Mul(P, &add)
@@ -218,7 +224,10 @@ type slipAdjustmentValues struct {
 	rTimesA        *big.Int
 }
 
-func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+// TODO: this function needs clarification.
+func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues { //nolint:gocritic
 	var denominator, rPlusR, aPlusA big.Int
 	rPlusR.Add(r, R)
 	aPlusA.Add(a, A)
@@ -242,7 +251,10 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 	return &slipAdjustmentValues{slipAdjustment: &slipAdjustment, RTimesa: &RTimesa, rTimesA: &rTimesA}
 }
 
-func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
+// TODO: this function needs clarification.
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
+func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint { // nolint:gocritic
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint()
 	}
@@ -267,8 +279,11 @@ func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRu
 	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
 }
 
+// TODO: this function needs clarification.
+// TODO: VARIABLE NAMES SHOULD BE DESCRIPTIVE.
+// TODO: don't use capital letters for local variables.
 func CalcSwapResult(toRowan bool,
-	X, x, Y sdk.Uint,
+	X, x, Y sdk.Uint, //nolint:gocritic
 	pmtpCurrentRunningRate, swapFeeRate sdk.Dec,
 ) sdk.Uint {
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
@@ -292,7 +307,8 @@ func CalcSwapResult(toRowan bool,
 }
 
 // y = (1-f)*x*Y/(x+X)
-func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
+// todo: don't use capital letters for local variables.
+func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat { //nolint:gocritic
 	var diff big.Rat
 	one := big.NewRat(1, 1)
 	diff.Sub(one, swapFeeRate) // diff = 1 - f
@@ -303,7 +319,8 @@ func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
 	return diff
 }
 
-func calcRawXYK(x, X, Y *big.Int) big.Rat {
+// TODO: don't use capitaln letters for local variables.
+func calcRawXYK(x, X, Y *big.Int) big.Rat { //nolint:gocritic
 	var numerator, denominator, xR, XR, YR, y big.Rat
 
 	xR.SetInt(x)
@@ -340,7 +357,8 @@ func CalcSpotPriceExternal(pool *types.Pool, decimalsExternal uint8, pmtpCurrent
 
 // Calculates the spot price of asset X in the preferred denominations accounting for PMTP.
 // Since this method applies PMTP adjustment, one of X, Y must be the native asset.
-func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) {
+// TODO: don't use capital letters for local  variables.
+func CalcSpotPriceX(X, Y sdk.Uint, decimalsX, decimalsY uint8, pmtpCurrentRunningRate sdk.Dec, isXNative bool) (sdk.Dec, error) { //nolint:gocritic
 	if X.Equal(sdk.ZeroUint()) {
 		return sdk.ZeroDec(), types.ErrInValidAmount
 	}
@@ -396,7 +414,7 @@ func CalcDenomChangeMultiplier(decimalsX, decimalsY uint8) big.Rat {
 	return *res.SetFrac(big.NewInt(1), dec)
 }
 
-func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
+func calcPriceImpact(X, x sdk.Uint) sdk.Uint { //nolint:gocritic
 	if x.IsZero() {
 		return sdk.ZeroUint()
 	}
