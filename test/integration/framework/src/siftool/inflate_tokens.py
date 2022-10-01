@@ -17,7 +17,6 @@ TokenDict = Mapping[str, Any]
 class InflateTokens:
     def __init__(self, ctx: test_utils.EnvCtx):
         self.ctx = ctx
-        self.wait_for_account_change_timeout = 1800  # For Ropsten we need to wait for 50 blocks i.e. ~20 min = 1200 s
         self.excluded_token_symbols = ["erowan"]  # TODO peggy1 only
 
         # Only transfer this tokens in a batch for Peggy1. See #2397. You would need to adjust this if
@@ -174,8 +173,7 @@ class InflateTokens:
         previous_block = self.ctx.eth.w3_conn.eth.block_number
         self.ctx.advance_blocks()
         log.info("Ethereum blocks advanced by {}".format(self.ctx.eth.w3_conn.eth.block_number - previous_block))
-        self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts,
-            polling_time=5, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+        self.ctx.wait_for_sif_balance_change(to_sif_addr, sif_balances_before, min_changes=sent_amounts, polling_time=5)
 
     # Distributes from intermediate_sif_account to each individual account
     def distribute_tokens_to_wallets(self, from_sif_account, tokens_to_transfer, amount_in_tokens, target_sif_accounts, amount_eth_gwei):
@@ -194,8 +192,7 @@ class InflateTokens:
                 remaining = remaining[batch_size:]
                 sif_balance_before = self.ctx.get_sifchain_balance(sif_acct)
                 self.ctx.send_from_sifchain_to_sifchain(from_sif_account, sif_acct, batch)
-                self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=batch,
-                    polling_time=2, timeout=None, change_timeout=self.wait_for_account_change_timeout)
+                self.ctx.wait_for_sif_balance_change(sif_acct, sif_balance_before, min_changes=batch, polling_time=2)
                 progress_current += batch_size
                 log.debug("Distributing tokens to wallets: {:0.0f}% done".format((progress_current/progress_total) * 100))
 
@@ -295,11 +292,14 @@ class InflateTokens:
 
 
 def run(*args):
-    # This script should be run with ENV_FILE set to a file containing definitions for OPERATOR_ADDRESS,
+    # This script should be run with SIFTOOL_ENV_FILE set to a file containing definitions for OPERATOR_ADDRESS,
     # ROWAN_SOURCE eth. Depending on if you're running it on Peggy1 or Peggy2 the format might be different.
     # See get_env_ctx() for details.
     assert not on_peggy2_branch, "Not supported yet on peggy2.0 branch"
     ctx = test_utils.get_env_ctx()
+    # For Ropsten we need to wait for 50 blocks i.e. ~20 min = 1200 s
+    ctx.wait_for_sif_balance_change_default_timeout = 0
+    ctx.wait_for_sif_balance_change_default_change_timeout = 1800
     script = InflateTokens(ctx)
     cmd = args[0]
     args = args[1:]
