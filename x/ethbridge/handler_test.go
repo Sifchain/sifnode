@@ -363,7 +363,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount, coinsToBurnSymbolPrefixed)
 	_, err = handler(ctx, &lockMsg)
 	require.NotNil(t, err)
-	require.Equal(t, "Pegged token cether can't be lock.", err.Error())
+	require.Equal(t, "pegged token cether can't be lock", err.Error())
 	// Fourth message OK
 	_, err = handler(ctx, &burnMsg)
 	require.Nil(t, err)

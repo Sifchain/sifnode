@@ -124,8 +124,10 @@ class Project:
         pass
 
     # Top-level "make install" should build everything, such as after git clone. If it does not, it's a bug.
-    def make_all(self):
-        self.cmd.execst(["make"], cwd=project_dir(), pipe=False)
+    # "Official" way is "make clean install"
+    def make_all(self, output_dir: Optional[str] = None):
+        env = None if output_dir is None else {"GOBIN": output_dir}
+        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False, env=env)
 
     # IntegrationEnvironment
     # TODO Merge
@@ -139,9 +141,10 @@ class Project:
     # TODO Merge
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
     # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    def make_go_binaries_2(self):
+    def make_go_binaries_2(self, feature_toggles: Optional[Iterable[str]] = None):
         # Original: cd smart-contracts; make -C .. install
-        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
+        extra_env = {feature: "1" for feature in feature_toggles}
+        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False, env=extra_env)
 
     def install_smart_contracts_dependencies(self):
         self.cmd.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
@@ -169,7 +172,7 @@ class Project:
         return self.cmd.get_user_home(".config", "siftool")
 
     def get_user_env_vars(self):
-        env_file = os.environ["ENV_FILE"]
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         return json.loads(self.cmd.read_text_file(env_file))
 
     def read_peruser_config_file(self, name):
@@ -197,7 +200,8 @@ class Project:
 
     def __rm_peggy2_compiled_go_stubs(self):
         # Peggy2: generated Go stubs (by smart-contracts/Makefile)
-        self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
+        if on_peggy2_branch:
+            self.__rm(project_dir("cmd", "ebrelayer", "contract", "generated"))
         self.__rm(project_dir(".proto-gen"))
 
     def __rm_run_env_files(self):
@@ -302,9 +306,11 @@ class Project:
             cache = cache[:max_cache_items]
         self.cmd.write_text_file(cache_index, json.dumps(cache))
 
+    def get_project_venv_dir(self):
+        return project_dir("test", "integration", "framework", "venv")
+
     def project_python(self):
-        project_venv_dir = project_dir("test", "integration", "framework", "venv")
-        return os.path.join(project_venv_dir, "bin", "python3")
+        return os.path.join(self.get_project_venv_dir(), "bin", "python3")
 
     def _ensure_build_dirs(self):
         for d in ["build", "build/repos", "build/generated"]:
@@ -398,6 +404,7 @@ class Project:
         self.__rm_sifnode_binaries()
         self.__rm(os.path.join(self.cmd.get_user_home(), ".sifnoded"))
         self.__rm_peggy2_compiled_go_stubs()
+        self.__rm_run_env_files()
         self.npm_install(self.smart_contracts_dir)
         self.make_go_binaries_2()
 

@@ -47,6 +47,15 @@ service Query {
   rpc GetPmtpParams(PmtpParamsReq) returns (PmtpParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/pmtp_params";
   };
+  rpc GetLiquidityProtectionParams(LiquidityProtectionParamsReq) returns (LiquidityProtectionParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/liquidity_protection_params";
+  };
+  rpc GetProviderDistributionParams(ProviderDistributionParamsReq) returns (ProviderDistributionParamsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/provider_distribution_params";
+  };
+  rpc GetSwapFeeRate(SwapFeeRateReq) returns (SwapFeeRateRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/swap_fee_rate";
+  };
 }
 
 message PoolReq {
@@ -152,13 +161,15 @@ message ParamsRes {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
+  string symmetry_ratio_threshold = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message RewardParamsReq {}
 
-message RewardParamsRes {
-  RewardParams params = 1;
-}
+message RewardParamsRes { RewardParams params = 1; }
 message PmtpParamsReq {}
 
 message PmtpParamsRes {
@@ -166,4 +177,27 @@ message PmtpParamsRes {
   sifnode.clp.v1.PmtpRateParams pmtp_rate_params = 2;
   sifnode.clp.v1.PmtpEpoch pmtp_epoch = 3;
   int64 height = 4;
+}
+
+message LiquidityProtectionParamsReq {}
+
+message LiquidityProtectionParamsRes {
+  sifnode.clp.v1.LiquidityProtectionParams params = 1;
+  sifnode.clp.v1.LiquidityProtectionRateParams rate_params = 2;
+  int64 height = 3;
+}
+
+message ProviderDistributionParamsReq {}
+
+message ProviderDistributionParamsRes {
+  ProviderDistributionParams params = 1;
+}
+
+message SwapFeeRateReq {}
+
+message SwapFeeRateRes {
+  string swap_fee_rate = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }

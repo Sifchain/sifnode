@@ -58,7 +58,7 @@ def web3_wait_for_connection_up(w3_conn: web3.Web3, polling_time: int = 1, timeo
             raise Exception("Timeout when trying to connect to {}".format(w3_conn.provider.endpoint_uri))
         time.sleep(polling_time)
 
-def validate_address_and_private_key(addr: Optional[Address], private_key: PrivateKey
+def validate_address_and_private_key(addr: Optional[Address], private_key: Optional[PrivateKey]
 ) -> Tuple[Address, Optional[PrivateKey]]:
     a = web3.Web3().eth.account
     addr = web3.Web3.toChecksumAddress(addr) if addr else None
@@ -71,7 +71,6 @@ def validate_address_and_private_key(addr: Optional[Address], private_key: Priva
         assert (not private_key.startswith("0x")) and (private_key == private_key.lower()), "Private key must be in lowercase hex without '0x' prefix"
     else:
         private_key = None
-    assert addr
     return addr, private_key
 
 class EthereumTxWrapper:

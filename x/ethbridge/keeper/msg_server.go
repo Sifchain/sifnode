@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"context"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +32,7 @@ func (srv msgServer) SetPauser(goCtx context.Context, msg *types.MsgPauser) (*ty
 	if err != nil {
 		return response, err
 	}
-	if !srv.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_ETHBRIDGE, signer) {
+	if !srv.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_ETHBRIDGE, signer) {
 		return response, types.ErrNotEnoughPermissions
 	}
 
@@ -49,7 +49,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	logger := srv.Keeper.Logger(ctx)
 	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
-		return response, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
+		return response, errors.Errorf("pegged token %s can't be lock", msg.Symbol)
 	}
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -105,7 +105,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		logger.Error("Native token can't be burn.",
 			"tokenSymbol", msg.Symbol)
-		return response, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+		return response, errors.Errorf("native token %s can't be burn", msg.Symbol)
 	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)

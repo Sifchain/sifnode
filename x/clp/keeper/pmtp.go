@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) PolicyStart(ctx sdk.Context) {
@@ -53,25 +54,40 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	return pmtpCurrentRunningRate
 }
 
+// NOTE: the code in this method must not panic otherwise the chain will halt
+// see: https://bytemeta.vip/repo/osmosis-labs/osmosis/issues/1305
 func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error {
 	pools := k.GetPools(ctx)
-	// compute swap prices for each pool
-	for _, pool := range pools {
-		normalizationFactor, adjustExternalToken := k.GetNormalizationFactorFromAsset(ctx, *pool.ExternalAsset)
-		// compute swap_price_native
-		swapPriceNative := CalcSwapPrice(types.GetSettlementAsset(), sdk.OneUint(), *pool.ExternalAsset, *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
-		// compute swap_price_external
-		swapPriceExternal := CalcSwapPrice(*pool.ExternalAsset, sdk.OneUint(), types.GetSettlementAsset(), *pool, normalizationFactor, adjustExternalToken, pmtpCurrentRunningRate)
 
-		pn := sdk.MustNewDecFromStr(swapPriceNative.String())
-		pe := sdk.MustNewDecFromStr(swapPriceExternal.String())
-		pool.SwapPriceNative = &pn
-		pool.SwapPriceExternal = &pe
-		// set pool
-		err := k.SetPool(ctx, pool)
+	// NOTE: if an error occurs in this loop we must continue to update the remaining pools
+	for _, pool := range pools {
+		decimalsExternal, err := k.GetAssetDecimals(ctx, *pool.ExternalAsset)
 		if err != nil {
-			return err
+			// Conditions for an error:
+			// 1. Asset has decimals value outside of 0-255 range
+			// 2. Asset cannot be found in the token registry
+			// In either case we should log the error then continue updating the remaining pools
+			ctx.Logger().Error(errors.Wrap(err, "error calculating pool spot price").Error())
+			continue
 		}
+
+		spotPriceNative, err := CalcSpotPriceNative(pool, decimalsExternal, pmtpCurrentRunningRate)
+		if err != nil {
+			// Error occurs if native asset pool depth is zero or result overflows
+			spotPriceNative = sdk.ZeroDec()
+		}
+		spotPriceExternal, err := CalcSpotPriceExternal(pool, decimalsExternal, pmtpCurrentRunningRate)
+		if err != nil {
+			// Error occurs if external asset pool depth is zero or result overflows
+			spotPriceExternal = sdk.ZeroDec()
+		}
+
+		// Note: the pool field should be named SpotPrice*
+		pool.SwapPriceNative = &spotPriceNative
+		pool.SwapPriceExternal = &spotPriceExternal
+
+		// ignore error since it will always be nil
+		_ = k.SetPool(ctx, pool)
 	}
 	return nil
 }

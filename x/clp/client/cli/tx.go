@@ -44,6 +44,10 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdatePmtpParams(),
 		GetCmdUpdateStakingRewards(),
 		GetCmdSetSymmetryThreshold(),
+		GetCmdUpdateLiquidityProtectionParams(),
+		GetCmdModifyLiquidityProtectionRates(),
+		GetCmdSetProviderDistributionPeriods(),
+		GetCmdSetSwapFeeRate(),
 	)
 
 	return clpTxCmd
@@ -86,6 +90,7 @@ func GetCmdAddRewardPeriod() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
+
 func GetCmdUpdateRewardParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reward-params",
@@ -133,9 +138,14 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			ratioThreshold, err := sdk.NewDecFromStr(viper.GetString(FlagSymmetryRatioThreshold))
+			if err != nil {
+				return err
+			}
 			msg := types.MsgSetSymmetryThreshold{
 				Signer:    signer.String(),
 				Threshold: threshold,
+				Ratio:     ratioThreshold,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -143,7 +153,44 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-	cmd.Flags().String(FlagSymmetryThreshold, "", "")
+	cmd.Flags().AddFlagSet(FsSymmetryThreshold)
+	cmd.Flags().AddFlagSet(FsSymmetryRatioThreshold)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetSwapFeeRate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-swap-fee-rate",
+		Short: "Set swap fee rate",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			swapFeeRate, err := sdk.NewDecFromStr(viper.GetString(FlagSwapFeeRate))
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgUpdateSwapFeeRateRequest{
+				Signer:      signer.String(),
+				SwapFeeRate: swapFeeRate,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsFlagSwapFeeRate)
+	if err := cmd.MarkFlagRequired(FlagSwapFeeRate); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -556,8 +603,8 @@ func GetCmdUnlockLiquidity() *cobra.Command {
 
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			signer := clientCtx.GetFromAddress()
-			units := viper.GetUint64(FlagUnits)
-			unitsInt := sdk.NewUint(units)
+			units := viper.GetString(FlagUnits)
+			unitsInt := sdk.NewUintFromString(units)
 			msg := types.MsgUnlockLiquidityRequest{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,
@@ -596,8 +643,8 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			signer := clientCtx.GetFromAddress()
-			units := viper.GetUint64(FlagUnits)
-			unitsInt := sdk.NewUint(units)
+			units := viper.GetString(FlagUnits)
+			unitsInt := sdk.NewUintFromString(units)
 			msg := types.MsgCancelUnlock{
 				Signer:        signer.String(),
 				ExternalAsset: &externalAsset,
@@ -619,6 +666,122 @@ func GetCmdCancelUnlockLiquidity() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdUpdateLiquidityProtectionParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "liquidity-protection-params",
+		Short: "Update liquidity protection params to set new threshold",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgUpdateLiquidityProtectionParams{
+				Signer:                          signer.String(),
+				MaxRowanLiquidityThreshold:      sdk.NewUintFromString(viper.GetString(FlagMaxRowanLiquidityThreshold)),
+				MaxRowanLiquidityThresholdAsset: viper.GetString(FlagMaxRowanLiquidityThresholdAsset),
+				EpochLength:                     viper.GetUint64(FlagLiquidityProtectionEpochLength),
+				IsActive:                        viper.GetBool(FlagLiquidityProtectionIsActive),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThreshold)
+	cmd.Flags().AddFlagSet(FsMaxRowanLiquidityThresholdAsset)
+	cmd.Flags().AddFlagSet(FsPmtpPeriodEpochLength)
+	cmd.Flags().AddFlagSet(FsLiquidityThresholdIsActive)
+	if err := cmd.MarkFlagRequired(FlagPmtpPeriodEpochLength); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThreshold); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagMaxRowanLiquidityThresholdAsset); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagLiquidityProtectionIsActive); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdModifyLiquidityProtectionRates() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "liquidity-protection-rates",
+		Short: "Modify liquidity protection current rowan liquidity threshold",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgModifyLiquidityProtectionRates{
+				Signer:                         signer.String(),
+				CurrentRowanLiquidityThreshold: sdk.NewUintFromString(viper.GetString(FlagCurrentRowanLiquidityThreshold)),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsCurrentRowanLiquidityThreshold)
+	if err := cmd.MarkFlagRequired(FlagCurrentRowanLiquidityThreshold); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetProviderDistributionPeriods() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-lppd-params",
+		Short: "Set LP provider distribution params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			var distributionPeriods []*types.ProviderDistributionPeriod
+			signer := clientCtx.GetFromAddress()
+			filePath := viper.GetString(FlagProviderDistributionPeriods)
+			file, err := filepath.Abs(filePath)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(input, &distributionPeriods)
+			if err != nil {
+				return err
+			}
+			msg := types.MsgAddProviderDistributionPeriodRequest{
+				Signer:              signer.String(),
+				DistributionPeriods: distributionPeriods,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsFlagProviderDistributionPeriods)
+	if err := cmd.MarkFlagRequired(FlagProviderDistributionPeriods); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

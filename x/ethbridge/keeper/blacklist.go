@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	db "github.com/tendermint/tm-db"
 )
 
 func (k Keeper) IsBlacklisted(ctx sdk.Context, address string) bool {
@@ -18,14 +19,14 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 		return err
 	}
 
-	if !k.tokenRegistryKeeper.IsAdminAccount(ctx, tokenregistrytypes.AdminType_ETHBRIDGE, from) {
+	if !k.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_ETHBRIDGE, from) {
 		return oracletypes.ErrNotAdminAccount
 	}
 
 	store := ctx.KVStore(k.storeKey)
 	// Process removals
 	var removals []string
-	iter := store.Iterator(types.BlacklistPrefix, nil)
+	iter := k.getStoreIterator(ctx)
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		if len(key) > 1 {
@@ -50,9 +51,8 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	for _, address := range removals {
 		store.Delete(append(types.BlacklistPrefix, []byte(address)...))
 	}
-	// Process additions
 	for _, address := range msg.Addresses {
-		store.Set(append(types.BlacklistPrefix, []byte(address)...), []byte{0x01})
+		store.Set(append(types.BlacklistPrefix, []byte(address)...), []byte(address))
 	}
 
 	return nil
@@ -60,14 +60,17 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 
 func (k Keeper) GetBlacklist(ctx sdk.Context) []string {
 	var addresses []string
-	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.BlacklistPrefix, nil)
+	iter := k.getStoreIterator(ctx)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
 		address := string(key[1:])
 		addresses = append(addresses, address)
 	}
-
 	return addresses
+}
+
+func (k Keeper) getStoreIterator(ctx sdk.Context) db.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.BlacklistPrefix)
 }

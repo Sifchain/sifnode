@@ -63,7 +63,7 @@ def load_main_module():
         os.path.join(venv_lib_dir, "site-packages"),
     ]
     paths_to_add = [p for p in paths if not any(os.path.realpath(p) == os.path.realpath(s) for s in sys.path)]
-    sys.path.extend(paths_to_add)
+    sys.path[:0] = paths_to_add
     import siftool.main as siftool_main
     return siftool_main
 
@@ -74,4 +74,7 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    if (sys.version_info.major < 3) or ((sys.version_info.major == 3) and (sys.version_info.minor < 8)):
+        print("Python 3.8 is required, but you have {}.{}".format(sys.version_info.major, sys.version_info.minor))
+        sys.exit(1)
     main(sys.argv[1:])

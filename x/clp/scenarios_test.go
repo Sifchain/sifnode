@@ -58,7 +58,6 @@ func TestScenarios(t *testing.T) {
 		tc := tc
 		ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 			trGs := &tokenregistrytypes.GenesisState{
-				AdminAccounts: test.GetAdmins(tc.Address),
 				Registry: &tokenregistrytypes.Registry{
 					Entries: []*tokenregistrytypes.RegistryEntry{
 						{Denom: tc.PoolAsset, BaseDenom: tc.PoolAsset, Decimals: tc.PoolAssetDecimals, Permissions: tc.PoolAssetPermissions},
@@ -152,6 +151,10 @@ func TestScenarios(t *testing.T) {
 
 						expectedState.Pool.SwapPriceNative = &expectedState.SwapPriceNative
 						expectedState.Pool.SwapPriceExternal = &expectedState.SwapPriceExternal
+
+						// explicitly test swap prices before testing pool - makes debugging easier
+						require.Equal(t, &expectedState.SwapPriceNative, got.SwapPriceNative)
+						require.Equal(t, &expectedState.SwapPriceExternal, got.SwapPriceExternal)
 
 						require.Equal(t, expectedState.Height, ctx.BlockHeight())
 						require.Equal(t, expectedState.Pool, got)

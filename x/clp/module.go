@@ -109,7 +109,9 @@ func (AppModule) Name() string {
 }
 
 // RegisterInvariants registers the clp module invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
+	keeper.RegisterInvariants(registry, am.keeper)
+}
 
 // Route returns the message routing key for the staking module.
 func (am AppModule) Route() sdk.Route {
@@ -133,6 +135,14 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), querier)
 	m := keeper.NewMigrator(am.keeper)
 	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer2)
+	if err != nil {
+		panic(err)
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 2, m.MigrateToVer3)
+	if err != nil {
+		panic(err)
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 3, m.MigrateToVer4)
 	if err != nil {
 		panic(err)
 	}
@@ -165,4 +175,4 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	return EndBlocker(ctx, am.keeper)
 }
 
-func (AppModule) ConsensusVersion() uint64 { return 2 }
+func (AppModule) ConsensusVersion() uint64 { return 4 }

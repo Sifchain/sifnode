@@ -10,16 +10,14 @@ from web3.eth import Contract
 from hexbytes import HexBytes
 from web3.types import TxReceipt
 
-from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos
+from siftool import eth, truffle, hardhat, run_env, sifchain, cosmos, command
+from siftool.sifchain import ROWAN, CETH
 from siftool.common import *
 
 # These are utilities to interact with running environment (running agains local ganache-cli/hardhat/sifnoded).
 # This is to replace test_utilities.py, conftest.py, burn_lock_functions.py and integration_test_context.py.
 # Also to replace smart-contracts/scripts/...
 
-
-CETH = "ceth"  # Peggy1 only (Peggy2.0 uses denom hash)
-ROWAN = "rowan"
 
 sifnode_funds_for_transfer_peggy1 = 10**17  # rowan
 
@@ -64,49 +62,106 @@ def get_env_ctx(cmd=None, env_file=None, env_vars=None):
 
 def get_env_ctx_peggy2():
     cmd = run_env.Integrator()
-    dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
-    environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
 
-    deployed_contract_address_overrides = get_overrides_for_smart_contract_addresses(dot_env_vars)
-    tmp = environment_vars["contractResults"]["contractAddresses"]
-    deployed_contract_addresses = dict_merge({
-        "BridgeBank": tmp["bridgeBank"],
-        "CosmosBridge": tmp["cosmosBridge"],
-        "BridgeRegistry": tmp["bridgeRegistry"],
-        "Rowan": tmp["rowanContract"],
-        "Blocklist": tmp["blocklist"],
-    }, deployed_contract_address_overrides)
-    abi_provider = hardhat.HardhatAbiProvider(cmd, deployed_contract_addresses)
+    if "SIFTOOL_ENV_FILE" in os.environ:
+        # New-style format (hopefully unified)
+        # This is for connecting to peggy2-tempnet etc.
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
+        env_vars = json.loads(cmd.read_text_file(env_file))
+        global_mnemonic = env_vars.get("mnemonic", None)
 
-    # TODO We're mixing "OPERATOR" vs. "OWNER"
-    # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
-    # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
-    # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
-    owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
-    owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
-    if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
-        owner_private_key = owner_private_key[2:]  # TODO Remove
-    owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+        sifchain_config = env_vars["sifchain"]
+        sifnode_url = sifchain_config["rpc_url"]
+        sifnode_chain_id = sifchain_config["chain_id"]
+        sifnoded_home = sifchain_config.get("home")
 
-    rowan_source = dot_env_vars["ROWAN_SOURCE"]
+        # Supported scenarios regarding rowan_source:
+        # (1) no rowan_source, no mnemonic => set rowan_source to None and assume it will not be used
+        # (1) rowan_source without mnemonic => assume private key is already in keystore
+        # (2) mnemonic without rowan source => create it if it doesn't exist yet
+        rowan_source = sifchain_config.get("rowan_source")
+        if not rowan_source:
+            if "rowan_source_mnemonic" in sifchain_config:
+                rowan_source_mnemonic = sifchain_config["rowan_source_mnemonic"]
+            elif global_mnemonic:
+                rowan_source_mnemonic = global_mnemonic
+            else:
+                rowan_source_mnemonic = None
+            if rowan_source_mnemonic:
+                rowan_source_mnemonic = rowan_source_mnemonic.split(" ")
+                rowan_source = sifchain.mnemonic_to_address(cmd, rowan_source_mnemonic)
+                sifnoded = sifchain.Sifnoded(cmd, home=sifnoded_home)
+                if not [x for x in sifnoded.keys_list() if x["address"] == rowan_source]:
+                    sifnoded.keys_add(None, rowan_source_mnemonic)
 
-    w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
+        eth_config = env_vars["ethereum"]
+        smart_contract_addresses = {k: eth.validate_address_and_private_key(v, None)[0] for k, v in eth_config["smart_contract_addresses"].items()}
+        w3_url = eth_config["url"]
+        ethereum_network_descriptor = eth_config["chain_id"]
+        eth_node_is_local = eth_config.get("is_local", False)
+
+        if "owner" in eth_config:
+            owner_address, owner_private_key = eth.validate_address_and_private_key(eth_config["owner"], eth_config["owner_private_key"])
+        elif global_mnemonic:
+            owner_address, owner_private_key = eth.validate_address_and_private_key(None, eth._mnemonic_to_private_key(global_mnemonic))
+        else:
+            raise ValueError("Missing ethereum.owner (and/or corresponding private key/mnemonic)")
+        eth_faucet = eth.validate_address_and_private_key(eth_config.get("faucet", None), None)[0] or owner_address
+    else:
+        # For either `siftool run-env` or `devenv`
+        # TODO Transition to unified format (above) and remove this block
+        dot_env_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/env.json")))
+        environment_vars = json.loads(cmd.read_text_file(cmd.project.project_dir("smart-contracts/environment.json")))
+
+        # Note the inconsistency in obtaining deployed smart contract addresses: first we read one set of variables from
+        # env.json, then we override them with another set of variables from environment.json. Those two files do not
+        # use the same names, they contain typos and they don't match 1:1. These inconsistencies were copied over from
+        # devenv intentionally to preserve compatibility with devenv users. The source of variables is however just one:
+        # the output from deploy_contracts_dev.ts script (that being bridgeBank, bridgeRegistry, cosmosBridge,
+        # rowanContract and blocklist). TODO Refactor to unified format (above)
+        smart_contract_address_overrides = _get_overrides_for_smart_contract_addresses(dot_env_vars)
+        tmp = environment_vars["contractResults"]["contractAddresses"]
+        smart_contract_addresses = dict_merge({
+            "BridgeBank": tmp["bridgeBank"],
+            "CosmosBridge": tmp["cosmosBridge"],
+            "BridgeRegistry": tmp["bridgeRegistry"],
+            "Rowan": tmp["rowanContract"],
+            "Blocklist": tmp["blocklist"],
+        }, smart_contract_address_overrides)
+
+        # TODO We're mixing "OPERATOR" vs. "OWNER"
+        # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
+        # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
+        # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
+        owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
+        owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
+        if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
+            owner_private_key = owner_private_key[2:]  # TODO Remove
+        owner_address, owner_private_key = eth.validate_address_and_private_key(owner_address, owner_private_key)
+        eth_faucet = owner_address
+
+        rowan_source = dot_env_vars["ROWAN_SOURCE"]
+
+        w3_url = eth.web3_host_port_url(dot_env_vars["ETH_HOST"], int(dot_env_vars["ETH_PORT"]))
+
+        sifnode_url = dot_env_vars["TCP_URL"]
+        sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
+        assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
+        sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
+        ethereum_network_descriptor = int(dot_env_vars["ETH_CHAIN_ID"])
+
+        eth_node_is_local = True
+
     w3_conn = eth.web3_connect(w3_url)
 
-    sifnode_url = dot_env_vars["TCP_URL"]
-    sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
-    assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
-    sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
-    ethereum_network_descriptor = int(dot_env_vars["ETH_CHAIN_ID"])
-
-    eth_node_is_local = True
     generic_erc20_contract = "BridgeToken"
     ceth_symbol = sifchain.sifchain_denom_hash(ethereum_network_descriptor, eth.NULL_ADDRESS)
-    assert ceth_symbol == "sifBridge99990x0000000000000000000000000000000000000000"
 
+    abi_files_root = cmd.project.project_dir("smart-contracts/artifacts/contracts")
+    abi_provider = hardhat.HardhatAbiProvider(cmd, abi_files_root, smart_contract_addresses)
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, owner_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, ceth_symbol, generic_erc20_contract)
+        rowan_source, ceth_symbol, generic_erc20_contract, eth_faucet)
     if owner_private_key:
         ctx.eth.set_private_key(owner_address, owner_private_key)
 
@@ -133,8 +188,8 @@ def get_env_ctx_peggy2():
 def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     cmd = cmd or run_env.Integrator()
 
-    if "ENV_FILE" in os.environ:
-        env_file = os.environ["ENV_FILE"]
+    if "SIFTOOL_ENV_FILE" in os.environ:
+        env_file = os.environ["SIFTOOL_ENV_FILE"]
         env_vars = json.loads(cmd.read_text_file(env_file))
     else:
         env_file = cmd.project.project_dir("test/integration/vagraneenv.json")
@@ -207,7 +262,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
 
     sifnode_url = env_vars.get("SIFNODE")  # Defaults to "tcp://localhost:26657"
     sifnoded_home = None  # Implies default ~/.sifnoded
-    deployed_smart_contract_address_overrides = get_overrides_for_smart_contract_addresses(env_vars)
+    deployed_smart_contract_address_overrides = _get_overrides_for_smart_contract_addresses(env_vars)
 
     w3_conn = eth.web3_connect(w3_url)
 
@@ -222,7 +277,7 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     ctx_eth = eth.EthereumTxWrapper(w3_conn, eth_node_is_local)
     abi_provider = truffle.GanacheAbiProvider(cmd, artifacts_dir, ethereum_network_id, deployed_smart_contract_address_overrides)
     ctx = EnvCtx(cmd, w3_conn, ctx_eth, abi_provider, operator_address, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, CETH, generic_erc20_contract_name)
+        rowan_source, CETH, generic_erc20_contract_name, operator_address)
     if operator_private_key:
         ctx.eth.set_private_key(operator_address, operator_private_key)
 
@@ -255,13 +310,15 @@ def get_env_ctx_peggy1(cmd=None, env_file=None, env_vars=None):
     return ctx
 
 
-def get_overrides_for_smart_contract_addresses(env_vars):
+# This is called from both get_env_ctx_peggy1() and get_env_ctx_peggy2()
+def _get_overrides_for_smart_contract_addresses(env_vars):
     mappings = {
         "BridgeBank": "BRIDGE_BANK_ADDRESS",
         "BridgeRegistry": "BRIDGE_REGISTRY_ADDRESS",
         "CosmosBridge": "COSMOS_BRIDGE_ADDRESS",  # Peggy2 only?
         "Rowan": "ROWAN_ADDRESS",  # Peggy2 only?
         "BridgeToken": "BRIDGE_TOKEN_ADDRESS",  # Peggy1 only
+        # Missing "Blocklist" missing (Peggy2 only)
     }
     return dict(((k, web3.Web3.toChecksumAddress(env_vars[v])) for k, v in mappings.items() if v in env_vars))
 
@@ -271,23 +328,23 @@ def sif_addr_to_evm_arg(sif_address):
 
 
 class EnvCtx:
-    def __init__(self, cmd, w3_conn: web3.Web3, ctx_eth, abi_provider, operator, sifnoded_home, sifnode_url, sifnode_chain_id,
-        rowan_source, ceth_symbol, generic_erc20_contract
+    def __init__(self, cmd: command.Command, w3_conn: web3.Web3, ctx_eth: eth.EthereumTxWrapper, abi_provider,
+        operator: eth.Address, sifnoded_home: str, sifnode_url: Optional[str], sifnode_chain_id: str,
+        rowan_source: cosmos.Address, ceth_symbol: str, generic_erc20_contract: str, eth_faucet: eth.Address
     ):
         self.cmd = cmd
         self.w3_conn = w3_conn
         self.eth: eth.EthereumTxWrapper = ctx_eth
         self.abi_provider: hardhat.HardhatAbiProvider = abi_provider
         self.operator = operator
-        self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home)
-        self.sifnode_url = sifnode_url
-        self.sifnode_chain_id = sifnode_chain_id
+        self.sifnode = sifchain.Sifnoded(self.cmd, home=sifnoded_home, node=sifnode_url, chain_id=sifnode_chain_id)
         # Refactoring in progress: moving stuff into separate client that encapsulates things like url, home and chain_id
-        self.sifnode_client = sifchain.SifnodeClient(self.cmd, self, node=sifnode_url, home=sifnoded_home, chain_id=sifnode_chain_id, grpc_port=9090)
+        self.sifnode_client = sifchain.SifnodeClient(self, self.sifnode, grpc_port=9090)
         self.rowan_source = rowan_source
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
+        self.eth_faucet = eth_faucet
 
     def get_current_block_number(self) -> int:
         return self.eth.w3_conn.eth.block_number
@@ -553,7 +610,10 @@ class EnvCtx:
         self.approve_erc20_token(token_sc, from_eth_addr, amount)
         self.bridge_bank_lock_eth(from_eth_addr, dest_sichain_addr, amount)
 
-    def create_sifchain_addr(self, moniker: str = None, fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance] = None):
+    # TODO Decouple; we want to use this with just "sifnoded" running, move to Sifnoded class?
+    def create_sifchain_addr(self, moniker: str = None,
+        fund_amounts: Union[cosmos.Balance, cosmos.LegacyBalance, None] = None
+    ) -> cosmos.Address:
         """
         Generates a new sifchain address in test keyring. If moniker is given, uses it, otherwise
         generates a random one 'test-xxx'. If fund_amounts is given, the sifchain funds are transferred
@@ -571,202 +631,40 @@ class EnvCtx:
                     self.rowan_source, sif_format_amount(required_amount, denom), sif_format_amount(available_amount, denom))
             old_balances = self.get_sifchain_balance(sif_address)
             self.send_from_sifchain_to_sifchain(self.rowan_source, sif_address, fund_amounts)
-            self.wait_for_sif_balance_change(sif_address, old_balances, min_changes=fund_amounts)
+            self.sifnode.wait_for_balance_change(sif_address, old_balances, min_changes=fund_amounts)
             new_balances = self.get_sifchain_balance(sif_address)
             assert cosmos.balance_zero(cosmos.balance_sub(new_balances, fund_amounts))
         return sif_address
 
+    # TODO Clean up
     def send_from_sifchain_to_sifchain(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address,
         amounts: cosmos.Balance
-    ):
-        amounts = cosmos.balance_normalize(amounts)
-        amounts_string = cosmos.balance_format(amounts)
-        args = ["tx", "bank", "send", from_sif_addr, to_sif_addr, amounts_string] + \
-            self.sifnode_client._chain_id_args() + \
-            self.sifnode_client._node_args() + \
-            self.sifnode_client._fees_args() + \
-            ["--yes", "--output", "json"]
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, keyring_backend=self.sifnode.keyring_backend)
-        retval = json.loads(stdout(res))
-        raw_log = retval["raw_log"]
-        for bad_thing in ["insufficient funds", "signature verification failed"]:
-            if bad_thing in raw_log:
-                raise Exception(raw_log)
-        return retval
+    ) -> Mapping:
+        return self.sifnode.send(from_sif_addr, to_sif_addr, amounts)
 
-    def get_sifchain_balance(self, sif_addr: cosmos.Address, limit: Optional[int] = 1000000,
-        offset: Optional[int] = None, disable_log: bool = False
+    # TODO Clean up
+    def get_sifchain_balance(self, sif_addr: cosmos.Address, height: Optional[int] = None,
+        disable_log: bool = False, retries_on_error: Optional[int] = None, delay_on_error: int = 3
     ) -> cosmos.Balance:
-        args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
-            (["--limit", str(limit)] if limit is not None else []) + \
-            (["--offset", str(offset)] if offset is not None else []) + \
-            self.sifnode_client._chain_id_args() + \
-            self.sifnode_client._node_args()
-        res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
-        res = json.loads(stdout(res))
-        if res["pagination"]["next_key"] is not None:
-            raise Exception("More than {} results in balances".format(limit))
-        return {denom: amount for denom, amount in ((x["denom"], int(x["amount"])) for x in res["balances"]) if amount != 0}
+        return self.sifnode.get_balance(sif_addr, height=height, disable_log=disable_log,
+            retries_on_error=retries_on_error, delay_on_error=delay_on_error)
 
-    # Experimental
-    def get_sifchain_balance_large(self, sif_addr: cosmos.Address, height: Optional[int] = None,
-        disable_log: bool = False, retries_on_error: int = 3, delay_on_error: int = 3
-    ) -> cosmos.Balance:
-        all_balances = {}
-        desired_page_size = 5000  # The actual limit might be capped to a lower value, in this case we'll get fewer results
-        page_key = None
-        while True:
-            args = ["query", "bank", "balances", sif_addr, "--output", "json"] + \
-                (["--height", str(height)] if height is not None else []) + \
-                (["--limit", str(desired_page_size)] if desired_page_size is not None else []) + \
-                (["--page-key", page_key] if page_key is not None else []) + \
-                self.sifnode_client._chain_id_args() + \
-                self.sifnode_client._node_args()
-            retries_left = retries_on_error
-            while True:
-                try:
-                    res = self.sifnode.sifnoded_exec(args, sifnoded_home=self.sifnode.home, disable_log=disable_log)
-                    break
-                except Exception as e:
-                    retries_left -= 1
-                    log.error("Error reading balances, retries left: {}".format(retries_left))
-                    if retries_left > 0:
-                        time.sleep(delay_on_error)
-                    else:
-                        raise e
-            res = json.loads(stdout(res))
-            balances = res["balances"]
-            next_key = res["pagination"]["next_key"]
-            if next_key is not None:
-                if height is None:
-                    # There are more results than fit on a page. To ensure we get all balances as a consistent
-                    # snapshot, retry with "--height" fised to the current block. This wastes one request.
-                    # We could optimize this by starting with explicit "--height" in the first place, but the current
-                    # assumption is that most of results will fit on one page and that this will be faster without
-                    # "--height".
-                    height = self.get_current_block()
-                    log.debug("Large balance result, switching to paged mode using height of {}.".format(height))
-                    continue
-                page_key = base64.b64decode(next_key).decode("UTF-8")
-            for bal in balances:
-                denom, amount = bal["denom"], int(bal["amount"])
-                assert denom not in all_balances
-                all_balances[denom] = amount
-            log.debug("Read {} balances, all={}, first='{}', next_key={}".format(len(balances), len(all_balances),
-                balances[0]["denom"] if len(balances) > 0 else None, next_key))
-            if next_key is None:
-                break
-        return all_balances
-
+    # TODO Clean up
     def get_current_block(self):
-        return int(self.status()["SyncInfo"]["latest_block_height"])
+        return self.sifnode.get_current_block()
 
+    # TODO Clean up
     def status(self):
-        args = ["status"] + self.sifnode_client._node_args()
-        res = self.sifnode.sifnoded_exec(args)
-        return json.loads(stderr(res))
-
-    # Unless timed out, this function will exit:
-    # - if min_changes are given: when changes are greater.
-    # - if expected_balance is given: when balances are equal to that.
-    # - if neither min_changes nor expected_balance are given: when anything changes.
-    # You cannot use min_changes and expected_balance at the same time.
-    def wait_for_sif_balance_change(self, sif_addr: cosmos.Address, old_balance: cosmos.Balance,
-        min_changes: cosmos.CompatBalance = None, expected_balance: cosmos.CompatBalance = None, polling_time: int = 1,
-        timeout: Optional[int] = 90, change_timeout: int = None, disable_log: bool = True
-    ) -> cosmos.Balance:
-        assert (min_changes is None) or (expected_balance is None), "Cannot use both min_changes and expected_balance"
-        log.debug("Waiting for balance to change for account {}...".format(sif_addr))
-        min_changes = None if min_changes is None else cosmos.balance_normalize(min_changes)
-        expected_balance = None if expected_balance is None else cosmos.balance_normalize(expected_balance)
-        start_time = time.time()
-        last_change_time = None
-        last_changed_balance = None
-        while True:
-            new_balance = self.get_sifchain_balance(sif_addr, disable_log=disable_log)
-            delta = cosmos.balance_sub(new_balance, old_balance)
-            if expected_balance is not None:
-                should_return = cosmos.balance_equal(expected_balance, new_balance)
-            elif min_changes is not None:
-                should_return = cosmos.balance_exceeds(delta, min_changes)
-            else:
-                should_return = not cosmos.balance_zero(delta)
-            if should_return:
-                return new_balance
-            now = time.time()
-            if (timeout is not None) and (now - start_time > timeout):
-                raise Exception("Timeout waiting for sif balance to change")
-            if last_change_time is None:
-                last_changed_balance = new_balance
-                last_change_time = now
-            else:
-                delta = cosmos.balance_sub(new_balance, last_changed_balance)
-                if not cosmos.balance_zero(delta):
-                    last_changed_balance = new_balance
-                    last_change_time = now
-                    log.debug("New state detected ({} denoms changed)".format(len(delta)))
-                if (change_timeout is not None) and (now - last_change_time > change_timeout):
-                    raise Exception("Timeout waiting for sif balance to change")
-            time.sleep(polling_time)
+        return self.sifnode.status()
 
     def eth_symbol_to_sif_symbol(self, eth_token_symbol):
+        assert not on_peggy2_branch
         # TODO sifchain.use sifchain_denom_hash() if on_peggy2_branch
         # E.g. "usdt" -> "cusdt"
         if eth_token_symbol == "erowan":
             return ROWAN
         else:
             return "c" + eth_token_symbol.lower()
-
-    # from_sif_addr has to be the address which was used at genesis time for "set-genesis-whitelister-admin".
-    # You need to have its private key in the test keyring.
-    # This is needed when creating pools for the token or when doing IBC transfers.
-    def token_registry_register(self, address, symbol, token_name, decimals, from_sif_addr):
-        # Check that we have the private key in test keyring. This will throw an exception if we don't.
-        self.cmd.sifnoded_keys_show(from_sif_addr)
-        sifchain_symbol = self.eth_symbol_to_sif_symbol(symbol)
-        upper_symbol = symbol.upper()  # Like "USDT"
-        # See scripts/ibc/tokenregistration for more information and examples.
-        # JSON file can be generated with "sifnoded q tokenregistry generate"
-        token_data = {"entries": [{
-            "decimals": str(decimals),
-            "denom": sifchain_symbol,
-            "base_denom": sifchain_symbol,
-            "path": "",
-            "ibc_channel_id": "",
-            "ibc_counterparty_channel_id": "",
-            "display_name": upper_symbol,
-            "display_symbol": "",
-            "network": "",
-            "address": "",
-            "external_symbol": upper_symbol,
-            "transfer_limit": "",
-            "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
-            "unit_denom": "",
-            "ibc_counterparty_denom": "",
-            "ibc_counterparty_chain_id": "",
-        }]}
-        tmp_registry_json = self.cmd.mktempfile()
-        try:
-            self.cmd.write_text_file(tmp_registry_json, json.dumps(token_data, indent=4))
-            args = ["tx", "tokenregistry", "register", tmp_registry_json] + \
-                self.sifnode_client._chain_id_args() + \
-                self.sifnode_client._node_args() + \
-                self.sifnode_client._fees_args() + [
-                "--from", from_sif_addr,
-                "--output", "json",
-                "--broadcast-mode", "block",  # One of sync|async|block; block will actually get us raw_message
-                "--yes"
-            ]
-            res = self.cmd.sifnoded_exec(args, keyring_backend="test")
-            res = json.loads(stdout(res))
-            # Example of successful output: {"height":"196804","txhash":"C8252E77BCD441A005666A4F3D76C99BD35F9CB49AA1BE44CBE2FFCC6AD6ADF4","codespace":"","code":0,"data":"0A270A252F7369666E6F64652E746F6B656E72656769737472792E76312E4D73675265676973746572","raw_log":"[{\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/sifnode.tokenregistry.v1.MsgRegister\"}]}]}]","logs":[{"msg_index":0,"log":"","events":[{"type":"message","attributes":[{"key":"action","value":"/sifnode.tokenregistry.v1.MsgRegister"}]}]}],"info":"","gas_wanted":"200000","gas_used":"115149","tx":null,"timestamp":""}
-            if res["raw_log"].startswith("signature verification failed"):
-                raise Exception(res["raw_log"])
-            if res["raw_log"].startswith("failed to execute message"):
-                raise Exception(res["raw_log"])
-            return res
-        finally:
-            self.cmd.rm(tmp_registry_json)
 
     # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
     # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
@@ -823,7 +721,8 @@ class EnvCtx:
             self.eth.set_private_key(address, key)
             assert self.eth.get_eth_balance(address) == 0
         if fund_amount is not None:
-            fund_from = fund_from or self.operator
+            fund_from = fund_from or self.eth_faucet
+            assert fund_from
             funder_balance_before = self.eth.get_eth_balance(fund_from)
             assert funder_balance_before >= fund_amount, "Cannot fund created account with ETH: {} needs {}, but has {}" \
                 .format(fund_from, fund_amount, funder_balance_before)
@@ -900,13 +799,13 @@ class EnvCtx:
         if on_peggy2_branch:
             pass
         else:
-            assert (self.sifnode_chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
-            assert (self.sifnode_chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
-            assert (self.sifnode_chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
+            assert (self.sifnode.chain_id != "sifchain-testnet-1") or (bridge_bank_sc.address == "0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835")
+            assert (self.sifnode.chain_id != "sifchain-devnet-1") or (bridge_bank_sc.address == "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73")
+            assert (self.sifnode.chain_id != "localnet") or (bridge_bank_sc.address == "0x30753E4A8aad7F8597332E813735Def5dD395028")
         assert bridge_bank_sc.functions.owner().call() == self.operator, \
             "BridgeBank owner is {}, but OPERATOR is {}".format(bridge_bank_sc.functions.owner().call(), self.operator)
         operator_balance = self.eth.get_eth_balance(self.operator) / eth.ETH
-        assert operator_balance >= 1, "Insufficient operator balance, should be at least 1 ETH"
+        assert operator_balance >= 1, "Insufficient operator balance {} ETH, should be at least 1 ETH".format(operator_balance)
 
         available_accounts = self.sifnode.keys_list()
         rowan_source_account = [x for x in available_accounts if x["address"] == self.rowan_source]
@@ -943,14 +842,6 @@ def recover_eth_from_test_accounts():
             total_recovered += to_recover
     log.info("Total recovered: {} ETH".format(total_recovered/eth.ETH))
 
-
-def sifnoded_parse_output_lines(stdout):
-    pat = re.compile("^(.*?): (.*)$")
-    result = {}
-    for line in stdout.splitlines():
-        m = pat.match(line)
-        result[m[1]] = m[2]
-    return result
 
 # Generalized version of "grep -B _ -A _". Can be used as iterator on long streams without loading everything to memory.
 def generalized_grep(items: Iterable, match_fn: Callable, before: int = 0, after: int = 0):

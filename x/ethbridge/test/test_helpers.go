@@ -3,10 +3,12 @@ package test
 import (
 	"bytes"
 	"encoding/hex"
-	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"math/rand"
 	"time"
+
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 
 	"strconv"
 	"testing"
@@ -60,9 +62,9 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyParams := sdk.NewKVStoreKey(paramstypes.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(paramstypes.TStoreKey)
 	keyBank := sdk.NewKVStoreKey(banktypes.StoreKey)
-	keytokenRegistry := sdk.NewKVStoreKey(tokenregistryTypes.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracleTypes.StoreKey)
 	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
+	adminKey := sdk.NewKVStoreKey(admintypes.StoreKey)
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 	ms.MountStoreWithDB(tkeyStaking, sdk.StoreTypeTransient, nil)
@@ -118,7 +120,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		paramsKeeper.Subspace(banktypes.ModuleName),
 		blacklistedAddrs,
 	)
-	tokenregistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keytokenRegistry)
+	adminKeeper := adminkeeper.NewKeeper(encCfg.Marshaler, adminKey)
 	initTokens := sdk.TokensFromConsensusPower(10000, sdk.DefaultPowerReduction)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(100))))
 	// bankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
@@ -134,7 +136,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	require.NoError(t, err)
 	err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, stakingtypes.NotBondedPoolName, totalSupply)
 	require.NoError(t, err)
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenregistryKeeper, keyEthBridge)
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, adminKeeper, keyEthBridge)
 	cethReceiverAccount, _ := sdk.AccAddressFromBech32(types.TestAddress)
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, cethReceiverAccount)
 	// Setup validators

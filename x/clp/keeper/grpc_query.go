@@ -237,8 +237,13 @@ func (k Querier) GetParams(c context.Context, _ *types.ParamsReq) (*types.Params
 	ctx := sdk.UnwrapSDKContext(c)
 	params := k.Keeper.GetParams(ctx)
 	threshold := k.Keeper.GetSymmetryThreshold(ctx)
+	ratioThreshold := k.Keeper.GetSymmetryRatio(ctx)
 
-	return &types.ParamsRes{Params: &params, SymmetryThreshold: threshold}, nil
+	return &types.ParamsRes{
+		Params:                 &params,
+		SymmetryThreshold:      threshold,
+		SymmetryRatioThreshold: ratioThreshold,
+	}, nil
 }
 
 func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*types.RewardParamsRes, error) {
@@ -246,4 +251,26 @@ func (k Querier) GetRewardParams(c context.Context, _ *types.RewardParamsReq) (*
 	params := k.Keeper.GetRewardsParams(ctx)
 
 	return &types.RewardParamsRes{Params: params}, nil
+}
+
+func (k Querier) GetLiquidityProtectionParams(c context.Context, _ *types.LiquidityProtectionParamsReq) (*types.LiquidityProtectionParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetLiquidityProtectionParams(ctx)
+	rateParams := k.Keeper.GetLiquidityProtectionRateParams(ctx)
+	response := types.NewLiquidityProtectionParamsResponse(params, rateParams, ctx.BlockHeight())
+	return &response, nil
+}
+
+func (k Querier) GetProviderDistributionParams(c context.Context, _ *types.ProviderDistributionParamsReq) (*types.ProviderDistributionParamsRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	params := k.Keeper.GetProviderDistributionParams(ctx)
+
+	return &types.ProviderDistributionParamsRes{Params: params}, nil
+}
+
+func (k Querier) GetSwapFeeRate(c context.Context, _ *types.SwapFeeRateReq) (*types.SwapFeeRateRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	swapFeeRate := k.Keeper.GetSwapFeeRate(ctx)
+
+	return &types.SwapFeeRateRes{SwapFeeRate: swapFeeRate.SwapFeeRate}, nil
 }

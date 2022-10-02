@@ -1,8 +1,7 @@
 package keeper
 
 import (
-	"strings"
-
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -11,77 +10,25 @@ import (
 )
 
 type keeper struct {
-	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	cdc         codec.BinaryCodec
+	storeKey    sdk.StoreKey
+	adminKeeper adminkeeper.Keeper
 }
 
-func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) types.Keeper {
+func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, adminKeeper adminkeeper.Keeper) types.Keeper {
 	return keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
+		cdc:         cdc,
+		storeKey:    storeKey,
+		adminKeeper: adminKeeper,
 	}
 }
 
-func (k keeper) SetAdminAccount(ctx sdk.Context, account *types.AdminAccount) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetAdminAccountKey(*account)
-	store.Set(key, k.cdc.MustMarshal(account))
+func (k keeper) StoreKey() sdk.StoreKey {
+	return k.storeKey
 }
 
-func (k keeper) IsAdminAccount(ctx sdk.Context, adminType types.AdminType, adminAccount sdk.AccAddress) bool {
-	accounts := k.GetAdminAccountsForType(ctx, adminType)
-	if len(accounts.AdminAccounts) == 0 {
-		return false
-	}
-	for _, account := range accounts.AdminAccounts {
-		if strings.EqualFold(account.AdminAddress, adminAccount.String()) {
-			return true
-		}
-	}
-	return false
-}
-
-func (k keeper) GetAdminAccountIterator(ctx sdk.Context) sdk.Iterator {
-	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.AdminAccountStorePrefix)
-}
-
-func (k keeper) GetAdminAccountsForType(ctx sdk.Context, adminType types.AdminType) *types.AdminAccounts {
-	var res types.AdminAccounts
-	iterator := k.GetAdminAccountIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(iterator)
-	for ; iterator.Valid(); iterator.Next() {
-		var al types.AdminAccount
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &al)
-		if al.AdminType == adminType {
-			res.AdminAccounts = append(res.AdminAccounts, &al)
-		}
-	}
-	return &res
-}
-
-func (k keeper) GetAdminAccounts(ctx sdk.Context) *types.AdminAccounts {
-	var res types.AdminAccounts
-	iterator := k.GetAdminAccountIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(iterator)
-	for ; iterator.Valid(); iterator.Next() {
-		var al types.AdminAccount
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshal(bytesValue, &al)
-		res.AdminAccounts = append(res.AdminAccounts, &al)
-	}
-	return &res
+func (k keeper) GetAdminKeeper() adminkeeper.Keeper {
+	return k.adminKeeper
 }
 
 func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
@@ -103,7 +50,7 @@ func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermis
 func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry, error) {
 	for i := range wl.Entries {
 		e := wl.Entries[i]
-		if e != nil && strings.EqualFold(e.Denom, denom) {
+		if e != nil && e.Denom == denom {
 			return wl.Entries[i], nil
 		}
 	}
@@ -113,7 +60,7 @@ func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry,
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	wl := k.GetRegistry(ctx)
 	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
+		if wl.Entries[i] != nil && types.StringCompare(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry
 			k.SetRegistry(ctx, wl)
 			return
@@ -127,7 +74,7 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 	registry := k.GetRegistry(ctx)
 	updated := make([]*types.RegistryEntry, 0)
 	for _, t := range registry.Entries {
-		if t != nil && !strings.EqualFold(t.Denom, denom) {
+		if t != nil && !types.StringCompare(t.Denom, denom) {
 			updated = append(updated, t)
 		}
 	}

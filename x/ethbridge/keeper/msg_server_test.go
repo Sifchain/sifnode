@@ -1,10 +1,10 @@
 package keeper_test
 
 import (
+	types2 "github.com/Sifchain/sifnode/x/admin/types"
 	keeper2 "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	types2 "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -19,7 +19,7 @@ func TestMsgServer_Lock(t *testing.T) {
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
 	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, admin, coins)
-	app.TokenRegistryKeeper.SetAdminAccount(ctx, &types2.AdminAccount{
+	app.AdminKeeper.SetAdminAccount(ctx, &types2.AdminAccount{
 		AdminType:    types2.AdminType_ETHBRIDGE,
 		AdminAddress: admin.String(),
 	})
@@ -64,7 +64,7 @@ func TestMsgServer_Burn(t *testing.T) {
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
 	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, admin, coins)
-	app.TokenRegistryKeeper.SetAdminAccount(ctx, &types2.AdminAccount{
+	app.AdminKeeper.SetAdminAccount(ctx, &types2.AdminAccount{
 		AdminType:    types2.AdminType_ETHBRIDGE,
 		AdminAddress: admin.String(),
 	})

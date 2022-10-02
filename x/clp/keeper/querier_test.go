@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdkQuery "github.com/cosmos/cosmos-sdk/types/query"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/cosmos/cosmos-sdk/codec"
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,7 +31,9 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { 
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.AdminKeeper,
 		app.MintKeeper,
+		func() margintypes.Keeper { return app.MarginKeeper },
 		app.GetSubspace(types.ModuleName),
 	)
 	return app.LegacyAmino(), app, ctx

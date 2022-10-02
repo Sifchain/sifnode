@@ -1,7 +1,7 @@
 CHAINNET?=betanet
 BINARY?=sifnoded
 GOPATH?=$(shell go env GOPATH)
-GOBIN?=${GOPATH}/bin
+GOBIN?=$(GOPATH)/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
@@ -10,13 +10,16 @@ HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
+GOFLAGS:=""
+GOTAGS:=
+
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
-BUILD_FLAGS := -ldflags '$(ldflags)'
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(GOTAGS)'
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 
@@ -34,7 +37,7 @@ start:
 
 lint-pre:
 	@test -z $(gofmt -l .)
-	@go mod verify
+	@GOFLAGS=$(GOFLAGS) go mod verify
 
 lint: lint-pre
 	@golangci-lint run
@@ -43,25 +46,25 @@ lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
 install: go.sum
-	go install ${BUILD_FLAGS} ${BINARIES}
+	GOFLAGS=$(GOFLAGS) go install $(BUILD_FLAGS) $(BINARIES)
 
 build-sifd: go.sum
-	go build  ${BUILD_FLAGS} ./cmd/sifnoded
+	GOFLAGS=$(GOFLAGS) go build  $(BUILD_FLAGS) ./cmd/sifnoded
 
 clean:
-	@rm -rf ${GOBIN}/sif*
+	@rm -rf $(GOBIN)/sif*
 
 coverage:
-	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+	@GOFLAGS=$(GOFLAGS) go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 tests:
-	@go test -v -coverprofile .testCoverage.txt ./...
+	@GOFLAGS=$(GOFLAGS) go test -v -coverprofile .testCoverage.txt ./...
 
 feature-tests:
-	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
+	@GOFLAGS=$(GOFLAGS) go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	go run ./cmd/sifnoded start
+	GOFLAGS=$(GOFLAGS) go run ./cmd/sifnoded start
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .

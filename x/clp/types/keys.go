@@ -19,22 +19,30 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol = "rowan"
-	PoolThrehold = "1000000000000000000"
+	NativeSymbol        = "rowan"
+	PoolThrehold        = "1000000000000000000"
+	NativeAssetDecimals = 18
 
 	MaxSymbolLength = 71
 	MaxWbasis       = 10000
 )
 
 var (
-	PoolPrefix               = []byte{0x00} // key for storing Pools
-	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
-	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
-	PmtpRateParamsPrefix     = []byte{0x03} // Key to store the Pmtp rate params
-	PmtpEpochPrefix          = []byte{0x04} // Key to store the Epoch
-	PmtpParamsPrefix         = []byte{0x05} // Key to store the Pmtp params
-	RewardParamPrefix        = []byte{0x06}
-	SymmetryThresholdPrefix  = []byte{0x07}
+	PoolPrefix                          = []byte{0x00} // key for storing Pools
+	LiquidityProviderPrefix             = []byte{0x01} // key for storing Liquidity Providers
+	WhiteListValidatorPrefix            = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
+	PmtpRateParamsPrefix                = []byte{0x03} // Key to store the Pmtp rate params
+	PmtpEpochPrefix                     = []byte{0x04} // Key to store the Epoch
+	PmtpParamsPrefix                    = []byte{0x05} // Key to store the Pmtp params
+	RewardParamPrefix                   = []byte{0x06}
+	SymmetryThresholdPrefix             = []byte{0x07}
+	LiquidityProtectionParamsPrefix     = []byte{0x08} // Key to store the Liquidity Protection params
+	LiquidityProtectionRateParamsPrefix = []byte{0x09} // Key to store the Liquidity Protection rate params
+	ProviderDistributionParamsPrefix    = []byte{0x0a}
+	RewardsBlockDistributionPrefix      = []byte{0x0b}
+	SwapFeeRatePrefix                   = []byte{0x0c}
+	RemovalRequestPrefix                = []byte{0x0d}
+	RemovalQueuePrefix                  = []byte{0x0e}
 )
 
 // Generates a key for storing a specific pool
@@ -69,4 +77,30 @@ func GetDefaultPmtpParams() *PmtpParams {
 		PmtpPeriodStartBlock:     0,
 		PmtpPeriodEndBlock:       0,
 	}
+}
+
+func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
+	return &LiquidityProtectionParams{
+		MaxRowanLiquidityThreshold:      sdk.NewUint(1000000000000),
+		MaxRowanLiquidityThresholdAsset: "cusdc",
+		EpochLength:                     14400,
+		IsActive:                        false,
+	}
+}
+
+// GetRemovalRequestKey generates a key to store a removal request,
+// the key is in the format: lpaddress_id
+func GetRemovalRequestKey(request RemovalRequest) []byte {
+	key := []byte(fmt.Sprintf("%s_%d", request.Msg.Signer, request.Id))
+	return append(RemovalRequestPrefix, key...)
+}
+
+func GetRemovalRequestLPPrefix(lpaddress string) []byte {
+	key := []byte(fmt.Sprintf("%s", lpaddress))
+	return append(RemovalRequestPrefix, key...)
+}
+
+func GetRemovalQueueKey(symbol string) []byte {
+	key := []byte(fmt.Sprintf("_%s", symbol))
+	return append(RemovalQueuePrefix, key...)
 }
