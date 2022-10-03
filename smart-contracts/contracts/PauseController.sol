@@ -16,9 +16,11 @@ contract PauseController is AccessControlEnumerable {
      * @dev Constant Roles for Access Control
      */
     bytes32 public constant PAUSER = keccak256("PAUSER"); // User who can pause the bridge
+    bytes32 public constant PAUSER_ADMIN = keccak256("PAUSER_ADMIN"); // User who can add pauser accounts
     bytes32 public constant CANCELER = keccak256("CANCELER"); // User who can cancel unpause requests
+    bytes32 public constant CANCELER_ADMIN = keccak256("CANCELER_ADMIN"); // User who can add canceler accounts
     bytes32 public constant UNPAUSER = keccak256("UNPAUSER"); // User who can unpause the bridge
-    // AccessControlEnumerable has a built in DEFAULT_ADMIN_ROLE which are users that can add/remove user roles
+    bytes32 public constant UNPAUSER_ADMIN = keccak256("UNPAUSER_ADMIN"); // User who can add unpauser accounts
     
     /**
      * @dev Constant value for No Unpause Request
@@ -76,20 +78,31 @@ contract PauseController is AccessControlEnumerable {
      *      can be changed at later times.
      * @param _bridgeBank The address of the bridgebank contract that this pause controller will pause/unpause
      * @param _timelockDelay How many blocks to wait after an unpause command before the unpause call can be made
-     * @param _admins An array of addresses to give the admin role which can add/remove any users from roles (Including Admin)
+     * @param _admins An array of addresses to give the admin role which can add/remove any users from any roles (Including Admin)
      *                this is a super user, use with care.
      * @param _pausers An array of addresses which can pause the bridgebank contracts
+     * @param _pauser_admins An array of addresses which can give or revoke the pauser roles
      * @param _unpausers An array of addresses which can schedule an unpause and then execute an unpause call.
+     * @param _unpauser_admins An array of addresses which can give or revoke the unpauser roles
      * @param _cancelers An array of addresses which can cancel a scheduled unpause if a compromise is suspected
+     * @param _canceler_admins An array of addresses which can give or revoke the cancelers roles
      */
     constructor(
         address _bridgeBank, 
         uint256 _timelockDelay, 
         address [] memory _admins, 
-        address [] memory _pausers, 
+        address [] memory _pausers,
+        address [] memory _pauser_admins, 
         address [] memory _unpausers,
-        address [] memory _cancelers
+        address [] memory _unpauser_admins,
+        address [] memory _cancelers,
+        address [] memory _canceler_admins
     ) {
+        // Setup the Role Admins
+        _setRoleAdmin(PAUSER, PAUSER_ADMIN);
+        _setRoleAdmin(UNPAUSER, UNPAUSER_ADMIN);
+        _setRoleAdmin(CANCELER, CANCELER_ADMIN);
+
         // Populate each role, These will be modifiable later by the admin role
         uint256 length = _admins.length;
         for (uint256 i; i<length;) {
@@ -102,6 +115,9 @@ contract PauseController is AccessControlEnumerable {
              *                 and evaluate this code if we change it to _grantRole.
              */
             _setupRole(DEFAULT_ADMIN_ROLE, _admins[i]);
+            _setupRole(PAUSER_ADMIN, _admins[i]);
+            _setupRole(UNPAUSER_ADMIN, _admins[i]);
+            _setupRole(CANCELER_ADMIN, _admins[i]);
             unchecked { ++i; }
         }
 
@@ -112,6 +128,13 @@ contract PauseController is AccessControlEnumerable {
             unchecked { ++i; }
         }
 
+        length = _pauser_admins.length;
+        for (uint256 i; i<length;) {
+            // See note in earlier loop
+            _setupRole(PAUSER_ADMIN, _pauser_admins[i]);
+            unchecked { ++i; }
+        }
+
         length = _unpausers.length;
         for (uint256 i; i<length;) {
             // See note in earlier loop
@@ -119,10 +142,24 @@ contract PauseController is AccessControlEnumerable {
             unchecked { ++i; }
         }
 
+        length = _unpauser_admins.length;
+        for (uint256 i; i<length;) {
+            // See note in earlier loop
+            _setupRole(UNPAUSER_ADMIN, _unpauser_admins[i]);
+            unchecked { ++i; }
+        }
+
         length = _cancelers.length;
         for (uint256 i; i<length;) {
             // See note in earlier loop
             _setupRole(CANCELER, _cancelers[i]);
+            unchecked { ++i; }
+        }
+
+        length = _canceler_admins.length;
+        for (uint256 i; i<length;) {
+            // See note in earlier loop
+            _setupRole(CANCELER_ADMIN, _canceler_admins[i]);
             unchecked { ++i; }
         }
 
