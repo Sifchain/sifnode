@@ -1,4 +1,9 @@
-# Symmetric Adds
+# Asymmetric Liquidity Adds
+
+Sifnoded does not currently support asymmetric liquidity adds. This document proposes a procedure
+which would allow asymmetric adds.
+
+## Symmetric Adds
 
 When adding symmetrically to a pool the fraction of total pool units owned by the Liquidity Provider (LP)
 equals the amount of native token added to the pool as a fraction of total native asset token in the
@@ -8,20 +13,20 @@ pool:
 l / (P + l) = r / (r + R)
 ```
 
-where:
-
+Where:
+```
 l - LP units
 P - total pool units (before)
 r - amount of native token added
 R - native asset pool depth (before)
-
+```
 Rearranging gives:
 
 ```
 (1) l = r * P / R
 ```
 
-# Asymmetric adds
+## Asymmetric adds
 
 In the asymmetric case, by definition:
 
@@ -33,23 +38,23 @@ R/A =/= r/a
 in which case the add is considered asymmetric)
 
 Where:
-
+```
 R - native asset pool depth (before adding liquidity)
 A - external asset pool depth (before adding liquidity)
 r - amount of native token added
 a - amount of external token added
-
+```
 Currently sifnoded blocks asymmetric adds. The following procedure is proposed to enable
 asymmetric adds.
 
-## Proposed method
+### Proposed method
 
 If the pool is not in the same ratio as the add then either:
 
-i. Some r must be swapped for a, such that after the swap the add is symmetric
-ii. Some a must be swapped for r, such that after the swap the add is symmetric
+1. Some r must be swapped for a, such that after the swap the add is symmetric
+2. Some a must be swapped for r, such that after the swap the add is symmetric
 
-### Swap native token for external token
+#### Swap native token for external token
 
 Swap an amount, s, of native token such that:
 
@@ -75,7 +80,7 @@ The number of pool units is then given by the symmetric formula (1):
 l = (r - s) * P / (R + s)
 ```
 
-### Swap external token for native token
+#### Swap external token for native token
 
 Swap an amount, s, of native token such that:
 
@@ -95,7 +100,7 @@ The number of pool units is then given by the symmetric formula (1):
 l = (a - s) * P / (A + s)
 ```
 
-## Equivalence with swapping
+### Equivalence with swapping
 
 Any procedure which assigns LP units should guarantee that if an LP adds (x,y) then removes all their
 liquidity from the pool, receiving (x',y') then it is never the case that x' > x and y' > y (all else being equal i.e.
@@ -106,17 +111,20 @@ the LP has achieved a cheap swap.)
 
 In the case of the proposed add liquidity procedure the amount the LP would receive by adding then removing would equal the amounts
 of each token after the internal swap (at this stage the add is symmetric and with symmetric adds x' = x and y' = y), that is:
-
+```
 (2) x' = x - s
 (3) y' = y + g.s
-
+```
 Plugging these into the equation for y'', y'' = y + g.(x - x')):
-
+```
 y'' = y + g.(x - x')
     = y + g.s by rearranging (2) and substituting 
     = y' by substituting (3)
-
-## Liquidity Protection
+```
+### Liquidity Protection
 
 Since the add liquidity process involves swapping then the Liquidity protection procedure must be applied.
 
+## References
+
+Detailed derivation of formulas https://hackmd.io/NjvaZY1qQiS17s_uEgZmTw?both
