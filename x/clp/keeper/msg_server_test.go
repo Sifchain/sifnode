@@ -1187,6 +1187,8 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 		userExternalAssetBalance               sdk.Int
 		poolNativeAssetBalance                 sdk.Uint
 		poolExternalAssetBalance               sdk.Uint
+		poolNativeLiabilities                  sdk.Uint
+		poolExternalLiabilities                sdk.Uint
 		poolUnits                              sdk.Uint
 		poolAssetPermissions                   []tokenregistrytypes.Permission
 		nativeAssetPermissions                 []tokenregistrytypes.Permission
@@ -1397,6 +1399,32 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
 			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
 			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
+			},
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662660951949037742990437"),
+			expectedLPUnits:                        sdk.NewUintFromString("401491654050052483"),
+		},
+		{
+			name:                     "success - swap native - with liabilities",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.ZeroUint(),
+			poolExternalAssetBalance: sdk.ZeroUint(),
+			poolNativeLiabilities:    sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalLiabilities:  sdk.NewUint(2674623482959),
 			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
 			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
@@ -1643,6 +1671,8 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 							NativeAssetBalance:   tc.poolNativeAssetBalance,
 							ExternalAssetBalance: tc.poolExternalAssetBalance,
 							PoolUnits:            tc.poolUnits,
+							NativeLiabilities:    tc.poolNativeLiabilities,
+							ExternalLiabilities:  tc.poolExternalLiabilities,
 						},
 					}
 					clpGs := types.DefaultGenesisState()
