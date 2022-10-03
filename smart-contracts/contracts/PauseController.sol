@@ -39,6 +39,35 @@ contract PauseController is AccessControlEnumerable {
      * @dev Pending UnPause Request Block Height
      */
     uint256 public UnpauseRequestBlockHeight;
+
+    /**
+     * @dev Event Emitted when a pause transaction is successfully submitted
+     */
+     event Pause(
+        address indexed _pauser
+     );
+
+    /**
+     * @dev Event Emitted when a unpause request is successfully submitted
+     */
+     event UnpauseRequest(
+        address indexed _requester,
+        uint256 _UnpauseRequestBlockHeight
+     );
+
+     /**
+      * @dev Event Emitted when a Cancel Unpause transaction is succcessfully submitted
+      */
+      event CancelUnpause(
+        address indexed _canceler
+     );
+
+    /**
+     * @dev Event Emitted when a Unpause transaction is successfully submitted
+     */
+    event Unpause(
+        address indexed _unpauser
+    );
     
     /**
      * @dev On contract construction the bridgebank address and timelock delay must be set. These values 
@@ -105,10 +134,12 @@ contract PauseController is AccessControlEnumerable {
      *      Only require the use of hardware wallets.
      */
     function pause() public {
-        require(hasRole(PAUSER, msg.sender), "User is not pauser");
+        address pauser = msg.sender;
+        require(hasRole(PAUSER, pauser), "User is not pauser");
         bool paused = BridgeBank.paused();
         require(paused == false, "BridgeBank already paused");
         BridgeBank.pause();
+        emit Pause(pauser);
     }
 
     /**
@@ -118,11 +149,14 @@ contract PauseController is AccessControlEnumerable {
      *      multisig contracts as well as hardware wallets for the signers.
      */
     function requestUnpause() public {
-        require(hasRole(UNPAUSER, msg.sender), "User is not unpauser");
+        address requester = msg.sender;
+        require(hasRole(UNPAUSER, requester), "User is not unpauser");
         require(UnpauseRequestBlockHeight == NOREQUEST, "Unpause request already pending");
         bool paused = BridgeBank.paused();
         require(paused == true, "BridgeBank not paused");
-        UnpauseRequestBlockHeight = block.number + TimeLockDelay;
+        uint256 RequestBlockHeight = block.number + TimeLockDelay;
+        UnpauseRequestBlockHeight = RequestBlockHeight;
+        emit UnpauseRequest(requester, RequestBlockHeight);
     }
 
     /**
@@ -135,8 +169,10 @@ contract PauseController is AccessControlEnumerable {
      *      Only require the use of hardware wallets. 
      */
     function cancelUnpause() public {
-        require(hasRole(CANCELER, msg.sender), "User is not canceler");
+        address requester = msg.sender;
+        require(hasRole(CANCELER, requester), "User is not canceler");
         UnpauseRequestBlockHeight = NOREQUEST;
+        emit CancelUnpause(requester);
     }
 
     /**
@@ -146,7 +182,8 @@ contract PauseController is AccessControlEnumerable {
      *      for the signers.
      */
     function unpause() public {
-        require(hasRole(UNPAUSER, msg.sender), "User is not unpauser");
+        address unpauser = msg.sender;
+        require(hasRole(UNPAUSER, unpauser), "User is not unpauser");
         uint256 requestBlockHeight = UnpauseRequestBlockHeight;
         require(requestBlockHeight != NOREQUEST, "No Active Unpause Request");
         require(requestBlockHeight < block.number, "TimeLock still in effect");
@@ -155,5 +192,6 @@ contract PauseController is AccessControlEnumerable {
             BridgeBank.unpause();
         }
         UnpauseRequestBlockHeight = NOREQUEST;
+        emit Unpause(unpauser);
     }
 }
