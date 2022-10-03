@@ -52,7 +52,7 @@ contract PauseController is AccessControlEnumerable {
      */
      event UnpauseRequest(
         address indexed _requester,
-        uint256 _UnpauseRequestBlockHeight
+        uint256 indexed _UnpauseRequestBlockHeight
      );
 
      /**
@@ -96,7 +96,7 @@ contract PauseController is AccessControlEnumerable {
             /**
              * @Note _setupRole has been deprecated in favor of _grantRole however 
              *       I can not use _grantRole until we upgrade versions of OpenZepplin
-             *       which should not happen until after the peggy2/master merge. 
+             *       which should not happen until after the peggy2/    master merge. 
              * 
              *       AUDITORS: Please evaluate this code both as its written with _setupRole
              *                 and evaluate this code if we change it to _grantRole.
