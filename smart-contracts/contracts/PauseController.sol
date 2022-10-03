@@ -116,6 +116,7 @@ contract PauseController is AccessControlEnumerable {
         }
 
         // Log the bridgebank address, This will be immutable
+        require(_bridgeBank != address(0), "BridgeBank address must be set");
         BridgeBank = Pausable(_bridgeBank);
 
         // Set the TimeLockDelay, This will be immutable
