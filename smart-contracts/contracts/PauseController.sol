@@ -93,24 +93,35 @@ contract PauseController is AccessControlEnumerable {
         // Populate each role, These will be modifiable later by the admin role
         uint256 length = _admins.length;
         for (uint256 i; i<length;) {
+            /**
+             * @Note _setupRole has been deprecated in favor of _grantRole however 
+             *       I can not use _grantRole until we upgrade versions of OpenZepplin
+             *       which should not happen until after the peggy2/master merge. 
+             * 
+             *       AUDITORS: Please evaluate this code both as its written with _setupRole
+             *                 and evaluate this code if we change it to _grantRole.
+             */
             _setupRole(DEFAULT_ADMIN_ROLE, _admins[i]);
             unchecked { ++i; }
         }
 
         length = _pausers.length;
         for (uint256 i; i<length;) {
+            // See note in earlier loop
             _setupRole(PAUSER, _pausers[i]);
             unchecked { ++i; }
         }
 
         length = _unpausers.length;
         for (uint256 i; i<length;) {
+            // See note in earlier loop
             _setupRole(UNPAUSER, _unpausers[i]);
             unchecked { ++i; }
         }
 
         length = _cancelers.length;
         for (uint256 i; i<length;) {
+            // See note in earlier loop
             _setupRole(CANCELER, _cancelers[i]);
             unchecked { ++i; }
         }
