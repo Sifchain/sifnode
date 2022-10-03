@@ -7,13 +7,47 @@ import "sifnode/oracle/v1/network_descriptor.proto";
 option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
 
 message GenesisState {
-  map<uint32, ValidatorWhiteList> address_whitelist = 1;
+  repeated GenesisValidatorWhiteList validator_whitelist = 1;
   string admin_address = 2;
   repeated Prophecy prophecies = 3;
-  map<uint32, uint32> consensus_needed = 4;
-  map<uint32, CrossChainFeeConfig> cross_chain_fee = 5;
-  map<string, uint64> witness_lock_burn_sequence = 6;
-  map<string, ProphecyInfo> prophecy_info = 7;
+  repeated GenesisConsensusNeeded consensus_needed = 4;
+  repeated GenesisCrossChainFeeConfig cross_chain_fee = 5;
+  repeated GenesisWitnessLockBurnSequence witness_lock_burn_sequence = 6;
+  repeated GenesisProphecyInfo prophecy_info = 7;
+}
+
+message ValidatorWhiteList { 
+  repeated ValidatorPower validator_power = 1;
+}
+
+message ValidatorPower { 
+  bytes validator_address = 1;
+  uint32 voting_power = 2;
+}
+
+message GenesisValidatorWhiteList { 
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  ValidatorWhiteList validator_whitelist = 2;
+}
+
+message GenesisConsensusNeeded { 
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  ConsensusNeeded consensus_needed = 2;
+}
+
+message GenesisCrossChainFeeConfig { 
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  CrossChainFeeConfig cross_chain_fee = 2;
+}
+
+message GenesisWitnessLockBurnSequence {
+  LockBurnSequenceKey witness_lock_burn_sequence_key = 1;
+  LockBurnSequence witness_lock_burn_sequence = 2;
+}
+
+message GenesisProphecyInfo {
+  GlobalSequenceKey global_sequence_key = 1;
+  ProphecyInfo prophecy_info = 2;
 }
 
 // Claim contains an arbitrary claim with arbitrary content made by a given
@@ -32,9 +66,6 @@ message Prophecy {
   StatusText status = 2;
   repeated string claim_validators = 3;
 }
-
-// ValidatorWhiteList is struct that contains validator and its voting power
-message ValidatorWhiteList { map<string, uint32> white_list = 1; }
 
 // StatusText is an enum used to represent the status of the prophecy
 enum StatusText {
@@ -105,13 +136,13 @@ message ProphecyInfo {
 message ConsensusNeeded { uint32 consensus_needed = 1; }
 
 // LockBurnNonceKey the key for LockBurnNonce used in sifnode keeper
-message LockBurnNonceKey {
+message LockBurnSequenceKey {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   bytes validator_address = 2;
 }
 
-// LockBurnNonce the value stored in the sifnode keeper
-message LockBurnNonce { uint64 lock_burn_nonce = 1; }
+// LockBurnSequence the value stored in the sifnode keeper
+message LockBurnSequence { uint64 lock_burn_sequence = 1; }
 
 // GlobalSequenceKey the key for GlobalSequence used in sifnode keeper
 message GlobalSequenceKey {

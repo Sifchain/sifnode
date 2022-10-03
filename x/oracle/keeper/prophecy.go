@@ -146,7 +146,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 // since ProphecyLifeTime is big enough for relayers to handle prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	// it is low efficient to check outdated prophecy each block
-	if k.currentHeight % CleanUpFrequency != 0 {
+	if k.currentHeight%CleanUpFrequency != 0 {
 		return
 	}
 	var prophecyInfo types.ProphecyInfo
@@ -156,7 +156,7 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
 		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
-		if currentHeight > prophecyInfo.BlockNumber + ProphecyLifeTime {
+		if currentHeight > prophecyInfo.BlockNumber+ProphecyLifeTime {
 			k.DeleteProphecyInfo(ctx, prophecyInfo)
 		}
 	}
@@ -248,12 +248,11 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 }
 
 // GetProphecyInfo return a prophecy's signatures
-func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) map[string]*types.ProphecyInfo {
+func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) []*types.GenesisProphecyInfo {
 	store := ctx.KVStore(k.storeKey)
-	prophecyInfos := make(map[string]*types.ProphecyInfo)
+	prophecyInfos := make([]*types.GenesisProphecyInfo, 0)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
-	var prophecyInfo types.ProphecyInfo
 
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -262,10 +261,15 @@ func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) map[string]*types.ProphecyIn
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		key := iterator.Key()
-		value := iterator.Value()
-		k.cdc.MustUnmarshal(value, &prophecyInfo)
-		prophecyInfos[string(key)] = &prophecyInfo
+		var globalSequenceKey types.GlobalSequenceKey
+		var prophecyInfo types.ProphecyInfo
+
+		k.cdc.MustUnmarshal(iterator.Key(), &globalSequenceKey)
+		k.cdc.MustUnmarshal(iterator.Value(), &prophecyInfo)
+		prophecyInfos = append(prophecyInfos, &types.GenesisProphecyInfo{
+			GlobalSequenceKey: &globalSequenceKey,
+			ProphecyInfo:      &prophecyInfo,
+		})
 	}
 
 	return prophecyInfos

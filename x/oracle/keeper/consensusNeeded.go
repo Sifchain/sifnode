@@ -11,13 +11,11 @@ import (
 // SetConsensusNeeded for a network.
 func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
-	consensusNeeded uint32) {
+	consensusNeeded types.ConsensusNeeded) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetConsensusNeededPrefix(k.cdc)
 
-	bs := k.cdc.MustMarshal(&types.ConsensusNeeded{
-		ConsensusNeeded: consensusNeeded,
-	})
+	bs := k.cdc.MustMarshal(&consensusNeeded)
 
 	store.Set(key, bs)
 }
@@ -42,8 +40,8 @@ func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.Networ
 }
 
 // GetAllConsensusNeeded get consensus needed for all network descriptors
-func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) map[uint32]uint32 {
-	consensuses := make(map[uint32]uint32)
+func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) []*types.GenesisConsensusNeeded {
+	consensuses := make([]*types.GenesisConsensusNeeded, 0)
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.ConsensusNeededPrefix)
@@ -58,7 +56,7 @@ func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) map[uint32]uint32 {
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 
-		network_descriptor, err := types.GetFromPrefix(k.cdc, key, types.ConsensusNeededPrefix)
+		networkIdentity, err := types.GetFromPrefix(k.cdc, key, types.ConsensusNeededPrefix)
 		if err != nil {
 			panic(err)
 		}
@@ -67,7 +65,10 @@ func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) map[uint32]uint32 {
 		var consensusNeeded types.ConsensusNeeded
 		k.cdc.MustUnmarshal(bz, &consensusNeeded)
 
-		consensuses[uint32(network_descriptor.NetworkDescriptor)] = consensusNeeded.ConsensusNeeded
+		consensuses = append(consensuses, &types.GenesisConsensusNeeded{
+			NetworkDescriptor: networkIdentity.NetworkDescriptor,
+			ConsensusNeeded:   &consensusNeeded,
+		})
 	}
 	return consensuses
 }

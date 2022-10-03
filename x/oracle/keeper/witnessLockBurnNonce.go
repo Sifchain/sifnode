@@ -1,55 +1,70 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // SetWitnessLockBurnNonce set the Witness lock burn nonce for each relayer
-func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress, newNonce uint64) {
+func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress, lockBurnSequence uint64) {
+
+	lockBurnSequenceKey := types.LockBurnSequenceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	}
+	lockBurnSequenceObj := types.LockBurnSequence{
+		LockBurnSequence: lockBurnSequence,
+	}
+	k.SetWitnessLockBurnNonceObj(ctx, lockBurnSequenceKey, lockBurnSequenceObj)
+}
+
+// SetWitnessLockBurnNonce set the Witness lock burn nonce for each relayer
+func (k Keeper) SetWitnessLockBurnNonceObj(ctx sdk.Context, lockBurnSequenceKey types.LockBurnSequenceKey, lockBurnSequence types.LockBurnSequence) {
 	store := ctx.KVStore(k.storeKey)
-	key := k.GetWitnessLockBurnSequencePrefix(networkDescriptor, valAccount)
+	key := lockBurnSequenceKey.GetWitnessLockBurnSequencePrefix(k.cdc)
 
-	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
-		LockBurnNonce: newNonce,
-	})
-
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetWitnessLockBurnNonce, "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
-
+	bs := k.cdc.MustMarshal(&lockBurnSequence)
 	store.Set(key, bs)
 }
 
 // GetWitnessLockBurnSequence return Witness lock burn nonce
 func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64 {
 	store := ctx.KVStore(k.storeKey)
-	key := k.GetWitnessLockBurnSequencePrefix(networkDescriptor, valAccount)
+
+	lockBurnSequenceKey := types.LockBurnSequenceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	}
+
+	key := lockBurnSequenceKey.GetWitnessLockBurnSequencePrefix(k.cdc)
 
 	// nonce start from 1, 0 represent the relayer is a new one
 	if !store.Has(key) {
 		return 0
 	}
 
-	var lockBurnNonce types.LockBurnNonce
-	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
+	var lockBurnSequence types.LockBurnSequence
+	k.cdc.MustUnmarshal(store.Get(key), &lockBurnSequence)
 
-	return lockBurnNonce.LockBurnNonce
+	return lockBurnSequence.LockBurnSequence
 }
 
 // GetWitnessLockBurnSequencePrefix return storage prefix
-func (k Keeper) GetWitnessLockBurnSequencePrefix(networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
-	bs := k.cdc.MustMarshal(&types.LockBurnNonceKey{
-		NetworkDescriptor: networkDescriptor,
-		ValidatorAddress:  valAccount,
-	})
+// func (k Keeper) GetWitnessLockBurnSequencePrefix(lockBurnSequenceKey types.LockBurnSequenceKey) []byte {
+// 	bs := k.cdc.MustMarshal(&lockBurnSequenceKey)
+// 	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
+// }
 
-	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
-}
+// GetWitnessLockBurnSequencePrefix return storage prefix
+// func (k Keeper) GetWitnessLockBurnSequencePrefix(lockBurnSequenceKey types.LockBurnSequenceKey) []byte {
+// 	bs := k.cdc.MustMarshal(&lockBurnSequenceKey)
+// 	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
+// }
 
 // GetAllWitnessLockBurnSequence get all witnessLockBurnSequence needed for all validators
-func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) map[string]uint64 {
-	sequences := make(map[string]uint64)
+func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) []*types.GenesisWitnessLockBurnSequence {
+	sequences := make([]*types.GenesisWitnessLockBurnSequence, 0)
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.WitnessLockBurnNoncePrefix)
@@ -60,21 +75,24 @@ func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) map[string]uint64
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		key := iterator.Key()
-		value := iterator.Value()
-		var lockBurnNonce types.LockBurnNonce
-		k.cdc.MustUnmarshal(value, &lockBurnNonce)
-		sequences[string(key)] = lockBurnNonce.LockBurnNonce
+		var lockBurnSequenceKey types.LockBurnSequenceKey
+		var lockBurnSequence types.LockBurnSequence
+		k.cdc.MustUnmarshal(iterator.Key(), &lockBurnSequenceKey)
+		k.cdc.MustUnmarshal(iterator.Value(), &lockBurnSequence)
+		sequences = append(sequences, &types.GenesisWitnessLockBurnSequence{
+			WitnessLockBurnSequenceKey: &lockBurnSequenceKey,
+			WitnessLockBurnSequence:    &lockBurnSequence,
+		})
 	}
 	return sequences
 }
 
-func (k Keeper) SetWitnessLockBurnNonceViaRawKey(ctx sdk.Context, key []byte, nonce uint64) {
+// func (k Keeper) SetWitnessLockBurnNonceViaRawKey(ctx sdk.Context, key []byte, nonce uint64) {
 
-	store := ctx.KVStore(k.storeKey)
-	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
-		LockBurnNonce: nonce,
-	})
+// 	store := ctx.KVStore(k.storeKey)
+// 	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+// 		LockBurnNonce: nonce,
+// 	})
 
-	store.Set(key, bs)
-}
+// 	store.Set(key, bs)
+// }

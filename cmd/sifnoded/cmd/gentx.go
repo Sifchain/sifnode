@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -31,10 +32,11 @@ the account address or key name. If a key name is given, the address will be loo
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
 
-			networkDescriptor, err := strconv.ParseUint(args[0], 10, 32)
+			networkDescriptorNum, err := strconv.ParseUint(args[0], 10, 32)
 			if err != nil {
 				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
+			networkDescriptor := oracletypes.NetworkDescriptor(networkDescriptorNum)
 			// check if the networkDescriptor is valid
 			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 				return fmt.Errorf("network id: %d is invalid", networkDescriptor)
@@ -56,18 +58,36 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
-			if oracleGenState.AddressWhitelist == nil {
-				oracleGenState.AddressWhitelist = make(map[uint32]*oracletypes.ValidatorWhiteList)
+
+			validatorWhitelist := oracletypes.ValidatorWhiteList{}
+
+			for index := 0; index < len(oracleGenState.ValidatorWhitelist); index++ {
+				if oracleGenState.ValidatorWhitelist[index].NetworkDescriptor == networkDescriptor {
+					validatorWhitelist = *oracleGenState.ValidatorWhitelist[index].ValidatorWhitelist
+					oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist[:index],
+						oracleGenState.ValidatorWhitelist[:index]...)
+				}
+			}
+			found := false
+			for index := 0; index < len(validatorWhitelist.ValidatorPower); index++ {
+				if bytes.Compare(validatorWhitelist.ValidatorPower[index].ValidatorAddress, addr) == 0 {
+					validatorWhitelist.ValidatorPower[index].VotingPower = uint32(power)
+					found = true
+				}
+			}
+			if !found {
+				newPower := oracletypes.ValidatorPower{
+					ValidatorAddress: addr,
+					VotingPower:      uint32(power),
+				}
+				validatorWhitelist.ValidatorPower = append(validatorWhitelist.ValidatorPower, &newPower)
 			}
 
-			_, ok := oracleGenState.AddressWhitelist[uint32(networkDescriptor)]
-
-			if !ok {
-				oracleGenState.AddressWhitelist[uint32(networkDescriptor)] = &oracletypes.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
-			}
-
-			whiteList := oracleGenState.AddressWhitelist[uint32(networkDescriptor)].WhiteList
-			whiteList[addr.String()] = uint32(power)
+			oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist,
+				&oracletypes.GenesisValidatorWhiteList{
+					NetworkDescriptor:  oracletypes.NetworkDescriptor(networkDescriptor),
+					ValidatorWhitelist: &validatorWhitelist,
+				})
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
 			if err != nil {
