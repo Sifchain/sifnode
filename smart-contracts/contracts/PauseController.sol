@@ -227,12 +227,11 @@ contract PauseController is AccessControlEnumerable {
     /**
      * @dev If a unpause request has been submited by a person with the unpauser role, and the required
      *      block delay has been waited a user with the unpause role will be able to complete the unpause
-     *      request resuming the bridgebank contract. Require use of multisig contracts and hardware wallets
-     *      for the signers.
+     *      request resuming the bridgebank contract. 
+     * 
+     *      Unprivlaged function, since it has to be scheduled by an unpauser anyone can complete this execution
      */
     function unpause() public {
-        address unpauser = msg.sender;
-        require(hasRole(UNPAUSER, unpauser), "User is not unpauser");
         uint256 requestBlockHeight = UnpauseRequestBlockHeight;
         require(requestBlockHeight != NOREQUEST, "No Active Unpause Request");
         require(requestBlockHeight < block.number, "TimeLock still in effect");
@@ -241,6 +240,6 @@ contract PauseController is AccessControlEnumerable {
             BridgeBank.unpause();
         }
         UnpauseRequestBlockHeight = NOREQUEST;
-        emit Unpause(unpauser);
+        emit Unpause(msg.sender);
     }
 }
