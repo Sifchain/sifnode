@@ -59,5 +59,5 @@ func TestSeed(t *testing.T) {
 
 	lps, err := app.ClpKeeper.GetAllLiquidityProviders(ctx)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, 10000, len(lps))
+	require.GreaterOrEqual(t, len(lps), 10000)
 }
