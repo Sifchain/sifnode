@@ -105,7 +105,7 @@ func TestExportGenesis(t *testing.T) {
 			assert.Equal(t, found, true)
 
 			found = false
-			if len(wl) == 0 {
+			if len(tc.genesis.ValidatorWhitelist) == 0 {
 				found = true
 			}
 			genesisWhitelist := make([]*types.ValidatorPower, 0)
@@ -164,9 +164,45 @@ func TestGenesisMarshalling(t *testing.T) {
 			wl := genesis.ValidatorWhitelist
 
 			require.Equal(t, len(tc.genesis.ValidatorWhitelist), len(wl))
-			// for i, addr := range tc.genesis.AddressWhitelist {
-			// 	require.Equal(t, addr, wl[i])
-			// }
+
+			found := false
+			expectedWhitelist := make([]*types.ValidatorPower, 0)
+
+			if len(wl) == 0 {
+				found = true
+			}
+
+			for _, value := range wl {
+				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
+					found = true
+					expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+				}
+			}
+			assert.Equal(t, found, true)
+
+			found = false
+			if len(tc.genesis.ValidatorWhitelist) == 0 {
+				found = true
+			}
+			genesisWhitelist := make([]*types.ValidatorPower, 0)
+			for _, value := range tc.genesis.ValidatorWhitelist {
+				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
+					found = true
+					genesisWhitelist = value.ValidatorWhitelist.ValidatorPower
+				}
+			}
+			assert.Equal(t, found, true)
+
+			for _, value := range genesisWhitelist {
+				found := false
+				for _, expected := range expectedWhitelist {
+					if bytes.Compare(value.ValidatorAddress, expected.ValidatorAddress) == 0 {
+						found = true
+						assert.Equal(t, value.VotingPower, expected.VotingPower)
+					}
+				}
+				assert.Equal(t, found, true)
+			}
 
 			dbProphecies := genesis.Prophecies
 			require.Equal(t, len(tc.genesis.Prophecies), len(dbProphecies))
