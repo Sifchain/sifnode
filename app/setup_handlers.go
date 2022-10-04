@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 
-	"github.com/Sifchain/sifnode/seed"
 	kpr "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
@@ -13,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "1.0-testnet.13"
+const releaseVersion = "1.0-beta.12"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
