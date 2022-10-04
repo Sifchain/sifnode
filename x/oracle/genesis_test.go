@@ -1,6 +1,7 @@
 package oracle_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -32,15 +33,33 @@ func TestInitGenesis(t *testing.T) {
 				require.Equal(t, tc.genesis.AdminAddress, keeper.GetAdminAccount(ctx).String())
 			}
 
-			wl := keeper.GetOracleWhiteList(ctx, networkDescriptor).WhiteList
+			wl := keeper.GetOracleWhiteList(ctx, networkDescriptor).ValidatorPower
 
-			whiteList, ok := tc.genesis.AddressWhitelist[uint32(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)]
+			whiteList := tc.genesis.ValidatorWhitelist
 
-			if ok {
-				for addr := range whiteList.WhiteList {
-					_, ok := wl[addr]
-					require.Equal(t, ok, true)
+			found := false
+			if len(wl) == 0 {
+				found = true
+			}
+			expectedWhitelist := make([]*types.ValidatorPower, 0)
+
+			for _, value := range whiteList {
+				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
+					found = true
+					expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
 				}
+			}
+			assert.Equal(t, found, true)
+
+			for _, value := range wl {
+				found := false
+				for _, expected := range expectedWhitelist {
+					if bytes.Compare(value.ValidatorAddress, expected.ValidatorAddress) == 0 {
+						found = true
+						assert.Equal(t, value.VotingPower, expected.VotingPower)
+					}
+				}
+				assert.Equal(t, found, true)
 			}
 
 			prophecies := keeper.GetProphecies(ctx)
@@ -67,10 +86,46 @@ func TestExportGenesis(t *testing.T) {
 			genesis := oracle.ExportGenesis(ctx, keeper)
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
-			wl := genesis.AddressWhitelist
-			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
-			for i, addr := range tc.genesis.AddressWhitelist {
-				require.Equal(t, addr, wl[i])
+			wl := genesis.GetValidatorWhitelist()
+			require.Equal(t, len(tc.genesis.ValidatorWhitelist), len(wl))
+
+			found := false
+			expectedWhitelist := make([]*types.ValidatorPower, 0)
+
+			if len(wl) == 0 {
+				found = true
+			}
+
+			for _, value := range wl {
+				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
+					found = true
+					expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+				}
+			}
+			assert.Equal(t, found, true)
+
+			found = false
+			if len(wl) == 0 {
+				found = true
+			}
+			genesisWhitelist := make([]*types.ValidatorPower, 0)
+			for _, value := range tc.genesis.ValidatorWhitelist {
+				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
+					found = true
+					genesisWhitelist = value.ValidatorWhitelist.ValidatorPower
+				}
+			}
+			assert.Equal(t, found, true)
+
+			for _, value := range genesisWhitelist {
+				found := false
+				for _, expected := range expectedWhitelist {
+					if bytes.Compare(value.ValidatorAddress, expected.ValidatorAddress) == 0 {
+						found = true
+						assert.Equal(t, value.VotingPower, expected.VotingPower)
+					}
+				}
+				assert.Equal(t, found, true)
 			}
 
 			prophecies := genesis.Prophecies
@@ -106,12 +161,12 @@ func TestGenesisMarshalling(t *testing.T) {
 
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
-			wl := genesis.AddressWhitelist
+			wl := genesis.ValidatorWhitelist
 
-			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
-			for i, addr := range tc.genesis.AddressWhitelist {
-				require.Equal(t, addr, wl[i])
-			}
+			require.Equal(t, len(tc.genesis.ValidatorWhitelist), len(wl))
+			// for i, addr := range tc.genesis.AddressWhitelist {
+			// 	require.Equal(t, addr, wl[i])
+			// }
 
 			dbProphecies := genesis.Prophecies
 			require.Equal(t, len(tc.genesis.Prophecies), len(dbProphecies))
@@ -151,8 +206,8 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name: "Prophecy",
 			genesis: types.GenesisState{
-				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{},
-				AdminAddress:     addrs[0].String(),
+				ValidatorWhitelist: []*types.GenesisValidatorWhiteList{},
+				AdminAddress:       addrs[0].String(),
 				Prophecies: []*types.Prophecy{
 					&prophecy,
 				},
@@ -178,7 +233,7 @@ func TestGenesisWithCrossChainFee(t *testing.T) {
 func TestGenesisWithConsensusNeeded(t *testing.T) {
 	ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 	networkIdentity := types.NewNetworkIdentity(types.NetworkDescriptor(1))
-	keeper.SetConsensusNeeded(ctx, networkIdentity, 66)
+	keeper.SetConsensusNeeded(ctx, networkIdentity, types.ConsensusNeeded{ConsensusNeeded: 66})
 
 	exportedState := oracle.ExportGenesis(ctx, keeper)
 	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")

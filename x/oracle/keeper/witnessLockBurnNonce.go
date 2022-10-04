@@ -77,7 +77,12 @@ func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) []*types.GenesisW
 	for ; iterator.Valid(); iterator.Next() {
 		var lockBurnSequenceKey types.LockBurnSequenceKey
 		var lockBurnSequence types.LockBurnSequence
-		k.cdc.MustUnmarshal(iterator.Key(), &lockBurnSequenceKey)
+
+		lockBurnSequenceKey, err := types.GetWitnessLockBurnSequenceKeyFromRawKey(k.cdc, iterator.Key())
+		if err != nil {
+			panic(err)
+		}
+
 		k.cdc.MustUnmarshal(iterator.Value(), &lockBurnSequence)
 		sequences = append(sequences, &types.GenesisWitnessLockBurnSequence{
 			WitnessLockBurnSequenceKey: &lockBurnSequenceKey,

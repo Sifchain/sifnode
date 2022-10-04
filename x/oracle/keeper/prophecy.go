@@ -252,7 +252,7 @@ func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) []*types.GenesisProphecyInfo
 	store := ctx.KVStore(k.storeKey)
 	prophecyInfos := make([]*types.GenesisProphecyInfo, 0)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
+	iterator := sdk.KVStorePrefixIterator(store, types.GlobalNonceProphecyIDPrefix)
 
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -262,10 +262,21 @@ func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) []*types.GenesisProphecyInfo
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var globalSequenceKey types.GlobalSequenceKey
+		// var prophecyId []byte
 		var prophecyInfo types.ProphecyInfo
 
-		k.cdc.MustUnmarshal(iterator.Key(), &globalSequenceKey)
-		k.cdc.MustUnmarshal(iterator.Value(), &prophecyInfo)
+		// k.cdc.MustUnmarshal(iterator.Key(), &globalSequenceKey)
+
+		globalSequenceKey, err := types.GetGlobalSequenceKeyKeyFromRawKey(k.cdc, iterator.Key())
+		if err != nil {
+			panic(err)
+		}
+		prophecyId := iterator.Value()
+
+		storePrefix := append(types.SignaturePrefix, prophecyId[:]...)
+		value := store.Get(storePrefix)
+
+		k.cdc.MustUnmarshal(value, &prophecyInfo)
 		prophecyInfos = append(prophecyInfos, &types.GenesisProphecyInfo{
 			GlobalSequenceKey: &globalSequenceKey,
 			ProphecyInfo:      &prophecyInfo,
