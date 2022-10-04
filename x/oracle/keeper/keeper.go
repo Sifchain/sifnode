@@ -139,8 +139,7 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 		return types.ErrNotAdminAccount
 	}
 
-	k.UpdateOracleWhiteList(ctx, networkDescriptor, validator, power)
-	return nil
+	return k.UpdateOracleWhiteList(ctx, networkDescriptor, validator, power)
 }
 
 /*

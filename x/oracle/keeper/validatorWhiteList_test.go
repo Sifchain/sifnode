@@ -20,7 +20,10 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
 
 	for _, address := range valAddresses {
-		app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 10)
+		err := app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 10)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	vList := app.OracleKeeper.GetOracleWhiteList(ctx, networkDescriptor)
@@ -37,7 +40,10 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
 
 	for _, address := range valAddresses {
-		app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 10)
+		err := app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 10)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, networkDescriptor, valAddresses[0]))
@@ -59,7 +65,8 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 			ValidatorAddress: address,
 			VotingPower:      100,
 		})
-		app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 100)
+		err := app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 100)
+		assert.NoError(t, err)
 	}
 
 	allWhiteList := app.OracleKeeper.GetAllWhiteList(ctx)

@@ -126,7 +126,7 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, networkIdentity types.NetworkId
 // }
 
 // UpdateOracleWhiteList validator's power
-func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress, power uint32) {
+func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress, power uint32) error {
 	store := ctx.KVStore(k.storeKey)
 
 	key := k.GetWhiteListKey(types.NewNetworkIdentity(networkDescriptor))
@@ -135,8 +135,12 @@ func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.N
 	var validatorWhiteList types.ValidatorWhiteList
 	k.cdc.MustUnmarshal(value, &validatorWhiteList)
 
-	validatorWhiteList.UpdateValidatorPower(validator, power)
+	err := validatorWhiteList.UpdateValidatorPower(validator, power)
+	if err != nil {
+		return err
+	}
 	store.Set(key, k.cdc.MustMarshal(&validatorWhiteList))
+	return nil
 }
 
 // GetWhiteListKey get the key for storage, key = WhiteListValidatorPrefix + networkDescriptor

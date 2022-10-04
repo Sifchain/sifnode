@@ -202,7 +202,10 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost), sdk.NewInt(FirstBurnDoublePeggyCost))
 	whitelist := oracleTypes.ValidatorWhiteList{ValidatorPower: valAddrs}
 	for _, value := range whitelist.ValidatorPower {
-		oracleKeeper.UpdateOracleWhiteList(ctx, NetworkDescriptor, value.ValidatorAddress, value.VotingPower)
+		err = oracleKeeper.UpdateOracleWhiteList(ctx, NetworkDescriptor, value.ValidatorAddress, value.VotingPower)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }

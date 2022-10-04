@@ -24,7 +24,10 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 	for _, list := range data.ValidatorWhitelist {
 		powers := list.ValidatorWhitelist
 		for _, power := range powers.ValidatorPower {
-			keeper.UpdateOracleWhiteList(ctx, list.NetworkDescriptor, power.ValidatorAddress, power.VotingPower)
+			err := keeper.UpdateOracleWhiteList(ctx, list.NetworkDescriptor, power.ValidatorAddress, power.VotingPower)
+			if err != nil {
+				panic(err)
+			}
 
 		}
 	}
