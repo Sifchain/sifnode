@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Sifchain/sifnode/app"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -94,8 +95,21 @@ func TestAddLiquidity(clientCtx client.Context, txf tx.Factory, key keyring.Info
 		return err
 	}
 
-	nativeAdd := poolBefore.Pool.NativeAssetBalance.Quo(sdk.NewUint(10))
-	externalAdd := poolBefore.Pool.ExternalAssetBalance.Quo(sdk.NewUint(10))
+	lpBefore, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
+		Symbol:    "ceth",
+		LpAddress: key.GetAddress().String(),
+	})
+	if err != nil {
+		// if lp doesn't exist
+		lpBefore = &clptypes.LiquidityProviderRes{
+			LiquidityProvider: &clptypes.LiquidityProvider{
+				LiquidityProviderUnits: sdk.ZeroUint(),
+			},
+		}
+	}
+
+	nativeAdd := poolBefore.Pool.NativeAssetBalance.Quo(sdk.NewUint(1000))
+	externalAdd := poolBefore.Pool.ExternalAssetBalance.Quo(sdk.NewUint(1000))
 
 	msg := clptypes.MsgAddLiquidity{
 		Signer:              key.GetAddress().String(),
@@ -123,6 +137,36 @@ func TestAddLiquidity(clientCtx client.Context, txf tx.Factory, key keyring.Info
 		return errors.New(fmt.Sprintf("external balance mismatch afer add (added: %s diff: %s)",
 			externalAdd,
 			poolAfter.Pool.ExternalAssetBalance.Sub(poolBefore.Pool.ExternalAssetBalance).String()))
+	}
+
+	// calculate expected result
+	newPoolUnits, lpUnits, err := clpkeeper.CalculatePoolUnits(
+		poolBefore.Pool.PoolUnits,
+		poolBefore.Pool.NativeAssetBalance,
+		poolBefore.Pool.ExternalAssetBalance,
+		msg.NativeAssetAmount,
+		msg.ExternalAssetAmount,
+		18,
+		sdk.NewDecWithPrec(5, 5),
+		sdk.NewDecWithPrec(5, 4))
+
+	if !poolAfter.Pool.PoolUnits.Equal(newPoolUnits) {
+		return errors.New(fmt.Sprintf("pool unit mismatch (expected: %s after: %s)", newPoolUnits.String(), poolAfter.Pool.PoolUnits.String()))
+	}
+
+	lp, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
+		Symbol:    "ceth",
+		LpAddress: key.GetAddress().String(),
+	})
+	if err != nil {
+		return err
+	}
+
+	if !lp.LiquidityProvider.LiquidityProviderUnits.Sub(lpBefore.LiquidityProvider.LiquidityProviderUnits).Equal(lpUnits) {
+		return errors.New(fmt.Sprintf("liquidity provided unit mismatch (expected: %s received: %s)",
+			lpUnits.String(),
+			lp.LiquidityProvider.LiquidityProviderUnits.String()),
+		)
 	}
 
 	return nil
