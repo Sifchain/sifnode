@@ -104,7 +104,7 @@ func TestAddLiquidity(clientCtx client.Context, txf tx.Factory, key keyring.Info
 		ExternalAssetAmount: externalAdd,
 	}
 
-	if err := buildAndBroadcast(clientCtx, txf, key, &msg); err != nil {
+	if _, err := buildAndBroadcast(clientCtx, txf, key, &msg); err != nil {
 		return err
 	}
 
@@ -128,33 +128,18 @@ func TestAddLiquidity(clientCtx client.Context, txf tx.Factory, key keyring.Info
 	return nil
 }
 
-func broadcastOpenPosition(clientCtx client.Context, txf tx.Factory, key keyring.Info) error {
-	collateralAsset := "rowan"
-	collateralAmount := uint64(100)
-	borrowAsset := "ceth"
-
+func TestOpenPosition(clientCtx client.Context, txf tx.Factory, key keyring.Info) error {
 	msg := types.MsgOpen{
 		Signer:           key.GetAddress().String(),
-		CollateralAsset:  collateralAsset,
-		CollateralAmount: sdk.NewUint(collateralAmount),
-		BorrowAsset:      borrowAsset,
+		CollateralAsset:  "rowan",
+		CollateralAmount: sdk.NewUint(100),
+		BorrowAsset:      "ceth",
 		Position:         types.Position_LONG,
 	}
-	txb, err := tx.BuildUnsignedTx(txf, &msg)
+
+	res, err := buildAndBroadcast(clientCtx, txf, key, &msg)
 	if err != nil {
 		panic(err)
-	}
-	err = tx.Sign(txf, key.GetName(), txb, true)
-	if err != nil {
-		panic(err)
-	}
-	txBytes, err := clientCtx.TxConfig.TxEncoder()(txb.GetTx())
-	if err != nil {
-		panic(err)
-	}
-	res, err := clientCtx.WithSimulation(true). /*.WithBroadcastMode("block")*/ BroadcastTx(txBytes)
-	if err != nil {
-		return err
 	}
 
 	log.Print(res)
@@ -162,20 +147,20 @@ func broadcastOpenPosition(clientCtx client.Context, txf tx.Factory, key keyring
 	return err
 }
 
-func buildAndBroadcast(clientCtx client.Context, txf tx.Factory, key keyring.Info, msg sdk.Msg) error {
+func buildAndBroadcast(clientCtx client.Context, txf tx.Factory, key keyring.Info, msg sdk.Msg) (*sdk.TxResponse, error) {
 	txb, err := tx.BuildUnsignedTx(txf, msg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = tx.Sign(txf, key.GetName(), txb, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	txBytes, err := clientCtx.TxConfig.TxEncoder()(txb.GetTx())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := clientCtx.
@@ -183,10 +168,8 @@ func buildAndBroadcast(clientCtx client.Context, txf tx.Factory, key keyring.Inf
 		WithBroadcastMode("block").
 		BroadcastTx(txBytes)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	log.Print(res)
-
-	return err
+	return res, err
 }
