@@ -20,6 +20,10 @@ func FundPool(clpKeeper clpkeeper.Keeper,
 	denom string,
 	address sdk.AccAddress) error {
 
+	if ctx.ChainID() == "sifchain-1" {
+		panic("cannot seed production")
+	}
+
 	pool, err := clpKeeper.GetPool(ctx, denom)
 	if err != nil {
 		return err
@@ -66,6 +70,10 @@ func Seed(clpKeeper clpkeeper.Keeper,
 	ctx sdk.Context,
 	numAccounts int,
 	fundNPools int) error {
+
+	if ctx.ChainID() == "sifchain-1" {
+		panic("cannot seed production")
+	}
 
 	// generate numAccounts random addresses, not guaranteeing uniqueness.
 	testAddrs := make([]sdk.AccAddress, numAccounts)
