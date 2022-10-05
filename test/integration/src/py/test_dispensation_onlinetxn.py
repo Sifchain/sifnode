@@ -6,8 +6,10 @@ import pytest
 from dispensation_envutils import create_online_singlekey_txn, create_new_sifaddr_and_key, send_sample_rowan, balance_check, \
 query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
+# Skipping this test
+@pytest.mark.skip(reason="not now")
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+# @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_online_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()

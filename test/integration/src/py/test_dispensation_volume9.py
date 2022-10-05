@@ -8,8 +8,10 @@ import random
 from dispensation_envutils import create_online_singlekey_txn, create_new_sifaddr_and_key, send_sample_rowan, balance_check, \
 query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
-# AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy'])
+# Skipping this test
+@pytest.mark.skip(reason="not now")
+# # AUTOMATED TEST TO VALIDATE ONLINE TXN
+# @pytest.mark.parametrize("claimType", ['ValidatorSubsidy'])
 def test_run_online_morethan10distribution_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()

@@ -8,9 +8,10 @@ import random
 from dispensation_envutils import create_new_sifaddr_and_key, send_sample_rowan, balance_check, \
 query_block_claim, create_claim, query_created_claim
 
-
-# TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW CLAIM IS CREATED
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+# Skipping this test
+@pytest.mark.skip(reason="not now")
+# # TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW CLAIM IS CREATED
+# @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_new_claim(claimType):
     sifchain_address, sifchain_name = create_new_sifaddr_and_key()
     keyring_backend = 'test'
