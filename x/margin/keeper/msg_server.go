@@ -142,6 +142,10 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
+	if !k.IsRowanCollateralEnabled(ctx) && types.StringCompare(msg.CollateralAsset, nativeAsset) {
+		return nil, sdkerrors.Wrap(types.ErrRowanAsCollateralNotAllowed, nativeAsset)
+	}
+
 	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
@@ -338,6 +342,23 @@ func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools)
 	k.SetParams(ctx, &params)
 
 	return &types.MsgUpdatePoolsResponse{}, nil
+}
+
+func (k msgServer) UpdateRowanCollateral(goCtx context.Context, msg *types.MsgUpdateRowanCollateral) (*types.MsgUpdateRowanCollateralResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	params.RowanCollateralEnabled = msg.RowanCollateralEnabled
+	k.SetParams(ctx, &params)
+
+	return &types.MsgUpdateRowanCollateralResponse{}, nil
 }
 
 func (k msgServer) Whitelist(goCtx context.Context, msg *types.MsgWhitelist) (*types.MsgWhitelistResponse, error) {
