@@ -262,10 +262,7 @@ func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) []*types.GenesisProphecyInfo
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var globalSequenceKey types.GlobalSequenceKey
-		// var prophecyId []byte
 		var prophecyInfo types.ProphecyInfo
-
-		// k.cdc.MustUnmarshal(iterator.Key(), &globalSequenceKey)
 
 		globalSequenceKey, err := types.GetGlobalSequenceKeyKeyFromRawKey(k.cdc, iterator.Key())
 		if err != nil {

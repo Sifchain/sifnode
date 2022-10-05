@@ -50,18 +50,6 @@ func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor ty
 	return lockBurnSequence.LockBurnSequence
 }
 
-// GetWitnessLockBurnSequencePrefix return storage prefix
-// func (k Keeper) GetWitnessLockBurnSequencePrefix(lockBurnSequenceKey types.LockBurnSequenceKey) []byte {
-// 	bs := k.cdc.MustMarshal(&lockBurnSequenceKey)
-// 	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
-// }
-
-// GetWitnessLockBurnSequencePrefix return storage prefix
-// func (k Keeper) GetWitnessLockBurnSequencePrefix(lockBurnSequenceKey types.LockBurnSequenceKey) []byte {
-// 	bs := k.cdc.MustMarshal(&lockBurnSequenceKey)
-// 	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
-// }
-
 // GetAllWitnessLockBurnSequence get all witnessLockBurnSequence needed for all validators
 func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) []*types.GenesisWitnessLockBurnSequence {
 	sequences := make([]*types.GenesisWitnessLockBurnSequence, 0)
@@ -91,13 +79,3 @@ func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) []*types.GenesisW
 	}
 	return sequences
 }
-
-// func (k Keeper) SetWitnessLockBurnNonceViaRawKey(ctx sdk.Context, key []byte, nonce uint64) {
-
-// 	store := ctx.KVStore(k.storeKey)
-// 	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
-// 		LockBurnNonce: nonce,
-// 	})
-
-// 	store.Set(key, bs)
-// }

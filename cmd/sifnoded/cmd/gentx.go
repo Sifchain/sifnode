@@ -38,7 +38,7 @@ the account address or key name. If a key name is given, the address will be loo
 			}
 			networkDescriptor := oracletypes.NetworkDescriptor(networkDescriptorNum)
 			// check if the networkDescriptor is valid
-			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+			if !networkDescriptor.IsValid() {
 				return fmt.Errorf("network id: %d is invalid", networkDescriptor)
 			}
 
@@ -85,7 +85,7 @@ the account address or key name. If a key name is given, the address will be loo
 
 			oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist,
 				&oracletypes.GenesisValidatorWhiteList{
-					NetworkDescriptor:  oracletypes.NetworkDescriptor(networkDescriptor),
+					NetworkDescriptor:  networkDescriptor,
 					ValidatorWhitelist: &validatorWhitelist,
 				})
 

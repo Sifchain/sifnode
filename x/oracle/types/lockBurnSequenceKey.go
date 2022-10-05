@@ -18,12 +18,9 @@ func GetWitnessLockBurnSequenceKeyFromRawKey(cdc codec.BinaryCodec, key []byte) 
 	// check the key which correct prefix
 	if bytes.HasPrefix(key, WitnessLockBurnNoncePrefix) {
 		var lockBurnSequenceKey LockBurnSequenceKey
-		err := cdc.Unmarshal(key[len(WitnessLockBurnNoncePrefix):], &lockBurnSequenceKey)
+		cdc.MustUnmarshal(key[len(WitnessLockBurnNoncePrefix):], &lockBurnSequenceKey)
 
-		if err == nil {
-			return lockBurnSequenceKey, nil
-		}
-		return lockBurnSequenceKey, err
+		return lockBurnSequenceKey, nil
 	}
 
 	return LockBurnSequenceKey{}, errors.New("LockBurnSequenceKey prefix is invalid")

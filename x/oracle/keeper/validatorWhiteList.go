@@ -31,13 +31,6 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) []*types.GenesisValidatorWhiteL
 	return genesisValidatorWhiteList
 }
 
-// SetOracleWhiteList set the validator list for a network.
-// func (k Keeper) SetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkIdentity, validatorList types.ValidatorWhiteList) {
-// 	store := ctx.KVStore(k.storeKey)
-// 	key := networkDescriptor.GetPrefix(k.cdc)
-// 	store.Set(key, k.cdc.MustMarshal(&validatorList))
-// }
-
 // RemoveOracleWhiteList remove the validator list for a network.
 func (k Keeper) RemoveOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkIdentity) {
 	store := ctx.KVStore(k.storeKey)
@@ -62,24 +55,6 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkIdentity types.Networ
 	return whiteList
 }
 
-// // GetAllValidators return validator list
-// func (k Keeper) GetAllValidators(ctx sdk.Context, networkIdentity types.NetworkIdentity) []sdk.ValAddress {
-// 	valAddresses := k.GetOracleWhiteList(ctx, networkIdentity)
-
-// 	vl := []sdk.ValAddress{}
-// 	for i, power := range valAddresses.GetWhiteList() {
-// 		addr, err := sdk.ValAddressFromBech32(i)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 		if power > 0 {
-// 			vl = append(vl, addr)
-// 		}
-// 	}
-
-// 	return vl
-// }
-
 // ValidateAddress is a validator in whitelist
 func (k Keeper) ValidateAddress(ctx sdk.Context, networkIdentity types.NetworkIdentity, address sdk.ValAddress) bool {
 	if !k.ExistsOracleWhiteList(ctx, networkIdentity) {
@@ -98,32 +73,6 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, networkIdentity types.NetworkId
 
 	return false
 }
-
-// GetValidatorPower return validator's power
-// func (k Keeper) GetValidatorPowerMap(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) map[string]types.VotingPower {
-// 	powerMap := make(map[string]types.VotingPower)
-// 	store := ctx.KVStore(k.storeKey)
-
-// 	iterator := sdk.KVStorePrefixIterator(store, types.WhiteListValidatorPrefix)
-// 	defer iterator.Close()
-// 	for ; iterator.Valid(); iterator.Next() {
-
-// 		votingKey, err := types.GetValidatorVotingPowerKeyFromRawKey(k.cdc, iterator.Key())
-// 		if err != nil {
-// 			panic(err.Error())
-// 		}
-
-// 		var votingPower types.VotingPower
-// 		k.cdc.MustUnmarshal(iterator.Value(), &votingPower)
-
-// 		validatorWhiteList = append(validatorWhiteList, &types.ValidatorWhiteList{
-// 			VotingKey:   &votingKey,
-// 			VotingPower: &votingPower,
-// 		})
-// 	}
-
-// 	return 0
-// }
 
 // UpdateOracleWhiteList validator's power
 func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress, power uint32) error {

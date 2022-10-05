@@ -52,5 +52,5 @@ func Test_GetWitnessLockBurnSequenceKeyFromRawKey(t *testing.T) {
 
 	// even the invalid data marshal without the error
 	val, err = types.GetWitnessLockBurnSequenceKeyFromRawKey(cdc, InvalidKey)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }

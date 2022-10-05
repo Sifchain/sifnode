@@ -32,21 +32,6 @@ func (list *ValidatorWhiteList) UpdateValidatorPower(validator sdk.ValAddress, p
 	return nil
 }
 
-// GetValidatorPower return validator's power
-// func (list *ValidatorWhiteList) GetValidatorPowerMap(networkDescriptor NetworkDescriptor) uint32 {
-// 	if list.ContainValidator(validator) {
-// 		return list.GetWhiteList()[validator.String()]
-// 	}
-
-// 	return 0
-// }
-
-// ContainValidator return if validator in the map
-// func (list *ValidatorWhiteList) ContainValidator(validator sdk.ValAddress) bool {
-// 	_, ok := list.GetWhiteList()[validator.String()]
-// 	return ok
-// }
-
 // GetPowerRatio return the power ratio of input validator address list
 func (list *ValidatorWhiteList) GetPowerRatio(claimValidators []sdk.ValAddress) float64 {
 	var totalPower = uint32(0)
@@ -67,19 +52,3 @@ func (list *ValidatorWhiteList) GetPowerRatio(claimValidators []sdk.ValAddress) 
 
 	return float64(votePower) / float64(totalPower)
 }
-
-// GetAllValidators return all validators
-// func (list *ValidatorWhiteList) GetAllValidators() []sdk.ValAddress {
-// 	validators := make([]sdk.ValAddress, 0)
-// 	for key, value := range list.GetWhiteList() {
-// 		address, err := sdk.ValAddressFromBech32(key)
-// 		if err != nil {
-// 			panic("invalid address in whitelist")
-// 		}
-// 		if value > 0 {
-// 			validators = append(validators, address)
-// 		}
-// 	}
-
-// 	return validators
-// }
