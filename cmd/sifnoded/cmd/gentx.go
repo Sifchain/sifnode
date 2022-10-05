@@ -52,20 +52,10 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
 
-			fmt.Printf("++++++ %v \n", addr)
-
-			fmt.Printf("++++++ %v \n", power)
-
 			genFile := config.GenesisFile()
 			appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
-			}
-
-			fmt.Printf("++++++ length of state is %v \n", len(appState))
-			for key, value := range appState {
-				fmt.Printf("++++++ %v \n", key)
-				fmt.Printf("_______ %v \n", value)
 			}
 
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
