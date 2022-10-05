@@ -46,7 +46,8 @@ contract PauseController is AccessControlEnumerable {
      * @dev Event Emitted when a pause transaction is successfully submitted
      */
      event Pause(
-        address indexed _pauser
+        address indexed _pauser,
+        bytes32 [] message
      );
 
     /**
@@ -182,13 +183,13 @@ contract PauseController is AccessControlEnumerable {
      * 
      *      Only require the use of hardware wallets.
      */
-    function pause() public {
+    function pause(bytes32 [] calldata message) public {
         address pauser = msg.sender;
         require(hasRole(PAUSER, pauser), "User is not pauser");
         bool paused = BridgeBank.paused();
         require(paused == false, "BridgeBank already paused");
         BridgeBank.pause();
-        emit Pause(pauser);
+        emit Pause(pauser, message);
     }
 
     /**
@@ -226,8 +227,8 @@ contract PauseController is AccessControlEnumerable {
 
     /**
      * @dev If a unpause request has been submited by a person with the unpauser role, and the required
-     *      block delay has been waited a user with the unpause role will be able to complete the unpause
-     *      request resuming the bridgebank contract. 
+     *      block delay has been waited anyone will be able to complete the unpause request resuming the
+     *      bridgebank contract. 
      * 
      *      Unprivlaged function, since it has to be scheduled by an unpauser anyone can complete this execution
      */
