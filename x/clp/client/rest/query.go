@@ -56,9 +56,9 @@ func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		//Generate Router
+		// Generate Router
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPool)
-		//Generate Params
+		// Generate Params
 		var params types.PoolReq
 		params.Symbol = r.URL.Query().Get("symbol")
 
@@ -221,7 +221,7 @@ func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 	}
 }
 
-//http://localhost:1317/clp/getLpList?symbol=catk
+// http://localhost:1317/clp/getLpList?symbol=catk
 func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)

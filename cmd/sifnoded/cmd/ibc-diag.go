@@ -109,8 +109,8 @@ func getCommittedPackets(
 	cmd *cobra.Command,
 	nodeURI string,
 	portID string,
-	channelID string) ([]uint64, error) {
-
+	channelID string,
+) ([]uint64, error) {
 	clientCtx, err := getClientContext(cmd, nodeURI)
 	if err != nil {
 		return nil, err
@@ -164,8 +164,8 @@ func getUnreceivedPackets(
 	nodeURI string,
 	committedPackets []uint64,
 	portID string,
-	channelID string) ([]uint64, error) {
-
+	channelID string,
+) ([]uint64, error) {
 	clientCtx, err := getClientContext(cmd, nodeURI)
 	if err != nil {
 		panic(err)

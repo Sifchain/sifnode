@@ -101,7 +101,8 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 			height:   1,
 			use:      sdk.NewUint(1000),
 			expected: types.ErrBalanceNotAvailable,
-		}, {
+		},
+		{
 			name:     "Unlock not ready",
 			height:   5,
 			use:      sdk.NewUint(1000),
@@ -177,7 +178,8 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 	period := types.RewardPeriod{
 		RewardPeriodId: "Test 1", RewardPeriodStartBlock: 0, RewardPeriodEndBlock: 0, RewardPeriodAllocation: &allocation,
 		RewardPeriodDefaultMultiplier: &oneDec, RewardPeriodDistribute: true, RewardPeriodMod: 0,
-		RewardPeriodPoolMultipliers: nil}
+		RewardPeriodPoolMultipliers: nil,
+	}
 
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, 1, 1)
 	pool := pools[0]
@@ -222,17 +224,19 @@ func TestKeeper_RewardsDistribution(t *testing.T) {
 // nolint
 func createRewardsDistributeEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
 	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
-	return []sdk.Event{sdk.NewEvent("rewards/distribution",
-		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
-		sdk.NewAttribute("amounts", amountsStr)),
+	return []sdk.Event{
+		sdk.NewEvent("rewards/distribution",
+			sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+			sdk.NewAttribute("amounts", amountsStr)),
 	}
 }
 
 func createRewardsAccumEvent(totalCoinsDistribution sdk.Coin, asset *types.Asset) []sdk.Event {
 	amountsStr := fmt.Sprintf("[{\"pool\":\"%s\",\"amount\":\"200000000000000000000000000\"}]", asset.Symbol)
-	return []sdk.Event{sdk.NewEvent("rewards/accumulation",
-		sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
-		sdk.NewAttribute("amounts", amountsStr)),
+	return []sdk.Event{
+		sdk.NewEvent("rewards/accumulation",
+			sdk.NewAttribute("total_amount", totalCoinsDistribution.Amount.String()),
+			sdk.NewAttribute("amounts", amountsStr)),
 	}
 }
 
@@ -252,7 +256,8 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 	period := types.RewardPeriod{
 		RewardPeriodId: "Test 1", RewardPeriodStartBlock: 0, RewardPeriodEndBlock: 0, RewardPeriodAllocation: &allocation,
 		RewardPeriodDefaultMultiplier: &oneDec, RewardPeriodDistribute: true, RewardPeriodMod: 0,
-		RewardPeriodPoolMultipliers: nil}
+		RewardPeriodPoolMultipliers: nil,
+	}
 
 	pools := test.GeneratePoolsSetLPs(app.ClpKeeper, ctx, 1, 1)
 	pool := pools[0]
@@ -281,9 +286,10 @@ func TestKeeper_RewardsDistributionFailure(t *testing.T) {
 }
 
 func createFailedEvent(receiver sdk.AccAddress) []sdk.Event {
-	return []sdk.Event{sdk.NewEvent("rewards/distribution_error",
-		sdk.NewAttribute("liquidity_provider", receiver.String()),
-		sdk.NewAttribute("error", fmt.Sprint(receiver.String(), " is not allowed to receive funds: unauthorized")),
-		sdk.NewAttribute("height", "0")),
+	return []sdk.Event{
+		sdk.NewEvent("rewards/distribution_error",
+			sdk.NewAttribute("liquidity_provider", receiver.String()),
+			sdk.NewAttribute("error", fmt.Sprint(receiver.String(), " is not allowed to receive funds: unauthorized")),
+			sdk.NewAttribute("height", "0")),
 	}
 }

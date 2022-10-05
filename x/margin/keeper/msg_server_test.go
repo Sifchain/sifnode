@@ -418,7 +418,7 @@ func TestKeeper_Close(t *testing.T) {
 			msg := tt.msgClose
 			msg.Signer = address
 
-			var signer = msg.Signer
+			signer := msg.Signer
 			if tt.overrideSigner != "" {
 				signer = tt.overrideSigner
 			}
@@ -784,7 +784,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 			msg.Signer = address
 			msg.MtpAddress = address
 
-			var signer = msg.Signer
+			signer := msg.Signer
 			if tt.overrideSigner != "" {
 				signer = tt.overrideSigner
 			}

@@ -2,6 +2,7 @@ package rest
 
 // The packages below are commented out at first to prevent an error if this file isn't initially saved.
 import (
+	"net/http"
 	// "bytes"
 	// "net/http"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
@@ -10,7 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func RegisterRoutes(cliCtx client.Context, r *mux.Router) {

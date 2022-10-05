@@ -35,8 +35,8 @@ func NewKeeper(storeKey sdk.StoreKey,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
 	adminKeeper adminkeeper.Keeper,
-	ps paramtypes.Subspace) Keeper {
-
+	ps paramtypes.Subspace,
+) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
@@ -390,7 +390,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, repa
 	owe := Liabilities.Add(InterestUnpaidCollateral)
 
 	if have.LT(Liabilities) {
-		//can't afford principle liability
+		// can't afford principle liability
 		returnAmount = sdk.ZeroUint()
 		debtP = Liabilities.Sub(have)
 		debtI = InterestUnpaidCollateral
@@ -687,7 +687,6 @@ func GetEpochPosition(ctx sdk.Context, epochLength int64) int64 {
 }
 
 func (k Keeper) ForceCloseLong(ctx sdk.Context, mtp *types.MTP, pool *clptypes.Pool, isAdminClose bool, takeFundPayment bool) (sdk.Uint, error) {
-
 	// check MTP health against threshold
 	safetyFactor := k.GetSafetyFactor(ctx)
 

@@ -17,22 +17,24 @@ const (
 	ValidatorsDir = "validators"
 )
 
-type Validators []Validator
-type Validator struct {
-	ChainID                   string `yaml:"chain_id"`
-	NodeID                    string `yaml:"node_id"`
-	IPv4Address               string `yaml:"ipv4_address"`
-	HomeDir                   string `yaml:"-"`
-	NodeHomeDir               string `yaml:"-"`
-	Moniker                   string `yaml:"moniker"`
-	Password                  string `yaml:"password"`
-	Address                   string `yaml:"address"`
-	PubKey                    string `yaml:"pub_key"`
-	Mnemonic                  string `yaml:"mnemonic"`
-	ValidatorAddress          string `yaml:"validator_address"`
-	ValidatorConsensusAddress string `yaml:"validator_consensus_address"`
-	Seed                      bool   `yaml:"is_seed"`
-}
+type (
+	Validators []Validator
+	Validator  struct {
+		ChainID                   string `yaml:"chain_id"`
+		NodeID                    string `yaml:"node_id"`
+		IPv4Address               string `yaml:"ipv4_address"`
+		HomeDir                   string `yaml:"-"`
+		NodeHomeDir               string `yaml:"-"`
+		Moniker                   string `yaml:"moniker"`
+		Password                  string `yaml:"password"`
+		Address                   string `yaml:"address"`
+		PubKey                    string `yaml:"pub_key"`
+		Mnemonic                  string `yaml:"mnemonic"`
+		ValidatorAddress          string `yaml:"validator_address"`
+		ValidatorConsensusAddress string `yaml:"validator_consensus_address"`
+		Seed                      bool   `yaml:"is_seed"`
+	}
+)
 
 func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Validator {
 	moniker := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()

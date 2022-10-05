@@ -107,7 +107,8 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func NewAppModule(
 	oracleKeeper types.OracleKeeper, bankKeeper types.BankKeeper,
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
-	cdc *codec.Codec) AppModule {
+	cdc *codec.Codec,
+) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},

@@ -27,7 +27,7 @@ func SetGenesisOracleAdminCmd(defaultNodeHome string) *cobra.Command {
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			cdc := clientCtx.Codec //todo uncomment when the module is migrated
+			cdc := clientCtx.Codec // todo uncomment when the module is migrated
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)

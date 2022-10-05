@@ -1,9 +1,10 @@
 package app
 
 import (
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetupHandlers_CreateName(t *testing.T) {

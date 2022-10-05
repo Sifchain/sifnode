@@ -12,9 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	errorMessageKey = "errorMessage"
-)
+var errorMessageKey = "errorMessage"
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
@@ -54,10 +52,9 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 			WithFees("500000000000000000rowan"),
 		messages...,
 	)
-
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
-	//    do we retry, 
+	//    do we retry,
 	//        if so, how many times do we try?
 	if err != nil {
 		sugaredLogger.Errorw(

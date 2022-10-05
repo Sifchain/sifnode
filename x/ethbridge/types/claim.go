@@ -3,8 +3,9 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"strconv"
+
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

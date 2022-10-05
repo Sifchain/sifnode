@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/hex"
 	"math/rand"
+	"strconv"
+	"testing"
 	"time"
 
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
-
-	"strconv"
-	"testing"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
@@ -104,7 +103,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		maccPerms[extraMaccPerm] = []string{authtypes.Burner, authtypes.Minter}
 	}
 	paramsKeeper := paramskeeper.NewKeeper(encCfg.Marshaler, encCfg.Amino, keyParams, tkeyParams)
-	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
+	// accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := authkeeper.NewAccountKeeper(
 		encCfg.Marshaler, // amino codec
 		keyAcc,           // target store
@@ -168,8 +167,8 @@ func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	// start at 100, so we can make up to 999 test addresses with valid test addresses
 	for i := 100; i < (numAddrs + 100); i++ {
 		numString := strconv.Itoa(i)
-		buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA6") //base address string
-		buffer.WriteString(numString)                               //adding on final two digits to make addresses unique
+		buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA6") // base address string
+		buffer.WriteString(numString)                               // adding on final two digits to make addresses unique
 		address, _ := sdk.AccAddressFromHex(buffer.String())
 		valAddress := sdk.ValAddress(address)
 		addresses = append(addresses, address)
@@ -183,11 +182,11 @@ func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 func CreateTestPubKeys(numPubKeys int) []cryptotypes.PubKey {
 	var publicKeys []cryptotypes.PubKey
 	var buffer bytes.Buffer
-	//start at 10 to avoid changing 1 to 01, 2 to 02, etc
+	// start at 10 to avoid changing 1 to 01, 2 to 02, etc
 	for i := 100; i < (numPubKeys + 100); i++ {
 		numString := strconv.Itoa(i)
-		buffer.WriteString("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AF") //base pubkey string
-		buffer.WriteString(numString)                                                       //adding on final two digits to make pubkeys unique
+		buffer.WriteString("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AF") // base pubkey string
+		buffer.WriteString(numString)                                                       // adding on final two digits to make pubkeys unique
 		publicKeys = append(publicKeys, NewPubKey(buffer.String()))
 		buffer.Reset()
 	}
@@ -199,7 +198,7 @@ func NewPubKey(pk string) (res cryptotypes.PubKey) {
 	if err != nil {
 		panic(err)
 	}
-	//res, err = crypto.PubKeyFromBytes(pkBytes)
+	// res, err = crypto.PubKeyFromBytes(pkBytes)
 	return &ed25519.PubKey{
 		Key: pkBytes,
 	}
@@ -214,7 +213,7 @@ const (
 	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
 )
 
-//// returns context and app with params set on account keeper
+// // returns context and app with params set on account keeper
 func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
 	sifapp := app.Setup(isCheckTx)
 	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})

@@ -43,7 +43,6 @@ type (
 		Signer  string       `json:"signer"` // User who is trying to close margin position
 		// nolint:revive
 		Id uint64 `json:"id"` // Id of the mtp
-
 	}
 
 	ForceCloseReq struct {
@@ -52,7 +51,6 @@ type (
 		MtpAddress string       `json:"mtp_address"` // MtpAddress for position to force close
 		// nolint:revive
 		Id uint64 `json:"id"` // Id of the mtp
-
 	}
 )
 

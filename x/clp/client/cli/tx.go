@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	"log"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -52,6 +51,7 @@ func GetTxCmd() *cobra.Command {
 
 	return clpTxCmd
 }
+
 func GetCmdAddRewardPeriod() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reward-period",

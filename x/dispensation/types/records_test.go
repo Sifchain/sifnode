@@ -32,7 +32,6 @@ func TestNewDistributionRecord(t *testing.T) {
 	assert.Equal(t, recipientAddress, result.RecipientAddress)
 	assert.Equal(t, distributionStartHeight, result.DistributionStartHeight)
 	assert.Equal(t, distributionCompletedHeight, result.DistributionCompletedHeight)
-
 }
 
 func TestNewDistributionRecord_validateTrue(t *testing.T) {
@@ -43,7 +42,8 @@ func TestNewDistributionRecord_validateTrue(t *testing.T) {
 	recipientAddress := types.AttributeKeyDistributionRecordAddress
 	Coins := sdk.Coins{sdk.Coin{
 		Denom:  "rowan",
-		Amount: sdk.NewInt(20)}}
+		Amount: sdk.NewInt(20),
+	}}
 	distributionStartHeight := int64(1)
 	distributionCompletedHeight := int64(10)
 	result := types.NewDistributionRecord(status, distributionType, distributionName, recipientAddress, Coins, distributionStartHeight, distributionCompletedHeight, runner)
@@ -59,7 +59,8 @@ func TestNewDistributionRecord_validateEmptyAddress(t *testing.T) {
 	recipientAddress := ""
 	Coins := sdk.Coins{sdk.Coin{
 		Denom:  "denom",
-		Amount: sdk.NewInt(20)}}
+		Amount: sdk.NewInt(20),
+	}}
 	distributionStartHeight := int64(1)
 	distributionCompletedHeight := int64(10)
 	result := types.NewDistributionRecord(status, distributionType, distributionName, recipientAddress, Coins, distributionStartHeight, distributionCompletedHeight, runner)
@@ -75,7 +76,8 @@ func TestNewDistributionRecord_validateCoinIsInvalid(t *testing.T) {
 	recipientAddress := types.AttributeKeyDistributionRecordAddress
 	Coins := sdk.Coins{sdk.Coin{
 		Denom:  "",
-		Amount: sdk.NewInt(20)}}
+		Amount: sdk.NewInt(20),
+	}}
 	distributionStartHeight := int64(1)
 	distributionCompletedHeight := int64(10)
 	result := types.NewDistributionRecord(status, distributionType, distributionName, recipientAddress, Coins, distributionStartHeight, distributionCompletedHeight, runner)
@@ -91,7 +93,8 @@ func TestNewDistributionRecord_Add(t *testing.T) {
 	recipientAddress := types.AttributeKeyDistributionRecordAddress
 	Coins := sdk.Coins{sdk.Coin{
 		Denom:  "",
-		Amount: sdk.NewInt(20)}}
+		Amount: sdk.NewInt(20),
+	}}
 	distributionStartHeight := int64(1)
 	distributionCompletedHeight := int64(10)
 
@@ -112,13 +115,13 @@ func TestNewDistributionRecord_DoesTypeSupportClaim(t *testing.T) {
 	recipientAddress := types.AttributeKeyDistributionRecordAddress
 	Coins := sdk.Coins{sdk.Coin{
 		Denom:  "rowan",
-		Amount: sdk.NewInt(20)}}
+		Amount: sdk.NewInt(20),
+	}}
 	distributionStartHeight := int64(1)
 	distributionCompletedHeight := int64(10)
 	result := types.NewDistributionRecord(status, distributionType, distributionName, recipientAddress, Coins, distributionStartHeight, distributionCompletedHeight, runner)
 	bool := result.DoesTypeSupportClaim()
 	assert.True(t, bool)
-
 }
 
 func TestNewDistributionRecord_DoesTypeSupportClaim_False(t *testing.T) {
@@ -129,13 +132,13 @@ func TestNewDistributionRecord_DoesTypeSupportClaim_False(t *testing.T) {
 	recipientAddress := types.AttributeKeyDistributionRecordAddress
 	Coins := sdk.Coins{sdk.Coin{
 		Denom:  "rowan",
-		Amount: sdk.NewInt(20)}}
+		Amount: sdk.NewInt(20),
+	}}
 	distributionStartHeight := int64(1)
 	distributionCompletedHeight := int64(10)
 	result := types.NewDistributionRecord(status, distributionType, distributionName, recipientAddress, Coins, distributionStartHeight, distributionCompletedHeight, runner)
 	bool := result.DoesTypeSupportClaim()
 	assert.False(t, bool)
-
 }
 
 func TestNewUserClaim(t *testing.T) {
@@ -149,7 +152,6 @@ func TestNewUserClaim(t *testing.T) {
 	assert.Equal(t, userClaimType, UserClaim.UserClaimType)
 	assert.Equal(t, tProto, UserClaim.UserClaimTime)
 	assert.Equal(t, err, error)
-
 }
 
 func TestNewUserClaim_ValidateFalse(t *testing.T) {
@@ -161,6 +163,7 @@ func TestNewUserClaim_ValidateFalse(t *testing.T) {
 	assert.False(t, bool)
 	assert.Empty(t, error)
 }
+
 func TestNewUserClaim_ValidateTrue(t *testing.T) {
 	UserAddress := types.AttributeKeyDistributionRecordAddress
 	userClaimType := types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING
@@ -170,6 +173,7 @@ func TestNewUserClaim_ValidateTrue(t *testing.T) {
 	assert.True(t, bool)
 	assert.Empty(t, error)
 }
+
 func TestNewDistribution(t *testing.T) {
 	distributiontype := types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING
 	name := types.AttributeKeyDistributionName
@@ -187,7 +191,6 @@ func TestNewDistribution_validateTrue(t *testing.T) {
 	result := types.NewDistribution(distributiontype, name, authorizedRunner)
 	bool := result.Validate()
 	assert.True(t, bool)
-
 }
 
 func TestNewDistribution_validateFalse(t *testing.T) {
@@ -197,7 +200,6 @@ func TestNewDistribution_validateFalse(t *testing.T) {
 	result := types.NewDistribution(distributiontype, name, authorizedRunner)
 	bool := result.Validate()
 	assert.False(t, bool)
-
 }
 
 func TestGetDistributionStatus_Completed(t *testing.T) {
@@ -206,7 +208,6 @@ func TestGetDistributionStatus_Completed(t *testing.T) {
 	Distributionstatus := int32(result)
 	assert.NotEmpty(t, Distributionstatus)
 	assert.True(t, output)
-
 }
 
 func TestGetDistributionStatus_Pending(t *testing.T) {

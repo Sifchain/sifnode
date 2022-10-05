@@ -157,8 +157,8 @@ func TestKeeper_SwapOne(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			//ctx, app := test.CreateTestAppClp(false)
-			poolUnits := sdk.NewUint(2000) //don't care
+			// ctx, app := test.CreateTestAppClp(false)
+			poolUnits := sdk.NewUint(2000) // don't care
 			pool := types.NewPool(&tc.toAsset, tc.nativeAssetBalance, tc.externalAssetBalance, poolUnits)
 			pool.NativeCustody = tc.nativeCustody
 			pool.ExternalCustody = tc.externalCustody
@@ -180,13 +180,12 @@ func TestKeeper_SwapOne(t *testing.T) {
 			require.Equal(t, tc.expectedNativeAssetBalance.String(), pool.NativeAssetBalance.String())
 		})
 	}
-
 }
 
 func TestKeeper_ExtractValuesFromPool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")
@@ -207,7 +206,7 @@ func TestKeeper_ExtractValuesFromPool(t *testing.T) {
 func TestKeeper_GetSwapFee(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
+	// Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
 	asset := types.NewAsset("eth")
@@ -350,7 +349,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		},
 		{
 			name:                 "successful no slip",
-			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
+			oldPoolUnits:         sdk.NewUint(1099511627776), // 2**40
 			nativeAssetBalance:   sdk.NewUint(1099511627776),
 			externalAssetBalance: sdk.NewUint(1099511627776),
 			nativeAssetAmount:    sdk.NewUint(1099511627776),
@@ -361,7 +360,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		},
 		{
 			name:                 "no asymmetric",
-			oldPoolUnits:         sdk.NewUint(1099511627776), //2**40
+			oldPoolUnits:         sdk.NewUint(1099511627776), // 2**40
 			nativeAssetBalance:   sdk.NewUint(1048576),
 			externalAssetBalance: sdk.NewUint(1024123),
 			nativeAssetAmount:    sdk.NewUint(999),
@@ -373,7 +372,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		},
 		{
 			name:                 "successful - very big",
-			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), // 2**200
 			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
 			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
 			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
@@ -848,7 +847,6 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			y := clpkeeper.CalcDenomChangeMultiplier(tc.decimalsX, tc.decimalsY)
 
 			require.Equal(t, tc.expected.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
@@ -858,7 +856,6 @@ func TestKeeper_CalcDenomChangeMultiplier(t *testing.T) {
 
 // nolint
 func TestKeeper_CalcSpotPriceX(t *testing.T) {
-
 	testcases := []struct {
 		name                   string
 		X                      sdk.Uint
@@ -933,7 +930,7 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 		{
 			name:                   "success big numbers",
 			X:                      sdk.OneUint(),
-			Y:                      sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			Y:                      sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), // 2**200
 			decimalsX:              18,
 			decimalsY:              18,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
@@ -965,7 +962,6 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			price, err := clpkeeper.CalcSpotPriceX(tc.X, tc.Y, tc.decimalsX, tc.decimalsY, tc.pmtpCurrentRunningRate, tc.isXNative)
 
 			if tc.errString != nil {
@@ -980,7 +976,6 @@ func TestKeeper_CalcSpotPriceX(t *testing.T) {
 }
 
 func TestKeeper_CalcSpotPriceNative(t *testing.T) {
-
 	testcases := []struct {
 		name                   string
 		nativeAssetBalance     sdk.Uint
@@ -1041,7 +1036,7 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 		{
 			name:                   "success big numbers",
 			nativeAssetBalance:     sdk.OneUint(),
-			externalAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			externalAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), // 2**200
 			decimalsExternal:       18,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
 			expected:               sdk.NewDecFromBigIntWithPrec(getFirstArg(big.NewInt(1).SetString("1606938044258990275541962092341162602522202993782792835301376000000000000000000", 10)), 18),
@@ -1090,7 +1085,6 @@ func TestKeeper_CalcSpotPriceNative(t *testing.T) {
 }
 
 func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
-
 	testcases := []struct {
 		name                   string
 		nativeAssetBalance     sdk.Uint
@@ -1150,7 +1144,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 		},
 		{
 			name:                   "success big numbers",
-			nativeAssetBalance:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), // 2**200
 			externalAssetBalance:   sdk.OneUint(),
 			decimalsExternal:       18,
 			pmtpCurrentRunningRate: sdk.NewDec(0),
@@ -1200,7 +1194,6 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 }
 
 func TestKeeper_CalculateRatioDiff(t *testing.T) {
-
 	testcases := []struct {
 		name       string
 		A, R, a, r *big.Int
@@ -1236,7 +1229,6 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			ratio, err := clpkeeper.CalculateRatioDiff(tc.A, tc.R, tc.a, tc.r)
 
 			if tc.errString != nil {

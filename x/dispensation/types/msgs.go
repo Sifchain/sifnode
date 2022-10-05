@@ -8,7 +8,6 @@ import (
 )
 
 func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []types.Output, authorizedRunner string) MsgCreateDistribution {
-
 	return MsgCreateDistribution{
 		Distributor:      distributor.String(),
 		AuthorizedRunner: authorizedRunner,
@@ -64,6 +63,7 @@ func NewMsgCreateUserClaim(userClaimAddress sdk.AccAddress, claimType Distributi
 		UserClaimType:    claimType,
 	}
 }
+
 func (m MsgCreateDistribution) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
@@ -128,7 +128,7 @@ func (m MsgRunDistribution) Type() string {
 }
 
 func (m MsgRunDistribution) ValidateBasic() error {
-	//Validate DistributionType
+	// Validate DistributionType
 	_, ok := IsValidDistributionType(m.DistributionType.String())
 	if !ok {
 		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")

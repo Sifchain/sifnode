@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/clp/test"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {

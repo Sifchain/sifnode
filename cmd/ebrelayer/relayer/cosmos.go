@@ -54,8 +54,8 @@ type CosmosSub struct {
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
 	key *ecdsa.PrivateKey,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
-
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger,
+) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
@@ -151,7 +151,6 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 
 				ctx := context.Background()
 				block, err := client.BlockResults(ctx, &tmpBlockNumber)
-
 				if err != nil {
 					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
 						errorMessageKey, err.Error())
@@ -387,7 +386,6 @@ func getOracleClaimType(eventType string) types.Event {
 }
 
 func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
-
 	for i := 0; i < 5; i++ {
 		client, auth, target, err := txs.InitRelayConfig(
 			sub.EthProvider,
@@ -396,7 +394,6 @@ func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client
 			sub.PrivateKey,
 			sub.SugaredLogger,
 		)
-
 		if err != nil {
 			sub.SugaredLogger.Errorw("failed in init relay config.",
 				errorMessageKey, err.Error())

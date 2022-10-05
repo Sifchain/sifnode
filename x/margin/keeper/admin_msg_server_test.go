@@ -188,7 +188,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 			msg := tt.msgAdminCloseAll
 			msg.Signer = address
 
-			var signer = msg.Signer
+			signer := msg.Signer
 
 			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.msgOpen.CollateralAsset, tt.msgOpen.BorrowAsset, signer, tt.msgOpen.Position, 1, sdk.NewDec(20))
 			mtp.Liabilities = sdk.NewUint(10)

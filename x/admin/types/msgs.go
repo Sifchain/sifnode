@@ -5,10 +5,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 )
 
-var _ sdk.Msg = &MsgAddAccount{}
-var _ sdk.Msg = &MsgRemoveAccount{}
-var _ legacytx.LegacyMsg = &MsgAddAccount{}
-var _ legacytx.LegacyMsg = &MsgRemoveAccount{}
+var (
+	_ sdk.Msg            = &MsgAddAccount{}
+	_ sdk.Msg            = &MsgRemoveAccount{}
+	_ legacytx.LegacyMsg = &MsgAddAccount{}
+	_ legacytx.LegacyMsg = &MsgRemoveAccount{}
+)
 
 func (m *MsgAddAccount) Route() string {
 	return RouterKey
