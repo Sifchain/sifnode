@@ -350,10 +350,13 @@ func GeneratePoolsFromFile(app *sifapp.SifchainApp, keeper clpkeeper.Keeper, ctx
 		if err != nil {
 			panic(err)
 		}
-		app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(
+		err = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(
 			sdk.NewCoin("rowan", sdk.NewIntFromBigInt(pool.NativeAssetBalance.BigInt())),
 			sdk.NewCoin(pool.ExternalAsset.Symbol, sdk.NewIntFromBigInt(pool.ExternalAssetBalance.BigInt())),
 		))
+		if err != nil {
+			panic(err)
+		}
 	}
 	return poolList.Pools
 }
