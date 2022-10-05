@@ -40,7 +40,7 @@ y = (1 - f) * (1 + r) * x * Y / (x + X)
 fee = f * (1 + r) * x * Y / (x + X)
 ```
 
-# Proposed Change
+## Proposed Change
 
 Apply a minimum fee when swapping to Rowan.
 
@@ -50,7 +50,7 @@ The fee calculation in equation (1) becomes:
 fee = max(f * raw_XYK_output, min_fee)
 ```
 
-Where `min_fee` is a minimum fee parameter which can be set via an admin key. See CLI
+Where `min_fee` is a minimum fee parameter which is set via an admin key. See CLI
 section for more details.
 
 ## Events
@@ -60,8 +60,8 @@ There are no new events or updates to existing events.
 ## CLI
 
 The CLI option for querying the swap fee rate (`sifnoded q clp swap-fee-rate`) and setting the swap fee
-rate (`sifnoded tx clp set-swap-fee-rate`), must be renamed to `sifnoded tx clp set-swap-params`
-and `sifnoded q clp swap-params` and updated to include the min fee.
+rate (`sifnoded tx clp set-swap-fee-rate`), must be renamed to `sifnoded q clp swap-params`
+and `sifnoded tx clp set-swap-params` and updated to include the min fee.
 
 ### Setting
 
@@ -86,7 +86,7 @@ sifnoded q clp swap-params --output json
 
 ```json
 {
-	"swap_fee_rate": "0.010000000000000000",
+    "swap_fee_rate": "0.010000000000000000",
     "min_fee": "100"
 }
 ```
