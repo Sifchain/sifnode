@@ -703,6 +703,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 						MaxOpenPositions:                         10000,
 						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
 						SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
+						RowanCollateralEnabled:                   true,
 					},
 				}
 
@@ -862,6 +863,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
 				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 				Pools:                                    []string{tt.externalAsset},
+				RowanCollateralEnabled:                   true,
 			}
 			expectedGenesis := types.GenesisState{Params: &params}
 			marginKeeper.InitGenesis(ctx, expectedGenesis)
@@ -1083,6 +1085,7 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 				SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
 				SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 				EpochLength:                              1,
+				RowanCollateralEnabled:                   true,
 				Pools: []string{
 					externalAsset,
 				},
@@ -1788,6 +1791,7 @@ func TestKeeper_EC(t *testing.T) {
 						SqModifier:                               sdk.MustNewDecFromStr("10000000000000000000000000"),
 						SafetyFactor:                             sdk.MustNewDecFromStr("1.05"),
 						EpochLength:                              1,
+						RowanCollateralEnabled:                   true,
 						Pools: []string{
 							ec.externalAsset,
 						},
