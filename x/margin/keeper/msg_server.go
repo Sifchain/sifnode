@@ -143,10 +143,6 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	nativeAsset := types.GetSettlementAsset()
 
 	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
-		return nil, sdkerrors.Wrap(types.ErrRowanAsCollateralNotAllowed, nativeAsset)
-	}
-
-	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
 		externalAsset = msg.CollateralAsset
