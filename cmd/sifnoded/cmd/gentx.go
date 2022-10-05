@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -69,35 +70,35 @@ the account address or key name. If a key name is given, the address will be loo
 
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
 
-			// validatorWhitelist := oracletypes.ValidatorWhiteList{}
+			validatorWhitelist := oracletypes.ValidatorWhiteList{}
 
-			// for index := 0; index < len(oracleGenState.ValidatorWhitelist); index++ {
-			// 	if oracleGenState.ValidatorWhitelist[index].NetworkDescriptor == networkDescriptor {
-			// 		validatorWhitelist = *oracleGenState.ValidatorWhitelist[index].ValidatorWhitelist
-			// 		oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist[:index],
-			// 			oracleGenState.ValidatorWhitelist[:index]...)
-			// 	}
-			// }
-			// found := false
-			// for index := 0; index < len(validatorWhitelist.ValidatorPower); index++ {
-			// 	if bytes.Compare(validatorWhitelist.ValidatorPower[index].ValidatorAddress, addr) == 0 {
-			// 		validatorWhitelist.ValidatorPower[index].VotingPower = uint32(power)
-			// 		found = true
-			// 	}
-			// }
-			// if !found {
-			// 	newPower := oracletypes.ValidatorPower{
-			// 		ValidatorAddress: addr,
-			// 		VotingPower:      uint32(power),
-			// 	}
-			// 	validatorWhitelist.ValidatorPower = append(validatorWhitelist.ValidatorPower, &newPower)
-			// }
+			for index := 0; index < len(oracleGenState.ValidatorWhitelist); index++ {
+				if oracleGenState.ValidatorWhitelist[index].NetworkDescriptor == networkDescriptor {
+					validatorWhitelist = *oracleGenState.ValidatorWhitelist[index].ValidatorWhitelist
+					oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist[:index],
+						oracleGenState.ValidatorWhitelist[:index]...)
+				}
+			}
+			found := false
+			for index := 0; index < len(validatorWhitelist.ValidatorPower); index++ {
+				if bytes.Compare(validatorWhitelist.ValidatorPower[index].ValidatorAddress, addr) == 0 {
+					validatorWhitelist.ValidatorPower[index].VotingPower = uint32(power)
+					found = true
+				}
+			}
+			if !found {
+				newPower := oracletypes.ValidatorPower{
+					ValidatorAddress: addr,
+					VotingPower:      uint32(power),
+				}
+				validatorWhitelist.ValidatorPower = append(validatorWhitelist.ValidatorPower, &newPower)
+			}
 
-			// oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist,
-			// 	&oracletypes.GenesisValidatorWhiteList{
-			// 		NetworkDescriptor:  networkDescriptor,
-			// 		ValidatorWhitelist: &validatorWhitelist,
-			// 	})
+			oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist,
+				&oracletypes.GenesisValidatorWhiteList{
+					NetworkDescriptor:  networkDescriptor,
+					ValidatorWhitelist: &validatorWhitelist,
+				})
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
 			if err != nil {
