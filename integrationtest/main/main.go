@@ -20,7 +20,9 @@ import (
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -55,8 +57,11 @@ func main() {
 		},
 		RunE: run,
 	}
+
 	flags.AddTxFlagsToCmd(rootCmd)
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
+
+	rootCmd.AddCommand(GetVerifyRemove())
 
 	err := svrcmd.Execute(rootCmd, app.DefaultNodeHome)
 	if err != nil {
@@ -78,8 +83,14 @@ func run(cmd *cobra.Command, args []string) error {
 		panic(err)
 	}
 
+	//txf = txf.WithAccountNumber(accountNumber).WithSequence(seq)
+	//err = TestAddLiquidity(clientCtx, txf, key)
+	//if err != nil {
+	//	panic(err)
+	//}
+
 	txf = txf.WithAccountNumber(accountNumber).WithSequence(seq)
-	err = TestAddLiquidity(clientCtx, txf, key)
+	err = TestSwap(clientCtx, txf, key)
 	if err != nil {
 		panic(err)
 	}
@@ -168,6 +179,212 @@ func TestAddLiquidity(clientCtx client.Context, txf tx.Factory, key keyring.Info
 			lp.LiquidityProvider.LiquidityProviderUnits.String()),
 		)
 	}
+
+	return nil
+}
+
+func TestSwap(clientCtx client.Context, txf tx.Factory, key keyring.Info) error {
+
+	bankQueryClient := banktypes.NewQueryClient(clientCtx)
+	cethBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: key.GetAddress().String(),
+		Denom:   "ceth",
+	})
+	if err != nil {
+		return err
+	}
+	rowanBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: key.GetAddress().String(),
+		Denom:   "rowan",
+	})
+	if err != nil {
+		return err
+	}
+
+	clpQueryClient := clptypes.NewQueryClient(clientCtx)
+	poolBefore, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: "ceth"})
+	if err != nil {
+		return err
+	}
+
+	msg := clptypes.MsgSwap{
+		Signer:             key.GetAddress().String(),
+		SentAsset:          &clptypes.Asset{Symbol: "ceth"},
+		ReceivedAsset:      &clptypes.Asset{Symbol: "rowan"},
+		SentAmount:         sdk.NewUint(10000),
+		MinReceivingAmount: sdk.NewUint(0),
+	}
+
+	if _, err := buildAndBroadcast(clientCtx, txf, key, &msg); err != nil {
+		return err
+	}
+
+	cethAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: key.GetAddress().String(),
+		Denom:   "ceth",
+	})
+	rowanAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: key.GetAddress().String(),
+		Denom:   "rowan",
+	})
+	poolAfter, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: "ceth"})
+	if err != nil {
+		return err
+	}
+
+	rowanDiff := rowanAfter.Balance.Amount.Sub(rowanBefore.Balance.Amount)
+	// negative
+	cethDiff := cethAfter.Balance.Amount.Sub(cethBefore.Balance.Amount)
+	// negative
+	poolNativeDiff := poolBefore.Pool.NativeAssetBalance.Sub(poolAfter.Pool.NativeAssetBalance)
+	poolExternalDiff := poolAfter.Pool.ExternalAssetBalance.Sub(poolBefore.Pool.ExternalAssetBalance)
+
+	fmt.Printf("Pool sent diff: %s\n", poolNativeDiff.String())
+	fmt.Printf("Pool received diff: %s\n", poolExternalDiff.String())
+	fmt.Printf("Address received diff: %s\n", rowanDiff.String())
+	fmt.Printf("Address sent diff: %s\n", cethDiff.String())
+
+	return nil
+}
+
+/* VerifySwap verifies amounts sent and received from wallet address.
+ */
+func VerifySwap(clientCtx client.Context, key keyring.Info) {
+
+}
+
+func GetVerifyRemove() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "verify-remove --height --from --units --external-asset",
+		Short: "Verify a removal",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Printf("verifying removal...\n")
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			unitsRemoved := sdk.NewUintFromString(viper.GetString("units"))
+
+			err = VerifyRemove(clientCtx,
+				viper.GetString("from"),
+				viper.GetUint64("height"),
+				unitsRemoved,
+				viper.GetString("external-asset"))
+			if err != nil {
+				panic(err)
+			}
+
+			return nil
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	//cmd.Flags().Uint64("height", 0, "height of transaction")
+	cmd.Flags().String("from", "", "address of transactor")
+	cmd.Flags().String("units", "0", "number of units removed")
+	cmd.Flags().String("external-asset", "", "external asset of pool")
+
+	return cmd
+}
+
+/*
+	 VerifyRemove verifies amounts received after remove.
+		--height --from --units --external-asset
+*/
+func VerifyRemove(clientCtx client.Context, from string, height uint64, units sdk.Uint, externalAsset string) error {
+	// Lookup wallet balances before remove
+	// Lookup wallet balances after remove
+	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	extBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   externalAsset,
+	})
+	if err != nil {
+		return err
+	}
+	rowanBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   "rowan",
+	})
+	if err != nil {
+		return err
+	}
+
+	// Lookup LP units before remove
+	// Lookup LP units after remove
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	lpBefore, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
+		Symbol:    externalAsset,
+		LpAddress: from,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Lookup pool balances before remove
+	poolBefore, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
+	if err != nil {
+		return err
+	}
+
+	// Calculate expected values
+	nativeAssetDepth := poolBefore.Pool.NativeAssetBalance.Add(poolBefore.Pool.NativeLiabilities)
+	externalAssetDepth := poolBefore.Pool.ExternalAssetBalance.Add(poolBefore.Pool.ExternalLiabilities)
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := clpkeeper.CalculateWithdrawalFromUnits(poolBefore.Pool.PoolUnits,
+		nativeAssetDepth.String(), externalAssetDepth.String(), lpBefore.LiquidityProvider.LiquidityProviderUnits.String(),
+		units)
+
+	// Lookup wallet balances after
+	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	extAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   externalAsset,
+	})
+	if err != nil {
+		return err
+	}
+	rowanAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   "rowan",
+	})
+	if err != nil {
+		return err
+	}
+
+	// Lookup LP after
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	lpAfter, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
+		Symbol:    externalAsset,
+		LpAddress: from,
+	})
+	if err != nil {
+		lpAfter = &clptypes.LiquidityProviderRes{
+			LiquidityProvider: &clptypes.LiquidityProvider{
+				LiquidityProviderUnits: sdk.ZeroUint(),
+			},
+		}
+	}
+
+	// Verify LP units are reduced by --units
+	// Verify native received amount
+	// Verify external received amount
+	//fee, _ := sdk.NewIntFromString("1000000000000000000")
+	externalDiff := extAfter.Balance.Amount.Sub(extBefore.Balance.Amount)
+	nativeDiff := rowanAfter.Balance.Amount.Sub(rowanBefore.Balance.Amount)
+
+	fmt.Printf("External received %s \n", externalDiff.String())
+	fmt.Printf("External expected %s \n\n", withdrawExternalAssetAmount.String())
+
+	fmt.Printf("Native received %s \n", nativeDiff.String())
+	//fmt.Printf("Native received excluding fee deduction %s \n", nativeDiff.Add(fee).String())
+	fmt.Printf("Native expected %s \n", withdrawNativeAssetAmount.String())
+	fmt.Printf("Native expected - received %s \n\n", sdk.NewIntFromBigInt(withdrawNativeAssetAmount.BigInt()).Sub(nativeDiff).String())
+
+	//fmt.Printf("LP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
+	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
+	fmt.Printf("LP units expected after %s \n", lpUnitsLeft.String())
 
 	return nil
 }
