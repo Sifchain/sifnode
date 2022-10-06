@@ -1,0 +1,162 @@
+[
+  {
+    "decimals": 18,
+    "denom": "cxft",
+    "base_denom": "cxft",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 4,
+    "denom": "cuos",
+    "base_denom": "cuos",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cnewo",
+    "base_denom": "cnewo",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cosqth",
+    "base_denom": "cosqth",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 8,
+    "denom": "cgala",
+    "base_denom": "cgala",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cpush",
+    "base_denom": "cpush",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cmc",
+    "base_denom": "cmc",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cinj",
+    "base_denom": "cinj",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  }
+]

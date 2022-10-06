@@ -35,10 +35,6 @@ message QueryEthProphecyResponse {
   repeated EthBridgeClaim claims = 3;
 }
 
-message QueryBlacklistRequest {
+message QueryBlacklistRequest {}
 
-}
-
-message QueryBlacklistResponse {
-  repeated string addresses = 1;
-}
+message QueryBlacklistResponse { repeated string addresses = 1; }

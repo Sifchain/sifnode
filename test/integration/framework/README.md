@@ -1,61 +1,48 @@
-# Resources
+# siftool
 
-1. Docker setup in docker/ (currently only on future/peggy2 branch, Tim Lind):
-- setups two sifnode instances running independent chains + IBC relayer (ts-relayer)
+Prerequisite
+- gcc
+- python3
+- python3-dev
+- docker
+- abigen
 
-2. Brent's PoC (docker): https://github.com/Sifchain/sifchain-deploy/tree/feature/ibc-poc/docker/localnet/ibc
+# Setup on Ubuntu 22.04
+- sudo apt update
+- sudo apt upgrade -y
+- sudo apt install -y gcc make python3-dev python3-venv golang
+- curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
+- sudo apt install nodejs
+- Install geth (for peggy2)
+  sudo add-apt-repository -y ppa:ethereum/ethereum
+  sudo apt update
+  sudo apt install -y ethereum
 
-3. Test environment for testing the new Sifchain public SDK (Caner):
-- https://docs.google.com/document/d/1MAlg-I0xMnUvbavAZdAN---WuqbyuRyKw-6Lfgfe130/edit
-- https://github.com/sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/index.ts#L1
-- https://github.com/Sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/cosmoshub/index.ts
+Additional requirements (depending on your use case):
+- Install Python development libraries (recommended; required if you are compiling Python from source, i.e. using pyenv)
+  sudo apt-get install -y libbz2-dev libncurses-dev libffi-dev libssl-dev libreadline-dev libsqlite3-dev liblzma-dev
+- Install Docker (for peggy2):
+  sudo apt-get install ca-certificates curl gnupg lsb-release
+  sudo mkdir -p /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update
+  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  sudo usermod -aG docker $USER
+- sudo install apt-get install -y jq (required for building sifnode binaries/smart contracts for peggy2)
 
-4. scripts/init-multichain.sh (on future/peggy2 branch)
+siftool run-env
 
-5. https://github.com/Sifchain/sifnode/commit/9ab620e148be8f4850eef59d39b0e869956f87a4
+It will automatically install Python dependencies upon first use. This command will detect if you are on Peggy1 or
+Peggy2 branch, and will start local processes accordingly:
+- For Peggy1, it will run ganache-cli, sifnoded and ebrelayer.
+- For Peggy2, it will run hardhat, sifnoded and two instances of ebrelayer.
 
-6. sifchain-devops script to deploy TestNet (by _IM): https://github.com/Sifchain/sifchain-devops/blob/main/scripts/testnet/launch.sh#L19
+If you want to use Python from virtual environment that includes all of the locally installed dependencies, use
+`test/integration/framework/venv/bin/python3`.
 
-7. Tempnet scripts by chainops
+At the moment, the environment consists of Ethereum-compliant local node (ganache/hardhat), one `sifnode` validator and
+a Peggy bridge implemented by `ebrelayer` binary.
 
-8. In Sifchain/sifnode/scripts there's init.sh which, if you have everything installed, will run a single node. Ping
-   @Brianosaurus for more info.
 
-9. erowan should be deployed and whitelisted (assumption)
-
-# RPC endpoints:
-e.g. SIFNODE="https://api-testnet.sifchain.finance"
-- $SIFNODE/node_info
-- $SIFNODE/tokenregistry/entries
-
-# Peggy2 devenv
-- Directory: smart-contracts/scripts/src/devenv
-- Init: cd smart-contracts; rm -rf node_modules; npm install (plan is to move to yarn eventually)
-- Run: GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-```
-{
-  // vscode launch.json file to debug the Dev Environment Scripts
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "runtimeArgs": [
-        "node_modules/.bin/hardhat",
-        "run"
-      ],
-      "cwd": "${workspaceFolder}/smart-contracts",
-      "type": "node",
-      "request": "launch",
-      "name": "Dev Environment Debugger",
-      "env": {
-         "GOBIN": "/home/anderson/go/bin"
-      },
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/smart-contracts/scripts/devenv.ts",
-    }
-  ]
-}
-```
-- Integration test to be targeted for PoC: test_eth_transfers.py
-- Dependency diagram: https://files.slack.com/files-pri/T0187TWB4V8-F02BC477N79/sifchaindevenv.jpg
+Original design document: https://docs.google.com/document/d/1IhE2Y03Z48ROmTwO9-J_0x_lx2vIOFkyDFG7BkAIqCk/edit#

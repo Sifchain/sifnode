@@ -1,19 +1,19 @@
 #
 # Build: Cosmovisor
 #
-FROM golang:1.17 AS cosmovisor
+FROM golang:1.18 AS cosmovisor
 
 ENV GOBIN=/go/bin
 ENV GOPATH=/go
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 
-RUN go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
+RUN go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.0.0
 
 #
 # Build: Sifnode
 #
-FROM golang:1.17 AS sifnode
+FROM golang:1.18 AS sifnode
 
 ARG chainnet
 

@@ -42,8 +42,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
-	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.ProphecyPrefix, nil)
+	iter := k.GetProphecyIterator(ctx)
 	for ; iter.Valid(); iter.Next() {
 		var dbProphecy types.DBProphecy
 		k.cdc.MustUnmarshal(iter.Value(), &dbProphecy)
@@ -197,4 +196,9 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
+}
+
+func (k Keeper) GetProphecyIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return store.Iterator(types.ProphecyPrefix, nil)
 }

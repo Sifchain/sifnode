@@ -1,6 +1,7 @@
 package types
 
 import (
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -29,4 +30,8 @@ type OracleKeeper interface {
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
+}
+
+type AdminKeeper interface {
+	IsAdminAccount(ctx sdk.Context, moduleName admintypes.AdminType, adminAccount sdk.AccAddress) bool
 }

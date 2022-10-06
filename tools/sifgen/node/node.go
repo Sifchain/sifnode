@@ -26,10 +26,11 @@ import (
 type Node struct {
 	CLI                       utils.CLI     `yaml:"-"`
 	AdminCLPAddresses         []string      `yaml:"admin_clp_addresses"`
+	AdminOracleAddress        string        `yaml:"admin_oracle_address"`
+	AdminTokenRegistryAddress string        `yaml:"admin_token_registry_address"`
 	ChainID                   string        `yaml:"chain_id"`
 	Moniker                   string        `yaml:"moniker"`
 	Mnemonic                  string        `yaml:"mnemonic"`
-	AdminOracleAddress        string        `yaml:"admin_oracle_address"`
 	IPAddr                    string        `yaml:"ip_address"`
 	Address                   string        `yaml:"address"`
 	Password                  string        `yaml:"password"`
@@ -42,8 +43,6 @@ type Node struct {
 	GenesisURL                string        `yaml:"-"`
 	Standalone                bool          `yaml:"-"`
 	WithCosmovisor            bool          `yaml:"-"`
-	EnableGrpc                bool          `yaml:"-"`
-	EnableAPI                 bool          `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -158,6 +157,13 @@ func (n *Node) seedGenesis() error {
 		}
 	}
 
+	if n.AdminTokenRegistryAddress != "" {
+		_, err = n.CLI.SetGenesisWhitelisterAdmin(n.AdminTokenRegistryAddress, common.DefaultNodeHome)
+		if err != nil {
+			return err
+		}
+	}
+
 	gentxDir, err := ioutil.TempDir("", "gentx")
 	if err != nil {
 		return err
@@ -207,6 +213,10 @@ func (n *Node) seedGenesis() error {
 	}
 
 	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, n.GovVotingPeriod); err != nil {
+		return err
+	}
+
+	if err := genesis.ReplaceMarginGenesis(common.DefaultNodeHome); err != nil {
 		return err
 	}
 
@@ -345,9 +355,10 @@ func (n *Node) replaceAppTOML() error {
 		return err
 	}
 
-	config.API.Enable = n.EnableAPI
+	config.API.Enable = true
+	config.API.Swagger = true
 	config.API.EnabledUnsafeCors = true
-	config.Grpc.Enable = n.EnableGrpc
+	config.Grpc.Enable = true
 
 	if err := toml.NewEncoder(file).Encode(config); err != nil {
 		return err
