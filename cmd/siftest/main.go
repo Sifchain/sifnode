@@ -40,7 +40,7 @@ func main() {
 	app.SetConfig(false)
 
 	rootCmd := &cobra.Command{
-		Use: "integrationtest",
+		Use: "siftest",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
@@ -55,13 +55,20 @@ func main() {
 			}
 			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
-		RunE: run,
+		//RunE: run,
 	}
 
 	flags.AddTxFlagsToCmd(rootCmd)
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
-	rootCmd.AddCommand(GetVerifyRemove())
+	verifyCmd := &cobra.Command{
+		Use:   "verify",
+		Short: "Verify transaction results",
+	}
+
+	verifyCmd.AddCommand(GetVerifyRemove())
+
+	rootCmd.AddCommand(verifyCmd)
 
 	err := svrcmd.Execute(rootCmd, app.DefaultNodeHome)
 	if err != nil {
@@ -255,7 +262,7 @@ func VerifySwap(clientCtx client.Context, key keyring.Info) {
 
 func GetVerifyRemove() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "verify-remove --height --from --units --external-asset",
+		Use:   "remove --height --from --units --external-asset",
 		Short: "Verify a removal",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -285,7 +292,10 @@ func GetVerifyRemove() *cobra.Command {
 	cmd.Flags().String("from", "", "address of transactor")
 	cmd.Flags().String("units", "0", "number of units removed")
 	cmd.Flags().String("external-asset", "", "external asset of pool")
-
+	cmd.MarkFlagRequired("from")
+	cmd.MarkFlagRequired("units")
+	cmd.MarkFlagRequired("external-asset")
+	cmd.MarkFlagRequired("height")
 	return cmd
 }
 
