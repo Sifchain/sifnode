@@ -211,7 +211,7 @@ func (k Keeper) getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor types.Ne
 		GlobalSequence:    globalSequence,
 	})
 
-	storeKey := append(types.GlobalNonceProphecyIDPrefix, bs[:]...)
+	storeKey := append(types.GlobalSequenceProphecyIDPrefix, bs[:]...)
 	return storeKey
 }
 
@@ -252,7 +252,7 @@ func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) []*types.GenesisProphecyInfo
 	store := ctx.KVStore(k.storeKey)
 	prophecyInfos := make([]*types.GenesisProphecyInfo, 0)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.GlobalNonceProphecyIDPrefix)
+	iterator := sdk.KVStorePrefixIterator(store, types.GlobalSequenceProphecyIDPrefix)
 
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()

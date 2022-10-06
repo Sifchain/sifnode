@@ -7,18 +7,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-// GlobalSequenceKey return storage prefix
-// func (key GlobalSequenceKey) GetGlobalSequenceKeyPrefix(cdc codec.BinaryCodec) []byte {
-// 	buf := cdc.MustMarshal(&key)
-// 	return append(GlobalNonceProphecyIDPrefix, buf[:]...)
-// }
-
-// Get the GetLockBurnSequenceKeyFromRawKey from storage key in keeper. storage key = WitnessLockBurnNoncePrefix + LockBurnSequenceKey
+// GetGlobalSequenceKeyKeyFromRawKey from storage key in keeper. storage key = GlobalSequenceProphecyIDPrefix + LockBurnSequenceKey
 func GetGlobalSequenceKeyKeyFromRawKey(cdc codec.BinaryCodec, key []byte) (GlobalSequenceKey, error) {
 	// check the key which correct prefix
-	if bytes.HasPrefix(key, GlobalNonceProphecyIDPrefix) {
+	if bytes.HasPrefix(key, GlobalSequenceProphecyIDPrefix) {
 		var globalSequenceKey GlobalSequenceKey
-		err := cdc.Unmarshal(key[len(GlobalNonceProphecyIDPrefix):], &globalSequenceKey)
+		err := cdc.Unmarshal(key[len(GlobalSequenceProphecyIDPrefix):], &globalSequenceKey)
 
 		if err == nil {
 			return globalSequenceKey, nil

@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetWitnessLockBurnNonce set the Witness lock burn nonce for each relayer
+// SetWitnessLockBurnNonce set the Witness lock burn sequence for each relayer
 func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress, lockBurnSequence uint64) {
 
 	lockBurnSequenceKey := types.LockBurnSequenceKey{
@@ -19,7 +19,7 @@ func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types
 	k.SetWitnessLockBurnNonceObj(ctx, lockBurnSequenceKey, lockBurnSequenceObj)
 }
 
-// SetWitnessLockBurnNonce set the Witness lock burn nonce for each relayer
+// SetWitnessLockBurnNonce set the Witness lock burn sequence for each relayer
 func (k Keeper) SetWitnessLockBurnNonceObj(ctx sdk.Context, lockBurnSequenceKey types.LockBurnSequenceKey, lockBurnSequence types.LockBurnSequence) {
 	store := ctx.KVStore(k.storeKey)
 	key := lockBurnSequenceKey.GetWitnessLockBurnSequencePrefix(k.cdc)
@@ -28,7 +28,7 @@ func (k Keeper) SetWitnessLockBurnNonceObj(ctx sdk.Context, lockBurnSequenceKey 
 	store.Set(key, bs)
 }
 
-// GetWitnessLockBurnSequence return Witness lock burn nonce
+// GetWitnessLockBurnSequence return Witness lock burn sequence
 func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64 {
 	store := ctx.KVStore(k.storeKey)
 
