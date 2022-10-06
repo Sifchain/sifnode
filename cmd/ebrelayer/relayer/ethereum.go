@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
+	"sort"
 	"sync"
 	"syscall"
 	"time"
@@ -323,6 +324,9 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			}
 			events = append(events, event)
 		}
+		sort.Slice(events, func(i, j int) bool {
+			return events[i].Nonce.Cmp(events[j].Nonce) < 0
+		})
 
 		if len(events) > 0 {
 			if lockBurnSequence, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnSequence); err != nil {
