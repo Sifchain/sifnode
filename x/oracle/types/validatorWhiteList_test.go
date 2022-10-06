@@ -27,6 +27,8 @@ func Test_GetPowerRatio(t *testing.T) {
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
+	assert.Equal(t, validatorWhitelist.GetPowerRatio(valAddresses[:1]), 0.0)
+
 	err := validatorWhitelist.UpdateValidatorPower(valAddresses[0], 100)
 	assert.NoError(t, err)
 
@@ -34,4 +36,9 @@ func Test_GetPowerRatio(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, validatorWhitelist.GetPowerRatio(valAddresses[:1]), 0.1)
+
+	err = validatorWhitelist.UpdateValidatorPower(valAddresses[1], 400)
+	assert.NoError(t, err)
+
+	assert.Equal(t, validatorWhitelist.GetPowerRatio(valAddresses[:1]), 0.2)
 }
