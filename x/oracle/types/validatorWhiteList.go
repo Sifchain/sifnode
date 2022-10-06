@@ -18,8 +18,10 @@ func (list *ValidatorWhiteList) UpdateValidatorPower(validator sdk.ValAddress, p
 			}
 			return nil
 		}
+		totalPower += value.VotingPower
 	}
 
+	// if validator is a new one
 	totalPower += power
 	if totalPower < power {
 		return ErrValidatorPowerOverflow

@@ -54,7 +54,6 @@ func SetGenesisOracleAdminCmd(defaultNodeHome string) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
-
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
 			oracleGenState.AdminAddress = addr.String()
 			oracleGenStateBz, err := json.Marshal(oracleGenState)

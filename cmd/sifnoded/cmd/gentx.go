@@ -62,6 +62,7 @@ the account address or key name. If a key name is given, the address will be loo
 
 			validatorWhitelist := oracletypes.ValidatorWhiteList{}
 
+			// find and remove according to network descriptor
 			for index := 0; index < len(oracleGenState.ValidatorWhitelist); index++ {
 				if oracleGenState.ValidatorWhitelist[index].NetworkDescriptor == networkDescriptor {
 					validatorWhitelist = *oracleGenState.ValidatorWhitelist[index].ValidatorWhitelist
@@ -70,12 +71,16 @@ the account address or key name. If a key name is given, the address will be loo
 				}
 			}
 			found := false
+
+			// just updat the power if validator exists
 			for index := 0; index < len(validatorWhitelist.ValidatorPower); index++ {
 				if bytes.Compare(validatorWhitelist.ValidatorPower[index].ValidatorAddress, addr) == 0 {
 					validatorWhitelist.ValidatorPower[index].VotingPower = uint32(power)
 					found = true
 				}
 			}
+
+			// add a new validator if not exists
 			if !found {
 				newPower := oracletypes.ValidatorPower{
 					ValidatorAddress: addr,
@@ -84,6 +89,7 @@ the account address or key name. If a key name is given, the address will be loo
 				validatorWhitelist.ValidatorPower = append(validatorWhitelist.ValidatorPower, &newPower)
 			}
 
+			// add the updated or new whitelist
 			oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist,
 				&oracletypes.GenesisValidatorWhiteList{
 					NetworkDescriptor:  networkDescriptor,
