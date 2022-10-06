@@ -1,0 +1,675 @@
+[
+    {
+        "name": "parity pool with 10% rate applied each block from from 1 to 40",
+        "create_balance": true,
+        "create_pool": true,
+        "create_lps": true,
+        "pool_asset": "eth",
+        "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+        "native_balance": "1000000000000000000",
+        "external_balance": "1000000000000000000",
+        "native_asset_amount": "1000",
+        "external_asset_amount": "1000",
+        "pool_units": "1000",
+        "pool_asset_decimals": 18,
+        "pool_asset_permissions": [
+            1
+        ],
+        "native_asset_permissions": [
+            1
+        ],
+        "params": {
+            "pmtp_period_governance_rate": "0.10",
+            "pmtp_period_epoch_length": 1,
+            "pmtp_period_start_block": 1,
+            "pmtp_period_end_block": 40
+        },
+        "epoch": {
+            "epoch_counter": 0,
+            "block_counter": 0
+        },
+        "expected_states": [
+            {
+                "height": 1,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "1.100000000000000089",
+                "swap_price_external": "0.909090909090909017",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "0.100000000000000089",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 2,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "1.210000000000000196",
+                "swap_price_external": "0.826446280991735403",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "0.210000000000000196",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 10,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "2.593742460100002100",
+                "swap_price_external": "0.385543289429531435",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "1.593742460100002100",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 20,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "6.727499949325610983",
+                "swap_price_external": "0.148643628024143445",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "5.727499949325610983",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 40,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "45.259255568176098344",
+                "swap_price_external": "0.022094928152179922",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "44.259255568176098344",
+                    "pmtp_inter_policy_rate": "44.259255568176098344"
+                }
+            },
+            {
+                "height": 41,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "45.259255568176098344",
+                "swap_price_external": "0.022094928152179922",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "44.259255568176098344",
+                    "pmtp_inter_policy_rate": "44.259255568176098344"
+                }
+            },
+            {
+                "height": 60,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "1000",
+                    "external_asset_balance": "1000",
+                    "pool_units": "1000",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "45.259255568176098344",
+                "swap_price_external": "0.022094928152179922",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.100000000000000089",
+                    "pmtp_current_running_rate": "44.259255568176098344",
+                    "pmtp_inter_policy_rate": "44.259255568176098344"
+                }
+            }
+        ]
+    },
+    {
+        "name": "eth with prod settings with 2% rate applied incrementally every 14400 blocks from 211 to 72211",
+        "create_balance": true,
+        "create_pool": true,
+        "create_lps": true,
+        "pool_asset": "eth",
+        "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+        "native_balance": "1000000000000000000",
+        "external_balance": "1000000000000000000",
+        "native_asset_amount": "49352380611368792060339203",
+        "external_asset_amount": "1576369012576526264262",
+        "pool_units": "49352380611368792060339203",
+        "pool_asset_decimals": 18,
+        "pool_asset_permissions": [
+            1
+        ],
+        "native_asset_permissions": [
+            1
+        ],
+        "params": {
+            "pmtp_period_governance_rate": "0.02",
+            "pmtp_period_epoch_length": 14400,
+            "pmtp_period_start_block": 211,
+            "pmtp_period_end_block": 72210
+        },
+        "epoch": {
+            "epoch_counter": 0,
+            "block_counter": 0
+        },
+        "expected_states": [
+            {
+                "height": 1,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000031941093682791",
+                "swap_price_external": "31307.631790289924870327",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000000000000000000",
+                    "pmtp_current_running_rate": "0.000000000000000000",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 210,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000031941093682791",
+                "swap_price_external": "31307.631790289924870327",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000000000000000000",
+                    "pmtp_current_running_rate": "0.000000000000000000",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 211,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000031941137607653",
+                "swap_price_external": "31307.588736613703191542",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.000001375183396712",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 212,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000031941181532575",
+                "swap_price_external": "31307.545682996688143772",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.000002750368684553",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 300,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000031945047162275",
+                "swap_price_external": "31303.757196542919506312",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.000123774079982746",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 1000,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000031975813155780",
+                "swap_price_external": "31273.637831450397661999",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.001086984476278008",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 10500,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000032396293283183",
+                "swap_price_external": "30867.728948455950679816",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.014251221480159420",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 14400,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000032570508215981",
+                "swap_price_external": "30702.621935427036598312",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.019705478448561475",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 14401,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000032570553006403",
+                "swap_price_external": "30702.579713749178015579",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.019706880730604974",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 28800,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000033221918380312",
+                "swap_price_external": "30100.609740604138666411",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.040099588017899085",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 43200,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000033886356747931",
+                "swap_price_external": "29510.401706464250553313",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.060901579778630775",
+                    "pmtp_inter_policy_rate": "0.000000000000000000"
+                }
+            },
+            {
+                "height": 72211,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000035265548368445",
+                "swap_price_external": "28356.286695226170023638",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.104080803201944594",
+                    "pmtp_inter_policy_rate": "0.104080803201944594"
+                }
+            },
+            {
+                "height": 72212,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000035265548368445",
+                "swap_price_external": "28356.286695226170023638",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.104080803201944594",
+                    "pmtp_inter_policy_rate": "0.104080803201944594"
+                }
+            },
+            {
+                "height": 100000,
+                "pool": {
+                    "external_asset": {
+                        "symbol": "eth"
+                    },
+                    "native_asset_balance": "49352380611368792060339203",
+                    "external_asset_balance": "1576369012576526264262",
+                    "pool_units": "49352380611368792060339203",
+                    "native_custody": "0",
+                    "external_custody": "0",
+                    "native_liabilities": "0",
+                    "external_liabilities": "0",
+                    "unsettled_native_liabilities": "0",
+                    "unsettled_external_liabilities": "0",
+                    "block_interest_native": "0",
+                    "block_interest_external": "0",
+                    "health": "0",
+                    "interest_rate": "0.000000000000000000",
+                    "reward_period_native_distributed": "0"
+                },
+                "swap_price_native": "0.000035265548368445",
+                "swap_price_external": "28356.286695226170023638",
+                "pmtp_rate_params": {
+                    "pmtp_period_block_rate": "0.000001375183396712",
+                    "pmtp_current_running_rate": "0.104080803201944594",
+                    "pmtp_inter_policy_rate": "0.104080803201944594"
+                }
+            }
+        ]
+    }
+]

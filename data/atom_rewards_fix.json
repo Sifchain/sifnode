@@ -1,0 +1,17 @@
+[
+  {
+    "reward_period_id": "RP_24_Atom_Fix",
+    "reward_period_start_block": 8788690,
+    "reward_period_end_block": 8788691,
+    "reward_period_allocation": "45114011000000000000000000",
+    "reward_period_pool_multipliers": [
+      {
+        "pool_multiplier_asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+        "multiplier": "1"
+      }
+    ],
+    "reward_period_default_multiplier": "0",
+    "reward_period_distribute": false,
+    "reward_period_mod": 1
+  }
+]

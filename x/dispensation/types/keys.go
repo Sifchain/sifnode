@@ -22,7 +22,10 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute       = ModuleName
 	DefaultParamspace  = ModuleName
-	MaxRecordsPerBlock = 10
+	MaxMintAmount      = "350000000000000000000000000"
+	MintAmountPerBlock = "225000000000000000000"
+	EcoPool            = "sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3"
+	MaxRecordsPerBlock = 20
 )
 
 var (
@@ -31,6 +34,7 @@ var (
 	DistributionRecordPrefixFailed    = []byte{0x012} // key for storing DistributionRecords failed
 	DistributionsPrefix               = []byte{0x01}  // key for storing Distributions
 	UserClaimPrefix                   = []byte{0x02}  // key for storing user claims
+	MintControllerPrefix              = []byte{0x03}  // key for storing the mintController
 )
 
 func GetDistributionRecordKey(status DistributionStatus, name string, recipient string, distributionType DistributionType) []byte {

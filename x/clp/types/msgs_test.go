@@ -183,3 +183,39 @@ func TestNewMsgRemoveLiquidity(t *testing.T) {
 	err = tx.ValidateBasic()
 	assert.Error(t, err, "invalid address")
 }
+
+func TestNewMsgAddProviderDistributionPeriodRequest(t *testing.T) {
+	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
+	var periods []*ProviderDistributionPeriod
+
+	validPeriod := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 10, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 1}
+	startBeforeEnd := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 8, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 1}
+	rateTooLow := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 12, DistributionPeriodBlockRate: sdk.NewDec(-1), DistributionPeriodMod: 1}
+	rateTooHigh := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 12, DistributionPeriodBlockRate: sdk.NewDec(2), DistributionPeriodMod: 1}
+	moduloTooLow := ProviderDistributionPeriod{DistributionPeriodStartBlock: 10, DistributionPeriodEndBlock: 12, DistributionPeriodBlockRate: sdk.NewDecWithPrec(1, 2), DistributionPeriodMod: 0}
+
+	periods = append(periods, &validPeriod)
+	tx := MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
+	err := tx.ValidateBasic()
+	assert.NoError(t, err)
+
+	periods = append(periods, &startBeforeEnd)
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
+	err = tx.ValidateBasic()
+	assert.Error(t, err)
+
+	periods[1] = &rateTooLow
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
+	err = tx.ValidateBasic()
+	assert.Error(t, err)
+
+	periods[1] = &rateTooHigh
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
+	err = tx.ValidateBasic()
+	assert.Error(t, err)
+
+	periods[1] = &moduloTooLow
+	tx = MsgAddProviderDistributionPeriodRequest{Signer: signer.String(), DistributionPeriods: periods}
+	err = tx.ValidateBasic()
+	assert.Error(t, err)
+}

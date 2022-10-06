@@ -1,0 +1,84 @@
+[
+  {
+    "reward_period_id": "RP_7",
+    "reward_period_start_block": 7081749,
+    "reward_period_end_block": 7180679,
+    "reward_period_allocation": "32938034000000000000000000",
+    "reward_period_pool_multipliers": [
+      {
+        "pool_multiplier_asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+        "multiplier": "1.085"
+      },
+      {
+        "pool_multiplier_asset": "ceth",
+        "multiplier": "1.085"
+      },
+      {
+        "pool_multiplier_asset": "cusdc",
+        "multiplier": "1.085"
+      },
+      {
+        "pool_multiplier_asset": "ibc/F279AB967042CAC10BFF70FAECB179DCE37AAAE4CD4C1BC4565C2BBC383BC0FA",
+        "multiplier": "1.085"
+      },
+      {
+        "pool_multiplier_asset": "ibc/345D30E8ED06B47FC538ED131D99D16126F07CD6F8B35DE96AAF4C1E445AF466",
+        "multiplier": "1.085"
+      },
+      {
+        "pool_multiplier_asset": "ibc/F141935FF02B74BDC6B8A0BD6FE86A23EE25D10E89AA0CD9158B3D92B63FDF4D",
+        "multiplier": "0.0"
+      },
+      {
+        "pool_multiplier_asset": "cust",
+        "multiplier": "0.0"
+      },
+      {
+        "pool_multiplier_asset": "ibc/17F5C77854734CFE1301E6067AA42CDF62DAF836E4467C635E6DB407853C6082",
+        "multiplier": "0.0"
+      }
+    ],
+    "reward_period_default_multiplier": "0.585"
+  },
+  {
+    "reward_period_id": "RP_6",
+    "reward_period_start_block": 6982961,
+    "reward_period_end_block": 7081748,
+    "reward_period_allocation": "35040462000000000000000000",
+    "reward_period_pool_multipliers": [
+      {
+        "pool_multiplier_asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+        "multiplier": "1.075"
+      },
+      {
+        "pool_multiplier_asset": "ceth",
+        "multiplier": "1.075"
+      },
+      {
+        "pool_multiplier_asset": "cusdc",
+        "multiplier": "1.075"
+      },
+      {
+        "pool_multiplier_asset": "ibc/F279AB967042CAC10BFF70FAECB179DCE37AAAE4CD4C1BC4565C2BBC383BC0FA",
+        "multiplier": "1.075"
+      },
+      {
+        "pool_multiplier_asset": "ibc/345D30E8ED06B47FC538ED131D99D16126F07CD6F8B35DE96AAF4C1E445AF466",
+        "multiplier": "1.075"
+      },
+      {
+        "pool_multiplier_asset": "ibc/F141935FF02B74BDC6B8A0BD6FE86A23EE25D10E89AA0CD9158B3D92B63FDF4D",
+        "multiplier": "0.0"
+      },
+      {
+        "pool_multiplier_asset": "cust",
+        "multiplier": "0.0"
+      },
+      {
+        "pool_multiplier_asset": "ibc/17F5C77854734CFE1301E6067AA42CDF62DAF836E4467C635E6DB407853C6082",
+        "multiplier": "0.0"
+      }
+    ],
+    "reward_period_default_multiplier": "0.602"
+  }
+]

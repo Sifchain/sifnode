@@ -21,8 +21,8 @@ store_prefix='ibc'
 max_gas=3000000
 gas_price={ price = 0.5, denom = 'rowan' }
 gas_adjustment=0.1
-clock_drift='5s'
-trusting_period='5minutes'
+clock_drift='20s'
+trusting_period='15minutes'
 trust_threshold={ numerator = '1', denominator = '3' }
 max_tx_size=8380000
 
@@ -38,8 +38,8 @@ store_prefix='ibc'
 max_gas=3000000
 gas_price={ price = 0.5, denom = 'rowan' }
 gas_adjustment=0.1
-clock_drift='5s'
-trusting_period='5minutes'
+clock_drift='20s'
+trusting_period='15minutes'
 trust_threshold={ numerator = '1', denominator = '3' }
 max_tx_size=8380000
 
@@ -55,8 +55,8 @@ store_prefix='ibc'
 max_gas=3000000
 gas_price={ price = 0.5, denom = 'rowan' }
 gas_adjustment=0.1
-clock_drift='5s'
-trusting_period='5minutes'
+clock_drift='20s'
+trusting_period='15minutes'
 trust_threshold={ numerator = '1', denominator = '3' }
 max_tx_size=8380000
 

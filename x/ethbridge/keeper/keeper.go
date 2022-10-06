@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -24,16 +23,18 @@ type Keeper struct {
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 	oracleKeeper  types.OracleKeeper
+	adminKeeper   types.AdminKeeper
 	storeKey      sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryCodec, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, adminKeeper types.AdminKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:           cdc,
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
 		oracleKeeper:  oracleKeeper,
+		adminKeeper:   adminKeeper,
 		storeKey:      storeKey,
 	}
 }

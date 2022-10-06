@@ -1,0 +1,20 @@
+name: Peggy 2 Documentation
+
+on:
+  push:
+    branches:
+      - 'future/peggy2'
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GIT_PAT }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              repo: 'sifchain/sifchain-chainops',
+              workflow_id: 'peggy-deploy-docs-peggy-2.yml',
+              ref: 'main'
+            })

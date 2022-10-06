@@ -73,7 +73,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "generate JSON for a token registration",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.MaximumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -295,7 +295,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 					conversionDenom := ""
 					if strings.HasPrefix(entry.Denom, "c") {
 						conversionDenom = "x" + strings.TrimPrefix(entry.Denom, "c")
-					} else if strings.EqualFold(entry.Denom, "rowan") {
+					} else if types.StringCompare(entry.Denom, "rowan") {
 						conversionDenom = "xrowan"
 					}
 					entryForConversion.IbcCounterpartyDenom = conversionDenom

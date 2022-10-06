@@ -11,6 +11,14 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
+func TestKeeper_SetClaims_Fail(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	ar := types.UserClaim{}
+	result := keeper.SetClaim(ctx, ar)
+	assert.Error(t, result)
+}
+
 func TestKeeper_GetClaimsByType(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
