@@ -66,7 +66,7 @@ func main() {
 		Short: "Verify transaction results",
 	}
 
-	verifyCmd.AddCommand(GetVerifyRemove())
+	verifyCmd.AddCommand(GetVerifyRemove(), GetVerifyAdd())
 
 	rootCmd.AddCommand(verifyCmd)
 
@@ -258,6 +258,152 @@ func TestSwap(clientCtx client.Context, txf tx.Factory, key keyring.Info) error 
  */
 func VerifySwap(clientCtx client.Context, key keyring.Info) {
 
+}
+
+func GetVerifyAdd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add --height --from --nativeAmount --externalAmount --external-asset",
+		Short: "Verify a liquidity add",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Printf("verifying add...\n")
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			nativeAmount := sdk.NewUintFromString(viper.GetString("nativeAmount"))
+			externalAmount := sdk.NewUintFromString(viper.GetString("externalAmount"))
+
+			err = VerifyAdd(clientCtx,
+				viper.GetString("from"),
+				viper.GetUint64("height"),
+				nativeAmount,
+				externalAmount,
+				viper.GetString("external-asset"))
+			if err != nil {
+				panic(err)
+			}
+
+			return nil
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	//cmd.Flags().Uint64("height", 0, "height of transaction")
+	cmd.Flags().String("from", "", "address of transactor")
+	cmd.Flags().String("nativeAmount", "0", "native amount added")
+	cmd.Flags().String("externalAmount", "0", "external amount added")
+	cmd.Flags().String("external-asset", "", "external asset of pool")
+	cmd.MarkFlagRequired("from")
+	cmd.MarkFlagRequired("nativeAmount")
+	cmd.MarkFlagRequired("externalAmount")
+	cmd.MarkFlagRequired("external-asset")
+	cmd.MarkFlagRequired("height")
+	return cmd
+}
+
+func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmount, externalAmount sdk.Uint, externalAsset string) error {
+	// Lookup wallet balances before remove
+	// Lookup wallet balances after remove
+	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	extBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   externalAsset,
+	})
+	if err != nil {
+		return err
+	}
+	rowanBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   "rowan",
+	})
+	if err != nil {
+		return err
+	}
+
+	// Lookup LP units before remove
+	// Lookup LP units after remove
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	lpBefore, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
+		Symbol:    externalAsset,
+		LpAddress: from,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Lookup pool balances before remove
+	poolBefore, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
+	if err != nil {
+		return err
+	}
+
+	// Calculate expected values
+	nativeAssetDepth := poolBefore.Pool.NativeAssetBalance.Add(poolBefore.Pool.NativeLiabilities)
+	externalAssetDepth := poolBefore.Pool.ExternalAssetBalance.Add(poolBefore.Pool.ExternalLiabilities)
+	_ /*newPoolUnits*/, lpUnits, err := clpkeeper.CalculatePoolUnits(
+		poolBefore.Pool.PoolUnits,
+		nativeAssetDepth,
+		externalAssetDepth,
+		nativeAmount,
+		externalAmount,
+		18,
+		sdk.NewDecWithPrec(5, 5),
+		sdk.NewDecWithPrec(5, 4))
+
+	// Lookup wallet balances after
+	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	extAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   externalAsset,
+	})
+	if err != nil {
+		return err
+	}
+	rowanAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   "rowan",
+	})
+	if err != nil {
+		return err
+	}
+
+	// Lookup LP after
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	lpAfter, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
+		Symbol:    externalAsset,
+		LpAddress: from,
+	})
+	if err != nil {
+		lpAfter = &clptypes.LiquidityProviderRes{
+			LiquidityProvider: &clptypes.LiquidityProvider{
+				LiquidityProviderUnits: sdk.ZeroUint(),
+			},
+		}
+	}
+
+	// Verify LP units are increased by lpUnits
+	// Verify native balance is deducted by nativeAmount
+	// Verify external balance is deducted by externalAmount
+	externalDiff := extAfter.Balance.Amount.Sub(extBefore.Balance.Amount)
+	nativeDiff := rowanAfter.Balance.Amount.Sub(rowanBefore.Balance.Amount)
+	lpUnitsDiff := lpAfter.LiquidityProvider.LiquidityProviderUnits.Sub(lpBefore.LiquidityProvider.LiquidityProviderUnits)
+
+	fmt.Printf("External deduction %s \n", externalDiff.String())
+	fmt.Printf("External expected %s \n\n", externalAmount.String())
+
+	fmt.Printf("Native diff %s \n", nativeDiff.String())
+	fmt.Printf("Native expected %s \n", sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg().String())
+	fmt.Printf("Native diff - expected %s \n\n", nativeDiff.Sub(sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg()).String())
+
+	fmt.Printf("LP units diff %s \n", lpUnitsDiff.String())
+	fmt.Printf("LP units expected diff %s \n", lpUnits.String())
+	fmt.Printf("LP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
+	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
+	fmt.Printf("LP units expected after %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.Add(lpUnits).String())
+
+	return nil
 }
 
 func GetVerifyRemove() *cobra.Command {
