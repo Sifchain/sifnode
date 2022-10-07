@@ -83,6 +83,8 @@ git checkout $NewBinary
 rm -rf $GOPATH/bin/sifnoded
 make install
 cp $GOPATH/bin/sifnoded $GOPATH/bin/new/
+rm -rf $GOPATH/bin/sifnoded
+cp $GOPATH/bin/old/ $GOPATH/bin/
 
 
 # Setup cosmovisor
