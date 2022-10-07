@@ -253,7 +253,7 @@ func (k Keeper) ProcessRemoveLiquidityMsg(ctx sdk.Context, msg *types.MsgRemoveL
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	swapFeeRate := k.GetSwapFeeParams(ctx).SwapFeeRate
 
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,

@@ -35,7 +35,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdPmtpParams(queryRoute),
 		GetCmdLiquidityProtectionParams(queryRoute),
 		GetCmdProviderDistributionParams(queryRoute),
-		GetCmdSwapFeeRate(queryRoute),
+		GetCmdSwapFeeParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -376,10 +376,10 @@ func GetCmdProviderDistributionParams(queryRoute string) *cobra.Command {
 	return cmd
 }
 
-func GetCmdSwapFeeRate(queryRoute string) *cobra.Command {
+func GetCmdSwapFeeParams(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "swap-fee-rate",
-		Short: "Get swap fee rate",
+		Use:   "swap-fee-params",
+		Short: "Get swap fee params",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -387,7 +387,7 @@ func GetCmdSwapFeeRate(queryRoute string) *cobra.Command {
 				return err
 			}
 			queryClient := types.NewQueryClient(clientCtx)
-			result, err := queryClient.GetSwapFeeRate(context.Background(), &types.SwapFeeRateReq{})
+			result, err := queryClient.GetSwapFeeParams(context.Background(), &types.SwapFeeParamsReq{})
 			if err != nil {
 				return err
 			}

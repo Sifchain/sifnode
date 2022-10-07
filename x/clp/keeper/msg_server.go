@@ -484,7 +484,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	swapFeeRate := k.GetSwapFeeParams(ctx).SwapFeeRate
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
@@ -781,7 +781,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	swapFeeRate := k.GetSwapFeeParams(ctx).SwapFeeRate
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -885,7 +885,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	swapFeeRate := k.GetSwapFeeParams(ctx).SwapFeeRate
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -1084,17 +1084,8 @@ func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *ty
 	return response, nil
 }
 
-func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdateSwapFeeRateRequest) (*types.MsgUpdateSwapFeeRateResponse, error) {
-	response := &types.MsgUpdateSwapFeeRateResponse{}
-
-	// defensive programming
-	if msg == nil {
-		return response, errors.Errorf("msg was nil")
-	}
-
-	if err := msg.ValidateBasic(); err != nil {
-		return response, err
-	}
+func (k msgServer) UpdateSwapFeeParams(goCtx context.Context, msg *types.MsgUpdateSwapFeeParamsRequest) (*types.MsgUpdateSwapFeeParamsResponse, error) {
+	response := &types.MsgUpdateSwapFeeParamsResponse{}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -1106,7 +1097,7 @@ func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdate
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
-	k.SetSwapFeeRate(ctx, &types.SwapFeeRate{SwapFeeRate: msg.SwapFeeRate})
+	k.SetSwapFeeParams(ctx, &types.SwapFeeParams{SwapFeeRate: msg.SwapFeeRate, TokenParams: msg.TokenParams})
 
 	return response, nil
 }
