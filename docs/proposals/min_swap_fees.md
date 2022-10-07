@@ -41,7 +41,7 @@ y = (1 - f) * (1 + r) * x * Y / (x + X)
 fee = f * (1 + r) * x * Y / (x + X)
 ```
 
-Similar to the case of swapping to rowan, this can be written equivalently as:
+Similar to the case of swapping to rowan, this can be written as:
 
 ```
 raw_XYK_output = x * Y / (x + X)
@@ -58,11 +58,13 @@ Apply a minimum fee when swapping.
 The fee calculation in equation (1) and (2) becomes:
 
 ```
-fee = max(f * adjusted_output, min_fee)
+fee = min(max(f * adjusted_output, min_fee), adjusted_output)
 ```
 
 Where `min_fee` is a minimum fee parameter for the token being bought, which is set via an admin key. See CLI
 section for more details.
+
+The min function is required to ensure that the fee is not greater than the adjusted output.
 
 If a `min-fee` has not been set for a token then it defaults to zero.
 
