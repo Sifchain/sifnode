@@ -84,7 +84,7 @@ rm -rf $GOPATH/bin/sifnoded
 make install
 cp $GOPATH/bin/sifnoded $GOPATH/bin/new/
 rm -rf $GOPATH/bin/sifnoded
-cp $GOPATH/bin/old/ $GOPATH/bin/
+cp $GOPATH/bin/old/sifnoded $GOPATH/bin/
 
 
 # Setup cosmovisor
