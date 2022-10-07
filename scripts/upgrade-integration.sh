@@ -101,6 +101,8 @@ cosmovisor start --home ~/.sifnoded/ --p2p.laddr 0.0.0.0:27655  --grpc.address 0
 #sleep 7
 #sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
 sleep 7
+sifnoded tx dispensation claim ValidatorSubsidy --from sif --keyring-backend test --yes --chain-id localnet -o json --fees=100000000000000000000000000rowan
+sleep 7
 sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
 sleep 7
 sifnoded tx gov vote 1 yes --from sif --keyring-backend test --chain-id localnet --yes
