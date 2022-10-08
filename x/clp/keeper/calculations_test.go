@@ -613,173 +613,80 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcLiquidityFee(t *testing.T) {
-	testcases := []struct {
-		name                string
-		toRowan             bool
-		adjustExternalToken bool
-		normalizationFactor sdk.Dec
-		X, x, Y, fee        sdk.Uint
-		err                 error
-		errString           error
-	}{
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(0),
-			x:       sdk.NewUint(0),
-			Y:       sdk.NewUint(1),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(1),
-			x:       sdk.NewUint(1),
-			Y:       sdk.NewUint(1),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(1),
-			x:       sdk.NewUint(1),
-			Y:       sdk.NewUint(4),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(2),
-			x:       sdk.NewUint(2),
-			Y:       sdk.NewUint(16),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(1054677676764),
-			x:       sdk.NewUint(2567655449999),
-			Y:       sdk.NewUint(1099511627776),
-			fee:     sdk.NewUint(2292288459),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
-			x:       sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
-			Y:       sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
-			fee:     sdk.NewUintFromString("9706853038245001398600547299925090963413469041036560829464056119132287"),
-		},
-	}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			fee := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.X, tc.x, tc.Y, sdk.NewDecWithPrec(3, 3), sdk.NewDecWithPrec(2, 2))
-			require.Equal(t, tc.fee.String(), fee.String()) // compare strings so that the expected amounts can be read from the failure message
-		})
-	}
-}
-
 func TestKeeper_CalcSwapResult(t *testing.T) {
 	testcases := []struct {
-		name                   string
-		toRowan                bool
-		X, x, Y, y             sdk.Uint
-		pmtpCurrentRunningRate sdk.Dec
-		swapFeeRate            sdk.Dec
-		err                    error
-		errString              error
+		name                    string
+		toRowan                 bool
+		X, x, Y, y, expectedFee sdk.Uint
+		pmtpCurrentRunningRate  sdk.Dec
+		swapFeeRate             sdk.Dec
+		err                     error
+		errString               error
 	}{
 		{
-			name:                   "adjust external token with rowan",
-			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(1),
-			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(1),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "adjust external token without rowan",
-			toRowan:                false,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(1),
-			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(1),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "x=0, X=0, Y=0",
+			name:                   "one side of pool empty",
 			toRowan:                true,
 			X:                      sdk.NewUint(0),
+			x:                      sdk.NewUint(12),
+			Y:                      sdk.NewUint(12),
+			y:                      sdk.NewUint(0),
+			expectedFee:            sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "swap amount zero",
+			toRowan:                true,
+			X:                      sdk.NewUint(117),
 			x:                      sdk.NewUint(0),
-			Y:                      sdk.NewUint(0),
+			Y:                      sdk.NewUint(12),
 			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expectedFee:            sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
-			name:                   "x=1, X=1, Y=1",
+			name:                   "real world amounts, buy rowan",
 			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(1),
-			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
+			X:                      sdk.NewUint(1999800619938006200),
+			x:                      sdk.NewUint(200000000000000),
+			Y:                      sdk.NewUint(2000200000000000000),
+			y:                      sdk.NewUint(66473292728673),
+			expectedFee:            sdk.NewUint(200019938000),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
-			name:                   "x=1, X=1, Y=4",
-			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(4),
-			y:                      sdk.NewUint(1),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "x=1, X=1, Y=4, nf=10",
-			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(4),
-			y:                      sdk.NewUint(1),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "x=23, X=42, Y=1337",
-			toRowan:                true,
-			X:                      sdk.NewUint(42),
-			x:                      sdk.NewUint(23),
-			Y:                      sdk.NewUint(1337),
-			y:                      sdk.NewUint(471),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "swap fee rate = 0.01",
+			name:                   "real world amounts, sell rowan",
 			toRowan:                false,
 			X:                      sdk.NewUint(1999800619938006200),
 			x:                      sdk.NewUint(200000000000000),
 			Y:                      sdk.NewUint(2000200000000000000),
-			y:                      sdk.NewUint(198019738620019),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(1, 2),
+			y:                      sdk.NewUint(598259634558057),
+			expectedFee:            sdk.NewUint(1800179442000),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "big numbers",
+			toRowan:                true,
+			X:                      sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
+			x:                      sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
+			Y:                      sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
+			y:                      sdk.NewUintFromString("1096809680968096858032537841242869111592632578510191129990575247754487592"),
+			expectedFee:            sdk.NewUintFromString("3300330033003300475524186081974530927560579473952430682017779080504977"),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
+			y, fee := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expectedFee.String(), fee.String())
 		})
 	}
 }
