@@ -15,7 +15,7 @@ func NewMigrator(keeper Keeper) Migrator {
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 	params := m.keeper.GetParams(ctx)
 
-	params.RowanCollateralEnabled = true
+	params.RowanCollateralEnabled = false
 
 	m.keeper.SetParams(ctx, &params)
 
