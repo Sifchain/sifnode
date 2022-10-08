@@ -254,12 +254,6 @@ func TestSwap(clientCtx client.Context, txf tx.Factory, key keyring.Info) error 
 	return nil
 }
 
-/* VerifySwap verifies amounts sent and received from wallet address.
- */
-func VerifySwap(clientCtx client.Context, key keyring.Info) {
-
-}
-
 func GetVerifyRemove() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove --height --from --units --external-asset",
