@@ -14,9 +14,12 @@ func (k Keeper) CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to types.Asset
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeParams(ctx).SwapFeeRate
 
-	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
+	swapFeeParams := k.GetSwapFeeParams(ctx)
+	swapFeeRate := swapFeeParams.SwapFeeRate
+	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
+
+	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate, minSwapFee)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), types.ErrNotEnoughAssetTokens
