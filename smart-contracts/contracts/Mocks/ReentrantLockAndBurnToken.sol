@@ -9,6 +9,7 @@ import "../BridgeBank/BridgeBank.sol";
 contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
     address bridgeBank;
     bytes sweepAddress;
+    address originalMsgSender;
     bool doLock;
     bool doBurn;
 
@@ -21,6 +22,12 @@ contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
     ) ERC20PresetFixedSupply(name_, symbol_, initialSupply_, msg.sender) {
         bridgeBank = bridgeBank_;
         sweepAddress = sweepAddress_;
+        console.log("approval: owner ", address(this));
+        console.log("approval: spender ", bridgeBank_);
+        console.log("approval: amount ", initialSupply_);
+        _approve(address(this), bridgeBank_, initialSupply_);
+        uint256 allowance = allowance(address(this), bridgeBank_);
+        console.log("allowance now: ", allowance);
     }
 
     function doRecursiveLock() public {

@@ -123,21 +123,24 @@ describe("Test Bridge Bank", function() {
         "recur",
         "recur",
         initialMintAmount,
-        userOne.address,
+        state.bridgeBank.address,
         state.sender
       );
-      await recursiveToken.doRecursiveLock().then(x => x.wait());
+      console.log("recursiveToken addr: ", recursiveToken.address);
+      await recursiveToken.transfer(recursiveToken.address, 1000).then(x => x.wait());
 
       await recursiveToken.approve(state.bridgeBank.address, initialMintAmount).then(x => x.wait());
 
       const lockAmount = initialMintAmount.div(10);
 
-      // Attempt to lock tokens
       await expect(async () => {
-        await state.bridgeBank
+        // Tell the recursive token to send a lock inside another lock
+        await recursiveToken.doRecursiveLock().then(x => x.wait());
+        await expect(state.bridgeBank
           .connect(userOne)
-          .lock(state.sender, recursiveToken.address, lockAmount);
-      }).to.changeTokenBalances(recursiveToken, [userOne, state.bridgeBank], [lockAmount.mul(-1), lockAmount]);
+          .lock(state.sender, recursiveToken.address, lockAmount)
+        ).to.be.revertedWith("RecursiveLockCall");
+      }).to.changeTokenBalances(recursiveToken, [userOne, state.bridgeBank], [0, 0]);
     });
 
     it("should allow user to lock Commission Charging ERC20 tokens", async function() {

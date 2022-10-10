@@ -10,6 +10,10 @@ import "./BankStorage.sol";
 import "./Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "hardhat/console.sol";
+
+error RecursiveLockCall();
+
 /**
  * @title Bridge Bank
  * @dev Bank contract which coordinates asset-related functionality.
@@ -536,8 +540,11 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     }
     require(msg.value == 0, "INV_NATIVE_SEND");
 
-    lockBurnNonce += 1;
+    uint256 currentLockBurnNonce = lockBurnNonce += 1;
     _lockTokens(recipient, token, amount, lockBurnNonce);
+    if (lockBurnNonce != currentLockBurnNonce) {
+      revert RecursiveLockCall();
+    }
   }
 
   /**
