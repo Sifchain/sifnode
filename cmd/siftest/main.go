@@ -10,6 +10,7 @@ import (
 	"github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -675,27 +676,37 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	} else {
 		return sdkerrors.Wrap(err, fmt.Sprintf("error: found mtp at close height %d", height))
 	}
-	// get swap params
-	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
-	pmtpParams, err := clpQueryClient.GetPmtpParams(context.Background(), &clptypes.PmtpParamsReq{})
-	if err != nil {
-		return err
-	}
-	// Calculate expected return
-	// Swap custody
+
 	var externalAsset string
 	if types.StringCompare(mtpResponse.Mtp.CollateralAsset, "rowan") {
 		externalAsset = mtpResponse.Mtp.CustodyAsset
 	} else {
 		externalAsset = mtpResponse.Mtp.CollateralAsset
 	}
+
+	// Final interest payment
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	pool, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
+	if err != nil {
+		return err
+	}
+	finalInterest := marginkeeper.CalcMTPInterestLiabilities(mtpResponse.Mtp, pool.Pool.InterestRate, 0, 1)
+	mtpCustodyAmount := mtpResponse.Mtp.CustodyAmount.Sub(finalInterest)
+	// get swap params
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	pmtpParams, err := clpQueryClient.GetPmtpParams(context.Background(), &clptypes.PmtpParamsReq{})
+	if err != nil {
+		return err
+	}
+	// Calculate expected return
+	// Swap custody
 	poolBefore, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
 	if err != nil {
 		return err
 	}
 	X, Y, toRowan := poolBefore.Pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
 	X, Y = poolBefore.Pool.ExtractDebt(X, Y, toRowan)
-	repayAmount := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+	repayAmount := clpkeeper.CalcSwapResult(toRowan, X, mtpCustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
 
 	// Repay()
 	// nolint:staticcheck,ineffassign
