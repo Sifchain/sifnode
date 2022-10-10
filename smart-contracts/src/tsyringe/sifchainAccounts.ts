@@ -45,6 +45,14 @@ export async function hreToSifchainAccountsAsync(
   const accounts = await hardhat.ethers.getSigners()
   const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts] =
     accounts
+  const output = new SifchainAccounts(
+    operatorAccount,
+    ownerAccount,
+    pauserAccount,
+    [validator1Account],
+    extraAccounts
+  )
+  console.log(output)
   return new SifchainAccounts(
     operatorAccount,
     ownerAccount,

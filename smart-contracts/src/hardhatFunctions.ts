@@ -13,6 +13,7 @@ import { BridgeToken, BridgeToken__factory } from "../build"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { NotNativeCurrencyAddress } from "./ethereumAddress"
 import { DeployedBridgeBank, DeployedBridgeToken } from "./contractSupport"
+import { SifchainAccountsPromise } from "./tsyringe/sifchainAccounts"
 
 export const eRowanMainnetAddress = "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe"
 
@@ -80,6 +81,9 @@ export async function setupDeployment(c: DependencyContainer) {
     case "sifchain-1":
       setupSifchainMainnetDeployment(c, hre, deploymentName)
       break
+    case "lance-deployment":
+      setupLanceDeployment(c, hre, deploymentName)
+      break
     case undefined:
       break
     default:
@@ -118,6 +122,14 @@ export async function setupSifchainMainnetDeployment(
     useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88",
   })
   c.register(DeployedBridgeToken, { useValue: syntheticBridgeToken as DeployedBridgeToken })
+}
+
+async function setupLanceDeployment(
+  c: DependencyContainer,
+  hre: HardhatRuntimeEnvironment,
+  deploymentName: "lance-deployment"
+) {
+  c.register(SifchainAccountsPromise, useValue: )
 }
 
 export async function impersonateBridgeBankAccounts(

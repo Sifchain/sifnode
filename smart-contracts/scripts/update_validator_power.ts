@@ -3,6 +3,7 @@ import { container } from "tsyringe"
 import { HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens"
 import { Valset, Valset__factory } from "../build"
 import { SifchainAccountsPromise } from "../src/tsyringe/sifchainAccounts"
+import { setupDeployment } from "../src/hardhatFunctions"
 
 // Usage
 //
@@ -11,9 +12,11 @@ import { SifchainAccountsPromise } from "../src/tsyringe/sifchainAccounts"
 // Normally this is only used by siftool
 
 async function main() {
+  // await setupDeployment(container)
   container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
   const ownerAccount = (await (await container.resolve(SifchainAccountsPromise)).accounts)
     .operatorAccount
+  // console.log((await container.resolve(SifchainAccountsPromise)))
   const cosmosBridge = Valset__factory.connect(process.env["COSMOSBRIDGE"]!!, ownerAccount)
   let validators = process.env["VALIDATORS"]!!.split(",")
   let powers = process.env["POWERS"]!!.split(",")
