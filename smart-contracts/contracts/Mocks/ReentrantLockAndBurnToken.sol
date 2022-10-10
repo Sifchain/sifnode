@@ -9,7 +9,6 @@ import "../BridgeBank/BridgeBank.sol";
 contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
     address bridgeBank;
     bytes sweepAddress;
-    uint256 currentBlockNumber;
     bool doLock;
     bool doBurn;
 
@@ -35,17 +34,14 @@ contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
     function _transfer(address from, address to, uint256 amount) internal override {
         console.log("ReentrantLockAndBurnToken/_transfer");
         super._transfer(from, to, amount);
-        if (block.number != currentBlockNumber) {
-            currentBlockNumber = block.number;
-            if (doLock) {
-                console.log("ReentrantLockAndBurnToken/_transfer / calling BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);");
-                BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);
-                doLock = false;
-            }
-            if (doBurn) {
-                BridgeBank(bridgeBank).burn(sweepAddress, address(this), 1);
-                doBurn = false;
-            }
+        if (doLock) {
+            console.log("ReentrantLockAndBurnToken/_transfer / calling BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);");
+            BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);
+            doLock = false;
+        }
+        if (doBurn) {
+            BridgeBank(bridgeBank).burn(sweepAddress, address(this), 1);
+            doBurn = false;
         }
     }
 }
