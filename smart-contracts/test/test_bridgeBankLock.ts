@@ -126,7 +126,6 @@ describe("Test Bridge Bank", function() {
         state.bridgeBank.address,
         state.sender
       );
-      console.log("recursiveToken addr: ", recursiveToken.address);
       await recursiveToken.transfer(recursiveToken.address, 1000).then(x => x.wait());
 
       await recursiveToken.approve(state.bridgeBank.address, initialMintAmount).then(x => x.wait());

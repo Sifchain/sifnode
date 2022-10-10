@@ -8,7 +8,7 @@ import "../BridgeBank/BridgeBank.sol";
 
 contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
     address bridgeBank;
-    bytes sweepAddress;
+    bytes recursiveLockSifchainDestination; // BridgeBank.lock needs a destination, so we set it in the constructor
     address originalMsgSender;
     bool doLock;
     bool doBurn;
@@ -18,16 +18,14 @@ contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
         string memory symbol_,
         uint256 initialSupply_,
         address bridgeBank_,
-        bytes memory sweepAddress_
+        bytes memory recursiveLockSifchainDestination_
     ) ERC20PresetFixedSupply(name_, symbol_, initialSupply_, msg.sender) {
         bridgeBank = bridgeBank_;
-        sweepAddress = sweepAddress_;
-        console.log("approval: owner ", address(this));
-        console.log("approval: spender ", bridgeBank_);
-        console.log("approval: amount ", initialSupply_);
+        recursiveLockSifchainDestination = recursiveLockSifchainDestination_;
+
+        // We want BridgeBank to be able to use tokens from this contract itself
+        // to do the recursive call, so approve that here
         _approve(address(this), bridgeBank_, initialSupply_);
-        uint256 allowance = allowance(address(this), bridgeBank_);
-        console.log("allowance now: ", allowance);
     }
 
     function doRecursiveLock() public {
@@ -39,12 +37,10 @@ contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
     }
 
     function _transfer(address from, address to, uint256 amount) internal override {
-        console.log("ReentrantLockAndBurnToken/_transfer");
         super._transfer(from, to, amount);
         if (doLock) {
             doLock = false;
-            console.log("ReentrantLockAndBurnToken/_transfer / calling BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);");
-            BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);
+            BridgeBank(bridgeBank).lock(recursiveLockSifchainDestination, address(this), 1);
         }
     }
 }
