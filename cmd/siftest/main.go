@@ -19,6 +19,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/spf13/cobra"
@@ -66,7 +67,7 @@ func main() {
 		Short: "Verify transaction results",
 	}
 
-	verifyCmd.AddCommand(GetVerifyRemove(), GetVerifyAdd())
+	verifyCmd.AddCommand(GetVerifyRemove(), GetVerifyAdd(), GetVerifyOpen(), GetVerifyClose())
 
 	rootCmd.AddCommand(verifyCmd)
 
@@ -541,6 +542,208 @@ func VerifyRemove(clientCtx client.Context, from string, height uint64, units sd
 	//fmt.Printf("LP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units expected after %s \n", lpUnitsLeft.String())
+
+	return nil
+}
+
+func GetVerifyOpen() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "open-position --height --from --collateralAmount --leverage --collateral-asset --borrow-asset",
+		Short: "Verify a margin long position open",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Printf("verifying open...\n")
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			collateralAmount := sdk.NewUintFromString(viper.GetString("collateralAmount"))
+			leverageDec, err := sdk.NewDecFromStr(viper.GetString("leverage"))
+			if err != nil {
+				panic(err)
+			}
+
+			err = VerifyOpenLong(clientCtx,
+				viper.GetString("from"),
+				int64(viper.GetUint64("height")),
+				collateralAmount,
+				viper.GetString("collateral-asset"),
+				viper.GetString("borrow-asset"),
+				leverageDec)
+			if err != nil {
+				panic(err)
+			}
+
+			return nil
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	//cmd.Flags().Uint64("height", 0, "height of transaction")
+	cmd.Flags().String("from", "", "address of transactor")
+	cmd.Flags().String("collateralAmount", "0", "collateral provided")
+	cmd.Flags().String("leverage", "0", "leverage")
+	cmd.Flags().String("collateral-asset", "", "collateral asset")
+	cmd.Flags().String("borrow-asset", "", "borrow asset")
+	cmd.MarkFlagRequired("from")
+	cmd.MarkFlagRequired("collateralAmount")
+	cmd.MarkFlagRequired("leverage")
+	cmd.MarkFlagRequired("collateral-asset")
+	cmd.MarkFlagRequired("height")
+	return cmd
+}
+
+func VerifyOpenLong(clientCtx client.Context,
+	from string,
+	height int64,
+	collateralAmount sdk.Uint,
+	collateralAsset,
+	borrowAsset string,
+	leverage sdk.Dec) error {
+
+	return nil
+}
+
+func GetVerifyClose() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "close --height --from --id",
+		Short: "Verify a margin position close",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Printf("verifying close...\n")
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			err = VerifyClose(clientCtx,
+				viper.GetString("from"),
+				int64(viper.GetUint64("height")),
+				viper.GetUint64("id"))
+			if err != nil {
+				panic(err)
+			}
+
+			return nil
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	//cmd.Flags().Uint64("height", 0, "height of transaction")
+	cmd.Flags().String("from", "", "address of transactor")
+	cmd.Flags().Uint64("id", 0, "id of mtp")
+	cmd.MarkFlagRequired("from")
+	cmd.MarkFlagRequired("height")
+	cmd.MarkFlagRequired("id")
+	return cmd
+}
+
+func VerifyClose(clientCtx client.Context, from string, height int64, id uint64) error {
+	// Lookup MTP
+	marginQueryClient := types.NewQueryClient(clientCtx.WithHeight(height - 1))
+	mtpResponse, err := marginQueryClient.GetMTP(context.Background(), &types.MTPRequest{
+		Address: from,
+		Id:      id,
+	})
+	if err != nil {
+		return sdkerrors.Wrap(err, fmt.Sprintf("error looking up mtp at height %d", height-1))
+	}
+	// lookup wallet before
+	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	collateralBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   mtpResponse.Mtp.CollateralAsset,
+	})
+	if err != nil {
+		return err
+	}
+	custodyBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   mtpResponse.Mtp.CustodyAsset,
+	})
+	fmt.Printf("Wallet collateral balance before: %s\n", collateralBefore.Balance.Amount.String())
+	fmt.Printf("Wallet custody balance before: %s\n\n", custodyBefore.Balance.Amount.String())
+	// Ensure mtp does not exist after close
+	marginQueryClient = types.NewQueryClient(clientCtx.WithHeight(height))
+	_, err = marginQueryClient.GetMTP(context.Background(), &types.MTPRequest{
+		Address: from,
+		Id:      id,
+	})
+	if err != nil {
+		fmt.Printf("confirmed MTP does not exist at close height %d\n\n", height)
+	} else {
+		return sdkerrors.Wrap(err, fmt.Sprintf("error: found mtp at close height %d", height))
+	}
+	// get swap params
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	pmtpParams, err := clpQueryClient.GetPmtpParams(context.Background(), &clptypes.PmtpParamsReq{})
+	if err != nil {
+		return err
+	}
+	// Calculate expected return
+	// Swap custody
+	var externalAsset string
+	if types.StringCompare(mtpResponse.Mtp.CollateralAsset, "rowan") {
+		externalAsset = mtpResponse.Mtp.CustodyAsset
+	} else {
+		externalAsset = mtpResponse.Mtp.CollateralAsset
+	}
+	poolBefore, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
+	if err != nil {
+		return err
+	}
+	X, Y, toRowan := poolBefore.Pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
+	X, Y = poolBefore.Pool.ExtractDebt(X, Y, toRowan)
+	repayAmount := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+
+	// Repay()
+	// nolint:staticcheck,ineffassign
+	mtp := mtpResponse.Mtp
+	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
+	Liabilities := mtp.Liabilities
+	InterestUnpaidCollateral := mtp.InterestUnpaidCollateral
+
+	have := repayAmount
+	owe := Liabilities.Add(InterestUnpaidCollateral)
+
+	if have.LT(Liabilities) {
+		//can't afford principle liability
+		returnAmount = sdk.ZeroUint()
+		debtP = Liabilities.Sub(have)
+		debtI = InterestUnpaidCollateral
+	} else if have.LT(owe) {
+		// v principle liability; x excess liability
+		returnAmount = sdk.ZeroUint()
+		debtP = sdk.ZeroUint()
+		debtI = Liabilities.Add(InterestUnpaidCollateral).Sub(have)
+	} else {
+		// can afford both
+		returnAmount = have.Sub(Liabilities).Sub(InterestUnpaidCollateral)
+		debtP = sdk.ZeroUint()
+		debtI = sdk.ZeroUint()
+	}
+
+	fmt.Printf("Return amount: %s\n", returnAmount.String())
+	fmt.Printf("Loss: %s\n\n", debtP.Add(debtI).String())
+
+	// lookup wallet balances after close
+	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	collateralAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   mtpResponse.Mtp.CollateralAsset,
+	})
+	if err != nil {
+		return err
+	}
+	custodyAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
+		Address: from,
+		Denom:   mtpResponse.Mtp.CustodyAsset,
+	})
+	collateralDiff := collateralAfter.Balance.Amount.Sub(collateralBefore.Balance.Amount)
+	custodyDiff := custodyAfter.Balance.Amount.Sub(custodyBefore.Balance.Amount)
+	fmt.Printf("Wallet collateral balance after: %s (diff: %s)\n", collateralAfter.Balance.Amount.String(), collateralDiff.String())
+	fmt.Printf("Wallet custody balance after: %s (diff: %s)\n\n", custodyAfter.Balance.Amount.String(), custodyDiff.String())
 
 	return nil
 }
