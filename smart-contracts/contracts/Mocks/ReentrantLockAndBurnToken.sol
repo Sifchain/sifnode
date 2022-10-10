@@ -35,13 +35,9 @@ contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
         console.log("ReentrantLockAndBurnToken/_transfer");
         super._transfer(from, to, amount);
         if (doLock) {
+            doLock = false;
             console.log("ReentrantLockAndBurnToken/_transfer / calling BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);");
             BridgeBank(bridgeBank).lock(sweepAddress, address(this), 1);
-            doLock = false;
-        }
-        if (doBurn) {
-            BridgeBank(bridgeBank).burn(sweepAddress, address(this), 1);
-            doBurn = false;
         }
     }
 }
