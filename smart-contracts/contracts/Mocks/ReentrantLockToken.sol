@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply.sol";
 
 import "../BridgeBank/BridgeBank.sol";
 
-contract ReentrantLockAndBurnToken is ERC20PresetFixedSupply {
+contract ReentrantLockToken is ERC20PresetFixedSupply {
     address bridgeBank;
     bytes recursiveLockSifchainDestination; // BridgeBank.lock needs a destination, so we set it in the constructor
     address originalMsgSender;

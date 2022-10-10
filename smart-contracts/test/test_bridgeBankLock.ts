@@ -126,18 +126,21 @@ describe("Test Bridge Bank", function() {
         state.bridgeBank.address,
         state.sender
       );
+      // The recursive lock call uses a balance held in the token itself.  When
+      // we create the token, all the minted tokens are sent to userOne, so
+      // send some tokens back to the token contract itself.
       await recursiveToken.transfer(recursiveToken.address, 1000).then(x => x.wait());
 
-      await recursiveToken.approve(state.bridgeBank.address, initialMintAmount).then(x => x.wait());
+      const transactionAmount = initialMintAmount.div(10);
+      await recursiveToken.approve(state.bridgeBank.address, transactionAmount).then(x => x.wait());
 
-      const lockAmount = initialMintAmount.div(10);
+      // Tell the recursive token to send a lock inside another lock
+      await recursiveToken.doRecursiveLock().then(x => x.wait());
 
       await expect(async () => {
-        // Tell the recursive token to send a lock inside another lock
-        await recursiveToken.doRecursiveLock().then(x => x.wait());
         await expect(state.bridgeBank
           .connect(userOne)
-          .lock(state.sender, recursiveToken.address, lockAmount)
+          .lock(state.sender, recursiveToken.address, transactionAmount)
         ).to.be.revertedWith("RecursiveLockCall");
       }).to.changeTokenBalances(recursiveToken, [userOne, state.bridgeBank], [0, 0]);
     });
