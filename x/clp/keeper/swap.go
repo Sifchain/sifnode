@@ -9,14 +9,12 @@ func (k Keeper) CLPCalcSwap(ctx sdk.Context, sentAmount sdk.Uint, to types.Asset
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
-	if marginEnabled {
-		X, Y = pool.ExtractDebt(X, Y, toRowan)
-	}
+	Xincl, Yincl := pool.ExtractDebt(X, Y, toRowan)
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
 
-	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
+	swapResult := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeRate)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), types.ErrNotEnoughAssetTokens
