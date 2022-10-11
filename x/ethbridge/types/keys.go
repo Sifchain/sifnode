@@ -21,8 +21,8 @@ var (
 	PeggyTokenKeyPrefix                = []byte{0x00}
 	CrossChainFeeReceiverAccountPrefix = []byte{0x01}
 	BlacklistPrefix                    = []byte{0x02}
-	GlobalNoncePrefix                  = []byte{0x03}
+	GlobalSequencePrefix               = []byte{0x03}
 	EthereumLockBurnSequencePrefix     = []byte{0x04}
-	GlobalNonceToBlockNumberPrefix     = []byte{0x05}
+	GlobalSequenceToBlockNumberPrefix  = []byte{0x05}
 	FirstLockDoublePegPrefix           = []byte{0x06}
 )

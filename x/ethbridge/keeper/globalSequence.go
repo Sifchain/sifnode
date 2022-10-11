@@ -43,11 +43,22 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalSequence, blockNumber)
 }
 
+// SetGlobalSequence get current global nonce and update it
+func (k Keeper) SetGlobalSequence(ctx sdk.Context,
+	networkDescriptor oracletypes.NetworkDescriptor,
+	globalSequence oracletypes.GlobalSequence) {
+	prefix := k.GetGlobalSequencePrefix(ctx, networkDescriptor)
+	store := ctx.KVStore(k.storeKey)
+
+	bs := k.cdc.MustMarshal(&globalSequence)
+	store.Set(prefix, bs)
+}
+
 // GetGlobalSequencePrefix compute the prefix
 func (k Keeper) GetGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	bs := k.cdc.MustMarshal(&networkIdentity)
-	return append(types.GlobalNoncePrefix, bs[:]...)
+	return append(types.GlobalSequencePrefix, bs[:]...)
 }
 
 // GetGlobalSequenceToBlockNumber
@@ -95,12 +106,12 @@ func (k Keeper) GetGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDes
 		GlobalSequence:    globalSequence,
 	})
 
-	return append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
+	return append(types.GlobalSequenceToBlockNumberPrefix, bs[:]...)
 }
 
 func (k Keeper) getGlobalSequenceIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.GlobalNoncePrefix)
+	return sdk.KVStorePrefixIterator(store, types.GlobalSequencePrefix)
 }
 
 // GetGlobalSequences get all sequences from keeper
@@ -114,8 +125,7 @@ func (k Keeper) GetGlobalSequences(ctx sdk.Context) []*types.GenesisGlobalSequen
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-
-		networkIdentity, err := oracletypes.GetFromPrefix(k.cdc, iterator.Key(), types.GlobalNoncePrefix)
+		networkIdentity, err := oracletypes.GetFromPrefix(k.cdc, iterator.Key(), types.GlobalSequencePrefix)
 		if err != nil {
 			panic(err)
 		}
@@ -134,7 +144,7 @@ func (k Keeper) GetGlobalSequences(ctx sdk.Context) []*types.GenesisGlobalSequen
 
 func (k Keeper) getGlobalSequenceToBlockNumberIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.GlobalNonceToBlockNumberPrefix)
+	return sdk.KVStorePrefixIterator(store, types.GlobalSequenceToBlockNumberPrefix)
 }
 
 // GetGlobalSequenceToBlockNumbers get all data from keeper
@@ -150,7 +160,7 @@ func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) []*types.Genesi
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 		value := iterator.Value()
-		globalSequenceKey, err := getGlobalSequenceKeyFromRawKey(k.cdc, key, types.GlobalNonceToBlockNumberPrefix)
+		globalSequenceKey, err := getGlobalSequenceKeyFromRawKey(k.cdc, key, types.GlobalSequenceToBlockNumberPrefix)
 		if err != nil {
 			panic(err)
 		}

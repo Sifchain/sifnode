@@ -29,7 +29,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 	}
 
 	for _, value := range data.GenesisGlobalSequence {
-		keeper.UpdateGlobalSequence(ctx, value.NetworkDescriptor, value.GlobalSequence.GlobalSequence)
+		keeper.SetGlobalSequence(ctx, value.NetworkDescriptor, *value.GlobalSequence)
 	}
 
 	for _, value := range data.GlobalNonceBlockNumber {
