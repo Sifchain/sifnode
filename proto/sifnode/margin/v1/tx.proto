@@ -12,6 +12,7 @@ service Msg {
   rpc ForceClose(MsgForceClose) returns (MsgForceCloseResponse) {}
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {}
   rpc UpdatePools(MsgUpdatePools) returns (MsgUpdatePoolsResponse) {}
+  rpc UpdateRowanCollateral(MsgUpdateRowanCollateral) returns (MsgUpdateRowanCollateralResponse) {}
   rpc Whitelist(MsgWhitelist) returns (MsgWhitelistResponse) {}
   rpc Dewhitelist(MsgDewhitelist) returns (MsgDewhitelistResponse) {}
   rpc AdminClose(MsgAdminClose) returns (MsgAdminCloseResponse) {}
@@ -64,6 +65,13 @@ message MsgUpdatePools {
 }
 
 message MsgUpdatePoolsResponse {}
+
+message MsgUpdateRowanCollateral {
+  string signer = 1;
+  bool rowan_collateral_enabled = 2;
+}
+
+message MsgUpdateRowanCollateralResponse {}
 
 message MsgWhitelist {
   string signer = 1;
