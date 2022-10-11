@@ -1,5 +1,13 @@
 # Siftest User Guide
 
+## Installation
+
+```shell
+git clone git@github.com:Sifchain/sifnode.git
+cd sifnode
+make install
+```
+
 ## Verify Add Liquidity
 
 ```shell
