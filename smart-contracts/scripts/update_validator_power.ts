@@ -12,11 +12,11 @@ import { setupDeployment } from "../src/hardhatFunctions"
 // Normally this is only used by siftool
 
 async function main() {
-  // await setupDeployment(container)
   container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
+  await setupDeployment(container)
   const ownerAccount = (await (await container.resolve(SifchainAccountsPromise)).accounts)
     .operatorAccount
-  // console.log((await container.resolve(SifchainAccountsPromise)))
+  console.log("Operator account:", ownerAccount)
   const cosmosBridge = Valset__factory.connect(process.env["COSMOSBRIDGE"]!!, ownerAccount)
   let validators = process.env["VALIDATORS"]!!.split(",")
   let powers = process.env["POWERS"]!!.split(",")

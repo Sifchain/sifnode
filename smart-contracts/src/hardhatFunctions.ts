@@ -13,7 +13,7 @@ import { BridgeToken, BridgeToken__factory } from "../build"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { NotNativeCurrencyAddress } from "./ethereumAddress"
 import { DeployedBridgeBank, DeployedBridgeToken } from "./contractSupport"
-import { SifchainAccountsPromise } from "./tsyringe/sifchainAccounts"
+import { SifchainAccounts, SifchainAccountsPromise } from "./tsyringe/sifchainAccounts"
 
 export const eRowanMainnetAddress = "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe"
 
@@ -76,6 +76,7 @@ export async function setNewEthBalance(
 export async function setupDeployment(c: DependencyContainer) {
   const hre = c.resolve(HardhatRuntimeEnvironmentToken) as HardhatRuntimeEnvironment
   let deploymentName = process.env["DEPLOYMENT_NAME"]
+  console.log("Attempted resolving deployment context. Deployment name:", deploymentName)
   switch (deploymentName) {
     case "sifchain":
     case "sifchain-1":
@@ -90,6 +91,7 @@ export async function setupDeployment(c: DependencyContainer) {
       setupRopstenDeployment(c, hre, deploymentName)
       break
   }
+  console.log("Deployment setup complete")
 }
 
 export async function setupSifchainMainnetDeployment(
@@ -129,7 +131,20 @@ async function setupLanceDeployment(
   hre: HardhatRuntimeEnvironment,
   deploymentName: "lance-deployment"
 ) {
-  c.register(SifchainAccountsPromise, useValue: )
+  console.log("Resolving lance deployment setup")
+  c.register(SifchainAccountsPromise, {useValue: new SifchainAccountsPromise(getSifchainAccounts(hre)) })
+}
+
+async function getSifchainAccounts(hardhat: HardhatRuntimeEnvironment): Promise<SifchainAccounts>{
+  const operatorAccount = await hardhat.ethers.getSigner("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266")
+  const ownerAccount = await hardhat.ethers.getSigner("0x70997970c51812dc3a010c7d01b50e0d17dc79c8")
+  const pauserAccount = await hardhat.ethers.getSigner("0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc")
+  const validatatorAccounts = await hardhat.ethers.getSigner("0x90f79bf6eb2c4f870365e785982e1f101e93b906")
+  const extraAccounts = await hardhat.ethers.getSigner("0x15d34aaf54267db7d7c367839aaf71a00a2c6a65")
+
+  console.log("Using hardcoded default evm addresses. FOR DEV ONLY")
+
+  return new SifchainAccounts(operatorAccount, ownerAccount, pauserAccount, [validatatorAccounts], [extraAccounts])
 }
 
 export async function impersonateBridgeBankAccounts(
