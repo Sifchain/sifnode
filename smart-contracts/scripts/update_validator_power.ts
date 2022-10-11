@@ -20,7 +20,7 @@ async function main() {
   const cosmosBridge = Valset__factory.connect(process.env["COSMOSBRIDGE"]!!, ownerAccount)
   let validators = process.env["VALIDATORS"]!!.split(",")
   let powers = process.env["POWERS"]!!.split(",")
-  // await (cosmosBridge as Valset).updateValset(validators, powers)
+  await (cosmosBridge as Valset).updateValset(validators, powers)
 }
 
 main()
