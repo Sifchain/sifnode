@@ -331,7 +331,12 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 		LpAddress: from,
 	})
 	if err != nil {
-		return err
+		// Use empty LP if this is the first add
+		lpBefore = &clptypes.LiquidityProviderRes{
+			LiquidityProvider: &clptypes.LiquidityProvider{
+				LiquidityProviderUnits: sdk.ZeroUint(),
+			},
+		}
 	}
 
 	// Lookup pool balances before remove

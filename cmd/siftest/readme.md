@@ -1,5 +1,9 @@
 # Siftest User Guide
 
+## About
+
+This can be used after running transactions to verify expected vs real changes.
+
 ## Installation
 
 ```shell
@@ -10,6 +14,14 @@ make install
 
 ## Verify Add Liquidity
 
+1. Execute add liquidity transaction
+2. Verify by passing in the following arguments
+   1. --height [height of transaction]
+   2. --from [address of transactor]
+   3. --external-asset [external asset of pool]
+   4. --nativeAmount [native amount requested to add]
+   5. --externalAmount [external amount requested to add]
+   6. --node [node to connect to]
 ```shell
 siftest verify add --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --height=43516 --external-asset=ceth --nativeAmount=96176925423929435353999282 --externalAmount=488436982990 --node tcp://localhost:26657
 ```
@@ -37,6 +49,13 @@ Pool share after 1.000000000000000000
 
 ## Verify Remove Liquidity
 
+1. Execute remove liquidity transaction
+2. Verify by passing in the following parameters:
+   1. --height [height of transaction]
+   2. --from [address of transactor]
+   3. --external-asset [external asset of pool]
+   4. --units [units requested for removal]
+   5. --node [node to connect to]
 Command
 ```shell
 siftest verify remove --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --units 1000000000000000000 --height=33068 --external-asset=ceth --node tcp://localhost:26657
@@ -65,6 +84,14 @@ Pool share after 1.000000000000000000
 ```
 
 ## Verify Close Position
+
+1. Execute close margin position
+2. Verify by passing in the following params:
+   1. --height [height of transaction]
+   2. --id [mtp id]
+   3. --from [owner of mtp]
+   4. --node [node to connect to]
+
 Run command using height of close transaction and MTP id.
 ```shell
 siftest verify close --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --height=72990 --id=4 --node tcp://localhost:26657
