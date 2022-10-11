@@ -3,7 +3,7 @@
 ## Verify Add Liquidity
 
 ```shell
-siftest verify add --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --height=43516 --external-asset=ceth --nativeAmount=96176925423929435353999282 --externalAmount=488436982990
+siftest verify add --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --height=43516 --external-asset=ceth --nativeAmount=96176925423929435353999282 --externalAmount=488436982990 --node tcp://localhost:26657
 ```
 
 Output
@@ -25,6 +25,35 @@ LP units diff 96174800216724768135872834 (expected: 96174800216724768135872834)
 
 Pool share before 1.000000000000000000
 Pool share after 1.000000000000000000
+```
+
+## Verify Remove Liquidity
+
+Command
+```shell
+siftest verify remove --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --units 1000000000000000000 --height=33068 --external-asset=ceth --node tcp://localhost:26657
+```
+
+Output
+```shell
+verifying removal...
+
+Wallet native balance before 499999807448701559072997868307527
+Wallet external balance before 499999999999999999999022148651615
+
+Wallet native balance after 499999807448702459100223367291740 
+Wallet external balance after 499999999999999999999022148656694 
+
+Wallet native diff 900027225498984213 (expected: 1000032419169645384 unexpected: -100005193670661171)
+Wallet external diff 5079 (expected: 5079 unexpected: 0)
+
+LP units before 192542050745763466715763665 
+LP units after 192542049745763466715763665 
+LP units diff -1000000000000000000 (expected: -1000000000000000000)
+
+Pool share before 1.000000000000000000
+Pool share after 1.000000000000000000
+
 ```
 
 ## Verify Close Position
