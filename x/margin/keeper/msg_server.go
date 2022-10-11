@@ -256,15 +256,6 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		}
 	}
 
-	err = k.TakeOutCustody(ctx, mtp, &pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
@@ -282,6 +273,15 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		if err != nil {
 			return nil, sdk.ZeroUint(), err
 		}
+	}
+
+	err = k.TakeOutCustody(ctx, mtp, &pool)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
 	}
 
 	err = k.Repay(ctx, &mtp, &pool, repayAmount, false)
