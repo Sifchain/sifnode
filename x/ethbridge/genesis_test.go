@@ -35,9 +35,9 @@ func TestExportGenesisExportsCorrectValue(t *testing.T) {
 	// Verify CrosschainFeeReceiveAccount
 	assert.Equal(t, receiver, state.CrosschainFeeReceiveAccount)
 	// Verify EtehreumLockBurnSequence
-	assert.Equal(t, keeper.GetEthereumLockBurnSequences(ctx), state.EthereumLockBurnSequence)
+	assert.Equal(t, keeper.GetEthereumLockBurnSequences(ctx), state.GenesisEthereumLockBurnSequence)
 	// Verify GlobalNonce
-	assert.Equal(t, keeper.GetGlobalSequences(ctx), state.GlobalNonce)
+	assert.Equal(t, keeper.GetGlobalSequences(ctx), state.GenesisGlobalSequence)
 	// Verify GlobalSequenceBlockNumber
 	assert.Equal(t, keeper.GetGlobalSequenceToBlockNumbers(ctx), state.GlobalNonceBlockNumber)
 }

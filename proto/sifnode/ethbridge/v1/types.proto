@@ -3,6 +3,7 @@ package sifnode.ethbridge.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/oracle/v1/network_descriptor.proto";
+import "sifnode/oracle/v1/types.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
@@ -64,7 +65,29 @@ enum ClaimType {
 // GenesisState for ethbridge
 message GenesisState { 
     string crosschain_fee_receive_account = 1; 
-    map<string, uint64> ethereum_lock_burn_sequence = 2;
-    map<uint32, uint64> global_nonce = 3;
-    map<string, uint64> global_nonce_block_number = 4;
+    repeated GenesisEthereumLockBurnSequence genesis_ethereum_lock_burn_sequence = 2;
+    repeated GenesisGlobalSequence genesis_global_sequence = 3;
+    repeated GenesisGlobalSequenceBlockNumber global_nonce_block_number = 4;
+}
+
+message EthereumLockBurnSequenceKey {
+    sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+    bytes validator_address = 2;
+}
+
+message EthereumLockBurnSequence { uint64 ethereum_lock_burn_sequence = 1; }
+
+message GenesisEthereumLockBurnSequence {
+    EthereumLockBurnSequenceKey ethereum_lock_burn_sequence_key = 1;
+    EthereumLockBurnSequence ethereum_lock_burn_sequence = 2;
+}
+
+message GenesisGlobalSequence {
+    sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+    sifnode.oracle.v1.GlobalSequence global_sequence = 2;
+} 
+
+message GenesisGlobalSequenceBlockNumber {
+    sifnode.oracle.v1.GlobalSequenceKey global_sequence_key = 1;
+    sifnode.oracle.v1.BlockNumber block_number = 2;
 }

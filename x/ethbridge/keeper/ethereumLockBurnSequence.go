@@ -1,9 +1,13 @@
 package keeper
 
 import (
+	"bytes"
+	"errors"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -12,8 +16,8 @@ func (k Keeper) SetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	store := ctx.KVStore(k.storeKey)
 	key := k.GetEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
 
-	bs := k.cdc.MustMarshal(&oracletypes.LockBurnNonce{
-		LockBurnNonce: newSequence,
+	bs := k.cdc.MustMarshal(&types.EthereumLockBurnSequence{
+		EthereumLockBurnSequence: newSequence,
 	})
 
 	store.Set(key, bs)
@@ -29,16 +33,16 @@ func (k Keeper) GetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	if !store.Has(key) {
 		return 0
 	}
-	var lockBurnNonce oracletypes.LockBurnNonce
-	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
+	var EthereumLockBurnSequence types.EthereumLockBurnSequence
+	k.cdc.MustUnmarshal(store.Get(key), &EthereumLockBurnSequence)
 
-	return lockBurnNonce.LockBurnNonce
+	return EthereumLockBurnSequence.EthereumLockBurnSequence
 }
 
 // GetEthereumLockBurnSequencePrefix return storage prefix
 func (k Keeper) GetEthereumLockBurnSequencePrefix(networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
 
-	bs := k.cdc.MustMarshal(&oracletypes.LockBurnNonceKey{
+	bs := k.cdc.MustMarshal(&types.EthereumLockBurnSequenceKey{
 		NetworkDescriptor: networkDescriptor,
 		ValidatorAddress:  valAccount,
 	})
@@ -51,8 +55,8 @@ func (k Keeper) getEthereumLockBurnSequenceIterator(ctx sdk.Context) sdk.Iterato
 }
 
 // GetEthereumLockBurnSequences get all sequences from keeper
-func (k Keeper) GetEthereumLockBurnSequences(ctx sdk.Context) map[string]uint64 {
-	sequences := make(map[string]uint64)
+func (k Keeper) GetEthereumLockBurnSequences(ctx sdk.Context) []*types.GenesisEthereumLockBurnSequence {
+	sequences := make([]*types.GenesisEthereumLockBurnSequence, 0)
 	iterator := k.getEthereumLockBurnSequenceIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -61,19 +65,33 @@ func (k Keeper) GetEthereumLockBurnSequences(ctx sdk.Context) map[string]uint64 
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		key := iterator.Key()
-		value := iterator.Value()
-		var lockBurnNonce oracletypes.LockBurnNonce
-		k.cdc.MustUnmarshal(value, &lockBurnNonce)
-		sequences[string(key)] = lockBurnNonce.LockBurnNonce
+
+		ethereumLockBurnSequenceKey, err := getEthereumLockBurnSequenceKeyFromRawKey(k.cdc, iterator.Key(), types.EthereumLockBurnSequencePrefix)
+		if err != nil {
+			panic(err)
+		}
+
+		var lockBurnSequence types.EthereumLockBurnSequence
+		k.cdc.MustUnmarshal(iterator.Value(), &lockBurnSequence)
+
+		sequences = append(sequences, &types.GenesisEthereumLockBurnSequence{
+			EthereumLockBurnSequenceKey: &ethereumLockBurnSequenceKey,
+			EthereumLockBurnSequence:    &lockBurnSequence,
+		})
 	}
 	return sequences
 }
 
-// SetSequenceViaRawKey used in import sequence from genesis
-func (k Keeper) SetSequenceViaRawKey(ctx sdk.Context, key []byte, newSequence uint64) {
-	// network, address := DecodeKey(key)
-	var lockBurnNonceKey oracletypes.LockBurnNonceKey
-	k.cdc.MustUnmarshal(key[len(types.EthereumLockBurnSequencePrefix):], &lockBurnNonceKey)
-	k.SetEthereumLockBurnSequence(ctx, lockBurnNonceKey.NetworkDescriptor, lockBurnNonceKey.ValidatorAddress, newSequence)
+func getEthereumLockBurnSequenceKeyFromRawKey(cdc codec.BinaryCodec, key []byte, prefix []byte) (types.EthereumLockBurnSequenceKey, error) {
+	if bytes.HasPrefix(key, prefix) {
+		var ethereumLockBurnSequenceKey types.EthereumLockBurnSequenceKey
+		err := cdc.Unmarshal(key[len(prefix):], &ethereumLockBurnSequenceKey)
+
+		if err == nil {
+			return ethereumLockBurnSequenceKey, nil
+		}
+		return types.EthereumLockBurnSequenceKey{}, err
+	}
+
+	return types.EthereumLockBurnSequenceKey{}, errors.New("prefix for EthereumLockBurnSequenceKey is invalid")
 }

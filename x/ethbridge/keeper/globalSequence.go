@@ -1,10 +1,14 @@
 package keeper
 
 import (
+	"bytes"
+	"errors"
+
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -100,8 +104,8 @@ func (k Keeper) getGlobalSequenceIterator(ctx sdk.Context) sdk.Iterator {
 }
 
 // GetGlobalSequences get all sequences from keeper
-func (k Keeper) GetGlobalSequences(ctx sdk.Context) map[uint32]uint64 {
-	sequences := make(map[uint32]uint64)
+func (k Keeper) GetGlobalSequences(ctx sdk.Context) []*types.GenesisGlobalSequence {
+	sequences := make([]*types.GenesisGlobalSequence, 0)
 	iterator := k.getGlobalSequenceIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -110,36 +114,22 @@ func (k Keeper) GetGlobalSequences(ctx sdk.Context) map[uint32]uint64 {
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		key := iterator.Key()
-		var networkIdentity oracletypes.NetworkIdentity
-		if len(key) < len(types.GlobalNoncePrefix) {
-			panic("the key for global nonce is valid")
-		}
-		k.cdc.MustUnmarshal(key[len(types.GlobalNoncePrefix):], &networkIdentity)
-		if networkIdentity.NetworkDescriptor < 0 {
-			panic("network identity value is invalid")
+
+		networkIdentity, err := oracletypes.GetFromPrefix(k.cdc, iterator.Key(), types.GlobalNoncePrefix)
+		if err != nil {
+			panic(err)
 		}
 
-		value := iterator.Value()
 		var globalSequence oracletypes.GlobalSequence
-		k.cdc.MustUnmarshal(value, &globalSequence)
 
-		sequences[uint32(networkIdentity.NetworkDescriptor)] = globalSequence.GlobalSequence
+		k.cdc.MustUnmarshal(iterator.Value(), &globalSequence)
+
+		sequences = append(sequences, &types.GenesisGlobalSequence{
+			NetworkDescriptor: networkIdentity.NetworkDescriptor,
+			GlobalSequence:    &globalSequence,
+		})
 	}
 	return sequences
-}
-
-// SetGlobalSequenceViaRawKey used in import sequence from genesis
-func (k Keeper) SetGlobalSequenceViaRawKey(ctx sdk.Context, networkDescriptor uint32, globalSequence uint64) {
-	store := ctx.KVStore(k.storeKey)
-
-	prefix := k.GetGlobalSequencePrefix(ctx, oracletypes.NetworkDescriptor(networkDescriptor))
-
-	bs := k.cdc.MustMarshal(&oracletypes.GlobalSequence{
-		GlobalSequence: globalSequence,
-	})
-
-	store.Set(prefix, bs)
 }
 
 func (k Keeper) getGlobalSequenceToBlockNumberIterator(ctx sdk.Context) sdk.Iterator {
@@ -148,8 +138,8 @@ func (k Keeper) getGlobalSequenceToBlockNumberIterator(ctx sdk.Context) sdk.Iter
 }
 
 // GetGlobalSequenceToBlockNumbers get all data from keeper
-func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) map[string]uint64 {
-	blockNumbers := make(map[string]uint64)
+func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) []*types.GenesisGlobalSequenceBlockNumber {
+	globalSequenceBlockNumber := make([]*types.GenesisGlobalSequenceBlockNumber, 0)
 	iterator := k.getGlobalSequenceToBlockNumberIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -160,20 +150,32 @@ func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) map[string]uint
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
 		value := iterator.Value()
+		globalSequenceKey, err := getGlobalSequenceKeyFromRawKey(k.cdc, key, types.GlobalNonceToBlockNumberPrefix)
+		if err != nil {
+			panic(err)
+		}
+
 		var blockNumber oracletypes.BlockNumber
 		k.cdc.MustUnmarshal(value, &blockNumber)
 
-		blockNumbers[string(key)] = blockNumber.BlockNumber
+		globalSequenceBlockNumber = append(globalSequenceBlockNumber, &types.GenesisGlobalSequenceBlockNumber{
+			GlobalSequenceKey: &globalSequenceKey,
+			BlockNumber:       &blockNumber,
+		})
 	}
-	return blockNumbers
+	return globalSequenceBlockNumber
 }
 
-// SetGlobalSequenceToBlockNumberViaRawKey used in import data from genesis
-func (k Keeper) SetGlobalSequenceToBlockNumberViaRawKey(ctx sdk.Context, key string, blockNumber uint64) {
-	store := ctx.KVStore(k.storeKey)
-	bs := k.cdc.MustMarshal(&oracletypes.BlockNumber{
-		BlockNumber: blockNumber,
-	})
+func getGlobalSequenceKeyFromRawKey(cdc codec.BinaryCodec, key []byte, prefix []byte) (oracletypes.GlobalSequenceKey, error) {
+	if bytes.HasPrefix(key, prefix) {
+		var globalSequenceKey oracletypes.GlobalSequenceKey
+		err := cdc.Unmarshal(key[len(prefix):], &globalSequenceKey)
 
-	store.Set([]byte(key), bs)
+		if err == nil {
+			return globalSequenceKey, nil
+		}
+		return oracletypes.GlobalSequenceKey{}, err
+	}
+
+	return oracletypes.GlobalSequenceKey{}, errors.New("prefix for GlobalSequenceKey is invalid")
 }
