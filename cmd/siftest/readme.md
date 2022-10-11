@@ -1,5 +1,32 @@
 # Siftest User Guide
 
+## Verify Add Liquidity
+
+```shell
+siftest verify add --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --height=43516 --external-asset=ceth --nativeAmount=96176925423929435353999282 --externalAmount=488436982990
+```
+
+Output
+```shell
+verifying add...
+
+Wallet native balance before 499999807448801156767565321374116
+Wallet external balance before 499999999999999999999022148656694
+
+Wallet native balance after 499999711271875632838129967374834 
+Wallet external balance after 499999999999999999998533711673704 
+
+Wallet native diff -96176925523929435353999282 (expected: -96176925423929435353999282 unexpected: -100000000000000000)
+Wallet external diff -488436982990 (expected: -488436982990 unexpected: 0)
+
+LP units before 192542049745763466715763665 
+LP units after 288716849962488234851636499 
+LP units diff 96174800216724768135872834 (expected: 96174800216724768135872834)
+
+Pool share before 1.000000000000000000
+Pool share after 1.000000000000000000
+```
+
 ## Verify Close Position
 Run command using height of close transaction and MTP id.
 ```shell

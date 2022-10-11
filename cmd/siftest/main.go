@@ -391,19 +391,49 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 	nativeDiff := rowanAfter.Balance.Amount.Sub(rowanBefore.Balance.Amount)
 	lpUnitsDiff := lpAfter.LiquidityProvider.LiquidityProviderUnits.Sub(lpBefore.LiquidityProvider.LiquidityProviderUnits)
 
-	fmt.Printf("External deduction %s \n", externalDiff.String())
-	fmt.Printf("External expected %s \n\n", externalAmount.String())
+	fmt.Printf("\nWallet native balance before %s\n", rowanBefore.Balance.Amount.String())
+	fmt.Printf("Wallet external balance before %s\n\n", extBefore.Balance.Amount.String())
 
-	fmt.Printf("Native diff %s \n", nativeDiff.String())
-	fmt.Printf("Native expected %s \n", sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg().String())
-	fmt.Printf("Native diff - expected %s \n\n", nativeDiff.Sub(sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg()).String())
+	fmt.Printf("Wallet native balance after %s \n", rowanAfter.Balance.Amount.String())
+	fmt.Printf("Wallet external balance after %s \n", extAfter.Balance.Amount.String())
 
-	fmt.Printf("LP units diff %s \n", lpUnitsDiff.String())
-	fmt.Printf("LP units expected diff %s \n", lpUnits.String())
-	fmt.Printf("LP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
+	fmt.Printf("\nWallet native diff %s (expected: %s unexpected: %s)\n",
+		nativeDiff.String(),
+		sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg().String(),
+		nativeDiff.Sub(sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg()).String())
+	fmt.Printf("Wallet external diff %s (expected: %s unexpected: %s)\n",
+		externalDiff.String(),
+		sdk.NewIntFromBigInt(externalAmount.BigInt()).Neg().String(),
+		externalDiff.Sub(sdk.NewIntFromBigInt(externalAmount.BigInt()).Neg()))
+
+	//fmt.Printf("External deduction %s \n", externalDiff.String())
+	//fmt.Printf("External expected %s \n\n", externalAmount.String())
+	//
+	//fmt.Printf("Native diff %s \n", nativeDiff.String())
+	//fmt.Printf("Native expected %s \n", sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg().String())
+	//fmt.Printf("Native diff - expected %s \n\n", nativeDiff.Sub(sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg()).String())
+
+	//fmt.Printf("LP units expected diff %s \n", lpUnits.String())
+	fmt.Printf("\nLP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
-	fmt.Printf("LP units expected after %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.Add(lpUnits).String())
+	fmt.Printf("LP units diff %s (expected: %s)\n", lpUnitsDiff.String(), lpUnits.String())
+	//fmt.Printf("LP units expected after %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.Add(lpUnits).String())
 
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	poolAfter, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
+	if err != nil {
+		return err
+	}
+
+	lpUnitsBeforeDec := sdk.NewDecFromBigInt(lpBefore.LiquidityProvider.LiquidityProviderUnits.BigInt())
+	lpUnitsAfterDec := sdk.NewDecFromBigInt(lpAfter.LiquidityProvider.LiquidityProviderUnits.BigInt())
+	poolUnitsBeforeDec := sdk.NewDecFromBigInt(poolBefore.Pool.PoolUnits.BigInt())
+	poolUnitsAfterDec := sdk.NewDecFromBigInt(poolAfter.Pool.PoolUnits.BigInt())
+	poolShareBefore := lpUnitsBeforeDec.Quo(poolUnitsBeforeDec)
+	poolShareAfter := lpUnitsAfterDec.Quo(poolUnitsAfterDec)
+
+	fmt.Printf("\nPool share before %s\n", poolShareBefore.String())
+	fmt.Printf("Pool share after %s\n", poolShareAfter.String())
 	return nil
 }
 
