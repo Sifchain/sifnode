@@ -515,6 +515,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 						found = true
 					}
 				}
+				// skip the validator if its power is 0
 				if power.VotingPower == 0 {
 					found = true
 				}

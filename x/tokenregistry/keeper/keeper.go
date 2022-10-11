@@ -160,6 +160,7 @@ func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 	}
 }
 
+// GetFirstLockDoublePeg return if the token already double pegged
 func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
 	registryEntry, err := k.GetRegistryEntry(ctx, denom)
 	if err != nil {
@@ -176,6 +177,7 @@ func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 	return true
 }
 
+// SetFirstDoublePeg add the network into double pegged network list for a denom
 func (k keeper) SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
 	registryEntry, err := k.GetRegistryEntry(ctx, denom)
 	if err != nil {
@@ -186,17 +188,21 @@ func (k keeper) SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescript
 			return
 		}
 	}
+
+	// update the list
 	registryEntry.DoublePeggedNetworks = append(registryEntry.DoublePeggedNetworks, networkDescriptor)
 
 	k.SetToken(ctx, registryEntry)
 }
 
+// AddMultipleTokens add multiple tokens into keeper
 func (k keeper) AddMultipleTokens(ctx sdk.Context, entries []*types.RegistryEntry) {
 	for _, entry := range entries {
 		k.SetToken(ctx, entry)
 	}
 }
 
+// RemoveMultipleTokens remove tokens from keeper
 func (k keeper) RemoveMultipleTokens(ctx sdk.Context, denoms []string) {
 	for _, denom := range denoms {
 		k.RemoveToken(ctx, denom)

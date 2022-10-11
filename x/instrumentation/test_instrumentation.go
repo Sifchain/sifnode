@@ -35,7 +35,7 @@ const (
 	SetGlobalNonceProphecyID       = "SetGlobalNonceProphecyID"
 	SetProphecy                    = "SetProphecy"
 	SetProphecyInfo                = "SetProphecyInfo"
-	SetWitnessLockBurnNonce        = "SetWitnessLockBurnNonce"
+	SetWitnessLockBurnSequence     = "SetWitnessLockBurnSequence"
 	SetFirstDoublePeg              = "SetFirstDoublePeg"
 	AddTokenMetadata               = "AddTokenMetadata"
 	GetTokenMetadata               = "GetTokenMetadata"

@@ -281,7 +281,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
 	}
 
 	// update witness's lock burn sequence
-	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
+	k.SetWitnessLockBurnSequence(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
 
 	// emit the event when status from pending to success
 	// old = unspecified, new = pending  the prophecy just created, not emit the event

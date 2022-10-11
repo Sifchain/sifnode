@@ -284,7 +284,7 @@ func TestGenesisWithWitnessLockBurnSequence(t *testing.T) {
 	_, valAddrs := test.CreateTestAddrs(2)
 
 	networkDescriptor := types.NetworkDescriptor(1)
-	keeper.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddrs[0], 66)
+	keeper.SetWitnessLockBurnSequence(ctx, networkDescriptor, valAddrs[0], 66)
 
 	exportedState := oracle.ExportGenesis(ctx, keeper)
 	newCtx, _, _, _, newKeeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")

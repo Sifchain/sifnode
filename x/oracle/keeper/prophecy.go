@@ -53,7 +53,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validator length", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
 
 	store.Set(storePrefix, k.cdc.MustMarshal(&prophecy))
 }
@@ -81,7 +81,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	tokenDenomHash string,
 	tokenContractAddress string,
 	tokenAmount sdk.Int,
-	crosschainFee sdk.Int,
+	crossChainFee sdk.Int,
 	bridgeToken bool,
 	globalSequence uint64,
 	tokenDecimal uint8,
@@ -99,13 +99,13 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		TokenAmount:          tokenAmount,
 		BridgeToken:          bridgeToken,
 		GlobalSequence:       globalSequence,
-		CrosschainFee:        crosschainFee,
+		CrosschainFee:        crossChainFee,
 		EthereumAddress:      []string{},
 		Signatures:           []string{},
 		BlockNumber:          uint64(k.currentHeight),
 		TokenName:            tokenName,
 		TokenSymbol:          tokenSymbol,
-		Decimail:             uint32(tokenDecimal),
+		Decimal:              uint32(tokenDecimal),
 	}
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)
@@ -146,7 +146,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 // since ProphecyLifeTime is big enough for relayers to handle prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	// it is low efficient to check outdated prophecy each block
-	if k.currentHeight%CleanUpFrequency != 0 {
+	if k.currentHeight % CleanUpFrequency != 0 {
 		return
 	}
 	var prophecyInfo types.ProphecyInfo
@@ -156,7 +156,7 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
 		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
-		if currentHeight > prophecyInfo.BlockNumber+ProphecyLifeTime {
+		if currentHeight > prophecyInfo.BlockNumber + ProphecyLifeTime {
 			k.DeleteProphecyInfo(ctx, prophecyInfo)
 		}
 	}

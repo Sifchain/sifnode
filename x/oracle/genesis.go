@@ -47,7 +47,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 	}
 
 	for _, lockBurnSequence := range data.WitnessLockBurnSequence {
-		keeper.SetWitnessLockBurnNonceObj(ctx, *lockBurnSequence.WitnessLockBurnSequenceKey, *lockBurnSequence.WitnessLockBurnSequence)
+		keeper.SetWitnessLockBurnSequenceObj(ctx, *lockBurnSequence.WitnessLockBurnSequenceKey, *lockBurnSequence.WitnessLockBurnSequence)
 	}
 
 	for _, prophecyInfo := range data.ProphecyInfo {
