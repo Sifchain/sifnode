@@ -1486,7 +1486,7 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			liquidityProtectionActive:              true,
 			maxRowanLiquidityThreshold:             sdk.NewUint(13360053289242425450),
 			currentRowanLiquidityThreshold:         sdk.NewUint(10),
-			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(1993999418413190216),
+			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(1330659558593215210),
 			expectedPoolUnits:                      sdk.NewUintFromString("23662660751003435747009552"),
 			expectedLPUnits:                        sdk.NewUintFromString("200546052054071598"),
 		},

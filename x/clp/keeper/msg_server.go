@@ -716,7 +716,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		}
 
 		if k.GetLiquidityProtectionParams(ctx).IsActive {
-			nativeAmount := CalcSwapResult(true, pool.ExternalAssetBalance, msg.ExternalAssetAmount, pool.NativeAssetBalance, pmtpCurrentRunningRate, swapFeeRate)
+			nativeAmount := CalcSwapResult(true, externalAssetDepth, swapAmount, nativeAssetDepth, pmtpCurrentRunningRate, swapFeeRate)
 			price, err := k.GetNativePrice(ctx)
 			if err != nil {
 				return nil, err
