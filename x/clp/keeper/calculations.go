@@ -155,19 +155,12 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 	}
 
 	ratioThresholdRat := DecToRat(&ratioThreshold)
-	// normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
-	// ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
 	ratioPercentDiff, err := CalculateRatioPercentDiff(externalAssetDepth.BigInt(), nativeAssetDepth.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
-	fmt.Println("ratioPercentDiff: ", ratioPercentDiff.String())
 	if err != nil {
 		return sdk.ZeroUint(), sdk.ZeroUint(), err
 	}
 	diff.Sub(one, &ratioPercentDiff)
-	fmt.Println("diff: ", diff.String())
 	diff.Abs(&diff)
-	fmt.Println("diff: ", diff.String())
-	fmt.Println("ratioThresholdRat: ", ratioThresholdRat.String())
-	fmt.Println("comp: ", diff.Cmp(&ratioThresholdRat))
 	if diff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
@@ -187,19 +180,11 @@ func CalculateRatioPercentDiff(A, R, a, r *big.Int) (big.Rat, error) {
 		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
 	}
 	var AdivR, adivr, percentDiff big.Rat
-	fmt.Println("A: ", A.String())
-	fmt.Println("R: ", R.String())
-	fmt.Println("a: ", a.String())
-	fmt.Println("r: ", r.String())
 
 	AdivR.SetFrac(A, R)
-	fmt.Println("AdivR: ", AdivR.String())
-
 	adivr.SetFrac(a, r)
-	fmt.Println("adivr: ", adivr.String())
 
 	percentDiff.Quo(&AdivR, &adivr)
-	fmt.Println("percentDiff: ", percentDiff.String())
 
 	return percentDiff, nil
 }
