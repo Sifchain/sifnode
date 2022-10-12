@@ -43,7 +43,7 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalSequence, blockNumber)
 }
 
-// SetGlobalSequence get current global nonce and update it
+// SetGlobalSequence set the sequence directly, used by genesis import
 func (k Keeper) SetGlobalSequence(ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
 	globalSequence oracletypes.GlobalSequence) {
@@ -61,7 +61,7 @@ func (k Keeper) GetGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracl
 	return append(types.GlobalSequencePrefix, bs[:]...)
 }
 
-// GetGlobalSequenceToBlockNumber
+// GetGlobalSequenceToBlockNumber get block number based on network descriptor and sequence
 func (k Keeper) GetGlobalSequenceToBlockNumber(
 	ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
@@ -80,7 +80,7 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 	return blockNumber.BlockNumber
 }
 
-// SetGlobalSequenceToBlockNumber
+// SetGlobalSequenceToBlockNumber set block number
 func (k Keeper) SetGlobalSequenceToBlockNumber(
 	ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
@@ -99,7 +99,7 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 	store.Set(prefix, bs)
 }
 
-// GetGlobalSequenceToBlockNumberPrefix
+// GetGlobalSequenceToBlockNumberPrefix return the key in store for GlobalSequenceKey object
 func (k Keeper) GetGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) []byte {
 	bs := k.cdc.MustMarshal(&oracletypes.GlobalSequenceKey{
 		NetworkDescriptor: networkDescriptor,
@@ -147,7 +147,7 @@ func (k Keeper) getGlobalSequenceToBlockNumberIterator(ctx sdk.Context) sdk.Iter
 	return sdk.KVStorePrefixIterator(store, types.GlobalSequenceToBlockNumberPrefix)
 }
 
-// GetGlobalSequenceToBlockNumbers get all data from keeper
+// GetGlobalSequenceToBlockNumbers get all sequence to blocknumber from keeper
 func (k Keeper) GetGlobalSequenceToBlockNumbers(ctx sdk.Context) []*types.GenesisGlobalSequenceBlockNumber {
 	globalSequenceBlockNumber := make([]*types.GenesisGlobalSequenceBlockNumber, 0)
 	iterator := k.getGlobalSequenceToBlockNumberIterator(ctx)
