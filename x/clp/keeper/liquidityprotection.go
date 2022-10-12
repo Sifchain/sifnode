@@ -64,14 +64,14 @@ func (k Keeper) GetNativePrice(ctx sdk.Context) (sdk.Dec, error) {
 
 	if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
 		return sdk.OneDec(), nil
-	} else {
-		pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
-		if err != nil {
-			return sdk.Dec{}, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
-		}
-
-		return CalcRowanSpotPrice(&pool, k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate)
 	}
+	pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
+	if err != nil {
+		return sdk.Dec{}, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
+	}
+
+	return CalcRowanSpotPrice(&pool, k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate)
+
 }
 
 // The nativePrice should be in MaxRowanLiquidityThresholdAsset

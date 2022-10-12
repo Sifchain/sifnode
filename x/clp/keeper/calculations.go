@@ -402,7 +402,7 @@ func CalculateExternalSwapAmountAsymmetric(R, A, r, a sdk.Uint, f, p *big.Rat) s
 // constraints on the inputs (e.g. X,Y,x > 0 and Y/X > y/x). It is possible to guard against
 // a panic by ensuring the sqrt argument is positive.
 func CalculateExternalSwapAmountAsymmetricRat(Y, X, y, x, f, r *big.Rat) big.Rat {
-	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, ac_, ad_, minusOne, one, two, four, r1 big.Rat
+	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, ac_, ad_, minusOne, one, two, four, r1 big.Rat //nolint:revive
 	minusOne.SetInt64(-1)
 	one.SetInt64(1)
 	two.SetInt64(2)
@@ -483,7 +483,7 @@ func CalculateNativeSwapAmountAsymmetric(R, A, r, a sdk.Uint, f, p *big.Rat) sdk
 // constraints on the inputs (i.e. Y,X,y > 0 and (x==0 or Y/X < y/x). It is possible to guard against
 // a panic by ensuring the sqrt argument is positive.
 func CalculateNativeSwapAmountAsymmetricRat(Y, X, y, x, f, r *big.Rat) big.Rat {
-	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, two, four big.Rat
+	var a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, aa_, ab_, two, four big.Rat // nolint:revive
 	two.SetInt64(2)
 	four.SetInt64(4)
 
