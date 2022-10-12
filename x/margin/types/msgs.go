@@ -15,6 +15,7 @@ var (
 	_ sdk.Msg = &MsgForceClose{}
 	_ sdk.Msg = &MsgUpdateParams{}
 	_ sdk.Msg = &MsgUpdatePools{}
+	_ sdk.Msg = &MsgUpdateRowanCollateral{}
 	_ sdk.Msg = &MsgDewhitelist{}
 	_ sdk.Msg = &MsgWhitelist{}
 	_ sdk.Msg = &MsgAdminClose{}
@@ -25,6 +26,7 @@ var (
 	_ legacytx.LegacyMsg = &MsgForceClose{}
 	_ legacytx.LegacyMsg = &MsgUpdateParams{}
 	_ legacytx.LegacyMsg = &MsgUpdatePools{}
+	_ legacytx.LegacyMsg = &MsgUpdateRowanCollateral{}
 	_ legacytx.LegacyMsg = &MsgWhitelist{}
 	_ legacytx.LegacyMsg = &MsgDewhitelist{}
 	_ legacytx.LegacyMsg = &MsgAdminClose{}
@@ -204,6 +206,33 @@ func (m MsgUpdatePools) Type() string {
 }
 
 func (m MsgUpdatePools) ValidateBasic() error {
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+
+	return nil
+}
+
+func (m MsgUpdateRowanCollateral) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{signer}
+}
+func (m MsgUpdateRowanCollateral) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateRowanCollateral) Route() string {
+	return RouterKey
+}
+
+func (m MsgUpdateRowanCollateral) Type() string {
+	return "update_rowan_collateral"
+}
+
+func (m MsgUpdateRowanCollateral) ValidateBasic() error {
 	if len(m.Signer) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}

@@ -25,6 +25,7 @@ func DefaultGenesis() *GenesisState {
 			IncrementalInterestPaymentEnabled:        true,
 			ClosedPools:                              []string{},
 			WhitelistingEnabled:                      false,
+			RowanCollateralEnabled:                   true,
 		},
 	}
 }

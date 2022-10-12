@@ -11,7 +11,7 @@ DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 GOFLAGS:=""
-GOTAGS:=
+GOTAGS:=ledger
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
