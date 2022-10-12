@@ -155,13 +155,20 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 	}
 
 	ratioThresholdRat := DecToRat(&ratioThreshold)
-	normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
-	ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
-	ratioDiff, err := CalculateRatioDiff(externalAssetDepth.BigInt(), nativeAssetDepth.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
+	// normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
+	// ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
+	ratioPercentDiff, err := CalculateRatioPercentDiff(externalAssetDepth.BigInt(), nativeAssetDepth.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
+	fmt.Println("ratioPercentDiff: ", ratioPercentDiff.String())
 	if err != nil {
 		return sdk.ZeroUint(), sdk.ZeroUint(), err
 	}
-	if ratioDiff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
+	diff.Sub(one, &ratioPercentDiff)
+	fmt.Println("diff: ", diff.String())
+	diff.Abs(&diff)
+	fmt.Println("diff: ", diff.String())
+	fmt.Println("ratioThresholdRat: ", ratioThresholdRat.String())
+	fmt.Println("comp: ", diff.Cmp(&ratioThresholdRat))
+	if diff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
@@ -174,19 +181,27 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 	return sdk.NewUintFromBigInt(&newPoolUnit), sdk.NewUintFromBigInt(stakeUnits), nil
 }
 
-// | A/R - a/r |
-func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
+// (A/R) / (a/r)
+func CalculateRatioPercentDiff(A, R, a, r *big.Int) (big.Rat, error) {
 	if R.Cmp(big.NewInt(0)) == 0 || r.Cmp(big.NewInt(0)) == 0 { // check for zeros
 		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
 	}
-	var AdivR, adivr, diff big.Rat
+	var AdivR, adivr, percentDiff big.Rat
+	fmt.Println("A: ", A.String())
+	fmt.Println("R: ", R.String())
+	fmt.Println("a: ", a.String())
+	fmt.Println("r: ", r.String())
 
 	AdivR.SetFrac(A, R)
-	adivr.SetFrac(a, r)
-	diff.Sub(&AdivR, &adivr)
-	diff.Abs(&diff)
+	fmt.Println("AdivR: ", AdivR.String())
 
-	return diff, nil
+	adivr.SetFrac(a, r)
+	fmt.Println("adivr: ", adivr.String())
+
+	percentDiff.Quo(&AdivR, &adivr)
+	fmt.Println("percentDiff: ", percentDiff.String())
+
+	return percentDiff, nil
 }
 
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
