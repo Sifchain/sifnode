@@ -38,7 +38,7 @@ const (
 	FlagCurrentRowanLiquidityThreshold  = "currentRowanLiquidityThreshold"
 	FlagLiquidityProtectionIsActive     = "isActive"
 	FlagProviderDistributionPeriods     = "path"
-	FlagSwapFeeRate                     = "swapFeeRate"
+	FlagSwapFeeParams                   = "path"
 )
 
 // common flagsets to add to various functions
@@ -76,7 +76,7 @@ var (
 	FsLiquidityProtectionEpochLength  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsCurrentRowanLiquidityThreshold  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagProviderDistributionPeriods = flag.NewFlagSet("", flag.ContinueOnError)
-	FsFlagSwapFeeRate                 = flag.NewFlagSet("", flag.ContinueOnError)
+	FsFlagSwapFeeParams               = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -114,5 +114,5 @@ func init() {
 	FsLiquidityThresholdIsActive.String(FlagLiquidityProtectionIsActive, "", "Set liquidity protection isActive")
 	FsCurrentRowanLiquidityThreshold.String(FlagCurrentRowanLiquidityThreshold, "", "Set current rowan liquidity threshold value")
 	FsFlagProviderDistributionPeriods.String(FlagProviderDistributionPeriods, "", "Path to Json File containing LP provider distribution periods")
-	FsFlagSwapFeeRate.String(FlagSwapFeeRate, "", "Set swap fee rate")
+	FsFlagSwapFeeParams.String(FlagProviderDistributionPeriods, "", "Path to Json File containing swap fee params")
 }
