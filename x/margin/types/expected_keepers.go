@@ -72,6 +72,7 @@ type Keeper interface {
 	IsPoolEnabled(ctx sdk.Context, asset string) bool
 	IsPoolClosed(ctx sdk.Context, asset string) bool
 	IsWhitelistingEnabled(ctx sdk.Context) bool
+	IsRowanCollateralEnabled(ctx sdk.Context) bool
 
 	CLPSwap(ctx sdk.Context, sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, custodyAmount sdk.Uint, mtp *MTP, pool *clptypes.Pool, eta sdk.Dec) error
