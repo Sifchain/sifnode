@@ -24,17 +24,17 @@ func CalcSwapPmtp(toRowan bool, y, pmtpCurrentRunningRate sdk.Dec) sdk.Dec {
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetDepth string,
+	externalAssetDepth string, lpUnits string, wBasisPoints string, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
-	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
+	nativeAssetDepthF, err := sdk.NewDecFromStr(nativeAssetDepth)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetDepth, err))
 	}
-	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance)
+	externalAssetDepthF, err := sdk.NewDecFromStr(externalAssetDepth)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetDepth, err))
 	}
 	lpUnitsF, err := sdk.NewDecFromStr(lpUnits)
 	if err != nil {
@@ -50,19 +50,19 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 	}
 	denominator := sdk.NewDec(10000).Quo(wBasisPointsF)
 	unitsToClaim := lpUnitsF.Quo(denominator)
-	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
-	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
+	withdrawExternalAssetAmount := externalAssetDepthF.Quo(poolUnitsF.Quo(unitsToClaim))
+	withdrawNativeAssetAmount := nativeAssetDepthF.Quo(poolUnitsF.Quo(unitsToClaim))
 
 	swapAmount := sdk.NewDec(0)
 	//if asymmetry is positive we need to swap from native to external
 	if asymmetry.IsPositive() {
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
-		swapAmount = nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
+		swapAmount = nativeAssetDepthF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 	//if asymmetry is negative we need to swap from external to native
 	if asymmetry.IsNegative() {
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
-		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
+		swapAmount = externalAssetDepthF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 
 	//if asymmetry is 0 we don't need to swap
@@ -76,17 +76,17 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
-	externalAssetBalance string, lpUnits string, withdrawUnits sdk.Uint) (sdk.Uint, sdk.Uint, sdk.Uint) {
+func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetDepth string,
+	externalAssetDepth string, lpUnits string, withdrawUnits sdk.Uint) (sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
-	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
+	nativeAssetDepthF, err := sdk.NewDecFromStr(nativeAssetDepth)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetDepth, err))
 	}
-	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance)
+	externalAssetDepthF, err := sdk.NewDecFromStr(externalAssetDepth)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetDepth, err))
 	}
 	lpUnitsF, err := sdk.NewDecFromStr(lpUnits)
 	if err != nil {
@@ -97,8 +97,8 @@ func CalculateWithdrawalFromUnits(poolUnits sdk.Uint, nativeAssetBalance string,
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", withdrawUnits, err))
 	}
 
-	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
-	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(withdrawUnitsF))
+	withdrawExternalAssetAmount := externalAssetDepthF.Quo(poolUnitsF.Quo(withdrawUnitsF))
+	withdrawNativeAssetAmount := nativeAssetDepthF.Quo(poolUnitsF.Quo(withdrawUnitsF))
 
 	//if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(withdrawUnitsF)
@@ -218,65 +218,36 @@ func GetLiquidityAddSymmetryState(X, x, Y, y sdk.Uint) int {
 	}
 }
 
-func CalcLiquidityFee(toRowan bool, X, x, Y sdk.Uint, swapFeeRate, pmtpCurrentRunningRate sdk.Dec) sdk.Uint {
-	if IsAnyZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
-	}
-
-	Xb := X.BigInt()
-	xb := x.BigInt()
-	Yb := Y.BigInt()
-	rawXYK := calcRawXYK(xb, Xb, Yb)
-
-	var fee big.Rat
-	f := DecToRat(&swapFeeRate)
-	fee.Mul(&f, &rawXYK)
-
-	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
-
-	if toRowan {
-		fee.Quo(&fee, &pmtpFac) // res = y / pmtpFac
-	} else {
-		fee.Mul(&fee, &pmtpFac) // res = y * pmtpFac
-	}
-
-	return sdk.NewUintFromBigInt(RatIntQuo(&fee))
-}
-
 func CalcSwapResult(toRowan bool,
 	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec, minSwapFee sdk.Uint) (sdk.Uint, sdk.Uint) {
 
+	// if either side of the pool is empty or swap amount iz zero then return zero
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
+		return sdk.ZeroUint(), sdk.ZeroUint()
+	}
+
+	rawXYK := calcRawXYK(x.BigInt(), X.BigInt(), Y.BigInt())
+
+	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
+	var adjustedR big.Rat
+	if toRowan {
+		adjustedR.Quo(&rawXYK, &pmtpFac) // adjusted = rawXYK / pmtpFac
+	} else {
+		adjustedR.Mul(&rawXYK, &pmtpFac) // adjusted = rawXYK * pmtpFac
 	}
 
 	swapFeeRateR := DecToRat(&swapFeeRate)
+	var percentFeeR big.Rat
+	percentFeeR.Mul(&adjustedR, &swapFeeRateR)
 
-	y := calcSwap(x.BigInt(), X.BigInt(), Y.BigInt(), &swapFeeRateR)
-	pmtpFac := calcPmtpFactor(pmtpCurrentRunningRate)
+	percentFee := sdk.NewUintFromBigInt(RatIntQuo(&percentFeeR))
+	adjusted := sdk.NewUintFromBigInt(RatIntQuo(&adjustedR))
 
-	var res big.Rat
-	if toRowan {
-		res.Quo(&y, &pmtpFac) // res = y / pmtpFac
-	} else {
-		res.Mul(&y, &pmtpFac) // res = y * pmtpFac
-	}
+	fee := sdk.MinUint(sdk.MaxUint(percentFee, minSwapFee), adjusted)
+	y := adjusted.Sub(fee)
 
-	num := RatIntQuo(&res)
-	return sdk.NewUintFromBigInt(num)
-}
-
-// y = (1-f)*x*Y/(x+X)
-func calcSwap(x, X, Y *big.Int, swapFeeRate *big.Rat) big.Rat {
-	var diff big.Rat
-	one := big.NewRat(1, 1)
-	diff.Sub(one, swapFeeRate) // diff = 1 - f
-
-	rawYXK := calcRawXYK(x, X, Y)
-	diff.Mul(&diff, &rawYXK)
-
-	return diff
+	return y, fee
 }
 
 func calcRawXYK(x, X, Y *big.Int) big.Rat {
@@ -385,12 +356,11 @@ func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnits := pool.PoolUnits
-	nativeAssetBalance := pool.NativeAssetBalance
-	externalAssetBalance := pool.ExternalAssetBalance
+	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 	return CalculateWithdrawal(
 		poolUnits,
-		nativeAssetBalance.String(),
-		externalAssetBalance.String(),
+		nativeAssetDepth.String(),
+		externalAssetDepth.String(),
 		lp.LiquidityProviderUnits.String(),
 		sdk.NewInt(types.MaxWbasis).String(),
 		sdk.ZeroInt(),
@@ -576,20 +546,26 @@ func CalculateWithdrawalRowanValue(
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) sdk.Uint {
+
+	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
 
-	return CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
+	value, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+
+	return value
 }
 
 func SwapOne(from types.Asset,
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+
+	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
@@ -597,9 +573,8 @@ func SwapOne(from types.Asset,
 
 	Xincl, Yincl = pool.ExtractDebt(X, Y, toRowan)
 
-	liquidityFee := CalcLiquidityFee(toRowan, Xincl, sentAmount, Yincl, swapFeeRate, pmtpCurrentRunningRate)
 	priceImpact := calcPriceImpact(Xincl, sentAmount)
-	swapResult := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeRate)
+	swapResult, liquidityFee := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
@@ -614,12 +589,14 @@ func SwapOne(from types.Asset,
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
+	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) sdk.Uint {
+	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
+
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
 
-	swapResult := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
+	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()

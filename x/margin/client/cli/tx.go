@@ -27,6 +27,7 @@ func GetTxCmd() *cobra.Command {
 		GetForceCloseCmd(),
 		GetUpdateParamsCmd(),
 		GetUpdatePoolsCmd(),
+		GetUpdateRowanCollateralCmd(),
 		GetDewhitelistCmd(),
 		GetWhitelistCmd(),
 		GetAdminCloseCmd(),
@@ -318,6 +319,41 @@ func readPoolsJSON(filename string) ([]string, error) {
 	}
 
 	return pools, nil
+}
+
+func GetUpdateRowanCollateralCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-rowan-collateral",
+		Short: "Enable or disable opening margin positions with rowan collateral.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			signer := clientCtx.GetFromAddress()
+			if signer == nil {
+				return errors.New("signer address is missing")
+			}
+
+			rowanCollateralEnabled := viper.GetBool("enabled")
+
+			msg := types.MsgUpdateRowanCollateral{
+				Signer:                 signer.String(),
+				RowanCollateralEnabled: rowanCollateralEnabled,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().Bool("enabled", true, "rowan collateral enabled for margin [bool]")
+	_ = cmd.MarkFlagRequired("enabled")
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }
 
 func GetWhitelistCmd() *cobra.Command {
