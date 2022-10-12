@@ -142,6 +142,10 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 	var externalAsset string
 	nativeAsset := types.GetSettlementAsset()
 
+	if !k.IsRowanCollateralEnabled(ctx) && types.StringCompare(msg.CollateralAsset, nativeAsset) {
+		return nil, sdkerrors.Wrap(types.ErrRowanAsCollateralNotAllowed, nativeAsset)
+	}
+
 	if types.StringCompare(msg.CollateralAsset, nativeAsset) {
 		externalAsset = msg.BorrowAsset
 	} else {
@@ -223,10 +227,10 @@ func (k msgServer) OpenLong(ctx sdk.Context, msg *types.MsgOpen) (*types.MTP, er
 		return nil, types.ErrMTPUnhealthy
 	}
 
-	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(externalAsset)(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
-	}
+	// res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(externalAsset)(ctx)
+	// if stop {
+	// 	return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	// }
 
 	return mtp, nil
 }
@@ -252,15 +256,6 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		}
 	}
 
-	err = k.TakeOutCustody(ctx, mtp, &pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
-	if err != nil {
-		return nil, sdk.ZeroUint(), err
-	}
-
 	epochLength := k.GetEpochLength(ctx)
 	epochPosition := GetEpochPosition(ctx, epochLength)
 	if epochPosition > 0 {
@@ -280,22 +275,31 @@ func (k msgServer) CloseLong(ctx sdk.Context, msg *types.MsgClose) (*types.MTP, 
 		}
 	}
 
+	err = k.TakeOutCustody(ctx, mtp, &pool)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+	repayAmount, err := k.CLPSwap(ctx, mtp.CustodyAmount, mtp.CollateralAsset, pool)
+	if err != nil {
+		return nil, sdk.ZeroUint(), err
+	}
+
 	err = k.Repay(ctx, &mtp, &pool, repayAmount, false)
 	if err != nil {
 		return nil, sdk.ZeroUint(), err
 	}
 
-	if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
-		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CustodyAsset)(ctx)
-		if stop {
-			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
-		}
-	} else {
-		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CollateralAsset)(ctx)
-		if stop {
-			return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
-		}
-	}
+	// if types.StringCompare(mtp.CollateralAsset, nativeAsset) {
+	// 	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CustodyAsset)(ctx)
+	// 	if stop {
+	// 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	// 	}
+	// } else {
+	// 	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtp.CollateralAsset)(ctx)
+	// 	if stop {
+	// 		return nil, sdk.ZeroUint(), sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	// 	}
+	// }
 
 	return &mtp, repayAmount, nil
 }
@@ -338,6 +342,23 @@ func (k msgServer) UpdatePools(goCtx context.Context, msg *types.MsgUpdatePools)
 	k.SetParams(ctx, &params)
 
 	return &types.MsgUpdatePoolsResponse{}, nil
+}
+
+func (k msgServer) UpdateRowanCollateral(goCtx context.Context, msg *types.MsgUpdateRowanCollateral) (*types.MsgUpdateRowanCollateralResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	if !k.AdminKeeper().IsAdminAccount(ctx, admintypes.AdminType_MARGIN, signer) {
+		return nil, sdkerrors.Wrap(admintypes.ErrPermissionDenied, fmt.Sprintf("signer not authorised: %s", msg.Signer))
+	}
+
+	params := k.GetParams(ctx)
+	params.RowanCollateralEnabled = msg.RowanCollateralEnabled
+	k.SetParams(ctx, &params)
+
+	return &types.MsgUpdateRowanCollateralResponse{}, nil
 }
 
 func (k msgServer) Whitelist(goCtx context.Context, msg *types.MsgWhitelist) (*types.MsgWhitelistResponse, error) {
@@ -414,17 +435,17 @@ func (k msgServer) ForceClose(goCtx context.Context, msg *types.MsgForceClose) (
 
 	k.EmitAdminClose(ctx, &mtpToClose, repayAmount, msg.Signer)
 
-	if types.StringCompare(mtpToClose.CollateralAsset, types.GetSettlementAsset()) {
-		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CustodyAsset)(ctx)
-		if stop {
-			return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
-		}
-	} else {
-		res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CollateralAsset)(ctx)
-		if stop {
-			return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
-		}
-	}
+	// if types.StringCompare(mtpToClose.CollateralAsset, types.GetSettlementAsset()) {
+	// 	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CustodyAsset)(ctx)
+	// 	if stop {
+	// 		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	// 	}
+	// } else {
+	// 	res, stop := k.ClpKeeper().SingleExternalBalanceModuleAccountCheck(mtpToClose.CollateralAsset)(ctx)
+	// 	if stop {
+	// 		return nil, sdkerrors.Wrap(clptypes.ErrBalanceModuleAccountCheck, res)
+	// 	}
+	// }
 
 	return &types.MsgForceCloseResponse{}, nil
 }
