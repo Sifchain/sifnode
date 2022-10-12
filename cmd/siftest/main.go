@@ -784,9 +784,16 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	}
 	// Calculate expected return
 	// Swap custody
+	swapFeeParams, err := clpQueryClient.GetSwapFeeParams(context.Background(), &clptypes.SwapFeeParamsReq{})
+	if err != nil {
+		return err
+	}
+	minSwapFee := clpkeeper.GetMinSwapFee(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset}, swapFeeParams.TokenParams)
+
+	// TODO take out custody happens before swap
 	X, Y, toRowan := poolBefore.Pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
 	X, Y = poolBefore.Pool.ExtractDebt(X, Y, toRowan)
-	repayAmount := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+	repayAmount, _ := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
 
 	// Repay()
 	// nolint:staticcheck,ineffassign
