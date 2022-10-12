@@ -121,6 +121,10 @@ func (k Keeper) IsWhitelistingEnabled(ctx sdk.Context) bool {
 	return k.GetParams(ctx).WhitelistingEnabled
 }
 
+func (k Keeper) IsRowanCollateralEnabled(ctx sdk.Context) bool {
+	return k.GetParams(ctx).RowanCollateralEnabled
+}
+
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
 	err := ValidateParams(params)
 	if err != nil {
