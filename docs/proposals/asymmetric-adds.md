@@ -6,8 +6,8 @@ which would allow asymmetric adds.
 ## Symmetric Adds
 
 When adding symmetrically to a pool the fraction of total pool units owned by the Liquidity Provider (LP)
-equals the amount of native token added to the pool as a fraction of total native asset token in the
-pool:
+after the add must equal the amount of native token added to the pool as a fraction of total native asset token in the
+pool (after the add):
 
 ```
 l / (P + l) = r / (r + R)
@@ -92,7 +92,7 @@ l = (r - s) * P / (R + s)
 Swap an amount, s, of native token such that:
 
 ```
-(R - s) / (A + g.s) = (R + r) / (A + a) = (r + g.s) / (a - s)
+(R - s) / (A + g'.s) = (R + r) / (A + a) = (r + g'.s) / (a - s)
 ```
 
 Where g' is the swap formula:
@@ -128,7 +128,7 @@ of each token after the internal swap (at this stage the add is symmetric and wi
 (2) x' = x - s
 (3) y' = y + g.s
 ```
-Plugging these into the equation for y'', y'' = y + g.(x - x')):
+Plugging these into the equation for y'', y'' = y + g.(x - x'):
 ```
 y'' = y + g.(x - x')
     = y + g.s by rearranging (2) and substituting 
