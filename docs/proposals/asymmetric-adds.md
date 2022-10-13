@@ -49,6 +49,13 @@ asymmetric adds.
 
 ### Proposed method
 
+In the following formulas:
+
+```
+p - Current ratio shifting running rate
+f - Swap fee rate. This must satisfy 0 =< f =< 1
+```
+
 If the pool is not in the same ratio as the add then either:
 
 1. Some r must be swapped for a, such that after the swap the add is symmetric
@@ -62,16 +69,16 @@ Swap an amount, s, of native token such that:
 (R + s) / (A - g.s) = (R + r) / (A + a) = (r − s) / (a + g.s)
 ```
 
-where g is the swap formula
+where g is the swap formula:
 
 ```
-g.x = s * Y / (x + X)
+g.x = (1 - f) * (1 + r) * x * Y / (x + X)
 ```
 
 Solving for s (using mathematica!) gives:
 
 ```
-s =  abs((sqrt(pow((-1*f*r*X*y-f*r*X*Y-f*X*y-f*X*Y+r*X*y+r*X*Y+2*x*Y+2*X*Y), 2)-4*(x+X)*(x*Y*Y-X*y*Y)) + f*r*X*y + f*r*X*Y + f*X*y + f*X*Y - r*X*y - r*X*Y - 2*x*Y - 2*X*Y) / (2 * (x + X)))
+s = abs((sqrt(pow((-1*f*p*A*r-f*p*A*R-f*A*r-f*A*R+p*A*r+p*A*R+2*a*R+2*A*R), 2)-4*(a+A)*(a*R*R-A*r*R)) + f*p*A*r + f*p*A*R + f*A*r + f*A*R - p*A*r - p*A*R - 2*a*R - 2*A*R) / (2 * (a + A))).
 ```
 
 The number of pool units is then given by the symmetric formula (1):
@@ -88,10 +95,16 @@ Swap an amount, s, of native token such that:
 (R - s) / (A + g.s) = (R + r) / (A + a) = (r + g.s) / (a - s)
 ```
 
+Where g' is the swap formula:
+
+```
+g' = (1 - f) * x * Y / ((x + X) * (1 + r))
+```
+
 Solving for s (using mathematica!) gives:
 
 ```
-s = abs((sqrt(Y*(-1*(x+X))*(-1*f*f*x*Y-f*f*X*Y-2*f*r*x*Y+4*f*r*X*y+2*f*r*X*Y+4*f*X*y+4*f*X*Y-r*r*x*Y-r*r*X*Y-4*r*X*y-4*r*X*Y-4*X*y-4*X*Y)) + f*x*Y + f*X*Y + r*x*Y - 2*r*X*y - r*X*Y - 2*X*y - 2*X*Y) / (2 * (r + 1) * (y + Y)))
+s = abs((sqrt(R*(-1*(a+A))*(-1*f*f*a*R-f*f*A*R-2*f*p*a*R+4*f*p*A*r+2*f*p*A*R+4*f*A*r+4*f*A*R-p*p*a*R-p*p*A*R-4*p*A*r-4*p*A*R-4*A*r-4*A*R)) + f*a*R + f*A*R + p*a*R - 2*p*A*r - p*A*R - 2*A*r - 2*A*R) / (2 * (p + 1) * (r + R)))
 ```
 
 The number of pool units is then given by the symmetric formula (1):

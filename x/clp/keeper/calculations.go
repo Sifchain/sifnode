@@ -379,7 +379,7 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 // Calculates the amount of external asset to swap, s, such that the ratio of the added assets after the swap
 // equals the ratio of assets in the pool after the swap i.e. calculates s, such that (a+A)/(r+R) = (a−s) / (r + s*R/(s+A)*(1−f)/(1+p)).
 //
-// Solving for s gives, s = math.Abs((math.Sqpt(R*(-1*(a+A))*(-1*f*f*a*R-f*f*A*R-2*f*p*a*R+4*f*p*A*r+2*f*p*A*R+4*f*A*r+4*f*A*R-p*p*a*R-p*p*A*R-4*p*A*r-4*p*A*R-4*A*r-4*A*R)) + f*a*R + f*A*R + p*a*R - 2*p*A*r - p*A*R - 2*A*r - 2*A*R) / (2 * (p + 1) * (r + R))).
+// Solving for s gives, s = math.Abs((math.Sqrt(R*(-1*(a+A))*(-1*f*f*a*R-f*f*A*R-2*f*p*a*R+4*f*p*A*r+2*f*p*A*R+4*f*A*r+4*f*A*R-p*p*a*R-p*p*A*R-4*p*A*r-4*p*A*R-4*A*r-4*A*R)) + f*a*R + f*A*R + p*a*R - 2*p*A*r - p*A*R - 2*A*r - 2*A*R) / (2 * (p + 1) * (r + R))).
 //
 // This function should only be used when when more native asset is required in order for an add to be symmetric i.e. when R,A,a > 0 and R/A > r/a.
 // If more external asset is required, then due to ratio shifting the swap formula changes, in which case
@@ -460,7 +460,7 @@ func CalculateExternalSwapAmountAsymmetricRat(Y, X, y, x, f, r *big.Rat) big.Rat
 // Calculates the amount of native asset to swap, s, such that the ratio of the added assets after the swap
 // equals the ratio of assets in the pool after the swap i.e. calculates s, such that (r+R)/(a+A) = (r-s) / (a + (s*A)/(s+R)*(1+p)*(1-f)).
 //
-// Solving for s gives, s = math.Abs((math.Sqpt(math.Pow((-1*f*p*A*r-f*p*A*R-f*A*r-f*A*R+p*A*r+p*A*R+2*a*R+2*A*R), 2)-4*(a+A)*(a*R*R-A*r*R)) + f*p*A*r + f*p*A*R + f*A*r + f*A*R - p*A*r - p*A*R - 2*a*R - 2*A*R) / (2 * (a + A))).
+// Solving for s gives, s = math.Abs((math.Sqrt(math.Pow((-1*f*p*A*r-f*p*A*R-f*A*r-f*A*R+p*A*r+p*A*R+2*a*R+2*A*R), 2)-4*(a+A)*(a*R*R-A*r*R)) + f*p*A*r + f*p*A*R + f*A*r + f*A*R - p*A*r - p*A*R - 2*a*R - 2*A*R) / (2 * (a + A))).
 
 // This function should only be used when when more external asset is required in order for an add to be symmetric i.e. when R,A,r > 0 and (a==0 or R/A < r/a)
 // If more native asset is required, then due to ratio shifting the swap formula changes, in which case
