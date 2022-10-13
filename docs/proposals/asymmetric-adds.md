@@ -52,8 +52,8 @@ asymmetric adds.
 In the following formulas:
 
 ```
-p - Current ratio shifting running rate
-f - Swap fee rate. This must satisfy 0 =< f =< 1
+p - current ratio shifting running rate
+f - swap fee rate
 ```
 
 If the pool is not in the same ratio as the add then either:
