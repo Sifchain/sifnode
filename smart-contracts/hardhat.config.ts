@@ -12,11 +12,13 @@ import "@typechain/hardhat";
 
 const envconfig = dotenv.config();
 
+const forkingEnabled = Boolean(process.env["USE_FORKING"] ?? false)
 const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com";
 const ropstenUrl = process.env["ROPSTEN_URL"] ?? "https://example.com";
 
 const activePrivateKey = process.env["ACTIVE_PRIVATE_KEY"] ?? "0xabcd";
 const keyList = activePrivateKey.indexOf(",") ? activePrivateKey.split(",") : [activePrivateKey];
+const accounts = activePrivateKey === "0xabcd" ? [] : keyList
 
 const config: HardhatUserConfig = {
   networks: {
@@ -24,18 +26,19 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: false,
       chainId: 1,
       forking: {
+        enabled: forkingEnabled,
         url: mainnetUrl,
         blockNumber: 14258314,
       },
     },
     ropsten: {
       url: ropstenUrl,
-      accounts: keyList,
+      accounts: accounts,
       gas: 2000000,
     },
     mainnet: {
       url: mainnetUrl,
-      accounts: keyList,
+      accounts: accounts,
       gas: 2000000,
     },
   },

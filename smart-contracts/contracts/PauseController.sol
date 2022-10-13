@@ -48,7 +48,7 @@ contract PauseController is AccessControlEnumerable {
      event Pause(
         address indexed _pauser, // Account which paused the bridge
         bool _messageUpdate, // Is this just a message update (true) or an actual pause event (false)
-        bytes32 [] message // Message sent for why the pause occurred 
+        bytes message // Message sent for why the pause occurred 
      );
 
     /**
@@ -167,7 +167,7 @@ contract PauseController is AccessControlEnumerable {
      * 
      *      Only require the use of hardware wallets.
      */
-    function pause(bytes32 [] calldata message) external {
+    function pause(bytes calldata message) external {
         address pauser = msg.sender;
         require(hasRole(PAUSER, pauser), "User is not pauser");
         bool paused = BridgeBank.paused();
