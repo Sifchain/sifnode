@@ -324,6 +324,8 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			}
 			events = append(events, event)
 		}
+		// In order to prevent possible attacks where locks have incorrect ordering, we avoid the
+		// issue by sorting all events so that the bridge will not halt if a way to change order is found
 		sort.Slice(events, func(i, j int) bool {
 			return events[i].Nonce.Cmp(events[j].Nonce) < 0
 		})
