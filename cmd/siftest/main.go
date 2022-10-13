@@ -296,11 +296,11 @@ func GetVerifyAdd() *cobra.Command {
 	cmd.Flags().String("nativeAmount", "0", "native amount added")
 	cmd.Flags().String("externalAmount", "0", "external amount added")
 	cmd.Flags().String("external-asset", "", "external asset of pool")
-	cmd.MarkFlagRequired("from")
-	cmd.MarkFlagRequired("nativeAmount")
-	cmd.MarkFlagRequired("externalAmount")
-	cmd.MarkFlagRequired("external-asset")
-	cmd.MarkFlagRequired("height")
+	_ = cmd.MarkFlagRequired("from")
+	_ = cmd.MarkFlagRequired("nativeAmount")
+	_ = cmd.MarkFlagRequired("externalAmount")
+	_ = cmd.MarkFlagRequired("external-asset")
+	_ = cmd.MarkFlagRequired("height")
 	return cmd
 }
 
@@ -394,7 +394,9 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 	// Verify external balance is deducted by externalAmount
 	externalDiff := extAfter.Balance.Amount.Sub(extBefore.Balance.Amount)
 	nativeDiff := rowanAfter.Balance.Amount.Sub(rowanBefore.Balance.Amount)
-	lpUnitsDiff := lpAfter.LiquidityProvider.LiquidityProviderUnits.Sub(lpBefore.LiquidityProvider.LiquidityProviderUnits)
+	lpUnitsBeforeInt := sdk.NewIntFromBigInt(lpBefore.LiquidityProvider.LiquidityProviderUnits.BigInt())
+	lpUnitsAfterInt := sdk.NewIntFromBigInt(lpAfter.LiquidityProvider.LiquidityProviderUnits.BigInt())
+	lpUnitsDiff := lpUnitsAfterInt.Sub(lpUnitsBeforeInt)
 
 	fmt.Printf("\nWallet native balance before %s\n", rowanBefore.Balance.Amount.String())
 	fmt.Printf("Wallet external balance before %s\n\n", extBefore.Balance.Amount.String())
@@ -421,7 +423,7 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 	//fmt.Printf("LP units expected diff %s \n", lpUnits.String())
 	fmt.Printf("\nLP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
-	fmt.Printf("LP units diff %s (expected: %s)\n", lpUnitsDiff.String(), lpUnits.String())
+	fmt.Printf("LP units diff %s (expected: %s unexpected: %s)\n", lpUnitsDiff.String(), lpUnits.String(), lpUnitsDiff.Sub(sdk.NewIntFromBigInt(lpUnits.BigInt())))
 	//fmt.Printf("LP units expected after %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.Add(lpUnits).String())
 
 	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
@@ -474,10 +476,10 @@ func GetVerifyRemove() *cobra.Command {
 	cmd.Flags().String("from", "", "address of transactor")
 	cmd.Flags().String("units", "0", "number of units removed")
 	cmd.Flags().String("external-asset", "", "external asset of pool")
-	cmd.MarkFlagRequired("from")
-	cmd.MarkFlagRequired("units")
-	cmd.MarkFlagRequired("external-asset")
-	cmd.MarkFlagRequired("height")
+	_ = cmd.MarkFlagRequired("from")
+	_ = cmd.MarkFlagRequired("units")
+	_ = cmd.MarkFlagRequired("external-asset")
+	_ = cmd.MarkFlagRequired("height")
 	return cmd
 }
 
@@ -645,11 +647,11 @@ func GetVerifyOpen() *cobra.Command {
 	cmd.Flags().String("leverage", "0", "leverage")
 	cmd.Flags().String("collateral-asset", "", "collateral asset")
 	cmd.Flags().String("borrow-asset", "", "borrow asset")
-	cmd.MarkFlagRequired("from")
-	cmd.MarkFlagRequired("collateralAmount")
-	cmd.MarkFlagRequired("leverage")
-	cmd.MarkFlagRequired("collateral-asset")
-	cmd.MarkFlagRequired("height")
+	_ = cmd.MarkFlagRequired("from")
+	_ = cmd.MarkFlagRequired("collateralAmount")
+	_ = cmd.MarkFlagRequired("leverage")
+	_ = cmd.MarkFlagRequired("collateral-asset")
+	_ = cmd.MarkFlagRequired("height")
 	return cmd
 }
 
@@ -692,9 +694,9 @@ func GetVerifyClose() *cobra.Command {
 	//cmd.Flags().Uint64("height", 0, "height of transaction")
 	cmd.Flags().String("from", "", "address of transactor")
 	cmd.Flags().Uint64("id", 0, "id of mtp")
-	cmd.MarkFlagRequired("from")
-	cmd.MarkFlagRequired("height")
-	cmd.MarkFlagRequired("id")
+	_ = cmd.MarkFlagRequired("from")
+	_ = cmd.MarkFlagRequired("height")
+	_ = cmd.MarkFlagRequired("id")
 	return cmd
 }
 
@@ -791,8 +793,18 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	minSwapFee := clpkeeper.GetMinSwapFee(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset}, swapFeeParams.TokenParams)
 
 	// TODO take out custody happens before swap
-	X, Y, toRowan := poolBefore.Pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
-	X, Y = poolBefore.Pool.ExtractDebt(X, Y, toRowan)
+	nativeAsset := types.GetSettlementAsset()
+	pool := *poolBefore.Pool
+
+	if types.StringCompare(mtpResponse.Mtp.CustodyAsset, nativeAsset) {
+		pool.NativeCustody = pool.NativeCustody.Sub(mtpResponse.Mtp.CustodyAmount)
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Add(mtpResponse.Mtp.CustodyAmount)
+	} else {
+		pool.ExternalCustody = pool.ExternalCustody.Sub(mtpResponse.Mtp.CustodyAmount)
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtpResponse.Mtp.CustodyAmount)
+	}
+	X, Y, toRowan := pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
+	X, Y = pool.ExtractDebt(X, Y, toRowan)
 	repayAmount, _ := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
 
 	// Repay()
