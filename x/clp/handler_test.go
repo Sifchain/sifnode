@@ -394,8 +394,7 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	ctx, app := test.CreateTestAppClp(false)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	_, err = app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	_, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	swapFeeParams := clptypes.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {
@@ -423,12 +422,11 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, tokenRegistryK
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Symbol)
 	assert.NoError(t, err)
-	registry := tokenRegistryKeeper.GetRegistry(ctx)
-	_, err = tokenRegistryKeeper.GetEntry(registry, inPool.ExternalAsset.Symbol)
+	_, err = tokenRegistryKeeper.GetRegistryEntry(ctx, inPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, sdk.OneDec(), swapFeeParams)
 	assert.NoError(t, err)
-	_, err = tokenRegistryKeeper.GetEntry(registry, outPool.ExternalAsset.Symbol)
+	_, err = tokenRegistryKeeper.GetRegistryEntry(ctx, outPool.ExternalAsset.Symbol)
 	assert.NoError(t, err)
 	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, sdk.OneDec(), swapFeeParams)
 	assert.NoError(t, err)
