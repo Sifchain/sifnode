@@ -16,11 +16,11 @@ contract PauseController is AccessControlEnumerable {
      * @dev Constant Roles for Access Control
      */
     bytes32 public constant PAUSER = keccak256("PAUSER"); // User who can pause the bridge
-    bytes32 public constant PAUSER_ADMIN = keccak256("PAUSER_ADMIN"); // User who can add pauser accounts
+    bytes32 public constant PAUSER_ADDER = keccak256("PAUSER_ADDER"); // User who can add pauser accounts
     bytes32 public constant CANCELER = keccak256("CANCELER"); // User who can cancel unpause requests
-    bytes32 public constant CANCELER_ADMIN = keccak256("CANCELER_ADMIN"); // User who can add canceler accounts
+    bytes32 public constant CANCELER_ADDER = keccak256("CANCELER_ADDER"); // User who can add canceler accounts
     bytes32 public constant UNPAUSER = keccak256("UNPAUSER"); // User who can unpause the bridge
-    bytes32 public constant UNPAUSER_ADMIN = keccak256("UNPAUSER_ADMIN"); // User who can add unpauser accounts
+    bytes32 public constant UNPAUSER_ADMIN = keccak256("UNPAUSER_ADMIN"); // User who can add and remove unpauser accounts
     
     /**
      * @dev Constant value for No Unpause Request
@@ -46,8 +46,9 @@ contract PauseController is AccessControlEnumerable {
      * @dev Event Emitted when a pause transaction is successfully submitted
      */
      event Pause(
-        address indexed _pauser,
-        bytes32 [] message
+        address indexed _pauser, // Account which paused the bridge
+        bool _messageUpdate, // Is this just a message update (true) or an actual pause event (false)
+        bytes32 [] message // Message sent for why the pause occurred 
      );
 
     /**
@@ -82,85 +83,68 @@ contract PauseController is AccessControlEnumerable {
      * @param _admins An array of addresses to give the admin role which can add/remove any users from any roles (Including Admin)
      *                this is a super user, use with care.
      * @param _pausers An array of addresses which can pause the bridgebank contracts
-     * @param _pauser_admins An array of addresses which can give or revoke the pauser roles
+     * @param _pauser_adder An array of addresses which can give the pauser role
      * @param _unpausers An array of addresses which can schedule an unpause and then execute an unpause call.
-     * @param _unpauser_admins An array of addresses which can give or revoke the unpauser roles
+     * @param _unpauser_admin An array of addresses which can give and revoke the unpauser role
      * @param _cancelers An array of addresses which can cancel a scheduled unpause if a compromise is suspected
-     * @param _canceler_admins An array of addresses which can give or revoke the cancelers roles
+     * @param _canceler_adder An array of addresses which can give the canceler role
      */
     constructor(
         address _bridgeBank, 
         uint256 _timelockDelay, 
         address [] memory _admins, 
         address [] memory _pausers,
-        address [] memory _pauser_admins, 
+        address [] memory _pauser_adder, 
         address [] memory _unpausers,
-        address [] memory _unpauser_admins,
+        address [] memory _unpauser_admin,
         address [] memory _cancelers,
-        address [] memory _canceler_admins
+        address [] memory _canceler_adder 
     ) {
-        // Setup the Role Admins
-        _setRoleAdmin(PAUSER, PAUSER_ADMIN);
+        // Set Unpauser_admin to the admin role of unpausers
         _setRoleAdmin(UNPAUSER, UNPAUSER_ADMIN);
-        _setRoleAdmin(CANCELER, CANCELER_ADMIN);
-
         // Populate each role, These will be modifiable later by the admin role
         uint256 length = _admins.length;
         for (uint256 i; i<length;) {
-            /**
-             * @Note _setupRole has been deprecated in favor of _grantRole however 
-             *       I can not use _grantRole until we upgrade versions of OpenZepplin
-             *       which should not happen until after the peggy2/    master merge. 
-             * 
-             *       AUDITORS: Please evaluate this code both as its written with _setupRole
-             *                 and evaluate this code if we change it to _grantRole.
-             */
-            _setupRole(DEFAULT_ADMIN_ROLE, _admins[i]);
-            _setupRole(PAUSER_ADMIN, _admins[i]);
-            _setupRole(UNPAUSER_ADMIN, _admins[i]);
-            _setupRole(CANCELER_ADMIN, _admins[i]);
+            _grantRole(DEFAULT_ADMIN_ROLE, _admins[i]);
+            _grantRole(PAUSER_ADDER, _admins[i]);
+            _grantRole(UNPAUSER_ADMIN, _admins[i]);
+            _grantRole(CANCELER_ADDER, _admins[i]);
             unchecked { ++i; }
         }
 
         length = _pausers.length;
         for (uint256 i; i<length;) {
-            // See note in earlier loop
-            _setupRole(PAUSER, _pausers[i]);
+            _grantRole(PAUSER, _pausers[i]);
             unchecked { ++i; }
         }
 
-        length = _pauser_admins.length;
+        length = _pauser_adder.length;
         for (uint256 i; i<length;) {
-            // See note in earlier loop
-            _setupRole(PAUSER_ADMIN, _pauser_admins[i]);
+            _grantRole(PAUSER_ADDER, _pauser_adder[i]);
             unchecked { ++i; }
         }
 
         length = _unpausers.length;
         for (uint256 i; i<length;) {
-            // See note in earlier loop
-            _setupRole(UNPAUSER, _unpausers[i]);
+            _grantRole(UNPAUSER, _unpausers[i]);
             unchecked { ++i; }
         }
 
-        length = _unpauser_admins.length;
+        length = _unpauser_admin.length;
         for (uint256 i; i<length;) {
-            // See note in earlier loop
-            _setupRole(UNPAUSER_ADMIN, _unpauser_admins[i]);
+            _grantRole(UNPAUSER_ADMIN, _unpauser_admin[i]);
             unchecked { ++i; }
         }
 
         length = _cancelers.length;
         for (uint256 i; i<length;) {
-            // See note in earlier loop
-            _setupRole(CANCELER, _cancelers[i]);
+            _grantRole(CANCELER, _cancelers[i]);
             unchecked { ++i; }
         }
 
-        length = _canceler_admins.length;
+        length = _canceler_adder.length;
         for (uint256 i; i<length;) {
-            // See note in earlier loop
-            _setupRole(CANCELER_ADMIN, _canceler_admins[i]);
+            _grantRole(CANCELER_ADDER, _canceler_adder[i]);
             unchecked { ++i; }
         }
 
@@ -183,13 +167,14 @@ contract PauseController is AccessControlEnumerable {
      * 
      *      Only require the use of hardware wallets.
      */
-    function pause(bytes32 [] calldata message) public {
+    function pause(bytes32 [] calldata message) external {
         address pauser = msg.sender;
         require(hasRole(PAUSER, pauser), "User is not pauser");
         bool paused = BridgeBank.paused();
-        require(paused == false, "BridgeBank already paused");
-        BridgeBank.pause();
-        emit Pause(pauser, message);
+        if (paused == false) { 
+            BridgeBank.pause();
+        }
+        emit Pause(pauser, paused, message);
     }
 
     /**
@@ -198,7 +183,7 @@ contract PauseController is AccessControlEnumerable {
      *      This should be considered a highly privilaged function, require the use of 
      *      multisig contracts as well as hardware wallets for the signers.
      */
-    function requestUnpause() public {
+    function requestUnpause() external {
         address requester = msg.sender;
         require(hasRole(UNPAUSER, requester), "User is not unpauser");
         require(UnpauseRequestBlockHeight == NOREQUEST, "Unpause request already pending");
@@ -218,7 +203,7 @@ contract PauseController is AccessControlEnumerable {
      * 
      *      Only require the use of hardware wallets. 
      */
-    function cancelUnpause() public {
+    function cancelUnpause() external {
         address requester = msg.sender;
         require(hasRole(CANCELER, requester), "User is not canceler");
         UnpauseRequestBlockHeight = NOREQUEST;
@@ -232,7 +217,7 @@ contract PauseController is AccessControlEnumerable {
      * 
      *      Unprivlaged function, since it has to be scheduled by an unpauser anyone can complete this execution
      */
-    function unpause() public {
+    function unpause() external {
         uint256 requestBlockHeight = UnpauseRequestBlockHeight;
         require(requestBlockHeight != NOREQUEST, "No Active Unpause Request");
         require(requestBlockHeight < block.number, "TimeLock still in effect");
@@ -243,4 +228,29 @@ contract PauseController is AccessControlEnumerable {
         UnpauseRequestBlockHeight = NOREQUEST;
         emit Unpause(msg.sender);
     }
+
+    /**
+     * @dev Function to add new pausers to the system. Must be called by an account
+     *      with the pauser_adder role. This function is used over the standard 
+     *      grantRole function for admin roles because we want these users only to
+     *      be able to grant the roles and not be able to remove pausers.
+     * @param account The account address to grant the pauser role to
+     */
+     function addPauser(address account) external {
+        require(hasRole(PAUSER_ADDER, msg.sender), "User is not PAUSER_ADDER");
+        _grantRole(PAUSER, account);
+     }
+
+    /**
+     * @dev Function to add new canceler to the system. Must be called by an account
+     *      with the canceler_adder role. This function is used over the standard 
+     *      grantRole function for admin roles because we want these users only to
+     *      be able to grant the roles and not be able to remove pausers.
+     * @param account The account address to grant the canceler role to
+     */
+     function addCanceler(address account) external {
+        require(hasRole(CANCELER_ADDER, msg.sender), "User is not CANCELER_ADDER");
+        _grantRole(CANCELER, account);
+     }
+
 }
