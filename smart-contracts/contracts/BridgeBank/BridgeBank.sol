@@ -10,8 +10,6 @@ import "./BankStorage.sol";
 import "./Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
-
 error RecursiveLockCall();
 
 /**
