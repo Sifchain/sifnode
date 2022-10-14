@@ -432,6 +432,10 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 		return err
 	}
 
+	fmt.Printf("\nPool units before %s\n", poolBefore.Pool.PoolUnits.String())
+	fmt.Printf("Pool units after %s\n", poolAfter.Pool.PoolUnits.String())
+	fmt.Printf("Pool units diff %s\n", sdk.NewIntFromBigInt(poolAfter.Pool.PoolUnits.BigInt()).Sub(sdk.NewIntFromBigInt(poolBefore.Pool.PoolUnits.BigInt())))
+
 	lpUnitsBeforeDec := sdk.NewDecFromBigInt(lpBefore.LiquidityProvider.LiquidityProviderUnits.BigInt())
 	lpUnitsAfterDec := sdk.NewDecFromBigInt(lpAfter.LiquidityProvider.LiquidityProviderUnits.BigInt())
 	poolUnitsBeforeDec := sdk.NewDecFromBigInt(poolBefore.Pool.PoolUnits.BigInt())
@@ -441,6 +445,19 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 
 	fmt.Printf("\nPool share before %s\n", poolShareBefore.String())
 	fmt.Printf("Pool share after %s\n", poolShareAfter.String())
+
+	fmt.Printf("\nPool external balance before %s\n", poolBefore.Pool.ExternalAssetBalance.String())
+	fmt.Printf("Pool native balance before %s\n", poolBefore.Pool.NativeAssetBalance.String())
+
+	fmt.Printf("\nPool external balance after %s\n", poolAfter.Pool.ExternalAssetBalance.String())
+	fmt.Printf("Pool native balance after %s\n", poolAfter.Pool.NativeAssetBalance.String())
+
+	poolExternalDiff := sdk.NewIntFromBigInt(poolAfter.Pool.ExternalAssetBalance.BigInt()).Sub(sdk.NewIntFromBigInt(poolBefore.Pool.ExternalAssetBalance.BigInt()))
+	poolNativeDiff := sdk.NewIntFromBigInt(poolAfter.Pool.NativeAssetBalance.BigInt()).Sub(sdk.NewIntFromBigInt(poolBefore.Pool.NativeAssetBalance.BigInt()))
+
+	fmt.Printf("\nPool external balance diff %s (expected: %s)\n", poolExternalDiff.String(), externalAmount.String())
+	fmt.Printf("Pool native balance diff %s (expected: %s)\n", poolNativeDiff.String(), nativeAmount.String())
+
 	return nil
 }
 
