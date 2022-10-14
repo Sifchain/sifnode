@@ -157,6 +157,7 @@ require (
 require pgregory.net/rapid v0.4.7
 
 replace (
+	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23 v0.45.9
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/libp2p/go-buffer-pool => github.com/libp2p/go-buffer-pool v0.1.0
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
