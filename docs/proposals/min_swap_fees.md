@@ -15,6 +15,7 @@ x - input amount
 y - output amount
 r - current ratio shifting running rate
 f - swap fee rate, this must satisfy 0 =< f =< 1
+min_fee - minimum fee for a swap
 ```
 
 ### Swapping to Rowan:
@@ -61,12 +62,24 @@ The fee calculation in equation (1) and (2) becomes:
 fee = min(max(f * adjusted_output, min_fee), adjusted_output)
 ```
 
-Where `min_fee` is a minimum fee parameter for the token being bought, which is set via an admin key. See CLI
-section for more details.
-
 The min function is required to ensure that the fee is not greater than the adjusted output.
 
-If a `min-fee` has not been set for a token then it defaults to zero.
+### Parameters
+
+The `min_fee` must be in the same denomination as the buy token, in which case a single value for `min_fee` (greater than zero)
+cannot be defined across all tokens. Consequently a default `min_fee` of zero must be applied and an admin account
+must be able to specify override `min_fee` values for specific tokens. The admin account must
+not be able to change the default `min_fee` value since zero is the only reasonable value.
+
+The same `min_fee` must be used when buying a token
+regardless of the sell token e.g. it will not be possible to set one `min_fee` for swapping atom to Rowan
+and another `min_fee` for swapping usdc to Rowan.
+
+Unlike the `min_fee` it is possible to define a swap fee rate, `f`, which can be applied on all swaps.
+The admin account must be able to specify a default swap fee rate and specify override values for specific tokens.
+As with the `min_fee` the same swap fee rate must be used regardless of the sell token.
+
+See the CLI section for commands for setting and querying the swap fee params.
 
 ## Events
 
@@ -94,17 +107,20 @@ sifnoded tx clp set-swap-fee-params \
 
 ```json
 {
-	"swap_fee_rate": "0.003",
+	"default_swap_fee_rate": "0.003",
 	"token_params": [{
 			"asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+			"swap_fee_rate": "0.002",
 			"min_swap_fee": "12"
 		},
 		{
 			"asset": "cusdc",
+			"swap_fee_rate": "0.002",
 			"min_swap_fee": "800"
 		},
 		{
 			"asset": "rowan",
+			"swap_fee_rate": "0.001",
 			"min_swap_fee": "12"
 		}
 	]
@@ -119,17 +135,20 @@ sifnoded q clp swap-fee-params --output json
 
 ```json
 {
-	"swap_fee_rate": "0.003000000000000000",
+	"default_swap_fee_rate": "0.003",
 	"token_params": [{
 			"asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+			"swap_fee_rate": "0.002",
 			"min_swap_fee": "12"
 		},
 		{
 			"asset": "cusdc",
+			"swap_fee_rate": "0.002",
 			"min_swap_fee": "800"
 		},
 		{
 			"asset": "rowan",
+			"swap_fee_rate": "0.001",
 			"min_swap_fee": "12"
 		}
 	]
