@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"strings"
-
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -151,65 +149,4 @@ func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 	for _, item := range wl.Entries {
 		k.SetToken(ctx, item)
 	}
-}
-
-func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
-	registryEntry, err := k.GetRegistryEntry(ctx, denom)
-	if err != nil {
-		panic("Invalid Denom for Get Double Peg")
-	}
-	if result, ok := registryEntry.DoublePeggedNetworkMap[uint32(networkDescriptor)]; ok {
-		return result
-	}
-
-	return true
-}
-
-func (k keeper) SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
-	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
-	if firstLockDoublePeg {
-		registryEntry, err := k.GetRegistryEntry(ctx, denom)
-		if err != nil {
-			panic("Invalid Denom for Set Double Peg")
-		}
-		if registryEntry.DoublePeggedNetworkMap == nil {
-			registryEntry.DoublePeggedNetworkMap = make(map[uint32]bool)
-		}
-		registryEntry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
-		k.SetToken(ctx, registryEntry)
-
-		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstDoublePeg, "networkDescriptor", networkDescriptor, "registry", registryEntry)
-	}
-	wl.Entries = append(wl.Entries, entry)
-	k.SetRegistry(ctx, wl)
-}
-
-func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	registry := k.GetRegistry(ctx)
-	updated := make([]*types.RegistryEntry, 0)
-	for _, t := range registry.Entries {
-		if t != nil && !strings.EqualFold(t.Denom, denom) {
-			updated = append(updated, t)
-		}
-	}
-	k.SetRegistry(ctx, types.Registry{
-		Entries: updated,
-	})
-}
-
-func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&wl)
-	store.Set(types.WhitelistStorePrefix, bz)
-}
-
-func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
-	var whitelist types.Registry
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.WhitelistStorePrefix)
-	if len(bz) == 0 {
-		return types.Registry{}
-	}
-	k.cdc.MustUnmarshal(bz, &whitelist)
-	return whitelist
 }

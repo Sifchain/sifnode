@@ -442,7 +442,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	decimals := sAsset.Decimals
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
-	totalLiquidityFee := sdk.ZeroUint()
+	var totalLiquidityFee sdk.Uint
 	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
@@ -726,8 +726,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRemoveLiquidityUnits) (*types.MsgRemoveLiquidityUnitsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	// registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
