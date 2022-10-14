@@ -753,7 +753,6 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 
 func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRemoveLiquidityUnits) (*types.MsgRemoveLiquidityUnitsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	// registry := k.tokenRegistryKeeper.GetRegistry(ctx)
 	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
@@ -862,11 +861,6 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 
 func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	// Verify min threshold
-	// MinThreshold := sdk.NewUintFromString(types.PoolThrehold)
-	// if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
-	// 	return nil, types.ErrTotalAmountTooLow
-	// }
 
 	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
@@ -1023,120 +1017,6 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 	return &types.MsgRemoveLiquidityResponse{}, nil
 }
-
-// func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
-// 	ctx := sdk.UnwrapSDKContext(goCtx)
-// 	eAsset, err := k.tokenRegistryKeeper.GetRegistryEntry(ctx, msg.ExternalAsset.Symbol)
-// 	if err != nil {
-// 		return nil, types.ErrTokenNotSupported
-// 	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
-// 	if k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
-// 		extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeParams)
-
-// 		futurePool := pool
-// 		futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
-// 		futurePool.ExternalAssetBalance = futurePool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
-// 		if k.GetMarginKeeper().CalculatePoolHealth(&futurePool).LT(k.GetMarginKeeper().GetRemovalQueueThreshold(ctx)) {
-// 			if k.IsRemovalQueueEnabled(ctx) {
-// 				k.QueueRemoval(ctx, msg, extRowanValue.Add(withdrawExternalAssetAmount))
-// 				return nil, types.ErrQueued
-// 			}
-// 			return nil, types.ErrRemovalsBlockedByHealth
-// 		}
-// 	}
-
-// 	withdrawExternalAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawExternalAssetAmount.String())
-// 	if !ok {
-// 		return nil, types.ErrUnableToParseInt
-// 	}
-// 	withdrawNativeAssetAmountInt, ok := k.Keeper.ParseToInt(withdrawNativeAssetAmount.String())
-// 	if !ok {
-// 		return nil, types.ErrUnableToParseInt
-// 	}
-// 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, withdrawExternalAssetAmountInt)
-// 	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetAmountInt)
-// 	// Subtract Value from pool
-// 	pool.PoolUnits = pool.PoolUnits.Sub(lp.LiquidityProviderUnits).Add(lpUnitsLeft)
-// 	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
-// 	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
-// 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
-// 	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
-// 		return nil, sdkerrors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
-
-// 	}
-// 	// Swapping between Native and External based on Asymmetry
-// 	if msg.Asymmetry.IsPositive() {
-// 		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, swapFeeParams)
-
-// 		if err != nil {
-// 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
-// 		}
-// 		if !swapResult.IsZero() {
-// 			swapResultInt, ok := k.Keeper.ParseToInt(swapResult.String())
-// 			if !ok {
-// 				return nil, types.ErrUnableToParseInt
-// 			}
-// 			swapAmountInt, ok := k.Keeper.ParseToInt(swapAmount.String())
-// 			if !ok {
-// 				return nil, types.ErrUnableToParseInt
-// 			}
-// 			swapCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapResultInt)
-// 			swapAmountInCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapAmountInt)
-// 			externalAssetCoin = externalAssetCoin.Add(swapCoin)
-// 			nativeAssetCoin = nativeAssetCoin.Sub(swapAmountInCoin)
-// 		}
-// 		pool = swappedPool
-// 	}
-// 	if msg.Asymmetry.IsNegative() {
-// 		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeParams)
-
-// 		if err != nil {
-// 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
-// 		}
-// 		if !swapResult.IsZero() {
-// 			swapInt, ok := k.Keeper.ParseToInt(swapResult.String())
-// 			if !ok {
-// 				return nil, types.ErrUnableToParseInt
-// 			}
-// 			swapAmountInt, ok := k.Keeper.ParseToInt(swapAmount.String())
-// 			if !ok {
-// 				return nil, types.ErrUnableToParseInt
-// 			}
-// 			swapCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapInt)
-// 			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapAmountInt)
-// 			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
-// 			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
-// 		}
-// 		pool = swappedPool
-// 	}
-// 	// Check and  remove Liquidity
-// 	err = k.Keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, externalAssetDepth, nativeAssetDepth)
-// 	if err != nil {
-// 		return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
-// 	}
-// 	ctx.EventManager().EmitEvents(sdk.Events{
-// 		sdk.NewEvent(
-// 			types.EventTypeRemoveLiquidity,
-// 			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
-// 			sdk.NewAttribute(types.AttributeKeyUnits, lp.LiquidityProviderUnits.Sub(lpUnitsLeft).String()),
-// 			sdk.NewAttribute(types.AttributePmtpBlockRate, k.GetPmtpRateParams(ctx).PmtpPeriodBlockRate.String()),
-// 			sdk.NewAttribute(types.AttributePmtpCurrentRunningRate, pmtpCurrentRunningRate.String()),
-// 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-// 		),
-// 		sdk.NewEvent(
-// 			sdk.EventTypeMessage,
-// 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-// 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
-// 		),
-// 	})
-
-// 	// res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
-// 	// if stop {
-// 	// 	return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-// 	// }
-
-// 	return &types.MsgRemoveLiquidityResponse{}, nil
-// }
 
 func (k msgServer) UpdateLiquidityProtectionParams(goCtx context.Context, msg *types.MsgUpdateLiquidityProtectionParams) (*types.MsgUpdateLiquidityProtectionParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
