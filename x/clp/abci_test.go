@@ -17,7 +17,7 @@ import (
 
 func TestEndBlocker(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	_ = test.GeneratePoolsFromFile(app.ClpKeeper, ctx)
+	_ = test.GeneratePoolsFromFile(app, app.ClpKeeper, ctx)
 	SetRewardParams(app.ClpKeeper, ctx)
 
 	_ = clp.EndBlocker(ctx, app.ClpKeeper)
@@ -411,10 +411,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.097803295605500089"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.907275450913636290"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.100000000000000089"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.909090909090909017"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.100000000000000089"),
@@ -428,10 +438,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.207583625166050196"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.824795864466942015"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.210000000000000196"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.826446280991735403"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.210000000000000196"),
@@ -445,10 +465,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.328341987682655322"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.749814422242674499"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.331000000000000323"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.751314800901577578"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.331000000000000323"),
@@ -462,10 +492,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.461176186450920973"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.681649474766067671"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.464100000000000474"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.683013455365070470"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.464100000000000474"),
@@ -511,10 +551,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				if tc.createPool {
 					pools := []*types.Pool{
 						{
-							ExternalAsset:        &types.Asset{Symbol: tc.poolAsset},
-							NativeAssetBalance:   tc.nativeAssetAmount,
-							ExternalAssetBalance: tc.externalAssetAmount,
-							PoolUnits:            tc.poolUnits,
+							ExternalAsset:                &types.Asset{Symbol: tc.poolAsset},
+							NativeAssetBalance:           tc.nativeAssetAmount,
+							ExternalAssetBalance:         tc.externalAssetAmount,
+							PoolUnits:                    tc.poolUnits,
+							NativeCustody:                sdk.ZeroUint(),
+							ExternalCustody:              sdk.ZeroUint(),
+							NativeLiabilities:            sdk.ZeroUint(),
+							ExternalLiabilities:          sdk.ZeroUint(),
+							UnsettledExternalLiabilities: sdk.ZeroUint(),
+							UnsettledNativeLiabilities:   sdk.ZeroUint(),
+							BlockInterestExternal:        sdk.ZeroUint(),
+							BlockInterestNative:          sdk.ZeroUint(),
+							Health:                       sdk.ZeroDec(),
+							InterestRate:                 sdk.NewDecWithPrec(1, 1),
 						},
 					}
 					clpGs := types.DefaultGenesisState()
@@ -556,6 +606,10 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 
 				expectedState.pool.SwapPriceNative = &expectedState.SwapPriceNative
 				expectedState.pool.SwapPriceExternal = &expectedState.SwapPriceExternal
+
+				// explicitly test swap prices before testing pool - makes debugging easier
+				require.Equal(t, &expectedState.SwapPriceNative, got.SwapPriceNative)
+				require.Equal(t, &expectedState.SwapPriceExternal, got.SwapPriceExternal)
 
 				require.Equal(t, expectedState.height, ctx.BlockHeight())
 				require.Equal(t, expectedState.pool, got)

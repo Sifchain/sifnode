@@ -15,6 +15,7 @@ const (
 // Parameter store keys
 var (
 	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
+	KeyEnableRemovalQueue     = []byte("EnableRemovalQueue")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -35,6 +36,7 @@ func NewParams(minThreshold uint64) Params {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
+		paramtypes.NewParamSetPair(KeyEnableRemovalQueue, &p.EnableRemovalQueue, validateEnableRemovalQueue),
 	}
 }
 
@@ -42,6 +44,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
+		EnableRemovalQueue:     false,
 	}
 }
 
@@ -60,6 +63,10 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	if v == 0 {
 		return fmt.Errorf("min create pool threshold must be positive: %d", v)
 	}
+	return nil
+}
+
+func validateEnableRemovalQueue(i interface{}) error {
 	return nil
 }
 

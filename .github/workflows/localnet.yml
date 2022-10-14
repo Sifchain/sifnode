@@ -1,9 +1,10 @@
 name: Run localnet tests on localnet environment
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
+    if: ${{ false }}
     name: Build Stack
     defaults:
       run:

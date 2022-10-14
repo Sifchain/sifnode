@@ -24,6 +24,11 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if cliContext.From == "" {
+		log.Println("Received empty clientContext.From, needed for validating cosmos transaction. Check if --from flag is set")
+		return errors.New("Missing from flag ")
+	}
+
 	tendermintNode := args[0]
 	web3Provider := args[1]
 

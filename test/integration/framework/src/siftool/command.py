@@ -1,3 +1,4 @@
+import contextlib
 import os
 import shutil
 import time
@@ -138,6 +139,14 @@ class Command:
         parent_dir = parent_dir or self.tmpdir()
         args = ["mktemp", "-p", parent_dir] if not self.is_mac() else ["mktemp", os.path.join(parent_dir, "siftool.XXXXXX")]
         return exactly_one(stdout_lines(self.execst(args)))
+
+    @contextlib.contextmanager
+    def with_temp_file(self, parent_dir: Optional[str] = None):
+        tmp = self.mktempfile(parent_dir=parent_dir)
+        try:
+            yield tmp
+        finally:
+            self.rm(tmp)
 
     def chmod(self, path: str, mode_str: str, recursive: bool = False):
         args = ["chmod"] + (["-r"] if recursive else []) + [mode_str, path]

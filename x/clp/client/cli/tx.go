@@ -47,6 +47,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdUpdateLiquidityProtectionParams(),
 		GetCmdModifyLiquidityProtectionRates(),
 		GetCmdSetProviderDistributionPeriods(),
+		GetCmdSetSwapFeeParams(),
 	)
 
 	return clpTxCmd
@@ -154,6 +155,53 @@ func GetCmdSetSymmetryThreshold() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(FsSymmetryThreshold)
 	cmd.Flags().AddFlagSet(FsSymmetryRatioThreshold)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetSwapFeeParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-swap-fee-params",
+		Short: "Set swap fee params",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+			filePath := viper.GetString(FlagSwapFeeParams)
+			file, err := filepath.Abs(filePath)
+			if err != nil {
+				return err
+			}
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			var swapFeeParams types.SwapFeeParams
+			err = json.Unmarshal(input, &swapFeeParams)
+			if err != nil {
+				return err
+			}
+			msg := types.MsgUpdateSwapFeeParamsRequest{
+				Signer:      signer.String(),
+				SwapFeeRate: swapFeeParams.SwapFeeRate,
+				TokenParams: swapFeeParams.TokenParams,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsFlagSwapFeeParams)
+	if err := cmd.MarkFlagRequired(FlagSwapFeeParams); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

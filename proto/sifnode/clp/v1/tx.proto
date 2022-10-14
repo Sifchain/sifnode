@@ -33,6 +33,7 @@ service Msg {
   rpc UpdateLiquidityProtectionParams(MsgUpdateLiquidityProtectionParams) returns (MsgUpdateLiquidityProtectionParamsResponse);
   rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
   rpc AddProviderDistributionPeriod(MsgAddProviderDistributionPeriodRequest) returns (MsgAddProviderDistributionPeriodResponse);
+  rpc UpdateSwapFeeParams(MsgUpdateSwapFeeParamsRequest) returns (MsgUpdateSwapFeeParamsResponse);
 }
 
 // message MsgUpdateStakingRewardParams{
@@ -234,6 +235,14 @@ message MsgCancelUnlock {
 
 message MsgCancelUnlockResponse {}
 
+message RemovalRequest {
+  int64 id = 1;
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  MsgRemoveLiquidity msg = 3;
+}
 message MsgModifyLiquidityProtectionRates {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   string current_rowan_liquidity_threshold = 2 [
@@ -261,3 +270,14 @@ message MsgAddProviderDistributionPeriodRequest {
 }
 
 message MsgAddProviderDistributionPeriodResponse {}
+
+message MsgUpdateSwapFeeParamsRequest {
+  string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
+  string swap_fee_rate = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated SwapFeeTokenParams token_params = 3;
+}
+
+message MsgUpdateSwapFeeParamsResponse {}

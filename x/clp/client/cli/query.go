@@ -35,6 +35,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdPmtpParams(queryRoute),
 		GetCmdLiquidityProtectionParams(queryRoute),
 		GetCmdProviderDistributionParams(queryRoute),
+		GetCmdSwapFeeParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -365,6 +366,28 @@ func GetCmdProviderDistributionParams(queryRoute string) *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 			result, err := queryClient.GetProviderDistributionParams(context.Background(), &types.ProviderDistributionParamsReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSwapFeeParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "swap-fee-params",
+		Short: "Get swap fee params",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetSwapFeeParams(context.Background(), &types.SwapFeeParamsReq{})
 			if err != nil {
 				return err
 			}

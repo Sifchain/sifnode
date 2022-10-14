@@ -4,12 +4,16 @@ import logging
 import subprocess
 import string
 import random
+import time
 import yaml
 import urllib.request
-from typing import Optional, Mapping, Sequence, IO, Union, Iterable, List
+from typing import Optional, Mapping, Sequence, Set, IO, Union, Iterable, List, Any, Callable, Dict
 
 
 ANY_ADDR = "0.0.0.0"
+LOCALHOST = "127.0.0.1"
+JsonObj = Any
+JsonDict = Dict[str, JsonObj]
 
 
 def stdout(res):
@@ -24,7 +28,7 @@ def stdout_lines(res):
 def joinlines(lines):
     return "".join([x + os.linesep for x in lines])
 
-def zero_or_one(items):
+def zero_or_one(items: Sequence[Any]) -> Any:
     if len(items) == 0:
         return None
     elif len(items) > 1:
@@ -32,13 +36,13 @@ def zero_or_one(items):
     else:
         return items[0]
 
-def exactly_one(items):
+def exactly_one(items: Union[Sequence[Any], Set[Any]]) -> Any:
     if len(items) == 0:
         raise ValueError("Zero items")
     elif len(items) > 1:
         raise ValueError("Multiple items")
     else:
-        return items[0]
+        return next(iter(items))
 
 def find_by_value(list_of_dicts, field, value):
     return [t for t in list_of_dicts if t[field] == value]
@@ -46,6 +50,17 @@ def find_by_value(list_of_dicts, field, value):
 def random_string(length):
     chars = string.ascii_letters + string.digits
     return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
+
+# Choose m out of n in random order
+def random_choice(m: int, n: int, rnd: Optional[random.Random] = None):
+    rnd = rnd if rnd is not None else random
+    a = [x for x in range(n)]
+    result = []
+    for i in range(m):
+        idx = rnd.randrange(len(a))
+        result.append(a[idx])
+        a.pop(idx)
+    return result
 
 def project_dir(*paths):
     return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*5))), *paths))
@@ -131,6 +146,35 @@ def template_transform(s, d):
         if not m:
             return s
         s = s[0:m.start(2)] + d[m[3]] + s[m.end(2):]
+
+def wait_for_enter_key_pressed():
+    try:
+        input("Press ENTER to exit...")
+    except EOFError:
+        log = logging.getLogger(__name__)
+        log.error("Cannot wait for ENTER keypress since standard input is closed. Instead, this program will now wait "
+            "for 100 years and you will have to kill it manually. If you get this message when running in recent "
+            "versions of pycharm, enable 'Emulate terminal in output console' in run configuration.")
+        time.sleep(3155760000)
+
+def retry(function: Callable, sleep_time: Optional[int] = 5, retries: Optional[int] = 0,
+    log: Optional[logging.Logger] = None
+) -> Callable:
+    def wrapper(*args, **kwargs):
+        retries_left = retries
+        while True:
+            try:
+                return function(*args, **kwargs)
+            except Exception as e:
+                if retries_left == 0:
+                    raise e
+                if log is not None:
+                    log.debug("Retriable exception for {}: args: {}, kwargs: {}, exception: {}".format(repr(function), repr(args), repr(kwargs), repr(e)))
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+                    retries_left -= 1
+                continue
+    return wrapper
 
 
 on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
