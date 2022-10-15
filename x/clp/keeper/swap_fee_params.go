@@ -15,18 +15,20 @@ func (k Keeper) GetSwapFeeParams(ctx sdk.Context) types.SwapFeeParams {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.SwapFeeParamsPrefix)
 	if bz == nil {
-		return types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)} //0.003
+		return types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)} //0.003
 	}
 	k.cdc.MustUnmarshal(bz, &params)
 	return params
 }
 
-func GetMinSwapFee(asset types.Asset, tokenParams []*types.SwapFeeTokenParams) sdk.Uint {
+func GetAssetSwapFeeParams(asset types.Asset, swapFeeParams *types.SwapFeeParams) (sdk.Dec, sdk.Uint) {
+
+	tokenParams := swapFeeParams.TokenParams
 	for _, p := range tokenParams {
 		if types.StringCompare(asset.Symbol, p.Asset) {
-			return p.MinSwapFee
+			return p.SwapFeeRate, p.MinSwapFee
 		}
 	}
 
-	return sdk.ZeroUint()
+	return swapFeeParams.DefaultSwapFeeRate, sdk.ZeroUint()
 }

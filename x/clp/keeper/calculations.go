@@ -415,13 +415,13 @@ func CalculateWithdrawalRowanValue(
 	pool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) sdk.Uint {
 
-	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
+	swapFeeRate, minSwapFee := GetAssetSwapFeeParams(to, &swapFeeParams)
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
 
-	value, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	value, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate, minSwapFee)
 
 	return value
 }
@@ -432,7 +432,7 @@ func SwapOne(from types.Asset,
 	pool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
-	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
+	swapFeeRate, minSwapFee := GetAssetSwapFeeParams(to, &swapFeeParams)
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
@@ -441,7 +441,7 @@ func SwapOne(from types.Asset,
 	Xincl, Yincl = pool.ExtractDebt(X, Y, toRowan)
 
 	priceImpact := calcPriceImpact(Xincl, sentAmount)
-	swapResult, liquidityFee := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	swapResult, liquidityFee := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeRate, minSwapFee)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
@@ -457,13 +457,14 @@ func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
 	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) sdk.Uint {
-	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
+
+	swapFeeRate, minSwapFee := GetAssetSwapFeeParams(to, &swapFeeParams)
 
 	X, Y, toRowan := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
 
-	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate, minSwapFee)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()

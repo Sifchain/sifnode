@@ -93,7 +93,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			swapFeeParams:                types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)},
 			expectedSwapResult:           sdk.NewUint(43501),
 			expectedLiquidityFee:         sdk.NewUint(130),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -112,7 +112,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			toAsset:                      types.GetSettlementAsset(),
 			fromAsset:                    types.NewAsset("cusdt"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			swapFeeParams:                types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)},
 			expectedSwapResult:           sdk.NewUintFromString("11704434254784015637542"),
 			expectedLiquidityFee:         sdk.NewUintFromString("35218959643281892590"),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -131,7 +131,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			swapFeeParams:                types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)},
 			expectedSwapResult:           sdk.NewUint(43550),
 			expectedLiquidityFee:         sdk.NewUint(131),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -139,18 +139,32 @@ func TestKeeper_SwapOne(t *testing.T) {
 			expectedNativeAssetBalance:   sdk.NewUint(10050000),
 		},
 		{
-			name:                         "real world numbers - fee < minSwapFee",
-			nativeAssetBalance:           sdk.NewUint(10000000),
-			externalAssetBalance:         sdk.NewUint(8770000),
-			nativeCustody:                sdk.ZeroUint(),
-			externalCustody:              sdk.ZeroUint(),
-			nativeLiabilities:            sdk.ZeroUint(),
-			externalLiabilities:          sdk.ZeroUint(),
-			sentAmount:                   sdk.NewUint(50000),
-			fromAsset:                    types.GetSettlementAsset(),
-			toAsset:                      types.NewAsset("eth"),
-			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3), TokenParams: []*types.SwapFeeTokenParams{{Asset: "eth", MinSwapFee: sdk.NewUint(300)}, {Asset: types.GetSettlementAsset().Symbol, MinSwapFee: sdk.NewUint(100)}}},
+			name:                   "real world numbers - fee < minSwapFee",
+			nativeAssetBalance:     sdk.NewUint(10000000),
+			externalAssetBalance:   sdk.NewUint(8770000),
+			nativeCustody:          sdk.ZeroUint(),
+			externalCustody:        sdk.ZeroUint(),
+			nativeLiabilities:      sdk.ZeroUint(),
+			externalLiabilities:    sdk.ZeroUint(),
+			sentAmount:             sdk.NewUint(50000),
+			fromAsset:              types.GetSettlementAsset(),
+			toAsset:                types.NewAsset("eth"),
+			pmtpCurrentRunningRate: sdk.NewDec(0),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "eth",
+						SwapFeeRate: sdk.NewDecWithPrec(3, 3),
+						MinSwapFee:  sdk.NewUint(300),
+					},
+					{
+						Asset:       types.GetSettlementAsset().Symbol,
+						SwapFeeRate: sdk.NewDecWithPrec(3, 3),
+						MinSwapFee:  sdk.NewUint(100),
+					},
+				},
+			},
 			expectedSwapResult:           sdk.NewUint(43331),
 			expectedLiquidityFee:         sdk.NewUint(300),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -223,7 +237,7 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapFeeParams := types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
+	swapFeeParams := types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)}
 	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), swapFeeParams)
 	assert.Equal(t, "1", swapResult.String())
 }
@@ -239,7 +253,7 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 	}
 	asset := types.Asset{}
 
-	swapFeeParams := types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
+	swapFeeParams := types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)}
 
 	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), swapFeeParams)
 
@@ -2220,7 +2234,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
 
-			swapFeeParams := types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
+			swapFeeParams := types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)}
 
 			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, swapFeeParams)
 

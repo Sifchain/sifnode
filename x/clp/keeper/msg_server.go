@@ -1097,7 +1097,7 @@ func (k msgServer) UpdateSwapFeeParams(goCtx context.Context, msg *types.MsgUpda
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
-	k.SetSwapFeeParams(ctx, &types.SwapFeeParams{SwapFeeRate: msg.SwapFeeRate, TokenParams: msg.TokenParams})
+	k.SetSwapFeeParams(ctx, &types.SwapFeeParams{DefaultSwapFeeRate: msg.DefaultSwapFeeRate, TokenParams: msg.TokenParams})
 
 	return response, nil
 }
