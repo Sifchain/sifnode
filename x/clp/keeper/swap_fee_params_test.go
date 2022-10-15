@@ -9,30 +9,63 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestKeeper_GetMinSwapFee(t *testing.T) {
+func TestKeeper_GetAssetSwapFeeParams(t *testing.T) {
 
 	testcases := []struct {
-		name               string
-		asset              types.Asset
-		tokenParams        []*types.SwapFeeTokenParams
-		expectedMinSwapFee sdk.Uint
+		name                string
+		asset               types.Asset
+		swapFeeParams       types.SwapFeeParams
+		expectedSwapFeeRate sdk.Dec
+		expectedMinSwapFee  sdk.Uint
 	}{
 		{
-			name:               "empty token params",
-			asset:              types.NewAsset("ceth"),
-			expectedMinSwapFee: sdk.ZeroUint(),
+			name:                "empty token params",
+			asset:               types.NewAsset("ceth"),
+			swapFeeParams:       types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			expectedSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+			expectedMinSwapFee:  sdk.ZeroUint(),
 		},
 		{
-			name:               "match",
-			asset:              types.NewAsset("ceth"),
-			tokenParams:        []*types.SwapFeeTokenParams{{Asset: "ceth", MinSwapFee: sdk.NewUint(100)}, {Asset: "cusdc", MinSwapFee: sdk.NewUint(300)}},
-			expectedMinSwapFee: sdk.NewUint(100),
+			name:  "match",
+			asset: types.NewAsset("ceth"),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "ceth",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 3),
+						MinSwapFee:  sdk.NewUint(100),
+					},
+					{
+						Asset:       "cusdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 3),
+						MinSwapFee:  sdk.NewUint(300),
+					},
+				},
+			},
+			expectedSwapFeeRate: sdk.NewDecWithPrec(1, 3),
+			expectedMinSwapFee:  sdk.NewUint(100),
 		},
 		{
-			name:               "no match",
-			asset:              types.NewAsset("rowan"),
-			tokenParams:        []*types.SwapFeeTokenParams{{Asset: "ceth", MinSwapFee: sdk.NewUint(100)}, {Asset: "cusdc", MinSwapFee: sdk.NewUint(300)}},
-			expectedMinSwapFee: sdk.ZeroUint(),
+			name:  "no match",
+			asset: types.NewAsset("rowan"),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "ceth",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 3),
+						MinSwapFee:  sdk.NewUint(100),
+					},
+					{
+						Asset:       "cusdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 3),
+						MinSwapFee:  sdk.NewUint(300),
+					},
+				},
+			},
+			expectedSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+			expectedMinSwapFee:  sdk.ZeroUint(),
 		},
 	}
 
@@ -40,8 +73,9 @@ func TestKeeper_GetMinSwapFee(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 
-			minSwapFee := keeper.GetMinSwapFee(tc.asset, tc.tokenParams)
+			swapFeeRate, minSwapFee := keeper.GetAssetSwapFeeParams(tc.asset, &tc.swapFeeParams)
 
+			require.Equal(t, tc.expectedSwapFeeRate.String(), swapFeeRate.String())
 			require.Equal(t, tc.expectedMinSwapFee.String(), minSwapFee.String())
 		})
 	}
