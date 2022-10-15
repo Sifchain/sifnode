@@ -1,6 +1,6 @@
 # Minimum swap fees
 
-This tutorial demonstrates the behaviour of the min swap fee functionality
+This tutorial demonstrates the behaviour of the min swap fee functionality.
 
 1. Start and run the chain:
 
@@ -75,7 +75,7 @@ sifnoded q clp swap-fee-params --output json | jq
 
 ```json
 {
-  "swap_fee_rate": "0.003000000000000000",
+  "default_swap_fee_rate": "0.003000000000000000",
   "token_params": []
 }
 ```
@@ -91,13 +91,15 @@ sifnoded tx clp set-swap-fee-params \
    --fees 100000000000000000rowan \
    -y \
    --path <( echo '{
-    "swap_fee_rate": "0.003",
+    "default_swap_fee_rate": "0.003",
     "token_params": [{
             "asset": "ceth",
+            "swap_fee_rate": "0.004",
             "min_swap_fee": "0"
         },
         {
             "asset": "rowan",
+            "swap_fee_rate": "0.002",
             "min_swap_fee": "600000000000"
         }
     ]
@@ -105,7 +107,7 @@ sifnoded tx clp set-swap-fee-params \
 ```
 
 
-4. Check swap fee params have been updated:
+6. Check swap fee params have been updated:
 
 ```bash
 sifnoded q clp swap-fee-params --output json | jq
@@ -113,21 +115,23 @@ sifnoded q clp swap-fee-params --output json | jq
 
 ```json
 {
-  "swap_fee_rate": "0.003000000000000000",
+  "default_swap_fee_rate": "0.003000000000000000",
   "token_params": [
     {
       "asset": "ceth",
-      "min_swap_fee": "0"
+      "min_swap_fee": "0",
+      "swap_fee_rate": "0.004000000000000000"
     },
     {
       "asset": "rowan",
-      "min_swap_fee": "600000000000"
+      "min_swap_fee": "600000000000",
+      "swap_fee_rate": "0.002000000000000000"
     }
   ]
 }
 ```
 
-6. Do a swap:
+7. Do a swap:
 
 ```bash
 sifnoded tx clp swap \
@@ -164,11 +168,37 @@ adjusted_output = x * Y  / ((x + X)(1 + r))
                 = 199980001999800
 
 fee = min(max(f * adjusted_output, min_swap_fee), adjusted_output)
-    = min(max(0.003 * 199980001999800, 600000000000), adjusted_output)
-	= min(max(599940005999, 600000000000), 199980001999800)
-	= 600000000000
+    = min(max(0.002 * 199980001999800, 600000000000), adjusted_output)
+	  = min(max(399960003999, 600000000000), 199980001999800)
+	  = 600000000000
 
 y = adjusted_amount - fee
   = 199980001999800 - 600000000000
   = 199380001999800
+```
+
+8. Confirm that setting swap fee rate greater than one fails:
+
+```bash
+sifnoded tx clp set-swap-fee-params \
+   --from sif \
+   --keyring-backend test \
+   --chain-id localnet \
+   --broadcast-mode block \
+   --fees 100000000000000000rowan \
+   -y \
+   --path <( echo '{
+    "default_swap_fee_rate": "0.003",
+    "token_params": [{
+            "asset": "ceth",
+            "swap_fee_rate": "1.2",
+            "min_swap_fee": "0"
+        },
+        {
+            "asset": "rowan",
+            "swap_fee_rate": "0.002",
+            "min_swap_fee": "600000000000"
+        }
+    ]
+    }' )
 ```
