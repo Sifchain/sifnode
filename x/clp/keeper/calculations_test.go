@@ -433,54 +433,31 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		},
 		{
 			// Same test as above but with external asset amount just below top limit
-			name:                 "success (normalized) ratios diff = 0.000000000000000499",
+			name:                 "success (normalized) ratios diff = 0.00496468840",
 			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
 			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance: sdk.NewUint(2674623482959),
 			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(70140),
+			externalAssetAmount:  sdk.NewUint(68480),
 			externalDecimals:     6,
-			poolUnits:            sdk.NewUintFromString("23662661162145935094484778"),
-			lpunits:              sdk.NewUintFromString("611688551401546824"),
+			poolUnits:            sdk.NewUintFromString("23662661154802842743687067"),
+			lpunits:              sdk.NewUintFromString("604345459050749113"),
 		},
 		{
 			// Same test as above but with external asset amount just above top limit
-			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
+			name:                 "failure (normalized) ratios diff = 0.0050954439",
 			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
 			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance: sdk.NewUint(2674623482959),
 			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(70141),
-			externalDecimals:     6,
-			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
-		},
-		{
-			// Same test as above but with external asset amount just above bottom limit
-			name:                 "success (normalized) ratios diff = 0.000000000000000499",
-			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
-			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetBalance: sdk.NewUint(2674623482959),
-			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(66141),
-			externalDecimals:     6,
-			poolUnits:            sdk.NewUintFromString("23662661144456159305055227"),
-			lpunits:              sdk.NewUintFromString("593998775612117273"),
-		},
-		{
-			// Same test as above but with external asset amount just below bottom limit
-			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
-			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
-			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetBalance: sdk.NewUint(2674623482959),
-			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(66140),
+			externalAssetAmount:  sdk.NewUint(68489),
 			externalDecimals:     6,
 			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
 		},
 	}
 
 	symmetryThreshold := sdk.NewDecWithPrec(1, 4)
-	ratioThreshold := sdk.NewDecWithPrec(5, 4)
+	ratioThreshold := sdk.NewDecWithPrec(5, 3)
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -1143,7 +1120,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalculateRatioDiff(t *testing.T) {
+func TestKeeper_CalculateRatioPercentDiff(t *testing.T) {
 
 	testcases := []struct {
 		name       string
@@ -1157,7 +1134,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			R:        big.NewInt(10),
 			a:        big.NewInt(8),
 			r:        big.NewInt(4),
-			expected: sdk.MustNewDecFromStr("0.000000000000000000"),
+			expected: sdk.MustNewDecFromStr("1.000000000000000000"),
 		},
 		{
 			name:     "not symmetric",
@@ -1165,7 +1142,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			R:        big.NewInt(10),
 			a:        big.NewInt(16),
 			r:        big.NewInt(4),
-			expected: sdk.MustNewDecFromStr("2.000000000000000000"),
+			expected: sdk.MustNewDecFromStr("0.500000000000000000"),
 		},
 		{
 			name:     "not symmetric",
@@ -1173,7 +1150,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			R:        big.NewInt(100),
 			a:        big.NewInt(5),
 			r:        big.NewInt(1),
-			expected: sdk.MustNewDecFromStr("0.010000000000000000"),
+			expected: sdk.MustNewDecFromStr("1.002000000000000000"),
 		},
 	}
 
@@ -1181,7 +1158,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 
-			ratio, err := clpkeeper.CalculateRatioDiff(tc.A, tc.R, tc.a, tc.r)
+			ratio, err := clpkeeper.CalculateRatioPercentDiff(tc.A, tc.R, tc.a, tc.r)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
