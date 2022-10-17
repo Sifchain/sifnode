@@ -158,7 +158,7 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 				return err
 			}
 
-			globalSequence, err := strconv.ParseInt(args[1], 10, 64)
+			globalSequence, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
@@ -167,7 +167,7 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 
 			req := &types.QueryGlobalSequenceBlockNumberRequest{
 				NetworkDescriptor: networkDescriptor,
-				GlobalSequence:    uint64(globalSequence),
+				GlobalSequence:    globalSequence,
 			}
 
 			res, err := queryClient.GlobalSequenceBlockNumber(context.Background(), req)
@@ -197,7 +197,7 @@ func GetProphecyCompleted() *cobra.Command {
 				return err
 			}
 
-			globalSequence, err := strconv.ParseInt(args[1], 10, 64)
+			globalSequence, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
@@ -206,7 +206,7 @@ func GetProphecyCompleted() *cobra.Command {
 
 			req := &types.QueryPropheciesCompletedRequest{
 				NetworkDescriptor: networkDescriptor,
-				GlobalSequence:    uint64(globalSequence),
+				GlobalSequence:    globalSequence,
 			}
 
 			res, err := queryClient.PropheciesCompleted(context.Background(), req)

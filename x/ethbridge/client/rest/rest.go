@@ -354,12 +354,12 @@ func getQueryGlobalSequenceBlockNumberHandler(cliCtx client.Context, storeName s
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
-		globalSequence, err := strconv.ParseInt(restNetworkDescriptor, 10, 64)
+		globalSequence, err := strconv.ParseUint(restNetworkDescriptor, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryGlobalSequenceBlockNumberRequest(networkDescriptor, uint64(globalSequence)))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryGlobalSequenceBlockNumberRequest(networkDescriptor, globalSequence))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
