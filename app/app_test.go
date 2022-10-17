@@ -71,7 +71,7 @@ func TestAppUpgrade_CannotDeleteLatestVersion(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 		func(app *baseapp.BaseApp) {
-			cms := rootmulti.NewStore(db)
+			cms := rootmulti.NewStore(db, app.Logger())
 			cms.SetPruning(storetypes.PruneDefault)
 			app.SetCMS(cms)
 		},
@@ -156,7 +156,7 @@ func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 		func(app *baseapp.BaseApp) {
-			cms := rootmulti.NewStore(db)
+			cms := rootmulti.NewStore(db, app.Logger())
 			cms.SetPruning(storetypes.PruneDefault)
 			app.SetCMS(cms)
 		},
@@ -190,7 +190,7 @@ func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 		func(app *baseapp.BaseApp) {
-			cms := rootmulti.NewStore(db)
+			cms := rootmulti.NewStore(db, app.Logger())
 			cms.SetPruning(storetypes.PruneDefault)
 			app.SetCMS(cms)
 		},
