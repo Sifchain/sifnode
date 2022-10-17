@@ -20,18 +20,6 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-func parseNetworkDescriptor(networkDescriptorStr string) (oracletypes.NetworkDescriptor, error) {
-	networkDescriptor, err := strconv.Atoi(networkDescriptorStr)
-	if err != nil {
-		return -1, err
-	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
-		return -1, errors.Errorf("Invalid %s. Valid range: [0-9999], received %d", types.FlagEthereumChainID, networkDescriptor)
-	} else if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
-		return -1, errors.Errorf("Invalid %s. Invalid value, received %d", types.FlagEthereumChainID, networkDescriptor)
-	}
-	return oracletypes.NetworkDescriptor(networkDescriptor), nil
-}
-
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
@@ -54,7 +42,7 @@ func GetCmdBurn() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -118,7 +106,7 @@ func GetCmdLock() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := parseNetworkDescriptor(networkDescriptorStr)
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(networkDescriptorStr)
 			if err != nil {
 				return err
 			}
@@ -175,7 +163,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -185,12 +173,12 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			power, err := strconv.Atoi(args[2])
+			power, err := strconv.ParseUint(args[2], 10, 32)
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(oracletypes.NetworkDescriptor(networkDescriptor), clientCtx.FromAddress, validatorAddress, uint32(power))
+			msg := types.NewMsgUpdateWhiteListValidator(networkDescriptor, clientCtx.FromAddress, validatorAddress, uint32(power))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -285,7 +273,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -308,7 +296,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 			}
 
 			msg := types.NewMsgSetFeeInfo(clientCtx.FromAddress,
-				oracletypes.NetworkDescriptor(networkDescriptor),
+				networkDescriptor,
 				feeCurrency,
 				feeCurrencyGas,
 				minimumLockCost,
@@ -338,7 +326,7 @@ func GetCmdSignProphecy() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -347,7 +335,7 @@ func GetCmdSignProphecy() *cobra.Command {
 			ethereumAddress := args[2]
 			signature := args[3]
 
-			msg := types.NewMsgSignProphecy(clientCtx.FromAddress.String(), oracletypes.NetworkDescriptor(networkDescriptor), []byte(prophecyID), ethereumAddress, signature)
+			msg := types.NewMsgSignProphecy(clientCtx.FromAddress.String(), networkDescriptor, []byte(prophecyID), ethereumAddress, signature)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -373,7 +361,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -387,7 +375,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 				return errors.New("Error consensus needed value too large")
 			}
 
-			msg := types.NewMsgUpdateConsensusNeeded(clientCtx.FromAddress.String(), oracletypes.NetworkDescriptor(networkDescriptor), uint32(consensusNeeded))
+			msg := types.NewMsgUpdateConsensusNeeded(clientCtx.FromAddress.String(), networkDescriptor, uint32(consensusNeeded))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

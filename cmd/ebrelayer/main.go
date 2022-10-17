@@ -211,14 +211,9 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.New("network descriptor is empty")
 	}
 
-	networkDescriptor, err := strconv.Atoi(networkDescriptorString)
+	networkDescriptor, err := oracletypes.ParseNetworkDescriptor(networkDescriptorString)
 	if err != nil {
 		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
-	}
-
-	// check if the networkDescriptor is valid
-	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
-		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
 	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
@@ -311,7 +306,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		cliContext,
 		nodeURL,
 		validatorMoniker,
-		oracletypes.NetworkDescriptor(networkDescriptor),
+		networkDescriptor,
 		web3Provider,
 		contractAddress,
 		sugaredLogger,
@@ -323,7 +318,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+	cosmosSub := relayer.NewCosmosSub(networkDescriptor,
 		privateKey,
 		tendermintNode,
 		web3Provider,
@@ -427,14 +422,9 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		return errors.New("network descriptor is empty")
 	}
 
-	networkDescriptor, err := strconv.Atoi(networkDescriptorString)
+	networkDescriptor, err := oracletypes.ParseNetworkDescriptor(networkDescriptorString)
 	if err != nil {
 		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
-	}
-
-	// check if the networkDescriptor is valid
-	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
-		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
 	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
@@ -520,7 +510,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		cliContext,
 		nodeURL,
 		validatorMoniker,
-		oracletypes.NetworkDescriptor(networkDescriptor),
+		networkDescriptor,
 		web3Provider,
 		contractAddress,
 		sugaredLogger,
@@ -532,7 +522,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	maxFeePerGas, maxPriorityFeePerGas, ethereumChainId := parseGasArguments(cmd, bigNetworkDescriptor)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+	cosmosSub := relayer.NewCosmosSub(networkDescriptor,
 		privateKey,
 		tendermintNode,
 		web3Provider,

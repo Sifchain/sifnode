@@ -52,7 +52,7 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -60,7 +60,7 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryCrosschainFeeConfigRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 			}
 
 			res, err := queryClient.CrosschainFeeConfig(context.Background(), req)
@@ -85,7 +85,7 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -93,7 +93,7 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryEthereumLockBurnSequenceRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 				RelayerValAddress: args[1],
 			}
 
@@ -119,7 +119,7 @@ func GetWitnessLockBurnSequence() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
@@ -127,7 +127,7 @@ func GetWitnessLockBurnSequence() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryWitnessLockBurnSequenceRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				NetworkDescriptor: networkDescriptor,
 				RelayerValAddress: args[1],
 			}
 
@@ -153,12 +153,12 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
 
-			globalSequence, err := strconv.Atoi(args[1])
+			globalSequence, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
@@ -166,8 +166,8 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryGlobalSequenceBlockNumberRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
-				GlobalSequence:    uint64(globalSequence),
+				NetworkDescriptor: networkDescriptor,
+				GlobalSequence:    globalSequence,
 			}
 
 			res, err := queryClient.GlobalSequenceBlockNumber(context.Background(), req)
@@ -192,12 +192,12 @@ func GetProphecyCompleted() *cobra.Command {
 				return err
 			}
 
-			networkDescriptor, err := strconv.Atoi(args[0])
+			networkDescriptor, err := oracletypes.ParseNetworkDescriptor(args[0])
 			if err != nil {
 				return err
 			}
 
-			globalSequence, err := strconv.Atoi(args[1])
+			globalSequence, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
@@ -205,8 +205,8 @@ func GetProphecyCompleted() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryPropheciesCompletedRequest{
-				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
-				GlobalSequence:    uint64(globalSequence),
+				NetworkDescriptor: networkDescriptor,
+				GlobalSequence:    globalSequence,
 			}
 
 			res, err := queryClient.PropheciesCompleted(context.Background(), req)
