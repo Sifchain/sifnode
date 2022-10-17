@@ -155,13 +155,13 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 	}
 
 	ratioThresholdRat := DecToRat(&ratioThreshold)
-	normalisingFactor := CalcDenomChangeMultiplier(externalDecimals, types.NativeAssetDecimals)
-	ratioThresholdRat.Mul(&ratioThresholdRat, &normalisingFactor)
-	ratioDiff, err := CalculateRatioDiff(externalAssetDepth.BigInt(), nativeAssetDepth.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
+	ratioPercentDiff, err := CalculateRatioPercentDiff(externalAssetDepth.BigInt(), nativeAssetDepth.BigInt(), externalAssetAmount.BigInt(), nativeAssetAmount.BigInt())
 	if err != nil {
 		return sdk.ZeroUint(), sdk.ZeroUint(), err
 	}
-	if ratioDiff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
+	diff.Sub(one, &ratioPercentDiff)
+	diff.Abs(&diff)
+	if diff.Cmp(&ratioThresholdRat) == 1 { //if ratioDiff > ratioThreshold
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAsymmetricRatioAdd
 	}
 
@@ -174,19 +174,19 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetDepth, externalAssetDepth, nati
 	return sdk.NewUintFromBigInt(&newPoolUnit), sdk.NewUintFromBigInt(stakeUnits), nil
 }
 
-// | A/R - a/r |
-func CalculateRatioDiff(A, R, a, r *big.Int) (big.Rat, error) {
+// (A/R) / (a/r)
+func CalculateRatioPercentDiff(A, R, a, r *big.Int) (big.Rat, error) {
 	if R.Cmp(big.NewInt(0)) == 0 || r.Cmp(big.NewInt(0)) == 0 { // check for zeros
 		return *big.NewRat(0, 1), types.ErrAsymmetricRatioAdd
 	}
-	var AdivR, adivr, diff big.Rat
+	var AdivR, adivr, percentDiff big.Rat
 
 	AdivR.SetFrac(A, R)
 	adivr.SetFrac(a, r)
-	diff.Sub(&AdivR, &adivr)
-	diff.Abs(&diff)
 
-	return diff, nil
+	percentDiff.Quo(&AdivR, &adivr)
+
+	return percentDiff, nil
 }
 
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
