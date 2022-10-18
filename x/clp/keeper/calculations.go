@@ -241,7 +241,7 @@ func calculateSlipAdjustment(R, A, r, a *big.Int) *slipAdjustmentValues {
 
 func CalcSwapResult(toRowan bool,
 	X, x, Y sdk.Uint,
-	pmtpCurrentRunningRate, swapFeeRate sdk.Dec, minSwapFee sdk.Uint) (sdk.Uint, sdk.Uint) {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) (sdk.Uint, sdk.Uint) {
 
 	// if either side of the pool is empty or swap amount iz zero then return zero
 	if IsAnyZero([]sdk.Uint{X, x, Y}) {
@@ -265,10 +265,9 @@ func CalcSwapResult(toRowan bool,
 	percentFee := sdk.NewUintFromBigInt(RatIntQuo(&percentFeeR))
 	adjusted := sdk.NewUintFromBigInt(RatIntQuo(&adjustedR))
 
-	fee := sdk.MinUint(sdk.MaxUint(percentFee, minSwapFee), adjusted)
-	y := adjusted.Sub(fee)
+	y := adjusted.Sub(percentFee)
 
-	return y, fee
+	return y, percentFee
 }
 
 func calcRawXYK(x, X, Y *big.Int) big.Rat {
@@ -413,15 +412,13 @@ func CalculateWithdrawalRowanValue(
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) sdk.Uint {
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
 
-	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
-
-	X, Y, toRowan := pool.ExtractValues(to)
+	X, Y, toRowan, _ := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
 
-	value, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	value, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
 
 	return value
 }
@@ -430,18 +427,16 @@ func SwapOne(from types.Asset,
 	sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
+	pmtpCurrentRunningRate sdk.Dec, swapFeeRate sdk.Dec) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
-	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
-
-	X, Y, toRowan := pool.ExtractValues(to)
+	X, Y, toRowan, _ := pool.ExtractValues(to)
 
 	var Xincl, Yincl sdk.Uint
 
 	Xincl, Yincl = pool.ExtractDebt(X, Y, toRowan)
 
 	priceImpact := calcPriceImpact(Xincl, sentAmount)
-	swapResult, liquidityFee := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	swapResult, liquidityFee := CalcSwapResult(toRowan, Xincl, sentAmount, Yincl, pmtpCurrentRunningRate, swapFeeRate)
 
 	// NOTE: impossible... pre-pmtp at least
 	if swapResult.GTE(Y) {
@@ -456,14 +451,13 @@ func SwapOne(from types.Asset,
 func GetSwapFee(sentAmount sdk.Uint,
 	to types.Asset,
 	pool types.Pool,
-	pmtpCurrentRunningRate sdk.Dec, swapFeeParams types.SwapFeeParams) sdk.Uint {
-	minSwapFee := GetMinSwapFee(to, swapFeeParams.TokenParams)
+	pmtpCurrentRunningRate, swapFeeRate sdk.Dec) sdk.Uint {
 
-	X, Y, toRowan := pool.ExtractValues(to)
+	X, Y, toRowan, _ := pool.ExtractValues(to)
 
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
 
-	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	swapResult, _ := CalcSwapResult(toRowan, X, sentAmount, Y, pmtpCurrentRunningRate, swapFeeRate)
 
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint()
