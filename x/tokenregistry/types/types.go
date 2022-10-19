@@ -16,6 +16,7 @@ const (
 	RouterKey = ModuleName
 )
 
+// Removes leading and trailing '/'
 func (r *RegistryEntry) Sanitize() {
 	r.Path = strings.Trim(r.Path, "/")
 }
