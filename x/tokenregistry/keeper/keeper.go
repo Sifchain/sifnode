@@ -47,7 +47,7 @@ func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermis
 	return true
 }
 
-func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
+func (k keeper) getDenomPrefix(ctx sdk.Context, denom string) []byte {
 	return append(types.TokenDenomPrefix, []byte(denom)...)
 }
 
@@ -56,7 +56,7 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	// get a copy to avoid modify input
 	tmpCopy := *entry
 	tmpCopy.Sanitize()
-	key := k.GetDenomPrefix(ctx, tmpCopy.Denom)
+	key := k.getDenomPrefix(ctx, tmpCopy.Denom)
 	store := ctx.KVStore(k.storeKey)
 
 	bz := k.cdc.MustMarshal(&tmpCopy)
@@ -66,7 +66,7 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 
 // RemoveToken remove a token
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	key := k.GetDenomPrefix(ctx, denom)
+	key := k.getDenomPrefix(ctx, denom)
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(key)
 }
@@ -77,7 +77,7 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 func (k keeper) GetRegistryEntry(ctx sdk.Context, denom string) (*types.RegistryEntry, error) {
 	var entry types.RegistryEntry
 	store := ctx.KVStore(k.storeKey)
-	key := k.GetDenomPrefix(ctx, denom)
+	key := k.getDenomPrefix(ctx, denom)
 
 	bz := store.Get(key)
 	if bz == nil {
