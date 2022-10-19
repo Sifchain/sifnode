@@ -516,7 +516,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
-	var totalLiquidityFee sdk.Uint
+	totalLiquidityFee := sdk.ZeroUint() // nolint:staticcheck
 	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
