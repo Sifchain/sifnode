@@ -339,53 +339,6 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	return processedBlocks
 }
 
-// Replay the missed events
-func (sub EthereumSub) Replay(txFactory tx.Factory, symbolTranslator *symbol_translator.SymbolTranslator) {
-
-	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
-	if err != nil {
-		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
-			errorMessageKey, err.Error())
-
-		return
-	}
-	defer ethClient.Close()
-	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
-		"Ethereum provider", sub.EthProvider)
-
-	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
-			errorMessageKey, err.Error())
-		return
-	}
-
-	networkID, err := ethClient.NetworkID(context.Background())
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get network ID.",
-			errorMessageKey, err.Error())
-
-		return
-	}
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	defer close(quit)
-
-	// get the bridgebank address from the registry contract
-	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
-	if err != nil {
-		log.Fatal("Error getting bridgebank address: ", err.Error())
-	}
-
-	sub.CheckNonceAndProcess(txFactory,
-		networkID,
-		ethClient,
-		tmClient,
-		bridgeBankAddress,
-		symbolTranslator)
-}
-
 // logToEvent unpacks an Ethereum event
 func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescriptor,
 	contractAddress common.Address,
