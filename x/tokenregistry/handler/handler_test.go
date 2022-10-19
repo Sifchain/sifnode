@@ -1,7 +1,6 @@
 package handler_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/handler"
@@ -37,7 +36,7 @@ func TestHandleRegister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				d, err := getEntry(registry, "TestDenom")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenom")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenom", d.Denom)
 			},
@@ -55,7 +54,7 @@ func TestHandleRegister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 2)
-				d, err := getEntry(registry, "TestDenomIBC")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenomIBC")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC", d.Denom)
 			},
@@ -73,7 +72,7 @@ func TestHandleRegister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 3)
-				d, err := getEntry(registry, "TestDenomIBC2")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenomIBC2")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC2", d.Denom)
 			},
@@ -92,7 +91,7 @@ func TestHandleRegister(t *testing.T) {
 				// Denom whitelist size is still 3, duplicate denoms are ignored.
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 3)
-				d, err := getEntry(registry, "TestDenomIBC")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenomIBC")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC", d.Denom)
 			},
@@ -120,17 +119,6 @@ func TestHandleRegister(t *testing.T) {
 	}
 }
 
-// Get a token Entry from a token registry
-func getEntry(wl types.Registry, denom string) (*types.RegistryEntry, error) {
-	for i := range wl.Entries {
-		e := wl.Entries[i]
-		if e != nil && strings.EqualFold(e.Denom, denom) {
-			return wl.Entries[i], nil
-		}
-	}
-	return nil, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found")
-}
-
 func TestHandleSetRegistry(t *testing.T) {
 	app, ctx, admin := test.CreateTestApp(false)
 	h := handler.NewHandler(app.TokenRegistryKeeper)
@@ -155,7 +143,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				d, err := getEntry(registry, "TestDenom")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenom")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenom", d.Denom)
 			},
@@ -173,7 +161,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 2)
-				d, err := getEntry(registry, "TestDenomIBC")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenomIBC")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC", d.Denom)
 			},
@@ -197,7 +185,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				d, err := getEntry(registry, "TestDenom")
+				d, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "TestDenom")
 				require.NoError(t, err)
 				require.Equal(t, "TestDenom", d.Denom)
 			},
@@ -265,8 +253,9 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 2)
-				_, err := getEntry(registry, "tokenToRemove")
+				_, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "tokenToRemove")
 				require.Error(t, err)
+				assert.ErrorIs(t, err, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found"))
 			},
 		},
 		{
@@ -279,8 +268,9 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				_, err := getEntry(registry, "ibcTokenToRemove")
+				_, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "ibcTokenToRemove")
 				require.Error(t, err)
+				assert.ErrorIs(t, err, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found"))
 			},
 		},
 		{
@@ -293,8 +283,9 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Empty(t, registry.Entries)
-				_, err := getEntry(registry, "ibcTokenToRemove2")
+				_, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "ibcTokenToRemove2")
 				require.Error(t, err)
+				assert.ErrorIs(t, err, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found"))
 			},
 		},
 		{
