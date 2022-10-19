@@ -230,3 +230,20 @@ func TestKeeper_CheckDenomPermissions(t *testing.T) {
 	assert.False(t, app.TokenRegistryKeeper.CheckEntryPermissions(entry2, []types.Permission{types.Permission_IBCEXPORT, types.Permission_IBCIMPORT}))
 	assert.True(t, app.TokenRegistryKeeper.CheckEntryPermissions(entry, []types.Permission{}))
 }
+
+func TestRemoveToken(t *testing.T) {
+	app, ctx, _ := test.CreateTestApp(false)
+	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
+		Denom:       "rowan",
+		Decimals:    18,
+		Permissions: []types.Permission{types.Permission_CLP},
+	})
+	_, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "rowan")
+	assert.NoError(t, err)
+
+	app.TokenRegistryKeeper.RemoveToken(ctx, "rowan")
+
+	actualEntry, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, "InvalidToken")
+	assert.ErrorIs(t, err, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found"))
+	assert.Nil(t, actualEntry)
+}
