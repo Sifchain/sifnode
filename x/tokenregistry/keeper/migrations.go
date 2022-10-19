@@ -29,7 +29,7 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
 	for ; iterator.Valid(); iterator.Next() {
 		store.Delete(iterator.Key())
 	}
-
+	m.MigrateDenomToVer4(ctx)
 	return nil
 }
 
