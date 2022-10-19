@@ -104,3 +104,7 @@ sifnoded q clp swap-fee-params --output json
 	]
 }
 ```
+
+## References
+
+Product spec https://hackmd.io/MhRTYAsfR2qtP83jvmDdmQ
