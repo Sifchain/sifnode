@@ -17,7 +17,6 @@ import (
 	bridgeBankContract "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeBank/BridgeBank.sol"
 	"github.com/ethereum/go-ethereum/common/math"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"google.golang.org/grpc"
 
@@ -30,7 +29,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -101,8 +99,7 @@ func NewEthereumSub(
 
 // Start an Ethereum chain subscription
 func (sub EthereumSub) Start(txFactory tx.Factory,
-	completionEvent *sync.WaitGroup,
-	symbolTranslator *symbol_translator.SymbolTranslator) {
+	completionEvent *sync.WaitGroup) {
 
 	defer completionEvent.Done()
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
@@ -112,19 +109,12 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 	defer ethClient.Close()
 	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
 		"Ethereum provider", sub.EthProvider)
-
-	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
-			errorMessageKey, err.Error())
-		return
-	}
 
 	networkID := big.NewInt(int64(sub.NetworkDescriptor))
 
@@ -154,9 +144,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 			if !sub.CheckNonceAndProcess(txFactory,
 				networkID,
 				ethClient,
-				tmClient,
-				bridgeBankAddress,
-				symbolTranslator) {
+				bridgeBankAddress) {
 				// CheckNonceAndProcess did no work, so we pause for a bit
 				time.Sleep(time.Second * ethereumSleepDuration)
 			}
@@ -168,9 +156,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	networkID *big.Int,
 	ethClient *ethclient.Client,
-	tmClient *tmclient.HTTP,
-	bridgeBankAddress common.Address,
-	symbolTranslator *symbol_translator.SymbolTranslator) (processedBlocks bool) {
+	bridgeBankAddress common.Address) (processedBlocks bool) {
 	// get current block height
 	currentBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
 	if err != nil {
@@ -325,7 +311,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		}
 
 		if len(events) > 0 {
-			if lockBurnSequence, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnSequence); err != nil {
+			if lockBurnSequence, err = sub.handleEthereumEvent(txFactory, events, lockBurnSequence); err != nil {
 				sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 					errorMessageKey, err.Error())
 				return
@@ -340,7 +326,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(txFactory tx.Factory, symbolTranslator *symbol_translator.SymbolTranslator) {
+func (sub EthereumSub) Replay(txFactory tx.Factory) {
 
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
@@ -352,13 +338,6 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, symbolTranslator *symbol_tra
 	defer ethClient.Close()
 	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
 		"Ethereum provider", sub.EthProvider)
-
-	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
-			errorMessageKey, err.Error())
-		return
-	}
 
 	networkID, err := ethClient.NetworkID(context.Background())
 	if err != nil {
@@ -381,9 +360,7 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, symbolTranslator *symbol_tra
 	sub.CheckNonceAndProcess(txFactory,
 		networkID,
 		ethClient,
-		tmClient,
-		bridgeBankAddress,
-		symbolTranslator)
+		bridgeBankAddress)
 }
 
 // logToEvent unpacks an Ethereum event
@@ -432,7 +409,6 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 // handleEthereumEvent unpacks an Ethereum event, converts it to a EthBridgeClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	events []types.EthereumEvent,
-	symbolTranslator *symbol_translator.SymbolTranslator,
 	lockBurnNonce uint64) (uint64, error) {
 
 	var ethBridgeClaims []*ethbridgetypes.EthBridgeClaim
@@ -442,7 +418,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		return lockBurnNonce, err
 	}
 	for _, event := range events {
-		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
+		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw("HandleEthereumEvent: failed to parse the eth bridge claim from the Ethereum event",
 				errorMessageKey, err.Error())

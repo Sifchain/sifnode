@@ -9,7 +9,6 @@ import (
 	"time"
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/CosmosBridge.sol"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -24,7 +23,7 @@ import (
 const wakeupTimer = 60
 
 // StartProphecyHandler start Cosmos chain subscription and process prophecy completed message
-func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
+func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
@@ -53,13 +52,13 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 			return
 
 		case <-t.C:
-			sub.handleNewProphecyCompleted(client)
+			sub.handleNewProphecyCompleted()
 		}
 	}
 }
 
 // Get all not processed Prophecy via rpc and handle them in batch
-func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
+func (sub CosmosSub) handleNewProphecyCompleted() {
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {

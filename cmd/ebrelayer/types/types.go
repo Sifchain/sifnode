@@ -36,7 +36,6 @@ const (
 	ProphecyCompleted
 	// SubmitProphecyClaimAggregatedSigs is Ethereum method name
 	SubmitProphecyClaimAggregatedSigs
-	FlagSymbolTranslatorFile = "symbol-translator-file"
 )
 
 // String returns the event type as a string
