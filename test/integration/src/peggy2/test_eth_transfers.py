@@ -52,6 +52,15 @@ def test_erc20_to_sifnode_and_back_first_time(ctx):
     transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
 
 
+@pytest.mark.xfail()
+def test_erc20_to_sifnode_and_back_with_bad_network_descriptor(ctx):
+    token_decimals = 18
+    token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    # A bad network descriptor should cause an expected failure
+    ctx.eth.ethereum_network_descriptor = 0
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
+
+
 def test_erc20_to_sifnode_and_back_multiple_times(ctx):
     token_decimals = 18
     token_sc = deploy_erc20_token_for_test(ctx, token_decimals)

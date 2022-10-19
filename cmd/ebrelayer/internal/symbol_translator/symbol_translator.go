@@ -2,9 +2,10 @@ package symbol_translator
 
 import (
 	"encoding/json"
+	"os"
+
 	bimap2 "github.com/Sifchain/sifnode/cmd/ebrelayer/internal/bimap_with_default"
 	"github.com/vishalkuo/bimap"
-	"io/ioutil"
 )
 
 // SymbolTranslator translates between Sifchain denoms and Ethereum symbols
@@ -25,7 +26,7 @@ func NewSymbolTranslator() *SymbolTranslator {
 }
 
 func NewSymbolTranslatorFromJSONFile(filename string) (*SymbolTranslator, error) {
-	contents, err := ioutil.ReadFile(filename)
+	contents, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}

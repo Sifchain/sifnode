@@ -10,6 +10,7 @@ import {
   subscribeToEthereumCosmosBridgeEvents,
   subscribeToEthereumEvents,
 } from "./ethereumMainnet"
+import * as path from "path"
 
 export interface SifwatchLogs {
   evmrelayer: string
@@ -68,7 +69,6 @@ export function sifwatch(
       map(toEvmRelayerEvent),
       filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
     )
-    console.log("Adding witness logs")
     observables.push(witnessEvents)
   }
 
@@ -91,4 +91,17 @@ export function sifwatchReplayable(
   })
   const subscription = eventStream.connect()
   return [eventStream, subscription]
+}
+
+/**
+ * Given a base directory, return a new SifwatchLogs
+ * containing basedir + relayer.log for evmrelayer, etc.
+ * @param basedir - the base directory containing logs
+ */
+export function defaultSifwatchLogs(basedir: string = "/tmp/sifnode"): SifwatchLogs {
+  return new (class implements SifwatchLogs {
+    evmrelayer = path.join(basedir, "relayer.log")
+    sifnoded = path.join(basedir, "sifnoded.log")
+    witness = path.join(basedir, "witness0.log")
+  })()
 }

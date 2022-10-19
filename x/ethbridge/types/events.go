@@ -1,7 +1,7 @@
 package types
 
 // Ethbridge module event types
-var (
+const (
 	EventTypeCreateClaim              = "create_claim"
 	EventTypeProphecyStatus           = "prophecy_status"
 	EventTypeBurn                     = "sif_burn"
@@ -15,7 +15,6 @@ var (
 	AttributeKeyEthereumSenderSequence       = "ethereum_sender_sequence"
 	AttributeKeyCosmosReceiver               = "cosmos_receiver"
 	AttributeKeyAmount                       = "amount"
-	AttributeKeycrossChainFee                = "cross_chain_fee_amount"
 	AttributeKeySymbol                       = "symbol"
 	AttributeKeyCoins                        = "coins"
 	AttributeKeyStatus                       = "status"

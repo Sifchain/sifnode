@@ -6,10 +6,13 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -65,12 +68,6 @@ func TestProcessClaimLock(t *testing.T) {
 	validator2Pow3 := validatorAddresses[1]
 
 	nonce := uint64(1)
-
-	// TODO(timlind): This default does not seem to be in any version history.
-	//invalid claim defaults to lock
-	//claimType, err := types.StringToClaimType("lkfjdsk")
-	//require.Equal(t, claimType.String(), "lock")
-	//require.Error(t, err)
 
 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -288,17 +285,18 @@ func TestProcessBurn(t *testing.T) {
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+
 	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
 
-	_, err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake, false)
+	_, err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake, false, false)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins.String(), string(""))
+	require.Equal(t, receiverCoins.String(), string(""), "Balance should be empty after sending all funds")
 }
 
 func TestProcessBurnCrossChainFee(t *testing.T) {
@@ -310,16 +308,64 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataCeth)
 
 	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+
 	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, doubleAmount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
-	_, err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, false)
+	_, err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, false, false)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
+}
+
+func TestProcessBurnErrOnBlacklistedEthereumDestination(t *testing.T) {
+	ctx, ethbridgeKeeper,
+		bankKeeper, _,
+		oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	testCosmosSender := test.GenerateAddress("")
+	testBlacklistedEthereumReceiver := types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
+
+	// Blacklisting ethereumSender address
+	testAdminAddress := test.GenerateAddress("")
+	admin := &admintypes.AdminAccount{
+		AdminType:    admintypes.AdminType_ETHBRIDGE,
+		AdminAddress: testAdminAddress.String(),
+	}
+	ethbridgeKeeper.GetTokenRegistryKeeper().GetAdminKeeper().SetAdminAccount(ctx, admin)
+	msgSetBlacklist := types.MsgSetBlacklist{From: testAdminAddress.String(), Addresses: []string{testBlacklistedEthereumReceiver.String()}}
+	if err := ethbridgeKeeper.SetBlacklist(ctx, &msgSetBlacklist); err != nil {
+		panic("Test setup failed, cannot proceed")
+	}
+
+	// Setting up cross-chain fee
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
+	crossChainFee := crossChainFeeConfig.FeeCurrency
+	denomHash := ethbridgeKeeper.AddTokenMetadata(ctx, testMetadataStake)
+
+	// Funding test account with test token and cross-chain fee
+	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testCosmosSender, coins)
+
+	account := ethbridgeKeeper.GetAccountKeeper().GetAccount(ctx, testCosmosSender)
+
+	testMsgBurn := types.NewMsgBurn(networkDescriptor,
+		testCosmosSender,
+		testBlacklistedEthereumReceiver,
+		amount, denomHash, amount)
+
+	prophecyId, err := ethbridgeKeeper.ProcessBurn(ctx, testCosmosSender,
+		account.GetSequence(),
+		&testMsgBurn, testMetadataStake, false, false)
+
+	require.Error(t, err, "Should have errored out because destination is in blacklist")
+	require.ErrorIs(t, err, types.ErrBlacklistedAddress)
+	require.Empty(t, prophecyId, "Should receive empty byte slice for ProphecyId")
 }
 
 func TestProcessLock(t *testing.T) {
@@ -334,21 +380,60 @@ func TestProcessLock(t *testing.T) {
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataRowan)
 
-	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+	msg := types.NewMsgLock(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
 
-	_, err := keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan)
+	_, err := keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins = sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan)
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), "")
+}
+
+func TestProcessLockErrOnBlacklistedEthereumDestination(t *testing.T) {
+	ctx, ethbridgeKeeper,
+		bankKeeper, _,
+		oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	testCosmosSender := test.GenerateAddress("")
+	testBlacklistedEthereumReceiver := types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
+
+	// Blacklisting ethereumSender address
+	testAdminAddress := test.GenerateAddress("")
+	admin := &admintypes.AdminAccount{
+		AdminType:    admintypes.AdminType_ETHBRIDGE,
+		AdminAddress: testAdminAddress.String(),
+	}
+	ethbridgeKeeper.GetTokenRegistryKeeper().GetAdminKeeper().SetAdminAccount(ctx, admin)
+	msgSetBlacklist := types.MsgSetBlacklist{From: testAdminAddress.String(), Addresses: []string{testBlacklistedEthereumReceiver.String()}}
+	if err := ethbridgeKeeper.SetBlacklist(ctx, &msgSetBlacklist); err != nil {
+		panic("Test setup failed, cannot proceed")
+	}
+
+	// Setting up cross-chain fee
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
+	crossChainFee := crossChainFeeConfig.FeeCurrency
+
+	denomHash := ethbridgeKeeper.AddTokenMetadata(ctx, testMetadataRowan)
+
+	// Funding test account with test token and cross chain fee
+	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testCosmosSender, coins)
+
+	msg := types.NewMsgLock(networkDescriptor, testCosmosSender, testBlacklistedEthereumReceiver, amount, denomHash, amount)
+	prophecyId, err := ethbridgeKeeper.ProcessLock(ctx, testCosmosSender, 1, &msg, testMetadataRowan, true)
+	require.Error(t, err, "Should have errored out because destination is in blacklist")
+	require.ErrorIs(t, err, types.ErrBlacklistedAddress)
+	require.Empty(t, prophecyId, "Should receive empty byte slice for ProphecyId")
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
@@ -369,7 +454,7 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
-	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake, false)
+	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake, false, false)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -393,7 +478,7 @@ func TestProcessBurnCrossChainFeeWithReceiver(t *testing.T) {
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
-	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, false)
+	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, false, false)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -421,14 +506,14 @@ func TestProcessLockWithReceiver(t *testing.T) {
 
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
 	// require.Nil(t, account)
-	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan)
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins = sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan)
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -458,14 +543,14 @@ func TestProcessBurnFirstDoublePeg(t *testing.T) {
 	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 
 	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
-	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, true)
+	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, true, false)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins = sdk.NewCoins(sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, true)
+	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth, true, false)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -508,4 +593,72 @@ func TestRescueCrossChainFees(t *testing.T) {
 
 	err = keeper.RescueCrossChainFees(ctx, &msg)
 	require.NoError(t, err)
+}
+
+func TestAppendValidatorToSucceededProphecyReturnsErr(t *testing.T) {
+	ctx, _, _, _, oracleKeeper, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	testProphecyId := []byte{1, 2, 3, 4, 5}
+	testProphecy := oracletypes.Prophecy{
+		Id:     testProphecyId,
+		Status: oracletypes.StatusText_STATUS_TEXT_SUCCESS,
+	}
+	oracleKeeper.SetProphecy(ctx, testProphecy)
+
+	status, err := oracleKeeper.AppendValidatorToProphecy(ctx, oracletypes.NetworkDescriptor(9999), testProphecyId, validatorAddresses[0])
+	require.ErrorIs(t, err, oracletypes.ErrProphecyFinalized)
+	require.Equal(t, oracletypes.StatusText_STATUS_TEXT_SUCCESS, status)
+}
+
+func TestProcessSignProphecySucceedOnSuccessProphecy(t *testing.T) {
+	ctx, _, _, _, oracleKeeper, _, _, valAddresses :=
+		test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	cosmosSender, _ := sdk.AccAddressFromBech32(types.TestAddress)
+	testNetworkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM //oracletypes.NetworkDescriptor(9999)
+	testProphecyId := []byte{1, 2, 3, 4, 5}
+	testProphecy := oracletypes.Prophecy{
+		Id:     testProphecyId,
+		Status: oracletypes.StatusText_STATUS_TEXT_SUCCESS,
+	}
+	oracleKeeper.SetProphecy(ctx, testProphecy)
+	err := oracleKeeper.SetProphecyInfo(ctx,
+		testProphecyId,
+		testNetworkDescriptor,
+		string(cosmosSender),
+		15,
+		ethereumSender.String(),
+		"",
+		"",
+		sdk.NewInt(1),
+		sdk.NewInt(1),
+		false,
+		1,
+		1,
+		"",
+		"")
+	if err != nil {
+		panic("Couldn't persist prophecyInfo, test cannot continue")
+	}
+
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		panic("Couldn't create test Ethereum PrivateKey, test cannot continue")
+	}
+
+	pubKey := privateKey.PublicKey
+	testEthereumSender := crypto.PubkeyToAddress(pubKey)
+
+	signatureData, err := crypto.Sign(oraclekeeper.PrefixMsg(testProphecyId), privateKey)
+	if err != nil {
+		panic("Couldn't sign test data with PrivateKey, test cannot continue")
+	}
+
+	errOut := oracleKeeper.ProcessSignProphecy(ctx,
+		testNetworkDescriptor,
+		testProphecyId,
+		valAddresses[0].String(),
+		testRopstenToken.TokenAddress,
+		testEthereumSender.Hex(), string(signatureData))
+
+	require.NoError(t, errOut, "Signing on a success prophecy shouldnt error out")
 }

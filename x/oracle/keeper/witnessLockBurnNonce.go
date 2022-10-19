@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -14,8 +12,9 @@ func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types
 	store := ctx.KVStore(k.storeKey)
 	key := k.GetWitnessLockBurnSequencePrefix(networkDescriptor, valAccount)
 
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newNonce)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+		LockBurnNonce: newNonce,
+	})
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetWitnessLockBurnNonce, "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
 
@@ -32,17 +31,50 @@ func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor ty
 		return 0
 	}
 
-	bz := store.Get(key)
-	return binary.BigEndian.Uint64(bz)
+	var lockBurnNonce types.LockBurnNonce
+	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
+
+	return lockBurnNonce.LockBurnNonce
 }
 
 // GetWitnessLockBurnSequencePrefix return storage prefix
 func (k Keeper) GetWitnessLockBurnSequencePrefix(networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	err := binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
-	if err != nil {
-		panic(err.Error())
+	bs := k.cdc.MustMarshal(&types.LockBurnNonceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	})
+
+	return append(types.WitnessLockBurnNoncePrefix, bs[:]...)
+}
+
+// GetAllWitnessLockBurnSequence get all witnessLockBurnSequence needed for all validators
+func (k Keeper) GetAllWitnessLockBurnSequence(ctx sdk.Context) map[string]uint64 {
+	sequences := make(map[string]uint64)
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.WitnessLockBurnNoncePrefix)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+		var lockBurnNonce types.LockBurnNonce
+		k.cdc.MustUnmarshal(value, &lockBurnNonce)
+		sequences[string(key)] = lockBurnNonce.LockBurnNonce
 	}
-	tmpKey := append(types.WitnessLockBurnNoncePrefix, bytebuf.Bytes()...)
-	return append(tmpKey, valAccount...)
+	return sequences
+}
+
+func (k Keeper) SetWitnessLockBurnNonceViaRawKey(ctx sdk.Context, key []byte, nonce uint64) {
+
+	store := ctx.KVStore(k.storeKey)
+	bs := k.cdc.MustMarshal(&types.LockBurnNonce{
+		LockBurnNonce: nonce,
+	})
+
+	store.Set(key, bs)
 }

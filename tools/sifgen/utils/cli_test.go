@@ -1,12 +1,13 @@
 package utils
 
 import (
+	"os"
+	"testing"
+
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"testing"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 )
 
 func SafeTempDir(dir string, pattern string, t *testing.T) string {
-	result, err := ioutil.TempDir(dir, pattern)
+	result, err := os.MkdirTemp(dir, pattern)
 	if err != nil {
 		t.Errorf("failed to create temporary directory %v with pattern %v", dir, pattern)
 	}

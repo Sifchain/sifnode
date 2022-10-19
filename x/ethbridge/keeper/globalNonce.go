@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -14,15 +13,15 @@ func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes
 	prefix := k.getGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
-	if !k.existsGlobalNonce(ctx, prefix) {
+	if !k.Exists(ctx, prefix) {
 		// global nonce start from 1
 		return uint64(1)
 	}
 
-	value := store.Get(prefix)
-	globalNonce := binary.LittleEndian.Uint64(value)
+	var globalSequence oracletypes.GlobalSequence
+	k.cdc.MustUnmarshal(store.Get(prefix), &globalSequence)
 
-	return globalNonce
+	return globalSequence.GlobalSequence
 }
 
 // UpdateGlobalSequence get current global nonce and update it
@@ -31,30 +30,19 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	blockNumber uint64) {
 	prefix := k.getGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
+	globalSequence := k.GetGlobalSequence(ctx, networkDescriptor)
 
-	globalNonce := k.GetGlobalSequence(ctx, networkDescriptor)
-
-	bs := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, globalNonce+1)
+	bs := k.cdc.MustMarshal(&oracletypes.GlobalSequence{
+		GlobalSequence: globalSequence + 1,
+	})
 	store.Set(prefix, bs)
-	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonce, blockNumber)
-}
-
-// existsGlobalNonce check if the global nonce exists
-func (k Keeper) existsGlobalNonce(ctx sdk.Context, prefix []byte) bool {
-	if !k.Exists(ctx, prefix) {
-		// The store doesnt exist.
-		return false
-	}
-	return true
+	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalSequence, blockNumber)
 }
 
 // getGlobalSequencePrefix compute the prefix
-// TODO: oracletypes.NetworkDescriptor is int32 (default type for enums), we are converting it to uint32 here.
 func (k Keeper) getGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
-	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
-
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	bs := k.cdc.MustMarshal(&networkIdentity)
 	return append(types.GlobalNoncePrefix, bs[:]...)
 }
 
@@ -67,12 +55,14 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 	store := ctx.KVStore(k.storeKey)
 	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalSequence)
 
-	if !k.existsGlobalNonce(ctx, prefix) {
+	if !k.Exists(ctx, prefix) {
 		return uint64(0)
 	}
 
-	value := store.Get(prefix)
-	return binary.LittleEndian.Uint64(value)
+	var blockNumber oracletypes.BlockNumber
+
+	k.cdc.MustUnmarshal(store.Get(prefix), &blockNumber)
+	return blockNumber.BlockNumber
 }
 
 // SetGlobalSequenceToBlockNumber
@@ -85,8 +75,9 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 	store := ctx.KVStore(k.storeKey)
 	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
 
-	bs := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, blockNumber)
+	bs := k.cdc.MustMarshal(&oracletypes.BlockNumber{
+		BlockNumber: blockNumber,
+	})
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetGlobalSequenceToBlockNumber, "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
 
@@ -94,13 +85,11 @@ func (k Keeper) SetGlobalSequenceToBlockNumber(
 }
 
 // getGlobalSequenceToBlockNumberPrefix
-func (k Keeper) getGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
-	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
-	tmpKey := append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
+func (k Keeper) getGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) []byte {
+	bs := k.cdc.MustMarshal(&oracletypes.GlobalSequenceKey{
+		NetworkDescriptor: networkDescriptor,
+		GlobalSequence:    globalSequence,
+	})
 
-	bs = make([]byte, 8)
-	binary.LittleEndian.PutUint64(bs, globalNonce)
-
-	return append(tmpKey, bs[:]...)
+	return append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)
 }

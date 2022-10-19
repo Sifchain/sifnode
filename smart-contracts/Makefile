@@ -38,5 +38,8 @@ clean-hardhat-artifact:
 	git clean -fdx artifacts 
 	git clean -fdx cache
 
-tests:
+type: 
+	npx hardhat typechain
+
+tests: type
 	npx hardhat test test/*.js test/*.ts

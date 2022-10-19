@@ -10,6 +10,7 @@ message GenesisState {
   DistributionRecords distribution_records = 1;
   Distributions distributions = 2;
   UserClaims claims = 3;
+  MintController mint_controller = 4;
 }
 
 // Distribution type enum

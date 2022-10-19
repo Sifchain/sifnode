@@ -30,7 +30,7 @@ func Test_TypesValidate(t *testing.T) {
 	pool := NewPool(&newAsset, nativeAssetAmount, externalAssetAmount, poolUnits)
 	boolean := pool.Validate()
 	assert.True(t, boolean)
-	newAsset = NewAsset("eth0123456789012345678901234567890123456789012345678901234567890123456789")
+	newAsset = NewAsset("eth01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789")
 	pool = NewPool(&newAsset, nativeAssetAmount, externalAssetAmount, poolUnits)
 	boolean = pool.Validate()
 	assert.False(t, boolean)

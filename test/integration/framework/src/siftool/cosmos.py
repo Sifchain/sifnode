@@ -21,7 +21,7 @@ def balance_normalize(bal: CompatBalance = None) -> Balance:
 
 def balance_add(*bal: Balance) -> Balance:
     result = {}
-    all_denoms = set(flatten_list([[*b.keys()] for b in bal]))
+    all_denoms = set(flatten([*b.keys()] for b in bal))
     for denom in all_denoms:
         val = sum(b.get(denom, 0) for b in bal)
         if val != 0:

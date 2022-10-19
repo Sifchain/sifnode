@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.4;
+pragma solidity 0.8.17;
 
 import "./Valset.sol";
 import "./OracleStorage.sol";
@@ -66,5 +66,11 @@ contract Oracle is OracleStorage, Valset {
     bool hasReachedThreshold = prophecyPowerCurrent >= prophecyPowerThreshold;
 
     return hasReachedThreshold;
+  }
+
+  function updateConsensusThreshold(uint256 _consensusThreshold) public onlyOperator {
+    require(_consensusThreshold > 0, "Consensus threshold must be positive.");
+    require(_consensusThreshold <= 100, "Invalid consensus threshold.");
+    consensusThreshold = _consensusThreshold;
   }
 }

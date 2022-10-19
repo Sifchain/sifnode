@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -62,7 +61,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			input, err := ioutil.ReadFile(file)
+			input, err := os.ReadFile(file)
 			if err != nil {
 				panic(err)
 			}
@@ -79,8 +78,8 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			_ = ioutil.WriteFile(file, f, 0600)
-			//_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
+			_ = os.WriteFile(file, f, 0600)
+			//_ = os.WriteFile(outpath+"_updated"+extension, f, 0600)
 		}
 	}
 }

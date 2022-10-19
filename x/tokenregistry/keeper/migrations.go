@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"encoding/json"
-	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"io/ioutil"
 	"path/filepath"
+
+	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type Migrator struct {
@@ -13,22 +14,26 @@ type Migrator struct {
 }
 
 func NewMigrator(keeper tkrtypes.Keeper) Migrator {
-	return Migrator{keeper: keeper}
+	return Migrator{keeper}
 }
 
-func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
-	registry := m.keeper.GetRegistry(ctx)
-	for _, entry := range registry.Entries {
-		if entry.Decimals > 9 && m.keeper.CheckEntryPermissions(entry, []tkrtypes.Permission{tkrtypes.Permission_CLP, tkrtypes.Permission_IBCEXPORT}) {
-			entry.Permissions = append(entry.Permissions, tkrtypes.Permission_IBCIMPORT)
-			entry.IbcCounterpartyDenom = ""
+func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
+	store := ctx.KVStore(m.keeper.StoreKey())
+	iterator := sdk.KVStorePrefixIterator(store, []byte{0x02})
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
 		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		store.Delete(iterator.Key())
 	}
-	m.keeper.SetRegistry(ctx, registry)
+
 	return nil
 }
 
-func (m Migrator) MigrateToVer4(ctx sdk.Context) {
+func (m Migrator) MigrateDenomToVer4(ctx sdk.Context) {
 	denomMigrations := GetDenomMigrationMap()
 	for peggy1denom, peggy2denom := range denomMigrations {
 		entry, err := m.keeper.GetRegistryEntry(ctx, peggy1denom)

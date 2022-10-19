@@ -23,10 +23,10 @@ jobs:
       - name: Clean
         run: make clean
 
-      - name: Unit test
+      - name: Build
         run: |
           source ~/.bash_profile
-          make install && make tests
+          make install
 
       - name: Start standalone peggy
         run: |
@@ -41,9 +41,11 @@ jobs:
           sleep 30
           pushd test/integration && framework/venv/bin/python3 -m pytest -olog_level=DEBUG -olog_file=/tmp/int-test.out -v src/peggy2/test_sifnode_transfers.py
 
-      - name: Archive logs from test
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: testlogs1
-          path: test/integration
+      # This is commented out because logs no longer outputs to that dir.
+      # Will update with new location
+      # - name: Archive logs from test
+      #   uses: actions/upload-artifact@v2
+      #   if: always()
+      #   with:
+      #     name: testlogs1
+      #     path: test/integration

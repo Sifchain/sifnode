@@ -28,9 +28,9 @@ Peggy 2.0 is a system that facilitates non-permissioned token transfer between S
 
 Incremental increases in the following
 
-- TVL 
-- Trading Volume 
-- Weekly Active Addresses 
+- TVL
+- Trading Volume
+- Weekly Active Addresses
 - Number of non-Ethereum tokens imported into Sifchain
 
 ## Use Cases
@@ -275,7 +275,7 @@ Incremental increases in the following
 
 ## Peggy 2.0 Features
 
-- Updated Sifchain Token Denoms - Extensibility 
+- Updated Sifchain Token Denoms - Extensibility
 - Stateless Signature Aggregation - Gas Savings
 - Transaction Ordering - Stability
 - EVM to EVM double pegging - Extensibility
@@ -285,23 +285,53 @@ Incremental increases in the following
 
 ## Peggy 2.1
 
-- New EVM chain integration 
+- New EVM chain integration
 
 
 ## Roadmap
 
 - Initial Development
 - Integration Testing Group 0
-- Documentation for Auditing 
-- Integration Testing Group 1 
+- Documentation for Auditing
+- Integration Testing Group 1
 - Merge Develop to Future/Peggy2
-- Halborn Audit 1 
-- Integration Testing Group 2 
-- Migration/Load Testing 
+- Halborn Audit 1
+- Integration Testing Group 2
+- Migration/Load Testing
 - Migration
-- Halborn Audit 2 
+- Halborn Audit 2
 - Deployment/Devops
 - UI Updates
 - Sifnode Updates
 - Data Pipeline Infrastructure Changes
 - Launch Peggy 2.0
+
+
+
+## Running peggy2 locally
+
+Prerequisite and detailed instruction, see `test/integration/framework/README.md`
+
+```
+# in peggy dir
+
+make
+test/integration/framework/siftool run-env
+```
+
+This will stand up:
+- 1 x hardhat node, a local ethereum node
+- 1 x sifnode
+- 1 x peggy relayer
+- 2 x peggy witness
+
+To run integration tests to verify deployment:
+```
+cd test/integration
+framework/venv/bin/python3 -m pytest -olog_level=DEBUG -v src/peggy2/
+```
+
+To run specific integration test:
+```
+framework/venv/bin/python3 -m pytest -olog_level=DEBUG -v src/peggy2/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth_transfer_valid
+```

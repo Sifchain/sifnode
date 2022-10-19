@@ -130,7 +130,6 @@ func TestMintSuccess(t *testing.T) {
 		Denom:         normalCreateMsg.EthBridgeClaim.Denom,
 		DisplaySymbol: normalCreateMsg.EthBridgeClaim.Symbol,
 		Decimals:      18,
-		IsWhitelisted: true,
 		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 	}
 	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
@@ -147,7 +146,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	// TODO peggy2merge
+
 	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.Denom, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
@@ -297,7 +296,6 @@ func TestBurnEthSuccess(t *testing.T) {
 		Denom:         denomHash,
 		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
 		Decimals:      18,
-		IsWhitelisted: true,
 		Network:       oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
 		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 	}

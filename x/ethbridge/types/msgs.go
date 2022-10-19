@@ -2,17 +2,14 @@ package types
 
 import (
 	"encoding/json"
-	"errors"
 	"math/big"
-	"strconv"
-	"strings"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	gethCommon "github.com/ethereum/go-ethereum/common"
-	crypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // NewMsgLock is a constructor function for MsgLock
@@ -35,10 +32,20 @@ func (msg MsgLock) Route() string { return RouterKey }
 // Type should return the action
 func (msg MsgLock) Type() string { return "lock" }
 
+// ValidateNetworkDescriptor returns an error if the network type is out of the
+// range we require (four base-10 digits)
+func ValidateNetworkDescriptor(networkDescriptor oracletypes.NetworkDescriptor) error {
+	if networkDescriptor < 0 || networkDescriptor > 9999 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", networkDescriptor)
+	}
+	return nil
+}
+
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.FormatInt(int64(msg.NetworkDescriptor), 10) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
+	err := ValidateNetworkDescriptor(msg.NetworkDescriptor)
+	if err != nil {
+		return err
 	}
 
 	if msg.CosmosSender == "" {
@@ -79,16 +86,28 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 }
 
 // GetProphecyID get prophecy ID for lock message
-func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64, tokenAddress string) []byte {
+func (msg MsgLock) GetProphecyID(
+	sequence uint64,
+	tokenAddress string,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	bridgeToken bool,
+	globalNonce uint64,
+) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
 		tokenAddress,
 		msg.Amount,
-		doublePeggy,
-		globalNonce,
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
 		msg.NetworkDescriptor,
+		bridgeToken,
+		globalNonce,
+		msg.DenomHash,
 	)
 }
 
@@ -114,8 +133,9 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if msg.NetworkDescriptor == 0 {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
+	err := ValidateNetworkDescriptor(msg.NetworkDescriptor)
+	if err != nil {
+		return err
 	}
 
 	if msg.CosmosSender == "" {
@@ -167,32 +187,56 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// GetProphecyID get prophecy ID for lock message
-func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64, tokenAddress string) []byte {
-
+// GetProphecyID get prophecy ID for burn message
+func (msg MsgBurn) GetProphecyID(
+	sequence uint64,
+	tokenAddress string,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	bridgeToken bool,
+	globalNonce uint64,
+) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
 		tokenAddress,
 		msg.Amount,
-		doublePeggy,
-		globalNonce,
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
 		msg.NetworkDescriptor,
+		bridgeToken,
+		globalNonce,
+		msg.DenomHash,
 	)
 }
 
 // ComputeProphecyID compute the prophecy id
-func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
-	doublePeggy bool, globalNonce uint64, networkDescriptor oracletypes.NetworkDescriptor) []byte {
+func ComputeProphecyID(
+	cosmosSender string,
+	sequence uint64,
+	ethereumReceiver string,
+	tokenAddress string,
+	amount sdk.Int,
+	tokenName string,
+	tokenSymbol string,
+	tokenDecimals uint8,
+	networkDescriptor oracletypes.NetworkDescriptor,
+	bridgeToken bool,
+	globalNonce uint64,
+	cosmosDenom string,
+) []byte {
 
-	// TODO to make sure the prophecy id is the same with smart contract side
-	// just use cosmos sender and sequence, need include more itmes
 	bytesTy, _ := abi.NewType("bytes", "bytes", nil)
-	// boolTy, _ := abi.NewType("bool", "bool", nil)
-	// uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
+	boolTy, _ := abi.NewType("bool", "bool", nil)
+	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
+	int32Ty, _ := abi.NewType("int32", "int32", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	addressTy, _ := abi.NewType("address", "address", nil)
+	stringTy, _ := abi.NewType("string", "string", nil)
+	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
 
 	arguments := abi.Arguments{
 		{
@@ -207,17 +251,29 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		{
 			Type: addressTy,
 		},
-		// {
-		// 	Type: uint256Ty,
-		// },
-		// {
-		// 	Type: boolTy,
-		// },
-		// {
-		// 	Type: uint128Ty,
-		// },
 		{
 			Type: uint256Ty,
+		},
+		{
+			Type: stringTy,
+		},
+		{
+			Type: stringTy,
+		},
+		{
+			Type: uint8Ty,
+		},
+		{
+			Type: int32Ty,
+		},
+		{
+			Type: boolTy,
+		},
+		{
+			Type: uint128Ty,
+		},
+		{
+			Type: stringTy,
 		},
 	}
 
@@ -226,10 +282,14 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		big.NewInt(int64(sequence)),
 		gethCommon.HexToAddress(ethereumReceiver),
 		gethCommon.HexToAddress(tokenAddress),
-		// big.NewInt(amount.Int64()),
-		// doublePeggy,
-		// big.NewInt(int64(globalNonce)),
-		big.NewInt(int64(networkDescriptor)),
+		big.NewInt(amount.Int64()),
+		tokenName,
+		tokenSymbol,
+		tokenDecimals,
+		networkDescriptor,
+		bridgeToken,
+		big.NewInt(int64(globalNonce)),
+		cosmosDenom,
 	)
 
 	hashBytes := crypto.Keccak256(bytes)
@@ -251,6 +311,10 @@ func (msg MsgCreateEthBridgeClaim) Type() string { return "create_bridge_claim" 
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
+	if err := ValidateNetworkDescriptor(msg.EthBridgeClaim.NetworkDescriptor); err != nil {
+		return err
+	}
+
 	if msg.EthBridgeClaim.CosmosReceiver == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.CosmosReceiver)
 	}
@@ -269,11 +333,6 @@ func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
 
 	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.TokenContractAddress) {
 		return ErrInvalidEthAddress
-	}
-
-	if strings.ToLower(msg.EthBridgeClaim.Symbol) == "eth" &&
-		NewEthereumAddress(msg.EthBridgeClaim.TokenContractAddress) != NewEthereumAddress("0x0000000000000000000000000000000000000000") {
-		return ErrInvalidEthSymbol
 	}
 
 	return nil
@@ -486,8 +545,8 @@ func (msg MsgSignProphecy) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !msg.NetworkDescriptor.IsValid() {
-		return errors.New("network descriptor is invalid")
+	if err := ValidateNetworkDescriptor(msg.NetworkDescriptor); err != nil {
+		return err
 	}
 
 	return nil
@@ -525,8 +584,8 @@ func (msg MsgSetFeeInfo) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !msg.NetworkDescriptor.IsValid() {
-		return errors.New("network descriptor is invalid")
+	if err := ValidateNetworkDescriptor(msg.NetworkDescriptor); err != nil {
+		return err
 	}
 
 	return nil
@@ -564,8 +623,8 @@ func (msg MsgUpdateConsensusNeeded) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !msg.NetworkDescriptor.IsValid() {
-		return errors.New("network descriptor is invalid")
+	if err := ValidateNetworkDescriptor(msg.NetworkDescriptor); err != nil {
+		return err
 	}
 
 	return nil
@@ -613,6 +672,17 @@ func (msg MsgSetBlacklist) GetSignBytes() []byte {
 }
 
 func (msg *MsgSetBlacklist) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.From)
+	if err != nil {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.From)
+	}
+
+	for _, address := range msg.Addresses {
+		if !gethCommon.IsHexAddress(address) {
+			return ErrInvalidEthAddress
+		}
+	}
+
 	return nil
 }
 

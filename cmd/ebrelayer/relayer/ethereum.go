@@ -42,21 +42,22 @@ import (
 const (
 	trailingBlocks        = 50
 	ethereumSleepDuration = 1
-	maxQueryBlocks        = 5000
+	maxQueryBlocks        = 25
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
-	EthProvider             string
-	TmProvider              string
-	RegistryContractAddress common.Address
-	ValidatorName           string
-	ValidatorAddress        sdk.ValAddress
-	NetworkDescriptor       oracletypes.NetworkDescriptor
-	CliCtx                  client.Context
-	PrivateKey              *ecdsa.PrivateKey
-	SugaredLogger           *zap.SugaredLogger
-	SifnodeGrpc             string
+	EthProvider                     string
+	TmProvider                      string
+	RegistryContractAddress         common.Address
+	ValidatorName                   string
+	ValidatorAddress                sdk.ValAddress
+	NetworkDescriptor               oracletypes.NetworkDescriptor
+	CliCtx                          client.Context
+	PrivateKey                      *ecdsa.PrivateKey
+	SugaredLogger                   *zap.SugaredLogger
+	SifnodeGrpc                     string
+	maxMessagesInSifnodeTransaction int
 }
 
 // NewKeybase create a new keybase instance
@@ -81,18 +82,20 @@ func NewEthereumSub(
 	registryContractAddress common.Address,
 	sugaredLogger *zap.SugaredLogger,
 	sifnodeGrpc string,
+	maxMessagesInSifnodeTransaction int,
 ) EthereumSub {
 
 	return EthereumSub{
-		EthProvider:             ethProvider,
-		TmProvider:              nodeURL,
-		NetworkDescriptor:       networkDescriptor,
-		RegistryContractAddress: registryContractAddress,
-		ValidatorName:           validatorMoniker,
-		ValidatorAddress:        nil,
-		CliCtx:                  cliCtx,
-		SugaredLogger:           sugaredLogger,
-		SifnodeGrpc:             sifnodeGrpc,
+		EthProvider:                     ethProvider,
+		TmProvider:                      nodeURL,
+		NetworkDescriptor:               networkDescriptor,
+		RegistryContractAddress:         registryContractAddress,
+		ValidatorName:                   validatorMoniker,
+		ValidatorAddress:                nil,
+		CliCtx:                          cliCtx,
+		SugaredLogger:                   sugaredLogger,
+		SifnodeGrpc:                     sifnodeGrpc,
+		maxMessagesInSifnodeTransaction: maxMessagesInSifnodeTransaction,
 	}
 }
 
@@ -279,6 +282,11 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			endBlock = fromBlockNumber + maxQueryBlocks
 		}
 
+		sub.SugaredLogger.Infow("ethClient retrieving filterlogs.", "fromBlockNumber", fromBlockNumber, "endBlock", endBlock)
+
+		// This is added to measure the performance of ethClient.FilterLogs
+		startTime := time.Now()
+
 		// query the events with block scope
 		ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
 			FromBlock: big.NewInt(int64(fromBlockNumber)),
@@ -287,11 +295,15 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			Topics:    topics,
 		})
 
+		sub.SugaredLogger.Infow("ethClient retrieving filtelogs completed.", "fromBlockNumber", fromBlockNumber, "endBlock", endBlock, "Elapsed", time.Since(startTime))
+
 		if err != nil {
 			sub.SugaredLogger.Errorw("failed to filter the logs from ethereum client",
 				errorMessageKey, err.Error())
 			return
 		}
+
+		sub.SugaredLogger.Infow("ethLogs size", "size", len(ethLogs))
 
 		// loop over ethlogs, and build an array of burn/lock events
 		for _, ethLog := range ethLogs {
@@ -417,7 +429,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	return event, true, nil
 }
 
-// handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
+// handleEthereumEvent unpacks an Ethereum event, converts it to a EthBridgeClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	events []types.EthereumEvent,
 	symbolTranslator *symbol_translator.SymbolTranslator,
@@ -432,14 +444,14 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	for _, event := range events {
 		ethBridgeClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
-			sub.SugaredLogger.Errorw(".",
-				"fail to get the eth bridge claim from Ethereum event", err.Error())
+			sub.SugaredLogger.Errorw("HandleEthereumEvent: failed to parse the eth bridge claim from the Ethereum event",
+				errorMessageKey, err.Error())
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || ethBridgeClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				ethBridgeClaims = append(ethBridgeClaims, &ethBridgeClaim)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", ethBridgeClaim)
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumBridgeClaim, zap.Reflect("event", event), "bridgeClaim", ethBridgeClaim)
 				lockBurnNonce = ethBridgeClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
@@ -457,10 +469,10 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		return lockBurnNonce, nil
 	}
 
-	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.SugaredLogger)
+	return lockBurnNonce, txs.RelayToCosmos(txFactory, ethBridgeClaims, sub.CliCtx, sub.maxMessagesInSifnodeTransaction, sub.SugaredLogger)
 }
 
-// GetLockBurnNonceFromCosmos via rpc
+// GetLockBurnSequenceFromCosmos via rpc
 func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
@@ -471,7 +483,7 @@ func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	queryClient := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryEthereumLockBurnSequenceRequest{
