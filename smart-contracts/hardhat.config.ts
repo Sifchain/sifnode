@@ -14,7 +14,9 @@ const envconfig = dotenv.config();
 
 const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com";
 const ropstenUrl = process.env["ROPSTEN_URL"] ?? "https://example.com";
+const goerliUrl = process.env["GOERLI_URL"] ?? "https://example.com";
 
+const goerliMneomonic = process.env["GOERLI_MNEMONIC"] ?? "test test test test test test test test test test test junk";
 const activePrivateKey = process.env["ACTIVE_PRIVATE_KEY"] ?? "0xabcd";
 const keyList = activePrivateKey.indexOf(",") ? activePrivateKey.split(",") : [activePrivateKey];
 
@@ -25,13 +27,21 @@ const config: HardhatUserConfig = {
       chainId: 1,
       forking: {
         url: mainnetUrl,
-        blockNumber: 14258314,
+      },
+      accounts: {
+        mnemonic: goerliMneomonic,
       },
     },
     ropsten: {
       url: ropstenUrl,
       accounts: keyList,
       gas: 2000000,
+    },
+    goerli: {
+      url: goerliUrl,
+      accounts: {
+        mnemonic: goerliMneomonic,
+      },
     },
     mainnet: {
       url: mainnetUrl,
