@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	// clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	tkrKeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -23,7 +23,7 @@ func (m Migrator) MigrateDenomToVer3(ctx sdk.Context) error {
 	for _, pool := range pools {
 		if peggy2Denom, found := migrationMap[pool.ExternalAsset.Symbol]; found {
 			peggy2Pool := *pool
-			peggy2Pool.ExternalAsset = &clptypes.Asset{Symbol: peggy2Denom}
+			peggy2Pool.ExternalAsset = &types.Asset{Symbol: peggy2Denom}
 			err := m.keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
 			if err != nil {
 				return err
@@ -33,7 +33,7 @@ func (m Migrator) MigrateDenomToVer3(ctx sdk.Context) error {
 				return err
 			}
 		} else {
-			return clptypes.ErrMigrationFailed.Wrap(fmt.Sprintf("Unable to migrate pool : %s ", pool.String()))
+			return types.ErrMigrationFailed.Wrap(fmt.Sprintf("Unable to migrate pool : %s ", pool.String()))
 		}
 	}
 	return nil

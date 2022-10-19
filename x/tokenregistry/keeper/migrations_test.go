@@ -1,11 +1,12 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_MigrateToVer4(t *testing.T) {
@@ -59,7 +60,8 @@ func Test_MigrateToVer4(t *testing.T) {
 		},
 	})
 	migrator := keeper.NewMigrator(app.TokenRegistryKeeper)
-	migrator.MigrateToVer4(ctx)
+	err := migrator.MigrateToVer4(ctx)
+	assert.NoError(t, err)
 
 	for _, s := range tt {
 		tc := s
