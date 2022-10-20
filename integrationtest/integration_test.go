@@ -21,6 +21,14 @@ import (
 	"github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
+type TestCase struct {
+	Setup struct {
+		Accounts []banktypes.Balance
+		Margin   *margintypes.GenesisState
+	}
+	Messages []sdk.Msg
+}
+
 func TestIntegration(t *testing.T) {
 	overwriteFlag := flag.Bool("overwrite", false, "Overwrite test output")
 	flag.Parse()
