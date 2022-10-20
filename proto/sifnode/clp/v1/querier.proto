@@ -196,7 +196,7 @@ message ProviderDistributionParamsRes {
 message SwapFeeParamsReq {}
 
 message SwapFeeParamsRes {
-  string swap_fee_rate = 1 [
+  string default_swap_fee_rate = 1 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
