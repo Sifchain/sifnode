@@ -6,6 +6,13 @@ and a sequence of different types of messages to execute.
 
 Results of the test case are compared to previous results stored.
 
+Setup: 
+* Token registry entries
+* Account balances
+* Margin Params
+* Clp Params
+* Admin accounts
+
 Message spec:
 
 ```go
