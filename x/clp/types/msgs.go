@@ -659,12 +659,22 @@ func (m MsgUpdateSwapFeeParamsRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 
-	if m.SwapFeeRate.LT(sdk.ZeroDec()) {
+	if m.DefaultSwapFeeRate.LT(sdk.ZeroDec()) {
 		return fmt.Errorf("swap rate fee must be greater than or equal to zero")
 	}
 
-	if m.SwapFeeRate.GT(sdk.OneDec()) {
+	if m.DefaultSwapFeeRate.GT(sdk.OneDec()) {
 		return fmt.Errorf("swap rate fee must be less than or equal to one")
+	}
+
+	for _, p := range m.TokenParams {
+		if p.SwapFeeRate.LT(sdk.ZeroDec()) {
+			return fmt.Errorf("swap rate fee must be greater than or equal to zero")
+		}
+
+		if p.SwapFeeRate.GT(sdk.OneDec()) {
+			return fmt.Errorf("swap rate fee must be less than or equal to one")
+		}
 	}
 
 	return nil
