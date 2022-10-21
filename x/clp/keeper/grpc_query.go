@@ -272,5 +272,5 @@ func (k Querier) GetSwapFeeParams(c context.Context, _ *types.SwapFeeParamsReq) 
 	ctx := sdk.UnwrapSDKContext(c)
 	swapFeeParams := k.Keeper.GetSwapFeeParams(ctx)
 
-	return &types.SwapFeeParamsRes{SwapFeeRate: swapFeeParams.SwapFeeRate, TokenParams: swapFeeParams.TokenParams}, nil
+	return &types.SwapFeeParamsRes{DefaultSwapFeeRate: swapFeeParams.DefaultSwapFeeRate, TokenParams: swapFeeParams.TokenParams}, nil
 }
