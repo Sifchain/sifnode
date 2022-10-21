@@ -24,8 +24,12 @@ import (
 type TestCase struct {
 	Name  string
 	Setup struct {
-		Accounts []banktypes.Balance
-		Margin   *margintypes.GenesisState
+		Accounts         []banktypes.Balance
+		Margin           *margintypes.GenesisState
+		RewardsParams    clptypes.RewardParams
+		ProtectionParams clptypes.LiquidityProtectionParams
+		ShiftingParams   clptypes.PmtpParams
+		ProviderParams   clptypes.ProviderDistributionParams
 	}
 	Messages []sdk.Msg
 }
@@ -50,10 +54,15 @@ func TC1(t *testing.T) TestCase {
 
 	tc := TestCase{
 		Setup: struct {
-			Accounts []banktypes.Balance
-			Margin   *margintypes.GenesisState
+			Accounts         []banktypes.Balance
+			Margin           *margintypes.GenesisState
+			RewardsParams    clptypes.RewardParams
+			ProtectionParams clptypes.LiquidityProtectionParams
+			ShiftingParams   clptypes.PmtpParams
+			ProviderParams   clptypes.ProviderDistributionParams
 		}{
-			Accounts: balances,
+			Accounts:       balances,
+			ShiftingParams: *clptypes.GetDefaultPmtpParams(),
 		},
 		Messages: []sdk.Msg{
 			&clptypes.MsgCreatePool{
@@ -136,6 +145,11 @@ func TestIntegration(t *testing.T) {
 
 				return genesisState
 			})
+
+			app.ClpKeeper.SetRewardParams(ctx, &tc.Setup.RewardsParams)
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, &tc.Setup.ProtectionParams)
+			app.ClpKeeper.SetPmtpParams(ctx, &tc.Setup.ShiftingParams)
+			app.ClpKeeper.SetProviderDistributionParams(ctx, &tc.Setup.ProviderParams)
 
 			clpSrv := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 			marginSrv := marginkeeper.NewMsgServerImpl(app.MarginKeeper)
