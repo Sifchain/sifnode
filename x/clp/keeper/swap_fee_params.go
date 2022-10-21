@@ -21,14 +21,16 @@ func (k Keeper) GetSwapFeeParams(ctx sdk.Context) types.SwapFeeParams {
 	return params
 }
 
-func (k Keeper) GetSwapFeeRate(ctx sdk.Context, asset types.Asset) sdk.Dec {
+func (k Keeper) GetSwapFeeRate(ctx sdk.Context, asset types.Asset, marginEnabled bool) sdk.Dec {
 
 	params := k.GetSwapFeeParams(ctx)
 
 	tokenParams := params.TokenParams
-	for _, p := range tokenParams {
-		if types.StringCompare(asset.Symbol, p.Asset) {
-			return p.SwapFeeRate
+	if !marginEnabled {
+		for _, p := range tokenParams {
+			if types.StringCompare(asset.Symbol, p.Asset) {
+				return p.SwapFeeRate
+			}
 		}
 	}
 
