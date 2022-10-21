@@ -49,7 +49,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdSetProviderDistributionPeriods(),
 		GetCmdSetSwapFeeParams(),
 	)
-
+	// this line is used by starport scaffolding # 1
 	return clpTxCmd
 }
 func GetCmdAddRewardPeriod() *cobra.Command {

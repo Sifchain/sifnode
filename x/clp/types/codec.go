@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	// this line is used by starport scaffolding # 1
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
@@ -17,6 +18,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgSwap{}, "clp/Swap", nil)
 	cdc.RegisterConcrete(&MsgDecommissionPool{}, "clp/DecommissionPool", nil)
 	cdc.RegisterConcrete(&MsgUnlockLiquidityRequest{}, "clp/UnlockLiquidity", nil)
+	// this line is used by starport scaffolding # 2
 }
 
 var (
@@ -33,14 +35,27 @@ func init() {
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgRemoveLiquidity{},
-		&MsgRemoveLiquidityUnits{},
-		&MsgCreatePool{},
-		&MsgAddLiquidity{},
-		&MsgSwap{},
-		&MsgDecommissionPool{},
-		&MsgUnlockLiquidityRequest{},
-	)
+		&MsgRemoveLiquidity{})
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgRemoveLiquidityUnits{})
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgCreatePool{})
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgAddLiquidity{})
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgSwap{})
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgDecommissionPool{})
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgUnlockLiquidityRequest{})
+
+	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

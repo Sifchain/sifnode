@@ -2,8 +2,8 @@ syntax = "proto3";
 package sifnode.ethbridge.v1;
 
 import "gogoproto/gogo.proto";
-import "sifnode/ethbridge/v1/types.proto";
-import "sifnode/oracle/v1/types.proto";
+import "ethbridge/v1/types.proto";
+import "oracle/v1/types.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
