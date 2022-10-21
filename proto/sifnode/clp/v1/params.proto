@@ -97,7 +97,7 @@ message ProviderDistributionParams {
 }
 
 message SwapFeeParams {
-    string swap_fee_rate = 1 [
+    string default_swap_fee_rate = 1 [
         (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
         (gogoproto.nullable) = false
     ];
@@ -106,8 +106,8 @@ message SwapFeeParams {
 
 message SwapFeeTokenParams {
   string asset = 1;
-  string min_swap_fee = 2 [
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+  string swap_fee_rate = 2 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
       (gogoproto.nullable) = false
   ];
 }
