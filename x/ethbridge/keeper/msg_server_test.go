@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	adminTypes "github.com/Sifchain/sifnode/x/admin/types"
