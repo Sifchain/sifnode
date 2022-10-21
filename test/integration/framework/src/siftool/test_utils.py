@@ -94,7 +94,8 @@ def get_env_ctx_peggy2():
     w3_conn = eth.web3_connect(w3_url)
 
     sifnode_url = dot_env_vars["TCP_URL"]
-    sifnode_chain_id = "localnet"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
+    # TODO: This needs to not be hardcoded. a. Extract from home_dir? b. ???
+    sifnode_chain_id = "SIFCHAIN-TEMPNET-1"  # TODO Mandatory, but not present either in environment_vars or dot_env_vars
     assert dot_env_vars["CHAINDIR"] == dot_env_vars["HOME"]
     sifnoded_home = os.path.join(dot_env_vars["CHAINDIR"], ".sifnoded")
     ethereum_network_descriptor = int(dot_env_vars["ETH_CHAIN_ID"])
@@ -602,6 +603,8 @@ class EnvCtx:
         raw_log = retval["raw_log"]
         for bad_thing in ["insufficient funds", "signature verification failed"]:
             if bad_thing in raw_log:
+                print(args)
+                print(res)
                 raise Exception(raw_log)
         return retval
 
