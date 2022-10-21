@@ -43,6 +43,8 @@ The swap fee rate of the **sell** token must be used in the swap calculations.
 
 When swapping between two non native tokens, TKN1:TKN2, the system performs two swaps, TKN1:rowan followed by rowan:TKN2. In this case the swap fee rate of TKN1 must be used for both swaps.
 
+The swaps occuring during an open or close of a margin position use the default swap fee rate.
+
 ## Events
 
 There are no new events or updates to existing events.
@@ -63,20 +65,21 @@ sifnoded tx clp set-swap-fee-params \
 
 ```json
 {
-	"default_swap_fee_rate": "0.003",
-	"token_params": [{
-			"asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
-			"swap_fee_rate": "12"
-		},
-		{
-			"asset": "cusdc",
-			"swap_fee_rate": "800"
-		},
-		{
-			"asset": "rowan",
-			"swap_fee_rate": "12"
-		}
-	]
+  "default_swap_fee_rate": "0.003",
+  "token_params": [
+    {
+      "asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+      "swap_fee_rate": "12"
+    },
+    {
+      "asset": "cusdc",
+      "swap_fee_rate": "800"
+    },
+    {
+      "asset": "rowan",
+      "swap_fee_rate": "12"
+    }
+  ]
 }
 ```
 
@@ -88,20 +91,21 @@ sifnoded q clp swap-fee-params --output json
 
 ```json
 {
-	"default_swap_fee_rate": "0.003000000000000000",
-	"token_params": [{
-			"asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
-			"swap_fee_rate": "12"
-		},
-		{
-			"asset": "cusdc",
-			"swap_fee_rate": "800"
-		},
-		{
-			"asset": "rowan",
-			"swap_fee_rate": "12"
-		}
-	]
+  "default_swap_fee_rate": "0.003000000000000000",
+  "token_params": [
+    {
+      "asset": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+      "swap_fee_rate": "12"
+    },
+    {
+      "asset": "cusdc",
+      "swap_fee_rate": "800"
+    },
+    {
+      "asset": "rowan",
+      "swap_fee_rate": "12"
+    }
+  ]
 }
 ```
 
