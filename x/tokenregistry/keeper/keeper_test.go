@@ -233,6 +233,9 @@ func TestKeeper_CheckDenomPermissions(t *testing.T) {
 
 func TestRemoveToken(t *testing.T) {
 	app, ctx, _ := test.CreateTestApp(false)
+	// Try to remove non-existing denom without panic
+	app.TokenRegistryKeeper.RemoveToken(ctx, "rowan")
+
 	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
 		Denom:       "rowan",
 		Decimals:    18,
