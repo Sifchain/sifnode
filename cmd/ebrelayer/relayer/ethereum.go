@@ -454,7 +454,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumBridgeClaim, zap.Reflect("event", event), "bridgeClaim", ethBridgeClaim)
 				lockBurnNonce = ethBridgeClaim.EthereumLockBurnSequence
 			} else {
-				sub.SugaredLogger.Infow("lock burn nonce is not expected",
+				sub.SugaredLogger.Errorw("lock burn nonce is not expected",
 					"nextLockBurnNonce", lockBurnNonce,
 					"prophecyClaim.EthereumLockBurnNonce", ethBridgeClaim.EthereumLockBurnSequence)
 				return lockBurnNonce, errors.New("lock burn nonce is not expected")
