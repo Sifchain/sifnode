@@ -421,7 +421,7 @@ func GetCmdSetBlacklist() *cobra.Command {
 
 func GetCmdPauser() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-pauser",
+		Use:   "set-pauser [pause]",
 		Short: "pause or unpause Lock and Burn transactions",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
