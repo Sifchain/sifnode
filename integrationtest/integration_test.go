@@ -22,6 +22,7 @@ import (
 )
 
 type TestCase struct {
+	Name  string
 	Setup struct {
 		Accounts []banktypes.Balance
 		Margin   *margintypes.GenesisState
@@ -29,34 +30,45 @@ type TestCase struct {
 	Messages []sdk.Msg
 }
 
-func TestIntegration(t *testing.T) {
-	overwriteFlag := flag.Bool("overwrite", false, "Overwrite test output")
-	flag.Parse()
-
+func TC1(t *testing.T) TestCase {
 	externalAsset := "cusdc"
 	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
 
-	tt := []struct {
-		name               string
-		externalAsset      string
-		address            string
-		createPoolMsg      clptypes.MsgCreatePool
-		openPositionMsg    margintypes.MsgOpen
-		swapMsg            clptypes.MsgSwap
-		addLiquidityMsg    clptypes.MsgAddLiquidity
-		removeLiquidityMsg clptypes.MsgRemoveLiquidity
-		closePositionMsg   margintypes.MsgClose
-	}{
+	externalAssetBalance, ok := sdk.NewIntFromString("1000000000000000")
+	require.True(t, ok)
+	nativeAssetBalance, ok := sdk.NewIntFromString("1000000000000000000000000000")
+	require.True(t, ok)
+	balances := []banktypes.Balance{
 		{
-			externalAsset: externalAsset,
-			address:       address,
-			createPoolMsg: clptypes.MsgCreatePool{
+			Address: address,
+			Coins: sdk.Coins{
+				sdk.NewCoin(externalAsset, externalAssetBalance),
+				sdk.NewCoin("rowan", nativeAssetBalance),
+			},
+		},
+	}
+
+	tc := TestCase{
+		Setup: struct {
+			Accounts []banktypes.Balance
+			Margin   *margintypes.GenesisState
+		}{
+			Accounts: balances,
+		},
+		Messages: []sdk.Msg{
+			&clptypes.MsgCreatePool{
 				Signer:              address,
 				ExternalAsset:       &clptypes.Asset{Symbol: "cusdc"},
 				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000"), // 1000rowan
 				ExternalAssetAmount: sdk.NewUintFromString("1000000000"),             // 1000cusdc
 			},
-			openPositionMsg: margintypes.MsgOpen{
+			&clptypes.MsgAddLiquidity{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: externalAsset},
+				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000"), // 1000rowan
+				ExternalAssetAmount: sdk.NewUintFromString("1000000000"),
+			},
+			&margintypes.MsgOpen{
 				Signer:           address,
 				CollateralAsset:  "rowan",
 				CollateralAmount: sdk.NewUintFromString("10000000000000000000"), // 10rowan
@@ -64,40 +76,45 @@ func TestIntegration(t *testing.T) {
 				Position:         margintypes.Position_LONG,
 				Leverage:         sdk.NewDec(2),
 			},
-			swapMsg: clptypes.MsgSwap{
+			&clptypes.MsgSwap{
 				Signer:             address,
 				SentAsset:          &clptypes.Asset{Symbol: externalAsset},
 				ReceivedAsset:      &clptypes.Asset{Symbol: clptypes.NativeSymbol},
 				SentAmount:         sdk.NewUintFromString("10000"),
 				MinReceivingAmount: sdk.NewUint(0),
 			},
-			addLiquidityMsg: clptypes.MsgAddLiquidity{
-				Signer:              address,
-				ExternalAsset:       &clptypes.Asset{Symbol: externalAsset},
-				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000"), // 1000rowan
-				ExternalAssetAmount: sdk.NewUintFromString("1000000000"),
-			},
-			removeLiquidityMsg: clptypes.MsgRemoveLiquidity{
+			&clptypes.MsgRemoveLiquidity{
 				Signer:        address,
 				ExternalAsset: &clptypes.Asset{Symbol: externalAsset},
 				WBasisPoints:  sdk.NewInt(5000),
 				Asymmetry:     sdk.NewInt(0),
 			},
-			closePositionMsg: margintypes.MsgClose{
+			&margintypes.MsgClose{
 				Signer: address,
 				Id:     1,
 			},
 		},
 	}
 
+	return tc
+}
+
+func TestIntegration(t *testing.T) {
+	overwriteFlag := flag.Bool("overwrite", false, "Overwrite test output")
+	flag.Parse()
+
+	tt := []TestCase{
+		TC1(t),
+	}
+
 	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.Name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				// Initialise token registry
 				trGs := &tokenregistrytypes.GenesisState{
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
-							{Denom: externalAsset, BaseDenom: externalAsset, Decimals: 6, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+							{Denom: "cusdc", BaseDenom: "cusdc", Decimals: 6, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 						},
 					},
@@ -106,27 +123,14 @@ func TestIntegration(t *testing.T) {
 				genesisState["tokenregistry"] = bz
 
 				// Initialise wallet
-				externalAssetBalance, ok := sdk.NewIntFromString("1000000000000000")
-				require.True(t, ok)
-				nativeAssetBalance, ok := sdk.NewIntFromString("1000000000000000000000000000")
-				require.True(t, ok)
-				balances := []banktypes.Balance{
-					{
-						Address: address,
-						Coins: sdk.Coins{
-							sdk.NewCoin(externalAsset, externalAssetBalance),
-							sdk.NewCoin("rowan", nativeAssetBalance),
-						},
-					},
-				}
 				bankGs := banktypes.DefaultGenesisState()
-				bankGs.Balances = append(bankGs.Balances, balances...)
+				bankGs.Balances = append(bankGs.Balances, tc.Setup.Accounts...)
 				bz, _ = app.AppCodec().MarshalJSON(bankGs)
 				genesisState["bank"] = bz
 
 				// Set enabled margin pools
 				marginGs := margintypes.DefaultGenesis()
-				marginGs.Params.Pools = append(marginGs.Params.Pools, externalAsset)
+				marginGs.Params.Pools = append(marginGs.Params.Pools, "cusdc")
 				bz, _ = app.AppCodec().MarshalJSON(marginGs)
 				genesisState["margin"] = bz
 
@@ -136,53 +140,34 @@ func TestIntegration(t *testing.T) {
 			clpSrv := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 			marginSrv := marginkeeper.NewMsgServerImpl(app.MarginKeeper)
 
-			ctx = ctx.WithBlockHeight(1)
-			//app.BeginBlock(abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
-			app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
-
-			// Create pool
-			_, err := clpSrv.CreatePool(sdk.WrapSDKContext(ctx), &tc.createPoolMsg)
-			require.NoError(t, err)
-
-			endBlock(t, app, ctx, ctx.BlockHeight())
-
-			ctx = ctx.WithBlockHeight(2)
-			app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
-
-			// Add liquidity
-			_, err = clpSrv.AddLiquidity(sdk.WrapSDKContext(ctx), &tc.addLiquidityMsg)
-			require.NoError(t, err)
-
-			endBlock(t, app, ctx, ctx.BlockHeight())
-			ctx = ctx.WithBlockHeight(3)
-			app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
-
-			// Open position
-			_, err = marginSrv.Open(sdk.WrapSDKContext(ctx), &tc.openPositionMsg)
-			require.NoError(t, err)
-
-			endBlock(t, app, ctx, ctx.BlockHeight())
-			ctx = ctx.WithBlockHeight(4)
-			app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
-
-			// Swap
-			_, err = clpSrv.Swap(sdk.WrapSDKContext(ctx), &tc.swapMsg)
-			require.NoError(t, err)
-
-			endBlock(t, app, ctx, ctx.BlockHeight())
-			ctx = ctx.WithBlockHeight(5)
-			app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
-
-			// Remove liquidity
-			_, err = clpSrv.RemoveLiquidity(sdk.WrapSDKContext(ctx), &tc.removeLiquidityMsg)
-			require.NoError(t, err)
-
-			// Close position
-			_, err = marginSrv.Close(sdk.WrapSDKContext(ctx), &tc.closePositionMsg)
-			require.NoError(t, err)
+			for i, msg := range tc.Messages {
+				ctx = ctx.WithBlockHeight(int64(i))
+				app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: types.Header{Height: ctx.BlockHeight()}})
+				switch msg := msg.(type) {
+				case *clptypes.MsgCreatePool:
+					_, err := clpSrv.CreatePool(sdk.WrapSDKContext(ctx), msg)
+					require.NoError(t, err)
+				case *clptypes.MsgAddLiquidity:
+					_, err := clpSrv.AddLiquidity(sdk.WrapSDKContext(ctx), msg)
+					require.NoError(t, err)
+				case *clptypes.MsgRemoveLiquidity:
+					_, err := clpSrv.RemoveLiquidity(sdk.WrapSDKContext(ctx), msg)
+					require.NoError(t, err)
+				case *clptypes.MsgSwap:
+					_, err := clpSrv.Swap(sdk.WrapSDKContext(ctx), msg)
+					require.NoError(t, err)
+				case *margintypes.MsgOpen:
+					_, err := marginSrv.Open(sdk.WrapSDKContext(ctx), msg)
+					require.NoError(t, err)
+				case *margintypes.MsgClose:
+					_, err := marginSrv.Close(sdk.WrapSDKContext(ctx), msg)
+					require.NoError(t, err)
+				}
+				endBlock(t, app, ctx, ctx.BlockHeight())
+			}
 
 			// Check balances
-			results := getResults(t, app, ctx, address, externalAsset)
+			results := getResults(t, app, ctx, tc.Setup.Accounts)
 			if *overwriteFlag {
 				writeResults(t, results)
 			} else {
@@ -210,30 +195,35 @@ type TestResults struct {
 	LPs      map[string]clptypes.LiquidityProvider
 }
 
-func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, address, externalAsset string) TestResults {
-	// Lookup account balances
-	addr, err := sdk.AccAddressFromBech32(address)
-	require.NoError(t, err)
-	balances := app.BankKeeper.GetAllBalances(ctx, addr)
-	// Lookup pool
-	pool, err := app.ClpKeeper.GetPool(ctx, externalAsset)
-	require.NoError(t, err)
-	// Lookup LP
-	lp, err := app.ClpKeeper.GetLiquidityProvider(ctx, externalAsset, address)
-	require.NoError(t, err)
-	lpKey := clptypes.GetLiquidityProviderKey(externalAsset, address)
+func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, accounts []banktypes.Balance) TestResults {
+	pools := app.ClpKeeper.GetPools(ctx)
 
-	return TestResults{
-		Accounts: map[string]sdk.Coins{
-			address: balances,
-		},
-		Pools: map[string]clptypes.Pool{
-			externalAsset: pool,
-		},
-		LPs: map[string]clptypes.LiquidityProvider{
-			string(lpKey): lp,
-		},
+	lps, err := app.ClpKeeper.GetAllLiquidityProviders(ctx)
+	require.NoError(t, err)
+
+	results := TestResults{
+		Accounts: make(map[string]sdk.Coins, len(accounts)),
+		Pools:    make(map[string]clptypes.Pool, len(pools)),
+		LPs:      make(map[string]clptypes.LiquidityProvider, len(lps)),
 	}
+
+	for _, account := range accounts {
+		// Lookup account balances
+		addr, err := sdk.AccAddressFromBech32(account.Address)
+		require.NoError(t, err)
+		balances := app.BankKeeper.GetAllBalances(ctx, addr)
+		results.Accounts[account.Address] = balances
+	}
+
+	for _, pool := range pools {
+		results.Pools[pool.ExternalAsset.Symbol] = *pool
+	}
+
+	for _, lp := range lps {
+		results.LPs[string(clptypes.GetLiquidityProviderKey(lp.Asset.Symbol, lp.LiquidityProviderAddress))] = *lp
+	}
+
+	return results
 }
 
 func writeResults(t *testing.T, results TestResults) {
