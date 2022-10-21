@@ -228,6 +228,7 @@ func TestMsgServer_Swap(t *testing.T) {
 		decimals                        int64
 		address                         string
 		maxRowanLiquidityThresholdAsset string
+		swapFeeParams                   types.SwapFeeParams
 		nativeBalance                   sdk.Int
 		externalBalance                 sdk.Int
 		nativeAssetAmount               sdk.Uint
@@ -422,7 +423,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "eth",
-			externalBalanceEnd:              sdk.NewInt(9749),
+			externalBalanceEnd:              sdk.NewInt(10500),
 			nativeBalanceEnd:                sdk.NewInt(9749),
 			expectedRunningThresholdEnd:     sdk.NewUint(498),
 			msg: &types.MsgSwap{
@@ -449,7 +450,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			currentRowanLiquidityThreshold:  sdk.NewUint(4000),
 			expectedRunningThresholdEnd:     sdk.NewUint(3500),
-			externalBalanceEnd:              sdk.NewInt(9750),
+			externalBalanceEnd:              sdk.NewInt(10498),
 			nativeBalanceEnd:                sdk.NewInt(9750),
 			maxRowanLiquidityThresholdAsset: "eth",
 			msg: &types.MsgSwap{
@@ -602,6 +603,98 @@ func TestMsgServer_Swap(t *testing.T) {
 				MinReceivingAmount: sdk.NewUint(0),
 			},
 		},
+		{
+			name:                            "eth:rowan - swap fee 5%",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(1000),
+			externalAssetAmount:             sdk.NewUint(1000),
+			poolUnits:                       sdk.NewUint(1000),
+			nativeBalanceEnd:                sdk.NewInt(10086),
+			externalBalanceEnd:              sdk.NewInt(9900),
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			expectedRunningThresholdEnd:     sdk.NewUint(1086),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "rowan",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 1), //10%
+					},
+					{
+						Asset:       "eth",
+						SwapFeeRate: sdk.NewDecWithPrec(5, 2), //5%
+					},
+					{
+						Asset:       "usdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 2), //2%
+					},
+				},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
+		{
+			name:                            "rowan:eth - swap fee 10%",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(1000),
+			externalAssetAmount:             sdk.NewUint(1000),
+			poolUnits:                       sdk.NewUint(1000),
+			nativeBalanceEnd:                sdk.NewInt(9900),
+			externalBalanceEnd:              sdk.NewInt(10081),
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			expectedRunningThresholdEnd:     sdk.NewUint(900),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "rowan",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 1), //10%
+					},
+					{
+						Asset:       "eth",
+						SwapFeeRate: sdk.NewDecWithPrec(5, 2), //5%
+					},
+					{
+						Asset:       "usdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 2), //2%
+					},
+				},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -681,6 +774,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			})
 
 			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
+			app.ClpKeeper.SetSwapFeeParams(ctx, &tc.swapFeeParams)
 
 			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
 			liquidityProtectionParam.MaxRowanLiquidityThresholdAsset = tc.maxRowanLiquidityThresholdAsset
@@ -703,19 +797,19 @@ func TestMsgServer_Swap(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			sentAssetBalanceRequest := banktypes.QueryBalanceRequest{
+			externalAssetBalanceRequest := banktypes.QueryBalanceRequest{
 				Address: tc.address,
-				Denom:   tc.msg.SentAsset.Symbol,
+				Denom:   tc.poolAsset,
 			}
 
-			sentAssetBalanceResponse, err := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &sentAssetBalanceRequest)
+			externalAssetBalanceResponse, err := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &externalAssetBalanceRequest)
 			if err != nil {
 				t.Fatalf("err: %v", err)
 			}
 
-			sentAssetBalance := sentAssetBalanceResponse.Balance.Amount
+			externalAssetBalance := externalAssetBalanceResponse.Balance.Amount
 
-			require.Equal(t, tc.externalBalanceEnd.String(), sentAssetBalance.String())
+			require.Equal(t, tc.externalBalanceEnd.String(), externalAssetBalance.String())
 
 			nativeAssetBalanceRequest := banktypes.QueryBalanceRequest{
 				Address: tc.address,

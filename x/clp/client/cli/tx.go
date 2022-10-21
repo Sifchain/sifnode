@@ -187,9 +187,9 @@ func GetCmdSetSwapFeeParams() *cobra.Command {
 				return err
 			}
 			msg := types.MsgUpdateSwapFeeParamsRequest{
-				Signer:      signer.String(),
-				SwapFeeRate: swapFeeParams.SwapFeeRate,
-				TokenParams: swapFeeParams.TokenParams,
+				Signer:             signer.String(),
+				DefaultSwapFeeRate: swapFeeParams.DefaultSwapFeeRate,
+				TokenParams:        swapFeeParams.TokenParams,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
