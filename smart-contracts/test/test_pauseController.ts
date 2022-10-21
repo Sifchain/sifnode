@@ -1,15 +1,13 @@
 import { ethers } from "hardhat";
 import hre from "hardhat";
 import { use, expect, should } from "chai";
-import { solidity } from "ethereum-waffle";
 import { BridgeBank, BridgeBank__factory, PauseController, PauseController__factory } from "../build";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Signer } from "ethers";
+import { Signer, logger } from "ethers";
 import { BytesLike } from "ethers";
 import { string } from "yargs";
 import { BigNumber } from "ethers";
 
-use(solidity);
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const TimeLockDelay = 250; // Just a default used in the tests
@@ -123,7 +121,7 @@ describe("Test Pause Controller", function () {
                     [Canceler1.address, Canceler2.address], // _cancelers
                     [CancelerAdder1.address, CancelerAdder2.address] // _canceler_adder
                 )
-            ).to.be.revertedWith("BridgeBank address must be set");
+            ).to.be.revertedWithCustomError(PauseControllerFactory, "BridgeBankAddressIsNull");
         });
         it("should correctly set the timelock values and bridgebank address", async () => {
             const PauseController = await PauseControllerFactory.connect(Deployer).deploy(
@@ -139,6 +137,7 @@ describe("Test Pause Controller", function () {
             );
             expect(await PauseController.BridgeBank()).to.equal(BridgeBank.address);
             expect(await PauseController.TimeLockDelay()).to.equal(TimeLockDelay);
+            expect(await PauseController.TimeLockRemaining()).to.equal(0); // No unpause request should default to 0
             const NO_REQUEST = await PauseController.NOREQUEST();
             expect(NO_REQUEST).to.equal(1); // 1 is the default NO_REQUEST ENUM
             expect(await PauseController.UnpauseRequestBlockHeight()).to.equal(NO_REQUEST);
@@ -366,14 +365,14 @@ describe("Test Pause Controller", function () {
         });
         it("should not allow a user without the pauser role to pause the bridge", async () => {
             await expect(PauseController.connect(Deployer).pause([]))
-              .to.be.revertedWith("User is not pauser");
+              .to.be.revertedWithCustomError(PauseController, "UserIsNotPauser");
         });
     });
     
     describe("Request Unpause", () => {
         it("should revert if it is called when the bridgebank is not already paused", async () => {
             await expect(PauseController.connect(Unpauser1).requestUnpause())
-              .to.be.revertedWith("BridgeBank not paused");
+              .to.be.revertedWithCustomError(PauseController, "BridgeBankNotPaused");
         });
         it("should allow an unpauser to request an unpause if the bridgebank is paused", async () => {
             await PauseController.connect(Pauser1).pause([]);
@@ -384,13 +383,28 @@ describe("Test Pause Controller", function () {
         it("should revert if the requester does not have the unpauser role", async () => {
             await PauseController.connect(Pauser1).pause([]);
             await expect(PauseController.connect(Pauser1).requestUnpause())
-              .to.be.revertedWith("User is not unpauser");
+              .to.be.revertedWithCustomError(PauseController, "UserIsNotUnpauser");
         });
         it("should revert if a curent unpause request is pending", async () => {
             await PauseController.connect(Pauser1).pause([]);
             await PauseController.connect(Unpauser1).requestUnpause();
             await expect(PauseController.connect(Unpauser1).requestUnpause())
-              .to.be.revertedWith("Unpause request already pending");
+              .to.be.revertedWithCustomError(PauseController, "UnpauseRequestAlreadyPending");
+        });
+        it("should accuretly calculate the TimeLockRemaining after unpauseRequest has been submitted", async () => {
+          const provider = hre.network.provider;
+          let TimeLockDelayRemaining = await PauseController.TimeLockDelay();
+          await PauseController.connect(Pauser1).pause([]);
+          await PauseController.connect(Unpauser1).requestUnpause();
+          while (TimeLockDelayRemaining.gte(0)) {
+            expect(await PauseController.TimeLockRemaining()).to.equal(TimeLockDelayRemaining);
+            const advanceBlocks = ethers.BigNumber.from(25);
+            await provider.send("hardhat_mine", [advanceBlocks.toHexString()]);
+            TimeLockDelayRemaining = TimeLockDelayRemaining.sub(advanceBlocks);
+          }
+          // If the time lock has passed the result should always be 0 regardless of how many blocks have passed
+          expect(await PauseController.TimeLockRemaining()).to.equal(0);
+          expect(TimeLockDelayRemaining).to.equal(-25);
         });
     });
     
@@ -416,7 +430,12 @@ describe("Test Pause Controller", function () {
         });
         it("should not allow a user without the canceler role to call cancelUnpause", async () => {
             await expect(PauseController.connect(Deployer).cancelUnpause())
-              .to.be.revertedWith("User is not canceler");
+              .to.be.revertedWithCustomError(PauseController, "UserIsNotCanceler")
+        });
+        it("should show TimeLockRemaning reset to zero after cancel is called", async () => {
+          expect(await PauseController.TimeLockRemaining()).to.equal(await PauseController.TimeLockDelay());
+          await PauseController.connect(Canceler1).cancelUnpause();
+          expect(await PauseController.TimeLockRemaining()).to.equal(0);
         });
     });
 
@@ -425,7 +444,7 @@ describe("Test Pause Controller", function () {
         describe("Before an unpause request", () => {
             it("should revert with no active request", async () => {
                await expect(PauseController.connect(Deployer).unpause())
-                 .to.be.revertedWith("No Active Unpause Request");
+                 .to.be.revertedWithCustomError(PauseController, "NoActiveUnpauseRequest");
             });
         });
         describe("After Pause Request", () => {
@@ -435,35 +454,39 @@ describe("Test Pause Controller", function () {
             });
             it("should revert if timelock is still in effect", async() => {
                 await expect(PauseController.connect(Deployer).unpause())
-                  .to.be.revertedWith("TimeLock still in effect");
+                  .to.be.revertedWithCustomError(PauseController, "TimeLock");
             });
             it("should revert a single block before the TimeLockDelay has passed", async () => {
-                const currentBlock = await PauseController.provider.getBlockNumber()
-                const requestBlock = await PauseController.UnpauseRequestBlockHeight();
-                const oneShort = requestBlock.sub(currentBlock + 1)
-                for (let i=0; oneShort.gt(i); i++) {
-                    provider.send("evm_mine");
-                }
-                await expect(PauseController.connect(Deployer).unpause())
-                .to.be.revertedWith("TimeLock still in effect");
+                const timelockDelay = await PauseController.TimeLockDelay();
+                const unpauseHeight = await PauseController.UnpauseRequestBlockHeight();
+                await provider.send("hardhat_mine", [timelockDelay.sub(2).toHexString()]);
+                const txPromise = PauseController.connect(Deployer).unpause();
+                await expect(txPromise).to.be.revertedWithCustomError(PauseController, "TimeLock").withArgs(1);
+                // We want to verify that we are exactly one block height away from the delay
+                // because the transaction reverts we need to catch it then look up by transaciton
+                // hash to get the block number and compare it with what was expected
+                // This is just a test assertion to make sure the test was setup correctly
+                  try {
+                    const tx = await txPromise;
+                    const receipt = await tx.wait();
+                  } catch (error) {
+                    const transactionHash: string = error.transactionHash;
+                    const tx = await ethers.provider.getTransactionReceipt(transactionHash);
+                    expect(tx.blockNumber).to.equal(unpauseHeight.sub(1));
+                  }
             });
             it("should allow any user to call if a single block has passed the TimeLockDelay", async () => {
                 const currentBlock = await PauseController.provider.getBlockNumber()
                 const requestBlock = await PauseController.UnpauseRequestBlockHeight();
                 const exactDelay = requestBlock.sub(currentBlock)
-                for (let i=0; exactDelay.gt(i); i++) {
-                    provider.send("evm_mine");
-                }
+                await provider.send("hardhat_mine", [exactDelay.toHexString()]);
                 await expect(PauseController.connect(Deployer).unpause())
                 .to.emit(PauseController, "Unpause").withArgs(Deployer.address);
             });
-            it("should allow any user to call if a many blocks have passed the TimeLockDelay", async () => {
-                const currentBlock = await PauseController.provider.getBlockNumber()
-                const requestBlock = await PauseController.UnpauseRequestBlockHeight();
-                const manyOver = requestBlock.add(currentBlock)
-                for (let i=0; manyOver.gt(i); i++) {
-                    provider.send("evm_mine");
-                }
+            it("should allow any user to call if many blocks have passed the TimeLockDelay", async () => {
+                const lockoutHeight = await PauseController.TimeLockDelay();
+                const manyOver = lockoutHeight.mul(9999);
+                await provider.send("hardhat_mine", [manyOver.toHexString()]);
                 await expect(PauseController.connect(Deployer).unpause())
                 .to.emit(PauseController, "Unpause").withArgs(Deployer.address);
             });
@@ -471,9 +494,7 @@ describe("Test Pause Controller", function () {
                 const currentBlock = await PauseController.provider.getBlockNumber()
                 const requestBlock = await PauseController.UnpauseRequestBlockHeight();
                 const exactDelay = requestBlock.sub(currentBlock)
-                for (let i=0; exactDelay.gt(i); i++) {
-                    provider.send("evm_mine");
-                }
+                await provider.send("hardhat_mine", [exactDelay.toHexString()]);
                 await BridgeBank.connect(Deployer).unpause();
                 await expect(PauseController.connect(Deployer).unpause())
                 .to.emit(PauseController, "Unpause").withArgs(Deployer.address);

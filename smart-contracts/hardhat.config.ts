@@ -1,14 +1,15 @@
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-etherscan"
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat";
 
-// require('solidity-coverage');
-// require("hardhat-gas-reporter");
-// require('hardhat-contract-sizer');
+import "solidity-coverage";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
 
 const envconfig = dotenv.config();
 
