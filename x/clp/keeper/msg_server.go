@@ -379,10 +379,10 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		),
 	})
 
-	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.Symbol)(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
+	// res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.Symbol)(ctx)
+	// if stop {
+	// 	return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// }
 
 	return &types.MsgDecommissionPoolResponse{}, nil
 }
@@ -448,10 +448,10 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		),
 	})
 
-	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
+	// res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
+	// if stop {
+	// 	return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// }
 
 	return &types.MsgCreatePoolResponse{}, nil
 }
@@ -484,7 +484,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.SentAsset)
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
@@ -668,18 +668,18 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		}
 	}
 
-	if !msg.SentAsset.Equals(types.GetSettlementAsset()) {
-		res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.SentAsset.Symbol)(ctx)
-		if stop {
-			return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-		}
-	}
-	if !msg.ReceivedAsset.Equals(types.GetSettlementAsset()) {
-		res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ReceivedAsset.Symbol)(ctx)
-		if stop {
-			return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-		}
-	}
+	// if !msg.SentAsset.Equals(types.GetSettlementAsset()) {
+	// 	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.SentAsset.Symbol)(ctx)
+	// 	if stop {
+	// 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// 	}
+	// }
+	// if !msg.ReceivedAsset.Equals(types.GetSettlementAsset()) {
+	// 	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ReceivedAsset.Symbol)(ctx)
+	// 	if stop {
+	// 		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// 	}
+	// }
 
 	return &types.MsgSwapResponse{}, nil
 }
@@ -746,10 +746,10 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		k.ProcessRemovalQueue(ctx, msg, newPoolUnits)
 	}
 
-	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
+	// res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
+	// if stop {
+	// 	return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// }
 
 	return &types.MsgAddLiquidityResponse{}, nil
 }
@@ -781,7 +781,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset)
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -855,10 +855,10 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 		),
 	})
 
-	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
+	// res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
+	// if stop {
+	// 	return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// }
 
 	return &types.MsgRemoveLiquidityUnitsResponse{}, nil
 }
@@ -885,7 +885,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx).SwapFeeRate
+	externalSwapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset)
+	nativeSwapFeeRate := k.GetSwapFeeRate(ctx, types.GetSettlementAsset())
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -915,7 +916,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 	// Skip pools that are not margin enabled, to avoid health being zero and queueing being triggered.
 	if k.GetMarginKeeper().IsPoolEnabled(ctx, eAsset.Denom) {
-		extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate)
+		extRowanValue := CalculateWithdrawalRowanValue(withdrawExternalAssetAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, externalSwapFeeRate)
 
 		futurePool := pool
 		futurePool.NativeAssetBalance = futurePool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
@@ -950,7 +951,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, swapFeeRate)
+		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, pmtpCurrentRunningRate, nativeSwapFeeRate)
 
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
@@ -972,7 +973,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, swapFeeRate)
+		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, pmtpCurrentRunningRate, externalSwapFeeRate)
 
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
@@ -1014,10 +1015,10 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		),
 	})
 
-	res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
-	if stop {
-		return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
-	}
+	// res, stop := k.SingleExternalBalanceModuleAccountCheck(msg.ExternalAsset.Symbol)(ctx)
+	// if stop {
+	// 	return nil, sdkerrors.Wrap(types.ErrBalanceModuleAccountCheck, res)
+	// }
 
 	return &types.MsgRemoveLiquidityResponse{}, nil
 }
@@ -1084,17 +1085,8 @@ func (k msgServer) ModifyLiquidityProtectionRates(goCtx context.Context, msg *ty
 	return response, nil
 }
 
-func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdateSwapFeeRateRequest) (*types.MsgUpdateSwapFeeRateResponse, error) {
-	response := &types.MsgUpdateSwapFeeRateResponse{}
-
-	// defensive programming
-	if msg == nil {
-		return response, errors.Errorf("msg was nil")
-	}
-
-	if err := msg.ValidateBasic(); err != nil {
-		return response, err
-	}
+func (k msgServer) UpdateSwapFeeParams(goCtx context.Context, msg *types.MsgUpdateSwapFeeParamsRequest) (*types.MsgUpdateSwapFeeParamsResponse, error) {
+	response := &types.MsgUpdateSwapFeeParamsResponse{}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -1106,7 +1098,7 @@ func (k msgServer) UpdateSwapFeeRate(goCtx context.Context, msg *types.MsgUpdate
 		return response, errors.Wrap(types.ErrNotEnoughPermissions, fmt.Sprintf("Sending Account : %s", msg.Signer))
 	}
 
-	k.SetSwapFeeRate(ctx, &types.SwapFeeRate{SwapFeeRate: msg.SwapFeeRate})
+	k.SetSwapFeeParams(ctx, &types.SwapFeeParams{DefaultSwapFeeRate: msg.DefaultSwapFeeRate, TokenParams: msg.TokenParams})
 
 	return response, nil
 }

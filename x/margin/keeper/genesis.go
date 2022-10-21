@@ -32,6 +32,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 			Pools:                                    k.GetEnabledPools(ctx),
 			SqModifier:                               k.GetSqModifier(ctx),
 			SafetyFactor:                             k.GetSafetyFactor(ctx),
+			RowanCollateralEnabled:                   k.IsRowanCollateralEnabled(ctx),
 		},
 	}
 }

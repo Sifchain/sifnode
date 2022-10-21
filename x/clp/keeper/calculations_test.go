@@ -73,6 +73,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 		fromAsset                    types.Asset
 		toAsset                      types.Asset
 		pmtpCurrentRunningRate       sdk.Dec
+		swapFeeRate                  sdk.Dec
 		errString                    error
 		expectedSwapResult           sdk.Uint
 		expectedLiquidityFee         sdk.Uint
@@ -81,25 +82,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 		expectedNativeAssetBalance   sdk.Uint
 	}{
 		{
-			name:                         "test1",
-			nativeAssetBalance:           sdk.NewUint(1000),
-			externalAssetBalance:         sdk.NewUint(877),
-			nativeCustody:                sdk.ZeroUint(),
-			externalCustody:              sdk.ZeroUint(),
-			nativeLiabilities:            sdk.ZeroUint(),
-			externalLiabilities:          sdk.ZeroUint(),
-			sentAmount:                   sdk.NewUint(50),
-			fromAsset:                    types.GetSettlementAsset(),
-			toAsset:                      types.NewAsset("eth"),
-			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			expectedSwapResult:           sdk.NewUint(41),
-			expectedLiquidityFee:         sdk.NewUint(0),
-			expectedPriceImpact:          sdk.ZeroUint(),
-			expectedExternalAssetBalance: sdk.NewUint(836),
-			expectedNativeAssetBalance:   sdk.NewUint(1050),
-		},
-		{
-			name:                         "test2",
+			name:                         "real world numbers",
 			nativeAssetBalance:           sdk.NewUint(10000000),
 			externalAssetBalance:         sdk.NewUint(8770000),
 			nativeCustody:                sdk.ZeroUint(),
@@ -110,14 +93,15 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			expectedSwapResult:           sdk.NewUint(43500),
+			swapFeeRate:                  sdk.NewDecWithPrec(3, 3),
+			expectedSwapResult:           sdk.NewUint(43501),
 			expectedLiquidityFee:         sdk.NewUint(130),
 			expectedPriceImpact:          sdk.ZeroUint(),
-			expectedExternalAssetBalance: sdk.NewUint(8726500),
+			expectedExternalAssetBalance: sdk.NewUint(8726499),
 			expectedNativeAssetBalance:   sdk.NewUint(10050000),
 		},
 		{
-			name:                         "test3",
+			name:                         "big numbers",
 			nativeAssetBalance:           sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance:         sdk.NewUint(2674623482959),
 			nativeCustody:                sdk.ZeroUint(),
@@ -128,6 +112,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			toAsset:                      types.GetSettlementAsset(),
 			fromAsset:                    types.NewAsset("cusdt"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			swapFeeRate:                  sdk.NewDecWithPrec(3, 3),
 			expectedSwapResult:           sdk.NewUintFromString("11704434254784015637542"),
 			expectedLiquidityFee:         sdk.NewUintFromString("35218959643281892590"),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -146,6 +131,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
+			swapFeeRate:                  sdk.NewDecWithPrec(3, 3),
 			expectedSwapResult:           sdk.NewUint(43550),
 			expectedLiquidityFee:         sdk.NewUint(131),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -165,7 +151,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			pool.NativeLiabilities = tc.nativeLiabilities
 			pool.ExternalLiabilities = tc.externalLiabilities
 
-			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -197,11 +183,12 @@ func TestKeeper_ExtractValuesFromPool(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	X, Y, toRowan := pool.ExtractValues(asset)
+	X, Y, toRowan, from := pool.ExtractValues(asset)
 
 	assert.Equal(t, X, sdk.NewUint(998))
 	assert.Equal(t, Y, sdk.NewUint(998))
 	assert.Equal(t, toRowan, false)
+	assert.Equal(t, types.GetSettlementAsset(), from)
 }
 
 func TestKeeper_GetSwapFee(t *testing.T) {
@@ -218,7 +205,8 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), sdk.NewDecWithPrec(3, 3))
+	swapFeeRate := sdk.NewDecWithPrec(3, 3)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), swapFeeRate)
 	assert.Equal(t, "1", swapResult.String())
 }
 
@@ -233,7 +221,9 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 	}
 	asset := types.Asset{}
 
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), sdk.NewDecWithPrec(3, 3))
+	swapFeeRate := sdk.NewDecWithPrec(3, 3)
+
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), swapFeeRate)
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -425,54 +415,31 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		},
 		{
 			// Same test as above but with external asset amount just below top limit
-			name:                 "success (normalized) ratios diff = 0.000000000000000499",
+			name:                 "success (normalized) ratios diff = 0.00496468840",
 			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
 			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance: sdk.NewUint(2674623482959),
 			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(70140),
+			externalAssetAmount:  sdk.NewUint(68480),
 			externalDecimals:     6,
-			poolUnits:            sdk.NewUintFromString("23662661162145935094484778"),
-			lpunits:              sdk.NewUintFromString("611688551401546824"),
+			poolUnits:            sdk.NewUintFromString("23662661154802842743687067"),
+			lpunits:              sdk.NewUintFromString("604345459050749113"),
 		},
 		{
 			// Same test as above but with external asset amount just above top limit
-			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
+			name:                 "failure (normalized) ratios diff = 0.0050954439",
 			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
 			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
 			externalAssetBalance: sdk.NewUint(2674623482959),
 			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(70141),
-			externalDecimals:     6,
-			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
-		},
-		{
-			// Same test as above but with external asset amount just above bottom limit
-			name:                 "success (normalized) ratios diff = 0.000000000000000499",
-			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
-			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetBalance: sdk.NewUint(2674623482959),
-			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(66141),
-			externalDecimals:     6,
-			poolUnits:            sdk.NewUintFromString("23662661144456159305055227"),
-			lpunits:              sdk.NewUintFromString("593998775612117273"),
-		},
-		{
-			// Same test as above but with external asset amount just below bottom limit
-			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
-			oldPoolUnits:         sdk.NewUintFromString("23662660550457383692937954"),
-			nativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetBalance: sdk.NewUint(2674623482959),
-			nativeAssetAmount:    sdk.NewUintFromString("4000000000000000000"),
-			externalAssetAmount:  sdk.NewUint(66140),
+			externalAssetAmount:  sdk.NewUint(68489),
 			externalDecimals:     6,
 			errString:            errors.New("Cannot add liquidity with asymmetric ratio"),
 		},
 	}
 
 	symmetryThreshold := sdk.NewDecWithPrec(1, 4)
-	ratioThreshold := sdk.NewDecWithPrec(5, 4)
+	ratioThreshold := sdk.NewDecWithPrec(5, 3)
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -613,173 +580,80 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalcLiquidityFee(t *testing.T) {
-	testcases := []struct {
-		name                string
-		toRowan             bool
-		adjustExternalToken bool
-		normalizationFactor sdk.Dec
-		X, x, Y, fee        sdk.Uint
-		err                 error
-		errString           error
-	}{
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(0),
-			x:       sdk.NewUint(0),
-			Y:       sdk.NewUint(1),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(1),
-			x:       sdk.NewUint(1),
-			Y:       sdk.NewUint(1),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(1),
-			x:       sdk.NewUint(1),
-			Y:       sdk.NewUint(4),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(2),
-			x:       sdk.NewUint(2),
-			Y:       sdk.NewUint(16),
-			fee:     sdk.NewUint(0),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUint(1054677676764),
-			x:       sdk.NewUint(2567655449999),
-			Y:       sdk.NewUint(1099511627776),
-			fee:     sdk.NewUint(2292288459),
-		},
-		{
-			name:    "success",
-			toRowan: true,
-			X:       sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
-			x:       sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
-			Y:       sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
-			fee:     sdk.NewUintFromString("9706853038245001398600547299925090963413469041036560829464056119132287"),
-		},
-	}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			fee := clpkeeper.CalcLiquidityFee(tc.toRowan, tc.X, tc.x, tc.Y, sdk.NewDecWithPrec(3, 3), sdk.NewDecWithPrec(2, 2))
-			require.Equal(t, tc.fee.String(), fee.String()) // compare strings so that the expected amounts can be read from the failure message
-		})
-	}
-}
-
 func TestKeeper_CalcSwapResult(t *testing.T) {
 	testcases := []struct {
-		name                   string
-		toRowan                bool
-		X, x, Y, y             sdk.Uint
-		pmtpCurrentRunningRate sdk.Dec
-		swapFeeRate            sdk.Dec
-		err                    error
-		errString              error
+		name                    string
+		toRowan                 bool
+		X, x, Y, y, expectedFee sdk.Uint
+		pmtpCurrentRunningRate  sdk.Dec
+		swapFeeRate             sdk.Dec
+		err                     error
+		errString               error
 	}{
 		{
-			name:                   "adjust external token with rowan",
-			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(1),
-			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(1),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "adjust external token without rowan",
-			toRowan:                false,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(1),
-			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(1),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "x=0, X=0, Y=0",
+			name:                   "one side of pool empty",
 			toRowan:                true,
 			X:                      sdk.NewUint(0),
+			x:                      sdk.NewUint(12),
+			Y:                      sdk.NewUint(12),
+			y:                      sdk.NewUint(0),
+			expectedFee:            sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "swap amount zero",
+			toRowan:                true,
+			X:                      sdk.NewUint(117),
 			x:                      sdk.NewUint(0),
-			Y:                      sdk.NewUint(0),
+			Y:                      sdk.NewUint(12),
 			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
+			expectedFee:            sdk.NewUint(0),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
-			name:                   "x=1, X=1, Y=1",
+			name:                   "real world amounts, buy rowan",
 			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(1),
-			y:                      sdk.NewUint(0),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
+			X:                      sdk.NewUint(1999800619938006200),
+			x:                      sdk.NewUint(200000000000000),
+			Y:                      sdk.NewUint(2000200000000000000),
+			y:                      sdk.NewUint(66473292728673),
+			expectedFee:            sdk.NewUint(200019938000),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 		{
-			name:                   "x=1, X=1, Y=4",
-			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(4),
-			y:                      sdk.NewUint(1),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "x=1, X=1, Y=4, nf=10",
-			toRowan:                true,
-			X:                      sdk.NewUint(1),
-			x:                      sdk.NewUint(1),
-			Y:                      sdk.NewUint(4),
-			y:                      sdk.NewUint(1),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "x=23, X=42, Y=1337",
-			toRowan:                true,
-			X:                      sdk.NewUint(42),
-			x:                      sdk.NewUint(23),
-			Y:                      sdk.NewUint(1337),
-			y:                      sdk.NewUint(471),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-		},
-		{
-			name:                   "swap fee rate = 0.01",
+			name:                   "real world amounts, sell rowan",
 			toRowan:                false,
 			X:                      sdk.NewUint(1999800619938006200),
 			x:                      sdk.NewUint(200000000000000),
 			Y:                      sdk.NewUint(2000200000000000000),
-			y:                      sdk.NewUint(198019738620019),
-			pmtpCurrentRunningRate: sdk.NewDec(0),
-			swapFeeRate:            sdk.NewDecWithPrec(1, 2),
+			y:                      sdk.NewUint(598259634558057),
+			expectedFee:            sdk.NewUint(1800179442000),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:                   "big numbers",
+			toRowan:                true,
+			X:                      sdk.NewUintFromString("20300000000000000000000000000000000000000000000000000000000000000000000000"),
+			x:                      sdk.NewUintFromString("10000000000000000658000000000000000000000000000000000000000000000000000000"),
+			Y:                      sdk.NewUintFromString("10000000000000000000000000000000000000000000000000000000000000000000021344"),
+			y:                      sdk.NewUintFromString("1096809680968096858032537841242869111592632578510191129990575247754487593"),
+			expectedFee:            sdk.NewUintFromString("3300330033003300475524186081974530927560579473952430682017779080504977"),
+			pmtpCurrentRunningRate: sdk.NewDec(2),
+			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
 		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			y := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
+			y, fee := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
+			require.Equal(t, tc.expectedFee.String(), fee.String())
 		})
 	}
 }
@@ -1199,7 +1073,7 @@ func TestKeeper_CalcSpotPriceExternal(t *testing.T) {
 	}
 }
 
-func TestKeeper_CalculateRatioDiff(t *testing.T) {
+func TestKeeper_CalculateRatioPercentDiff(t *testing.T) {
 
 	testcases := []struct {
 		name       string
@@ -1213,7 +1087,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			R:        big.NewInt(10),
 			a:        big.NewInt(8),
 			r:        big.NewInt(4),
-			expected: sdk.MustNewDecFromStr("0.000000000000000000"),
+			expected: sdk.MustNewDecFromStr("1.000000000000000000"),
 		},
 		{
 			name:     "not symmetric",
@@ -1221,7 +1095,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			R:        big.NewInt(10),
 			a:        big.NewInt(16),
 			r:        big.NewInt(4),
-			expected: sdk.MustNewDecFromStr("2.000000000000000000"),
+			expected: sdk.MustNewDecFromStr("0.500000000000000000"),
 		},
 		{
 			name:     "not symmetric",
@@ -1229,7 +1103,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 			R:        big.NewInt(100),
 			a:        big.NewInt(5),
 			r:        big.NewInt(1),
-			expected: sdk.MustNewDecFromStr("0.010000000000000000"),
+			expected: sdk.MustNewDecFromStr("1.002000000000000000"),
 		},
 	}
 
@@ -1237,7 +1111,7 @@ func TestKeeper_CalculateRatioDiff(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 
-			ratio, err := clpkeeper.CalculateRatioDiff(tc.A, tc.R, tc.a, tc.r)
+			ratio, err := clpkeeper.CalculateRatioPercentDiff(tc.A, tc.R, tc.a, tc.r)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -1588,13 +1462,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.2"),
-			swapResult:             sdk.NewUint(108),
+			swapResult:             sdk.NewUint(109),
 			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(890),
+				ExternalAssetBalance:          sdk.NewUint(889),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1620,13 +1494,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.3"),
-			swapResult:             sdk.NewUint(117),
+			swapResult:             sdk.NewUint(118),
 			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(881),
+				ExternalAssetBalance:          sdk.NewUint(880),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1652,13 +1526,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.4"),
-			swapResult:             sdk.NewUint(126),
+			swapResult:             sdk.NewUint(127),
 			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(872),
+				ExternalAssetBalance:          sdk.NewUint(871),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1684,13 +1558,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.5"),
-			swapResult:             sdk.NewUint(135),
+			swapResult:             sdk.NewUint(136),
 			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(863),
+				ExternalAssetBalance:          sdk.NewUint(862),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1716,13 +1590,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.6"),
-			swapResult:             sdk.NewUint(144),
+			swapResult:             sdk.NewUint(145),
 			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(854),
+				ExternalAssetBalance:          sdk.NewUint(853),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1876,13 +1750,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("2.0"),
-			swapResult:             sdk.NewUint(271),
+			swapResult:             sdk.NewUint(272),
 			liquidityFee:           sdk.NewUint(0),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(727),
+				ExternalAssetBalance:          sdk.NewUint(726),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -1972,13 +1846,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("5.0"),
-			swapResult:             sdk.NewUint(543),
+			swapResult:             sdk.NewUint(544),
 			liquidityFee:           sdk.NewUint(1),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(455),
+				ExternalAssetBalance:          sdk.NewUint(454),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -2004,13 +1878,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("6.0"),
-			swapResult:             sdk.NewUint(634),
+			swapResult:             sdk.NewUint(635),
 			liquidityFee:           sdk.NewUint(1),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(364),
+				ExternalAssetBalance:          sdk.NewUint(363),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -2036,13 +1910,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("7.0"),
-			swapResult:             sdk.NewUint(724),
+			swapResult:             sdk.NewUint(725),
 			liquidityFee:           sdk.NewUint(2),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(274),
+				ExternalAssetBalance:          sdk.NewUint(273),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -2068,13 +1942,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("8.0"),
-			swapResult:             sdk.NewUint(815),
+			swapResult:             sdk.NewUint(816),
 			liquidityFee:           sdk.NewUint(2),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(183),
+				ExternalAssetBalance:          sdk.NewUint(182),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -2132,13 +2006,13 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 			wBasis:                 sdk.NewInt(1000),
 			asymmetry:              sdk.NewInt(10000),
 			pmtpCurrentRunningRate: sdk.MustNewDecFromStr("10.0"),
-			swapResult:             sdk.NewUint(996),
+			swapResult:             sdk.NewUint(997),
 			liquidityFee:           sdk.NewUint(2),
 			priceImpact:            sdk.ZeroUint(),
 			expectedPool: types.Pool{
 				ExternalAsset:                 &types.Asset{Symbol: "eth"},
 				NativeAssetBalance:            sdk.NewUint(1098),
-				ExternalAssetBalance:          sdk.NewUint(2),
+				ExternalAssetBalance:          sdk.NewUint(1),
 				PoolUnits:                     sdk.NewUint(998),
 				NativeCustody:                 sdk.ZeroUint(),
 				ExternalCustody:               sdk.ZeroUint(),
@@ -2299,7 +2173,9 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
 
-			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, sdk.NewDecWithPrec(3, 3))
+			swapFeeRate := sdk.NewDecWithPrec(3, 3)
+
+			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, swapFeeRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
