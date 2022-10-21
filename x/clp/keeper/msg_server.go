@@ -482,7 +482,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.SentAsset)
+	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.SentAsset, false)
 
 	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
 	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
@@ -777,7 +777,7 @@ func (k msgServer) RemoveLiquidityUnits(goCtx context.Context, msg *types.MsgRem
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset)
+	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset, false)
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
@@ -881,8 +881,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	}
 
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
-	externalSwapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset)
-	nativeSwapFeeRate := k.GetSwapFeeRate(ctx, types.GetSettlementAsset())
+	externalSwapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset, false)
+	nativeSwapFeeRate := k.GetSwapFeeRate(ctx, types.GetSettlementAsset(), false)
 	// Prune pools
 	params := k.GetRewardsParams(ctx)
 	k.PruneUnlockRecords(ctx, &lp, params.LiquidityRemovalLockPeriod, params.LiquidityRemovalCancelPeriod)
