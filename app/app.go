@@ -117,9 +117,12 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const appName = "sifnode"
+
+// this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
 
 var (
 	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
@@ -799,5 +802,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
+	// this line is used by starport scaffolding # stargate/app/paramSubspace
 	return paramsKeeper
 }
