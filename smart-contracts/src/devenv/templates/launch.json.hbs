@@ -1,0 +1,153 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "runtimeArgs": [
+        "node_modules/.bin/hardhat",
+        "run"
+      ],
+      "cwd": "${workspaceFolder}/smart-contracts",
+      "type": "node",
+      "request": "launch",
+      "name": "Debug DevENV scripts",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/smart-contracts/scripts/devenv.ts"
+    },
+    {
+      "runtimeArgs": [
+        "node_modules/.bin/hardhat",
+        "test"
+      ],
+      "args": [
+        "--network",
+        "localhost"
+      ],
+      "cwd": "${workspaceFolder}/smart-contracts",
+      "type": "node",
+      "request": "launch",
+      "name": "Typescript Tests",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/smart-contracts/test/watcher/watcher.ts"
+    }{{#each Dev.sifResults.relayerAddresses}},
+    {
+      "name": "Debug Relayer-{{@index}}",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "cmd/ebrelayer",
+      "envFile": "${workspaceFolder}/smart-contracts/.env",
+      "env": {
+        {{!-- we cant use @index directly to access array --}}
+        {{#with (lookup @root.Dev.ethResults.accounts.available @index)}}
+        "ETHEREUM_PRIVATE_KEY": "{{subString privateKey 2}}"
+        {{/with}}
+      },
+      "args": [
+        "init-relayer",
+        "--network-descriptor",
+        "{{@root.Dev.ethResults.chainId}}",
+	    "--tendermint-node",
+        "{{@root.Dev.sifResults.tcpurl}}",
+	    "--web3-provider",
+        "ws://{{@root.Dev.ethResults.httpHost}}:{{@root.Dev.ethResults.httpPort}}/",
+	    "--bridge-registry-contract-address",
+        "{{@root.Dev.contractResults.contractAddresses.bridgeRegistry}}",
+	    "--validator-mnemonic",
+        "{{this.name}}",
+        "--chain-id",
+        "localnet",
+        "--node",
+        "{{@root.Dev.sifResults.tcpurl}}",
+        "--keyring-backend",
+        "test",
+        "--from",
+        "{{this.account}}",
+        "--symbol-translator-file",
+        "${workspaceFolder}/test/integration/config/symbol_translator.json",
+        "--home",
+        "{{this.homeDir}}"
+      ]
+    }{{/each}}{{#each Dev.sifResults.witnessAddresses}},
+    {
+      "name": "Debug Witness-{{@index}}",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "cmd/ebrelayer",
+      "envFile": "${workspaceFolder}/smart-contracts/.env",
+      "env": {
+        {{!-- we cant use @index directly to access array --}}
+        {{#with (lookup @root.Dev.ethResults.accounts.available @index)}}
+        "ETHEREUM_PRIVATE_KEY": "{{subString privateKey 2}}"
+        {{/with}}
+      },
+      "args": [
+        "init-witness",
+        "{{@root.Dev.ethResults.chainId}}",
+        "{{@root.Dev.sifResults.tcpurl}}",
+        "ws://{{@root.Dev.ethResults.httpHost}}:{{@root.Dev.ethResults.httpPort}}/",
+        "{{@root.Dev.contractResults.contractAddresses.bridgeRegistry}}",
+        "{{this.name}}",
+        "--chain-id",
+        "localnet",
+        "--node",
+        "{{@root.Dev.sifResults.tcpurl}}",
+        "--keyring-backend",
+        "test",
+        "--from",
+        "{{this.account}}",
+        "--symbol-translator-file",
+        "${workspaceFolder}/test/integration/config/symbol_translator.json",
+        "--home",
+        "{{this.homeDir}}"
+      ]
+    }{{/each}},
+    {
+      "name": "Debug Sifnoded",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "cmd/sifnoded",
+      "envFile": "${workspaceFolder}/smart-contracts/.env",
+      "args": [
+        "start",
+        "--log_format",
+        "json",
+        "--log_level",
+        "debug",
+        "--minimum-gas-prices",
+        "0.5rowan",
+        "--rpc.laddr",
+        "{{@root.Dev.sifResults.tcpurl}}",
+        "--home",
+        "/tmp/sifnodedNetwork/validators/localnet/{{@root.Dev.sifResults.validatorValues.[0].moniker}}/.sifnoded"
+      ]
+    },
+    {
+      "name": "Pytest",
+      "type": "python",
+      "request": "launch",
+      "stopOnEntry": false,
+      "python": "${command:python.interpreterPath}",
+      "module": "pytest",
+      "args": [
+        "-olog_cli=false",
+        "-olog_level=DEBUG",
+        "-olog_file=/tmp/pytest.out",
+        "-v",
+        "test/integration/src/peggy2/test_eth_transfers.py"
+      ],
+      "cwd": "${workspaceRoot}",
+      "env": {{{Env}}},
+      "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+      ]
+    }
+  ]
+}
