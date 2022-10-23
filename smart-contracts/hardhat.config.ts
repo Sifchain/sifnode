@@ -1,48 +1,88 @@
-import * as dotenv from "dotenv";
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomiclabs/hardhat-ethers";
-import "@openzeppelin/hardhat-upgrades";
+import * as dotenv from "dotenv"
+import { HardhatUserConfig } from "hardhat/config"
+import "@nomiclabs/hardhat-ethers"
 import "@nomiclabs/hardhat-etherscan"
-import "reflect-metadata"; // needed by tsyringe
-import "@typechain/hardhat";
+import "@openzeppelin/hardhat-upgrades"
+import "@float-capital/solidity-coverage"
+import "hardhat-contract-sizer"
+import "hardhat-gas-reporter"
+import "reflect-metadata" // needed by tsyringe
+import "@typechain/hardhat"
+import "@nomiclabs/hardhat-waffle";
 
-// require('solidity-coverage');
-// require("hardhat-gas-reporter");
-// require('hardhat-contract-sizer');
+import "./tasks/task_blocklist";
 
-const envconfig = dotenv.config();
 
-const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com";
-const ropstenUrl = process.env["ROPSTEN_URL"] ?? "https://example.com";
+import { print } from "./scripts/helpers/utils";
 
-const activePrivateKey = process.env["ACTIVE_PRIVATE_KEY"] ?? "0xabcd";
-const keyList = activePrivateKey.indexOf(",") ? activePrivateKey.split(",") : [activePrivateKey];
+const networkUrl = process.env["NETWORK_URL"] ?? "http://needToSetNETWORK_URL.nothing"
+const activePrivateKey = process.env["ETHEREUM_PRIVATE_KEY"] ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+const keyList = [activePrivateKey]
+
+if (!networkUrl) {
+  print("error", "ABORTED! Missing NETWORK_URL env variable")
+  throw new Error("INVALID_NETWORK_URL")
+}
+if (!activePrivateKey) {
+  print("error", "ABORTED! Missing ACTIVE_PRIVATE_KEY env variable")
+  throw new Error("INVALID_PRIVATE_KEY")
+}
+
+const runCoverage = process.env["RUN_COVERAGE"] ? true : false
+if (runCoverage) print("warn", "HARDHAT :: Test coverage mode is ON")
+
+const reportGas = process.env["REPORT_GAS"] ? true : false
+if (reportGas) print("warn", "HARDHAT :: Gas reporter is ON")
+
+// Works only for 'hardhat' network:
+const useForking = process.env["USE_FORKING"] ? true : false
+if (useForking) print("warn", "HARDHAT :: Forking is ON")
+
+var accounts: string[] = []
+if (process.env["ETH_ACCOUNTS"] ? true : false) {
+    accounts = (process.env["ETH_ACCOUNTS"] || "").split(",")
+}
 
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      chainId: 1,
+      initialBaseFeePerGas: runCoverage ? 0 : 875000000,
+      chainId: 9999,
+      mining: {
+        auto: true,
+        interval: 200,
+      },
       forking: {
-        url: mainnetUrl,
-        blockNumber: 14258314,
+        enabled: useForking,
+        url: networkUrl,
+        blockNumber: 13469882,
       },
     },
     ropsten: {
-      url: ropstenUrl,
+      url: networkUrl,
       accounts: keyList,
       gas: 2000000,
     },
+    geth: {
+      url: networkUrl,
+      accounts: accounts,
+      gas: 6000000,
+      gasPrice: "auto",
+      gasMultiplier: 1.2,
+    },
     mainnet: {
-      url: mainnetUrl,
+      url: networkUrl,
       accounts: keyList,
-      gas: 2000000,
+      gas: 6000000,
+      gasPrice: "auto",
+      gasMultiplier: 1.2,
     },
   },
   solidity: {
     compilers: [
       {
-        version: "0.8.0",
+        version: "0.8.17",
         settings: {
           optimizer: {
             enabled: true,
@@ -71,8 +111,17 @@ const config: HardhatUserConfig = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: process.env['ETHERSCAN_API_KEY']
-  }
-};
+    apiKey: process.env["ETHERSCAN_API_KEY"],
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
+  },
+  gasReporter: {
+    enabled: reportGas,
+  },
+}
 
-export default config;
+export default config

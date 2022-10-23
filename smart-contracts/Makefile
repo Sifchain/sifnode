@@ -2,30 +2,44 @@
 
 SHELL:=/bin/bash
 
-setup:
-	python3 -m venv venv ; source ./venv/bin/activate ; pip3 install -r requirements.txt
-	yarn
+include Makefile.smartContracts
+include Makefile.artifacts
+gofiles=$(artifacts:.json=.go)
 
-# Run slither over entire directory
-# `make slither`
-slither: setup
-	slither . || true
+all: ${artifacts}
 
-# Simple static analysis in a human-readable report over entire directory
-# `make slither-pretty-summary`
-slither-pretty-summary: setup
-	slither . --print human-summary
+install: all
 
-# Check for ERC 20|223|777|721|165|1820 conformance
-# `make conformance CONTRACT=./contracts/ContractFile.sol CONTRACT_NAME=ContractName`
-erc-conformance: setup
-	slither-check-erc ${CONTRACT} ${CONTRACT_NAME}
+artifacts/%.go: artifacts/%.json
+	bash scripts/do_abigen.sh $< ../cmd/ebrelayer/contract/generated
 
-.PHONY: clean clean-smartcontracts clean-node
-clean: clean-node clean-smartcontracts
+${artifacts}: .hardhat-compile
+
+all: ${gofiles}
+
+.hardhat-compile: node_modules
+	npx hardhat compile --force
+	touch $@
+
+node_modules: package.json
+	npm install
+
+.PHONY: clean clean-smartcontracts clean-node clean-hardhat-artifact 
+clean: clean-hardhat-artifact clean-node clean-smartcontracts
+	rm -f .hardhat-compile
 
 clean-smartcontracts:
 	rm -rf build .openzepplin
 
 clean-node:
 	rm -rf node_modules
+
+clean-hardhat-artifact:
+	git clean -fdx artifacts 
+	git clean -fdx cache
+
+type: 
+	npx hardhat typechain
+
+tests: type
+	npx hardhat test test/*.js test/*.ts

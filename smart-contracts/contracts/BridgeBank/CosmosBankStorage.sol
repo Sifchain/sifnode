@@ -1,40 +1,44 @@
-pragma solidity 0.5.16;
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity 0.8.17;
 
+/**
+ * @title Cosmos Bank Storage
+ * @dev Stores Cosmos deposits, nonces, networkDescriptor
+ */
 contract CosmosBankStorage {
+  /**
+   * @dev {DEPRECATED}
+   */
+  struct CosmosDeposit {
+    bytes cosmosSender;
+    address payable ethereumRecipient;
+    address bridgeTokenAddress;
+    uint256 amount;
+    bool locked;
+  }
 
-    /**
-    * @notice Cosmos deposit struct
-    */
-    struct CosmosDeposit {
-        bytes cosmosSender;
-        address payable ethereumRecipient;
-        address bridgeTokenAddress;
-        uint256 amount;
-        bool locked;
-    }
+  /**
+   * @dev {DEPRECATED}
+   */
+  uint256 private bridgeTokenCount;
 
-    /**
-    * @notice number of bridge tokens
-    */
-    uint256 public bridgeTokenCount;
+  /**
+   * @dev {DEPRECATED}
+   */
+  uint256 private cosmosDepositNonce;
 
-    /**
-    * @notice cosmos deposit nonce
-    */
-    uint256 public cosmosDepositNonce;
-    
-    /**
-    * @notice mapping of symbols to token addresses
-    */
-    mapping(string => address) controlledBridgeTokens;
-    
-    /**
-    * @notice mapping of lowercase symbols to properly capitalized tokens
-    */
-    mapping(string => string) public lowerToUpperTokens;
+  /**
+   * @dev {DEPRECATED}
+   */
+  mapping(string => address) private controlledBridgeTokens;
 
-    /**
-    * @notice gap of storage for future upgrades
-    */
-    uint256[100] private ____gap;
+  /**
+   * @dev {DEPRECATED}
+   */
+  mapping(string => string) private lowerToUpperTokens;
+
+  /**
+   * @dev gap of storage for future upgrades
+   */
+  uint256[100] private ____gap;
 }
