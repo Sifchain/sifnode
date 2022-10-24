@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es5",
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
     "resolveJsonModule": true,
@@ -20,16 +21,9 @@
   },
   "allowJs": true,
   "include": [
+    "./hardhat.config.ts",
     "./scripts",
-    "./scripts/helpers",
     "./deploy",
-    "./test",
-    "./tasks",
-    "./tasks/blocklist",
-    "./build",
     "./recover/test"
-   ],
-  "files": [
-    "./hardhat.config.ts"
   ]
 }

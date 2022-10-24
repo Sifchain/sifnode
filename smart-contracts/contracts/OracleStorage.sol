@@ -1,38 +1,33 @@
-// SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.17;
+pragma solidity 0.5.16;
 
-/**
- * @title Oracle Storage
- * @dev Stores prophecy-related information and the CosmosBridge address
- */
 contract OracleStorage {
-  /**
-   * @notice Address of the Cosmos Bridge contract
-   */
-  address public cosmosBridge;
+    /*
+     * @dev: Public variable declarations
+     */
+    address public cosmosBridge;
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  address private operator;
+    /**
+    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
+    */
+    address public operator;
 
-  /**
-   * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
-   */
-  uint256 public consensusThreshold; // e.g. 75 = 75%
+    /**
+    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
+    */
+    uint256 public consensusThreshold; // e.g. 75 = 75%
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  mapping(uint256 => uint256) private oracleClaimValidators;
+    /**
+    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
+    */
+    mapping(uint256 => uint256) public oracleClaimValidators;
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  mapping(uint256 => mapping(address => bool)) private hasMadeClaim;
+    /**
+    * @notice mapping of prophecyid to validator address to boolean
+    */
+    mapping(uint256 => mapping(address => bool)) public hasMadeClaim;
 
-  /**
-   * @dev gap of storage for future upgrades
-   */
-  uint256[100] private ____gap;
+    /**
+    * @notice gap of storage for future upgrades
+    */
+    uint256[100] private ____gap;
 }

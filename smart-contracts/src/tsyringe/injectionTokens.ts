@@ -10,5 +10,3 @@ export const DeploymentChainId = Symbol("DeploymentChainId")
 export const BridgeBankMainnetUpgradeAdmin = Symbol("BridgeBankMainnetUpgradeAdmin")
 
 export const CosmosBridgeMainnetUpgradeAdmin = Symbol("CosmosBridgeMainnetUpgradeAdmin")
-
-export const NetworkDescriptorToken = Symbol("NetworkDescriptorToken")

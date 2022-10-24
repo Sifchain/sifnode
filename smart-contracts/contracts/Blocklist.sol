@@ -1,12 +1,12 @@
-pragma solidity 0.8.17;
+pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title Blocklist
  * @dev This contract manages a list of addresses and has a simple CRUD
  */
-contract Blocklist is Ownable  {
+contract Blocklist is Ownable {
   /**
    * @dev The index of each user in the list
    */
@@ -49,7 +49,7 @@ contract Blocklist is Ownable  {
    * @return true if the operation succeeded
    * @dev Fails if the address was already blocklisted
    */
-  function _addToBlocklist(address account) private onlyNotInBlocklist(account) returns (bool) {
+  function _addToBlocklist(address account) private onlyNotInBlocklist(account) returns(bool) {
     _userIndex[account] = _userList.length;
     _userList.push(account);
 
@@ -64,10 +64,8 @@ contract Blocklist is Ownable  {
    * @dev Fails if at least one of the addresses was already blocklisted
    */
   function batchAddToBlocklist(address[] calldata accounts) external onlyOwner {
-    uint256 accountLength = accounts.length;
-    for (uint256 i; i < accountLength;) {
+    for (uint256 i = 0; i < accounts.length; i++) {
       require(_addToBlocklist(accounts[i]));
-      unchecked { ++i; }
     }
   }
 
@@ -77,7 +75,7 @@ contract Blocklist is Ownable  {
    * @return true if the operation succeeded
    * @dev Fails if the address was already blocklisted
    */
-  function addToBlocklist(address account) external onlyOwner returns (bool) {
+  function addToBlocklist(address account) external onlyOwner returns(bool) {
     return _addToBlocklist(account);
   }
 
@@ -87,15 +85,15 @@ contract Blocklist is Ownable  {
    * @return true if the operation succeeds
    * @dev Fails if the address was not blocklisted
    */
-  function _removeFromBlocklist(address account) private onlyInBlocklist(account) returns (bool) {
-    uint256 rowToDelete = _userIndex[account];
-    address keyToMove = _userList[_userList.length - 1];
+  function _removeFromBlocklist(address account) private onlyInBlocklist(account) returns(bool) {
+    uint rowToDelete = _userIndex[account];
+    address keyToMove = _userList[_userList.length-1];
     _userList[rowToDelete] = keyToMove;
-    _userIndex[keyToMove] = rowToDelete;
-    _userList.pop();
+    _userIndex[keyToMove] = rowToDelete; 
+    _userList.length--;
 
     emit removedFromBlocklist(account, msg.sender);
-
+    
     return true;
   }
 
@@ -105,10 +103,8 @@ contract Blocklist is Ownable  {
    * @dev Fails if at least one of the addresses was not blocklisted
    */
   function batchRemoveFromBlocklist(address[] calldata accounts) external onlyOwner {
-    uint256 accountLength = accounts.length;
-    for (uint256 i; i < accountLength;) {
+    for (uint256 i = 0; i < accounts.length; i++) {
       require(_removeFromBlocklist(accounts[i]));
-      unchecked { ++i; }
     }
   }
 
@@ -118,7 +114,7 @@ contract Blocklist is Ownable  {
    * @dev Fails if the address was not blocklisted
    * @return true if the operation succeeded
    */
-  function removeFromBlocklist(address account) external onlyOwner returns (bool) {
+  function removeFromBlocklist(address account) external onlyOwner returns(bool) {
     return _removeFromBlocklist(account);
   }
 
@@ -127,12 +123,12 @@ contract Blocklist is Ownable  {
    * @param account The address to check
    * @return bool True if the address is blocklisted
    */
-  function isBlocklisted(address account) public view returns (bool) {
-    if (_userList.length == 0) return false;
+  function isBlocklisted(address account) public view returns(bool) {
+    if(_userList.length == 0) return false;
 
     // We don't want to throw when querying for an out-of-bounds index.
     // It can happen when the list has been shrunk after a deletion.
-    if (_userIndex[account] >= _userList.length) return false;
+    if(_userIndex[account] >= _userList.length) return false;
 
     return _userList[_userIndex[account]] == account;
   }
@@ -141,7 +137,7 @@ contract Blocklist is Ownable  {
    * @notice Fetches the list of all blocklisted addresses
    * @return array The list of currently blocklisted addresses
    */
-  function getFullList() public view returns (address[] memory) {
+  function getFullList() public view returns(address[] memory) {
     return _userList;
   }
 }
