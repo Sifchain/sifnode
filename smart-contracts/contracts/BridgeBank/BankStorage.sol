@@ -1,45 +1,38 @@
-// SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.17;
+pragma solidity 0.5.16;
 
 import "./CosmosBankStorage.sol";
 import "./EthereumBankStorage.sol";
 import "./CosmosWhiteListStorage.sol";
 
-/**
- * @title Bank Storage
- * @dev Stores addresses for owner, operator, and CosmosBridge
- **/
-contract BankStorage is CosmosBankStorage, EthereumBankStorage, CosmosWhiteListStorage {
-  /**
-   * @notice Operator address that can:
-   *         Reinitialize BridgeBank
-   *         Update Eth whitelist
-   *         Change the operator
-   */
-  address public operator;
+contract BankStorage is 
+    CosmosBankStorage,
+    EthereumBankStorage,
+    CosmosWhiteListStorage {
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  address private oracle;
+    /**
+    * @notice operator address that can update the smart contract
+    */
+    address public operator;
 
-  /**
-   * @notice Address of the Cosmos Bridge smart contract
-   */
-  address public cosmosBridge;
+    /**
+    * @notice address of the Oracle smart contract
+    */
+    address public oracle;
 
-  /**
-   * @notice Owner address that can use the admin API
-   */
-  address public owner;
+    /**
+    * @notice address of the Cosmos Bridge smart contract
+    */
+    address public cosmosBridge;
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  mapping(string => uint256) private maxTokenAmount;
+    /**
+    * @notice owner address that can use the admin API
+    */
+    address public owner;
 
-  /**
-   * @dev gap of storage for future upgrades
-   */
-  uint256[100] private ____gap;
+    mapping (string => uint256) public maxTokenAmount;
+
+    /**
+    * @notice gap of storage for future upgrades
+    */
+    uint256[100] private ____gap;
 }

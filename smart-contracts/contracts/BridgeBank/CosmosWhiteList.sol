@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.17;
+pragma solidity 0.5.16;
 
 import "./CosmosWhiteListStorage.sol";
 
@@ -7,40 +6,55 @@ import "./CosmosWhiteListStorage.sol";
  * @title WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
  **/
+
 contract CosmosWhiteList is CosmosWhiteListStorage {
-  bool private _initialized;
+    bool private _initialized;
 
-  /**
-   * @dev Initializer
-   */
-  function _cosmosWhitelistInitialize() internal {
-    require(!_initialized, "Initialized");
-    _initialized = true;
-  }
+    /*
+     * @dev: Event declarations
+     */
+    event LogWhiteListUpdate(address _token, bool _value);
 
-  /**
-   * @dev Modifier to restrict erc20 can be locked
-   */
-  modifier onlyCosmosTokenWhiteList(address _token) {
-    require(getCosmosTokenInWhiteList(_token), "Token is not in Cosmos whitelist");
-    _;
-  }
+    function initialize() public {
+        require(!_initialized, "Initialized");
+        _cosmosTokenWhiteList[address(0)] = true;
+        _initialized = true;
+    }
 
-  /**
-   * @dev Modifier to restrict erc20 can be locked
-   */
-  modifier onlyTokenNotInCosmosWhiteList(address _token) {
-    require(!getCosmosTokenInWhiteList(_token), "Only token not in cosmos whitelist can be locked");
-    _;
-  }
+    /*
+     * @dev: Modifier to restrict erc20 can be locked
+     */
+    modifier onlyCosmosTokenWhiteList(address _token) {
+        require(
+            getCosmosTokenInWhiteList(_token),
+            "Only token in whitelist can be transferred to cosmos"
+        );
+        _;
+    }
 
-  /**
-   * @notice Is `_token` in Cosmos Whitelist?
-   * @dev Get if the token in whitelist
-   * @param _token: ERC 20's address
-   * @return if _token in whitelist
-   */
-  function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
-    return _cosmosTokenWhiteList[_token];
-  }
+    /*
+     * @dev: Set the token address in whitelist
+     *
+     * @param _token: ERC 20's address
+     * @param _inList: set the _token in list or not
+     * @return: new value of if _token in whitelist
+     */
+    function setTokenInCosmosWhiteList(address _token, bool _inList)
+        internal
+        returns (bool)
+    {
+        _cosmosTokenWhiteList[_token] = _inList;
+        emit LogWhiteListUpdate(_token, _inList);
+        return _inList;
+    }
+
+    /*
+     * @dev: Get if the token in whitelist
+     *
+     * @param _token: ERC 20's address
+     * @return: if _token in whitelist
+     */
+    function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
+        return _cosmosTokenWhiteList[_token];
+    }
 }

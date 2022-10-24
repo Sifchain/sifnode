@@ -1,58 +1,33 @@
-// SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.17;
+pragma solidity 0.5.16;
 
-/**
- * @title Bridge Registry
- * @dev Stores the addresses of BridgeBank and CosmosBridge
- */
+
 contract BridgeRegistry {
-  /**
-   * @notice Address of the CosmosBridge contract
-   */
-  address public cosmosBridge;
+    address public cosmosBridge;
+    address public bridgeBank;
+    address public oracle;
+    address public valset;
 
-  /**
-   * @notice Address of the BridgeBank contract
-   */
-  address public bridgeBank;
+    bool private _initialized;
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  address private oracle;
+    uint256[100] private ____gap;
 
-  /**
-   * @dev {DEPRECATED}
-   */
-  address private valset;
+    event LogContractsRegistered(
+        address _cosmosBridge,
+        address _bridgeBank,
+        address _oracle,
+        address _valset
+    );
 
-  /**
-   * @dev has this contract been initialized?
-   */
-  bool private _initialized;
+    function initialize(
+        address _cosmosBridge,
+        address _bridgeBank
+    ) public {
+        require(!_initialized, "Initialized");
 
-  /**
-   * @dev gap of storage for future upgrades
-   */
-  uint256[100] private ____gap;
+        cosmosBridge = _cosmosBridge;
+        bridgeBank = _bridgeBank;
+        _initialized = true;
 
-  /**
-   * @dev Event emitted when this contract is initialized
-   */
-  event LogContractsRegistered(address _cosmosBridge, address _bridgeBank);
-
-  /**
-   * @notice Initializer
-   * @param _cosmosBridge Address of the CosmosBridge contract
-   * @param _bridgeBank Address of the BridgeBank contract
-   */
-  function initialize(address _cosmosBridge, address _bridgeBank) public {
-    require(!_initialized, "Initialized");
-
-    cosmosBridge = _cosmosBridge;
-    bridgeBank = _bridgeBank;
-    _initialized = true;
-
-    emit LogContractsRegistered(cosmosBridge, bridgeBank);
-  }
+        emit LogContractsRegistered(cosmosBridge, bridgeBank, oracle, valset);
+    }
 }

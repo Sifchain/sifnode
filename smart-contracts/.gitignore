@@ -9,8 +9,3 @@ venv
 /artifacts/
 /cache/
 /.idea/
-relayerdb/
-witnessdb/
-*.pyc
-package-lock.json
-.hardhat-compile
