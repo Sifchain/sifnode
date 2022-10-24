@@ -10,6 +10,7 @@ import (
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	ethtest "github.com/Sifchain/sifnode/x/ethbridge/test"
 	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -53,6 +54,7 @@ func TC1(t *testing.T) TestCase {
 	}
 
 	tc := TestCase{
+		Name: "tc1",
 		Setup: struct {
 			Accounts         []banktypes.Balance
 			Margin           *margintypes.GenesisState
@@ -108,12 +110,253 @@ func TC1(t *testing.T) TestCase {
 	return tc
 }
 
+func TC2(t *testing.T) TestCase {
+	sifapp.SetConfig(false)
+	externalAsset := "cusdc"
+	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	addresses, _ := ethtest.CreateTestAddrs(1)
+
+	externalAssetBalance, ok := sdk.NewIntFromString("1000000000000000000") // 1,000,000,000,000.000000
+	require.True(t, ok)
+	nativeAssetBalance, ok := sdk.NewIntFromString("1000000000000000000000000000000") // 1000,000,000,000.000000000000000000
+	require.True(t, ok)
+	balances := []banktypes.Balance{
+		{
+			Address: address,
+			Coins: sdk.Coins{
+				sdk.NewCoin("atom", externalAssetBalance),
+				sdk.NewCoin(externalAsset, externalAssetBalance),
+				sdk.NewCoin("rowan", nativeAssetBalance),
+			},
+		},
+		{
+			Address: addresses[0].String(),
+			Coins: sdk.Coins{
+				sdk.NewCoin("atom", externalAssetBalance),
+				sdk.NewCoin(externalAsset, externalAssetBalance),
+				sdk.NewCoin("rowan", nativeAssetBalance),
+			},
+		},
+	}
+	allocation := sdk.NewUintFromString("1000000000000000000000000")
+	defaultMultiplier := sdk.NewDec(1)
+
+	tc := TestCase{
+		Name: "tc2",
+		Setup: struct {
+			Accounts         []banktypes.Balance
+			Margin           *margintypes.GenesisState
+			RewardsParams    clptypes.RewardParams
+			ProtectionParams clptypes.LiquidityProtectionParams
+			ShiftingParams   clptypes.PmtpParams
+			ProviderParams   clptypes.ProviderDistributionParams
+		}{
+			Accounts:       balances,
+			ShiftingParams: *clptypes.GetDefaultPmtpParams(),
+			RewardsParams: clptypes.RewardParams{
+				LiquidityRemovalLockPeriod:   0,
+				LiquidityRemovalCancelPeriod: 0,
+				RewardPeriods: []*clptypes.RewardPeriod{
+					&clptypes.RewardPeriod{
+						RewardPeriodId:                "1",
+						RewardPeriodStartBlock:        1,
+						RewardPeriodEndBlock:          1000,
+						RewardPeriodAllocation:        &allocation,
+						RewardPeriodPoolMultipliers:   []*clptypes.PoolMultiplier{},
+						RewardPeriodDefaultMultiplier: &defaultMultiplier,
+						RewardPeriodDistribute:        false,
+						RewardPeriodMod:               1,
+					},
+				},
+				RewardPeriodStartTime: "",
+			},
+			ProviderParams: clptypes.ProviderDistributionParams{
+				DistributionPeriods: []*clptypes.ProviderDistributionPeriod{
+					&clptypes.ProviderDistributionPeriod{
+						DistributionPeriodBlockRate:  sdk.NewDecWithPrec(7, 6),
+						DistributionPeriodStartBlock: 1,
+						DistributionPeriodEndBlock:   1000,
+						DistributionPeriodMod:        1,
+					},
+				},
+			},
+		},
+		Messages: []sdk.Msg{
+			&clptypes.MsgCreatePool{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "atom"},
+				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000000000"), // 1000,000,000rowan
+				ExternalAssetAmount: sdk.NewUintFromString("1000000000000000"),             // 1000,000,000atom
+			},
+			&margintypes.MsgOpen{
+				Signer:           address,
+				CollateralAsset:  "atom",
+				CollateralAmount: sdk.NewUintFromString("500000000"), // 500atom
+				BorrowAsset:      "rowan",
+				Position:         margintypes.Position_LONG,
+				Leverage:         sdk.NewDec(10),
+			},
+			&margintypes.MsgOpen{
+				Signer:           addresses[0].String(),
+				CollateralAsset:  "rowan",
+				CollateralAmount: sdk.NewUintFromString("500000000000000000000000"), // 500,000rowan
+				BorrowAsset:      "atom",
+				Position:         margintypes.Position_LONG,
+				Leverage:         sdk.NewDec(5),
+			}, /*
+				&clptypes.MsgAddLiquidity{
+					Signer:              address,
+					ExternalAsset:       &clptypes.Asset{Symbol: externalAsset},
+					NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000"), // 1000rowan
+					ExternalAssetAmount: sdk.NewUintFromString("1000000000"),
+				},*/
+		},
+	}
+
+	return tc
+}
+
+func TC3(t *testing.T) TestCase {
+	sifapp.SetConfig(false)
+	externalAsset := "cusdc"
+	address := "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+	addresses, _ := ethtest.CreateTestAddrs(2)
+
+	externalAssetBalance, ok := sdk.NewIntFromString("1000000000000000000") // 1,000,000,000,000.000000
+	require.True(t, ok)
+	nativeAssetBalance, ok := sdk.NewIntFromString("1000000000000000000000000000000") // 1000,000,000,000.000000000000000000
+	require.True(t, ok)
+	balances := []banktypes.Balance{
+		{
+			Address: address,
+			Coins: sdk.Coins{
+				sdk.NewCoin("atom", externalAssetBalance),
+				sdk.NewCoin(externalAsset, externalAssetBalance),
+				sdk.NewCoin("rowan", nativeAssetBalance),
+			},
+		},
+		{
+			Address: addresses[0].String(),
+			Coins: sdk.Coins{
+				sdk.NewCoin("atom", externalAssetBalance),
+				sdk.NewCoin(externalAsset, externalAssetBalance),
+				sdk.NewCoin("rowan", nativeAssetBalance),
+			},
+		},
+		{
+			Address: addresses[1].String(),
+			Coins: sdk.Coins{
+				sdk.NewCoin("atom", externalAssetBalance),
+				sdk.NewCoin(externalAsset, externalAssetBalance),
+				sdk.NewCoin("rowan", nativeAssetBalance),
+			},
+		},
+	}
+	allocation := sdk.NewUintFromString("2000000000000000000000000")
+	defaultMultiplier := sdk.NewDec(1)
+
+	tc := TestCase{
+		Name: "tc3",
+		Setup: struct {
+			Accounts         []banktypes.Balance
+			Margin           *margintypes.GenesisState
+			RewardsParams    clptypes.RewardParams
+			ProtectionParams clptypes.LiquidityProtectionParams
+			ShiftingParams   clptypes.PmtpParams
+			ProviderParams   clptypes.ProviderDistributionParams
+		}{
+			Accounts:       balances,
+			ShiftingParams: *clptypes.GetDefaultPmtpParams(),
+			RewardsParams: clptypes.RewardParams{
+				LiquidityRemovalLockPeriod:   0,
+				LiquidityRemovalCancelPeriod: 0,
+				RewardPeriods: []*clptypes.RewardPeriod{
+					&clptypes.RewardPeriod{
+						RewardPeriodId:                "1",
+						RewardPeriodStartBlock:        1,
+						RewardPeriodEndBlock:          1000,
+						RewardPeriodAllocation:        &allocation,
+						RewardPeriodPoolMultipliers:   []*clptypes.PoolMultiplier{},
+						RewardPeriodDefaultMultiplier: &defaultMultiplier,
+						RewardPeriodDistribute:        false,
+						RewardPeriodMod:               1,
+					},
+				},
+				RewardPeriodStartTime: "",
+			},
+			ProviderParams: clptypes.ProviderDistributionParams{
+				DistributionPeriods: []*clptypes.ProviderDistributionPeriod{
+					&clptypes.ProviderDistributionPeriod{
+						DistributionPeriodBlockRate:  sdk.NewDecWithPrec(7, 6),
+						DistributionPeriodStartBlock: 1,
+						DistributionPeriodEndBlock:   1000,
+						DistributionPeriodMod:        1,
+					},
+				},
+			},
+		},
+		Messages: []sdk.Msg{
+			&clptypes.MsgCreatePool{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "atom"},
+				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000000000"), // 1000,000,000rowan
+				ExternalAssetAmount: sdk.NewUintFromString("1000000000000000"),             // 1000,000,000atom
+			},
+			&clptypes.MsgCreatePool{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000000000"), // 1000,000,000rowan
+				ExternalAssetAmount: sdk.NewUintFromString("1000000000000000"),             // 1000,000,000cusdc
+			},
+			&margintypes.MsgOpen{
+				Signer:           address,
+				CollateralAsset:  "cusdc",
+				CollateralAmount: sdk.NewUintFromString("1000000000"), // 1000atom
+				BorrowAsset:      "rowan",
+				Position:         margintypes.Position_LONG,
+				Leverage:         sdk.NewDec(10),
+			},
+			&margintypes.MsgOpen{
+				Signer:           addresses[0].String(),
+				CollateralAsset:  "cusdc",
+				CollateralAmount: sdk.NewUintFromString("5000000000"), // 5000
+				BorrowAsset:      "rowan",
+				Position:         margintypes.Position_LONG,
+				Leverage:         sdk.NewDec(5),
+			},
+			&margintypes.MsgOpen{
+				Signer:           addresses[1].String(),
+				CollateralAsset:  "rowan",
+				CollateralAmount: sdk.NewUintFromString("500000000000000000000000"), // 500,000
+				BorrowAsset:      "atom",
+				Position:         margintypes.Position_LONG,
+				Leverage:         sdk.NewDec(3),
+			},
+			&clptypes.MsgSwap{
+				Signer:             address,
+				SentAsset:          &clptypes.Asset{Symbol: "atom"},
+				ReceivedAsset:      &clptypes.Asset{Symbol: clptypes.NativeSymbol},
+				SentAmount:         sdk.NewUintFromString("5000000000"), // 5000
+				MinReceivingAmount: sdk.NewUint(0),
+			}, /*
+				&clptypes.MsgAddLiquidity{
+					Signer:              address,
+					ExternalAsset:       &clptypes.Asset{Symbol: externalAsset},
+					NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000"), // 1000rowan
+					ExternalAssetAmount: sdk.NewUintFromString("1000000000"),
+				},*/
+		},
+	}
+
+	return tc
+}
+
 func TestIntegration(t *testing.T) {
 	overwriteFlag := flag.Bool("overwrite", false, "Overwrite test output")
 	flag.Parse()
 
 	tt := []TestCase{
-		TC1(t),
+		TC1(t), TC2(t), TC3(t),
 	}
 
 	for _, tc := range tt {
@@ -123,6 +366,7 @@ func TestIntegration(t *testing.T) {
 				trGs := &tokenregistrytypes.GenesisState{
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
+							{Denom: "atom", BaseDenom: "atom", Decimals: 6, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 							{Denom: "cusdc", BaseDenom: "cusdc", Decimals: 6, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 						},
@@ -139,7 +383,7 @@ func TestIntegration(t *testing.T) {
 
 				// Set enabled margin pools
 				marginGs := margintypes.DefaultGenesis()
-				marginGs.Params.Pools = append(marginGs.Params.Pools, "cusdc")
+				marginGs.Params.Pools = append(marginGs.Params.Pools, []string{"cusdc", "atom"}...)
 				bz, _ = app.AppCodec().MarshalJSON(marginGs)
 				genesisState["margin"] = bz
 
@@ -181,11 +425,11 @@ func TestIntegration(t *testing.T) {
 			}
 
 			// Check balances
-			results := getResults(t, app, ctx, tc.Setup.Accounts)
+			results := getResults(t, app, ctx, tc)
 			if *overwriteFlag {
-				writeResults(t, results)
+				writeResults(t, tc, results)
 			} else {
-				expected, err := getExpected()
+				expected, err := getExpected(tc)
 				require.NoError(t, err)
 				require.EqualValues(t, expected, &results)
 			}
@@ -209,19 +453,19 @@ type TestResults struct {
 	LPs      map[string]clptypes.LiquidityProvider
 }
 
-func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, accounts []banktypes.Balance) TestResults {
+func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, tc TestCase) TestResults {
 	pools := app.ClpKeeper.GetPools(ctx)
 
 	lps, err := app.ClpKeeper.GetAllLiquidityProviders(ctx)
 	require.NoError(t, err)
 
 	results := TestResults{
-		Accounts: make(map[string]sdk.Coins, len(accounts)),
+		Accounts: make(map[string]sdk.Coins, len(tc.Setup.Accounts)),
 		Pools:    make(map[string]clptypes.Pool, len(pools)),
 		LPs:      make(map[string]clptypes.LiquidityProvider, len(lps)),
 	}
 
-	for _, account := range accounts {
+	for _, account := range tc.Setup.Accounts {
 		// Lookup account balances
 		addr, err := sdk.AccAddressFromBech32(account.Address)
 		require.NoError(t, err)
@@ -240,16 +484,19 @@ func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, accounts
 	return results
 }
 
-func writeResults(t *testing.T, results TestResults) {
+func writeResults(t *testing.T, tc TestCase, results TestResults) {
 	bz, err := json.Marshal(results)
 	fmt.Printf("%s", bz)
 	require.NoError(t, err)
-	err = os.WriteFile("output/results.json", bz, 0644)
+
+	filename := "output/" + tc.Name + ".json"
+
+	err = os.WriteFile(filename, bz, 0644)
 	require.NoError(t, err)
 }
 
-func getExpected() (*TestResults, error) {
-	bz, err := os.ReadFile("output/results.json")
+func getExpected(tc TestCase) (*TestResults, error) {
+	bz, err := os.ReadFile("output/" + tc.Name + ".json")
 	if err != nil {
 		return nil, err
 	}
