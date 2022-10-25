@@ -112,6 +112,9 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 		18,
 		sdk.NewDecWithPrec(5, 5),
 		sdk.NewDecWithPrec(5, 4))
+	if err != nil {
+		return err
+	}
 
 	// Lookup wallet balances after
 	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
@@ -431,7 +434,7 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	fmt.Printf("MTP interest paid collateral %s\n", mtpResponse.Mtp.InterestPaidCollateral.String())
 	fmt.Printf("MTP interest unpaid collateral %s\n", mtpResponse.Mtp.InterestUnpaidCollateral.String())
 	// lookup wallet before
-	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(height - 1))
 	collateralBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   mtpResponse.Mtp.CollateralAsset,
@@ -443,6 +446,9 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 		Address: from,
 		Denom:   mtpResponse.Mtp.CustodyAsset,
 	})
+	if err != nil {
+		return err
+	}
 	fmt.Printf("\nWallet collateral balance before: %s\n", collateralBefore.Balance.Amount.String())
 	fmt.Printf("Wallet custody balance before: %s\n\n", custodyBefore.Balance.Amount.String())
 	// Ensure mtp does not exist after close
@@ -464,7 +470,7 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 		externalAsset = mtpResponse.Mtp.CollateralAsset
 	}
 
-	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(height - 1))
 	poolBefore, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
 	if err != nil {
 		return err
@@ -477,7 +483,7 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	fmt.Printf("Pool native depth (including liabilities) before %s\n", poolBefore.Pool.NativeAssetBalance.Add(poolBefore.Pool.NativeLiabilities).String())
 	fmt.Printf("Pool external depth (including liabilities) before %s\n", poolBefore.Pool.ExternalAssetBalance.Add(poolBefore.Pool.ExternalLiabilities).String())
 
-	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(height))
 	poolAfter, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
 	if err != nil {
 		return err
@@ -492,7 +498,7 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	//finalInterest := marginkeeper.CalcMTPInterestLiabilities(mtpResponse.Mtp, pool.Pool.InterestRate, 0, 1)
 	//mtpCustodyAmount := mtpResponse.Mtp.CustodyAmount.Sub(finalInterest)
 	// get swap params
-	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(height - 1))
 	pmtpParams, err := clpQueryClient.GetPmtpParams(context.Background(), &clptypes.PmtpParamsReq{})
 	if err != nil {
 		return err
@@ -521,8 +527,8 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	repayAmount, _ := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
 
 	// Repay()
-	// nolint:staticcheck,ineffassign
 	mtp := mtpResponse.Mtp
+	// nolint:staticcheck,ineffassign
 	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
 	Liabilities := mtp.Liabilities
 	InterestUnpaidCollateral := mtp.InterestUnpaidCollateral
@@ -551,7 +557,7 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	fmt.Printf("Loss: %s\n\n", debtP.Add(debtI).String())
 
 	// lookup wallet balances after close
-	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(height))
 	collateralAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   mtpResponse.Mtp.CollateralAsset,
@@ -559,10 +565,16 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	if err != nil {
 		return err
 	}
+	if err != nil {
+		return err
+	}
 	custodyAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   mtpResponse.Mtp.CustodyAsset,
 	})
+	if err != nil {
+		return err
+	}
 	collateralDiff := collateralAfter.Balance.Amount.Sub(collateralBefore.Balance.Amount)
 	custodyDiff := custodyAfter.Balance.Amount.Sub(custodyBefore.Balance.Amount)
 	fmt.Printf("Wallet collateral balance after: %s (diff: %s)\n", collateralAfter.Balance.Amount.String(), collateralDiff.String())

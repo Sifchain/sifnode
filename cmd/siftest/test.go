@@ -25,6 +25,9 @@ func runTest(cmd *cobra.Command, args []string) error {
 
 	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
 	key, err := txf.Keybase().Key(clientCtx.GetFromName())
+	if err != nil {
+		return err
+	}
 
 	accountNumber, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, key.GetAddress())
 	if err != nil {
@@ -114,6 +117,9 @@ func TestAddLiquidity(clientCtx client.Context, txf tx.Factory, key keyring.Info
 		18,
 		sdk.NewDecWithPrec(5, 5),
 		sdk.NewDecWithPrec(5, 4))
+	if err != nil {
+		return err
+	}
 
 	if !poolAfter.Pool.PoolUnits.Equal(newPoolUnits) {
 		return errors.New(fmt.Sprintf("pool unit mismatch (expected: %s after: %s)", newPoolUnits.String(), poolAfter.Pool.PoolUnits.String()))
@@ -177,10 +183,16 @@ func TestSwap(clientCtx client.Context, txf tx.Factory, key keyring.Info) error 
 		Address: key.GetAddress().String(),
 		Denom:   "ceth",
 	})
+	if err != nil {
+		return err
+	}
 	rowanAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: key.GetAddress().String(),
 		Denom:   "rowan",
 	})
+	if err != nil {
+		return err
+	}
 	poolAfter, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: "ceth"})
 	if err != nil {
 		return err
