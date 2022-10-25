@@ -1,1 +1,65 @@
-{"accounts":{"sif15ky9du8a2wlstz6fpx3p4mqpjyrm5cgqhns3lt":[{"denom":"atom","amount":"1000000000000000000"},{"denom":"cusdc","amount":"1000000000000000000"},{"denom":"rowan","amount":"999999500000000000000000000000"}],"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd":[{"denom":"atom","amount":"998999999500000000"},{"denom":"cusdc","amount":"1000000000000000000"},{"denom":"rowan","amount":"999000014013414589440803461377"}]},"Pools":{"atom":{"external_asset":{"symbol":"atom"},"native_asset_balance":"1000487089285600288982742163","external_asset_balance":"999004488135149","pool_units":"1000000000000000000000000000","swap_price_native":"1.000007907317368468","swap_price_external":"0.999992092745156704","reward_period_native_distributed":"2000000000000000000000","external_liabilities":"500000000","external_custody":"996011864851","native_liabilities":"500000000000000000000000","native_custody":"897299810270213796460","health":"0.999499996303992980","interest_rate":"0.200000000000000000","last_height_interest_rate_computed":2,"unsettled_external_liabilities":"0","unsettled_native_liabilities":"0","block_interest_native":"89729273457704882289","block_interest_external":"0"}},"LPs":{"\u0001atom_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd":{"asset":{"symbol":"atom"},"liquidity_provider_units":"1000000000000000000000000000","liquidity_provider_address":"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"}}}
+{
+	"accounts": {
+		"sif15ky9du8a2wlstz6fpx3p4mqpjyrm5cgqhns3lt": [
+			{
+				"denom": "atom",
+				"amount": "1000000000000000000"
+			},
+			{
+				"denom": "cusdc",
+				"amount": "1000000000000000000"
+			},
+			{
+				"denom": "rowan",
+				"amount": "999999500000000000000000000000"
+			}
+		],
+		"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd": [
+			{
+				"denom": "atom",
+				"amount": "998999999500000000"
+			},
+			{
+				"denom": "cusdc",
+				"amount": "1000000000000000000"
+			},
+			{
+				"denom": "rowan",
+				"amount": "999000014013414589440803461377"
+			}
+		]
+	},
+	"Pools": {
+		"atom": {
+			"external_asset": {
+				"symbol": "atom"
+			},
+			"native_asset_balance": "1000487089285600288982742163",
+			"external_asset_balance": "999004488135149",
+			"pool_units": "1000000000000000000000000000",
+			"swap_price_native": "1.000007907317368468",
+			"swap_price_external": "0.999992092745156704",
+			"reward_period_native_distributed": "2000000000000000000000",
+			"external_liabilities": "500000000",
+			"external_custody": "996011864851",
+			"native_liabilities": "500000000000000000000000",
+			"native_custody": "897299810270213796460",
+			"health": "0.999499996303992980",
+			"interest_rate": "0.200000000000000000",
+			"last_height_interest_rate_computed": 2,
+			"unsettled_external_liabilities": "0",
+			"unsettled_native_liabilities": "0",
+			"block_interest_native": "89729273457704882289",
+			"block_interest_external": "0"
+		}
+	},
+	"LPs": {
+		"\u0001atom_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd": {
+			"asset": {
+				"symbol": "atom"
+			},
+			"liquidity_provider_units": "1000000000000000000000000000",
+			"liquidity_provider_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+		}
+	}
+}

@@ -485,7 +485,7 @@ func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, tc TestC
 }
 
 func writeResults(t *testing.T, tc TestCase, results TestResults) {
-	bz, err := json.Marshal(results)
+	bz, err := json.MarshalIndent(results, "", "\t")
 	fmt.Printf("%s", bz)
 	require.NoError(t, err)
 
