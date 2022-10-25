@@ -491,7 +491,7 @@ func writeResults(t *testing.T, tc TestCase, results TestResults) {
 
 	filename := "output/" + tc.Name + ".json"
 
-	err = os.WriteFile(filename, bz, 0644)
+	err = os.WriteFile(filename, bz, 0600)
 	require.NoError(t, err)
 }
 
