@@ -509,7 +509,6 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	if err != nil {
 		return err
 	}
-	minSwapFee := clpkeeper.GetMinSwapFee(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset}, swapFeeParams.TokenParams)
 
 	// TODO take out custody happens before swap
 	nativeAsset := types.GetSettlementAsset()
@@ -522,9 +521,9 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 		pool.ExternalCustody = pool.ExternalCustody.Sub(mtpResponse.Mtp.CustodyAmount)
 		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(mtpResponse.Mtp.CustodyAmount)
 	}
-	X, Y, toRowan := pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
+	X, Y, toRowan, _ := pool.ExtractValues(clptypes.Asset{Symbol: mtpResponse.Mtp.CollateralAsset})
 	X, Y = pool.ExtractDebt(X, Y, toRowan)
-	repayAmount, _ := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, swapFeeParams.SwapFeeRate, minSwapFee)
+	repayAmount, _ := clpkeeper.CalcSwapResult(toRowan, X, mtpResponse.Mtp.CustodyAmount, Y, pmtpParams.PmtpRateParams.PmtpCurrentRunningRate, swapFeeParams.DefaultSwapFeeRate)
 
 	// Repay()
 	mtp := mtpResponse.Mtp
