@@ -15,12 +15,14 @@ func TestKeeper_GetSwapFeeRate(t *testing.T) {
 		name                string
 		asset               types.Asset
 		swapFeeParams       types.SwapFeeParams
+		marginEnabled       bool
 		expectedSwapFeeRate sdk.Dec
 	}{
 		{
 			name:                "empty token params",
 			asset:               types.NewAsset("ceth"),
 			swapFeeParams:       types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			marginEnabled:       false,
 			expectedSwapFeeRate: sdk.NewDecWithPrec(3, 3),
 		},
 		{
@@ -39,6 +41,7 @@ func TestKeeper_GetSwapFeeRate(t *testing.T) {
 					},
 				},
 			},
+			marginEnabled:       false,
 			expectedSwapFeeRate: sdk.NewDecWithPrec(1, 3),
 		},
 		{
@@ -57,6 +60,26 @@ func TestKeeper_GetSwapFeeRate(t *testing.T) {
 					},
 				},
 			},
+			marginEnabled:       false,
+			expectedSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+		},
+		{
+			name:  "match but fallback to default rate as margin enabled",
+			asset: types.NewAsset("ceth"),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "ceth",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 3),
+					},
+					{
+						Asset:       "cusdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 3),
+					},
+				},
+			},
+			marginEnabled:       true,
 			expectedSwapFeeRate: sdk.NewDecWithPrec(3, 3),
 		},
 	}
@@ -69,7 +92,7 @@ func TestKeeper_GetSwapFeeRate(t *testing.T) {
 
 			app.ClpKeeper.SetSwapFeeParams(ctx, &tc.swapFeeParams)
 
-			swapFeeRate := app.ClpKeeper.GetSwapFeeRate(ctx, tc.asset)
+			swapFeeRate := app.ClpKeeper.GetSwapFeeRate(ctx, tc.asset, tc.marginEnabled)
 
 			require.Equal(t, tc.expectedSwapFeeRate.String(), swapFeeRate.String())
 		})
