@@ -1,4 +1,4 @@
-# Minimum swap fees
+# P swap fees
 
 This tutorial demonstrates the behaviour of the parameterized swap fee functionality.
 
