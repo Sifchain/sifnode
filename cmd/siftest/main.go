@@ -58,35 +58,6 @@ func main() {
 	}
 }
 
-/*
-func GetExportCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "export",
-		Short: "Export state",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			err = Export(clientCtx, viper.GetInt64("height"), viper.GetString("from"), viper.GetString("pool"))
-			if err != nil {
-				panic(err)
-			}
-
-			return nil
-		},
-	}
-	cmd.Flags().Int64("height", 0, "height at which to export")
-	cmd.Flags().String("pool", "", "pool to export")
-	cmd.Flags().String("from", "", "account to export")
-	flags.AddQueryFlagsToCmd(cmd)
-	_ = cmd.MarkFlagRequired("height")
-	_ = cmd.MarkFlagRequired("pool")
-	_ = cmd.MarkFlagRequired("from")
-	return cmd
-}
-*/
-
 func GetTestCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "test",

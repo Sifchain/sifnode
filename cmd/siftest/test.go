@@ -34,12 +34,6 @@ func runTest(cmd *cobra.Command, args []string) error {
 		panic(err)
 	}
 
-	//txf = txf.WithAccountNumber(accountNumber).WithSequence(seq)
-	//err = TestAddLiquidity(clientCtx, txf, key)
-	//if err != nil {
-	//	panic(err)
-	//}
-
 	txf = txf.WithAccountNumber(accountNumber).WithSequence(seq)
 	err = TestOpenPosition(clientCtx, txf, key)
 	if err != nil {

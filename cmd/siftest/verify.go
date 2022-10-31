@@ -171,18 +171,9 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 		sdk.NewIntFromBigInt(externalAmount.BigInt()).Neg().String(),
 		externalDiff.Sub(sdk.NewIntFromBigInt(externalAmount.BigInt()).Neg()))
 
-	//fmt.Printf("External deduction %s \n", externalDiff.String())
-	//fmt.Printf("External expected %s \n\n", externalAmount.String())
-	//
-	//fmt.Printf("Native diff %s \n", nativeDiff.String())
-	//fmt.Printf("Native expected %s \n", sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg().String())
-	//fmt.Printf("Native diff - expected %s \n\n", nativeDiff.Sub(sdk.NewIntFromBigInt(nativeAmount.BigInt()).Neg()).String())
-
-	//fmt.Printf("LP units expected diff %s \n", lpUnits.String())
 	fmt.Printf("\nLP units before %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units diff %s (expected: %s unexpected: %s)\n", lpUnitsDiff.String(), lpUnits.String(), lpUnitsDiff.Sub(sdk.NewIntFromBigInt(lpUnits.BigInt())))
-	//fmt.Printf("LP units expected after %s \n", lpBefore.LiquidityProvider.LiquidityProviderUnits.Add(lpUnits).String())
 
 	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
 	poolAfter, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
@@ -426,13 +417,15 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	if err != nil {
 		return sdkerrors.Wrap(err, fmt.Sprintf("error looking up mtp at height %d", height-1))
 	}
-	fmt.Printf("\nMTP collateral %s (%s)\n", mtpResponse.Mtp.CollateralAmount.String(), mtpResponse.Mtp.CollateralAsset)
+	fmt.Printf("\nMTP custody %s (%s)\n", mtpResponse.Mtp.CustodyAmount.String(), mtpResponse.Mtp.CustodyAsset)
+	fmt.Printf("MTP collateral %s (%s)\n", mtpResponse.Mtp.CollateralAmount.String(), mtpResponse.Mtp.CollateralAsset)
 	fmt.Printf("MTP leverage %s\n", mtpResponse.Mtp.Leverage.String())
 	fmt.Printf("MTP liability %s\n", mtpResponse.Mtp.Liabilities.String())
 	fmt.Printf("MTP health %s\n", mtpResponse.Mtp.MtpHealth)
 	fmt.Printf("MTP interest paid custody %s\n", mtpResponse.Mtp.InterestPaidCustody.String())
 	fmt.Printf("MTP interest paid collateral %s\n", mtpResponse.Mtp.InterestPaidCollateral.String())
 	fmt.Printf("MTP interest unpaid collateral %s\n", mtpResponse.Mtp.InterestUnpaidCollateral.String())
+
 	// lookup wallet before
 	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(height - 1))
 	collateralBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
@@ -488,11 +481,32 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	if err != nil {
 		return err
 	}
+
+	expectedPoolNativeCustody := sdk.NewIntFromBigInt(poolBefore.Pool.NativeCustody.BigInt())
+	expectedPoolExternalCustody := sdk.NewIntFromBigInt(poolBefore.Pool.ExternalCustody.BigInt())
+	expectedPoolNativeLiabilities := sdk.NewIntFromBigInt(poolBefore.Pool.NativeLiabilities.BigInt())
+	expectedPoolExternalLiabilities := sdk.NewIntFromBigInt(poolBefore.Pool.ExternalLiabilities.BigInt())
+	if types.StringCompare(mtpResponse.Mtp.CustodyAsset, "rowan") {
+		expectedPoolNativeCustody = expectedPoolNativeCustody.Sub(
+			sdk.NewIntFromBigInt(mtpResponse.Mtp.CustodyAmount.BigInt()),
+		)
+		expectedPoolExternalLiabilities = expectedPoolExternalLiabilities.Sub(
+			sdk.NewIntFromBigInt(mtpResponse.Mtp.Liabilities.BigInt()),
+		)
+	} else {
+		expectedPoolExternalCustody = expectedPoolExternalCustody.Sub(
+			sdk.NewIntFromBigInt(mtpResponse.Mtp.CustodyAmount.BigInt()),
+		)
+		expectedPoolNativeLiabilities = expectedPoolNativeLiabilities.Sub(
+			sdk.NewIntFromBigInt(mtpResponse.Mtp.Liabilities.BigInt()),
+		)
+	}
+
 	fmt.Printf("\nPool health after %s\n", poolAfter.Pool.Health.String())
-	fmt.Printf("Pool native custody after %s\n", poolAfter.Pool.NativeCustody.String())
-	fmt.Printf("Pool external custody after %s\n", poolAfter.Pool.ExternalCustody.String())
-	fmt.Printf("Pool native liabilities after %s\n", poolAfter.Pool.NativeLiabilities.String())
-	fmt.Printf("Pool external liabilities after %s\n", poolAfter.Pool.ExternalLiabilities.String())
+	fmt.Printf("Pool native custody after %s (expected %s)\n", poolAfter.Pool.NativeCustody.String(), expectedPoolNativeCustody.String())
+	fmt.Printf("Pool external custody after %s (expected %s)\n", poolAfter.Pool.ExternalCustody.String(), expectedPoolExternalCustody.String())
+	fmt.Printf("Pool native liabilities after %s (expected %s)\n", poolAfter.Pool.NativeLiabilities.String(), expectedPoolNativeLiabilities.String())
+	fmt.Printf("Pool external liabilities after %s (expected %s)\n", poolAfter.Pool.ExternalLiabilities.String(), expectedPoolExternalLiabilities.String())
 
 	// Final interest payment
 	//finalInterest := marginkeeper.CalcMTPInterestLiabilities(mtpResponse.Mtp, pool.Pool.InterestRate, 0, 1)
@@ -510,7 +524,6 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 		return err
 	}
 
-	// TODO take out custody happens before swap
 	nativeAsset := types.GetSettlementAsset()
 	pool := *poolBefore.Pool
 
@@ -576,8 +589,12 @@ func VerifyClose(clientCtx client.Context, from string, height int64, id uint64)
 	}
 	collateralDiff := collateralAfter.Balance.Amount.Sub(collateralBefore.Balance.Amount)
 	custodyDiff := custodyAfter.Balance.Amount.Sub(custodyBefore.Balance.Amount)
-	fmt.Printf("Wallet collateral balance after: %s (diff: %s)\n", collateralAfter.Balance.Amount.String(), collateralDiff.String())
-	fmt.Printf("Wallet custody balance after: %s (diff: %s)\n\n", custodyAfter.Balance.Amount.String(), custodyDiff.String())
+	fmt.Printf("Wallet collateral (%s) balance after: %s (diff: %s expected diff: %s)\n",
+		mtpResponse.Mtp.CollateralAsset,
+		collateralAfter.Balance.Amount.String(),
+		collateralDiff.String(),
+		returnAmount.String())
+	fmt.Printf("Wallet custody (%s) balance after: %s (diff: %s)\n\n", mtpResponse.Mtp.CustodyAsset, custodyAfter.Balance.Amount.String(), custodyDiff.String())
 
 	return nil
 }
