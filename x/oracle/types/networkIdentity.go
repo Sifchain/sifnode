@@ -2,9 +2,10 @@ package types
 
 import (
 	"bytes"
-	"errors"
+	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/pkg/errors"
 )
 
 // NewNetworkIdentity get a new NetworkIdentity instance
@@ -57,4 +58,16 @@ func (n NetworkDescriptor) IsValid() bool {
 // IsSifchain check if the network id is Sifchain
 func (n NetworkDescriptor) IsSifchain() bool {
 	return n == NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
+func ParseNetworkDescriptor(networkDescriptorStr string) (NetworkDescriptor, error) {
+	networkDescriptor, err := strconv.ParseInt(networkDescriptorStr, 10, 32)
+	if err != nil {
+		return -1, err
+	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
+		return -1, errors.Errorf("Invalid network descriptor. Valid range: [0-9999], received %d", networkDescriptor)
+	} else if !NetworkDescriptor(networkDescriptor).IsValid() {
+		return -1, errors.Errorf("Invalid network descriptor. Invalid value, received %d", networkDescriptor)
+	}
+	return NetworkDescriptor(networkDescriptor), nil
 }

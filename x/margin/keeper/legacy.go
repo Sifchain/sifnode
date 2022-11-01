@@ -44,6 +44,9 @@ func NewLegacyHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgUpdatePools:
 			res, err := msgServer.UpdatePools(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgUpdateRowanCollateral:
+			res, err := msgServer.UpdateRowanCollateral(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgWhitelist:
 			res, err := msgServer.Whitelist(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

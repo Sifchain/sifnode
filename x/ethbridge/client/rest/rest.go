@@ -181,7 +181,7 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 			return
 		}
 
-		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(req.NetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -199,10 +199,10 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
+			msgLock := types.NewMsgLock(networkDescriptor, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
 			msg = &msgLock
 		case "burn":
-			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
+			msgBurn := types.NewMsgBurn(networkDescriptor, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
 			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()
@@ -229,7 +229,7 @@ func signProphecyHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(req.NetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -246,7 +246,7 @@ func signProphecyHandler(cliCtx client.Context) http.HandlerFunc {
 		signature := req.Signature
 
 		// create the message
-		msg := types.NewMsgSignProphecy(req.CosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), []byte(prophecyID), ethereumAddress, signature)
+		msg := types.NewMsgSignProphecy(req.CosmosSender, networkDescriptor, []byte(prophecyID), ethereumAddress, signature)
 
 		err = msg.ValidateBasic()
 		if err != nil {
@@ -264,12 +264,12 @@ func getCrosschainFeeConfigHandler(cliCtx client.Context, storeName string) http
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(restNetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryCrosschainFeeConfigRequest(oracletypes.NetworkDescriptor(networkDescriptor)))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryCrosschainFeeConfigRequest(networkDescriptor))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -292,13 +292,13 @@ func getEthereumLockBurnSequenceHandler(cliCtx client.Context, storeName string)
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(restNetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 		valAddress := vars[restRelayerCosmosAddress]
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewEthereumLockBurnSequenceRequest(oracletypes.NetworkDescriptor(networkDescriptor), valAddress))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewEthereumLockBurnSequenceRequest(networkDescriptor, valAddress))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -321,13 +321,13 @@ func getWitnessLockBurnSequenceHandler(cliCtx client.Context, storeName string) 
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(restNetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 		valAddress := vars[restRelayerCosmosAddress]
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewWitnessLockBurnSequenceRequest(oracletypes.NetworkDescriptor(networkDescriptor), valAddress))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewWitnessLockBurnSequenceRequest(networkDescriptor, valAddress))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -350,16 +350,16 @@ func getQueryGlobalSequenceBlockNumberHandler(cliCtx client.Context, storeName s
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(restNetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
-		globalSequence, err := strconv.Atoi(restSequence)
+		globalSequence, err := strconv.ParseUint(restNetworkDescriptor, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryGlobalSequenceBlockNumberRequest(oracletypes.NetworkDescriptor(networkDescriptor), uint64(globalSequence)))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryGlobalSequenceBlockNumberRequest(networkDescriptor, globalSequence))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -382,16 +382,16 @@ func getProphciesCompletedHandler(cliCtx client.Context, storeName string) http.
 
 		restNetworkDescriptor := vars[restNetworkDescriptor]
 
-		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		networkDescriptor, err := oracletypes.ParseNetworkDescriptor(restNetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
-		globalSequence, err := strconv.Atoi(restSequence)
+		globalSequence, err := strconv.ParseInt(restSequence, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewPropheciesCompletedRequest(oracletypes.NetworkDescriptor(networkDescriptor), uint64(globalSequence)))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewPropheciesCompletedRequest(networkDescriptor, uint64(globalSequence)))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return

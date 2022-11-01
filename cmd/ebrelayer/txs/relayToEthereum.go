@@ -104,7 +104,7 @@ func prophecyInfoToSignatureUnit(prophecyInfo *oracletypes.ProphecyInfo) Signatu
 		NetworkDescriptor:    int32(prophecyInfo.NetworkDescriptor),
 		TokenName:            prophecyInfo.TokenName,
 		TokenSymbol:          prophecyInfo.TokenSymbol,
-		TokenDecimals:        uint8(prophecyInfo.Decimal),
+		TokenDecimals:        uint8(prophecyInfo.Decimals),
 		CosmosDenom:          prophecyInfo.TokenDenomHash,
 	}
 

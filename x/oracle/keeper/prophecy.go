@@ -105,7 +105,11 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		BlockNumber:          uint64(k.currentHeight),
 		TokenName:            tokenName,
 		TokenSymbol:          tokenSymbol,
+<<<<<<< HEAD
 		Decimal:              uint32(tokenDecimal),
+=======
+		Decimals:             uint32(tokenDecimal),
+>>>>>>> future/peggy2
 	}
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)
@@ -146,7 +150,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 // since ProphecyLifeTime is big enough for relayers to handle prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	// it is low efficient to check outdated prophecy each block
-	if k.currentHeight % CleanUpFrequency != 0 {
+	if k.currentHeight%CleanUpFrequency != 0 {
 		return
 	}
 	var prophecyInfo types.ProphecyInfo
@@ -156,7 +160,7 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	iter := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
 	for ; iter.Valid(); iter.Next() {
 		k.cdc.MustUnmarshal(iter.Value(), &prophecyInfo)
-		if currentHeight > prophecyInfo.BlockNumber + ProphecyLifeTime {
+		if currentHeight > prophecyInfo.BlockNumber+ProphecyLifeTime {
 			k.DeleteProphecyInfo(ctx, prophecyInfo)
 		}
 	}
