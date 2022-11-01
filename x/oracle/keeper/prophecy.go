@@ -105,11 +105,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		BlockNumber:          uint64(k.currentHeight),
 		TokenName:            tokenName,
 		TokenSymbol:          tokenSymbol,
-<<<<<<< HEAD
-		Decimal:              uint32(tokenDecimal),
-=======
 		Decimals:             uint32(tokenDecimal),
->>>>>>> future/peggy2
 	}
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)
