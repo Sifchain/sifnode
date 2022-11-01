@@ -10,8 +10,6 @@ message GenesisState {
   repeated NetworkConfigData network_config_data = 1;
   string admin_address = 2;
   repeated Prophecy prophecies = 3;
-  // repeated GenesisConsensusNeeded consensus_needed = 4;
-  // repeated GenesisCrossChainFeeConfig cross_chain_fee = 5;
   repeated GenesisWitnessLockBurnSequence witness_lock_burn_sequence = 4;
   repeated GenesisProphecyInfo prophecy_info = 5;
 }
@@ -31,21 +29,6 @@ message NetworkConfigData {
   ConsensusNeeded consensus_needed = 3;
   CrossChainFeeConfig cross_chain_fee = 4;
 }
-
-// message GenesisValidatorWhiteList { 
-//   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-//   ValidatorWhiteList validator_whitelist = 2;
-// }
-
-// message GenesisConsensusNeeded { 
-//   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-//   ConsensusNeeded consensus_needed = 2;
-// }
-
-// message GenesisCrossChainFeeConfig { 
-//   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-//   CrossChainFeeConfig cross_chain_fee = 2;
-// }
 
 message GenesisWitnessLockBurnSequence {
   LockBurnSequenceKey witness_lock_burn_sequence_key = 1;
