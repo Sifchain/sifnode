@@ -14,11 +14,9 @@ func NewGenesisState() GenesisState {
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		ValidatorWhitelist:      []*GenesisValidatorWhiteList{},
+		NetworkConfigData:       []*NetworkConfigData{},
 		AdminAddress:            "",
 		Prophecies:              []*Prophecy{},
-		ConsensusNeeded:         []*GenesisConsensusNeeded{},
-		CrossChainFee:           []*GenesisCrossChainFeeConfig{},
 		WitnessLockBurnSequence: []*GenesisWitnessLockBurnSequence{},
 		ProphecyInfo:            []*GenesisProphecyInfo{},
 	}

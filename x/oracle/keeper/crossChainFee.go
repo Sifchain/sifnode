@@ -65,8 +65,8 @@ func (k Keeper) GetCrossChainFee(ctx sdk.Context, networkIdentity types.NetworkI
 }
 
 // GetAllCrossChainFeeConfig get all fee configs for all network descriptors
-func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) []*types.GenesisCrossChainFeeConfig {
-	configs := make([]*types.GenesisCrossChainFeeConfig, 0)
+func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) []*types.NetworkConfigData {
+	configs := make([]*types.NetworkConfigData, 0)
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.CrossChainFeePrefix)
@@ -82,7 +82,7 @@ func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) []*types.GenesisCross
 		key := iterator.Key()
 		value := iterator.Value()
 
-		var config types.GenesisCrossChainFeeConfig
+		var config types.NetworkConfigData
 
 		network_identity, err := types.GetFromPrefix(k.cdc, key, types.CrossChainFeePrefix)
 		if err != nil {

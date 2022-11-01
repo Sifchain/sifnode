@@ -40,8 +40,8 @@ func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.Networ
 }
 
 // GetAllConsensusNeeded get consensus needed for all network descriptors
-func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) []*types.GenesisConsensusNeeded {
-	consensuses := make([]*types.GenesisConsensusNeeded, 0)
+func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) []*types.NetworkConfigData {
+	consensuses := make([]*types.NetworkConfigData, 0)
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.ConsensusNeededPrefix)
@@ -65,7 +65,7 @@ func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) []*types.GenesisConsensus
 		var consensusNeeded types.ConsensusNeeded
 		k.cdc.MustUnmarshal(bz, &consensusNeeded)
 
-		consensuses = append(consensuses, &types.GenesisConsensusNeeded{
+		consensuses = append(consensuses, &types.NetworkConfigData{
 			NetworkDescriptor: networkIdentity.NetworkDescriptor,
 			ConsensusNeeded:   &consensusNeeded,
 		})

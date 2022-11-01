@@ -21,14 +21,15 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetAdminAccount(ctx, adminAddress)
 	}
 
-	for _, list := range data.ValidatorWhitelist {
+	for _, list := range data.NetworkConfigData {
 		powers := list.ValidatorWhitelist
-		for _, power := range powers.ValidatorPower {
-			err := keeper.UpdateOracleWhiteList(ctx, list.NetworkDescriptor, power.ValidatorAddress, power.VotingPower)
-			if err != nil {
-				panic(err)
+		if powers != nil {
+			for _, power := range powers.ValidatorPower {
+				err := keeper.UpdateOracleWhiteList(ctx, list.NetworkDescriptor, power.ValidatorAddress, power.VotingPower)
+				if err != nil {
+					panic(err)
+				}
 			}
-
 		}
 	}
 
@@ -36,14 +37,18 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetProphecy(ctx, *prophecy)
 	}
 
-	for _, fee := range data.CrossChainFee {
-		networkIdentity := types.NetworkIdentity{NetworkDescriptor: fee.NetworkDescriptor}
-		keeper.SetCrossChainFeeObj(ctx, networkIdentity, fee.CrossChainFee)
+	for _, fee := range data.NetworkConfigData {
+		if fee != nil && fee.CrossChainFee != nil {
+			networkIdentity := types.NetworkIdentity{NetworkDescriptor: fee.NetworkDescriptor}
+			keeper.SetCrossChainFeeObj(ctx, networkIdentity, fee.CrossChainFee)
+		}
 	}
 
-	for _, consensusNeeded := range data.ConsensusNeeded {
-		networkIdentity := types.NetworkIdentity{NetworkDescriptor: consensusNeeded.NetworkDescriptor}
-		keeper.SetConsensusNeeded(ctx, networkIdentity, *consensusNeeded.ConsensusNeeded)
+	for _, consensusNeeded := range data.NetworkConfigData {
+		if consensusNeeded != nil && consensusNeeded.ConsensusNeeded != nil {
+			networkIdentity := types.NetworkIdentity{NetworkDescriptor: consensusNeeded.NetworkDescriptor}
+			keeper.SetConsensusNeeded(ctx, networkIdentity, *consensusNeeded.ConsensusNeeded)
+		}
 	}
 
 	for _, lockBurnSequence := range data.WitnessLockBurnSequence {
@@ -71,12 +76,52 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	for i := range prophecies {
 		dbProphecies[i] = &prophecies[i]
 	}
+
+	// get the init data from whitelist
+	networkConfigData := whiteList
+
+	// merge the data from crossChainFee
+	for _, fee := range crossChainFee {
+		found := false
+		for index := 0; index < len(networkConfigData); index++ {
+			if fee.NetworkDescriptor == networkConfigData[index].NetworkDescriptor {
+				networkConfigData[index].CrossChainFee = fee.CrossChainFee
+				found = true
+				break
+			}
+		}
+		if !found {
+			networkConfigData = append(networkConfigData, &types.NetworkConfigData{
+				NetworkDescriptor: fee.NetworkDescriptor,
+				CrossChainFee:     fee.CrossChainFee,
+			})
+
+		}
+	}
+
+	// merge the data from consensusNeeded
+	for _, consensus := range consensusNeeded {
+		found := false
+		for index := 0; index < len(networkConfigData); index++ {
+			if consensus.NetworkDescriptor == networkConfigData[index].NetworkDescriptor {
+				networkConfigData[index].ConsensusNeeded = consensus.ConsensusNeeded
+				found = true
+				break
+			}
+		}
+		if !found {
+			networkConfigData = append(networkConfigData, &types.NetworkConfigData{
+				NetworkDescriptor: consensus.NetworkDescriptor,
+				ConsensusNeeded:   consensus.ConsensusNeeded,
+			})
+
+		}
+	}
+
 	return &types.GenesisState{
-		ValidatorWhitelist:      whiteList,
+		NetworkConfigData:       networkConfigData,
 		AdminAddress:            adminAcc.String(),
 		Prophecies:              dbProphecies,
-		CrossChainFee:           crossChainFee,
-		ConsensusNeeded:         consensusNeeded,
 		WitnessLockBurnSequence: witnessLockBurnSequence,
 		ProphecyInfo:            prophecyInfo,
 	}
@@ -84,14 +129,14 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 
 // ValidateGenesis validates the oracle genesis parameters
 func ValidateGenesis(state *types.GenesisState) error {
-	for _, crossChainFee := range state.CrossChainFee {
-		if !crossChainFee.CrossChainFee.IsValid() {
+	for _, networkConfigData := range state.NetworkConfigData {
+		if !networkConfigData.CrossChainFee.IsValid() {
 			return errors.New("crossChainFee is not valid")
 		}
 	}
 
-	for _, consensusNeeded := range state.ConsensusNeeded {
-		if consensusNeeded.ConsensusNeeded.ConsensusNeeded > 100 {
+	for _, networkConfigData := range state.NetworkConfigData {
+		if networkConfigData.ConsensusNeeded.ConsensusNeeded > 100 {
 			return errors.New("consensusNeeded stored is too large")
 		}
 	}

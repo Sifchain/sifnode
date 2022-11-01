@@ -8,8 +8,8 @@ import (
 )
 
 // GetAllWhiteList get the validators for all networks.
-func (k Keeper) GetAllWhiteList(ctx sdk.Context) []*types.GenesisValidatorWhiteList {
-	genesisValidatorWhiteList := make([]*types.GenesisValidatorWhiteList, 0)
+func (k Keeper) GetAllWhiteList(ctx sdk.Context) []*types.NetworkConfigData {
+	genesisValidatorWhiteList := make([]*types.NetworkConfigData, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.WhiteListValidatorPrefix)
 	defer iterator.Close()
@@ -21,7 +21,7 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) []*types.GenesisValidatorWhiteL
 		var validatorWhiteList types.ValidatorWhiteList
 		k.cdc.MustUnmarshal(iterator.Value(), &validatorWhiteList)
 
-		genesisValidatorWhiteList = append(genesisValidatorWhiteList, &types.GenesisValidatorWhiteList{
+		genesisValidatorWhiteList = append(genesisValidatorWhiteList, &types.NetworkConfigData{
 			NetworkDescriptor:  networkIdentity.NetworkDescriptor,
 			ValidatorWhitelist: &validatorWhiteList,
 		})

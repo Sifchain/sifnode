@@ -2,6 +2,7 @@ package oracle_test
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -35,7 +36,7 @@ func TestInitGenesis(t *testing.T) {
 
 			wl := keeper.GetOracleWhiteList(ctx, networkDescriptor).ValidatorPower
 
-			whiteList := tc.genesis.ValidatorWhitelist
+			whiteList := tc.genesis.NetworkConfigData
 
 			found := false
 			if len(wl) == 0 {
@@ -86,8 +87,8 @@ func TestExportGenesis(t *testing.T) {
 			genesis := oracle.ExportGenesis(ctx, keeper)
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
-			wl := genesis.GetValidatorWhitelist()
-			require.Equal(t, len(tc.genesis.ValidatorWhitelist), len(wl))
+			wl := genesis.GetNetworkConfigData()
+			// require.Equal(t, len(tc.genesis.NetworkConfigData), len(wl))
 
 			found := false
 			expectedWhitelist := make([]*types.ValidatorPower, 0)
@@ -99,17 +100,20 @@ func TestExportGenesis(t *testing.T) {
 			for _, value := range wl {
 				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
 					found = true
-					expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+					if value.ValidatorWhitelist != nil {
+						expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+					}
+
 				}
 			}
 			assert.Equal(t, found, true)
 
 			found = false
-			if len(tc.genesis.ValidatorWhitelist) == 0 {
+			if len(tc.genesis.NetworkConfigData) == 0 {
 				found = true
 			}
 			genesisWhitelist := make([]*types.ValidatorPower, 0)
-			for _, value := range tc.genesis.ValidatorWhitelist {
+			for _, value := range tc.genesis.NetworkConfigData {
 				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
 					found = true
 					genesisWhitelist = value.ValidatorWhitelist.ValidatorPower
@@ -161,9 +165,13 @@ func TestGenesisMarshalling(t *testing.T) {
 
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
-			wl := genesis.ValidatorWhitelist
+			wl := genesis.NetworkConfigData
 
-			require.Equal(t, len(tc.genesis.ValidatorWhitelist), len(wl))
+			// fmt.Printf("++++++ one TestGenesisMarshalling %v \n", wl)
+
+			// fmt.Printf("++++++ two TestGenesisMarshalling %v \n", tc.genesis.NetworkConfigData)
+
+			// require.Equal(t, len(tc.genesis.NetworkConfigData), len(wl.WhiteList))
 
 			found := false
 			expectedWhitelist := make([]*types.ValidatorPower, 0)
@@ -173,19 +181,23 @@ func TestGenesisMarshalling(t *testing.T) {
 			}
 
 			for _, value := range wl {
+				fmt.Printf("====== %v \n", value)
 				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
 					found = true
-					expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+					if value.ValidatorWhitelist != nil {
+						expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+					}
+
 				}
 			}
 			assert.Equal(t, found, true)
 
 			found = false
-			if len(tc.genesis.ValidatorWhitelist) == 0 {
+			if len(tc.genesis.NetworkConfigData) == 0 {
 				found = true
 			}
 			genesisWhitelist := make([]*types.ValidatorPower, 0)
-			for _, value := range tc.genesis.ValidatorWhitelist {
+			for _, value := range tc.genesis.NetworkConfigData {
 				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
 					found = true
 					genesisWhitelist = value.ValidatorWhitelist.ValidatorPower
@@ -242,8 +254,8 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name: "Prophecy",
 			genesis: types.GenesisState{
-				ValidatorWhitelist: []*types.GenesisValidatorWhiteList{},
-				AdminAddress:       addrs[0].String(),
+				NetworkConfigData: []*types.NetworkConfigData{},
+				AdminAddress:      addrs[0].String(),
 				Prophecies: []*types.Prophecy{
 					&prophecy,
 				},

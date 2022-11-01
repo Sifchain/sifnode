@@ -60,22 +60,25 @@ the account address or key name. If a key name is given, the address will be loo
 
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
 
-			validatorWhitelist := oracletypes.ValidatorWhiteList{}
+			networkConfigData := oracletypes.NetworkConfigData{
+				NetworkDescriptor:  networkDescriptor,
+				ValidatorWhitelist: &oracletypes.ValidatorWhiteList{},
+			}
 
 			// find and remove according to network descriptor
-			for index := 0; index < len(oracleGenState.ValidatorWhitelist); index++ {
-				if oracleGenState.ValidatorWhitelist[index].NetworkDescriptor == networkDescriptor {
-					validatorWhitelist = *oracleGenState.ValidatorWhitelist[index].ValidatorWhitelist
-					oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist[:index],
-						oracleGenState.ValidatorWhitelist[:index]...)
+			for index := 0; index < len(oracleGenState.NetworkConfigData); index++ {
+				if oracleGenState.NetworkConfigData[index].NetworkDescriptor == networkDescriptor {
+					networkConfigData = *oracleGenState.NetworkConfigData[index]
+					oracleGenState.NetworkConfigData = append(oracleGenState.NetworkConfigData[:index],
+						oracleGenState.NetworkConfigData[:index]...)
 				}
 			}
 			found := false
 
-			// just updat the power if validator exists
-			for index := 0; index < len(validatorWhitelist.ValidatorPower); index++ {
-				if bytes.Compare(validatorWhitelist.ValidatorPower[index].ValidatorAddress, addr) == 0 {
-					validatorWhitelist.ValidatorPower[index].VotingPower = uint32(power)
+			// just update the power if validator exists
+			for index := 0; index < len(networkConfigData.ValidatorWhitelist.ValidatorPower); index++ {
+				if bytes.Compare(networkConfigData.ValidatorWhitelist.ValidatorPower[index].ValidatorAddress, addr) == 0 {
+					networkConfigData.ValidatorWhitelist.ValidatorPower[index].VotingPower = uint32(power)
 					found = true
 				}
 			}
@@ -86,15 +89,11 @@ the account address or key name. If a key name is given, the address will be loo
 					ValidatorAddress: addr,
 					VotingPower:      uint32(power),
 				}
-				validatorWhitelist.ValidatorPower = append(validatorWhitelist.ValidatorPower, &newPower)
+				networkConfigData.ValidatorWhitelist.ValidatorPower = append(networkConfigData.ValidatorWhitelist.ValidatorPower, &newPower)
 			}
 
 			// add the updated or new whitelist
-			oracleGenState.ValidatorWhitelist = append(oracleGenState.ValidatorWhitelist,
-				&oracletypes.GenesisValidatorWhiteList{
-					NetworkDescriptor:  networkDescriptor,
-					ValidatorWhitelist: &validatorWhitelist,
-				})
+			oracleGenState.NetworkConfigData = append(oracleGenState.NetworkConfigData, &networkConfigData)
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
 			if err != nil {
