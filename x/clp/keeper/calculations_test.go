@@ -73,7 +73,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 		fromAsset                    types.Asset
 		toAsset                      types.Asset
 		pmtpCurrentRunningRate       sdk.Dec
-		swapFeeParams                types.SwapFeeParams
+		swapFeeRate                  sdk.Dec
 		errString                    error
 		expectedSwapResult           sdk.Uint
 		expectedLiquidityFee         sdk.Uint
@@ -93,7 +93,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			swapFeeRate:                  sdk.NewDecWithPrec(3, 3),
 			expectedSwapResult:           sdk.NewUint(43501),
 			expectedLiquidityFee:         sdk.NewUint(130),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -112,7 +112,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			toAsset:                      types.GetSettlementAsset(),
 			fromAsset:                    types.NewAsset("cusdt"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			swapFeeRate:                  sdk.NewDecWithPrec(3, 3),
 			expectedSwapResult:           sdk.NewUintFromString("11704434254784015637542"),
 			expectedLiquidityFee:         sdk.NewUintFromString("35218959643281892590"),
 			expectedPriceImpact:          sdk.ZeroUint(),
@@ -131,30 +131,11 @@ func TestKeeper_SwapOne(t *testing.T) {
 			fromAsset:                    types.GetSettlementAsset(),
 			toAsset:                      types.NewAsset("eth"),
 			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)},
+			swapFeeRate:                  sdk.NewDecWithPrec(3, 3),
 			expectedSwapResult:           sdk.NewUint(43550),
 			expectedLiquidityFee:         sdk.NewUint(131),
 			expectedPriceImpact:          sdk.ZeroUint(),
 			expectedExternalAssetBalance: sdk.NewUint(8726450),
-			expectedNativeAssetBalance:   sdk.NewUint(10050000),
-		},
-		{
-			name:                         "real world numbers - fee < minSwapFee",
-			nativeAssetBalance:           sdk.NewUint(10000000),
-			externalAssetBalance:         sdk.NewUint(8770000),
-			nativeCustody:                sdk.ZeroUint(),
-			externalCustody:              sdk.ZeroUint(),
-			nativeLiabilities:            sdk.ZeroUint(),
-			externalLiabilities:          sdk.ZeroUint(),
-			sentAmount:                   sdk.NewUint(50000),
-			fromAsset:                    types.GetSettlementAsset(),
-			toAsset:                      types.NewAsset("eth"),
-			pmtpCurrentRunningRate:       sdk.NewDec(0),
-			swapFeeParams:                types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3), TokenParams: []*types.SwapFeeTokenParams{{Asset: "eth", MinSwapFee: sdk.NewUint(300)}, {Asset: types.GetSettlementAsset().Symbol, MinSwapFee: sdk.NewUint(100)}}},
-			expectedSwapResult:           sdk.NewUint(43331),
-			expectedLiquidityFee:         sdk.NewUint(300),
-			expectedPriceImpact:          sdk.ZeroUint(),
-			expectedExternalAssetBalance: sdk.NewUint(8726669),
 			expectedNativeAssetBalance:   sdk.NewUint(10050000),
 		},
 	}
@@ -170,7 +151,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 			pool.NativeLiabilities = tc.nativeLiabilities
 			pool.ExternalLiabilities = tc.externalLiabilities
 
-			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, tc.swapFeeParams)
+			swapResult, liquidityFee, priceImpact, pool, err := clpkeeper.SwapOne(tc.fromAsset, tc.sentAmount, tc.toAsset, pool, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
@@ -202,11 +183,12 @@ func TestKeeper_ExtractValuesFromPool(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	X, Y, toRowan := pool.ExtractValues(asset)
+	X, Y, toRowan, from := pool.ExtractValues(asset)
 
 	assert.Equal(t, X, sdk.NewUint(998))
 	assert.Equal(t, Y, sdk.NewUint(998))
 	assert.Equal(t, toRowan, false)
+	assert.Equal(t, types.GetSettlementAsset(), from)
 }
 
 func TestKeeper_GetSwapFee(t *testing.T) {
@@ -223,8 +205,8 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	swapFeeParams := types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), swapFeeParams)
+	swapFeeRate := sdk.NewDecWithPrec(3, 3)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, sdk.OneDec(), swapFeeRate)
 	assert.Equal(t, "1", swapResult.String())
 }
 
@@ -239,9 +221,9 @@ func TestKeeper_GetSwapFee_PmtpParams(t *testing.T) {
 	}
 	asset := types.Asset{}
 
-	swapFeeParams := types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
+	swapFeeRate := sdk.NewDecWithPrec(3, 3)
 
-	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), swapFeeParams)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, pool, sdk.NewDec(100), swapFeeRate)
 
 	require.Equal(t, swapResult, sdk.ZeroUint())
 }
@@ -350,13 +332,13 @@ func TestKeeper_CalculateWithdrawal(t *testing.T) {
 
 func TestKeeper_CalcSwapResult(t *testing.T) {
 	testcases := []struct {
-		name                                string
-		toRowan                             bool
-		X, x, Y, y, minSwapFee, expectedFee sdk.Uint
-		pmtpCurrentRunningRate              sdk.Dec
-		swapFeeRate                         sdk.Dec
-		err                                 error
-		errString                           error
+		name                    string
+		toRowan                 bool
+		X, x, Y, y, expectedFee sdk.Uint
+		pmtpCurrentRunningRate  sdk.Dec
+		swapFeeRate             sdk.Dec
+		err                     error
+		errString               error
 	}{
 		{
 			name:                   "one side of pool empty",
@@ -368,7 +350,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			expectedFee:            sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(500),
 		},
 		{
 			name:                   "swap amount zero",
@@ -380,7 +361,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			expectedFee:            sdk.NewUint(0),
 			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(500),
 		},
 		{
 			name:                   "real world amounts, buy rowan",
@@ -392,7 +372,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			expectedFee:            sdk.NewUint(200019938000),
 			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(0),
 		},
 		{
 			name:                   "real world amounts, sell rowan",
@@ -404,31 +383,6 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			expectedFee:            sdk.NewUint(1800179442000),
 			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(0),
-		},
-		{
-			name:                   "real world amounts, sell rowan, fee < minSwapFee & minSwapFee > adjustedAmount",
-			toRowan:                false,
-			X:                      sdk.NewUint(1999800619938006200),
-			x:                      sdk.NewUint(200000000000000),
-			Y:                      sdk.NewUint(2000200000000000000),
-			y:                      sdk.NewUint(0),
-			expectedFee:            sdk.NewUint(600059814000057),
-			pmtpCurrentRunningRate: sdk.NewDec(2),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(20000000000000000),
-		},
-		{
-			name:                   "real world amounts, sell rowan, fee < minSwapFee",
-			toRowan:                false,
-			X:                      sdk.NewUint(1999800619938006200),
-			x:                      sdk.NewUint(200000000000000),
-			Y:                      sdk.NewUint(2000200000000000000),
-			y:                      sdk.NewUint(598059814000057),
-			expectedFee:            sdk.NewUint(2000000000000),
-			pmtpCurrentRunningRate: sdk.NewDec(2),
-			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(2000000000000),
 		},
 		{
 			name:                   "big numbers",
@@ -440,13 +394,12 @@ func TestKeeper_CalcSwapResult(t *testing.T) {
 			expectedFee:            sdk.NewUintFromString("3300330033003300475524186081974530927560579473952430682017779080504977"),
 			pmtpCurrentRunningRate: sdk.NewDec(2),
 			swapFeeRate:            sdk.NewDecWithPrec(3, 3),
-			minSwapFee:             sdk.NewUint(0),
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			y, fee := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate, tc.minSwapFee)
+			y, fee := clpkeeper.CalcSwapResult(tc.toRowan, tc.X, tc.x, tc.Y, tc.pmtpCurrentRunningRate, tc.swapFeeRate)
 
 			require.Equal(t, tc.y.String(), y.String()) // compare strings so that the expected amounts can be read from the failure message
 			require.Equal(t, tc.expectedFee.String(), fee.String())
@@ -1334,7 +1287,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 		},
 	}
 
-	swapFeeRate := sdk.NewDecWithPrec(1, 4)
+	sellNativeSwapFeeRate := sdk.NewDecWithPrec(1, 4)
+	buyNativeSwapFeeRate := sdk.NewDecWithPrec(1, 4)
 	pmtpCurrentRunningRate := sdk.ZeroDec()
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1345,7 +1299,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 				tc.externalAssetBalance,
 				tc.nativeAssetAmount,
 				tc.externalAssetAmount,
-				swapFeeRate,
+				sellNativeSwapFeeRate,
+				buyNativeSwapFeeRate,
 				pmtpCurrentRunningRate,
 			)
 
@@ -2309,9 +2264,9 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				to = types.Asset{Symbol: tc.poolAsset}
 			}
 
-			swapFeeParams := types.SwapFeeParams{SwapFeeRate: sdk.NewDecWithPrec(3, 3)}
+			swapFeeRate := sdk.NewDecWithPrec(3, 3)
 
-			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, swapFeeParams)
+			swapResult, liquidityFee, priceImpact, newPool, err := clpkeeper.SwapOne(from, swapAmount, to, pool, tc.pmtpCurrentRunningRate, swapFeeRate)
 
 			if tc.errString != nil {
 				require.EqualError(t, err, tc.errString.Error())
