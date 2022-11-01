@@ -1,4 +1,5 @@
-This tutorial demonstrates asymmetric adds it also shows how adding asymmetrically to a
+This tutorial demonstrates the ability to add asymmetrically to a pool.
+It also shows how adding asymmetrically to a
 pool then removing liquidity is equivalent to performing a swap, that is the liquidity
 provider does not achieve a cheap swap by adding then removing from the pool.
 
@@ -205,9 +206,9 @@ sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)
 ceth: 500000366455407949029237
 rowan: 499999449683111923543856
 
-akasha has swapped 450316888076456144rowan for 366455407949029237ceth
-By adding then removing from the pool, akasha gained 366455407949029238ceth.
-So akasha gains 1ceth more by adding then removing from the pool rather than swapping.
+akasha has swapped 450316888076456144rowan for 366455407949029237ceth.
+By adding then removing from the pool, akasha gained 366455407949029238ceth and provided 450316888076456144rowan to the pool.
+So both actions are almost identical, except akasha gains 1ceth more by adding then removing from the pool rather than swapping.
 This is a rounding error. Which means, as expected, adding asymmetrically then removing
 liquidity is equivalent to swapping.
 
