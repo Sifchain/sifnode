@@ -186,6 +186,7 @@ type MarginParams struct {
 	ClosedPools                              []string    `json:"closed_pools"`
 	IncrementalInterestPaymentEnabled        bool        `json:"incremental_interest_payment_enabled"`
 	WhitelistingEnabled                      bool        `json:"whitelisting_enabled"`
+	RowanCollateralEnabled                   bool        `json:"rowan_collateral_enabled"`
 }
 
 type Dispensation struct {

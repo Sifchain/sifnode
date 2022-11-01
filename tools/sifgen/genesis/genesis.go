@@ -154,6 +154,7 @@ func ReplaceMarginGenesis(nodeHomeDir string) error {
 	(*genesis).AppState.Margin.Params.ClosedPools = gen.Params.ClosedPools
 	(*genesis).AppState.Margin.Params.IncrementalInterestPaymentEnabled = gen.Params.IncrementalInterestPaymentEnabled
 	(*genesis).AppState.Margin.Params.WhitelistingEnabled = gen.Params.WhitelistingEnabled
+	(*genesis).AppState.Margin.Params.RowanCollateralEnabled = gen.Params.RowanCollateralEnabled
 
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
