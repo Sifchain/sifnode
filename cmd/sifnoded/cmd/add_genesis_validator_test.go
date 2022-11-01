@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -70,8 +69,6 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	_ = mm.InitGenesis(ctx, sifapp.AppCodec(), appState)
 	// Assert validator
 	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkIdentity(TestNetworkDescriptor))
-
-	fmt.Printf("+++++++ %v \n", validators)
 
 	expectedValidatorAddress, err := sdk.ValAddressFromBech32(expectedValidatorBech32)
 	assert.NoError(t, err)

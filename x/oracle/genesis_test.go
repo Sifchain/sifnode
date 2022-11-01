@@ -2,7 +2,6 @@ package oracle_test
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -167,12 +166,6 @@ func TestGenesisMarshalling(t *testing.T) {
 
 			wl := genesis.NetworkConfigData
 
-			// fmt.Printf("++++++ one TestGenesisMarshalling %v \n", wl)
-
-			// fmt.Printf("++++++ two TestGenesisMarshalling %v \n", tc.genesis.NetworkConfigData)
-
-			// require.Equal(t, len(tc.genesis.NetworkConfigData), len(wl.WhiteList))
-
 			found := false
 			expectedWhitelist := make([]*types.ValidatorPower, 0)
 
@@ -181,7 +174,6 @@ func TestGenesisMarshalling(t *testing.T) {
 			}
 
 			for _, value := range wl {
-				fmt.Printf("====== %v \n", value)
 				if value.NetworkDescriptor == networkDescriptor.NetworkDescriptor {
 					found = true
 					if value.ValidatorWhitelist != nil {
