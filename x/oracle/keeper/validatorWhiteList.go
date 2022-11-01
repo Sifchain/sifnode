@@ -24,8 +24,9 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) []*types.NetworkConfigData {
 		genesisValidatorWhiteList = append(genesisValidatorWhiteList, &types.NetworkConfigData{
 			NetworkDescriptor:  networkIdentity.NetworkDescriptor,
 			ValidatorWhitelist: &validatorWhiteList,
+			ConsensusNeeded:    &types.ConsensusNeeded{},
+			CrossChainFee:      &types.CrossChainFeeConfig{},
 		})
-
 	}
 
 	return genesisValidatorWhiteList

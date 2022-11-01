@@ -63,6 +63,8 @@ the account address or key name. If a key name is given, the address will be loo
 			networkConfigData := oracletypes.NetworkConfigData{
 				NetworkDescriptor:  networkDescriptor,
 				ValidatorWhitelist: &oracletypes.ValidatorWhiteList{},
+				ConsensusNeeded:    &oracletypes.ConsensusNeeded{},
+				CrossChainFee:      &oracletypes.CrossChainFeeConfig{},
 			}
 
 			// find and remove according to network descriptor
@@ -71,6 +73,7 @@ the account address or key name. If a key name is given, the address will be loo
 					networkConfigData = *oracleGenState.NetworkConfigData[index]
 					oracleGenState.NetworkConfigData = append(oracleGenState.NetworkConfigData[:index],
 						oracleGenState.NetworkConfigData[:index]...)
+					break
 				}
 			}
 			found := false
