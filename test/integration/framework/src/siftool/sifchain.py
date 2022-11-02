@@ -1163,29 +1163,32 @@ class SifnodeClient:
         generate_only: bool = False
     ) -> Mapping:
         """ Sends ETH from Sifchain to Ethereum (burn) """
-        assert on_peggy2_branch, "Only for Peggy2.0"
-        assert self.ctx.eth
-        eth = self.ctx.eth
+        if on_peggy2_branch:
+            assert self.ctx.eth
+            eth = self.ctx.eth
 
-        direction = "lock" if is_cosmos_native_denom(denom) else "burn"
-        cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
-                "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
-                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
-                "--output", "json",
-            ] + \
-            (["--generate-only"] if generate_only else []) + \
-            self.sifnode._fees_args() + \
-            self.sifnode._home_args() + \
-            (self.sifnode._keyring_backend_args() if not generate_only else []) + \
-            self.sifnode._chain_id_args() + \
-            self.sifnode._node_args() + \
-            self.sifnode._yes_args()
-        res = self.sifnode.sifnoded_exec(args)
-        result = json.loads(stdout(res))
-        if not generate_only:
-            assert "failed to execute message" not in result["raw_log"]
-        return result
+            direction = "lock" if is_cosmos_native_denom(denom) else "burn"
+            cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
+            args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+                    "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
+                    "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+                    "--output", "json",
+                ] + \
+                (["--generate-only"] if generate_only else []) + \
+                self.sifnode._fees_args() + \
+                self.sifnode._home_args() + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._node_args() + \
+                self.sifnode._yes_args()
+            res = self.sifnode.sifnoded_exec(args)
+            result = json.loads(stdout(res))
+            if not generate_only:
+                assert "failed to execute message" not in result["raw_log"]
+            return result
+        else:
+            # I am on peggy1 branch
+
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str
