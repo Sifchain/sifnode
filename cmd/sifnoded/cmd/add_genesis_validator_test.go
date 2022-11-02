@@ -8,8 +8,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -67,6 +69,15 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	_ = mm.InitGenesis(ctx, sifapp.AppCodec(), appState)
 	// Assert validator
 	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkIdentity(TestNetworkDescriptor))
-	expectedValidators := oracletypes.ValidatorWhiteList{WhiteList: map[string]uint32{expectedValidatorBech32: 100}}
-	require.Equal(t, expectedValidators, validators)
+
+	expectedValidatorAddress, err := sdk.ValAddressFromBech32(expectedValidatorBech32)
+	assert.NoError(t, err)
+	found := false
+	for _, value := range validators.ValidatorPower {
+		if bytes.Compare(value.ValidatorAddress, expectedValidatorAddress) == 0 {
+			found = true
+			assert.Equal(t, value.VotingPower, uint32(100))
+		}
+	}
+	assert.Equal(t, found, true)
 }

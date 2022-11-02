@@ -2,13 +2,13 @@ package keeper
 
 import (
 	"fmt"
+
 	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -160,41 +160,49 @@ func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 	}
 }
 
+// GetFirstLockDoublePeg return if the token already double pegged
 func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
 	registryEntry, err := k.GetRegistryEntry(ctx, denom)
 	if err != nil {
 		panic("Invalid Denom for Get Double Peg")
 	}
-	if result, ok := registryEntry.DoublePeggedNetworkMap[uint32(networkDescriptor)]; ok {
-		return result
+
+	for _, value := range registryEntry.DoublePeggedNetworks {
+		if value == networkDescriptor {
+			// already recorded, not the first time
+			return false
+		}
 	}
 
 	return true
 }
 
+// SetFirstDoublePeg add the network into double pegged network list for a denom
 func (k keeper) SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
-	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
-	if firstLockDoublePeg {
-		registryEntry, err := k.GetRegistryEntry(ctx, denom)
-		if err != nil {
-			panic("Invalid Denom for Set Double Peg")
-		}
-		if registryEntry.DoublePeggedNetworkMap == nil {
-			registryEntry.DoublePeggedNetworkMap = make(map[uint32]bool)
-		}
-		registryEntry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
-		k.SetToken(ctx, registryEntry)
-
-		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstDoublePeg, "networkDescriptor", networkDescriptor, "registry", registryEntry)
+	registryEntry, err := k.GetRegistryEntry(ctx, denom)
+	if err != nil {
+		panic(err)
 	}
+	for _, value := range registryEntry.DoublePeggedNetworks {
+		if value == networkDescriptor {
+			return
+		}
+	}
+
+	// update the list
+	registryEntry.DoublePeggedNetworks = append(registryEntry.DoublePeggedNetworks, networkDescriptor)
+
+	k.SetToken(ctx, registryEntry)
 }
 
+// AddMultipleTokens add multiple tokens into keeper
 func (k keeper) AddMultipleTokens(ctx sdk.Context, entries []*types.RegistryEntry) {
 	for _, entry := range entries {
 		k.SetToken(ctx, entry)
 	}
 }
 
+// RemoveMultipleTokens remove tokens from keeper
 func (k keeper) RemoveMultipleTokens(ctx sdk.Context, denoms []string) {
 	for _, denom := range denoms {
 		k.RemoveToken(ctx, denom)

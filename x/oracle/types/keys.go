@@ -15,12 +15,12 @@ const (
 )
 
 var (
-	WhiteListValidatorPrefix    = []byte{0x00}
-	AdminAccountPrefix          = []byte{0x01}
-	ProphecyPrefix              = []byte{0x02}
-	CrossChainFeePrefix         = []byte{0x03}
-	SignaturePrefix             = []byte{0x04}
-	GlobalNonceProphecyIDPrefix = []byte{0x05}
-	WitnessLockBurnNoncePrefix  = []byte{0x06}
-	ConsensusNeededPrefix       = []byte{0x07}
+	WhiteListValidatorPrefix       = []byte{0x00}
+	AdminAccountPrefix             = []byte{0x01}
+	ProphecyPrefix                 = []byte{0x02}
+	CrossChainFeePrefix            = []byte{0x03}
+	SignaturePrefix                = []byte{0x04}
+	GlobalSequenceProphecyIDPrefix = []byte{0x05}
+	WitnessLockBurnNoncePrefix     = []byte{0x06}
+	ConsensusNeededPrefix          = []byte{0x07}
 )

@@ -397,8 +397,8 @@ type Ibc struct {
 }
 
 type Oracle struct {
-	AddressWhitelist map[string]interface{} `json:"address_whitelist"`
-	AdminAddress     string                 `json:"admin_address"`
+	NetworkConfigData []interface{} `json:"network_config_data"`
+	AdminAddress      string        `json:"admin_address"`
 }
 
 type SlashingParams struct {

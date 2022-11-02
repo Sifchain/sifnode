@@ -6,10 +6,11 @@ import (
 	"math/rand"
 	"time"
 
-	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"strconv"
 	"testing"
+
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 
 	"github.com/Sifchain/sifnode/app"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
@@ -172,12 +173,15 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
-	valAddrs := make(map[string]uint32)
+	valAddrs := make([]*oracleTypes.ValidatorPower, 0)
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
 		valAddrsInOrder[i] = valAddr
-		valAddrs[valAddr.String()] = uint32(amount)
+		valAddrs = append(valAddrs, &oracleTypes.ValidatorPower{
+			ValidatorAddress: valAddr,
+			VotingPower:      uint32(amount),
+		})
 		valTokens := sdk.TokensFromConsensusPower(amount, sdk.DefaultPowerReduction)
 		// test how the validator is set from a purely unbonbed pool
 		validator, err := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
@@ -196,8 +200,13 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	oracleKeeper.SetCrossChainFee(ctx, networkIdentity,
 		types.GetDenom(NetworkDescriptor, types.NewEthereumAddress(EthAddress)),
 		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost), sdk.NewInt(FirstBurnDoublePeggyCost))
-	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
-	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
+	whitelist := oracleTypes.ValidatorWhiteList{ValidatorPower: valAddrs}
+	for _, value := range whitelist.ValidatorPower {
+		err = oracleKeeper.UpdateOracleWhiteList(ctx, NetworkDescriptor, value.ValidatorAddress, value.VotingPower)
+		if err != nil {
+			panic(err)
+		}
+	}
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }
 

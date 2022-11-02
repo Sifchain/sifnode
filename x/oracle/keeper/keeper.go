@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strconv"
@@ -138,8 +139,7 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 		return types.ErrNotAdminAccount
 	}
 
-	k.UpdateOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor), validator, power)
-	return nil
+	return k.UpdateOracleWhiteList(ctx, networkDescriptor, validator, power)
 }
 
 /*
@@ -149,8 +149,21 @@ higher than Consensus needed for networkDescriptor
 NetworkDescriptor is used to look up consensus threshold needed for network
 */
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
+	logger := k.Logger(ctx)
+
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
-	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
+
+	validators := make([]sdk.ValAddress, 0)
+	for _, value := range prophecy.ClaimValidators {
+		validator, err := sdk.ValAddressFromBech32(value)
+		if err != nil {
+			logger.Error("invalid validator format in prophecy ")
+			return prophecy
+		}
+
+		validators = append(validators, validator)
+	}
+	voteRate := whiteList.GetPowerRatio(validators)
 
 	var consensusNeeded float64
 	consensusNeededUint, err := k.GetConsensusNeeded(ctx, types.NewNetworkIdentity(networkDescriptor))
@@ -196,15 +209,23 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
 	networkDescriptor types.NetworkDescriptor,
 	prophecyID []byte,
 	cosmosSender, tokenAddress, ethereumAddress, signature string) error {
+	validatorAddress, err := sdk.ValAddressFromBech32(cosmosSender)
+
+	if err != nil {
+		return err
+	}
+
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.ErrProphecyNotFound
 	}
 
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
-	power, ok := whiteList.WhiteList[cosmosSender]
-	if !ok {
-		return errors.New("message sender to sign prophecy not in the whitelist")
+	power := uint32(0)
+	for _, powerPair := range whiteList.ValidatorPower {
+		if bytes.Compare(powerPair.ValidatorAddress, validatorAddress) == 0 {
+			power = powerPair.VotingPower
+		}
 	}
 
 	if power == 0 {
@@ -260,7 +281,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
 	}
 
 	// update witness's lock burn sequence
-	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
+	k.SetWitnessLockBurnSequence(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
 
 	// emit the event when status from pending to success
 	// old = unspecified, new = pending  the prophecy just created, not emit the event
@@ -302,7 +323,7 @@ func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.A
 		return types.ErrNotAdminAccount
 	}
 
-	k.SetConsensusNeeded(ctx, types.NewNetworkIdentity(networkDescriptor), consensusNeeded)
+	k.SetConsensusNeeded(ctx, types.NewNetworkIdentity(networkDescriptor), types.ConsensusNeeded{ConsensusNeeded: consensusNeeded})
 	return nil
 }
 

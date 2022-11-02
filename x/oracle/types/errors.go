@@ -22,4 +22,5 @@ var (
 	ErrNotAdminAccount         = sdkerrors.Register(ModuleName, 12, "Not an admin account")
 	ErrInvalidOperationType    = sdkerrors.Register(ModuleName, 13, "invalid operation type for validator whitelist")
 	ErrInvalidProphecyStatus   = sdkerrors.Register(ModuleName, 14, "invalid prophecy status")
+	ErrValidatorPowerOverflow  = sdkerrors.Register(ModuleName, 15, "validator power setting is overflow")
 )

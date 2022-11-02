@@ -65,8 +65,8 @@ func (k Keeper) GetCrossChainFee(ctx sdk.Context, networkIdentity types.NetworkI
 }
 
 // GetAllCrossChainFeeConfig get all fee configs for all network descriptors
-func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) map[uint32]*types.CrossChainFeeConfig {
-	configs := make(map[uint32]*types.CrossChainFeeConfig)
+func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) []*types.NetworkConfigData {
+	configs := make([]*types.NetworkConfigData, 0)
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.CrossChainFeePrefix)
@@ -80,16 +80,23 @@ func (k Keeper) GetAllCrossChainFeeConfig(ctx sdk.Context) map[uint32]*types.Cro
 
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
-		var config types.CrossChainFeeConfig
 		value := iterator.Value()
 
-		network_descriptor, err := types.GetFromPrefix(k.cdc, key, types.CrossChainFeePrefix)
+		var config types.NetworkConfigData
+
+		network_identity, err := types.GetFromPrefix(k.cdc, key, types.CrossChainFeePrefix)
 		if err != nil {
 			panic(err)
 		}
-		k.cdc.MustUnmarshal(value, &config)
+		// k.cdc.MustUnmarshal(value, &config)
 
-		configs[uint32(network_descriptor.NetworkDescriptor)] = &config
+		var crossChainFeeConfig types.CrossChainFeeConfig
+		k.cdc.MustUnmarshal(value, &crossChainFeeConfig)
+
+		config.NetworkDescriptor = network_identity.NetworkDescriptor
+		config.CrossChainFee = &crossChainFeeConfig
+
+		configs = append(configs, &config)
 	}
 	return configs
 }

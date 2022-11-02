@@ -24,7 +24,7 @@ func TestKeeper_GetConsensusNeeded(t *testing.T) {
 	_, err = app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
 	assert.Error(t, err)
 
-	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, 10)
+	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, types.ConsensusNeeded{ConsensusNeeded: 10})
 
 	// case for well set the ConsensusNeeded
 	consensusNeeded, err := app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
@@ -38,7 +38,7 @@ func TestKeeper_SetConsensusNeeded(t *testing.T) {
 
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
 
-	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, 10)
+	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, types.ConsensusNeeded{ConsensusNeeded: 10})
 
 	consensusNeeded, err := app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
 	assert.NoError(t, err)
@@ -52,7 +52,7 @@ func TestKeeper_SetConsensusNeededWithLargeNumber(t *testing.T) {
 
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
 
-	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, 1000)
+	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, types.ConsensusNeeded{ConsensusNeeded: 1000})
 
 	_, err := app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
 	assert.Error(t, err)

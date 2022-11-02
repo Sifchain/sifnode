@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -17,15 +18,16 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
-	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
+
 	for _, address := range valAddresses {
-		whilelist.GetWhiteList()[address.String()] = 100
+		err := app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 10)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whilelist)
-
 	vList := app.OracleKeeper.GetOracleWhiteList(ctx, networkDescriptor)
-	assert.Equal(t, len(vList.GetAllValidators()), 2)
+	assert.Equal(t, len(vList.ValidatorPower), 2)
 	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx, networkDescriptor))
 }
 
@@ -36,13 +38,14 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
-	whitelist := make(map[string]uint32)
 
 	for _, address := range valAddresses {
-		whitelist[address.String()] = 100
+		err := app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 10)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, types.ValidatorWhiteList{WhiteList: whitelist})
 	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, networkDescriptor, valAddresses[0]))
 	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, networkDescriptor, valAddresses[1]))
 	addresses = sifapp.CreateRandomAccounts(3)
@@ -56,15 +59,37 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
-	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
+	whitelist := make([]*types.ValidatorPower, 0)
 	for _, address := range valAddresses {
-		whilelist.GetWhiteList()[address.String()] = 100
+		whitelist = append(whitelist, &types.ValidatorPower{
+			ValidatorAddress: address,
+			VotingPower:      100,
+		})
+		err := app.OracleKeeper.UpdateOracleWhiteList(ctx, types.NetworkDescriptor(0), address, 100)
+		assert.NoError(t, err)
 	}
 
-	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whilelist)
-
 	allWhiteList := app.OracleKeeper.GetAllWhiteList(ctx)
-	assert.Equal(t, whilelist, allWhiteList[types.NetworkDescriptor(0)])
 
+	expectedWhitelist := make([]*types.ValidatorPower, 0)
+	found := false
+
+	for _, value := range allWhiteList {
+		if value.NetworkDescriptor == types.NetworkDescriptor(0) {
+			found = true
+			expectedWhitelist = value.ValidatorWhitelist.ValidatorPower
+		}
+	}
+	assert.Equal(t, found, true)
+
+	for _, value := range whitelist {
+		found := false
+		for _, expected := range expectedWhitelist {
+			if bytes.Compare(value.ValidatorAddress, expected.ValidatorAddress) == 0 {
+				found = true
+				assert.Equal(t, value.VotingPower, expected.VotingPower)
+			}
+		}
+		assert.Equal(t, found, true)
+	}
 }

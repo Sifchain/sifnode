@@ -53,7 +53,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validator length", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
 
 	store.Set(storePrefix, k.cdc.MustMarshal(&prophecy))
 }
@@ -81,7 +81,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	tokenDenomHash string,
 	tokenContractAddress string,
 	tokenAmount sdk.Int,
-	crosschainFee sdk.Int,
+	crossChainFee sdk.Int,
 	bridgeToken bool,
 	globalSequence uint64,
 	tokenDecimal uint8,
@@ -99,7 +99,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		TokenAmount:          tokenAmount,
 		BridgeToken:          bridgeToken,
 		GlobalSequence:       globalSequence,
-		CrosschainFee:        crosschainFee,
+		CrosschainFee:        crossChainFee,
 		EthereumAddress:      []string{},
 		Signatures:           []string{},
 		BlockNumber:          uint64(k.currentHeight),
@@ -211,7 +211,7 @@ func (k Keeper) getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor types.Ne
 		GlobalSequence:    globalSequence,
 	})
 
-	storeKey := append(types.GlobalNonceProphecyIDPrefix, bs[:]...)
+	storeKey := append(types.GlobalSequenceProphecyIDPrefix, bs[:]...)
 	return storeKey
 }
 
@@ -248,12 +248,11 @@ func (k Keeper) GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context,
 }
 
 // GetProphecyInfo return a prophecy's signatures
-func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) map[string]*types.ProphecyInfo {
+func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) []*types.GenesisProphecyInfo {
 	store := ctx.KVStore(k.storeKey)
-	prophecyInfos := make(map[string]*types.ProphecyInfo)
+	prophecyInfos := make([]*types.GenesisProphecyInfo, 0)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.SignaturePrefix)
-	var prophecyInfo types.ProphecyInfo
+	iterator := sdk.KVStorePrefixIterator(store, types.GlobalSequenceProphecyIDPrefix)
 
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -262,10 +261,23 @@ func (k Keeper) GetAllProphecyInfo(ctx sdk.Context) map[string]*types.ProphecyIn
 		}
 	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
-		key := iterator.Key()
-		value := iterator.Value()
+		var globalSequenceKey types.GlobalSequenceKey
+		var prophecyInfo types.ProphecyInfo
+
+		globalSequenceKey, err := types.GetGlobalSequenceKeyKeyFromRawKey(k.cdc, iterator.Key())
+		if err != nil {
+			panic(err)
+		}
+		prophecyId := iterator.Value()
+
+		storePrefix := append(types.SignaturePrefix, prophecyId[:]...)
+		value := store.Get(storePrefix)
+
 		k.cdc.MustUnmarshal(value, &prophecyInfo)
-		prophecyInfos[string(key)] = &prophecyInfo
+		prophecyInfos = append(prophecyInfos, &types.GenesisProphecyInfo{
+			GlobalSequenceKey: &globalSequenceKey,
+			ProphecyInfo:      &prophecyInfo,
+		})
 	}
 
 	return prophecyInfos

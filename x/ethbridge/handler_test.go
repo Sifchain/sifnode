@@ -1,6 +1,7 @@
 package ethbridge_test
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -506,13 +507,17 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			wl := oracleKeeper.GetAllValidators(ctx, networkDescriptor)
-			for _, address := range wl {
+			wl := oracleKeeper.GetOracleWhiteList(ctx, networkDescriptor)
+			for _, power := range wl.ValidatorPower {
 				found := false
 				for _, expected := range testCase.expected {
-					if address.Equals(expected) {
+					if bytes.Compare(power.ValidatorAddress, expected) == 0 {
 						found = true
 					}
+				}
+				// skip the validator if its power is 0
+				if power.VotingPower == 0 {
+					found = true
 				}
 				require.Equal(t, found, true)
 			}
