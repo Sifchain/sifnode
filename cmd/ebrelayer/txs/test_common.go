@@ -1,7 +1,6 @@
 package txs
 
 import (
-	"encoding/binary"
 	"math/big"
 	"strconv"
 	"testing"
@@ -46,15 +45,9 @@ var testAmount = big.NewInt(5)
 var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
-func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
+func CreateTestLogEthereumEvent() types.EthereumEvent {
 	networkDescriptor := oracletypes.NetworkDescriptor(TestNetworkDescriptor)
 	testBridgeContractAddress := common.HexToAddress(TestBridgeContractAddress)
-	// Convert int to [32]byte
-	var testProphecyID []byte
-	var testProphecyID32 [32]byte
-	testProphecyID = make([]byte, 32)
-	binary.LittleEndian.PutUint64(testProphecyID, uint64(TestProphecyID))
-	copy(testProphecyID32[:], testProphecyID)
 	testEthereumSender := common.HexToAddress(TestEthereumAddress1)
 	testCosmosRecipient := []byte(TestCosmosAddress1)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
