@@ -35,8 +35,6 @@ message MsgLock {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   string denom_hash = 3 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
-  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 7
-      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
   string crosschain_fee = 6 [
@@ -44,6 +42,8 @@ message MsgLock {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"crosschain_fee\""
   ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 7
+  [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
 }
 
 message MsgLockResponse {}
@@ -57,8 +57,7 @@ message MsgBurn {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   string denom_hash = 3 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
-  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 7
-      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+  
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
   string crosschain_fee = 6 [
@@ -66,6 +65,8 @@ message MsgBurn {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"crosschain_fee\""
   ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 7
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
 }
 
 message MsgBurnResponse {}
@@ -79,10 +80,10 @@ message MsgCreateEthBridgeClaimResponse {}
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
 message MsgUpdateWhiteListValidator {
-  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 4
-      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string cosmos_sender = 1 [ (gogoproto.moretags) = "yaml:\"cosmos_sender\"" ];
   string validator = 2 [ (gogoproto.moretags) = "yaml:\"validator\"" ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 4
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   uint32 power = 5;
 }
 
