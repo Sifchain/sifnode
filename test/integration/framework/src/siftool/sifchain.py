@@ -535,6 +535,23 @@ class Sifnoded:
         res = exactly_one(stdout(res).splitlines())
         assert res.endswith(" is a valid genesis file")
 
+    # Pause the ethbridge module's Lock/Burn on an evm_network_descriptor
+    def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
+        assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
+        args = ["tx", "ethbridge", "set-pauser", "true"] + \
+                [self._home_args(), self._keyring_backend_args() ] + \
+                ["--from", admin_account_address] + \
+                ["--output", "json"]
+
+        res = self.sifnoded_exec(args)
+        check_raw_log(res)
+        return [json.loads(x) for x in stdout(res).splitlines()]
+
+    # Unpause the ethbridge module's Lock/Burn on an evm_network_descriptor
+    def unpause_peggy_bridge(self):
+        assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
+        pass
+
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
     # This was split from init_common
     def peggy2_add_account(self, name: str, tokens: cosmos.Balance, is_admin: bool = False):
@@ -1142,7 +1159,6 @@ class Sifnoded:
 
     def _yes_args(self) -> List[str]:
         return ["--yes"]
-
 
 # Refactoring in progress - this class is supposed to become the successor of class Sifnode.
 # It wraps node, home, chain_id, fees and keyring backend
