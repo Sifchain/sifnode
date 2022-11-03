@@ -1,6 +1,9 @@
 package instrumentation
 
 import (
+	"os"
+	"strings"
+
 	"github.com/tendermint/tendermint/libs/log"
 	"go.uber.org/zap"
 )
@@ -10,15 +13,15 @@ const (
 	peggyTestMarker = "peggytest"
 	kindMarker      = "kind"
 
-	Startup       = "Startup"
-	EthereumEvent = "EthereumEvent"
-	CosmosEvent   = "CosmosEvent"
-	// TODO: rename, there isnt ethereumprophecyclaim, is there?
-	EthereumProphecyClaim          = "EthereumProphecyClaim"
+	Startup                        = "Startup"
+	EthereumEvent                  = "EthereumEvent"
+	CosmosEvent                    = "CosmosEvent"
+	EthereumBridgeClaim            = "EthereumBridgeClaim"
 	SetGlobalSequenceToBlockNumber = "SetGlobalSequenceToBlockNumber"
 	SendCoinsFromAccountToModule   = "SendCoinsFromAccountToModule"
 	BurnCoins                      = "BurnCoins"
 	SignProphecy                   = "SignProphecy"
+	ProcessSignProphecy            = "ProcessSignProphecy"
 	ProcessSuccessfulClaim         = "ProcessSuccessfulClaim"
 	CoinsSent                      = "coinsSent"
 	Burn                           = "Burn"
@@ -39,14 +42,13 @@ const (
 	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"
 	ReceiveCosmosBurnMessage       = "ReceiveCosmosBurnMessage"
 	WitnessSignProphecy            = "WitnessSignProphecy"
-	// TODO: Ambiguous naming
-	ProphecyClaimSubmitted = "ProphecyClaimSubmitted"
+	ProphecyClaimSubmitted         = "ProphecyClaimSubmitted"
 )
 
 func PeggyCheckpoint(logger log.Logger, kind string, keysAndValues ...interface{}) {
-	logger.Debug(peggyTestMarker, append([]interface{}{kindMarker, kind}, keysAndValues...)...)
+	logger.Debug(peggyTestMarker, append([]interface{}{kindMarker, kind, "cmdline", strings.Join(os.Args, " ")}, keysAndValues...)...)
 }
 
 func PeggyCheckpointZap(logger *zap.SugaredLogger, kind string, keysAndValues ...interface{}) {
-	logger.Debugw(peggyTestMarker, append([]interface{}{kindMarker, kind}, keysAndValues...)...)
+	logger.Debugw(peggyTestMarker, append([]interface{}{kindMarker, kind, "cmdline", strings.Join(os.Args, " ")}, keysAndValues...)...)
 }

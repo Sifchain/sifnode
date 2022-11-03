@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,7 +23,7 @@ func ParseInput(fp string) ([]types.Input, error) {
 	if err != nil {
 		return nil, err
 	}
-	input, err := ioutil.ReadFile(file)
+	input, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func ParseOutput(fp string) ([]types.Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	o, err := ioutil.ReadFile(file)
+	o, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

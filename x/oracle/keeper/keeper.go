@@ -12,7 +12,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -23,9 +22,9 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc         codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	storeKey    sdk.StoreKey      // Unexposed key to access store from sdk.Context
-	stakeKeeper types.StakingKeeper
+	cdc             codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	storeKey        sdk.StoreKey      // Unexposed key to access store from sdk.Context
+	stakeKeeper     types.StakingKeeper
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
 	currentHeight   int64
 }
@@ -82,8 +81,17 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 }
 
-// AppendValidatorToProphecy append the validator's signature to prophecy
-func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator sdk.ValAddress) (types.StatusText, error) {
+/*
+AppendValidatorToProphecy append the validator's signature to prophecy
+
+If ProphecyStatus is SUCCESS when called, it will
+1. Add validator to ClaimValidator array, and persist.
+2. Returns ErrProphecyFinalized
+*/
+func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	prophecyID []byte,
+	validator sdk.ValAddress) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		prophecy.Id = prophecyID
@@ -94,7 +102,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
-
+		k.Logger(ctx).Debug("Processing pending prophecy")
 		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
@@ -107,6 +115,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
+		k.Logger(ctx).Debug("Processing succeeded prophecy")
 
 		err := prophecy.AddClaim(validator)
 		if err != nil {
@@ -116,6 +125,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		return prophecy.Status, types.ErrProphecyFinalized
 
 	default:
+		// This is possible IFF GetProphecy returned with UNSPECIFIED
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
 }
@@ -132,7 +142,12 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 	return nil
 }
 
-// processCompletion looks at a given prophecy
+/*
+Updates Prophecy.Status to SUCCESS if voting power in ClaimValidators is
+higher than Consensus needed for networkDescriptor
+
+NetworkDescriptor is used to look up consensus threshold needed for network
+*/
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
 	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
@@ -150,7 +165,12 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion, "prophecy", zap.Reflect("prophecy", prophecy))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion,
+		"prophecy", zap.Reflect("prophecy", prophecy),
+		"whitelist", zap.Reflect("whiteList", whiteList),
+		"consensusNeededUint", consensusNeededUint,
+		"voteRate", voteRate,
+	)
 
 	return prophecy
 }
@@ -172,7 +192,10 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 }
 
 // ProcessSignProphecy deal with the signature from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	prophecyID []byte,
+	cosmosSender, tokenAddress, ethereumAddress, signature string) error {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.ErrProphecyNotFound
@@ -196,12 +219,12 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
-	pubKey, err := crypto.UnmarshalPubkey(publicKey)
+	pubKey, err := gethCrypto.UnmarshalPubkey(publicKey)
 	if err != nil {
 		return err
 	}
 
-	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
+	recoveredAddr := gethCrypto.PubkeyToAddress(*pubKey)
 
 	if recoveredAddr.String() != ethereumAddress {
 		return errors.New("incorrect ethereum signature")
@@ -226,7 +249,8 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	oldStatus := prophecy.Status
 
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
-	if err != nil {
+	if err != nil && err != types.ErrProphecyFinalized {
+		k.Logger(ctx).Error("Error appending validator to Prophecy", "Error", err)
 		return err
 	}
 
@@ -255,7 +279,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
 			sdk.NewAttribute(types.AttributeKeyBridgeToken, strconv.FormatBool(prophecyInfo.BridgeToken)),
 			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
-			sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
 			sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
 			sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),
 		)
@@ -286,6 +310,11 @@ func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.A
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
+}
+
+func (k Keeper) GetProphecyIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return store.Iterator(types.ProphecyPrefix, nil)
 }
 
 // PrefixMsg prefixes a message for verification, mimics behavior of web3.eth.sign

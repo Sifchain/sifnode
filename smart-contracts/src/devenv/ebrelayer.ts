@@ -1,7 +1,7 @@
 import * as ChildProcess from "child_process"
 import { EthereumAddressAndKey, ShellCommand } from "./devEnv"
 import { EbRelayerAccount, ValidatorValues, waitForSifAccount } from "./sifnoded"
-import { DeployedContractAddresses } from "../../scripts/deploy_contracts"
+import { DeployedContractAddresses } from "../../scripts/deploy_contracts_dev"
 import notifier from "node-notifier"
 import { GolangResults } from "./golangBuilder"
 import * as fs from "fs"
@@ -54,7 +54,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
         this.websocketAddress,
         "--bridge-registry-contract-address",
         this.args.smartContract.bridgeRegistry,
-        "--validator-mnemonic",
+        "--validator-moniker",
         this.args.sifnodeAccount.name,
         "--chain-id",
         String(this.chainNet),
@@ -141,7 +141,7 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
         this.websocketAddress,
         "--bridge-registry-contract-address",
         this.args.smartContract.bridgeRegistry,
-        "--validator-mnemonic",
+        "--validator-moniker",
         this.args.sifnodeAccount.name,
         "--chain-id",
         String(this.chainNet),

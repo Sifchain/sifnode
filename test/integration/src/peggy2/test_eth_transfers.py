@@ -12,7 +12,7 @@ fund_amount_eth = 10 * eth.ETH
 fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1  # TODO How much rowan do we need? (this is 10**18)
 fund_amount_ceth_cross_chain_fee = 10 * eth.GWEI
 
-def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
+def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx: EnvCtx):
     # Create/retrieve a test ethereum account
     test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
 
@@ -49,6 +49,15 @@ def test_eth_to_ceth_and_back_to_eth_transfer_valid(ctx):
 def test_erc20_to_sifnode_and_back_first_time(ctx):
     token_decimals = 18
     token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
+
+
+@pytest.mark.xfail()
+def test_erc20_to_sifnode_and_back_with_bad_network_descriptor(ctx):
+    token_decimals = 18
+    token_sc = deploy_erc20_token_for_test(ctx, token_decimals)
+    # A bad network descriptor should cause an expected failure
+    ctx.eth.ethereum_network_descriptor = 0
     transfer_erc20_to_sifnode_and_back(ctx, token_sc, token_decimals, 1, False)
 
 

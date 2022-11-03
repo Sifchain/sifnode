@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -30,7 +29,7 @@ func createInput(t *testing.T, filename string) {
 	inputList := []banktypes.Input{banktypes.NewInput(in, coin), banktypes.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0600)
+	_ = os.WriteFile(filename, file, 0600)
 }
 
 func removeFile(t *testing.T, filename string) {

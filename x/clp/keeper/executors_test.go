@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -12,25 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestKeeper_CreatePool_Error(t *testing.T) {
-	// nativeAssetAmount sdk.Uint, externalAssetAmount
-	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress(test.AddressKey1)
-	//Parameters for create pool
-	nativeAssetAmount := sdk.NewUintFromString("998")
-	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth0123456789012345678901234567890123456789012345678901234567890123456789")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("10000")))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
-	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
-	// Test Create Pool with invalid pool asset name
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	assert.Error(t, err, "Invalid pool asset name.")
-	assert.Nil(t, pool)
-}
 
 func TestKeeper_CreatePool_Range(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
@@ -92,9 +72,7 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool", err)
 	_, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), nil)
 	assert.Error(t, err, "MsgCreatePool can not be nil")
 	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
@@ -162,9 +140,7 @@ func TestKeeper_CreateLiquidityProvider(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	asset := types.NewAsset("eth")
 	lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-	if err != nil {
-		fmt.Println("Error Creating Liquidity Provider :", err)
-	}
+	require.NoError(t, err, "Error Creating Liquidity Provider :", err)
 	lp := app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), lpAddess)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.LiquidityProviderAddress, "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
@@ -229,9 +205,7 @@ func TestKeeper_DecommissionPool(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool :", err)
 
 	err = app.ClpKeeper.DecommissionPool(ctx, *pool)
 	require.NoError(t, err)
@@ -274,18 +248,14 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, assetEth, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	_, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool :", err)
 	externalCoin = sdk.NewCoin(assetDash.Symbol, sdk.Int(sdk.NewUint(10000)))
 	nativeCoin = sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	_ = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 
 	msgCreatePool = types.NewMsgCreatePool(signer, assetDash, nativeAssetAmount, externalAssetAmount)
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+	require.NoError(t, err, "Error Generating new pool :", err)
 	// Test Parameters for swap
 	// initialBalance: Initial account balance for all assets created.
 	initialBalance := sdk.NewUintFromString("1000000000000000000000")
@@ -320,4 +290,10 @@ func TestKeeper_ParseToInt(t *testing.T) {
 	res, boolean := app.ClpKeeper.ParseToInt("1")
 	assert.True(t, boolean)
 	assert.Equal(t, res.String(), "1")
+}
+
+func TestKeeper_ParseToInt_WithBigNumber(t *testing.T) {
+	_, app := test.CreateTestAppClp(false)
+	_, boolean := app.ClpKeeper.ParseToInt("10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+	assert.False(t, boolean)
 }

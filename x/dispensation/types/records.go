@@ -30,9 +30,6 @@ func (dr DistributionRecord) Validate() bool {
 	if !dr.Coins.IsValid() {
 		return false
 	}
-	if !dr.Coins.IsAllPositive() {
-		return false
-	}
 	return true
 }
 

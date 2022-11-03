@@ -29,7 +29,6 @@
       ]
     },
     {
-      "is_whitelisted": true,
       "denom": "sifea3bfa843d3064ff1e7565aed45706b6eba6aa5d0d2fa25d64c70d62697fa421",
       "decimals": "18",
       "permissions": [

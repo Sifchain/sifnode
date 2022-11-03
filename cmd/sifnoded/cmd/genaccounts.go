@@ -64,13 +64,19 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			if err != nil {
 				return fmt.Errorf("failed to parse coins: %w", err)
 			}
-			vestingStart, err := cmd.Flags().GetUint64(flagVestingStart)
+			vestingStart, err := cmd.Flags().GetInt64(flagVestingStart)
 			if err != nil {
 				return err
 			}
-			vestingEnd, err := cmd.Flags().GetUint64(flagVestingEnd)
+			if vestingStart < 0 {
+				return fmt.Errorf("vestingStart is negative")
+			}
+			vestingEnd, err := cmd.Flags().GetInt64(flagVestingEnd)
 			if err != nil {
 				return err
+			}
+			if vestingEnd < 0 {
+				return fmt.Errorf("vestingEnd is negative")
 			}
 			vestingAmtStr, err := cmd.Flags().GetString(flagVestingAmt)
 			if err != nil {
@@ -85,10 +91,10 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			balances := banktypes.Balance{Address: addr.String(), Coins: coins.Sort()}
 			baseAccount := authtypes.NewBaseAccount(addr, nil, 0, 0)
 			if !vestingAmt.IsZero() {
-				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), int64(vestingEnd))
+				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), vestingEnd)
 				switch {
 				case vestingStart != 0 && vestingEnd != 0:
-					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, int64(vestingStart))
+					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, vestingStart)
 				case vestingEnd != 0:
 					genAccount = authvesting.NewDelayedVestingAccountRaw(baseVestingAccount)
 				default:
@@ -147,7 +153,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "node's home directory")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	cmd.Flags().String(flagVestingAmt, "", "amount of coins for vesting accounts")
-	cmd.Flags().Uint64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")
-	cmd.Flags().Uint64(flagVestingEnd, 0, "schedule end time (unix epoch) for vesting accounts")
+	cmd.Flags().Int64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")
+	cmd.Flags().Int64(flagVestingEnd, 0, "schedule end time (unix epoch) for vesting accounts")
 	return cmd
 }

@@ -3,6 +3,8 @@ package types
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -63,8 +65,39 @@ type Crisis struct {
 	ConstantFee ConstantFee `json:"constant_fee"`
 }
 
+type Registry struct {
+	Entries []*RegistryEntry `json:"entries"`
+}
+
+type RegistryEntry struct {
+	Decimals                 int64              `json:"deciamls"`
+	Denom                    string             `json:"denom"`
+	BaseDenom                string             `json:"base_denom"`
+	Path                     string             `json:"path"`
+	IbcChannelID             string             `json:"ibc_channel_id"`
+	IbcCounterpartyChannelID string             `json:"ibc_counterparty_id"`
+	DisplayName              string             `json:"display_name"`
+	DisplaySymbol            string             `json:"display_symbol"`
+	Network                  string             `json:"network"`
+	Address                  string             `json:"address"`
+	ExternalSymbol           string             `json:"external_symbol"`
+	TransferLimit            string             `json:"transfer_limit"`
+	Permissions              []types.Permission `json:"permissions"`
+	UnitDenom                string             `json:"unit_denom"`
+	IbcCounterpartyDenom     string             `json:"ibc_counterparty_denom"`
+	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
+}
 type TokenRegistry struct {
-	AdminAccount string `json:"admin_account"`
+	Registry Registry `json:"registry"`
+}
+
+type Admin struct {
+	AdminAccounts []AdminAccount `json:"admin_accounts"`
+}
+
+type AdminAccount struct {
+	AdminType    int32  `json:"admin_type"`
+	AdminAddress string `json:"admin_address"`
 }
 
 type ConstantFee struct {
@@ -104,6 +137,19 @@ type Capability struct {
 	Owners []interface{} `json:"owners"`
 }
 
+type PoolMultiplier struct {
+	Asset      string `json:"asset"`
+	Multiplier string `json:"multiplier"`
+}
+
+type RewardPeriod struct {
+	ID          string            `json:"id"`
+	StartBlock  json.Number       `json:"start_block"`
+	EndBlock    json.Number       `json:"end_block"`
+	Allocation  string            `json:"allocation"`
+	Multipliers []*PoolMultiplier `json:"multipliers"`
+}
+
 type CLPParams struct {
 	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
 }
@@ -113,6 +159,34 @@ type CLP struct {
 	AddressWhitelist   []string      `json:"address_whitelist"`
 	PoolList           []interface{} `json:"pool_list"`
 	LiquidityProviders []interface{} `json:"liquidity_providers"`
+}
+
+type Margin struct {
+	Params MarginParams `json:"params"`
+}
+
+type MarginParams struct {
+	LeverageMax                              string      `json:"leverage_max"`
+	InterestRateMax                          string      `json:"interest_rate_max"`
+	InterestRateMin                          string      `json:"interest_rate_min"`
+	InterestRateIncrease                     string      `json:"interest_rate_increase"`
+	InterestRateDecrease                     string      `json:"interest_rate_decrease"`
+	HealthGainFactor                         string      `json:"health_gain_factor"`
+	EpochLength                              json.Number `json:"epoch_length,omitempty"`
+	Pools                                    []string    `json:"pools,omitempty"`
+	RemovalQueueThreshold                    string      `json:"removal_queue_threshold"`
+	MaxOpenPositions                         json.Number `json:"max_open_positions"`
+	PoolOpenThreshold                        string      `json:"pool_open_threshold"`
+	ForceCloseFundPercentage                 string      `json:"force_close_fund_percentage"`
+	ForceCloseFundAddress                    string      `json:"force_close_fund_address"`
+	IncrementalInterestPaymentFundPercentage string      `json:"incremental_interest_payment_fund_percentage"`
+	IncrementalInterestPaymentFundAddress    string      `json:"incremental_interest_payment_fund_address"`
+	SqModifier                               string      `json:"sq_modifier"`
+	SafetyFactor                             string      `json:"safety_factor"`
+	ClosedPools                              []string    `json:"closed_pools"`
+	IncrementalInterestPaymentEnabled        bool        `json:"incremental_interest_payment_enabled"`
+	WhitelistingEnabled                      bool        `json:"whitelisting_enabled"`
+	RowanCollateralEnabled                   bool        `json:"rowan_collateral_enabled"`
 }
 
 type Dispensation struct {
@@ -385,6 +459,7 @@ type AppState struct {
 	AuthZ         AuthZ         `json:"authz"`
 	Bank          Bank          `json:"bank"`
 	CLP           CLP           `json:"clp"`
+	Margin        Margin        `json:"margin"`
 	Transfer      Transfer      `json:"transfer"`
 	Capability    Capability    `json:"capability"`
 	Dispensation  Dispensation  `json:"dispensation"`
@@ -393,6 +468,7 @@ type AppState struct {
 	Genutil       Genutil       `json:"genutil"`
 	Crisis        Crisis        `json:"crisis"`
 	TokenRegistry TokenRegistry `json:"tokenregistry"`
+	Admin         Admin         `json:"admin"`
 }
 
 type Genesis struct {

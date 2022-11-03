@@ -25,8 +25,6 @@ const wakeupTimer = 60
 
 // StartProphecyHandler start Cosmos chain subscription and process prophecy completed message
 func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
-	defer completionEvent.Done()
-	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
@@ -37,8 +35,6 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 	if err := client.Start(); err != nil {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
-		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
@@ -57,7 +53,6 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 			return
 
 		case <-t.C:
-			sub.SugaredLogger.Info("timer triggered, start to check cosmos message")
 			sub.handleNewProphecyCompleted(client)
 		}
 	}
@@ -168,7 +163,7 @@ func GetAllPropheciesCompleted(sifnodeGrpc string, networkDescriptor oracletypes
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryPropheciesCompletedRequest{

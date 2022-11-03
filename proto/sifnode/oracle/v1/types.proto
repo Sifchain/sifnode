@@ -10,6 +10,10 @@ message GenesisState {
   map<uint32, ValidatorWhiteList> address_whitelist = 1;
   string admin_address = 2;
   repeated Prophecy prophecies = 3;
+  map<uint32, uint32> consensus_needed = 4;
+  map<uint32, CrossChainFeeConfig> cross_chain_fee = 5;
+  map<string, uint64> witness_lock_burn_sequence = 6;
+  map<string, ProphecyInfo> prophecy_info = 7;
 }
 
 // Claim contains an arbitrary claim with arbitrary content made by a given
@@ -90,9 +94,33 @@ message ProphecyInfo {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"crosschain_fee\""
   ];
-  uint32 decimail = 13;
+  uint32 decimals = 13;
   string token_name = 14;
   string token_symbol = 15;
   repeated string ethereum_address = 16;
   repeated string signatures = 17;
 }
+
+// ConsensusNeeded threshold for prophocy finalization
+message ConsensusNeeded { uint32 consensus_needed = 1; }
+
+// LockBurnNonceKey the key for LockBurnNonce used in sifnode keeper
+message LockBurnNonceKey {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  bytes validator_address = 2;
+}
+
+// LockBurnNonce the value stored in the sifnode keeper
+message LockBurnNonce { uint64 lock_burn_nonce = 1; }
+
+// GlobalSequenceKey the key for GlobalSequence used in sifnode keeper
+message GlobalSequenceKey {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_sequence = 2;
+}
+
+// GlobalSequence the value stored in sifnode keeper
+message GlobalSequence { uint64 global_sequence = 1; }
+
+// BlockNumber is value stored in sifnode keeper
+message BlockNumber { uint64 block_number = 1; }

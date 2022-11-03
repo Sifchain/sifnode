@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 
@@ -14,10 +13,11 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
 	consensusNeeded uint32) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetConsensusNeededPrefix()
+	key := networkIdentity.GetConsensusNeededPrefix(k.cdc)
 
-	bs := make([]byte, 4)
-	binary.BigEndian.PutUint32(bs, consensusNeeded)
+	bs := k.cdc.MustMarshal(&types.ConsensusNeeded{
+		ConsensusNeeded: consensusNeeded,
+	})
 
 	store.Set(key, bs)
 }
@@ -25,16 +25,49 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 // GetConsensusNeeded for a network
 func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.NetworkIdentity) (uint32, error) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetConsensusNeededPrefix()
+	key := networkIdentity.GetConsensusNeededPrefix(k.cdc)
 
 	if !store.Has(key) {
 		return 0.0, fmt.Errorf("%s%s", "ConsensusNeeded not set for ", networkIdentity.NetworkDescriptor.String())
 	}
 
 	bz := store.Get(key)
-	consensusNeeded := binary.BigEndian.Uint32(bz)
-	if consensusNeeded > 100 {
+	var consensusNeeded types.ConsensusNeeded
+	k.cdc.MustUnmarshal(bz, &consensusNeeded)
+
+	if consensusNeeded.ConsensusNeeded > 100 {
 		return 0, errors.New("consensusNeeded stored is too large")
 	}
-	return consensusNeeded, nil
+	return consensusNeeded.ConsensusNeeded, nil
+}
+
+// GetAllConsensusNeeded get consensus needed for all network descriptors
+func (k Keeper) GetAllConsensusNeeded(ctx sdk.Context) map[uint32]uint32 {
+	consensuses := make(map[uint32]uint32)
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.ConsensusNeededPrefix)
+
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(iterator)
+
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+
+		network_descriptor, err := types.GetFromPrefix(k.cdc, key, types.ConsensusNeededPrefix)
+		if err != nil {
+			panic(err)
+		}
+
+		bz := store.Get(key)
+		var consensusNeeded types.ConsensusNeeded
+		k.cdc.MustUnmarshal(bz, &consensusNeeded)
+
+		consensuses[uint32(network_descriptor.NetworkDescriptor)] = consensusNeeded.ConsensusNeeded
+	}
+	return consensuses
 }

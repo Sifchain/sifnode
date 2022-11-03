@@ -14,19 +14,26 @@ var (
 )
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
+//
 //lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgRegister{}, "MsgRegister", nil)
-	cdc.RegisterConcrete(&MsgRegisterResponse{}, "MsgRegisterResponse", nil)
-	cdc.RegisterConcrete(&MsgDeregister{}, "MsgDeregister", nil)
-	cdc.RegisterConcrete(&MsgDeregisterResponse{}, "MsgDeregisterResponse", nil)
+	cdc.RegisterConcrete(&MsgRegister{}, "tokenregistry/MsgRegister", nil)
+	cdc.RegisterConcrete(&MsgRegisterAll{}, "tokenregistry/MsgRegisterAll", nil)
+	cdc.RegisterConcrete(&MsgSetRegistry{}, "tokenregistry/MsgSetRegistry", nil)
+	cdc.RegisterConcrete(&MsgDeregister{}, "tokenregistry/MsgDeregister", nil)
+	cdc.RegisterConcrete(&MsgDeregisterAll{}, "tokenregistry/MsgDeregisterAll", nil)
+	cdc.RegisterConcrete(&TokenMetadataAddRequest{}, "tokenregistry/TokenMetadataAddRequest", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgRegister{},
+		&MsgRegisterAll{},
+		&MsgSetRegistry{},
 		&MsgDeregister{},
+		&MsgDeregisterAll{},
+		&TokenMetadataAddRequest{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

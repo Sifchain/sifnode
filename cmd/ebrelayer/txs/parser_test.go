@@ -51,6 +51,38 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
 }
 
+func TestEthereumEventToEthBridgeClaimAcceptsEthSymbolNonNullAddress(t *testing.T) {
+	testBridgeContractAddress := ethbridge.NewEthereumAddress(TestBridgeContractAddress)
+	testTokenContractAddress := ethbridge.NewEthereumAddress(TestEthereumAddress2)
+	testEthereumAddress := ethbridge.NewEthereumAddress(TestEthereumAddress1)
+	testCosmosAddress, _ := sdk.AccAddressFromBech32(TestCosmosAddress1)
+
+	symbolTranslator := symbol_translator.NewSymbolTranslator()
+
+	testRawCosmosValidatorAddress, _ := sdk.AccAddressFromBech32(TestCosmosAddress2)
+	testCosmosValidatorBech32Address := sdk.ValAddress(testRawCosmosValidatorAddress)
+
+	ethereumEvent := CreateTestLogEthereumEvent(t)
+	ethereumEvent.Symbol = "eth"
+	ethereumEvent.Token = common.Address(testTokenContractAddress)
+
+	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
+		TestNetworkDescriptor, testBridgeContractAddress, TestNonce,
+		"eth", testTokenContractAddress,
+		testEthereumAddress, testCosmosAddress,
+		testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK,
+		TestName, TestDecimals)
+
+	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address,
+		ethereumEvent,
+		symbolTranslator,
+		sugaredLogger)
+
+	require.NoError(t, err)
+
+	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
+}
+
 func TestDenomCalculated(t *testing.T) {
 	address := ethbridge.NewEthereumAddress("0X0000000000000000000000000000000000000000")
 	// Test strings with uppercase values

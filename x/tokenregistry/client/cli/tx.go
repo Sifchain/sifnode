@@ -147,10 +147,8 @@ func GetCmdRegisterAll() *cobra.Command {
 				return err
 			}
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-			return nil
+
+			return err
 		},
 	}
 	flags.AddTxFlagsToCmd(cmd)
@@ -189,10 +187,7 @@ func GetCmdDeregisterAll() *cobra.Command {
 			}
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 
-			if err != nil {
-				return err
-			}
-			return nil
+			return err
 		},
 	}
 	flags.AddTxFlagsToCmd(cmd)

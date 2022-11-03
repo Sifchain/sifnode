@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.4;
+pragma solidity 0.8.17;
 
 import "./ValsetStorage.sol";
 
@@ -234,6 +234,8 @@ contract Valset is ValsetStorage {
    * @param _validatorPower The power this validator has
    */
   function _addValidatorInternal(address _validatorAddress, uint256 _validatorPower) internal {
+    require(validators[_validatorAddress][currentValsetVersion] == false, "Already a validator");
+    
     validatorCount = validatorCount + 1;
     totalPower = totalPower + _validatorPower;
 

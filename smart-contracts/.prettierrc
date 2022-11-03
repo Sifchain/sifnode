@@ -27,7 +27,8 @@
         "tabWidth": 2,
         "useTabs": false,
         "singleQuote": false,
-        "semi": false
+        "semi": true,
+        "trailingComma": es5
       }
     }
   ]

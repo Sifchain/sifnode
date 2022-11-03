@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.4;
+pragma solidity 0.8.17;
 
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
+error OutOfOrderSigner(uint256 index);
+error DuplicateSigner(uint256 index, address signer);
 
 /**
  * @title Cosmos Bridge
@@ -222,13 +224,22 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       );
 
       unchecked {
-        pow += getValidatorPower(validator.signer); 
+        pow += getValidatorPower(validator.signer);
       }
 
-      for (uint256 j = i + 1; j < validatorLength;) {
-        require(validator.signer != _validators[j].signer, "DUP_SIGNER");
-        unchecked { ++j; }
+      // Signatures must be sorted on the relayer side, so we just
+      // need to make sure that the next witness in the array
+      // (if we're not at the end) isn't a duplicate and is
+      // sorted correctly
+      if (i + 1 <= validatorLength - 1) {
+        if (validator.signer == _validators[i + 1].signer) {
+          revert DuplicateSigner(i + 1, validator.signer);
+        }
+        if (validator.signer > _validators[i + 1].signer) {
+          revert OutOfOrderSigner(i);
+        }
       }
+
       unchecked { ++i; }
     }
   }
@@ -416,14 +427,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     );
     // need to make a business decision on what this symbol should be
     // First lock of this asset, deploy new contract and get new symbol/token address
-    address newTokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
+    tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
       name,
       symbol,
       decimals,
       cosmosDenom
     );
 
-    cosmosDenomToDestinationAddress[cosmosDenom] = newTokenAddress;
+    cosmosDenomToDestinationAddress[cosmosDenom] = tokenAddress;
 
     emit LogNewBridgeTokenCreated(
       decimals,
@@ -431,11 +442,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       name,
       symbol,
       sourceChainTokenAddress,
-      newTokenAddress,
+      tokenAddress,
       cosmosDenom
     );
-
-    return newTokenAddress;
   }
 
   /**

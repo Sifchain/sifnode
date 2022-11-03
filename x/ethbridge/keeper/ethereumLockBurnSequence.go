@@ -1,9 +1,6 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -15,8 +12,9 @@ func (k Keeper) SetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	store := ctx.KVStore(k.storeKey)
 	key := k.getEthereumLockBurnSequencePrefix(networkDescriptor, valAccount)
 
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint64(bs, newNonce)
+	bs := k.cdc.MustMarshal(&oracletypes.LockBurnNonce{
+		LockBurnNonce: newNonce,
+	})
 
 	store.Set(key, bs)
 }
@@ -31,15 +29,18 @@ func (k Keeper) GetEthereumLockBurnSequence(ctx sdk.Context, networkDescriptor o
 	if !store.Has(key) {
 		return 0
 	}
+	var lockBurnNonce oracletypes.LockBurnNonce
+	k.cdc.MustUnmarshal(store.Get(key), &lockBurnNonce)
 
-	bz := store.Get(key)
-	return binary.BigEndian.Uint64(bz)
+	return lockBurnNonce.LockBurnNonce
 }
 
 // getEthereumLockBurnSequencePrefix return storage prefix
 func (k Keeper) getEthereumLockBurnSequencePrefix(networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
-	tmpKey := append(types.EthereumLockBurnSequencePrefix, bytebuf.Bytes()...)
-	return append(tmpKey, valAccount...)
+
+	bs := k.cdc.MustMarshal(&oracletypes.LockBurnNonceKey{
+		NetworkDescriptor: networkDescriptor,
+		ValidatorAddress:  valAccount,
+	})
+	return append(types.EthereumLockBurnSequencePrefix, bs[:]...)
 }

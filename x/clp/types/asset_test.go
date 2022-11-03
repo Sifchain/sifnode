@@ -17,7 +17,7 @@ func Test_AssetValidate(t *testing.T) {
 	assert.True(t, boolean)
 
 	// to long
-	asset = NewAsset("abcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefg")
+	asset = NewAsset("abcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefgabcdefg")
 	boolean = asset.Validate()
 	assert.False(t, boolean)
 }

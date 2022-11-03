@@ -2,14 +2,11 @@ package types
 
 import (
 	"bytes"
-	"encoding/binary"
-	"errors"
-)
+	"strconv"
 
-// NetworkIdentity define the different network like Ethereum, Binance
-type NetworkIdentity struct {
-	NetworkDescriptor NetworkDescriptor `json:"network_descriptor"`
-}
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/pkg/errors"
+)
 
 // NewNetworkIdentity get a new NetworkIdentity instance
 func NewNetworkIdentity(networkDescriptor NetworkDescriptor) NetworkIdentity {
@@ -19,34 +16,32 @@ func NewNetworkIdentity(networkDescriptor NetworkDescriptor) NetworkIdentity {
 }
 
 // GetPrefix return storage prefix
-func (n NetworkIdentity) GetPrefix() []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(WhiteListValidatorPrefix, bytebuf.Bytes()...)
+func (n NetworkIdentity) GetPrefix(cdc codec.BinaryCodec) []byte {
+	bytebuf := cdc.MustMarshal(&n)
+	return append(WhiteListValidatorPrefix, bytebuf...)
 }
 
 // GetCrossChainFeePrefix return storage prefix
-func (n NetworkIdentity) GetCrossChainFeePrefix() []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(CrossChainFeePrefix, bytebuf.Bytes()...)
+func (n NetworkIdentity) GetCrossChainFeePrefix(cdc codec.BinaryCodec) []byte {
+	bytebuf := cdc.MustMarshal(&n)
+	return append(CrossChainFeePrefix, bytebuf...)
 }
 
 // GetConsensusNeededPrefix return storage prefix
-func (n NetworkIdentity) GetConsensusNeededPrefix() []byte {
-	bytebuf := bytes.NewBuffer([]byte{})
-	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(ConsensusNeededPrefix, bytebuf.Bytes()...)
+func (n NetworkIdentity) GetConsensusNeededPrefix(cdc codec.BinaryCodec) []byte {
+	bytebuf := cdc.MustMarshal(&n)
+	return append(ConsensusNeededPrefix, bytebuf...)
 }
 
-// GetFromPrefix return a NetworkIdentity from prefix
-func GetFromPrefix(key []byte) (NetworkIdentity, error) {
-	if len(key) == 5 {
-		var data NetworkDescriptor
-		bytebuff := bytes.NewBuffer(key[1:])
-		err := binary.Read(bytebuff, binary.BigEndian, &data)
+// GetFromPrefix return a NetworkIdentity from key which include the storage Prefix and encoded NetworkIdentity
+func GetFromPrefix(cdc codec.BinaryCodec, key []byte, prefix []byte) (NetworkIdentity, error) {
+	// check the key which correct prefix
+	if bytes.HasPrefix(key, prefix) {
+		var networkIdentity NetworkIdentity
+		err := cdc.Unmarshal(key[len(prefix):], &networkIdentity)
+
 		if err == nil {
-			return NewNetworkIdentity(data), nil
+			return networkIdentity, nil
 		}
 		return NetworkIdentity{}, err
 	}
@@ -63,4 +58,16 @@ func (n NetworkDescriptor) IsValid() bool {
 // IsSifchain check if the network id is Sifchain
 func (n NetworkDescriptor) IsSifchain() bool {
 	return n == NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
+func ParseNetworkDescriptor(networkDescriptorStr string) (NetworkDescriptor, error) {
+	networkDescriptor, err := strconv.ParseInt(networkDescriptorStr, 10, 32)
+	if err != nil {
+		return -1, err
+	} else if networkDescriptor < 0 || networkDescriptor > 9999 {
+		return -1, errors.Errorf("Invalid network descriptor. Valid range: [0-9999], received %d", networkDescriptor)
+	} else if !NetworkDescriptor(networkDescriptor).IsValid() {
+		return -1, errors.Errorf("Invalid network descriptor. Invalid value, received %d", networkDescriptor)
+	}
+	return NetworkDescriptor(networkDescriptor), nil
 }

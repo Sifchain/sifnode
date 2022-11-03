@@ -1,0 +1,17 @@
+{                                                                                
+  "title": "CLP Locking Period Change",                                    
+  "description": "Update Locking Period",                                        
+  "changes": [                                                                                                                                        
+      {                                                                            
+        "subspace": "clp",                                                         
+        "key": "LiquidityRemovalCancelPeriod",                                     
+        "value": "720"                                                             
+      },                                                                           
+      {                                                                            
+        "subspace": "clp",                                                         
+        "key": "LiquidityRemovalLockPeriod",                                       
+        "value": "10"                                                             
+      }                                                                            
+    ],                                                                             
+  "deposit": "10000000stake"                                                     
+} 
