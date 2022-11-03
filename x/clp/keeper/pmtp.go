@@ -82,7 +82,6 @@ func (k Keeper) PolicyRun(ctx sdk.Context, pmtpCurrentRunningRate sdk.Dec) error
 			spotPriceExternal = sdk.ZeroDec()
 		}
 
-		// Note: the pool field should be named SpotPrice*
 		pool.SwapPriceNative = &spotPriceNative
 		pool.SwapPriceExternal = &spotPriceExternal
 

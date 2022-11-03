@@ -1,10 +1,11 @@
 package ante
 
 import (
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"strings"
 
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -80,6 +81,11 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 			minFee = sdk.NewInt(100000000000000000) // 0.1
 		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
+		} else if strings.Contains(msgTypeURLLower, "submitproposal") || strings.Contains(msgTypeURLLower, govtypes.TypeMsgSubmitProposal) {
+			val, ok := sdk.NewIntFromString("5000000000000000000000") // 5000
+			if ok {
+				minFee = val
+			}
 		}
 	}
 	if minFee.Equal(sdk.ZeroInt()) {
