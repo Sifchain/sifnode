@@ -34,13 +34,13 @@ service Query {
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
-message QueryEthProphecyRequest { bytes prophecy_id = 1; }
+message QueryEthProphecyRequest { bytes prophecy_id = 7; }
 
 // QueryEthProphecyResponse payload for EthProphecy rpc query
 message QueryEthProphecyResponse {
   bytes prophecy_id = 1;
   sifnode.oracle.v1.StatusText status = 2;
-  repeated string claim_validators = 3;
+  repeated string claim_validators = 4;
 }
 
 // QueryCrosschainFeeConfigRequest payload for EthProphecy rpc query
