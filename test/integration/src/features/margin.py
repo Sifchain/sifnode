@@ -49,6 +49,15 @@ class TestMargin:
         pool_definitions = {denom: (decimals, native_amount, external_amount)
             for denom, decimals, native_amount, external_amount, _ in pool_setup}
         env.setup_liquidity_pools_simple(pool_definitions)
+
+        # Enable margin on all pools
+        mtp_enabled_pools = set(denom for denom, _, _, _, _ in pool_setup)
+        margin_params_before = env.sifnoded.query_margin_params()
+        env.sifnoded.tx_margin_update_pools(env.clp_admin, mtp_enabled_pools, [], broadcast_mode="block")
+        margin_params_after = env.sifnoded.query_margin_params()
+        assert len(margin_params_before["params"]["pools"]) == 0
+        assert set(margin_params_after["params"]["pools"]) == mtp_enabled_pools
+
         yield env, env.sifnoded, pool_definitions
         env.close()
 
@@ -119,7 +128,7 @@ class TestMargin:
 
             balances.append(sifnoded.get_balance(account))
             pools.append(sifnoded.query_pools_sorted())
-            env.fund(account, {ROWAN: 10**25, src_denom: swap_amount})
+            env.fund(account, {ROWAN: 10**20, src_denom: swap_amount})
 
             balance_before = sifnoded.get_balance(account)
             pools_before = sifnoded.query_pools_sorted()
@@ -160,5 +169,56 @@ class TestMargin:
             assert True  # no-op line just for setting a breakpoint
 
     def test_swap(self):
-        self.test_swap_rowan_to_external()
+        # self.test_swap_rowan_to_external()
         # self.test_swap_external_to_external()
+        self.test_margin()
+
+    def test_margin(self):
+        borrow_asset = "rowan"
+        collateral_asset = "cusdc"
+        collateral_amount = 10**20
+        leverage = 2
+
+        with self.with_test_env(self.default_pool_setup) as (env, sifnoded, pools_definitions):
+            account = sifnoded.create_addr()
+            env.fund(account, {
+                ROWAN: 10**25,
+                collateral_asset: 10**25,
+            })
+            margin_params = sifnoded.query_margin_params()
+
+            # sifnoded.tx_margin_whitelist(env.clp_admin, account, broadcast_mode="block")
+
+            pool_before_open = sifnoded.query_pools_sorted()[collateral_asset]
+            balance_before_open = sifnoded.get_balance(account)
+            mtp_positions_before_open = sifnoded.query_margin_positions_for_address(account)
+            res = sifnoded.margin_open_simple(account, borrow_asset, collateral_asset=collateral_asset,
+                collateral_amount=collateral_amount, leverage=leverage, position="long")
+            mtp_id = int(res["id"])
+            pool_after_open = sifnoded.query_pools_sorted()[collateral_asset]
+            balance_after_open = sifnoded.get_balance(account)
+            mtp_positions_after_open = sifnoded.query_margin_positions_for_address(account)
+
+            assert len(mtp_positions_before_open) == 0
+            assert len(mtp_positions_after_open) == 1
+
+            open_borrow_delta = balance_after_open.get(borrow_asset, 0) - balance_before_open.get(borrow_asset, 0)
+            open_collateral_delta = balance_after_open.get(collateral_asset, 0) - balance_before_open.get(collateral_asset, 0)
+
+            # TODO Why does the open position disappear after 4 blocks?
+            # Whitelisting does not help
+            for i in range(10):
+                cnt = len(sifnoded.query_margin_positions_for_address(account))
+                if cnt == 0:
+                    break
+                sifnoded.wait_for_last_transaction_to_be_mined()
+
+            # TODO
+
+            pool_before_close = sifnoded.query_pools_sorted()[collateral_asset]
+            balance_before_close = sifnoded.get_balance(account)
+            res2 = sifnoded.tx_margin_close(account, mtp_id, broadcast_mode="block")
+            pool_after_close = sifnoded.query_pools_sorted()[collateral_asset]
+            balance_after_close = sifnoded.get_balance(account)
+
+            assert True
