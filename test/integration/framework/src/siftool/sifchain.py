@@ -1188,7 +1188,8 @@ class SifnodeClient:
             return result
         else:
             # I am on peggy1 branch
-
+            # sifnoded tx ethbridge <direction> <node> <sifchain_addr> <ethereum_addr> <amount> <symbol> <keyring backend> <ethereum-chain-id>
+            pass
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str
