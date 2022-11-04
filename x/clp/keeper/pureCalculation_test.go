@@ -295,3 +295,36 @@ func TestKeeper_RatIntQuo(t *testing.T) {
 		})
 	}
 }
+
+func TestKeeper_ApproxRatSquareRoot(t *testing.T) {
+	testcases := []struct {
+		name     string
+		x        big.Rat
+		expected big.Int
+	}{
+		{
+			name:     "square number",
+			x:        *big.NewRat(50, 2),
+			expected: *big.NewInt(5),
+		},
+		{
+			name:     "non square integer number",
+			x:        *big.NewRat(100, 2),
+			expected: *big.NewInt(7),
+		},
+		{
+			name:     "non square non number",
+			x:        *big.NewRat(101, 2),
+			expected: *big.NewInt(7),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			y := clpkeeper.ApproxRatSquareRoot(&tc.x)
+
+			require.Equal(t, tc.expected.String(), y.String())
+		})
+	}
+}
