@@ -408,15 +408,12 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		return nil, types.ErrUnableToCreatePool
 	}
 
-	nativeBalance := msg.NativeAssetAmount
-	externalBalance := msg.ExternalAssetAmount
-	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
-	if err != nil {
-		return nil, err
-	}
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	sellNativeSwapFeeRate := k.GetSwapFeeRate(ctx, types.GetSettlementAsset(), false)
+	buyNativeSwapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset, false)
 
-	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
-		nativeBalance, externalBalance, externalDecimals, k.GetSymmetryThreshold(ctx), k.GetSymmetryRatio(ctx))
+	poolUnits, lpunits, _, _, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(),
+		msg.NativeAssetAmount, msg.ExternalAssetAmount, sellNativeSwapFeeRate, buyNativeSwapFeeRate, pmtpCurrentRunningRate)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -486,33 +483,19 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
 	swapFeeRate := k.GetSwapFeeRate(ctx, *msg.SentAsset, false)
 
-	liquidityProtectionParams := k.GetLiquidityProtectionParams(ctx)
-	maxRowanLiquidityThreshold := liquidityProtectionParams.MaxRowanLiquidityThreshold
-	maxRowanLiquidityThresholdAsset := liquidityProtectionParams.MaxRowanLiquidityThresholdAsset
-	currentRowanLiquidityThreshold := k.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
-	var (
-		sentValue sdk.Uint
-	)
-
-	// if liquidity protection is active and selling rowan
-	if liquidityProtectionParams.IsActive && types.StringCompare(sAsset.Denom, types.NativeSymbol) {
-		if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
-			sentValue = msg.SentAmount
-		} else {
-			pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
-			if err != nil {
-				return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
-			}
-
-			sentValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, msg.SentAmount)
-
-			if err != nil {
-				return nil, err
-			}
+	var price sdk.Dec
+	if k.GetLiquidityProtectionParams(ctx).IsActive {
+		// we'll need the price later as well - calculate it before any
+		// changes are made to the pool which could change the price
+		price, err = k.GetNativePrice(ctx)
+		if err != nil {
+			return nil, err
 		}
 
-		if currentRowanLiquidityThreshold.LT(sentValue) {
-			return nil, types.ErrReachedMaxRowanLiquidityThreshold
+		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
+			if k.IsBlockedByLiquidityProtection(ctx, msg.SentAmount, price) {
+				return nil, types.ErrReachedMaxRowanLiquidityThreshold
+			}
 		}
 	}
 
@@ -629,42 +612,15 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		),
 	})
 
-	if liquidityProtectionParams.IsActive {
-		// if sell rowan
+	if k.GetLiquidityProtectionParams(ctx).IsActive {
 		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
-			// we know that sentValue < currentRowanLiquidityThreshold so we can do the
-			// substitution knowing it won't panic
-			currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Sub(sentValue)
-			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+			// selling rowan
+			k.MustUpdateLiquidityProtectionThreshold(ctx, true, msg.SentAmount, price)
 		}
 
-		// if buy rowan
 		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
-			var emitValue sdk.Uint
-			if types.StringCompare(maxRowanLiquidityThresholdAsset, types.NativeSymbol) {
-				emitValue = emitAmount
-			} else {
-				pool, err := k.GetPool(ctx, maxRowanLiquidityThresholdAsset)
-				if err != nil {
-					return nil, types.ErrMaxRowanLiquidityThresholdAssetPoolDoesNotExist
-				}
-
-				emitValue, err = CalcRowanValue(&pool, pmtpCurrentRunningRate, emitAmount)
-
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			// This is equivalent to currentRowanLiquidityThreshold := sdk.MinUint(currentRowanLiquidityThreshold.Add(emitValue), maxRowanLiquidityThreshold)
-			// except it prevents any overflows when adding the emitValue
-			if maxRowanLiquidityThreshold.Sub(currentRowanLiquidityThreshold).LT(emitValue) {
-				currentRowanLiquidityThreshold = maxRowanLiquidityThreshold
-			} else {
-				currentRowanLiquidityThreshold = currentRowanLiquidityThreshold.Add(emitValue)
-			}
-
-			k.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, currentRowanLiquidityThreshold)
+			// buying rowan
+			k.MustUpdateLiquidityProtectionThreshold(ctx, false, emitAmount, price)
 		}
 	}
 
@@ -687,38 +643,94 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+
+	nAsset, err := k.tokenRegistryKeeper.GetEntry(registry, types.NativeSymbol)
+	if err != nil {
+		return nil, types.ErrTokenNotSupported
+	}
+
 	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
+
 	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
-	// Get pool
+
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
 
-	externalDecimals, err := Int64ToUint8Safe(eAsset.Decimals)
-	if err != nil {
-		return nil, err
-	}
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	sellNativeSwapFeeRate := k.GetSwapFeeRate(ctx, types.GetSettlementAsset(), false)
+	buyNativeSwapFeeRate := k.GetSwapFeeRate(ctx, *msg.ExternalAsset, false)
 
 	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
-	newPoolUnits, lpUnits, err := CalculatePoolUnits(
+	newPoolUnits, lpUnits, swapStatus, swapAmount, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		nativeAssetDepth,
 		externalAssetDepth,
 		msg.NativeAssetAmount,
 		msg.ExternalAssetAmount,
-		externalDecimals,
-		k.GetSymmetryThreshold(ctx),
-		k.GetSymmetryRatio(ctx))
+		sellNativeSwapFeeRate,
+		buyNativeSwapFeeRate,
+		pmtpCurrentRunningRate)
 	if err != nil {
 		return nil, err
 	}
+
+	switch swapStatus {
+	case NoSwap:
+		// do nothing
+	case SellNative:
+		// check sell permission for native
+		if k.tokenRegistryKeeper.CheckEntryPermissions(nAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_SELL}) {
+			return nil, tokenregistrytypes.ErrNotAllowedToSellAsset
+		}
+		// check buy permission for external
+		if k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_BUY}) {
+			return nil, tokenregistrytypes.ErrNotAllowedToBuyAsset
+		}
+
+		if k.GetLiquidityProtectionParams(ctx).IsActive {
+			price, err := k.GetNativePrice(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			if k.IsBlockedByLiquidityProtection(ctx, swapAmount, price) {
+				return nil, types.ErrReachedMaxRowanLiquidityThreshold
+			}
+
+			k.MustUpdateLiquidityProtectionThreshold(ctx, true, swapAmount, price)
+		}
+
+	case BuyNative:
+		// check sell permission for external
+		if k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_SELL}) {
+			return nil, tokenregistrytypes.ErrNotAllowedToSellAsset
+		}
+		// check buy permission for native
+		if k.tokenRegistryKeeper.CheckEntryPermissions(nAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_BUY}) {
+			return nil, tokenregistrytypes.ErrNotAllowedToBuyAsset
+		}
+
+		if k.GetLiquidityProtectionParams(ctx).IsActive {
+			nativeAmount, _ := CalcSwapResult(true, externalAssetDepth, swapAmount, nativeAssetDepth, pmtpCurrentRunningRate, buyNativeSwapFeeRate)
+			price, err := k.GetNativePrice(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			k.MustUpdateLiquidityProtectionThreshold(ctx, false, nativeAmount, price)
+		}
+	default:
+		panic("expect not to reach here!")
+	}
+
 	// Get lp , if lp doesnt exist create lp
 	lp, err := k.Keeper.AddLiquidity(ctx, msg, pool, newPoolUnits, lpUnits)
 	if err != nil {
