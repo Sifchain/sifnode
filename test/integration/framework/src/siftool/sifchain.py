@@ -539,8 +539,11 @@ class Sifnoded:
     def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
         assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
         args = ["tx", "ethbridge", "set-pauser", "true"] + \
-                [self._home_args(), self._keyring_backend_args() ] + \
+                self._home_args() + self._keyring_backend_args() + \
+                self._chain_id_args() + self._node_args() + \
+                self._fees_args() + \
                 ["--from", admin_account_address] + \
+                ["--chain-id", self.chain_id] + \
                 ["--output", "json"]
 
         res = self.sifnoded_exec(args)
