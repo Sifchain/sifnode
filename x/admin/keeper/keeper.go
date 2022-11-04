@@ -100,3 +100,21 @@ func (k Keeper) GetAdminAccounts(ctx sdk.Context) []*types.AdminAccount {
 	}
 	return accounts
 }
+
+func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.ParamsStorePrefix, k.cdc.MustMarshal(params))
+}
+
+func (k Keeper) GetParams(ctx sdk.Context) *types.Params {
+	defaultSubmitProposalFee := sdk.NewUintFromString("500000000000000000000")
+
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ParamsStorePrefix)
+	if bz == nil {
+		return &types.Params{SubmitProposalFee: defaultSubmitProposalFee}
+	}
+	var params types.Params
+	k.cdc.MustUnmarshal(bz, &params)
+	return &params
+}

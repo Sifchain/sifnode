@@ -1,6 +1,7 @@
 package ante
 
 import (
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -13,6 +14,7 @@ import (
 // HandlerOptions defines the list of module keepers required to run the Sifnode
 // AnteHandler decorators.
 type HandlerOptions struct {
+	AdminKeeper     adminkeeper.Keeper
 	AccountKeeper   ante.AccountKeeper
 	BankKeeper      bankkeeper.Keeper
 	FeegrantKeeper  ante.FeegrantKeeper

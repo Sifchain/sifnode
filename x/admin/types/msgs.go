@@ -7,8 +7,10 @@ import (
 
 var _ sdk.Msg = &MsgAddAccount{}
 var _ sdk.Msg = &MsgRemoveAccount{}
+var _ sdk.Msg = &MsgSetParams{}
 var _ legacytx.LegacyMsg = &MsgAddAccount{}
 var _ legacytx.LegacyMsg = &MsgRemoveAccount{}
+var _ legacytx.LegacyMsg = &MsgSetParams{}
 
 func (m *MsgAddAccount) Route() string {
 	return RouterKey
@@ -51,6 +53,30 @@ func (m *MsgRemoveAccount) GetSignBytes() []byte {
 }
 
 func (m *MsgRemoveAccount) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func (m *MsgSetParams) Route() string {
+	return RouterKey
+}
+
+func (m *MsgSetParams) Type() string {
+	return "set_params"
+}
+
+func (m *MsgSetParams) ValidateBasic() error {
+	return nil
+}
+
+func (m *MsgSetParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+func (m *MsgSetParams) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)

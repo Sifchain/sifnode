@@ -3,6 +3,7 @@ package ante
 import (
 	"strings"
 
+	adminkeeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -25,8 +26,8 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 	return sdk.ChainAnteDecorators(
-		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		NewAdjustGasPriceDecorator(),    // Custom decorator to adjust gas price for specific msg types
+		ante.NewSetUpContextDecorator(),                 // outermost AnteDecorator. SetUpContext must be called first
+		NewAdjustGasPriceDecorator(options.AdminKeeper), // Custom decorator to adjust gas price for specific msg types
 		ante.NewRejectExtensionOptionsDecorator(),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
@@ -46,15 +47,19 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 // AdjustGasPriceDecorator is a custom decorator to reduce fee prices .
 type AdjustGasPriceDecorator struct {
+	adminKeeper adminkeeper.Keeper
 }
 
 // NewAdjustGasPriceDecorator create a new instance of AdjustGasPriceDecorator
-func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
-	return AdjustGasPriceDecorator{}
+func NewAdjustGasPriceDecorator(adminKeeper adminkeeper.Keeper) AdjustGasPriceDecorator {
+	return AdjustGasPriceDecorator{adminKeeper: adminKeeper}
 }
 
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	adminParams := r.adminKeeper.GetParams(ctx)
+	submitProposalFee := adminParams.SubmitProposalFee
+
 	msgs := tx.GetMsgs()
 	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
 		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
@@ -82,10 +87,7 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
 		} else if strings.Contains(msgTypeURLLower, "submitproposal") || strings.Contains(msgTypeURLLower, govtypes.TypeMsgSubmitProposal) {
-			val, ok := sdk.NewIntFromString("5000000000000000000000") // 5000
-			if ok {
-				minFee = val
-			}
+			minFee = sdk.NewIntFromBigInt(submitProposalFee.BigInt())
 		}
 	}
 	if minFee.Equal(sdk.ZeroInt()) {
