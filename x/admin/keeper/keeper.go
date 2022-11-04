@@ -107,7 +107,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) *types.Params {
-	defaultSubmitProposalFee := sdk.NewUintFromString("500000000000000000000")
+	defaultSubmitProposalFee := sdk.NewUintFromString("5000000000000000000000") // 5000
 
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ParamsStorePrefix)
