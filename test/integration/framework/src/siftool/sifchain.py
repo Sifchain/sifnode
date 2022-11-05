@@ -539,33 +539,11 @@ class Sifnoded:
     def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
         assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
         return self._set_peggy_brige_pause_status(admin_account_address, True)
-        # args = ["tx", "ethbridge", "set-pauser", "true"] + \
-        #         self._keyring_backend_args() + \
-        #         self._chain_id_args() + self._node_args() + \
-        #         self._fees_args() + \
-        #         ["--from", admin_account_address] + \
-        #         ["--chain-id", self.chain_id] + \
-        #         ["--output", "json"] + \
-        #         self._yes_args()
-
-        # res = self.sifnoded_exec(args)
-        # return [json.loads(x) for x in stdout(res).splitlines()]
 
     # Unpause the ethbridge module's Lock/Burn on an evm_network_descriptor
     def unpause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
         assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
         return self._set_peggy_brige_pause_status(admin_account_address, False)
-        # args = ["tx", "ethbridge", "set-pauser", "false"] + \
-        #         self._keyring_backend_args() + \
-        #         self._chain_id_args() + self._node_args() + \
-        #         self._fees_args() + \
-        #         ["--from", admin_account_address] + \
-        #         ["--chain-id", self.chain_id] + \
-        #         ["--output", "json"] + \
-        #         self._yes_args()
-
-        # res = self.sifnoded_exec(args)
-        # return [json.loads(x) for x in stdout(res).splitlines()]
 
     def _set_peggy_brige_pause_status(self, admin_account_address, pause_status: bool) -> List[Mapping[str, Any]]:
         assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
@@ -576,6 +554,7 @@ class Sifnoded:
                 ["--from", admin_account_address] + \
                 ["--chain-id", self.chain_id] + \
                 ["--output", "json"] + \
+                self._broadcast_mode_args("block") + \
                 self._yes_args()
 
         res = self.sifnoded_exec(args)
