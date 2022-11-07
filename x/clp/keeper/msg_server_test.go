@@ -667,7 +667,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
-			expectedRunningThresholdEnd:     sdk.NewUint(900),
+			expectedRunningThresholdEnd:     sdk.NewUint(910),
 			maxRowanLiquidityThresholdAsset: "rowan",
 			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
 			swapFeeParams: types.SwapFeeParams{
@@ -1606,7 +1606,7 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			liquidityProtectionActive:              true,
 			maxRowanLiquidityThreshold:             sdk.NewUint(1336005328924242545),
 			currentRowanLiquidityThreshold:         sdk.NewUint(1336005328924242544),
-			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(0),
+			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(4008015986772728),
 			expectedPoolUnits:                      sdk.NewUintFromString("23662660951949037742990437"),
 			expectedLPUnits:                        sdk.NewUintFromString("401491654050052483"),
 		},
