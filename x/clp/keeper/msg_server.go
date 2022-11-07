@@ -706,7 +706,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 				return nil, types.ErrReachedMaxRowanLiquidityThreshold
 			}
 
-			k.MustUpdateLiquidityProtectionThreshold(ctx, true, swapAmount, price)
+			discountedSentAmount := CalculateDiscountedSentAmount(swapAmount, sellNativeSwapFeeRate)
+			k.MustUpdateLiquidityProtectionThreshold(ctx, true, discountedSentAmount, price)
 		}
 
 	case BuyNative:
