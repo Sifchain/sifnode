@@ -35,6 +35,7 @@ message MsgLock {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   string denom_hash = 3 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
+  reserved 4;
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
   string crosschain_fee = 6 [
@@ -82,6 +83,7 @@ message MsgCreateEthBridgeClaimResponse {}
 message MsgUpdateWhiteListValidator {
   string cosmos_sender = 1 [ (gogoproto.moretags) = "yaml:\"cosmos_sender\"" ];
   string validator = 2 [ (gogoproto.moretags) = "yaml:\"validator\"" ];
+  reserved 3;
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 4
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   uint32 power = 5;
