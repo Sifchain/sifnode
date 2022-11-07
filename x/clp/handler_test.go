@@ -109,8 +109,9 @@ func TestAddLiquidity(t *testing.T) {
 	require.NotNil(t, res)
 	msg = clptypes.NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), addLiquidityAmount)
 	res, err = handler(ctx, &msg)
-	require.EqualError(t, err, "Cannot add liquidity asymmetrically")
-	require.Nil(t, res)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
 	// Subtracted twice , during create and add
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
 	nativeCoin = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(sdk.ZeroUint())))
@@ -155,8 +156,8 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	require.NotNil(t, res)
 	msg := clptypes.NewMsgAddLiquidity(signer, asset, addLiquidityAmountRowan, addLiquidityAmountCaCoin)
 	res, err = handler(ctx, &msg)
-	require.EqualError(t, err, "Cannot add liquidity asymmetrically")
-	require.Nil(t, res)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }
 
 func TestRemoveLiquidity(t *testing.T) {
