@@ -1,11 +1,9 @@
-//go:build !FEATURE_TOGGLE_SDK_045
-// +build !FEATURE_TOGGLE_SDK_045
-
 package keeper_test
 
 import (
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"testing"
+
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -46,11 +44,11 @@ func TestIsBlacklisted(t *testing.T) {
 	for _, tc := range tt {
 		tc := tc
 		app, ctx := test.CreateTestApp(false)
-		admin := tokenregistrytypes.AdminAccount{
-			AdminType:    tokenregistrytypes.AdminType_ETHBRIDGE,
+		admin := admintypes.AdminAccount{
+			AdminType:    admintypes.AdminType_ETHBRIDGE,
 			AdminAddress: adminAddress.String(),
 		}
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, &admin)
+		app.AdminKeeper.SetAdminAccount(ctx, &admin)
 		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
@@ -110,11 +108,11 @@ func TestSetBlacklist(t *testing.T) {
 	for _, tc := range tt {
 		tc := tc
 		app, ctx := test.CreateTestApp(false)
-		admin := tokenregistrytypes.AdminAccount{
-			AdminType:    tokenregistrytypes.AdminType_ETHBRIDGE,
+		admin := admintypes.AdminAccount{
+			AdminType:    admintypes.AdminType_ETHBRIDGE,
 			AdminAddress: adminAddress.String(),
 		}
-		app.TokenRegistryKeeper.SetAdminAccount(ctx, &admin)
+		app.AdminKeeper.SetAdminAccount(ctx, &admin)
 		err := app.EthbridgeKeeper.SetBlacklist(ctx, &types.MsgSetBlacklist{
 			From:      adminAddress.String(),
 			Addresses: tc.addresses,
@@ -125,12 +123,16 @@ func TestSetBlacklist(t *testing.T) {
 			Addresses: tc.updated,
 		})
 		require.NoError(t, err)
+
+		//list := app.EthbridgeKeeper.GetBlacklist(ctx)
+		//fmt.Println(list)
 		for _, address := range tc.expectTrue {
 			require.True(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
 		for _, address := range tc.expectFalse {
 			require.False(t, app.EthbridgeKeeper.IsBlacklisted(ctx, address))
 		}
+
 	}
 }
 

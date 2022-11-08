@@ -33,6 +33,9 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdParams(queryRoute),
 		GetCmdRewardsParams(queryRoute),
 		GetCmdPmtpParams(queryRoute),
+		GetCmdLiquidityProtectionParams(queryRoute),
+		GetCmdProviderDistributionParams(queryRoute),
+		GetCmdSwapFeeParams(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -322,5 +325,75 @@ func GetCmdPmtpParams(queryRoute string) *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 
+	return cmd
+}
+
+func GetCmdLiquidityProtectionParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "liquidity-protection-params",
+		Short: "Get all liquidity protection parameters",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			result, err := queryClient.GetLiquidityProtectionParams(cmd.Context(), &types.LiquidityProtectionParamsReq{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(result)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdProviderDistributionParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "lppd-params",
+		Short: "Get the clp LP provider distribution params",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetProviderDistributionParams(context.Background(), &types.ProviderDistributionParamsReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSwapFeeParams(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "swap-fee-params",
+		Short: "Get swap fee params",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			result, err := queryClient.GetSwapFeeParams(context.Background(), &types.SwapFeeParamsReq{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(result)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

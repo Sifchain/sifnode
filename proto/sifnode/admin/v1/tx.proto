@@ -1,0 +1,36 @@
+syntax = "proto3";
+package sifnode.admin.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/admin/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/admin/types";
+
+service Msg {
+  rpc AddAccount(MsgAddAccount) returns (MsgAddAccountResponse) {}
+  rpc RemoveAccount(MsgRemoveAccount) returns (MsgRemoveAccountResponse) {}
+  rpc SetParams(MsgSetParams) returns (MsgSetParamsResponse) {}
+}
+
+message MsgAddAccount {
+  string signer = 1;
+  AdminAccount account = 2;
+}
+
+message MsgAddAccountResponse {}
+
+message MsgRemoveAccount {
+  string signer = 1;
+  AdminAccount account = 2;
+}
+
+message MsgRemoveAccountResponse {}
+
+message MsgSetParams {
+  string signer = 1;
+  Params params = 2;
+}
+
+message MsgSetParamsResponse {
+
+}

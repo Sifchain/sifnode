@@ -1,0 +1,26 @@
+syntax = "proto3";
+package sifnode.admin.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "sifnode/admin/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/admin/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse) {}
+  rpc GetParams(GetParamsRequest) returns (GetParamsResponse) {}
+}
+
+message ListAccountsRequest {}
+
+message ListAccountsResponse {
+  repeated AdminAccount keys = 2;
+}
+
+message GetParamsRequest {}
+
+message GetParamsResponse {
+  Params params = 1;
+}

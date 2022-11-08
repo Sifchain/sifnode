@@ -2,9 +2,10 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
@@ -70,7 +71,7 @@ func TestAppUpgrade_CannotDeleteLatestVersion(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 		func(app *baseapp.BaseApp) {
-			cms := rootmulti.NewStore(db)
+			cms := rootmulti.NewStore(db, app.Logger())
 			cms.SetPruning(storetypes.PruneDefault)
 			app.SetCMS(cms)
 		},
@@ -155,7 +156,7 @@ func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 		func(app *baseapp.BaseApp) {
-			cms := rootmulti.NewStore(db)
+			cms := rootmulti.NewStore(db, app.Logger())
 			cms.SetPruning(storetypes.PruneDefault)
 			app.SetCMS(cms)
 		},
@@ -189,7 +190,7 @@ func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 		func(app *baseapp.BaseApp) {
-			cms := rootmulti.NewStore(db)
+			cms := rootmulti.NewStore(db, app.Logger())
 			cms.SetPruning(storetypes.PruneDefault)
 			app.SetCMS(cms)
 		},
@@ -221,7 +222,7 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	encCfg := MakeTestEncodingConfig()
 	db := dbm.NewMemDB()
 	app := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
-
+	SetConfig(false)
 	for acc := range maccPerms {
 		require.True(
 			t,

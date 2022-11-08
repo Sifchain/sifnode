@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"errors"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -79,108 +80,47 @@ func TestKeeper_GetBankKeeper(t *testing.T) {
 	require.NotNil(t, got)
 }
 
-func TestKeeper_GetNormalizationFactor(t *testing.T) {
+// nolint
+func TestKeeper_GetAssetDecimals(t *testing.T) {
 	testcases :=
 		[]struct {
-			name                string
-			decimals            int64
-			normalizationFactor sdk.Dec
-			adjustExternalToken bool
-			expPanic            bool
-			expPanicMsg         string
-		}{
-			{
-				name:        "big decimals number throws error",
-				decimals:    100000000,
-				expPanic:    true,
-				expPanicMsg: "Int overflow",
-			},
-			{
-				name:                "decimals less than 18",
-				decimals:            10,
-				normalizationFactor: sdk.NewDec(100000000),
-				adjustExternalToken: true,
-			},
-			{
-				name:                "decimals greater than or equal to 18",
-				decimals:            20,
-				normalizationFactor: sdk.NewDec(100),
-				adjustExternalToken: false,
-			},
-			{
-				name:                "with 6 decimals",
-				decimals:            6,
-				normalizationFactor: sdk.NewDec(1000000000000),
-				adjustExternalToken: true,
-			},
-		}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			_, app := test.CreateTestAppClp(false)
-			clpKeeper := app.ClpKeeper
-
-			if tc.expPanic {
-				require.PanicsWithValue(t, tc.expPanicMsg, func() {
-					clpKeeper.GetNormalizationFactor(tc.decimals)
-				})
-			} else {
-				normalizationFactor, adjustExternalToken := clpKeeper.GetNormalizationFactor(tc.decimals)
-
-				require.NotNil(t, normalizationFactor)
-				require.Equal(t, tc.normalizationFactor, normalizationFactor)
-				require.Equal(t, tc.adjustExternalToken, adjustExternalToken)
-			}
-		})
-	}
-}
-
-func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
-	testcases :=
-		[]struct {
-			name                string
-			denom               string
-			expPanicMsg         string
-			asset               types.Asset
-			decimals            int64
-			normalizationFactor sdk.Dec
-			createToken         bool
-			adjustExternalToken bool
-			expPanic            bool
+			name        string
+			denom       string
+			asset       types.Asset
+			decimals    int64
+			createToken bool
+			errString   error
+			expected    uint8
 		}{
 			{
 				name:        "big decimals number throws error",
 				asset:       types.Asset{Symbol: "xxx"},
 				createToken: true,
 				denom:       "xxx",
-				decimals:    100000000,
-				expPanic:    true,
-				expPanicMsg: "Int overflow",
+				decimals:    256,
+				errString:   errors.New("Could not perform type cast"),
 			},
 			{
-				name:                "unknown symbol",
-				createToken:         false,
-				asset:               types.Asset{Symbol: "xxx"},
-				adjustExternalToken: false,
+				name:        "negative decimals number throws error",
+				asset:       types.Asset{Symbol: "xxx"},
+				createToken: true,
+				denom:       "xxx",
+				decimals:    -200,
+				errString:   errors.New("Could not perform type cast"),
 			},
 			{
-				name:                "decimals less than 18",
-				asset:               types.Asset{Symbol: "xxx"},
-				createToken:         true,
-				denom:               "xxx",
-				decimals:            10,
-				normalizationFactor: sdk.NewDec(100000000),
-				adjustExternalToken: true,
+				name:        "unknown symbol",
+				createToken: false,
+				asset:       types.Asset{Symbol: "xxx"},
+				errString:   errors.New("registry entry not found: key not found"),
 			},
 			{
-				name:                "decimals greater than or equal to 18",
-				asset:               types.Asset{Symbol: "xxx"},
-				createToken:         true,
-				denom:               "xxx",
-				decimals:            20,
-				normalizationFactor: sdk.NewDec(100),
-				adjustExternalToken: false,
+				name:        "success",
+				asset:       types.Asset{Symbol: "xxx"},
+				createToken: true,
+				denom:       "xxx",
+				decimals:    73,
+				expected:    73,
 			},
 		}
 
@@ -197,18 +137,13 @@ func TestKeeper_GetNormalizationFactorFromAsset(t *testing.T) {
 					Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 				})
 			}
+			decimals, err := clpKeeper.GetAssetDecimals(ctx, tc.asset)
 
-			if tc.expPanic {
-				require.PanicsWithValue(t, tc.expPanicMsg, func() {
-					clpKeeper.GetNormalizationFactorFromAsset(ctx, tc.asset)
-				})
-			} else {
-				normalizationFactor, adjustExternalToken := clpKeeper.GetNormalizationFactorFromAsset(ctx, tc.asset)
-
-				require.NotNil(t, normalizationFactor)
-				require.Equal(t, tc.normalizationFactor, normalizationFactor)
-				require.Equal(t, tc.adjustExternalToken, adjustExternalToken)
+			if tc.errString != nil {
+				require.EqualError(t, err, tc.errString.Error())
+				return
 			}
+			require.Equal(t, tc.expected, decimals)
 		})
 	}
 }

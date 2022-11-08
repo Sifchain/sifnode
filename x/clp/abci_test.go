@@ -17,7 +17,7 @@ import (
 
 func TestEndBlocker(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	_ = test.GeneratePoolsFromFile(app.ClpKeeper, ctx)
+	_ = test.GeneratePoolsFromFile(app, app.ClpKeeper, ctx)
 	SetRewardParams(app.ClpKeeper, ctx)
 
 	_ = clp.EndBlocker(ctx, app.ClpKeeper)
@@ -57,25 +57,30 @@ func SetRewardParams(keeper keeper.Keeper, ctx sdk.Context) {
 }
 
 func TestBeginBlocker(t *testing.T) {
-	testcases := []struct {
-		name                   string
-		createBalance          bool
-		createPool             bool
-		createLPs              bool
-		poolAsset              string
-		address                string
-		nativeBalance          sdk.Int
-		externalBalance        sdk.Int
-		nativeAssetAmount      sdk.Uint
-		externalAssetAmount    sdk.Uint
-		poolUnits              sdk.Uint
-		poolAssetPermissions   []tokenregistrytypes.Permission
-		nativeAssetPermissions []tokenregistrytypes.Permission
-		params                 types.Params
-		epoch                  types.PmtpEpoch
-		err                    error
-		errString              error
-		panicErr               string
+	testcases := []struct { //nolint
+		name                           string
+		createBalance                  bool
+		createPool                     bool
+		createLPs                      bool
+		poolAsset                      string
+		address                        string
+		nativeBalance                  sdk.Int
+		externalBalance                sdk.Int
+		nativeAssetAmount              sdk.Uint
+		externalAssetAmount            sdk.Uint
+		poolUnits                      sdk.Uint
+		poolAssetPermissions           []tokenregistrytypes.Permission
+		nativeAssetPermissions         []tokenregistrytypes.Permission
+		params                         types.Params
+		epoch                          types.PmtpEpoch
+		err                            error
+		errString                      error
+		panicErr                       string
+		maxRowanLiquidityThreshold     sdk.Uint
+		currentRowanLiquidityThreshold sdk.Uint
+		liquidityProtectionEpochLength uint64
+		liquidityProtectionIsActive    bool
+		expectedRunningThresholdEnd    sdk.Uint
 	}{
 		{
 			name:                   "current height equals to start block",
@@ -166,6 +171,87 @@ func TestBeginBlocker(t *testing.T) {
 			},
 			// panicErr: "not enough received asset tokens to swap",
 		},
+		{
+			name:                   "liquidity protection correct replenishment",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			externalBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			nativeAssetAmount:      sdk.NewUint(1000),
+			externalAssetAmount:    sdk.NewUint(1000),
+			poolUnits:              sdk.NewUint(1000),
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			params: types.Params{
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+			},
+			epoch: types.PmtpEpoch{
+				EpochCounter: 10,
+				BlockCounter: 0,
+			},
+			liquidityProtectionIsActive:    true,
+			maxRowanLiquidityThreshold:     sdk.NewUint(100),
+			currentRowanLiquidityThreshold: sdk.NewUint(80),
+			liquidityProtectionEpochLength: 10,
+			expectedRunningThresholdEnd:    sdk.NewUint(90),
+		},
+		{
+			name:                   "liquidity protection correct replenishment hit maximum",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			externalBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			nativeAssetAmount:      sdk.NewUint(1000),
+			externalAssetAmount:    sdk.NewUint(1000),
+			poolUnits:              sdk.NewUint(1000),
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			params: types.Params{
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+			},
+			epoch: types.PmtpEpoch{
+				EpochCounter: 10,
+				BlockCounter: 0,
+			},
+			liquidityProtectionIsActive:    true,
+			maxRowanLiquidityThreshold:     sdk.NewUint(100),
+			currentRowanLiquidityThreshold: sdk.NewUint(95),
+			liquidityProtectionEpochLength: 10,
+			expectedRunningThresholdEnd:    sdk.NewUint(100),
+		},
+		{
+			name:                   "liquidity protection maximum max liquidity threshold",
+			createBalance:          true,
+			createPool:             true,
+			createLPs:              true,
+			poolAsset:              "eth",
+			address:                "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:          sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			externalBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			nativeAssetAmount:      sdk.NewUint(1000),
+			externalAssetAmount:    sdk.NewUint(1000),
+			poolUnits:              sdk.NewUint(1000),
+			poolAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			params: types.Params{
+				MinCreatePoolThreshold: types.DefaultMinCreatePoolThreshold,
+			},
+			epoch: types.PmtpEpoch{
+				EpochCounter: 10,
+				BlockCounter: 0,
+			},
+			liquidityProtectionIsActive:    true,
+			maxRowanLiquidityThreshold:     sdk.NewUintFromString("115792089237316195423570985008687907853269984665640564039457584007913129639935"),
+			currentRowanLiquidityThreshold: sdk.NewUintFromString("115792089237316195423570985008687907853269984665640564039457584007913129639935"),
+			liquidityProtectionEpochLength: 10,
+			expectedRunningThresholdEnd:    sdk.NewUintFromString("115792089237316195423570985008687907853269984665640564039457584007913129639935"),
+		},
 	}
 
 	for _, tc := range testcases {
@@ -173,7 +259,6 @@ func TestBeginBlocker(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
@@ -238,6 +323,13 @@ func TestBeginBlocker(t *testing.T) {
 			})
 			app.ClpKeeper.SetPmtpEpoch(ctx, tc.epoch)
 
+			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
+			liquidityProtectionParam.MaxRowanLiquidityThreshold = tc.maxRowanLiquidityThreshold
+			liquidityProtectionParam.IsActive = tc.liquidityProtectionIsActive
+			liquidityProtectionParam.EpochLength = tc.liquidityProtectionEpochLength
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, liquidityProtectionParam)
+			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
+
 			if tc.panicErr != "" {
 				// nolint:errcheck
 				require.PanicsWithError(t, tc.panicErr, func() {
@@ -247,6 +339,11 @@ func TestBeginBlocker(t *testing.T) {
 			}
 
 			clp.BeginBlocker(ctx, app.ClpKeeper)
+
+			if tc.liquidityProtectionIsActive {
+				runningThreshold := app.ClpKeeper.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+				require.Equal(t, tc.expectedRunningThresholdEnd.String(), runningThreshold.String())
+			}
 		})
 	}
 }
@@ -314,10 +411,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.097803295605500089"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.907275450913636290"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.100000000000000089"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.909090909090909017"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.100000000000000089"),
@@ -331,10 +438,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.207583625166050196"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.824795864466942015"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.210000000000000196"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.826446280991735403"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.210000000000000196"),
@@ -348,10 +465,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.328341987682655322"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.749814422242674499"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.331000000000000323"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.751314800901577578"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.331000000000000323"),
@@ -365,10 +492,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 						NativeAssetBalance:            sdk.NewUint(1000),
 						ExternalAssetBalance:          sdk.NewUint(1000),
 						PoolUnits:                     sdk.NewUint(1000),
+						NativeCustody:                 sdk.ZeroUint(),
+						ExternalCustody:               sdk.ZeroUint(),
+						NativeLiabilities:             sdk.ZeroUint(),
+						ExternalLiabilities:           sdk.ZeroUint(),
+						UnsettledExternalLiabilities:  sdk.ZeroUint(),
+						UnsettledNativeLiabilities:    sdk.ZeroUint(),
+						BlockInterestExternal:         sdk.ZeroUint(),
+						BlockInterestNative:           sdk.ZeroUint(),
+						Health:                        sdk.ZeroDec(),
+						InterestRate:                  sdk.NewDecWithPrec(1, 1),
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
 					},
-					SwapPriceNative:   sdk.MustNewDecFromStr("1.461176186450920973"),
-					SwapPriceExternal: sdk.MustNewDecFromStr("0.681649474766067671"),
+					SwapPriceNative:   sdk.MustNewDecFromStr("1.464100000000000474"),
+					SwapPriceExternal: sdk.MustNewDecFromStr("0.683013455365070470"),
 					pmtpRateParams: types.PmtpRateParams{
 						PmtpPeriodBlockRate:    sdk.MustNewDecFromStr("0.100000000000000089"),
 						PmtpCurrentRunningRate: sdk.MustNewDecFromStr("0.464100000000000474"),
@@ -384,7 +521,6 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
-					AdminAccounts: test.GetAdmins(tc.address),
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
 							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.poolAssetDecimals, Permissions: tc.poolAssetPermissions},
@@ -415,10 +551,20 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 				if tc.createPool {
 					pools := []*types.Pool{
 						{
-							ExternalAsset:        &types.Asset{Symbol: tc.poolAsset},
-							NativeAssetBalance:   tc.nativeAssetAmount,
-							ExternalAssetBalance: tc.externalAssetAmount,
-							PoolUnits:            tc.poolUnits,
+							ExternalAsset:                &types.Asset{Symbol: tc.poolAsset},
+							NativeAssetBalance:           tc.nativeAssetAmount,
+							ExternalAssetBalance:         tc.externalAssetAmount,
+							PoolUnits:                    tc.poolUnits,
+							NativeCustody:                sdk.ZeroUint(),
+							ExternalCustody:              sdk.ZeroUint(),
+							NativeLiabilities:            sdk.ZeroUint(),
+							ExternalLiabilities:          sdk.ZeroUint(),
+							UnsettledExternalLiabilities: sdk.ZeroUint(),
+							UnsettledNativeLiabilities:   sdk.ZeroUint(),
+							BlockInterestExternal:        sdk.ZeroUint(),
+							BlockInterestNative:          sdk.ZeroUint(),
+							Health:                       sdk.ZeroDec(),
+							InterestRate:                 sdk.NewDecWithPrec(1, 1),
 						},
 					}
 					clpGs := types.DefaultGenesisState()
@@ -460,6 +606,10 @@ func TestBeginBlocker_Incremental(t *testing.T) {
 
 				expectedState.pool.SwapPriceNative = &expectedState.SwapPriceNative
 				expectedState.pool.SwapPriceExternal = &expectedState.SwapPriceExternal
+
+				// explicitly test swap prices before testing pool - makes debugging easier
+				require.Equal(t, &expectedState.SwapPriceNative, got.SwapPriceNative)
+				require.Equal(t, &expectedState.SwapPriceExternal, got.SwapPriceExternal)
 
 				require.Equal(t, expectedState.height, ctx.BlockHeight())
 				require.Equal(t, expectedState.pool, got)

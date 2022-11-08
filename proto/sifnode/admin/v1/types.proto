@@ -1,0 +1,30 @@
+syntax = "proto3";
+package sifnode.admin.v1;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/admin/types";
+
+message GenesisState {
+  repeated AdminAccount admin_accounts = 1;
+}
+
+enum AdminType {
+  CLPDEX = 0;
+  PMTPREWARDS = 1;
+  TOKENREGISTRY = 2;
+  ETHBRIDGE = 3;
+  ADMIN = 4;
+  MARGIN = 5;
+}
+
+message AdminAccount {
+  AdminType admin_type = 1;
+  string admin_address = 2;
+}
+
+message Params {
+  string submit_proposal_fee = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}

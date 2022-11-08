@@ -1,12 +1,17 @@
 import json
+from typing import List, Optional
 
 
 class Ganache:
     @staticmethod
-    def start_ganache_cli(env, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
-        gas_limit=None, default_balance_ether=None, block_time=None, account_keys_path=None, log_file=None
+    def start_ganache_cli(env, executable: Optional[str] = None, mnemonic: Optional[List[str]] = None,
+        db: Optional[str] = None, port: Optional[int] = None, host: Optional[str] = None,
+        network_id: Optional[int] = None, gas_price: Optional[int] = None, gas_limit: Optional[int] = None,
+        default_balance_ether: Optional[int] = None, block_time: Optional[int] = None,
+        account_keys_path: Optional[str] = None, log_file: Optional[str] = None
     ):
-        args = ["ganache-cli"] + \
+        args = \
+            ([executable] if executable is not None else ["ganache-cli"]) + \
             (["--mnemonic", " ".join(mnemonic)] if mnemonic else []) + \
             (["--db", db] if db else []) + \
             (["--port", str(port)] if port is not None else []) + \
