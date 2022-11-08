@@ -56,7 +56,7 @@ message RegistryEntry {
   string ibc_counterparty_chain_id = 18;
   map<uint32, bool> double_pegged_network_map = 19;
   sifnode.oracle.v1.NetworkDescriptor network = 20;
-  string peggy_2_denom = 20;
+  string peggy_2_denom = 21;
 }
 
 // Coin Metadata Modlue structure for storing
