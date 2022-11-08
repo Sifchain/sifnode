@@ -143,6 +143,13 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     int32 _networkDescriptor,
     address _rowanTokenAddress
   ) private {
+    
+    require(_operator != address(0), "invalid _operator");
+    require(_cosmosBridgeAddress != address(0), "invalid _cosmosBridgeAddress");
+    require(_owner != address(0), "invalid _owner");
+    require(_networkDescriptor > 0 && _networkDescriptor <= 9999, "invalid _networkDescriptor");
+    require(_pauser != address(0), "invalid _pauser");
+
     Pausable._pausableInitialize(_pauser);
 
     operator = _operator;
