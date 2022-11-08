@@ -1,0 +1,22 @@
+{
+  "array": [
+    {
+      "address": "0x4461cfd640da24d1a4642fa5f9ea3e6da966b831",
+      "name": "Cosmostarter",
+      "symbol": "CSMS",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": null
+    },
+    {
+      "address": "0xae697f994fc5ebc000f8e22ebffee04612f98a0d",
+      "name": "LGCY Network",
+      "symbol": "LGCY",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/6665.png"
+    }
+  ]
+}

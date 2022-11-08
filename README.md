@@ -11,3 +11,4 @@ To launch a validator or full-node on Sifchain, on either TestNet or BetaNet, th
 ## Additional Resources
 
 Feel free to ask questions on Discord [here](https://discord.gg/vdNRZBttC8).
+

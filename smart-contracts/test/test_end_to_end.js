@@ -5,6 +5,7 @@ const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeBank = artifacts.require("BridgeBank");
 const BridgeToken = artifacts.require("BridgeToken");
+const Blocklist = artifacts.require("Blocklist");
 
 var bigInt = require("big-integer");
 
@@ -109,6 +110,10 @@ contract("End To End", function (accounts) {
       ],
       {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {

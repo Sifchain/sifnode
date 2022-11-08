@@ -3,8 +3,8 @@ package keeper
 import (
 	"errors"
 	"fmt"
-
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -20,21 +20,23 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc           codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
-	oracleKeeper  types.OracleKeeper
-	storeKey      sdk.StoreKey
+	cdc                 codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	accountKeeper       types.AccountKeeper
+	bankKeeper          types.BankKeeper
+	oracleKeeper        types.OracleKeeper
+	tokenRegistryKeeper types.TokenRegistryKeeper
+	storeKey            sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryCodec, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
-		cdc:           cdc,
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
-		oracleKeeper:  oracleKeeper,
-		storeKey:      storeKey,
+		cdc:                 cdc,
+		accountKeeper:       accountKeeper,
+		bankKeeper:          bankKeeper,
+		oracleKeeper:        oracleKeeper,
+		tokenRegistryKeeper: tokenRegistryKeeper,
+		storeKey:            storeKey,
 	}
 }
 
@@ -95,6 +97,11 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return types.ErrInvalidEthAddress
+	}
+
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
@@ -130,6 +137,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 // ProcessLock processes the lockup of cosmos coins from the given sender
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
 	logger := k.Logger(ctx)
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return types.ErrInvalidEthAddress
+	}
+
 	var coins sdk.Coins
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))

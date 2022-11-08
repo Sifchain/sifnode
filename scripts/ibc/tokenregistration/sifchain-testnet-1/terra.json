@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/452372B8214E22C625E98958C5EDFB939C48E6590E40B711E9D30206EF8EDC9B",
       "base_denom": "uluna",
-      "path": "",
+      "path": "transfer/channel-45",
       "ibc_channel_id": "channel-45",
       "ibc_counterparty_channel_id": "channel-27",
       "display_name": "",

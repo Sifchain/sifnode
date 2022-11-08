@@ -260,6 +260,7 @@ def create_offline_singlekey_txn_with_runner(
 def run_dispensation(
         distribution_name,
         claimType,
+        distribution_count,
         runner_address,
         chain_id
     ):
@@ -271,6 +272,7 @@ def run_dispensation(
         "sifnoded tx dispensation run",
         distribution_name,
         f"{claimType}",
+        distribution_count,
         f"--from {runner_address}",
         f"--chain-id {chain_id}",
         sifchain_gas_entry,

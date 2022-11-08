@@ -12,13 +12,13 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) (Pool, error) {
+func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) Pool {
 	pool := Pool{ExternalAsset: externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
 		PoolUnits:            poolUnits}
 
-	return pool, nil
+	return pool
 }
 
 type Pools []Pool
@@ -40,10 +40,6 @@ func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidi
 // ----------------------------------------------------------------------------
 // Client Types
 
-func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsRes {
-	return PoolsRes{Pools: pools, Height: height, ClpModuleAddress: address}
-}
-
 func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderRes {
 	return LiquidityProviderRes{LiquidityProvider: &liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
@@ -54,4 +50,8 @@ func NewLiquidityProviderDataResponse(liquidityProviderData []*LiquidityProvider
 
 func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance string, externalBalance string) LiquidityProviderData {
 	return LiquidityProviderData{LiquidityProvider: &liquidityProvider, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
+}
+
+func NewPmtpParamsResponse(params *PmtpParams, pmtpRateParams PmtpRateParams, pmtpEpoch PmtpEpoch, height int64) PmtpParamsRes {
+	return PmtpParamsRes{Params: params, PmtpRateParams: &pmtpRateParams, PmtpEpoch: &pmtpEpoch, Height: height}
 }

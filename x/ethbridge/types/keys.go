@@ -23,4 +23,5 @@ const (
 var (
 	PeggyTokenKeyPrefix       = []byte{0x00}
 	CethReceiverAccountPrefix = []byte{0x01}
+	BlacklistPrefix           = []byte{0x02}
 )

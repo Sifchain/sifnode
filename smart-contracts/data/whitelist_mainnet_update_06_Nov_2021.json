@@ -1,0 +1,67 @@
+{
+  "array": [
+    {
+      "address": "0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3",
+      "name": "Magic Internet Money",
+      "symbol": "MIM",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": null
+    },
+    {
+      "address": "0x9040e237c3bf18347bb00957dc22167d0f2b999d",
+      "name": "Standard",
+      "symbol": "STND",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/9251.png"
+    },
+    {
+      "address": "0x6524b87960c2d573ae514fd4181777e7842435d4",
+      "name": "Benzene",
+      "symbol": "BZN",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": null
+    },
+    {
+      "address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
+      "name": "Wootrade Network",
+      "symbol": "WOO",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/7501.png"
+    },
+    {
+      "address": "0xe53ec727dbdeb9e2d5456c3be40cff031ab40a55",
+      "name": "SuperFarm",
+      "symbol": "SUPER",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/8290.png"
+    },
+    {
+      "address": "0x3506424f91fd33084466f402d5d97f05f8e3b4af",
+      "name": "chiliZ",
+      "symbol": "CHZ",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/4066.png"
+    },
+    {
+      "address": "0x888888848b652b3e3a0f34c96e00eec0f3a23f72",
+      "name": "Alien Worlds Trilium",
+      "symbol": "TLM",
+      "decimals": 4,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/9119.png"
+    }
+  ]
+}

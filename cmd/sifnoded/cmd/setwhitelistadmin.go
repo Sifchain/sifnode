@@ -56,7 +56,13 @@ the address will be looked up in the local Keybase.
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 			state := tokenregistrytypes.UnmarshalGenesis(cdc, appState[tokenregistrytypes.ModuleName])
-			state.AdminAccount = addr.String()
+			account := tokenregistrytypes.AdminAccounts{AdminAccounts: []*tokenregistrytypes.AdminAccount{
+				{
+					AdminAddress: addr.String(),
+					AdminType:    tokenregistrytypes.AdminType_TOKENREGISTRY,
+				},
+			}}
+			state.AdminAccounts = &account
 			stateBz, err := json.Marshal(state)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)

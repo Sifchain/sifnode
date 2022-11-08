@@ -17,11 +17,13 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	}
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
 	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
@@ -35,24 +37,17 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	if !k.bankKeeper.HasBalance(ctx, addr, externalAssetCoin) && !k.bankKeeper.HasBalance(ctx, addr, nativeAssetCoin) {
 		return nil, types.ErrBalanceNotAvailable
 	}
-
-	pool, err := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
-	}
-
+	pool := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
 	// Send coins from user to pool
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.NewCoins(externalAssetCoin, nativeAssetCoin))
 	if err != nil {
 		return nil, err
 	}
-
 	// Pool creator becomes the first LP
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-
 	return &pool, nil
 }
 
@@ -68,11 +63,13 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	// Verify user has coins to add liquidiy
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.ExternalAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
 	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
+		// this branch will never be reached as msg.NativeAssetAmount is already validated as sdk.Uint
 		return nil, types.ErrUnableToParseInt
 	}
 
@@ -170,6 +167,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 	if externalAssetCoin.Amount.GTE(sdk.Int(poolOriginalEB)) || nativeAssetCoin.Amount.GTE(sdk.Int(poolOriginalNB)) {
 		return sdkerrors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
+
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())

@@ -2,10 +2,11 @@ package types
 
 import (
 	"bytes"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func NewSigner(signer string) sdk.AccAddress {
@@ -37,6 +38,10 @@ func GetETHAsset() Asset {
 	return NewAsset("eth")
 }
 
+func GetROWANAsset() Asset {
+	return NewAsset("rowan")
+}
+
 func GetWrongAsset() Asset {
 	return NewAsset("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
 }
@@ -52,6 +57,23 @@ func TestNewMsgCreatePool(t *testing.T) {
 	newpool = NewMsgCreatePool(signer, wrongAsset, sdk.NewUint(1000), sdk.NewUint(100))
 	err = newpool.ValidateBasic()
 	assert.Error(t, err)
+
+	str := newpool.Route()
+	assert.Equal(t, str, "clp")
+	str = newpool.Type()
+	assert.Equal(t, str, "create_pool")
+	newpool = NewMsgCreatePool(nil, asset, sdk.NewUint(1000), sdk.NewUint(100))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "invalid address")
+	newpool = NewMsgCreatePool(signer, GetROWANAsset(), sdk.NewUint(1000), sdk.NewUint(100))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "External Asset cannot be rowan")
+	newpool = NewMsgCreatePool(signer, asset, sdk.NewUint(0), sdk.NewUint(100))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "amount is invalid")
+	newpool = NewMsgCreatePool(signer, asset, sdk.NewUint(1000), sdk.NewUint(0))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "amount is invalid")
 }
 
 func TestNewMsgDecommissionPool(t *testing.T) {
@@ -65,6 +87,14 @@ func TestNewMsgDecommissionPool(t *testing.T) {
 	tx = NewMsgDecommissionPool(signer, wrongAsset.Symbol)
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
+
+	str := tx.Route()
+	assert.Equal(t, str, "clp")
+	str = tx.Type()
+	assert.Equal(t, str, "decommission_pool")
+	tx = NewMsgDecommissionPool(nil, asset.Symbol)
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "invalid address")
 }
 
 func TestNewMsgSwap(t *testing.T) {
@@ -81,6 +111,23 @@ func TestNewMsgSwap(t *testing.T) {
 	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(0), sdk.NewUint(90))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
+
+	str := tx.Route()
+	assert.Equal(t, str, "clp")
+	str = tx.Type()
+	assert.Equal(t, str, "swap")
+	tx = NewMsgSwap(nil, asset, GetSettlementAsset(), sdk.NewUint(100), sdk.NewUint(90))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "invalid address")
+	tx = NewMsgSwap(signer, asset, wrongAsset, sdk.NewUint(100), sdk.NewUint(90))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "asset is invalid")
+	tx = NewMsgSwap(signer, asset, asset, sdk.NewUint(100), sdk.NewUint(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "Sent And Received asset cannot be the same")
+	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(0), sdk.NewUint(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "amount is invalid")
 }
 
 func TestNewMsgAddLiquidity(t *testing.T) {
@@ -94,6 +141,20 @@ func TestNewMsgAddLiquidity(t *testing.T) {
 	tx = NewMsgAddLiquidity(signer, wrongAsset, sdk.NewUint(100), sdk.NewUint(100))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
+
+	str := tx.Route()
+	assert.Equal(t, str, "clp")
+	str = tx.Type()
+	assert.Equal(t, str, "add_liquidity")
+	tx = NewMsgAddLiquidity(nil, asset, sdk.NewUint(100), sdk.NewUint(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "invalid address")
+	tx = NewMsgAddLiquidity(signer, GetSettlementAsset(), sdk.NewUint(100), sdk.NewUint(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "External asset cannot be rowan")
+	tx = NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), sdk.ZeroUint())
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "Both asset ammounts cannot be 0 0 / 0")
 }
 
 func TestNewMsgRemoveLiquidity(t *testing.T) {
@@ -107,10 +168,18 @@ func TestNewMsgRemoveLiquidity(t *testing.T) {
 	tx = NewMsgRemoveLiquidity(signer, wrongAsset, sdk.NewInt(100), sdk.NewInt(100))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
-	tx = NewMsgRemoveLiquidity(signer, wrongAsset, sdk.NewInt(-100), sdk.NewInt(100))
+	tx = NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(-100), sdk.NewInt(100))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
-	tx = NewMsgRemoveLiquidity(signer, wrongAsset, sdk.NewInt(100), sdk.NewInt(100000))
+	tx = NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(100), sdk.NewInt(100000))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
+
+	str := tx.Route()
+	assert.Equal(t, str, "clp")
+	str = tx.Type()
+	assert.Equal(t, str, "remove_liquidity")
+	tx = NewMsgRemoveLiquidity(nil, asset, sdk.NewInt(100), sdk.NewInt(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "invalid address")
 }

@@ -2,17 +2,26 @@ package keeper
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strconv"
 )
 
 var _ types.QueryServer = queryServer{}
 
 type queryServer struct {
 	Keeper
+}
+
+func (srv queryServer) GetBlacklist(ctx context.Context, _ *types.QueryBlacklistRequest) (*types.QueryBlacklistResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	addresses := srv.Keeper.GetBlacklist(sdkCtx)
+
+	return &types.QueryBlacklistResponse{Addresses: addresses}, nil
 }
 
 // NewQueryServer returns an implementation of the ethbridge QueryServer interface,
@@ -51,5 +60,3 @@ func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProph
 
 	return &res, nil
 }
-
-

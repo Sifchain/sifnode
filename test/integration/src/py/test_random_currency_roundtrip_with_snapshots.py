@@ -51,7 +51,8 @@ def do_currency_test(
 
 @pytest.mark.usefixtures("with_snapshot")
 @pytest.mark.parametrize("snapshot_name", ["s1"])
-def test_transfer_tokens_with_some_currency(ctx):
+def test_transfer_tokens_with_some_currency(ctx_legacy):
+    ctx = ctx_legacy  # TODO Refactoring in progress, pytest fixture name "ctx" is now used for new code
     ctx.set_operator_private_key_env_var()  # TODO Instead of @pytest.mark.usefixtures("operator_private_key")
     basic_transfer_request = ctx.basic_transfer_request
     source_ethereum_address = ctx.source_ethereum_address
@@ -69,7 +70,8 @@ def test_transfer_tokens_with_some_currency(ctx):
 
 @pytest.mark.usefixtures("with_snapshot")
 @pytest.mark.parametrize("snapshot_name", ["s1"])
-def test_three_letter_currency_with_capitals_in_name(ctx):
+def test_three_letter_currency_with_capitals_in_name(ctx_legacy):
+    ctx = ctx_legacy  # TODO Refactoring in progress, pytest fixture name "ctx" is now used for new code
     ctx.set_operator_private_key_env_var()  # TODO Instead of @pytest.mark.usefixtures("operator_private_key")
     basic_transfer_request = ctx.basic_transfer_request
     source_ethereum_address = ctx.source_ethereum_address

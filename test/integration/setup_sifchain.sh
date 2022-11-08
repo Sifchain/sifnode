@@ -47,6 +47,4 @@ nohup $TEST_INTEGRATION_DIR/sifchain_start_daemon.sh < /dev/null > $SIFNODED_LOG
 # we don't have a great way to make sure sifchain itself has started
 sleep 10
 set_persistant_env_var SIFNODED_PID $! $envexportfile
-nohup sifnoded rest-server --laddr tcp://0.0.0.0:1317 < /dev/null > $datadir/logs/restserver.log 2>&1 &
-set_persistant_env_var REST_SERVER_PID $! $envexportfile
 bash $TEST_INTEGRATION_DIR/sifchain_start_ebrelayer.sh
