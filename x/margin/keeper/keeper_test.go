@@ -184,32 +184,32 @@ func TestKeeper_CLPSwap(t *testing.T) {
 			err:        clptypes.ErrAmountTooLow,
 		},
 		{
-			name:       "no token adjustment and non-rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
+			name:       "no token adjustment and non-rowan target asset does not throw an error as swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   18,
 			to:         "xxx",
-			sentAmount: sdk.NewUint(10000000000000),
+			sentAmount: sdk.NewUint(1000),
 		},
 		{
-			name:       "no token adjustment and rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
+			name:       "no token adjustment and rowan target asset does not throw an error as swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   18,
 			to:         "rowan",
-			sentAmount: sdk.NewUint(10000000000000),
+			sentAmount: sdk.NewUint(1000),
 		},
 		{
-			name:       "token adjustment and non-rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
+			name:       "token adjustment and non-rowan target asset does not throw an error as swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   9,
 			to:         "xxx",
 			sentAmount: sdk.NewUint(1000),
 		},
 		{
-			name:       "token adjustment and rowan target asset does not throw an error as slippage fee gets adjusted to keep the swap result under the available pool balance",
+			name:       "token adjustment and rowan target asset does not throw an error as swap result under the available pool balance",
 			denom:      "rowan",
 			decimals:   9,
 			to:         "rowan",
-			sentAmount: sdk.NewUint(1000000000000),
+			sentAmount: sdk.NewUint(1000),
 		},
 	}
 
@@ -454,18 +454,18 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			health:                   sdk.NewDec(1),
 			position:                 types.Position_LONG,
 		},
-		{
-			name:                     "not enough received asset tokens to swap does not throw an error as swap result readjusted based on slippage",
-			denom:                    "rowan",
-			decimals:                 18,
-			to:                       "rowan",
-			collateralAmount:         sdk.NewUint(1000),
-			custodyAmount:            sdk.NewUint(10000000000),
-			liabilities:              sdk.NewUint(1000),
-			interestUnpaidCollateral: sdk.NewUint(1000),
-			health:                   sdk.NewDec(1),
-			position:                 types.Position_LONG,
-		},
+		//{
+		//	name:                     "not enough received asset tokens to swap does not throw an error as swap result readjusted based on slippage",
+		//	denom:                    "rowan",
+		//	decimals:                 18,
+		//	to:                       "rowan",
+		//	collateralAmount:         sdk.NewUint(1000),
+		//	custodyAmount:            sdk.NewUint(10000000000),
+		//	liabilities:              sdk.NewUint(1000),
+		//	interestUnpaidCollateral: sdk.NewUint(1000),
+		//	health:                   sdk.NewDec(1),
+		//	position:                 types.Position_LONG,
+		//},
 		{
 			name:                     "swap with same asset",
 			denom:                    "rowan",
@@ -850,17 +850,32 @@ func TestKeeper_CheckMinLiabilities(t *testing.T) {
 	params := marginKeeper.GetParams(ctx)
 	params.InterestRateMin = sdk.MustNewDecFromStr("0.00000001")
 	marginKeeper.SetParams(ctx, &params)
-
-	got := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(100000000), sdk.OneDec())
+	pool := clptypes.Pool{
+		ExternalAsset:                &clptypes.Asset{Symbol: "cusdc"},
+		NativeAssetBalance:           sdk.NewUintFromString("1000000000000000000000"),
+		NativeLiabilities:            sdk.NewUint(0),
+		ExternalCustody:              sdk.NewUint(0),
+		ExternalAssetBalance:         sdk.NewUint(1000000000),
+		ExternalLiabilities:          sdk.NewUint(0),
+		NativeCustody:                sdk.NewUint(0),
+		UnsettledExternalLiabilities: sdk.ZeroUint(),
+		UnsettledNativeLiabilities:   sdk.ZeroUint(),
+		BlockInterestExternal:        sdk.ZeroUint(),
+		BlockInterestNative:          sdk.ZeroUint(),
+		PoolUnits:                    sdk.NewUint(1),
+		Health:                       sdk.NewDec(1),
+		InterestRate:                 sdk.NewDec(1),
+	}
+	got := marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(200000000), sdk.OneDec(), pool, "rowan")
 	require.Nil(t, got)
 
-	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec())
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(10000000), sdk.OneDec(), pool, "rowan")
 	require.EqualError(t, got, "borrowed amount is too low")
 
-	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9))
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(20000000), sdk.NewDec(9), pool, "rowan")
 	require.Nil(t, got)
 
-	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9))
+	got = marginKeeper.CheckMinLiabilities(ctx, sdk.NewUint(2000000), sdk.NewDec(9), pool, "rowan")
 	require.EqualError(t, got, "borrowed amount is too low")
 }
 
