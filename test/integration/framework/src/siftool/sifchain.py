@@ -802,7 +802,7 @@ class Sifnoded:
                         height = self.get_current_block()
                         log.debug("Large query result, restarting in paged mode using height of {}.".format(height))
                         continue
-                page_key = base64.b64decode(next_key).decode("UTF-8")
+                page_key = _b64_decode(next_key)
             chunk = res[result_key]
             all_results.extend(chunk)
             log.debug("Read {} items, all={}, next_key={}".format(len(chunk), len(all_results), next_key))
@@ -903,6 +903,73 @@ class Sifnoded:
             res = self.sifnoded_exec(args)
             res = sifnoded_parse_output_lines(stdout(res))
             return res
+
+    def tx_margin_update_pools(self, from_addr: cosmos.Address, open_pools: Iterable[str],
+        closed_pools: Iterable[str], broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        with self.cmd.with_temp_file() as open_pools_file, self.cmd.with_temp_file() as closed_pools_file:
+            self.cmd.write_text_file(open_pools_file, json.dumps(list(open_pools)))
+            self.cmd.write_text_file(closed_pools_file, json.dumps(list(closed_pools)))
+            args = ["tx", "margin", "update-pools", open_pools_file, "--closed-pools", closed_pools_file,
+                "--from", from_addr] + self._home_args() + self._keyring_backend_args() + self._node_args() + \
+                self._chain_id_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+            res = self.sifnoded_exec(args)
+            res = yaml_load(stdout(res))
+            check_raw_log(res)
+            return res
+
+    def query_margin_params(self, height: Optional[int] = None) -> JsonDict:
+        args = ["query", "margin", "params"] + \
+            (["--height", str(height)] if height is not None else []) + \
+            self._node_args() + self._chain_id_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        return res
+
+    def tx_margin_whitelist(self, from_addr: cosmos.Address, address: cosmos.Address,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "margin", "whitelist", address, "--from", from_addr] + self._home_args() + \
+            self._keyring_backend_args() + self._node_args() + self._chain_id_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        return res
+
+    def tx_margin_open(self, from_addr: cosmos.Address, borrow_asset: str, collateral_asset: str, collateral_amount: int,
+        leverage: int, position: str, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "margin", "open", "--borrow_asset", borrow_asset, "--collateral_asset", collateral_asset,
+           "--collateral_amount", str(collateral_amount), "--leverage", str(leverage), "--position", position, \
+            "--from", from_addr] + self._home_args() + self._keyring_backend_args() + self._node_args() + \
+            self._chain_id_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
+
+    def tx_margin_close(self, from_addr: cosmos.Address, id: int, broadcast_mode: Optional[str] = None) -> JsonDict:
+        args = ["tx", "margin", "close", "--id", str(id), "--from", from_addr] + self._home_args() + \
+            self._keyring_backend_args() + self._node_args() + self._chain_id_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
+
+    def margin_open_simple(self, from_addr: cosmos.Address, borrow_asset: str, collateral_asset: str, collateral_amount: int,
+        leverage: int, position: str
+    ) -> JsonDict:
+        res = self.tx_margin_open(from_addr, borrow_asset, collateral_asset, collateral_amount, leverage, position,
+            broadcast_mode="block")
+        mtp_open_event = exactly_one([x for x in res["events"] if x["type"] == "margin/mtp_open"])["attributes"]
+        result = {_b64_decode(x["key"]): _b64_decode(x["value"]) for x in mtp_open_event}
+        return result
+
+    def query_margin_positions_for_address(self, address: cosmos.Address, height: Optional[int] = None) -> JsonDict:
+        args = ["query", "margin", "positions-for-address", address] + self._node_args() + self._chain_id_args()
+        res = self._paged_read(args, "mtps", height=height)
+        return res
 
     def sign_transaction(self, tx: JsonDict, from_sif_addr: cosmos.Address, sequence: int = None,
         account_number: int = None
@@ -1268,3 +1335,6 @@ def _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key):
         assert ethereum_address.startswith("0x")
         env["ETHEREUM_ADDRESS"] = ethereum_address
     return env or None  # Avoid passing empty environment
+
+def _b64_decode(s: str):
+    return base64.b64decode(s).decode("UTF-8")
