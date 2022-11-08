@@ -90,7 +90,11 @@ def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmo
 def is_cosmos_native_denom(denom: str) -> bool:
     """Returns true if denom is a native cosmos token (Rowan, ibc)
     that was not imported using Peggy"""
-    return not str.startswith(denom, "sifBridge")
+    if on_peggy2_branch:
+        return not str.startswith(denom, "sifBridge")
+    else:
+        return (denom == ROWAN) or str.startswith(denom, "ibc/")
+
 
 def ondemand_import_generated_protobuf_sources():
     global cosmos_pb
@@ -1212,9 +1216,37 @@ class SifnodeClient:
                 assert "failed to execute message" not in result["raw_log"]
             return result
         else:
-            # I am on peggy1 branch
+            assert self.ctx.eth
+            eth = self.ctx.eth
+            gas_cost = 160000000000 * 393000 # Taken from peggy1
+
+            direction = "lock" if is_cosmos_native_denom(denom) else "burn"
+            cross_chain_ceth_fee = str(gas_cost) # TODO
+            # print("Cross-chain-fee:", cross_chain_ceth_fee)
+            # Ethereum chain id is hardcoded according to peggy1
+            # TODO: Verify if --from flag is redundant
+            ethereum_chain_id = str(5777)
+            args = ["tx", "ethbridge", direction] + \
+                self.sifnode._node_args() + \
+                [from_sif_addr, to_eth_addr, str(amount), denom, cross_chain_ceth_fee] + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._fees_args() + \
+                ["--ethereum-chain-id", ethereum_chain_id] + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._home_args() + \
+                ["--from", from_sif_addr] + \
+                ["--output","json"] + \
+                self.sifnode._yes_args()
+
+            res = self.sifnode.sifnoded_exec(args)
+            result = json.loads(stdout(res))
+            print(result)
+            if not generate_only:
+                assert "failed to execute message" not in result["raw_log"]
+            return result
+
             # sifnoded tx ethbridge <direction> <node> <sifchain_addr> <ethereum_addr> <amount> <symbol> <keyring backend> <ethereum-chain-id>
-            pass
+
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str
