@@ -75,7 +75,7 @@ func ParsePoolKey(key string) (string, string, error) {
 
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
-		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
 		RewardPeriods:                nil,
 		RewardPeriodStartTime:        "",
