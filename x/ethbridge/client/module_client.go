@@ -23,7 +23,8 @@ func GetQueryCmd() *cobra.Command {
 	ethBridgeQueryCmd.PersistentFlags().String(types.FlagEthereumChainID, "", "Ethereum chain ID")
 	ethBridgeQueryCmd.PersistentFlags().String(types.FlagTokenContractAddr, "", "Token address representing a unique asset type")
 	flags.AddQueryFlagsToCmd(ethBridgeQueryCmd)
-	ethBridgeQueryCmd.AddCommand(cli.GetCmdGetEthBridgeProphecy(),
+	ethBridgeQueryCmd.AddCommand(
+		cli.GetCmdGetEthBridgeProphecy(),
 		cli.GetCmdGetBlacklist(),
 		cli.GetPauseStatus())
 
