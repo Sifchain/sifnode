@@ -44,11 +44,11 @@ message EthBridgeClaim {
   string denom = 13 [(gogoproto.moretags) = "yaml:\"denom_hash\""];
   // The original denom in sifnode,like rowan or ibc token
   string cosmos_denom = 14 [(gogoproto.moretags) = "yaml:\"cosmos_denom\""];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 15
+  [(gogoproto.moretags) = "yaml:\"network_descriptor\""];
   // Lock burn nonce from bridge bank
   uint64 ethereum_lock_burn_sequence = 16
   [(gogoproto.moretags) = "yaml:\"ethereum_lock_burn_sequence\""];
-  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 15
-  [(gogoproto.moretags) = "yaml:\"network_descriptor\""];
 }
 
 message PeggyTokens {repeated string tokens = 1;}

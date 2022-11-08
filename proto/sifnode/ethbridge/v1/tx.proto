@@ -58,7 +58,7 @@ message MsgBurn {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   string denom_hash = 3 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
-  
+  reserved 4;
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
   string crosschain_fee = 6 [
