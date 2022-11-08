@@ -365,7 +365,7 @@ class EnvCtx:
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
-    def get_bridge_token_sc(self):
+    def get_bridge_token_sc(self) -> Contract:
         abi, _, address = self.abi_provider.get_descriptor("BridgeToken")
         assert address, "No address for BridgeToken"
         result = self.w3_conn.eth.contract(address=address, abi=abi)
