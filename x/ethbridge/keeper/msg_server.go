@@ -25,8 +25,8 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-func (srv msgServer) SetPauser(goCtx context.Context, msg *types.MsgPauser) (*types.MsgPauserResponse, error) {
-	response := &types.MsgPauserResponse{}
+func (srv msgServer) SetPause(goCtx context.Context, msg *types.MsgPause) (*types.MsgPauseResponse, error) {
+	response := &types.MsgPauseResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
@@ -36,7 +36,7 @@ func (srv msgServer) SetPauser(goCtx context.Context, msg *types.MsgPauser) (*ty
 		return response, types.ErrNotEnoughPermissions
 	}
 
-	srv.Keeper.SetPauser(ctx, &types.Pauser{IsPaused: msg.IsPaused})
+	srv.Keeper.SetPause(ctx, &types.Pause{IsPaused: msg.IsPaused})
 	return response, nil
 }
 

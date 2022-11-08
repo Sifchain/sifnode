@@ -5,19 +5,19 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) SetPauser(ctx sdk.Context, pauser *types.Pauser) {
+func (k Keeper) SetPause(ctx sdk.Context, pause *types.Pause) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.PauserPrefix, k.cdc.MustMarshal(pauser))
+	store.Set(types.PausePrefix, k.cdc.MustMarshal(pause))
 }
 
-func (k Keeper) getPauser(ctx sdk.Context) *types.Pauser {
-	pauser := types.Pauser{}
+func (k Keeper) getPause(ctx sdk.Context) *types.Pause {
+	pause := types.Pause{}
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.PauserPrefix)
-	k.cdc.MustUnmarshal(bz, &pauser)
-	return &pauser
+	bz := store.Get(types.PausePrefix)
+	k.cdc.MustUnmarshal(bz, &pause)
+	return &pause
 }
 
 func (k Keeper) IsPaused(ctx sdk.Context) bool {
-	return k.getPauser(ctx).IsPaused
+	return k.getPause(ctx).IsPaused
 }

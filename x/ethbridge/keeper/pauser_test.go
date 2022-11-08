@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSetPauser(t *testing.T) {
+func TestSetPause(t *testing.T) {
 	ctx, app := test.CreateSimulatorApp(false)
 
 	// test the default value before any setting
@@ -16,7 +16,7 @@ func TestSetPauser(t *testing.T) {
 	assert.False(t, paused)
 
 	// pause
-	app.EthbridgeKeeper.SetPauser(ctx, &types.Pauser{
+	app.EthbridgeKeeper.SetPause(ctx, &types.Pause{
 		IsPaused: true,
 	})
 
@@ -24,7 +24,7 @@ func TestSetPauser(t *testing.T) {
 	assert.True(t, paused)
 
 	// unpause
-	app.EthbridgeKeeper.SetPauser(ctx, &types.Pauser{
+	app.EthbridgeKeeper.SetPause(ctx, &types.Pause{
 		IsPaused: false,
 	})
 

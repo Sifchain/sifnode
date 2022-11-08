@@ -21,6 +21,7 @@ import (
 )
 
 // GetCmdCreateEthBridgeClaim is the CLI command for creating a claim on an ethereum prophecy
+//
 //nolint:lll
 func GetCmdCreateEthBridgeClaim() *cobra.Command {
 	return &cobra.Command{
@@ -115,6 +116,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 }
 
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
+//
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
@@ -419,9 +421,9 @@ func GetCmdSetBlacklist() *cobra.Command {
 	return cmd
 }
 
-func GetCmdPauser() *cobra.Command {
+func GetCmdPause() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-pauser [pause]",
+		Use:   "set-pause [pause]",
 		Short: "pause or unpause Lock and Burn transactions",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -434,7 +436,7 @@ func GetCmdPauser() *cobra.Command {
 				return err
 			}
 			signer := clientCtx.GetFromAddress()
-			msg := types.MsgPauser{
+			msg := types.MsgPause{
 				Signer:   signer.String(),
 				IsPaused: isPaused,
 			}

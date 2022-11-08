@@ -38,8 +38,8 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgSetBlacklist:
 			res, err := msgServer.SetBlacklist(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgPauser:
-			res, err := msgServer.SetPauser(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgPause:
+			res, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:

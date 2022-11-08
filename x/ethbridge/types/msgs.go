@@ -17,26 +17,26 @@ const (
 	lockGasCost = 60000000000 * 393000
 )
 
-var _ sdk.Msg = &MsgPauser{}
+var _ sdk.Msg = &MsgPause{}
 
 // Route should return the name of the module
-func (msg MsgPauser) Route() string { return RouterKey }
+func (msg MsgPause) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgPauser) Type() string { return "pauser" }
+func (msg MsgPause) Type() string { return "pause" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgPauser) ValidateBasic() error {
+func (msg MsgPause) ValidateBasic() error {
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgPauser) GetSignBytes() []byte {
+func (msg MsgPause) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgPauser) GetSigners() []sdk.AccAddress {
+func (msg MsgPause) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		panic(err)

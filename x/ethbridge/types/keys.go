@@ -24,5 +24,5 @@ var (
 	PeggyTokenKeyPrefix       = []byte{0x00}
 	CethReceiverAccountPrefix = []byte{0x01}
 	BlacklistPrefix           = []byte{0x02}
-	PauserPrefix              = []byte{0x03}
+	PausePrefix               = []byte{0x03}
 )

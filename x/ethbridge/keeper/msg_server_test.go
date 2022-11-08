@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMsgServer_Lock_No_Pauser_Set(t *testing.T) {
+func TestMsgServer_Lock_No_Pause_Set(t *testing.T) {
 	ctx, app := test.CreateSimulatorApp(false)
 	addresses, _ := test.CreateTestAddrs(2)
 	admin := addresses[0]
@@ -43,25 +43,25 @@ func TestMsgServer_Lock(t *testing.T) {
 		AdminType:    adminTypes.AdminType_ETHBRIDGE,
 		AdminAddress: admin.String(),
 	})
-	msgPauseNonAdmin := types.MsgPauser{
+	msgPauseNonAdmin := types.MsgPause{
 		Signer:   nonAdmin.String(),
 		IsPaused: true,
 	}
-	msgPause := types.MsgPauser{
+	msgPause := types.MsgPause{
 		Signer:   admin.String(),
 		IsPaused: true,
 	}
-	msgUnPause := types.MsgPauser{
+	msgUnPause := types.MsgPause{
 		Signer:   admin.String(),
 		IsPaused: false,
 	}
 	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
 	// Pause with Non Admin Account
-	_, err := msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgPauseNonAdmin)
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgPauseNonAdmin)
 	require.Error(t, err)
 
 	// Pause Transactions
-	_, err = msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgPause)
+	_, err = msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgPause)
 	require.NoError(t, err)
 
 	// Fail Lock
@@ -69,7 +69,7 @@ func TestMsgServer_Lock(t *testing.T) {
 	require.Error(t, err)
 
 	// Unpause Transactions
-	_, err = msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgUnPause)
+	_, err = msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgUnPause)
 	require.NoError(t, err)
 
 	// Lock Success
@@ -90,18 +90,18 @@ func TestMsgServer_Burn(t *testing.T) {
 	})
 	app.EthbridgeKeeper.AddPeggyToken(ctx, "stake")
 	msg := types.NewMsgBurn(1, admin, ethereumSender, amount, "stake", amount)
-	msgPause := types.MsgPauser{
+	msgPause := types.MsgPause{
 		Signer:   admin.String(),
 		IsPaused: true,
 	}
-	msgUnPause := types.MsgPauser{
+	msgUnPause := types.MsgPause{
 		Signer:   admin.String(),
 		IsPaused: false,
 	}
 	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
 
 	// Pause Transactions
-	_, err := msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgPause)
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgPause)
 	require.NoError(t, err)
 
 	// Fail Burn
@@ -109,7 +109,7 @@ func TestMsgServer_Burn(t *testing.T) {
 	require.Error(t, err)
 
 	// Unpause Transactions
-	_, err = msgServer.SetPauser(sdk.WrapSDKContext(ctx), &msgUnPause)
+	_, err = msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgUnPause)
 	require.NoError(t, err)
 
 	// Burn Success

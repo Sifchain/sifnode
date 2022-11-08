@@ -53,6 +53,6 @@ message GenesisState {
   repeated string peggy_tokens = 2;
 }
 
-message Pauser {
+message Pause {
   bool is_paused = 1;
 }

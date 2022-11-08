@@ -25,7 +25,7 @@ func GetQueryCmd() *cobra.Command {
 	flags.AddQueryFlagsToCmd(ethBridgeQueryCmd)
 	ethBridgeQueryCmd.AddCommand(cli.GetCmdGetEthBridgeProphecy(),
 		cli.GetCmdGetBlacklist(),
-		cli.GetPauserStatus())
+		cli.GetPauseStatus())
 
 	return ethBridgeQueryCmd
 }
@@ -50,7 +50,7 @@ func GetTxCmd() *cobra.Command {
 		cli.GetCmdUpdateCethReceiverAccount(),
 		cli.GetCmdRescueCeth(),
 		cli.GetCmdSetBlacklist(),
-		cli.GetCmdPauser(),
+		cli.GetCmdPause(),
 	)
 
 	return ethBridgeTxCmd

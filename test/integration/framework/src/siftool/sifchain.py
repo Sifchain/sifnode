@@ -548,7 +548,7 @@ class Sifnoded:
         return self._set_peggy_brige_pause_status(admin_account_address, False)
 
     def _set_peggy_brige_pause_status(self, admin_account_address, pause_status: bool) -> List[Mapping[str, Any]]:
-        args = ["tx", "ethbridge", "set-pauser", str(pause_status)] + \
+        args = ["tx", "ethbridge", "set-pause", str(pause_status)] + \
                 self._keyring_backend_args() + \
                 self._chain_id_args() + self._node_args() + \
                 self._fees_args() + \
