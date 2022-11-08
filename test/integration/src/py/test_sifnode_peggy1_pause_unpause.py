@@ -58,11 +58,11 @@ def test_pause_burn_valid(ctx: EnvCtx):
     fund_amount_eth = 1 * eth.ETH
 
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+    sif_account_balance_before = ctx.get_sifchain_balance(test_sif_account)
     ctx.tx_bridge_bank_lock_eth(ctx.eth_faucet, test_sif_account, fund_amount_eth)
     ctx.eth.advance_blocks(100)
     # Setup is complete, test account has rowan AND eth
-    # Sleep for relayer to complete transaction
-    time.sleep(5)
+    ctx.sifnode.wait_for_balance_change(test_sif_account, sif_account_balance_before)
     test_eth_destination_account = ctx.create_and_fund_eth_account()
 
     send_amount = 1
