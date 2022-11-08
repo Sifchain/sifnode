@@ -44,4 +44,5 @@ var (
 	ErrRemovalsBlockedByHealth                         = sdkerrors.Register(ModuleName, 42, "Cannot remove liquidity due to low pool health")
 	ErrBalanceModuleAccountCheck                       = sdkerrors.Register(ModuleName, 43, "Balance of module account check failed")
 	ErrUnitsCheck                                      = sdkerrors.Register(ModuleName, 44, "Pool vs LP units check failed")
+	ErrMigrationFailed                                 = sdkerrors.Register(ModuleName, 45, "Migration Dailed")
 )

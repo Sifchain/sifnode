@@ -1,7 +1,11 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
+	// clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	tkrKeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -13,6 +17,30 @@ func NewMigrator(keeper Keeper) Migrator {
 	return Migrator{keeper: keeper}
 }
 
+func (m Migrator) MigrateDenomToVer3(ctx sdk.Context) error {
+	pools := m.keeper.GetPools(ctx)
+	migrationMap := tkrKeeper.GetDenomMigrationMap()
+	for _, pool := range pools {
+		if peggy2Denom, found := migrationMap[pool.ExternalAsset.Symbol]; found {
+			peggy2Pool := *pool
+			peggy2Pool.ExternalAsset = &types.Asset{Symbol: peggy2Denom}
+			err := m.keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
+			if err != nil {
+				return err
+			}
+			err = m.keeper.SetPool(ctx, &peggy2Pool)
+			if err != nil {
+				return err
+			}
+		} else {
+			return types.ErrMigrationFailed.Wrap(fmt.Sprintf("Unable to migrate pool : %s ", pool.String()))
+		}
+	}
+	return nil
+}
+
+// TODO : Add migration for Rewards after Branch is rebased with develop
+// TODO : Modify consensus version of CLP after Branch is rebased with develop
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {
 	// Initiate Rewards
 	m.keeper.SetRewardParams(ctx, types.GetDefaultRewardParams())
@@ -78,7 +106,7 @@ func (m Migrator) MigrateToVer3(ctx sdk.Context) error {
 		m.keeper.SetPool(ctx, &pool)
 	}
 
-	return nil
+	return m.MigrateDenomToVer3(ctx)
 }
 
 func (m Migrator) MigrateToVer4(ctx sdk.Context) error {

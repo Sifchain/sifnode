@@ -186,7 +186,7 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	require.Equal(t, allowed, true)
 	convertToDenomEntry, err := app.TokenRegistryKeeper.GetRegistryEntry(ctx, mintedDenomEntry.UnitDenom)
 	require.NoError(t, err)
-	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
+	_, err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
 	require.NoError(t, err)
 	mintedDenom = helpers.GetMintedDenomFromPacket(packet, nonReturningData)
 	mintedDenomEntry, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, mintedDenom)
@@ -195,7 +195,7 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	require.Equal(t, allowed, true)
 	convertToDenomEntry, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, mintedDenomEntry.UnitDenom)
 	require.NoError(t, err)
-	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
+	_, err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
 	require.NoError(t, err)
 }
 
@@ -249,7 +249,7 @@ func TestOnRecvPacketV2(t *testing.T) {
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
 	err = app2.AddCoinsToAccount(sctransfertypes.ModuleName, app.BankKeeper, ctx, escrowAddress, finalCoins)
 	require.NoError(t, err)
-	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedXRowanEntry, convertToDenomEntry, packet, returningXrowan)
+	_, err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedXRowanEntry, convertToDenomEntry, packet, returningXrowan)
 	require.NoError(t, err)
 }
 
