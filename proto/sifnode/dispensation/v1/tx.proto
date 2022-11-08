@@ -35,4 +35,5 @@ message MsgRunDistribution {
   string authorized_runner = 1;
   string distribution_name = 2;
   DistributionType distribution_type = 3;
+  int64 distribution_count = 4;
 }

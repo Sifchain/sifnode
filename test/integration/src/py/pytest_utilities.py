@@ -17,17 +17,20 @@ def generate_minimal_test_account(
     assert base_transfer_request.ethereum_address is not None
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
+    logging.info(f"Python |=====: generated credentials")
     new_addr = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
     new_sifaddr = new_addr["address"]
     credentials.from_key = new_addr["name"]
-
+    logging.info(f"Python |=====: generated address")
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
     request.sifchain_address = new_sifaddr
     request.amount = target_ceth_balance
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
     logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
+    logging.info(f"Python |=====: transfer_ethereum_to_sifchain request :{request.as_json()}")
     burn_lock_functions.transfer_ethereum_to_sifchain(request, timeout)
+
     logging.info(
         f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
     return request, credentials

@@ -12,7 +12,7 @@ function buildProvider(context, argv, logging) {
     switch (argv.ethereum_network) {
         case "ropsten":
         case "mainnet":
-            let netConnectionString = `https://${argv.ethereum_network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
+            let netConnectionString = process.env['WEB3_PROVIDER'];
             if (argv.ethereum_private_key_env_var) {
                 const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
                 provider = new HDWalletProvider(

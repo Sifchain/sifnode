@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"path/filepath"
 	"regexp"
 	"strconv"
 
@@ -359,6 +362,49 @@ func GetCmdRescueCeth() *cobra.Command {
 			}
 
 			msg := types.NewMsgRescueCeth(cosmosSender, cethReceiverAccount, cethAmount)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdSetBlacklist() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-blacklist [msgsetblacklist.json]",
+		Short: "Set the ethereum address blacklist.",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgSetBlacklist{}
+
+			file, err := filepath.Abs(args[0])
+			if err != nil {
+				return err
+			}
+
+			contents, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(contents, &msg)
+			if err != nil {
+				return err
+			}
+
+			msg.From = clientCtx.FromAddress.String()
+
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

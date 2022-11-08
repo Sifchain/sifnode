@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -246,4 +247,22 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app2 := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
 	_, err = app2.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
+}
+
+func TestAddressFormatValidation(t *testing.T) {
+	addr0 := make([]byte, 0)
+	err := sdk.VerifyAddressFormat(addr0)
+	assert.Error(t, err, "addresses cannot be empty: unknown address")
+	addr5 := make([]byte, 5)
+	err = sdk.VerifyAddressFormat(addr5)
+	assert.NoError(t, err)
+	addr20 := make([]byte, 20)
+	err = sdk.VerifyAddressFormat(addr20)
+	assert.NoError(t, err)
+	addr32 := make([]byte, 32)
+	err = sdk.VerifyAddressFormat(addr32)
+	assert.NoError(t, err)
+	addr256 := make([]byte, 256)
+	err = sdk.VerifyAddressFormat(addr256)
+	assert.Error(t, err, "address max length is 255, got 256: unknown address")
 }

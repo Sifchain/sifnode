@@ -3,11 +3,12 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -15,6 +16,8 @@ import (
 
 // ConvertCoinsForTransfer Converts the coins requested for transfer into an amount that should be deducted from requested denom,
 // and the Coins that should be minted in the new denom.
+
+//TODO only used in tests , remove this function completely
 func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntry *tokenregistrytypes.RegistryEntry,
 	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
@@ -89,8 +92,12 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 	return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 }
 
-func ConvertIncomingCoins(amount uint64, diff uint64) sdk.Int {
-	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(sdk.NewIntFromUint64(amount)), diff).TruncateInt().BigInt())
+func ConvertIncomingCoins(amount string, diff uint64) (sdk.Int, error) {
+	intAmount, ok := sdk.NewIntFromString(amount)
+	if !ok {
+		return sdk.ZeroInt(), errors.New("Failed to convert to int from string")
+	}
+	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(intAmount), diff).TruncateInt().BigInt()), nil
 }
 
 func ExecConvForIncomingCoins(
@@ -106,7 +113,10 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	amount := sdk.NewIntFromUint64(data.Amount)
+	amount, ok := sdk.NewIntFromString(data.Amount)
+	if !ok {
+		return errors.New("Unable to get string amount")
+	}
 	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
@@ -122,11 +132,16 @@ func ExecConvForIncomingCoins(
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-		convAmount = ConvertIncomingCoins(data.Amount, diff)
+		// This is the reduced precision xToken coming in , so we know for sure conversion to uint64 will not cause problems
+		convAmount, err = ConvertIncomingCoins(data.Amount, diff)
+		if err != nil {
+			return err
+		}
 		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	}
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
+
 	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, finalCoins); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows
@@ -137,60 +152,6 @@ func ExecConvForIncomingCoins(
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sctransfertypes.EventTypeConvertReceived,
-			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", data.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, mintedDenomEntry.Denom),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convAmount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convertToDenomEntry.Denom),
-		),
-	)
-	return nil
-}
-
-func ExecConvForRefundCoins(
-	ctx sdk.Context,
-	bankKeeper sdktransfertypes.BankKeeper,
-	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
-	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
-) error {
-	// decode the sender address
-	sender, err := sdk.AccAddressFromBech32(data.Sender)
-	if err != nil {
-		return err
-	}
-	amount := sdk.NewIntFromUint64(data.Amount)
-	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
-	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, incomingCoins)
-	if err != nil {
-		return err
-	}
-	convAmount := amount
-	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
-	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-		convAmount = ConvertIncomingCoins(data.Amount, diff)
-		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
-	}
-	// unescrow original tokens
-	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
-	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, finalCoins); err != nil {
-		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
-		// counterparty module. The bug may occur in bank or any part of the code that allows
-		// the escrow address to be drained. A malicious counterparty module could drain the
-		// escrow address by allowing more tokens to be sent back then were escrowed.
-		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
-	}
-	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, incomingCoins)
-	if err != nil {
-		return err
-	}
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sctransfertypes.EventTypeConvertRefund,
 			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
 			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", data.Amount)),
 			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, mintedDenomEntry.Denom),

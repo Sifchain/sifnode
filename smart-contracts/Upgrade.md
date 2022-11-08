@@ -14,7 +14,7 @@ Where:
 
 |Item|Description|
 |----|-----------|
-|`<mainnet_url>`|Replace with the Infura Mainnet URL|
+|`<mainnet_url>`|Replace with the Mainnet URL|
 |`<private_key>`|Replace with the ETH Private Key|
 
 ## Execution

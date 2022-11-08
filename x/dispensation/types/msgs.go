@@ -50,14 +50,9 @@ func (m MsgCreateDistribution) ValidateBasic() error {
 		if err != nil {
 			return errors.Wrapf(ErrInvalid, "Invalid Recipient Address")
 		}
+		out.Coins.Sort()
 		if !out.Coins.IsValid() {
 			return errors.Wrapf(ErrInvalid, "Invalid Coins")
-		}
-		if len(out.Coins) > 1 {
-			return errors.Wrapf(ErrInvalid, "Invalid Coins Can only specify one coin type for an entry")
-		}
-		if out.Coins.GetDenomByIndex(0) != TokenSupported {
-			return errors.Wrapf(ErrInvalid, "Invalid Coins Specified coin can only be %s", TokenSupported)
 		}
 	}
 	return nil
@@ -115,11 +110,12 @@ func (m MsgCreateUserClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func NewMsgRunDistribution(runner string, distributionName string, distributionType DistributionType) MsgRunDistribution {
+func NewMsgRunDistribution(runner string, distributionName string, distributionType DistributionType, distributionCount int64) MsgRunDistribution {
 	return MsgRunDistribution{
-		AuthorizedRunner: runner,
-		DistributionName: distributionName,
-		DistributionType: distributionType,
+		AuthorizedRunner:  runner,
+		DistributionName:  distributionName,
+		DistributionType:  distributionType,
+		DistributionCount: distributionCount,
 	}
 }
 
@@ -145,6 +141,9 @@ func (m MsgRunDistribution) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.AuthorizedRunner)
 	if err != nil {
 		return errors.Wrapf(ErrInvalid, "Invalid Runner Address")
+	}
+	if m.DistributionCount > MaxRecordsPerBlock || m.DistributionCount <= 0 {
+		return errors.Wrapf(ErrInvalid, "Dispensation count cannot be greater than %d or less than 1", MaxRecordsPerBlock)
 	}
 	return nil
 }

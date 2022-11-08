@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
@@ -372,8 +373,8 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	contractABI abi.ABI, cLog ctypes.Log) (types.EthereumEvent, bool, error) {
 	// Parse the event's attributes via contract ABI
 	event := types.EthereumEvent{}
-	eventLogLockSignature := contractABI.Events[types.LogLock.String()].ID().Hex()
-	eventLogBurnSignature := contractABI.Events[types.LogBurn.String()].ID().Hex()
+	eventLogLockSignature := contractABI.Events[types.LogLock.String()].ID.Hex()
+	eventLogBurnSignature := contractABI.Events[types.LogBurn.String()].ID.Hex()
 
 	var eventName string
 	switch cLog.Topics[0].Hex() {
@@ -388,7 +389,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 		return event, false, nil
 	}
 
-	err := contractABI.Unpack(&event, eventName, cLog.Data)
+	err := contractABI.UnpackIntoInterface(&event, eventName, cLog.Data)
 	if err != nil {
 		sub.SugaredLogger.Errorw(".",
 			errorMessageKey, err.Error())

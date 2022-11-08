@@ -2,4 +2,4 @@
 
 killall sifnoded
 
-sifnoded start
+sifnoded start --trace

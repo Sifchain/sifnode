@@ -16,7 +16,7 @@ func (k Keeper) SetDistribution(ctx sdk.Context, ar types.Distribution) error {
 	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType, ar.Runner)
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
+	store.Set(key, k.cdc.MustMarshal(&ar))
 	return nil
 }
 
@@ -28,7 +28,7 @@ func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType t
 		return &ar, errors.Wrapf(types.ErrInvalid, "Record Does not Exist : %s", ar.String())
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &ar)
+	k.cdc.MustUnmarshal(bz, &ar)
 	return &ar, nil
 }
 
@@ -49,7 +49,7 @@ func (k Keeper) GetDistributions(ctx sdk.Context) *types.Distributions {
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.Distribution
 		bytesValue := iterator.Value()
-		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
+		err := k.cdc.Unmarshal(bytesValue, &dl)
 		if err != nil {
 			// Log unmarshal distribution error instead of panic.
 			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for distribution bytes : %s ", bytesValue))

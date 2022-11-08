@@ -406,3 +406,28 @@ func MapOracleClaimsToEthBridgeClaims(
 
 	return mappedClaims, nil
 }
+
+var _ sdk.Msg = &MsgSetBlacklist{}
+
+// Route should return the name of the module
+func (msg MsgSetBlacklist) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgSetBlacklist) Type() string { return "setblacklist" }
+
+func (msg MsgSetBlacklist) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+}
+
+func (msg *MsgSetBlacklist) ValidateBasic() error {
+	return nil
+}
+
+func (msg *MsgSetBlacklist) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.From)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{from}
+}

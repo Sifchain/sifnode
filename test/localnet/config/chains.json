@@ -1,0 +1,160 @@
+{
+  "sifchain": {
+    "binary": "sifnoded",
+    "binaryUrl": "https://github.com/Sifchain/sifnode/releases/download/betanet-0.9.10/sifnoded-betanet-0.9.10-linux-amd64.zip",
+    "denom": "rowan",
+    "prefix": "sif",
+    "fees": 100000,
+    "node": "https://rpc-testnet.sifchain.finance:443",
+    "chainId": "sifchain-testnet-1",
+    "devnet-1": {
+      "node": "https://rpc-devnet.sifchain.finance:443",
+      "chainId": "sifchain-devnet-1"
+    },
+    "testnet-1": {
+      "node": "https://rpc-testnet.sifchain.finance:443",
+      "chainId": "sifchain-testnet-1"
+    },
+    "betanet": {
+      "node": "https://rpc.sifchain.finance:443",
+      "chainId": "sifchain-1"
+    }
+  },
+  "cosmos": {
+    "node": "https://rpc.testnet.cosmos.network:443",
+    "chainId": "cosmoshub-testnet",
+    "binary": "gaiad",
+    "binaryUrl": "https://github.com/cosmos/gaia/releases/download/v5.0.8/gaiad-v5.0.8-linux-amd64",
+    "fees": 0,
+    "denom": "uphoton",
+    "prefix": "cosmos",
+    "devnet-1": {
+      "channelId": 101,
+      "counterpartyChannelId": 3
+    },
+    "testnet-1": {
+      "channelId": 11,
+      "counterpartyChannelId": 27
+    },
+    "faucet": "https://faucet.testnet.cosmos.network"
+  },
+  "akash": {
+    "disabled": true,
+    "node": "http://147.75.32.35:26657",
+    "chainId": "akash-testnet-6",
+    "binary": "akash",
+    "binaryUrl": "https://github.com/ovrclk/akash/releases/download/v0.14.0/akash_0.14.0_linux_amd64.zip",
+    "binaryRelativePath": "akash_0.14.0_linux_amd64/akash",
+    "fees": 5000,
+    "denom": "uakt",
+    "prefix": "akash",
+    "devnet-1": {
+      "channelId": 115,
+      "counterpartyChannelId": 65
+    },
+    "testnet-1": {
+      "channelId": 12,
+      "counterpartyChannelId": 66
+    }
+  },
+  "iris": {
+    "disabled": true,
+    "node": "http://35.234.10.84:26657",
+    "chainId": "nyancat-8",
+    "binary": "iris",
+    "sourceUrl": "https://github.com/irisnet/irishub/archive/refs/tags/v1.1.1.zip",
+    "sourceRelativePath": "irishub-1.1.1",
+    "fees": 400,
+    "denom": "unyan",
+    "prefix": "iaa",
+    "devnet-1": {
+      "channelId": 117,
+      "counterpartyChannelId": 24
+    },
+    "testnet-1": {
+      "channelId": 14,
+      "counterpartyChannelId": 25,
+      "receiver": {
+        "fees": 150000,
+        "gas": 300000,
+        "denom": "ibc/7EABFE14CD2B6F8B0444A0ED0D7BCB947A81D0B74CE5B571C73DE61DFA261193"
+      }
+    }
+  },
+  "sentinel": {
+    "disabled": true,
+    "node": "http://rpc.sentinel.co:26657",
+    "chainId": "sentinelhub-2",
+    "binary": "sentinelhub",
+    "sourceUrl": "https://github.com/sentinel-official/sentinel/archive/refs/tags/v0.1.4.zip",
+    "sourceRelativePath": "sentinel-0.1.4",
+    "fees": 20000,
+    "denom": "udvpn",
+    "prefix": "sent",
+    "devnet-1": {
+      "channelId": 79,
+      "counterpartyChannelId": 19
+    },
+    "testnet-1": {
+      "channelId": 39,
+      "counterpartyChannelId": 2
+    }
+  },
+  "osmosis": {
+    "disabled": true,
+    "node": "http://osmosis-rpc.osmosis-node:26657",
+    "chainId": "osmosis-1",
+    "binary": "osmosis",
+    "binaryUrl": "https://github.com/osmosis-labs/osmosis/releases/download/v4.2.0/osmosisd-4.2.0-linux-amd64",
+    "fees": 0,
+    "denom": "uosmo",
+    "devnet-1": {
+      "channelId": 74,
+      "counterpartyChannelId": 22
+    },
+    "testnet-1": {
+      "channelId": 74,
+      "counterpartyChannelId": 22
+    }
+  },
+  "persistence": {
+    "node": "https://persistence.testnet.rpc.audit.one:443",
+    "chainId": "test-core-1",
+    "binary": "persistenceCore",
+    "binaryUrl": "https://github.com/persistenceOne/persistenceCore/releases/download/v0.1.3/persistenceCore-linux-amd64.tar.gz",
+    "fees": 100000000000,
+    "denom": "uxprt",
+    "prefix": "persistence",
+    "devnet-1": {
+      "channelId": 120,
+      "counterpartyChannelId": 25
+    },
+    "testnet-1": {
+      "channelId": 15,
+      "counterpartyChannelId": 24,
+      "receiver": {
+        "fees": 150000,
+        "gas": 300000,
+        "denom": "ibc/2915CCA550DA6840CB2D4F5BC95A067A7924A767B2EBEB3227DD66124AA8A626"
+      }
+    }
+  },
+  "terra": {
+    "disabled": true,
+    "node": "http://3.34.120.243:26657",
+    "chainId": "bombay-10",
+    "binary": "terrad",
+    "binaryUrl": "https://github.com/terra-money/core/releases/download/v0.5.10/terra_0.5.10_Linux_x86_64.tar.gz",
+    "fees": 0,
+    "denom": "uluna",
+    "prefix": "terra",
+    "devnet-1": {
+      "channelId": 123,
+      "counterpartyChannelId": 3
+    },
+    "testnet-1": {
+      "channelId": 29,
+      "counterpartyChannelId": 4
+    }
+  }
+}

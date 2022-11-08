@@ -14,7 +14,7 @@ func (k Keeper) SetClaim(ctx sdk.Context, ar types.UserClaim) error {
 	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetUserClaimKey(ar.UserAddress, ar.UserClaimType)
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
+	store.Set(key, k.cdc.MustMarshal(&ar))
 	return nil
 }
 
@@ -26,7 +26,7 @@ func (k Keeper) GetClaim(ctx sdk.Context, recipient string, userClaimType types.
 		return ar, errors.Wrapf(types.ErrInvalid, "Claim Does not Exist : %s", ar.String())
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &ar)
+	k.cdc.MustUnmarshal(bz, &ar)
 	return ar, nil
 }
 
@@ -34,6 +34,7 @@ func (k Keeper) ExistsClaim(ctx sdk.Context, recipient string, userClaimType typ
 	key := types.GetUserClaimKey(recipient, userClaimType)
 	return k.Exists(ctx, key)
 }
+
 func (k Keeper) DeleteClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetUserClaimKey(recipient, userClaimType)
@@ -60,7 +61,7 @@ func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
 		if len(bytesValue) == 0 {
 			continue
 		}
-		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
+		err := k.cdc.Unmarshal(bytesValue, &dl)
 		if err != nil {
 			// Log unmarshal claim error instead of panic.
 			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for user claim bytes : %s ", bytesValue))
@@ -86,7 +87,7 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 		if len(bytesValue) == 0 {
 			continue
 		}
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
+		k.cdc.MustUnmarshal(bytesValue, &dl)
 		if dl.UserClaimType == userClaimType {
 			res.UserClaims = append(res.UserClaims, &dl)
 		}

@@ -12,7 +12,7 @@ import (
 func (k Keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.AdminAccountPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&gogotypes.BytesValue{Value: adminAccount}))
+	store.Set(key, k.cdc.MustMarshal(&gogotypes.BytesValue{Value: adminAccount}))
 }
 
 func (k Keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
@@ -28,9 +28,7 @@ func (k Keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	key := types.AdminAccountPrefix
 	bz := store.Get(key)
 	acc := gogotypes.BytesValue{}
-	k.cdc.MustUnmarshalBinaryBare(bz, &acc)
-
+	k.cdc.MustUnmarshal(bz, &acc)
 	adminAccount = sdk.AccAddress(acc.Value)
-
 	return adminAccount
 }

@@ -28,7 +28,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           process.env.ETHEREUM_PRIVATE_KEY,
-          "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+          process.env['WEB3_PROVIDER']
         );
       },
       network_id: 3,
@@ -38,7 +38,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           process.env.ETHEREUM_PRIVATE_KEY,
-          "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+          process.env['WEB3_PROVIDER']
         );
       },
       network_id: 1,

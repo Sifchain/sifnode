@@ -28,7 +28,7 @@ func UpgradeDistributions(ctx sdk.Context, keeper Keeper) {
 	for ; iterator.Valid(); iterator.Next() {
 		var dr legacy.Distribution084
 		bytesValue := iterator.Value()
-		keeper.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		keeper.cdc.MustUnmarshal(bytesValue, &dr)
 
 		upgraded := types.Distribution{
 			DistributionName: dr.DistributionName,
@@ -37,7 +37,7 @@ func UpgradeDistributions(ctx sdk.Context, keeper Keeper) {
 
 		key := types.GetDistributionsKey(upgraded.DistributionName, upgraded.DistributionType)
 		keysForDeletion = append(keysForDeletion, string(iterator.Key()))
-		keysForSetting[string(key)] = keeper.cdc.MustMarshalBinaryBare(upgraded)
+		keysForSetting[string(key)] = keeper.cdc.MustMarshal(upgraded)
 	}
 
 	store := ctx.KVStore(keeper.storeKey)
@@ -60,7 +60,7 @@ func UpgradeDistributionRecords(ctx sdk.Context, keeper Keeper) {
 	for ; iterator.Valid(); iterator.Next() {
 		var dr legacy.DistributionRecord084
 		bytesValue := iterator.Value()
-		keeper.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		keeper.cdc.MustUnmarshal(bytesValue, &dr)
 
 		upgraded := types.DistributionRecord{
 			DistributionStatus: types.DistributionStatus(dr.ClaimStatus),
@@ -80,7 +80,7 @@ func UpgradeDistributionRecords(ctx sdk.Context, keeper Keeper) {
 			upgraded.DistributionType,
 		)
 		drKeysForDeletion = append(drKeysForDeletion, string(iterator.Key()))
-		drKeysForSetting[string(key)] = keeper.cdc.MustMarshalBinaryBare(&upgraded)
+		drKeysForSetting[string(key)] = keeper.cdc.MustMarshal(&upgraded)
 	}
 
 	store := ctx.KVStore(keeper.storeKey)

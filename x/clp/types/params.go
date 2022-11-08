@@ -9,7 +9,6 @@ import (
 
 // Default parameter namespace
 const (
-	DefaultParamspace                    = ModuleName
 	DefaultMinCreatePoolThreshold uint64 = 100
 )
 
@@ -41,11 +40,16 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // DefaultParams defines the parameters for this module
 func DefaultParams() Params {
-	return NewParams(DefaultMinCreatePoolThreshold)
+	return Params{
+		MinCreatePoolThreshold: DefaultMinCreatePoolThreshold,
+	}
 }
 
 func (p Params) Validate() error {
-	return validateMinCreatePoolThreshold(p.MinCreatePoolThreshold)
+	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
+		return err
+	}
+	return nil
 }
 
 func validateMinCreatePoolThreshold(i interface{}) error {
@@ -53,7 +57,6 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-
 	if v == 0 {
 		return fmt.Errorf("min create pool threshold must be positive: %d", v)
 	}
@@ -61,7 +64,7 @@ func validateMinCreatePoolThreshold(i interface{}) error {
 }
 
 func (p Params) Equal(p2 Params) bool {
-	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
-	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	bz1 := ModuleCdc.MustMarshalLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalLengthPrefixed(&p2)
 	return bytes.Equal(bz1, bz2)
 }

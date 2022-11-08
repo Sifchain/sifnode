@@ -155,7 +155,7 @@ func bindBridgeRegistry(address common.Address, caller bind.ContractCaller, tran
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_BridgeRegistry *BridgeRegistryRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _BridgeRegistry.Contract.BridgeRegistryCaller.contract.Call(opts, result, method, params...)
+	return _BridgeRegistry.Contract.BridgeRegistryCaller.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -174,7 +174,7 @@ func (_BridgeRegistry *BridgeRegistryRaw) Transact(opts *bind.TransactOpts, meth
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_BridgeRegistry *BridgeRegistryCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _BridgeRegistry.Contract.contract.Call(opts, result, method, params...)
+	return _BridgeRegistry.Contract.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -196,7 +196,7 @@ func (_BridgeRegistry *BridgeRegistryCaller) BridgeBank(opts *bind.CallOpts) (co
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeRegistry.contract.Call(opts, out, "bridgeBank")
+	err := _BridgeRegistry.contract.Call(opts, &[]interface{}{out}, "bridgeBank")
 	return *ret0, err
 }
 
@@ -222,7 +222,7 @@ func (_BridgeRegistry *BridgeRegistryCaller) CosmosBridge(opts *bind.CallOpts) (
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeRegistry.contract.Call(opts, out, "cosmosBridge")
+	err := _BridgeRegistry.contract.Call(opts, &[]interface{}{out}, "cosmosBridge")
 	return *ret0, err
 }
 
@@ -248,7 +248,7 @@ func (_BridgeRegistry *BridgeRegistryCaller) Oracle(opts *bind.CallOpts) (common
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeRegistry.contract.Call(opts, out, "oracle")
+	err := _BridgeRegistry.contract.Call(opts, &[]interface{}{out}, "oracle")
 	return *ret0, err
 }
 
@@ -274,7 +274,7 @@ func (_BridgeRegistry *BridgeRegistryCaller) Valset(opts *bind.CallOpts) (common
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeRegistry.contract.Call(opts, out, "valset")
+	err := _BridgeRegistry.contract.Call(opts, &[]interface{}{out}, "valset")
 	return *ret0, err
 }
 

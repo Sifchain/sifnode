@@ -5,6 +5,7 @@ const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeToken = artifacts.require("BridgeToken");
 const BridgeBank = artifacts.require("BridgeBank");
+const Blocklist = artifacts.require("Blocklist");
 
 const Web3Utils = require("web3-utils");
 const EVMRevert = "revert";
@@ -116,6 +117,10 @@ contract("BridgeBank", function (accounts) {
       {unsafeAllowCustomTypes: true}
       );
 
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
+
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
@@ -197,6 +202,30 @@ contract("BridgeBank", function (accounts) {
       afterUserBalance.should.be.bignumber.equal(this.amount);
     });
 
+    it("should NOT mint bridge tokens upon the successful processing of a burn prophecy claim if the recipient is blocklisted", async function () {
+      // Add recipient to the blocklist
+      await this.blocklist.addToBlocklist(this.recipient);
+      
+      // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
+      this.nonce = 1;
+      await expect(this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        (this.symbol).toLowerCase(),
+        this.amount, {
+          from: userOne
+        }
+      )).to.be.rejectedWith('Address is blocklisted');
+
+      // Confirm that the user has not received any tokens
+      const afterUserBalance = Number(
+        await this.token.balanceOf(this.recipient)
+      );
+      afterUserBalance.should.be.bignumber.equal(0);
+    });
+
     it("should not be able to add a token to the whitelist that has the same symbol as an already registered token", async function () {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
@@ -247,6 +276,10 @@ contract("BridgeBank", function (accounts) {
       ],
       {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
 
       this.recipient = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
@@ -332,6 +365,10 @@ contract("BridgeBank", function (accounts) {
       {unsafeAllowCustomTypes: true}
       );
 
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
+
       this.recipient = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
@@ -379,6 +416,31 @@ contract("BridgeBank", function (accounts) {
       //Confirm that the tokens have been locked
       bridgeBankTokenBalance.should.be.bignumber.equal(100);
       userBalance.should.be.bignumber.equal(900);
+    });
+
+    it("should NOT allow users to lock ERC20 tokens if user is blocklisted", async function () {
+      // Add sender to the blocklist
+      await this.blocklist.addToBlocklist(userOne);
+
+      // Attempt to lock tokens
+      await expect(this.bridgeBank.lock(
+        this.recipient,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      )).to.be.rejectedWith('Address is blocklisted');
+
+      //Get the user and BridgeBank token balance after the *failed* transfer
+      const bridgeBankTokenBalance = Number(
+        await this.token.balanceOf(this.bridgeBank.address)
+      );
+      const userBalance = Number(await this.token.balanceOf(userOne));
+
+      //Confirm that the tokens have NOT been locked
+      bridgeBankTokenBalance.should.be.bignumber.equal(0);
+      userBalance.should.be.bignumber.equal(1000);
     });
     
     it("should not allow users to lock ERC20 tokens if the sifaddress length is incorrect", async function () {
@@ -435,6 +497,27 @@ contract("BridgeBank", function (accounts) {
       );
     });
 
+    it("should NOT allow blocklisted users to lock Ethereum", async function () {
+      // Add sender to the blocklist
+      await this.blocklist.addToBlocklist(userOne);
+
+      await expect(this.bridgeBank.lock(
+        this.recipient,
+        this.ethereumToken,
+        this.weiAmount, {
+          from: userOne,
+          value: this.weiAmount
+        }
+      )).to.be.rejectedWith('Address is blocklisted');
+
+      const contractBalanceWei = await web3.eth.getBalance(
+        this.bridgeBank.address
+      );
+      const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
+
+      contractBalance.should.be.bignumber.equal(0);
+    });
+
     it("should increment the token amount in the contract's locked funds mapping", async function () {
       // Confirm locked balances prior to lock
       const priorLockedTokenBalance = await this.bridgeBank.lockedFunds(
@@ -486,6 +569,9 @@ contract("BridgeBank", function (accounts) {
       {unsafeAllowCustomTypes: true}
       );
 
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
@@ -590,6 +676,41 @@ contract("BridgeBank", function (accounts) {
       );
     });
 
+    it("should NOT unlock Ethereum upon the processing of a burn prophecy if recipient is blocklisted", async function () {
+      // Add recipient to the blocklist
+      await this.blocklist.addToBlocklist(this.recipient);
+
+      // Get prior balances of user and BridgeBank contract
+      const beforeUserBalance = Number(await web3.eth.getBalance(this.recipient));
+      const beforeContractBalance = Number(
+        await web3.eth.getBalance(this.bridgeBank.address)
+      );
+        
+      this.nonce = 1;
+      // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
+
+      await expect(this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.ethereumSymbol,
+        this.weiAmount, {
+          from: userOne
+        }
+      )).to.be.rejectedWith('Address is blocklisted')
+
+      // Get balances after prophecy processing
+      const afterUserBalance = Number(await web3.eth.getBalance(this.recipient));
+      const afterContractBalance = Number(
+        await web3.eth.getBalance(this.bridgeBank.address)
+      );
+
+      // Check if balances remain the same
+      afterUserBalance.should.be.bignumber.equal(beforeUserBalance);
+      afterContractBalance.should.be.bignumber.equal(beforeContractBalance);
+    });
+
     it("should revert when invalid symbol is given for burn prophecy", async function () {
       this.nonce = 1;
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
@@ -646,6 +767,44 @@ contract("BridgeBank", function (accounts) {
       );
       afterBridgeBankBalance.should.be.bignumber.equal(0);
       afterUserBalance.should.be.bignumber.equal(this.amount);
+    });
+
+    it("should NOT unlock and transfer ERC20 tokens upon the processing of a burn prophecy if recipient is blocklisted", async function () {
+      // Add recipient to the blocklist
+      await this.blocklist.addToBlocklist(this.recipient);
+
+      // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
+      // Get Bridge and user's token balance prior to unlocking
+      const beforeBridgeBankBalance = Number(
+        await this.token.balanceOf(this.bridgeBank.address)
+      );
+      const beforeUserBalance = Number(
+        await this.token.balanceOf(this.recipient)
+      );
+      beforeBridgeBankBalance.should.be.bignumber.equal(this.amount);
+      beforeUserBalance.should.be.bignumber.equal(0);
+
+      this.nonce = 1;
+      await expect(this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.symbol.toLowerCase(),
+        this.amount, {
+          from: userOne
+        }
+      )).to.be.rejectedWith('Address is blocklisted')
+
+      //Confirm that the tokens have NOT been unlocked and transfered
+      const afterBridgeBankBalance = Number(
+        await this.token.balanceOf(this.bridgeBank.address)
+      );
+      const afterUserBalance = Number(
+        await this.token.balanceOf(this.recipient)
+      );
+      afterBridgeBankBalance.should.be.bignumber.equal(this.amount);
+      afterUserBalance.should.be.bignumber.equal(0);
     });
 
     it("should allow locked funds to be unlocked incrementally by successive burn prophecies", async function () {
@@ -826,6 +985,12 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator})
     });
 
+    beforeEach(async function() {
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
+    });
+
     it("should create eRowan mock and connect it to the cosmos bridge with admin API", async function () {
       const symbol = "eRowan"
       this.token = await BridgeToken.new(symbol, {from: operator});
@@ -869,6 +1034,31 @@ contract("BridgeBank", function (accounts) {
       (tx.receipt.logs[0].args['3']).should.be.equal(symbol);
     });
 
+    it("should NOT burn eRowan to create rowan on sifchain if user is blocklisted", async function () {
+      // Add sender to the blocklist
+      await this.blocklist.addToBlocklist(operator);
+
+      function convertToHex(str) {
+        let hex = '';
+        for (let i = 0; i < str.length; i++) {
+            hex += '' + str.charCodeAt(i).toString(16);
+        }
+        return hex;
+      }
+
+      const amount = 100000;
+      const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
+
+      await this.token.mint(operator, amount, { from: operator })
+      await this.token.approve(this.bridgeBank.address, amount, {from: operator})
+      // Attempt to lock tokens
+      await expect(this.bridgeBank.burn(
+        sifAddress,
+        this.token.address,
+        amount, { from: operator }
+      )).to.be.rejectedWith('Address is blocklisted');
+    });
+
     it("should mint eRowan to transfer Rowan from sifchain to ethereum", async function () {
       function convertToHex(str) {
         let hex = '';
@@ -885,7 +1075,9 @@ contract("BridgeBank", function (accounts) {
       const nonce = 1;
 
       // operator should not have any eRowan
-      (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(0)).toString())
+      // NOTE: this.token has NOT been reset since the last test;
+      // NOTE: that's the reason why the operator should have `amount` tokens now
+      (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
 
       // Enum in cosmosbridge: enum ClaimType {Unsupported, Burn, Lock}
       await this.cosmosBridge.newProphecyClaim(
@@ -918,7 +1110,7 @@ contract("BridgeBank", function (accounts) {
 
       const status = await this.cosmosBridge.getProphecyThreshold(claimID);
       status['0'].should.be.equal(true);
-      (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
+      (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount*2)).toString())
     });
   });
 });

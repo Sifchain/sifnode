@@ -23,7 +23,10 @@
             },
             "connection_genesis": {
                 "connections": [],
-                "client_connection_paths": []
+                "client_connection_paths": [],
+                "oarams": {
+                    "max_expected_time_per_block": "10"
+                }
             },
             "channel_genesis": {
                 "channels": [],
@@ -313,6 +316,8 @@
             },
             "pool_list": null
         },
+        "authz": {},
+        "crisis": {},
         "dispensation": {},
         "distribution": {
             "delegator_starting_infos": [

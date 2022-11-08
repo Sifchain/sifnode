@@ -21,7 +21,7 @@ func DefaultGenesisState() *GenesisState {
 }
 
 // GetGenesisStateFromAppState gets the GenesisState from raw message
-func GetGenesisStateFromAppState(cdc codec.Marshaler, appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(cdc codec.Codec, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
 		err := cdc.UnmarshalJSON(appState[ModuleName], &genesisState)

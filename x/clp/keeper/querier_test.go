@@ -21,16 +21,16 @@ import (
 // createTestInput Returns a simapp with custom StakingKeeper
 // to avoid messing with the hooks.
 func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { //nolint
-	app := sifapp.Setup(false)
 	sifapp.SetConfig(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		app.AppCodec(),
 		app.GetKey(types.StoreKey),
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.TokenRegistryKeeper,
+		app.MintKeeper,
 		app.GetSubspace(types.ModuleName),
 	)
 	return app.LegacyAmino(), app, ctx
@@ -319,6 +319,24 @@ func TestQueryAllLPs(t *testing.T) {
 	err = cdc.UnmarshalJSON(resBz, &lpRes.LiquidityProviders)
 	assert.NoError(t, err)
 	assert.Equal(t, []*types.LiquidityProvider{&lp}, lpRes.LiquidityProviders)
+}
+
+func TestQueryPmtpParams(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+	keeper := app.ClpKeeper
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+	query.Path = ""
+	query.Data = nil
+	resBz, err := querier(ctx, []string{types.QueryPmtpParams}, query)
+	assert.NoError(t, err)
+	var pmtpParamsRes types.PmtpParamsRes
+	err = cdc.UnmarshalJSON(resBz, &pmtpParamsRes)
+	assert.NoError(t, err)
 }
 
 func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {

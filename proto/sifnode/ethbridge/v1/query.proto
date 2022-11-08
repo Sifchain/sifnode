@@ -11,6 +11,7 @@ option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 service Query {
   // EthProphecy queries an EthProphecy
   rpc EthProphecy(QueryEthProphecyRequest) returns (QueryEthProphecyResponse) {}
+  rpc GetBlacklist(QueryBlacklistRequest) returns (QueryBlacklistResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -32,4 +33,12 @@ message QueryEthProphecyResponse {
   string id = 1;
   sifnode.oracle.v1.Status status = 2;
   repeated EthBridgeClaim claims = 3;
+}
+
+message QueryBlacklistRequest {
+
+}
+
+message QueryBlacklistResponse {
+  repeated string addresses = 1;
 }

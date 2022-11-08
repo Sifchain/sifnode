@@ -6,57 +6,20 @@ on:
       - published
 
 jobs:
-  release:
-    name: Release
+  dispatch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
+      - name: Get the tag
+        id: release_tag
+        run: echo ::set-output name=name::${GITHUB_REF/refs\/tags\//}
+
+      - uses: convictional/trigger-workflow-and-wait@v1.6.1
         with:
-          repository: Sifchain/sifchain-devops
-          path: deploy
-          token: "${{ secrets.GIT_PAT }}"
-
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v2.x
-
-      - if: contains(github.ref, 'devnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'testnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'betanet')
-        run: |
-          echo "CHAINNET=betanet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'mainnet')
-        run: |
-          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
-
-      - name: Build docker images
-        run: |
-          echo ${{ env.CHAINNET }}
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
-
-      - name: Push docker images
-        run: |
-          docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
-
-      - name: Release a new sifnoded binary
-        uses: ./deploy/release
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: linux
-          goarch: amd64
-          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
-          project_path: "./cmd/sifnoded"
-          binary_name: "sifnoded"
-          sha256sum: true
+          owner: sifchain
+          repo: sifchain-chainops
+          github_token: ${{ secrets.GIT_PAT }}
+          workflow_file_name: sifnode-release.yml
+          client_payload: '{ "release_tag": "${{ steps.release_tag.outputs.name }}" }'
+          propagate_failure: false
+          trigger_workflow: true
+          wait_workflow: true

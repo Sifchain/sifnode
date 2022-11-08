@@ -155,7 +155,7 @@ func bindValset(address common.Address, caller bind.ContractCaller, transactor b
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_Valset *ValsetRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _Valset.Contract.ValsetCaller.contract.Call(opts, result, method, params...)
+	return _Valset.Contract.ValsetCaller.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -174,7 +174,7 @@ func (_Valset *ValsetRaw) Transact(opts *bind.TransactOpts, method string, param
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_Valset *ValsetCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _Valset.Contract.contract.Call(opts, result, method, params...)
+	return _Valset.Contract.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -196,7 +196,7 @@ func (_Valset *ValsetCaller) CurrentValsetVersion(opts *bind.CallOpts) (*big.Int
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "currentValsetVersion")
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "currentValsetVersion")
 	return *ret0, err
 }
 
@@ -222,7 +222,7 @@ func (_Valset *ValsetCaller) GetValidatorPower(opts *bind.CallOpts, _validatorAd
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "getValidatorPower", _validatorAddress)
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "getValidatorPower", _validatorAddress)
 	return *ret0, err
 }
 
@@ -248,7 +248,7 @@ func (_Valset *ValsetCaller) IsActiveValidator(opts *bind.CallOpts, _validatorAd
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "isActiveValidator", _validatorAddress)
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "isActiveValidator", _validatorAddress)
 	return *ret0, err
 }
 
@@ -274,7 +274,7 @@ func (_Valset *ValsetCaller) Operator(opts *bind.CallOpts) (common.Address, erro
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "operator")
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "operator")
 	return *ret0, err
 }
 
@@ -300,7 +300,7 @@ func (_Valset *ValsetCaller) Powers(opts *bind.CallOpts, arg0 [32]byte) (*big.In
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "powers", arg0)
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "powers", arg0)
 	return *ret0, err
 }
 
@@ -326,7 +326,7 @@ func (_Valset *ValsetCaller) Recover(opts *bind.CallOpts, _message [32]byte, _si
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "recover", _message, _signature)
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "recover", _message, _signature)
 	return *ret0, err
 }
 
@@ -352,7 +352,7 @@ func (_Valset *ValsetCaller) TotalPower(opts *bind.CallOpts) (*big.Int, error) {
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "totalPower")
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "totalPower")
 	return *ret0, err
 }
 
@@ -378,7 +378,7 @@ func (_Valset *ValsetCaller) ValidatorCount(opts *bind.CallOpts) (*big.Int, erro
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "validatorCount")
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "validatorCount")
 	return *ret0, err
 }
 
@@ -404,7 +404,7 @@ func (_Valset *ValsetCaller) Validators(opts *bind.CallOpts, arg0 [32]byte) (boo
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Valset.contract.Call(opts, out, "validators", arg0)
+	err := _Valset.contract.Call(opts, &[]interface{}{out}, "validators", arg0)
 	return *ret0, err
 }
 

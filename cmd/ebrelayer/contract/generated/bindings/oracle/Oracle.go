@@ -155,7 +155,7 @@ func bindOracle(address common.Address, caller bind.ContractCaller, transactor b
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_Oracle *OracleRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _Oracle.Contract.OracleCaller.contract.Call(opts, result, method, params...)
+	return _Oracle.Contract.OracleCaller.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -174,7 +174,7 @@ func (_Oracle *OracleRaw) Transact(opts *bind.TransactOpts, method string, param
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_Oracle *OracleCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _Oracle.Contract.contract.Call(opts, result, method, params...)
+	return _Oracle.Contract.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -202,7 +202,7 @@ func (_Oracle *OracleCaller) CheckBridgeProphecy(opts *bind.CallOpts, _prophecyI
 		ret1,
 		ret2,
 	}
-	err := _Oracle.contract.Call(opts, out, "checkBridgeProphecy", _prophecyID)
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "checkBridgeProphecy", _prophecyID)
 	return *ret0, *ret1, *ret2, err
 }
 
@@ -228,7 +228,7 @@ func (_Oracle *OracleCaller) ConsensusThreshold(opts *bind.CallOpts) (*big.Int, 
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Oracle.contract.Call(opts, out, "consensusThreshold")
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "consensusThreshold")
 	return *ret0, err
 }
 
@@ -254,7 +254,7 @@ func (_Oracle *OracleCaller) CosmosBridge(opts *bind.CallOpts) (common.Address, 
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Oracle.contract.Call(opts, out, "cosmosBridge")
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "cosmosBridge")
 	return *ret0, err
 }
 
@@ -280,7 +280,7 @@ func (_Oracle *OracleCaller) HasMadeClaim(opts *bind.CallOpts, arg0 *big.Int, ar
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Oracle.contract.Call(opts, out, "hasMadeClaim", arg0, arg1)
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "hasMadeClaim", arg0, arg1)
 	return *ret0, err
 }
 
@@ -306,7 +306,7 @@ func (_Oracle *OracleCaller) Operator(opts *bind.CallOpts) (common.Address, erro
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Oracle.contract.Call(opts, out, "operator")
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "operator")
 	return *ret0, err
 }
 
@@ -332,7 +332,7 @@ func (_Oracle *OracleCaller) OracleClaimValidators(opts *bind.CallOpts, arg0 *bi
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Oracle.contract.Call(opts, out, "oracleClaimValidators", arg0, arg1)
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "oracleClaimValidators", arg0, arg1)
 	return *ret0, err
 }
 
@@ -358,7 +358,7 @@ func (_Oracle *OracleCaller) Valset(opts *bind.CallOpts) (common.Address, error)
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Oracle.contract.Call(opts, out, "valset")
+	err := _Oracle.contract.Call(opts, &[]interface{}{out}, "valset")
 	return *ret0, err
 }
 

@@ -14,7 +14,7 @@ func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddre
 	for i, entry := range validatorList {
 		valList[i] = entry.String()
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
+	store.Set(key, k.cdc.MustMarshal(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
@@ -22,14 +22,12 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
 	return k.Exists(ctx, key)
 }
 
-//
 func (k Keeper) GetOracleWhiteList(ctx sdk.Context) []sdk.ValAddress {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
 	valAddresses := &stakingtypes.ValAddresses{}
-	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
-
+	k.cdc.MustUnmarshal(bz, valAddresses)
 	vl := make([]sdk.ValAddress, len(valAddresses.Addresses))
 	for i, entry := range valAddresses.Addresses {
 		addr, err := sdk.ValAddressFromBech32(entry)
@@ -38,7 +36,6 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context) []sdk.ValAddress {
 		}
 		vl[i] = addr
 	}
-
 	return vl
 }
 
@@ -48,7 +45,6 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, address sdk.ValAddress) bool {
 		return false
 	}
 	valList := k.GetOracleWhiteList(ctx)
-
 	for _, validator := range valList {
 		if validator.Equals(address) {
 			return true
@@ -66,13 +62,11 @@ func (k Keeper) AddOracleWhiteList(ctx sdk.Context, validator sdk.ValAddress) {
 // RemoveOracleWhiteList remove a validator from whitelist
 func (k Keeper) RemoveOracleWhiteList(ctx sdk.Context, validator sdk.ValAddress) {
 	valList := k.GetOracleWhiteList(ctx)
-
 	var updated []sdk.ValAddress
 	for _, addr := range valList {
 		if !validator.Equals(addr) {
 			updated = append(updated, addr)
 		}
 	}
-
 	k.SetOracleWhiteList(ctx, updated)
 }

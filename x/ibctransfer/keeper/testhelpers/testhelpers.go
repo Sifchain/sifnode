@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdktransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
-	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	sdktransferkeeper "github.com/cosmos/ibc-go/v2/modules/apps/transfer/keeper"
+	sdktransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 )
 
 // Can be passed to sctransferkeeper.MsgServer as the SDK stub,
@@ -56,9 +56,7 @@ func SendStub(ctx sdk.Context, transferKeeper sdktransferkeeper.Keeper, bankKeep
 		); err != nil {
 			return "", err
 		}
-		if err := bankKeeper.BurnCoins(
-			ctx, sdktransfertypes.ModuleName, sdk.NewCoins(token),
-		); err != nil {
+		if err := bankKeeper.BurnCoins(ctx, sdktransfertypes.ModuleName, sdk.NewCoins(token)); err != nil {
 			// NOTE: should not happen as the module account was
 			// retrieved on the step above and it has enough balace
 			// to burn.

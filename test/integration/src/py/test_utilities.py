@@ -345,7 +345,7 @@ def wait_for_sifchain_addr_balance(
         symbol,
         target_balance,
         sifchaincli_node,
-        max_seconds=90,
+        max_seconds=30,
         debug_prefix=""
 ):
     normalized_symbol = normalize_symbol(symbol)
@@ -391,7 +391,7 @@ def send_from_sifchain_to_sifchain_cmd(
         sifchain_fees_entry,
         home_entry,
         "--gas auto",
-        "-y",
+        "-y -o json",
     ])
     return cmd
 

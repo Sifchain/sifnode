@@ -7,6 +7,7 @@ import (
 // query endpoints supported by the oracle Querier
 const (
 	QueryEthProphecy = "prophecies"
+	QueryBlacklist   = "blacklist"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams

@@ -19,7 +19,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
 default_timeout_for_ganache = 160
 
 
-def decrease_log_level(new_level=logging.WARNING):
+def decrease_log_level(new_level=logging.DEBUG):
     logger = logging.getLogger()
     existing_level = logger.level
     if new_level > existing_level:

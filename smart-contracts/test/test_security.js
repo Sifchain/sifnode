@@ -5,6 +5,7 @@ const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeToken = artifacts.require("BridgeToken");
 const BridgeBank = artifacts.require("BridgeBank");
+const Blocklist = artifacts.require("Blocklist");
 
 const Web3Utils = require("web3-utils");
 const EVMRevert = "revert";
@@ -65,6 +66,10 @@ contract("Security Test", function (accounts) {
       ],
       {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
 
       this.token = await BridgeToken.new("erowan");
 

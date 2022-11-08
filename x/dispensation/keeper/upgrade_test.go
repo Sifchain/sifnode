@@ -56,7 +56,7 @@ func TestUpgradeDistributionRecords(t *testing.T) {
 			for _, dr := range tc.records {
 				sifapp.DispensationKeeper.Set(ctx,
 					types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String(), types.DistributionTypeUnknown.String()),
-					sifapp.Codec().MustMarshalBinaryBare(dr),
+					sifapp.Codec().MustMarshal(dr),
 				)
 			}
 
@@ -68,7 +68,7 @@ func TestUpgradeDistributionRecords(t *testing.T) {
 			for ; iterator.Valid(); iterator.Next() {
 				var dr types.DistributionRecord
 				bytesValue := iterator.Value()
-				sifapp.Codec().MustUnmarshalBinaryBare(bytesValue, &dr)
+				sifapp.Codec().MustUnmarshal(bytesValue, &dr)
 				got = append(got, dr)
 			}
 
@@ -105,7 +105,7 @@ func TestUpgradeDistributions(t *testing.T) {
 			for _, dr := range tc.records {
 				sifapp.DispensationKeeper.Set(ctx,
 					types.GetDistributionsKey(dr.DistributionName, dr.DistributionType),
-					sifapp.Codec().MustMarshalBinaryBare(dr),
+					sifapp.Codec().MustMarshal(dr),
 				)
 			}
 
@@ -117,7 +117,7 @@ func TestUpgradeDistributions(t *testing.T) {
 			for ; iterator.Valid(); iterator.Next() {
 				var d types.Distribution
 				bytesValue := iterator.Value()
-				sifapp.Codec().MustUnmarshalBinaryBare(bytesValue, &d)
+				sifapp.Codec().MustUnmarshal(bytesValue, &d)
 				got = append(got, d)
 			}
 

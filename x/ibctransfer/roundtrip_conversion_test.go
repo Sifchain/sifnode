@@ -4,58 +4,21 @@ import (
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	test "github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 )
-
-func TestExportImportConversionEquality(t *testing.T) {
-	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
-	maxUInt64 := uint64(18446744073709551615)
-	rowanEntry := tokenregistrytypes.RegistryEntry{
-		Decimals:             18,
-		Denom:                "rowan",
-		BaseDenom:            "rowan",
-		IbcCounterpartyDenom: "microrowan",
-	}
-	microRowanEntry := tokenregistrytypes.RegistryEntry{
-		Decimals:  10,
-		Denom:     "microrowan",
-		BaseDenom: "microrowan",
-		UnitDenom: "rowan",
-	}
-	app.TokenRegistryKeeper.SetToken(ctx, &rowanEntry)
-	app.TokenRegistryKeeper.SetToken(ctx, &microRowanEntry)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	rEntry, err := app.TokenRegistryKeeper.GetEntry(registry, "rowan")
-	require.NoError(t, err)
-	mrEntry, err := app.TokenRegistryKeeper.GetEntry(registry, "microrowan")
-	require.NoError(t, err)
-	msg := &transfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}
-	outgoingDeduction, outgoingAddition := helpers.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
-	mrEntryUnit, err := app.TokenRegistryKeeper.GetEntry(registry, mrEntry.UnitDenom)
-	require.NoError(t, err)
-	require.True(t, mrEntryUnit.Decimals > mrEntry.Decimals)
-	diff := uint64(mrEntryUnit.Decimals - mrEntry.Decimals)
-	convAmount := helpers.ConvertIncomingCoins(184467440737, diff)
-	incomingDeduction := sdk.NewCoin("microrowan", sdk.NewIntFromUint64(184467440737))
-	incomingAddition := sdk.NewCoin("rowan", convAmount)
-	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())
-	require.Equal(t, outgoingDeduction, incomingAddition)
-	require.Equal(t, outgoingAddition, incomingDeduction)
-}
 
 func TestMultihopTransfer(t *testing.T) {
 	sifapp.SetConfig(false)
 	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 	addrs, _ := test.CreateTestAddrs(3)
-	amount := uint64(123456789123456789)
+	amount := "123456789123456789"
 	photonToken := tokenregistrytypes.RegistryEntry{
 		Denom:     "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8",
 		BaseDenom: "uphoton",
@@ -84,8 +47,10 @@ func TestMultihopTransfer(t *testing.T) {
 	err = app.TransferKeeper.OnRecvPacket(ctx, recvPacket, recvTokenPacket)
 	require.NoError(t, err)
 	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, first, "uphoton").Amount.String())
+	intAmount, ok := sdk.NewIntFromString(amount)
+	require.True(t, ok)
 	require.Equal(t, "123456789123456789", app.BankKeeper.GetBalance(ctx, second, "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8").Amount.String())
-	sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, sdk.NewCoin("ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8", sdk.NewIntFromUint64(amount)), second, "transfer", "channel-12")
+	sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, sdk.NewCoin("ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8", intAmount), second, "transfer", "channel-12")
 	require.Equal(t, "transfer/channel-11/uphoton", sdkSentDenom)
 	recvTokenPacket = transfertypes.FungibleTokenPacketData{
 		Denom:    sdkSentDenom,
@@ -104,7 +69,7 @@ func TestMultihopTransfer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, second, "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8").Amount.String())
 	require.Equal(t, "123456789123456789", app.BankKeeper.GetBalance(ctx, third, "ibc/ED52642E49540BE90488C9027BEA1C1AFA2BD296A548D99CA20EDAEF8F3BB5B9").Amount.String())
-	sdkSentDenom, _ = testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, sdk.NewCoin("ibc/ED52642E49540BE90488C9027BEA1C1AFA2BD296A548D99CA20EDAEF8F3BB5B9", sdk.NewIntFromUint64(amount)), third, "transfer", "channel-66")
+	sdkSentDenom, _ = testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, sdk.NewCoin("ibc/ED52642E49540BE90488C9027BEA1C1AFA2BD296A548D99CA20EDAEF8F3BB5B9", intAmount), third, "transfer", "channel-66")
 	require.Equal(t, "transfer/channel-66/transfer/channel-11/uphoton", sdkSentDenom)
 	recvTokenPacket = transfertypes.FungibleTokenPacketData{
 		Denom:    sdkSentDenom,

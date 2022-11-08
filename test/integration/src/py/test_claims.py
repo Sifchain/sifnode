@@ -16,7 +16,7 @@ def test_create_new_claim(claimType):
     keyring_backend = 'test'
     chain_id = 'localnet'
     from_address = 'sifnodeadmin'
-    amount = '10000000rowan'
+    amount = '100000000010000000rowan'
     send_sample_rowan(from_address, sifchain_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
     txnhash = (create_claim(sifchain_address, claimType, keyring_backend, chain_id))

@@ -1,0 +1,56 @@
+{
+  "name": "localnet",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "buildBinaryNet": "node ./cmd/buildBinaryNet.mjs",
+    "buildLocalNet": "node ./cmd/buildLocalNet.mjs",
+    "checkBalance": "node ./cmd/checkBalance.mjs",
+    "checkTx": "node ./cmd/checkTx.mjs",
+    "createAccount": "node ./cmd/createAccount.mjs",
+    "createSnapshot": "node ./cmd/createSnapshot.mjs",
+    "downloadBinaries": "node ./cmd/downloadBinaries.mjs",
+    "feedAccount": "node ./cmd/feedAccount.mjs",
+    "ibc": "node ./cmd/ibc.mjs",
+    "initAllChains": "node ./cmd/initAllChains.mjs",
+    "initAllRelayers": "node ./cmd/initAllRelayers.mjs",
+    "initChain": "node ./cmd/initChain.mjs",
+    "initRelayer": "node ./cmd/initRelayer.mjs",
+    "loadLocalNet": "node ./cmd/loadLocalNet.mjs",
+    "recoverAccount": "node ./cmd/recoverAccount.mjs",
+    "send": "node ./cmd/send.mjs",
+    "startAllChains": "node ./cmd/startAllChains.mjs",
+    "startAllRelayers": "node ./cmd/startAllRelayers.mjs",
+    "startChain": "node ./cmd/startChain.mjs",
+    "startRelayer": "node ./cmd/startRelayer.mjs",
+    "takeSnapshot": "node ./cmd/takeSnapshot.mjs",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "whitelistedTokens": "node ./cmd/whitelistedTokens.mjs"
+  },
+  "dependencies": {
+    "@types/jest": "^27.0.2",
+    "arg": "^5.0.1",
+    "debug": "^4.3.2",
+    "jest": "^27.3.1",
+    "js-yaml": "^4.1.0",
+    "p-event": "^4.2.0",
+    "@confio/relayer": "^0.4.0",
+    "zx": "^4.2.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "mjs",
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "json",
+      "node"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.?(m)[jt]s?(x)",
+      "**/?(*.)+(spec|test).?(m)[jt]s?(x)"
+    ]
+  }
+}

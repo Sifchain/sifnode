@@ -22,10 +22,8 @@ const DefaultConsensusNeeded float64 = 0.7
 type Prophecy struct {
 	ID     string `json:"id"`
 	Status Status `json:"status"`
-
 	//WARNING: Mappings are nondeterministic in Amino,
 	// an so iterating over them could result in consensus failure. New code should not iterate over the below 2 mappings.
-
 	//This is a mapping from a claim to the list of validators that made that claim.
 	ClaimValidators map[string][]sdk.ValAddress `json:"claim_validators"`
 	//This is a mapping from a validator bech32 address to their claim
@@ -42,12 +40,10 @@ func (prophecy Prophecy) SerializeForDB() (DBProphecy, error) {
 	if err != nil {
 		return DBProphecy{}, err
 	}
-
 	validatorClaims, err := json.Marshal(prophecy.ValidatorClaims)
 	if err != nil {
 		return DBProphecy{}, err
 	}
-
 	return DBProphecy{
 		Id:              prophecy.ID,
 		Status:          prophecy.Status,
@@ -62,12 +58,10 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 	if err := json.Unmarshal(dbProphecy.ClaimValidators, &claimValidators); err != nil {
 		return Prophecy{}, err
 	}
-
 	var validatorClaims map[string]string
 	if err := json.Unmarshal(dbProphecy.ValidatorClaims, &validatorClaims); err != nil {
 		return Prophecy{}, err
 	}
-
 	return Prophecy{
 		ID:              dbProphecy.Id,
 		Status:          dbProphecy.Status,
@@ -80,7 +74,6 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 func (prophecy Prophecy) AddClaim(validator sdk.ValAddress, claim string) {
 	claimValidators := prophecy.ClaimValidators[claim]
 	prophecy.ClaimValidators[claim] = append(claimValidators, validator)
-
 	validatorBech32 := validator.String()
 	prophecy.ValidatorClaims[validatorBech32] = claim
 }
@@ -100,46 +93,37 @@ func inWhiteList(validator staking.Validator, whiteListValidatorAddresses []sdk.
 func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKeeper, whiteListValidatorAddresses []sdk.ValAddress) (string, int64, int64, int64) {
 	fmt.Println("sifnode oracle prophecy FindHighestClaim")
 	validators := stakeKeeper.GetBondedValidatorsByPower(ctx)
-
 	fmt.Printf("sifnode oracle prophecy FindHighestClaim validators length is %d\n", len(validators))
-
 	// Compute the total power of white list validators
 	totalPower := int64(0)
 	for _, validator := range validators {
 		if inWhiteList(validator, whiteListValidatorAddresses) {
-			totalPower += validator.GetConsensusPower()
+			totalPower += validator.GetConsensusPower(sdk.DefaultPowerReduction)
 		}
 	}
-
 	fmt.Printf("sifnode oracle prophecy FindHighestClaim totalPower is %d\n", totalPower)
-
 	//Index the validators by address for looking when scanning through claims
 	validatorsByAddress := make(map[string]staking.Validator)
 	for _, validator := range validators {
 		validatorsByAddress[validator.OperatorAddress] = validator
 	}
-
 	totalClaimsPower := int64(0)
 	highestClaimPower := int64(-1)
 	highestClaim := ""
-
 	for claim, validatorAddrs := range prophecy.ClaimValidators {
 		claimPower := int64(0)
-
 		for _, validatorAddr := range validatorAddrs {
 			fmt.Printf("sifnode oracle prophecy FindHighestClaim validator is %s\n", validatorAddr.String())
-
 			validator, found := validatorsByAddress[validatorAddr.String()]
 			if found {
 				// Note: If claim validator is not found in the current validator set, we assume it is no longer
 				// an active validator and so can silently ignore it's claim and no longer count it towards total power.
-				claimPower += validator.GetConsensusPower()
+				claimPower += validator.GetConsensusPower(sdk.DefaultPowerReduction)
 			}
 		}
 		totalClaimsPower += claimPower
 		fmt.Printf("sifnode oracle prophecy FindHighestClaim totalClaimsPower is %d\n", totalClaimsPower)
 		fmt.Printf("sifnode oracle prophecy FindHighestClaim claimPower is %d\n", claimPower)
-
 		if claimPower > highestClaimPower {
 			highestClaimPower = claimPower
 			highestClaim = claim

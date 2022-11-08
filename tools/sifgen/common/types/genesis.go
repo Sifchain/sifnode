@@ -3,6 +3,8 @@ package types
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -55,6 +57,54 @@ type Auth struct {
 	Accounts Accounts `json:"accounts"`
 }
 
+type AuthZ struct {
+	Authorization []string `json:"authorization"`
+}
+
+type Crisis struct {
+	ConstantFee ConstantFee `json:"constant_fee"`
+}
+
+type AdminAccount struct {
+	AdminType    types.AdminType `json:"admin_type"`
+	AdminAddress string          `json:"admin_address"`
+}
+type AdminAccounts struct {
+	AdminAccounts []*AdminAccount `json:"admin_accounts"`
+}
+
+type Registry struct {
+	Entries []*RegistryEntry `json:"entries"`
+}
+
+type RegistryEntry struct {
+	Decimals                 int64              `json:"deciamls"`
+	Denom                    string             `json:"denom"`
+	BaseDenom                string             `json:"base_denom"`
+	Path                     string             `json:"path"`
+	IbcChannelID             string             `json:"ibc_channel_id"`
+	IbcCounterpartyChannelID string             `json:"ibc_counterparty_id"`
+	DisplayName              string             `json:"display_name"`
+	DisplaySymbol            string             `json:"display_symbol"`
+	Network                  string             `json:"network"`
+	Address                  string             `json:"address"`
+	ExternalSymbol           string             `json:"external_symbol"`
+	TransferLimit            string             `json:"transfer_limit"`
+	Permissions              []types.Permission `json:"permissions"`
+	UnitDenom                string             `json:"unit_denom"`
+	IbcCounterpartyDenom     string             `json:"ibc_counterparty_denom"`
+	IbcCounterpartyChainID   string             `json:"ibc_counterparty_chain_id"`
+}
+type TokenRegistry struct {
+	AdminAccounts AdminAccounts `json:"admin_accounts"`
+	Registry      Registry      `json:"registry"`
+}
+
+type ConstantFee struct {
+	Amount string `json:"amount"`
+	Denom  string `json:"denom"`
+}
+
 type BankParams struct {
 	SendEnabled        []interface{} `json:"send_enabled"`
 	DefaultSendEnabled bool          `json:"default_send_enabled"`
@@ -85,6 +135,19 @@ type Bank struct {
 type Capability struct {
 	Index  string        `json:"index"`
 	Owners []interface{} `json:"owners"`
+}
+
+type PoolMultiplier struct {
+	Asset      string `json:"asset"`
+	Multiplier string `json:"multiplier"`
+}
+
+type RewardPeriod struct {
+	ID          string            `json:"id"`
+	StartBlock  json.Number       `json:"start_block"`
+	EndBlock    json.Number       `json:"end_block"`
+	Allocation  string            `json:"allocation"`
+	Multipliers []*PoolMultiplier `json:"multipliers"`
 }
 
 type CLPParams struct {
@@ -268,6 +331,10 @@ type ClientGenesisParams struct {
 	AllowedClients []string `json:"allowed_clients"`
 }
 
+type ConnectionGenesisParams struct {
+	MaxExpectedTimePerBlock string `json:"max_expected_time_per_block"`
+}
+
 type ClientGenesis struct {
 	Clients            []interface{}       `json:"clients"`
 	ClientsConsensus   []interface{}       `json:"clients_consensus"`
@@ -278,9 +345,10 @@ type ClientGenesis struct {
 }
 
 type ConnectionGenesis struct {
-	Connections            []interface{} `json:"connections"`
-	ClientConnectionPaths  []interface{} `json:"client_connection_paths"`
-	NextConnectionSequence string        `json:"next_connection_sequence"`
+	Connections            []interface{}           `json:"connections"`
+	ClientConnectionPaths  []interface{}           `json:"client_connection_paths"`
+	NextConnectionSequence string                  `json:"next_connection_sequence"`
+	Params                 ConnectionGenesisParams `json:"params"`
 }
 
 type ChannelGenesis struct {
@@ -350,24 +418,27 @@ type Transfer struct {
 }
 
 type AppState struct {
-	Upgrade      struct{}      `json:"upgrade"`
-	Ethbridge    struct{}      `json:"ethbridge"`
-	Params       interface{}   `json:"params"`
-	Ibc          Ibc           `json:"ibc"`
-	Distribution Distribution  `json:"distribution"`
-	Staking      Staking       `json:"staking"`
-	Gov          Gov           `json:"gov"`
-	Mint         Mint          `json:"mint"`
-	Slashing     Slashing      `json:"slashing"`
-	Auth         Auth          `json:"auth"`
-	Bank         Bank          `json:"bank"`
-	CLP          CLP           `json:"clp"`
-	Transfer     Transfer      `json:"transfer"`
-	Capability   Capability    `json:"capability"`
-	Dispensation Dispensation  `json:"dispensation"`
-	Oracle       Oracle        `json:"oracle"`
-	Evidence     EvidenceState `json:"evidence"`
-	Genutil      Genutil       `json:"genutil"`
+	Upgrade       struct{}      `json:"upgrade"`
+	Ethbridge     struct{}      `json:"ethbridge"`
+	Params        interface{}   `json:"params"`
+	Ibc           Ibc           `json:"ibc"`
+	Distribution  Distribution  `json:"distribution"`
+	Staking       Staking       `json:"staking"`
+	Gov           Gov           `json:"gov"`
+	Mint          Mint          `json:"mint"`
+	Slashing      Slashing      `json:"slashing"`
+	Auth          Auth          `json:"auth"`
+	AuthZ         AuthZ         `json:"authz"`
+	Bank          Bank          `json:"bank"`
+	CLP           CLP           `json:"clp"`
+	Transfer      Transfer      `json:"transfer"`
+	Capability    Capability    `json:"capability"`
+	Dispensation  Dispensation  `json:"dispensation"`
+	Oracle        Oracle        `json:"oracle"`
+	Evidence      EvidenceState `json:"evidence"`
+	Genutil       Genutil       `json:"genutil"`
+	Crisis        Crisis        `json:"crisis"`
+	TokenRegistry TokenRegistry `json:"tokenregistry"`
 }
 
 type Genesis struct {
