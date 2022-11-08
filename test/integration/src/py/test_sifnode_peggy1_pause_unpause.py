@@ -1,7 +1,8 @@
+from typing import Tuple
 import pytest
 
 import siftool_path
-from siftool import eth, test_utils, sifchain
+from siftool import eth, test_utils, sifchain, cosmos
 from siftool.inflate_tokens import InflateTokens
 from siftool.common import *
 from siftool.test_utils import EnvCtx
@@ -19,69 +20,102 @@ def test_pause_unpause_no_error(ctx: EnvCtx):
 def test_pause_lock_valid(ctx: EnvCtx):
     # Test a working flow:
     fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1
-    fund_amount_eth = 10 * eth.ETH
+    fund_amount_eth = 1 * eth.ETH
 
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
-    test_eth_account = ctx.create_and_fund_eth_account(fund_amount=fund_amount_eth)
+    ctx.tx_bridge_bank_lock_eth(ctx.eth_faucet, test_sif_account, fund_amount_eth)
+    ctx.eth.advance_blocks()
+    # Setup is complete, test account has rowan AND eth
 
-    eth_balance_before = ctx.eth.get_eth_balance(test_eth_account)
-    sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+    test_eth_destination_account = ctx.create_and_fund_eth_account()
 
-    print(sif_balance_before)
+    send_amount = 1
+    balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, erc20_token_addr=ctx.get_bridge_token_sc().address)
+    # TODO: sif_tx_fee vs get from envctx vs more lenient assertion
+    assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * (send_amount + sifchain.sif_tx_fee_in_rowan )), "Gas fee and sent amount should be deducted from sender sif acct"
+    assert erc_diff == send_amount, "Eth destination should receive rowan token"
 
-    send_amount = 10000
-    # Submit lock
-    # TODO: Fix Hardcoded denom "rowan"
-    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, send_amount, "rowan")
-
-    sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
-
-    # Assert tx go through, balance updated correctly.
-    balance_diff = sifchain.balance_delta(sif_balance_before, sif_balance_after)
-    assert exactly_one(list(balance_diff.keys())) == ctx.ceth_symbol
-    assert balance_diff[ctx.ceth_symbol] == send_amount
-
-    # Pause the bridge
-    print("Using admin account to pause bridge:", ctx.sifchain_ethbridge_admin_account)
     res = ctx.sifnode.pause_peggy_bridge(ctx.sifchain_ethbridge_admin_account)
-    print(res)
+    assert res[0]['code'] == 0
 
-    # Submit lock
-    # eth_balance_before = ctx.eth.get_eth_balance(test_eth_account)
-    # sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
-    # res = ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_account, send_amount, ctx.ceth_symbol)
-    # # TODO: Assert on RES getting ERROR
+    balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, erc20_token_addr=ctx.get_bridge_token_sc().address)
+    assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * sifchain.sif_tx_fee_in_rowan), "Only gas fee should be deducted for attempted tx"
+    assert erc_diff == 0, "Eth destination should not receive rowan token"
 
-    # balance_change_exception = None
-    # try:
-    #     sif_balance_after = ctx.wait_for_sif_balance_change(test_sif_account, sif_balance_before)
-    # except Exception as e:
-    #     balance_change_exception = e
-
-    # # TODO: Add more precise assertion, e.g. exception type
-    # assert balance_change_exception is not None
-
-    # # Unpause the bridge
-    # # TODO: Implement this method
-    print("Using admin account to unpause bridge:", ctx.sifchain_ethbridge_admin_account)
     res = ctx.sifnode.unpause_peggy_bridge(ctx.sifchain_ethbridge_admin_account)
-    print(res)
+    assert res[0]['code'] == 0
     # # Submit lock
     # # Assert tx go through, balance updated correctly.
+    send_amount = 15
+    balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, erc20_token_addr=ctx.get_bridge_token_sc().address)
+    # TODO: sif_tx_fee vs get from envctx vs more lenient assertion
+    assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * (send_amount + sifchain.sif_tx_fee_in_rowan )), "Gas fee and sent amount should be deducted from sender sif acct"
+    assert erc_diff == send_amount, "Eth destination should receive rowan token"
 
-def test_pause_burn_valid(ctx):
+# Burn CETH
+def test_pause_burn_valid(ctx: EnvCtx):
+    fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1
+    fund_amount_eth = 1 * eth.ETH
 
+    faucet_balance = ctx.eth.get_eth_balance(ctx.eth_faucet)
+    print("Eth faucet balance before:", faucet_balance)
+    test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
+    ctx.tx_bridge_bank_lock_eth(ctx.eth_faucet, test_sif_account, fund_amount_eth)
+    ctx.eth.advance_blocks(100)
+    # Setup is complete, test account has rowan AND eth
+    balance = ctx.sifnode.get_balance(test_sif_account)
+    time.sleep(5)
+    print("Balance", balance)
+    faucet_balance = ctx.eth.get_eth_balance(ctx.eth_faucet)
+    print("Eth faucet balance after:", faucet_balance)
+    test_eth_destination_account = ctx.create_and_fund_eth_account()
 
+    send_amount = 1
+    balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.CETH, erc20_token_addr=None)
+    # TODO: sif_tx_fee vs get from envctx vs more lenient assertion
+    print(balance_diff)
+    gas_cost = 160000000000 * 393000 # Taken from peggy1
+    assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * sifchain.sif_tx_fee_in_rowan), "Gas fee should be deducted from sender sif acct"
+    assert balance_diff.get(sifchain.CETH, 0) == (-1 * (send_amount + gas_cost)), "Sent amount should be deducted from sender sif acct ceth balance"
+    assert erc_diff == send_amount, "Eth destination should receive rowan token"
 
     res = ctx.sifnode.pause_peggy_bridge(ctx.sifchain_ethbridge_admin_account)
+    assert res[0]['code'] == 0
+
+    send_amount = 1
+    balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.CETH, erc20_token_addr=None)
+    assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * sifchain.sif_tx_fee_in_rowan), "Only gas fee should be deducted for attempted tx"
+    assert balance_diff.get(sifchain.CETH, 0) == 0, "Eth amount should'nt be deducted, no tx to evm"
+    assert erc_diff == 0, "Eth destination should not receive rowan token"
 
 
+    res = ctx.sifnode.unpause_peggy_bridge(ctx.sifchain_ethbridge_admin_account)
+    assert res[0]['code'] == 0
 
-    pass
+    send_amount = 15
+    balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.CETH, erc20_token_addr=None)
+    # TODO: sif_tx_fee vs get from envctx vs more lenient assertion
+    print(balance_diff)
+    gas_cost = 160000000000 * 393000 # Taken from peggy1
+    assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * sifchain.sif_tx_fee_in_rowan), "Gas fee should be deducted from sender sif acct"
+    assert balance_diff.get(sifchain.CETH, 0) == (-1 * (send_amount + gas_cost)), "Sent amount should be deducted from sender sif acct ceth balance"
+    assert erc_diff == send_amount, "Eth destination should receive rowan token"
 
-def test_non_admin_cant_pause_bridge(ctx: EnvCtx):
-    non_admin_test_sif_acct = ctx.create_sifchain_addr()
-    res = ctx.sifnode.pause_peggy_bridge(non_admin_test_sif_acct)
-    assert res[0]['code'] != 0
-    # Assert res gets error,
-    # Assert error code is what's expected
+# TODO: Naming is terrible
+def send_test_account(ctx: EnvCtx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.ROWAN, erc20_token_addr: str=None) -> Tuple[cosmos.Balance, int]:
+    sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
+    if erc20_token_addr is not None:
+        eth_balance_before = ctx.get_erc20_token_balance(erc20_token_addr, test_eth_destination_account)
+    else:
+        eth_balance_before = ctx.eth.get_eth_balance(test_eth_destination_account)
+
+    ctx.sifnode_client.send_from_sifchain_to_ethereum(test_sif_account, test_eth_destination_account, send_amount, denom)
+
+    sif_balance_after = ctx.sifnode.wait_for_balance_change(test_sif_account, sif_balance_before)
+    try:
+        eth_balance_after = ctx.wait_for_eth_balance_change(test_eth_destination_account, eth_balance_before, token_addr=erc20_token_addr, timeout=30)
+    except Exception as e:
+        eth_balance_after = eth_balance_before
+
+    balance_diff = sifchain.balance_delta(sif_balance_before, sif_balance_after)
+    return balance_diff, (eth_balance_after - eth_balance_before)
