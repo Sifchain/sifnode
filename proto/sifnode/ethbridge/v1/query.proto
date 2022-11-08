@@ -34,13 +34,19 @@ service Query {
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
-message QueryEthProphecyRequest { bytes prophecy_id = 1; }
+message QueryEthProphecyRequest {
+  reserved 1 to 6;
+  bytes prophecy_id = 7;
+
+}
+
 
 // QueryEthProphecyResponse payload for EthProphecy rpc query
 message QueryEthProphecyResponse {
   bytes prophecy_id = 1;
-  sifnode.oracle.v1.StatusText status = 2;
-  repeated string claim_validators = 3;
+  reserved 2 to 3;
+  sifnode.oracle.v1.StatusText status = 4;
+  repeated string claim_validators = 5;
 }
 
 // QueryCrosschainFeeConfigRequest payload for EthProphecy rpc query
@@ -98,8 +104,8 @@ message QueryGlobalSequenceBlockNumberRequest {
 }
 
 // QueryGlobalSequenceBlockNumberResponse return GlobalsequenceBlockNumber
-message QueryGlobalSequenceBlockNumberResponse { uint64 block_number = 1; }
+message QueryGlobalSequenceBlockNumberResponse {uint64 block_number = 1;}
 
 message QueryBlacklistRequest {}
 
-message QueryBlacklistResponse { repeated string addresses = 1; }
+message QueryBlacklistResponse {repeated string addresses = 1;}

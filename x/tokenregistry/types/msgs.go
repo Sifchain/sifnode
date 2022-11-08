@@ -246,7 +246,7 @@ func (msg TokenMetadataAddRequest) ValidateBasic() error {
 		return ErrInvalidMetadataSymbol
 	}
 
-	if msg.Metadata.TokenAddress == "" {
+	if !gethcommon.IsHexAddress(msg.Metadata.TokenAddress) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Metadata.TokenAddress)
 	}
 

@@ -31,7 +31,7 @@ message RegistryEntry {
   string ibc_counterparty_channel_id = 7;
   string display_name = 8;
   string display_symbol = 9;
-  sifnode.oracle.v1.NetworkDescriptor network = 10;
+  reserved 10;
   string address = 11;
   string external_symbol = 12;
   string transfer_limit = 13;
@@ -55,6 +55,7 @@ message RegistryEntry {
   string ibc_counterparty_denom = 17;
   string ibc_counterparty_chain_id = 18;
   map<uint32, bool> double_pegged_network_map = 19;
+  sifnode.oracle.v1.NetworkDescriptor network = 20;
   string peggy_2_denom = 20;
 }
 
