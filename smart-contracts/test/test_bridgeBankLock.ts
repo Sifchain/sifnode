@@ -1,22 +1,23 @@
 const Web3Utils = require("web3-utils");
 
 import { ethers, network } from "hardhat";
+import * as hardhat from "hardhat";
 import { use, expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { setup, deployCommissionToken, TestFixtureState } from "./helpers/testFixture";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ContractTransaction } from "ethers";
-import { BridgeBank } from "../build";
+import { BridgeBank, ReentrantLockAndBurnToken__factory } from "../build";
 
 use(solidity);
 
-const getBalance = async function (address: string) {
+const getBalance = async function(address: string) {
   return await network.provider.send("eth_getBalance", [address]);
 };
 
 const BigNumber = ethers.BigNumber;
 
-describe("Test Bridge Bank", function () {
+describe("Test Bridge Bank", function() {
   let userOne: SignerWithAddress;
   let userTwo: SignerWithAddress;
   let userThree: SignerWithAddress;
@@ -33,7 +34,7 @@ describe("Test Bridge Bank", function () {
   // track the state of the deployed contracts
   let state: TestFixtureState;
 
-  before(async function () {
+  before(async function() {
     accounts = await ethers.getSigners();
 
     signerAccounts = accounts.map((e) => {
@@ -55,7 +56,7 @@ describe("Test Bridge Bank", function () {
     networkDescriptor = 1;
   });
 
-  beforeEach(async function () {
+  beforeEach(async function() {
     state = await setup(
       initialValidators,
       initialPowers,
@@ -65,7 +66,7 @@ describe("Test Bridge Bank", function () {
       userOne,
       userThree,
       pauser,
-      networkDescriptor,
+      networkDescriptor
     );
 
     const tokens = [state.token, state.token1, state.token2, state.token3, state.token_ibc, state.token_noDenom];
@@ -83,15 +84,15 @@ describe("Test Bridge Bank", function () {
     await Promise.all(approvePromises);
   });
 
-  describe("BridgeBank", function () {
-    it("should deploy the BridgeBank, correctly setting the operator", async function () {
+  describe("BridgeBank", function() {
+    it("should deploy the BridgeBank, correctly setting the operator", async function() {
       expect(state.bridgeBank).to.exist;
 
       const bridgeBankOperator = await state.bridgeBank.operator();
       expect(bridgeBankOperator).to.equal(operator.address);
     });
 
-    it("should allow user to lock ERC20 tokens", async function () {
+    it("should allow user to lock ERC20 tokens", async function() {
       // Get balances before locking
       const beforeBridgeBankBalance = Number(
         await state.token1.balanceOf(state.bridgeBank.address)
@@ -99,7 +100,7 @@ describe("Test Bridge Bank", function () {
       expect(beforeBridgeBankBalance).to.equal(0);
 
       const beforeUserBalance = Number(await state.token1.balanceOf(userOne.address));
-       expect(beforeUserBalance).to.equal(state.amount * 2);
+      expect(beforeUserBalance).to.equal(state.amount * 2);
 
       // Attempt to lock tokens
       await state.bridgeBank
@@ -115,13 +116,42 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(state.amount);
     });
 
-    it("should allow user to lock Commission Charging ERC20 tokens", async function () { 
+    it.only("should not allow user to lock ERC20 tokens that do a recursive lock", async function() {
+      let initialMintAmount = hardhat.ethers.utils.parseEther("100");
+
+      const recursiveToken = await new ReentrantLockAndBurnToken__factory(userOne).deploy(
+        "recur",
+        "recur",
+        initialMintAmount,
+        state.bridgeBank.address,
+        state.sender
+      );
+      // The recursive lock call uses a balance held in the token itself.  When
+      // we create the token, all the minted tokens are sent to userOne, so
+      // send some tokens back to the token contract itself.
+      await recursiveToken.transfer(recursiveToken.address, 1000).then(x => x.wait());
+
+      const transactionAmount = initialMintAmount.div(10);
+      await recursiveToken.approve(state.bridgeBank.address, transactionAmount).then(x => x.wait());
+
+      // Tell the recursive token to send a lock inside another lock
+      await recursiveToken.doRecursiveLock().then(x => x.wait());
+
+      await expect(async () => {
+        await expect(state.bridgeBank
+          .connect(userOne)
+          .lock(state.sender, recursiveToken.address, transactionAmount)
+        ).to.be.revertedWith("RecursiveLockCall");
+      }).to.changeTokenBalances(recursiveToken, [userOne, state.bridgeBank], [0, 0]);
+    });
+
+    it("should allow user to lock Commission Charging ERC20 tokens", async function() {
       const devAccount = userOne.address;
       const user = userTwo;
       const devFee = 500; // 5% dev fee
-      const initialBalance = 100_000
+      const initialBalance = 100_000;
       const token = await deployCommissionToken(devAccount, devFee, user.address, initialBalance);
-      const transferAmount = 10_000
+      const transferAmount = 10_000;
       const remaining = 90_000;
       const afterTransfer = 9_500;
       // Get balances before locking
@@ -148,11 +178,11 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(afterTransfer);
     });
 
-    it("should allow users to lock Ethereum in the bridge bank", async function () {
+    it("should allow users to lock Ethereum in the bridge bank", async function() {
       const tx = await state.bridgeBank
         .connect(userOne)
         .lock(state.sender, state.constants.zeroAddress, state.weiAmount, {
-          value: state.weiAmount,
+          value: state.weiAmount
         });
       await tx.wait();
 
@@ -164,7 +194,7 @@ describe("Test Bridge Bank", function () {
       );
     });
 
-    it("should NOT allow a blocklisted user to lock ERC20 tokens", async function () {
+    it("should NOT allow a blocklisted user to lock ERC20 tokens", async function() {
       // Add userOne to the blocklist:
       await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
@@ -191,7 +221,7 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(beforeBridgeBankBalance);
     });
 
-    it("should NOT allow a blocklisted user to lock Ethereum in the bridge bank", async function () {
+    it("should NOT allow a blocklisted user to lock Ethereum in the bridge bank", async function() {
       // Add userOne to the blocklist:
       await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
@@ -199,7 +229,7 @@ describe("Test Bridge Bank", function () {
         state.bridgeBank
           .connect(userOne)
           .lock(state.sender, state.constants.zeroAddress, state.weiAmount, {
-            value: state.weiAmount,
+            value: state.weiAmount
           })
       ).to.be.revertedWith("Address is blocklisted");
 
@@ -210,8 +240,8 @@ describe("Test Bridge Bank", function () {
     });
   });
 
-  describe("Multi Lock ERC20 Tokens", function () {
-    it("should allow user to multi-lock ERC20 tokens", async function () {
+  describe("Multi Lock ERC20 Tokens", function() {
+    it("should allow user to multi-lock ERC20 tokens", async function() {
       const previousNonce = await state.bridgeBank.connect(userOne).lockBurnNonce();
 
       // Attempt to lock tokens
@@ -237,13 +267,13 @@ describe("Test Bridge Bank", function () {
       expect(afterUserBalance).to.equal(state.amount);
     });
 
-     it("should allow user to multi-lock ERC20 tokens including commission tokens", async function () {
+    it("should allow user to multi-lock ERC20 tokens including commission tokens", async function() {
       const devAccount = userTwo.address;
       const user = userOne;
       const devFee = 500; // 5% dev fee
-      const initialBalance = 100_000
+      const initialBalance = 100_000;
       const token = await deployCommissionToken(devAccount, devFee, user.address, initialBalance);
-      const transferAmount = 10_000
+      const transferAmount = 10_000;
       const remaining = 90_000;
       const afterTransfer = 9_500;
 
@@ -284,7 +314,7 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(afterTransfer);
     });
 
-    it("should NOT allow a blocklisted user to multi-lock ERC20 tokens", async function () {
+    it("should NOT allow a blocklisted user to multi-lock ERC20 tokens", async function() {
       // Add userOne to the blocklist:
       await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
@@ -320,7 +350,7 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(0);
     });
 
-    it("should allow user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
+    it("should allow user to multi-lock ERC20 tokens with multiLockBurn method", async function() {
       // Attempt to lock tokens
       await state.bridgeBank
         .connect(userOne)
@@ -342,7 +372,7 @@ describe("Test Bridge Bank", function () {
       expect(afterUserBalance).to.equal(state.amount);
     });
 
-    it("should NOT allow a blocklisted user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
+    it("should NOT allow a blocklisted user to multi-lock ERC20 tokens with multiLockBurn method", async function() {
       // Add userOne to the blocklist:
       await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
@@ -378,7 +408,7 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(0);
     });
 
-    it("should NOT allow user to multi-burn ERC20 tokens that are not cosmos native assets", async function () {
+    it("should NOT allow user to multi-burn ERC20 tokens that are not cosmos native assets", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -392,7 +422,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("Token is not in Cosmos whitelist");
     });
 
-    it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
+    it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function() {
       // approve bridgebank to spend rowan
       await state.rowan.connect(userOne).approve(state.bridgeBank.address, state.amount);
 
@@ -419,7 +449,7 @@ describe("Test Bridge Bank", function () {
       expect(afterUserBalance).to.equal(state.amount);
     });
 
-    it("should NOT allow a blocklisted user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
+    it("should NOT allow a blocklisted user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function() {
       // Add userOne to the blocklist:
       await expect(state.blocklist.connect(operator).addToBlocklist(userOne.address)).to.not.be.reverted;
 
@@ -458,7 +488,7 @@ describe("Test Bridge Bank", function () {
       expect(afterBridgeBankBalance).to.equal(0);
     });
 
-    it("should NOT allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
+    it("should NOT allow user to multi-lock ERC20 tokens if one token is not fully approved", async function() {
       const tx = await state.token1.connect(userOne).approve(state.bridgeBank.address, 0);
       const receipt = await tx.wait();
 
@@ -485,7 +515,7 @@ describe("Test Bridge Bank", function () {
       expect(afterUserBalance).to.equal(state.amount * 2);
     });
 
-    it("should NOT allow user to multi-lock when parameters are malformed, not enough token amounts", async function () {
+    it("should NOT allow user to multi-lock when parameters are malformed, not enough token amounts", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -499,7 +529,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should NOT allow user to multi-lock when parameters are malformed, not enough token addresses", async function () {
+    it("should NOT allow user to multi-lock when parameters are malformed, not enough token addresses", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -513,7 +543,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should NOT allow user to multi-lock when parameters are malformed, not enough sif addresses", async function () {
+    it("should NOT allow user to multi-lock when parameters are malformed, not enough sif addresses", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -527,7 +557,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should NOT allow user to multi-lock when parameters are malformed, invalid sif addresses", async function () {
+    it("should NOT allow user to multi-lock when parameters are malformed, invalid sif addresses", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -541,7 +571,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("INV_SIF_ADDR");
     });
 
-    it("should NOT allow user to multi-lock when bridgebank is paused", async function () {
+    it("should NOT allow user to multi-lock when bridgebank is paused", async function() {
       await state.bridgeBank.connect(pauser).pause();
       // Attempt to lock tokens
       await expect(
@@ -556,7 +586,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("Pausable: paused");
     });
 
-    it("should NOT allow user to multi-lock ERC20 tokens and Eth in the same call", async function () {
+    it("should NOT allow user to multi-lock ERC20 tokens and Eth in the same call", async function() {
       // Attempt to lock tokens and Ether in the same call
       await expect(
         state.bridgeBank
@@ -567,16 +597,16 @@ describe("Test Bridge Bank", function () {
               state.token1.address,
               state.token2.address,
               state.token3.address,
-              state.constants.zeroAddress,
+              state.constants.zeroAddress
             ],
             [state.amount, state.amount, state.amount, state.amount],
             [false, false, false, false],
             { value: 100 } as any // Typescript and typechain are smart enough to know this is a non-payable function so we must override that for this check
-          ),
+          )
       ).to.be.reverted; // Non-Payable function may prevent ethersjs from getting to the revert
     });
 
-    it("should NOT allow user to multi-burn tokens and Eth in the same call", async function () {
+    it("should NOT allow user to multi-burn tokens and Eth in the same call", async function() {
       // Add the tokens into whitelist
       // Also, add Ether into whitelist, which shouldn't be done but
       // we'll indulge in this scenario to bypass the whitelist requirements
@@ -586,7 +616,7 @@ describe("Test Bridge Bank", function () {
           state.token1.address,
           state.token2.address,
           state.token3.address,
-          state.constants.zeroAddress,
+          state.constants.zeroAddress
         ]);
 
       // Attempt to burn tokens and Ether in the same call
@@ -599,7 +629,7 @@ describe("Test Bridge Bank", function () {
               state.token1.address,
               state.token2.address,
               state.token3.address,
-              state.constants.zeroAddress,
+              state.constants.zeroAddress
             ],
             [state.amount, state.amount, state.amount, state.amount],
             [true, true, true, true]
@@ -608,8 +638,8 @@ describe("Test Bridge Bank", function () {
     });
   });
 
-  describe("Multi Lock Burn ERC20 Tokens", function () {
-    it("should revert when parameters are malformed, not enough token amounts", async function () {
+  describe("Multi Lock Burn ERC20 Tokens", function() {
+    it("should revert when parameters are malformed, not enough token amounts", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -623,7 +653,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should revert when multi-lock parameters are malformed, not enough token addresses", async function () {
+    it("should revert when multi-lock parameters are malformed, not enough token addresses", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -637,7 +667,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should revert when multi-lock parameters are malformed, not enough sif addresses", async function () {
+    it("should revert when multi-lock parameters are malformed, not enough sif addresses", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -651,7 +681,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should revert when multi-lock parameters are malformed, not enough booleans", async function () {
+    it("should revert when multi-lock parameters are malformed, not enough booleans", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -665,7 +695,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
-    it("should revert when multi-lock parameters are malformed, invalid sif addresses", async function () {
+    it("should revert when multi-lock parameters are malformed, invalid sif addresses", async function() {
       // Attempt to lock tokens
       await expect(
         state.bridgeBank
@@ -679,7 +709,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("INV_SIF_ADDR");
     });
 
-    it("should NOT allow user to multi-lock/burn when bridgebank is paused", async function () {
+    it("should NOT allow user to multi-lock/burn when bridgebank is paused", async function() {
       await state.bridgeBank.connect(pauser).pause();
       // Attempt to lock tokens
       await expect(
@@ -695,8 +725,8 @@ describe("Test Bridge Bank", function () {
     });
   });
 
-  describe("Whitelist", function () {
-    it("should NOT allow user to lock ERC20 tokens that are in Cosmos whitelist", async function () {
+  describe("Whitelist", function() {
+    it("should NOT allow user to lock ERC20 tokens that are in Cosmos whitelist", async function() {
       // add token as BridgeToken
       await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
 
@@ -706,7 +736,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
 
-    it("should NOT allow user to multi-lock ERC20 tokens if at least one of them is in cosmos whitelist", async function () {
+    it("should NOT allow user to multi-lock ERC20 tokens if at least one of them is in cosmos whitelist", async function() {
       // add token1 as BridgeToken
       await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
 
@@ -723,7 +753,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
 
-    it("should NOT allow user to multi-lock ERC20 tokens with multiLockBurn method if one of them is cosmos whitelist", async function () {
+    it("should NOT allow user to multi-lock ERC20 tokens with multiLockBurn method if one of them is cosmos whitelist", async function() {
       // add token1 as BridgeToken
       await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
 
@@ -740,7 +770,7 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
 
-    it("should NOT allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method if at least one of them is in cosmos whitelist ", async function () {
+    it("should NOT allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method if at least one of them is in cosmos whitelist ", async function() {
       // add token1 as BridgeToken
       await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
 
