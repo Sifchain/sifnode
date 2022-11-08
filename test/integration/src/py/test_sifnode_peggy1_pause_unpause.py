@@ -57,23 +57,17 @@ def test_pause_burn_valid(ctx: EnvCtx):
     fund_amount_sif = 10 * test_utils.sifnode_funds_for_transfer_peggy1
     fund_amount_eth = 1 * eth.ETH
 
-    faucet_balance = ctx.eth.get_eth_balance(ctx.eth_faucet)
-    print("Eth faucet balance before:", faucet_balance)
     test_sif_account = ctx.create_sifchain_addr(fund_amounts=[[fund_amount_sif, "rowan"]])
     ctx.tx_bridge_bank_lock_eth(ctx.eth_faucet, test_sif_account, fund_amount_eth)
     ctx.eth.advance_blocks(100)
     # Setup is complete, test account has rowan AND eth
-    balance = ctx.sifnode.get_balance(test_sif_account)
+    # Sleep for relayer to complete transaction
     time.sleep(5)
-    print("Balance", balance)
-    faucet_balance = ctx.eth.get_eth_balance(ctx.eth_faucet)
-    print("Eth faucet balance after:", faucet_balance)
     test_eth_destination_account = ctx.create_and_fund_eth_account()
 
     send_amount = 1
     balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.CETH, erc20_token_addr=None)
     # TODO: sif_tx_fee vs get from envctx vs more lenient assertion
-    print(balance_diff)
     gas_cost = 160000000000 * 393000 # Taken from peggy1
     assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * sifchain.sif_tx_fee_in_rowan), "Gas fee should be deducted from sender sif acct"
     assert balance_diff.get(sifchain.CETH, 0) == (-1 * (send_amount + gas_cost)), "Sent amount should be deducted from sender sif acct ceth balance"
@@ -95,7 +89,6 @@ def test_pause_burn_valid(ctx: EnvCtx):
     send_amount = 15
     balance_diff, erc_diff = send_test_account(ctx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.CETH, erc20_token_addr=None)
     # TODO: sif_tx_fee vs get from envctx vs more lenient assertion
-    print(balance_diff)
     gas_cost = 160000000000 * 393000 # Taken from peggy1
     assert balance_diff.get(sifchain.ROWAN, 0) == (-1 * sifchain.sif_tx_fee_in_rowan), "Gas fee should be deducted from sender sif acct"
     assert balance_diff.get(sifchain.CETH, 0) == (-1 * (send_amount + gas_cost)), "Sent amount should be deducted from sender sif acct ceth balance"
