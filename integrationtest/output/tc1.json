@@ -1,0 +1,47 @@
+{
+	"accounts": {
+		"sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd": [
+			{
+				"denom": "cusdc",
+				"amount": "999998994370679"
+			},
+			{
+				"denom": "rowan",
+				"amount": "999999000005078262924594065"
+			}
+		]
+	},
+	"Pools": {
+		"cusdc": {
+			"external_asset": {
+				"symbol": "cusdc"
+			},
+			"native_asset_balance": "999994921737075405935",
+			"external_asset_balance": "1005629321",
+			"pool_units": "1000000000000000000000",
+			"swap_price_native": "0.987727340533795089",
+			"swap_price_external": "1.012425149089800862",
+			"reward_period_native_distributed": "0",
+			"external_liabilities": "0",
+			"external_custody": "0",
+			"native_liabilities": "0",
+			"native_custody": "0",
+			"health": "0.990098960118728966",
+			"interest_rate": "0.500000000000000000",
+			"last_height_interest_rate_computed": 5,
+			"unsettled_external_liabilities": "0",
+			"unsettled_native_liabilities": "2023304519940209643",
+			"block_interest_native": "0",
+			"block_interest_external": "4390203"
+		}
+	},
+	"LPs": {
+		"\u0001cusdc_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd": {
+			"asset": {
+				"symbol": "cusdc"
+			},
+			"liquidity_provider_units": "1000000000000000000000",
+			"liquidity_provider_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+		}
+	}
+}
