@@ -541,16 +541,13 @@ class Sifnoded:
 
     # Pause the ethbridge module's Lock/Burn on an evm_network_descriptor
     def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
-        assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
         return self._set_peggy_brige_pause_status(admin_account_address, True)
 
     # Unpause the ethbridge module's Lock/Burn on an evm_network_descriptor
     def unpause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
-        assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
         return self._set_peggy_brige_pause_status(admin_account_address, False)
 
     def _set_peggy_brige_pause_status(self, admin_account_address, pause_status: bool) -> List[Mapping[str, Any]]:
-        assert not on_peggy2_branch, "This is only implemented in peggy1, to-be-implemented in peggy2"
         args = ["tx", "ethbridge", "set-pauser", str(pause_status)] + \
                 self._keyring_backend_args() + \
                 self._chain_id_args() + self._node_args() + \
@@ -1192,11 +1189,10 @@ class SifnodeClient:
         generate_only: bool = False
     ) -> Mapping:
         """ Sends ETH from Sifchain to Ethereum (burn) """
+        assert self.ctx.eth
+        eth = self.ctx.eth
+        direction = "lock" if is_cosmos_native_denom(denom) else "burn"
         if on_peggy2_branch:
-            assert self.ctx.eth
-            eth = self.ctx.eth
-
-            direction = "lock" if is_cosmos_native_denom(denom) else "burn"
             cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
             args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
                     "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
@@ -1216,15 +1212,9 @@ class SifnodeClient:
                 assert "failed to execute message" not in result["raw_log"]
             return result
         else:
-            assert self.ctx.eth
-            eth = self.ctx.eth
             gas_cost = 160000000000 * 393000 # Taken from peggy1
-
-            direction = "lock" if is_cosmos_native_denom(denom) else "burn"
-            cross_chain_ceth_fee = str(gas_cost) # TODO
-            # print("Cross-chain-fee:", cross_chain_ceth_fee)
+            cross_chain_ceth_fee = str(gas_cost) # TODO Not sure if this is the right variable
             # Ethereum chain id is hardcoded according to peggy1
-            # TODO: Verify if --from flag is redundant
             ethereum_chain_id = str(5777)
             args = ["tx", "ethbridge", direction] + \
                 self.sifnode._node_args() + \
