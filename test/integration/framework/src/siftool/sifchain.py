@@ -90,7 +90,11 @@ def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmo
 def is_cosmos_native_denom(denom: str) -> bool:
     """Returns true if denom is a native cosmos token (Rowan, ibc)
     that was not imported using Peggy"""
-    return not str.startswith(denom, "sifBridge")
+    if on_peggy2_branch:
+        return not str.startswith(denom, "sifBridge")
+    else:
+        return (denom == ROWAN) or str.startswith(denom, "ibc/")
+
 
 def ondemand_import_generated_protobuf_sources():
     global cosmos_pb
@@ -534,6 +538,29 @@ class Sifnoded:
         res = self.sifnoded_exec(args)
         res = exactly_one(stdout(res).splitlines())
         assert res.endswith(" is a valid genesis file")
+
+    # Pause the ethbridge module's Lock/Burn on an evm_network_descriptor
+    def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
+        return self._set_peggy_brige_pause_status(admin_account_address, True)
+
+    # Unpause the ethbridge module's Lock/Burn on an evm_network_descriptor
+    def unpause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
+        return self._set_peggy_brige_pause_status(admin_account_address, False)
+
+    def _set_peggy_brige_pause_status(self, admin_account_address, pause_status: bool) -> List[Mapping[str, Any]]:
+        args = ["tx", "ethbridge", "set-pause", str(pause_status)] + \
+                self._keyring_backend_args() + \
+                self._chain_id_args() + self._node_args() + \
+                self._fees_args() + \
+                ["--from", admin_account_address] + \
+                ["--chain-id", self.chain_id] + \
+                ["--output", "json"] + \
+                self._broadcast_mode_args("block") + \
+                self._yes_args()
+
+        res = self.sifnoded_exec(args)
+        return [json.loads(x) for x in stdout(res).splitlines()]
+
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
     # This was split from init_common
@@ -1143,7 +1170,6 @@ class Sifnoded:
     def _yes_args(self) -> List[str]:
         return ["--yes"]
 
-
 # Refactoring in progress - this class is supposed to become the successor of class Sifnode.
 # It wraps node, home, chain_id, fees and keyring backend
 # TODO Remove 'ctx' (currently needed for cross-chain fees for Peggy2)
@@ -1163,29 +1189,53 @@ class SifnodeClient:
         generate_only: bool = False
     ) -> Mapping:
         """ Sends ETH from Sifchain to Ethereum (burn) """
-        assert on_peggy2_branch, "Only for Peggy2.0"
         assert self.ctx.eth
         eth = self.ctx.eth
-
         direction = "lock" if is_cosmos_native_denom(denom) else "burn"
-        cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
-                "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
-                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
-                "--output", "json",
-            ] + \
-            (["--generate-only"] if generate_only else []) + \
-            self.sifnode._fees_args() + \
-            self.sifnode._home_args() + \
-            (self.sifnode._keyring_backend_args() if not generate_only else []) + \
-            self.sifnode._chain_id_args() + \
-            self.sifnode._node_args() + \
-            self.sifnode._yes_args()
-        res = self.sifnode.sifnoded_exec(args)
-        result = json.loads(stdout(res))
-        if not generate_only:
-            assert "failed to execute message" not in result["raw_log"]
-        return result
+        if on_peggy2_branch:
+            cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
+            args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+                    "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
+                    "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+                    "--output", "json",
+                ] + \
+                (["--generate-only"] if generate_only else []) + \
+                self.sifnode._fees_args() + \
+                self.sifnode._home_args() + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._node_args() + \
+                self.sifnode._yes_args()
+            res = self.sifnode.sifnoded_exec(args)
+            result = json.loads(stdout(res))
+            if not generate_only:
+                assert "failed to execute message" not in result["raw_log"]
+            return result
+        else:
+            gas_cost = 160000000000 * 393000 # Taken from peggy1
+            cross_chain_ceth_fee = str(gas_cost) # TODO Not sure if this is the right variable
+            # Ethereum chain id is hardcoded according to peggy1
+            ethereum_chain_id = str(5777)
+            args = ["tx", "ethbridge", direction] + \
+                self.sifnode._node_args() + \
+                [from_sif_addr, to_eth_addr, str(amount), denom, cross_chain_ceth_fee] + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._fees_args() + \
+                ["--ethereum-chain-id", ethereum_chain_id] + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._home_args() + \
+                ["--from", from_sif_addr] + \
+                ["--output","json"] + \
+                self.sifnode._yes_args()
+
+            res = self.sifnode.sifnoded_exec(args)
+            result = json.loads(stdout(res))
+            if not generate_only:
+                assert "failed to execute message" not in result["raw_log"]
+            return result
+
+            # sifnoded tx ethbridge <direction> <node> <sifchain_addr> <ethereum_addr> <amount> <symbol> <keyring backend> <ethereum-chain-id>
+
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str

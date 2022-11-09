@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/hex"
+	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"math/rand"
 	"time"
 
@@ -160,6 +161,15 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, valAddrs
 }
 
+func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
+	sifchainApp := app.Setup(isCheckTx)
+	ctx := sifchainApp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	sifchainApp.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
+	_ = app.AddTestAddrs(sifchainApp, ctx, 6, initTokens)
+	return sifchainApp, ctx
+}
+
 // nolint: unparam
 func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	var addresses []sdk.AccAddress
@@ -215,13 +225,21 @@ const (
 )
 
 //// returns context and app with params set on account keeper
-func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
-	sifapp := app.Setup(isCheckTx)
-	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	sifapp.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
-	_ = app.AddTestAddrs(sifapp, ctx, 6, initTokens)
-	return sifapp, ctx
+func CreateSimulatorApp(isCheckTx bool) (sdk.Context, *app.SifchainApp) {
+	sifchainApp := app.Setup(isCheckTx)
+	ctx := sifchainApp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+	sifchainApp.TokenRegistryKeeper.SetRegistry(ctx, tokenregistryTypes.Registry{
+		Entries: []*tokenregistryTypes.RegistryEntry{
+			{Denom: "ceth", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "cdash", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "eth", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "cacoin", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "dash", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "atom", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}},
+		},
+	})
+	return ctx, sifchainApp
 }
 
 func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
