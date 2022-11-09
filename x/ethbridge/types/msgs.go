@@ -27,6 +27,9 @@ func (msg MsgPause) Type() string { return "pause" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgPause) ValidateBasic() error {
+	if msg.GetSigner() == "" {
+		return sdkerrors.ErrInvalidAddress
+	}
 	return nil
 }
 
