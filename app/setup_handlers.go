@@ -1,7 +1,7 @@
 package app
 
 import (
-	sifTypes "github.com/Sifchain/sifnode/x/clp/types"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
@@ -14,8 +14,9 @@ func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
 
-		swapFeeParams := sifTypes.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(5, 4)}
-		app.ClpKeeper.SetSwapFeeParams(ctx, &swapFeeParams)
+		app.AdminKeeper.SetParams(ctx, &admintypes.Params{
+			SubmitProposalFee: sdk.NewUintFromString("5000000000000000000000"),
+		})
 
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
