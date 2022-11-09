@@ -1230,7 +1230,6 @@ class SifnodeClient:
 
             res = self.sifnode.sifnoded_exec(args)
             result = json.loads(stdout(res))
-            print(result)
             if not generate_only:
                 assert "failed to execute message" not in result["raw_log"]
             return result
