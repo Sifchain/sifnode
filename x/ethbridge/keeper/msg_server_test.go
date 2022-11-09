@@ -115,5 +115,146 @@ func TestMsgServer_Burn(t *testing.T) {
 	// Burn Success
 	_, err = msgServer.Burn(sdk.WrapSDKContext(ctx), &msg)
 	require.NoError(t, err)
+}
 
+func TestRedundantSetUnpauseValid(t *testing.T) {
+	ctx, app := test.CreateSimulatorApp(false)
+	addresses, _ := test.CreateTestAddrs(2)
+	admin := addresses[0]
+	testAccount := addresses[1]
+	coins := sdk.NewCoins(
+		sdk.NewCoin("stake", amount),
+		sdk.NewCoin(types.CethSymbol, amount))
+
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testAccount, coins)
+
+	app.AdminKeeper.SetAdminAccount(ctx, &adminTypes.AdminAccount{
+		AdminType:    adminTypes.AdminType_ETHBRIDGE,
+		AdminAddress: admin.String(),
+	})
+
+	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
+	msgUnPause := types.MsgPause{
+		Signer:   admin.String(),
+		IsPaused: false,
+	}
+
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgUnPause)
+	require.NoError(t, err)
+
+	msgLock := types.NewMsgLock(
+		1,
+		testAccount, ethereumSender,
+		amount, "stake", amount)
+
+	_, err = msgServer.Lock(sdk.WrapSDKContext(ctx), &msgLock)
+	require.NoError(t, err)
+}
+
+func TestSetPauseIdempotent(t *testing.T) {
+	ctx, app := test.CreateSimulatorApp(false)
+	addresses, _ := test.CreateTestAddrs(2)
+	admin := addresses[0]
+	testAccount := addresses[1]
+	coins := sdk.NewCoins(
+		sdk.NewCoin("stake", amount),
+		sdk.NewCoin(types.CethSymbol, amount))
+
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testAccount, coins)
+
+	app.AdminKeeper.SetAdminAccount(ctx, &adminTypes.AdminAccount{
+		AdminType:    adminTypes.AdminType_ETHBRIDGE,
+		AdminAddress: admin.String(),
+	})
+
+	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
+	msgPause := types.MsgPause{
+		Signer:   admin.String(),
+		IsPaused: true,
+	}
+
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgPause)
+	require.NoError(t, err)
+
+	_, err = msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgPause)
+	require.NoError(t, err)
+
+	msgLock := types.NewMsgLock(
+		1,
+		testAccount, ethereumSender,
+		amount, "stake", amount)
+
+	_, err = msgServer.Lock(sdk.WrapSDKContext(ctx), &msgLock)
+	require.Error(t, err, types.ErrPaused)
+}
+
+func TestSetUnpauseIdempotent(t *testing.T) {
+	ctx, app := test.CreateSimulatorApp(false)
+	addresses, _ := test.CreateTestAddrs(2)
+	admin := addresses[0]
+	testAccount := addresses[1]
+	coins := sdk.NewCoins(
+		sdk.NewCoin("stake", amount),
+		sdk.NewCoin(types.CethSymbol, amount))
+
+	_ = app.BankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, testAccount, coins)
+
+	app.AdminKeeper.SetAdminAccount(ctx, &adminTypes.AdminAccount{
+		AdminType:    adminTypes.AdminType_ETHBRIDGE,
+		AdminAddress: admin.String(),
+	})
+
+	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
+	msgUnPause := types.MsgPause{
+		Signer:   admin.String(),
+		IsPaused: false,
+	}
+
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgUnPause)
+	require.NoError(t, err)
+
+	_, err = msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgUnPause)
+	require.NoError(t, err)
+
+	msgLock := types.NewMsgLock(
+		1,
+		testAccount, ethereumSender,
+		amount, "stake", amount)
+
+	_, err = msgServer.Lock(sdk.WrapSDKContext(ctx), &msgLock)
+	require.NoError(t, err)
+
+}
+
+func TestSetUnPauseWithNonAdminFails(t *testing.T) {
+	ctx, app := test.CreateSimulatorApp(false)
+	addresses, _ := test.CreateTestAddrs(1)
+	non_admin := addresses[0]
+
+	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
+	msgUnPause := types.MsgPause{
+		Signer:   non_admin.String(),
+		IsPaused: false,
+	}
+
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgUnPause)
+	require.Error(t, err, types.ErrNotEnoughPermissions)
+}
+
+func TestSetPauseWithNonAdminFails(t *testing.T) {
+	ctx, app := test.CreateSimulatorApp(false)
+	addresses, _ := test.CreateTestAddrs(1)
+	non_admin := addresses[0]
+
+	msgServer := ethbriddgeKeeper.NewMsgServerImpl(app.EthbridgeKeeper)
+	msgPause := types.MsgPause{
+		Signer:   non_admin.String(),
+		IsPaused: true,
+	}
+
+	_, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), &msgPause)
+	require.Error(t, err, types.ErrNotEnoughPermissions)
 }
