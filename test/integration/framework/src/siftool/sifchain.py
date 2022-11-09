@@ -559,7 +559,9 @@ class Sifnoded:
                 self._yes_args()
 
         res = self.sifnoded_exec(args)
-        return [json.loads(x) for x in stdout(res).splitlines()]
+        output = [json.loads(x) for x in stdout(res).splitlines()]
+        print(output)
+        return output
 
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
