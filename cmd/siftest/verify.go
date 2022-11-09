@@ -100,18 +100,46 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 		return err
 	}
 
+	pmtpParams, err := clpQueryClient.GetPmtpParams(context.Background(), &clptypes.PmtpParamsReq{})
+	if err != nil {
+		return err
+	}
+
+	swapFeeParams, err := clpQueryClient.GetSwapFeeParams(context.Background(), &clptypes.SwapFeeParamsReq{})
+	if err != nil {
+		return err
+	}
+
+	// get native swap fee rate
+	sellNativeSwapFeeRate := swapFeeParams.DefaultSwapFeeRate
+	for _, tokenParam := range swapFeeParams.TokenParams {
+		if tokenParam.Asset == clptypes.GetSettlementAsset().Symbol {
+			sellNativeSwapFeeRate = tokenParam.SwapFeeRate
+			break
+		}
+	}
+
+	// get external token swap fee rate
+	buyNativeSwapFeeRate := swapFeeParams.DefaultSwapFeeRate
+	for _, tokenParam := range swapFeeParams.TokenParams {
+		if tokenParam.Asset == externalAsset {
+			buyNativeSwapFeeRate = tokenParam.SwapFeeRate
+			break
+		}
+	}
+
 	// Calculate expected values
 	nativeAssetDepth := poolBefore.Pool.NativeAssetBalance.Add(poolBefore.Pool.NativeLiabilities)
 	externalAssetDepth := poolBefore.Pool.ExternalAssetBalance.Add(poolBefore.Pool.ExternalLiabilities)
-	_ /*newPoolUnits*/, lpUnits, err := clpkeeper.CalculatePoolUnits(
+	_ /*newPoolUnits*/, lpUnits, _, _, err := clpkeeper.CalculatePoolUnits(
 		poolBefore.Pool.PoolUnits,
 		nativeAssetDepth,
 		externalAssetDepth,
 		nativeAmount,
 		externalAmount,
-		18,
-		sdk.NewDecWithPrec(5, 5),
-		sdk.NewDecWithPrec(5, 4))
+		sellNativeSwapFeeRate,
+		buyNativeSwapFeeRate,
+		pmtpParams.PmtpRateParams.PmtpCurrentRunningRate)
 	if err != nil {
 		return err
 	}
