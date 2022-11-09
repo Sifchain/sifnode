@@ -615,7 +615,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if k.GetLiquidityProtectionParams(ctx).IsActive {
 		if types.StringCompare(sAsset.Denom, types.NativeSymbol) {
 			// selling rowan
-			k.MustUpdateLiquidityProtectionThreshold(ctx, true, msg.SentAmount, price)
+			discountedSentAmount := CalculateDiscountedSentAmount(msg.SentAmount, swapFeeRate)
+			k.MustUpdateLiquidityProtectionThreshold(ctx, true, discountedSentAmount, price)
 		}
 
 		if types.StringCompare(rAsset.Denom, types.NativeSymbol) {
@@ -705,7 +706,8 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 				return nil, types.ErrReachedMaxRowanLiquidityThreshold
 			}
 
-			k.MustUpdateLiquidityProtectionThreshold(ctx, true, swapAmount, price)
+			discountedSentAmount := CalculateDiscountedSentAmount(swapAmount, sellNativeSwapFeeRate)
+			k.MustUpdateLiquidityProtectionThreshold(ctx, true, discountedSentAmount, price)
 		}
 
 	case BuyNative:

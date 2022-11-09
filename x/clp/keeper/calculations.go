@@ -598,3 +598,9 @@ func GetSwapFee(sentAmount sdk.Uint,
 	}
 	return swapResult
 }
+
+func CalculateDiscountedSentAmount(sentAmount sdk.Uint, swapFeeRate sdk.Dec) sdk.Uint {
+	discountedSentAmount := sentAmount.Sub(sdk.Uint(sdk.NewDecFromBigInt(sentAmount.BigInt()).Mul(swapFeeRate).RoundInt()))
+
+	return discountedSentAmount
+}
