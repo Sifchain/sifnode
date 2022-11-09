@@ -94,7 +94,7 @@ def test_pause_burn_valid(ctx: EnvCtx):
     assert balance_diff.get(sifchain.CETH, 0) == (-1 * (send_amount + gas_cost)), "Sent amount should be deducted from sender sif acct ceth balance"
     assert erc_diff == send_amount, "Eth destination should receive rowan token"
 
-# TODO: Naming is terrible
+# This is a temporary helper method. It will eventually be incorporated into siftool
 def send_test_account(ctx: EnvCtx, test_sif_account, test_eth_destination_account, send_amount, denom=sifchain.ROWAN, erc20_token_addr: str=None) -> Tuple[cosmos.Balance, int]:
     sif_balance_before = ctx.get_sifchain_balance(test_sif_account)
     if erc20_token_addr is not None:
@@ -108,6 +108,7 @@ def send_test_account(ctx: EnvCtx, test_sif_account, test_eth_destination_accoun
     try:
         eth_balance_after = ctx.wait_for_eth_balance_change(test_eth_destination_account, eth_balance_before, token_addr=erc20_token_addr, timeout=30)
     except Exception as e:
+        # wait_for_eth_balance_change raises exception only if timedout, implying old_balance == new_balance
         eth_balance_after = eth_balance_before
 
     balance_diff = sifchain.balance_delta(sif_balance_before, sif_balance_after)
