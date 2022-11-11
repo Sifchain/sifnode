@@ -90,7 +90,11 @@ def balance_delta(balances1: cosmos.Balance, balances2: cosmos.Balance) -> cosmo
 def is_cosmos_native_denom(denom: str) -> bool:
     """Returns true if denom is a native cosmos token (Rowan, ibc)
     that was not imported using Peggy"""
-    return not str.startswith(denom, "sifBridge")
+    if on_peggy2_branch:
+        return not str.startswith(denom, "sifBridge")
+    else:
+        return (denom == ROWAN) or str.startswith(denom, "ibc/")
+
 
 def ondemand_import_generated_protobuf_sources():
     global cosmos_pb
@@ -535,6 +539,29 @@ class Sifnoded:
         res = exactly_one(stdout(res).splitlines())
         assert res.endswith(" is a valid genesis file")
 
+    # Pause the ethbridge module's Lock/Burn on an evm_network_descriptor
+    def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
+        return self._set_peggy_brige_pause_status(admin_account_address, True)
+
+    # Unpause the ethbridge module's Lock/Burn on an evm_network_descriptor
+    def unpause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
+        return self._set_peggy_brige_pause_status(admin_account_address, False)
+
+    def _set_peggy_brige_pause_status(self, admin_account_address, pause_status: bool) -> List[Mapping[str, Any]]:
+        args = ["tx", "ethbridge", "set-pause", str(pause_status)] + \
+                self._keyring_backend_args() + \
+                self._chain_id_args() + self._node_args() + \
+                self._fees_args() + \
+                ["--from", admin_account_address] + \
+                ["--chain-id", self.chain_id] + \
+                ["--output", "json"] + \
+                self._broadcast_mode_args("block") + \
+                self._yes_args()
+
+        res = self.sifnoded_exec(args)
+        return [json.loads(x) for x in stdout(res).splitlines()]
+
+
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
     # This was split from init_common
     def peggy2_add_account(self, name: str, tokens: cosmos.Balance, is_admin: bool = False):
@@ -802,7 +829,7 @@ class Sifnoded:
                         height = self.get_current_block()
                         log.debug("Large query result, restarting in paged mode using height of {}.".format(height))
                         continue
-                page_key = base64.b64decode(next_key).decode("UTF-8")
+                page_key = _b64_decode(next_key)
             chunk = res[result_key]
             all_results.extend(chunk)
             log.debug("Read {} items, all={}, next_key={}".format(len(chunk), len(all_results), next_key))
@@ -903,6 +930,73 @@ class Sifnoded:
             res = self.sifnoded_exec(args)
             res = sifnoded_parse_output_lines(stdout(res))
             return res
+
+    def tx_margin_update_pools(self, from_addr: cosmos.Address, open_pools: Iterable[str],
+        closed_pools: Iterable[str], broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        with self.cmd.with_temp_file() as open_pools_file, self.cmd.with_temp_file() as closed_pools_file:
+            self.cmd.write_text_file(open_pools_file, json.dumps(list(open_pools)))
+            self.cmd.write_text_file(closed_pools_file, json.dumps(list(closed_pools)))
+            args = ["tx", "margin", "update-pools", open_pools_file, "--closed-pools", closed_pools_file,
+                "--from", from_addr] + self._home_args() + self._keyring_backend_args() + self._node_args() + \
+                self._chain_id_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+            res = self.sifnoded_exec(args)
+            res = yaml_load(stdout(res))
+            check_raw_log(res)
+            return res
+
+    def query_margin_params(self, height: Optional[int] = None) -> JsonDict:
+        args = ["query", "margin", "params"] + \
+            (["--height", str(height)] if height is not None else []) + \
+            self._node_args() + self._chain_id_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        return res
+
+    def tx_margin_whitelist(self, from_addr: cosmos.Address, address: cosmos.Address,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "margin", "whitelist", address, "--from", from_addr] + self._home_args() + \
+            self._keyring_backend_args() + self._node_args() + self._chain_id_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        return res
+
+    def tx_margin_open(self, from_addr: cosmos.Address, borrow_asset: str, collateral_asset: str, collateral_amount: int,
+        leverage: int, position: str, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "margin", "open", "--borrow_asset", borrow_asset, "--collateral_asset", collateral_asset,
+           "--collateral_amount", str(collateral_amount), "--leverage", str(leverage), "--position", position, \
+            "--from", from_addr] + self._home_args() + self._keyring_backend_args() + self._node_args() + \
+            self._chain_id_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
+
+    def tx_margin_close(self, from_addr: cosmos.Address, id: int, broadcast_mode: Optional[str] = None) -> JsonDict:
+        args = ["tx", "margin", "close", "--id", str(id), "--from", from_addr] + self._home_args() + \
+            self._keyring_backend_args() + self._node_args() + self._chain_id_args() + self._fees_args() + \
+            self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        res = yaml_load(stdout(res))
+        check_raw_log(res)
+        return res
+
+    def margin_open_simple(self, from_addr: cosmos.Address, borrow_asset: str, collateral_asset: str, collateral_amount: int,
+        leverage: int, position: str
+    ) -> JsonDict:
+        res = self.tx_margin_open(from_addr, borrow_asset, collateral_asset, collateral_amount, leverage, position,
+            broadcast_mode="block")
+        mtp_open_event = exactly_one([x for x in res["events"] if x["type"] == "margin/mtp_open"])["attributes"]
+        result = {_b64_decode(x["key"]): _b64_decode(x["value"]) for x in mtp_open_event}
+        return result
+
+    def query_margin_positions_for_address(self, address: cosmos.Address, height: Optional[int] = None) -> JsonDict:
+        args = ["query", "margin", "positions-for-address", address] + self._node_args() + self._chain_id_args()
+        res = self._paged_read(args, "mtps", height=height)
+        return res
 
     def sign_transaction(self, tx: JsonDict, from_sif_addr: cosmos.Address, sequence: int = None,
         account_number: int = None
@@ -1076,7 +1170,6 @@ class Sifnoded:
     def _yes_args(self) -> List[str]:
         return ["--yes"]
 
-
 # Refactoring in progress - this class is supposed to become the successor of class Sifnode.
 # It wraps node, home, chain_id, fees and keyring backend
 # TODO Remove 'ctx' (currently needed for cross-chain fees for Peggy2)
@@ -1096,29 +1189,53 @@ class SifnodeClient:
         generate_only: bool = False
     ) -> Mapping:
         """ Sends ETH from Sifchain to Ethereum (burn) """
-        assert on_peggy2_branch, "Only for Peggy2.0"
         assert self.ctx.eth
         eth = self.ctx.eth
-
         direction = "lock" if is_cosmos_native_denom(denom) else "burn"
-        cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
-        args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
-                "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
-                "--from", from_sif_addr,  # Mandatory, either name from keyring or address
-                "--output", "json",
-            ] + \
-            (["--generate-only"] if generate_only else []) + \
-            self.sifnode._fees_args() + \
-            self.sifnode._home_args() + \
-            (self.sifnode._keyring_backend_args() if not generate_only else []) + \
-            self.sifnode._chain_id_args() + \
-            self.sifnode._node_args() + \
-            self.sifnode._yes_args()
-        res = self.sifnode.sifnoded_exec(args)
-        result = json.loads(stdout(res))
-        if not generate_only:
-            assert "failed to execute message" not in result["raw_log"]
-        return result
+        if on_peggy2_branch:
+            cross_chain_ceth_fee = eth.cross_chain_fee_base * eth.cross_chain_burn_fee  # TODO
+            args = ["tx", "ethbridge", direction, to_eth_addr, str(amount), denom, str(cross_chain_ceth_fee),
+                    "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
+                    "--from", from_sif_addr,  # Mandatory, either name from keyring or address
+                    "--output", "json",
+                ] + \
+                (["--generate-only"] if generate_only else []) + \
+                self.sifnode._fees_args() + \
+                self.sifnode._home_args() + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._node_args() + \
+                self.sifnode._yes_args()
+            res = self.sifnode.sifnoded_exec(args)
+            result = json.loads(stdout(res))
+            if not generate_only:
+                assert "failed to execute message" not in result["raw_log"]
+            return result
+        else:
+            gas_cost = 160000000000 * 393000 # Taken from peggy1
+            cross_chain_ceth_fee = str(gas_cost) # TODO Not sure if this is the right variable
+            # Ethereum chain id is hardcoded according to peggy1
+            ethereum_chain_id = str(5777)
+            args = ["tx", "ethbridge", direction] + \
+                self.sifnode._node_args() + \
+                [from_sif_addr, to_eth_addr, str(amount), denom, cross_chain_ceth_fee] + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._fees_args() + \
+                ["--ethereum-chain-id", ethereum_chain_id] + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._home_args() + \
+                ["--from", from_sif_addr] + \
+                ["--output","json"] + \
+                self.sifnode._yes_args()
+
+            res = self.sifnode.sifnoded_exec(args)
+            result = json.loads(stdout(res))
+            if not generate_only:
+                assert "failed to execute message" not in result["raw_log"]
+            return result
+
+            # sifnoded tx ethbridge <direction> <node> <sifchain_addr> <ethereum_addr> <amount> <symbol> <keyring backend> <ethereum-chain-id>
+
 
     def send_from_sifchain_to_ethereum_grpc(self, from_sif_addr: cosmos.Address, to_eth_addr: str, amount: int,
         denom: str
@@ -1268,3 +1385,6 @@ def _env_for_ethereum_address_and_key(ethereum_address, ethereum_private_key):
         assert ethereum_address.startswith("0x")
         env["ETHEREUM_ADDRESS"] = ethereum_address
     return env or None  # Avoid passing empty environment
+
+def _b64_decode(s: str):
+    return base64.b64decode(s).decode("UTF-8")

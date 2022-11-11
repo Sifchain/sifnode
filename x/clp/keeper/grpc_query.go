@@ -268,9 +268,9 @@ func (k Querier) GetProviderDistributionParams(c context.Context, _ *types.Provi
 	return &types.ProviderDistributionParamsRes{Params: params}, nil
 }
 
-func (k Querier) GetSwapFeeRate(c context.Context, _ *types.SwapFeeRateReq) (*types.SwapFeeRateRes, error) {
+func (k Querier) GetSwapFeeParams(c context.Context, _ *types.SwapFeeParamsReq) (*types.SwapFeeParamsRes, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	swapFeeRate := k.Keeper.GetSwapFeeRate(ctx)
+	swapFeeParams := k.Keeper.GetSwapFeeParams(ctx)
 
-	return &types.SwapFeeRateRes{SwapFeeRate: swapFeeRate.SwapFeeRate}, nil
+	return &types.SwapFeeParamsRes{DefaultSwapFeeRate: swapFeeParams.DefaultSwapFeeRate, TokenParams: swapFeeParams.TokenParams}, nil
 }

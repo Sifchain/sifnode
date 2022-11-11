@@ -18,6 +18,10 @@ func (q Querier) ListAccounts(ctx context.Context, _ *types.ListAccountsRequest)
 	}, nil
 }
 
+func (q Querier) GetParams(ctx context.Context, _ *types.GetParamsRequest) (*types.GetParamsResponse, error) {
+	return &types.GetParamsResponse{Params: q.Keeper.GetParams(sdk.UnwrapSDKContext(ctx))}, nil
+}
+
 func NewQueryServer(k Keeper) types.QueryServer {
 	return Querier{k}
 }

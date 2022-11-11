@@ -600,6 +600,7 @@ func NewSifAppWithBlacklist(
 	app.MountMemoryStores(memKeys)
 	anteHandler, err := sifchainAnte.NewAnteHandler(
 		sifchainAnte.HandlerOptions{
+			AdminKeeper:     app.AdminKeeper,
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
 			StakingKeeper:   app.StakingKeeper,

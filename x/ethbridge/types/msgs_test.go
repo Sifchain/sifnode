@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -48,4 +49,10 @@ func TestNewMsgCreateEthBridgeClaim(t *testing.T) {
 	msg := types.NewMsgCreateEthBridgeClaim(ethClaim)
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
+}
+
+func TestPauseMsgEmptySignerReturnsError(t *testing.T) {
+	msgPause := types.MsgPause{Signer: "", IsPaused: true}
+	err := msgPause.ValidateBasic()
+	assert.Error(t, err, sdkerrors.ErrInvalidAddress)
 }
