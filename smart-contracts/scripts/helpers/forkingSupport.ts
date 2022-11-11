@@ -4,6 +4,7 @@
 import fs from "fs";
 import { ethers, network } from "hardhat";
 import { print } from "./utils";
+import { Contract } from "ethers";
 
 // By default, this will work with a mainnet fork,
 // but it can also be used to fork Ropsten
@@ -15,31 +16,20 @@ const PROXY_ADMIN_ADDRESS = "0x7c6c6ea036e56efad829af5070c8fb59dc163d88";
 
 /**
  * Figures out the correct details for a given contract that has already been deployed in production
- * @param {string} deploymentName
- * @param {string} contractName
- * @param {number} chainId
+ * @param {string} contractName The name of the contract to create a factory from
+ * @param {string} address The address of the instance to connect to
  * @returns An object containing the factory, the instance, its address and the first user found in the accounts list
  */
-export async function getDeployedContract(deploymentName: string, contractName: string, chainId: number) {
-  deploymentName = deploymentName ?? DEFAULT_DEPLOYMENT_NAME;
-  contractName = contractName ?? "BridgeBank";
-  chainId = chainId ?? 1;
-
-  const filename = `${DEPLOYMENT_DIRECTORY}/${deploymentName}/${contractName}.json`;
-  const artifactContents = fs.readFileSync(filename, { encoding: "utf-8" });
-  const parsed = JSON.parse(artifactContents);
-  const ethersInterface = new ethers.utils.Interface(parsed.abi);
-
-  const address = parsed.networks[chainId].address;
-  print("yellow", `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`);
-
+export async function getDeployedContract<T extends Contract>(contractName: string, address: string) {
   const accounts = await ethers.getSigners();
   const activeUser = accounts[0];
 
-  const contract = new ethers.Contract(address, ethersInterface, activeUser);
-  const instance = await contract.attach(address);
+  print("yellow", `🕑 Connecting to ${contractName} at ${address}`);
 
-  print("green", `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`);
+  const contract = await ethers.getContractFactory(contractName, activeUser);
+  const instance = (await contract.attach(address)) as T
+
+  print("green", `🌎 Connected to ${contractName} at ${address}`);
 
   return {
     contract,
