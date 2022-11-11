@@ -1160,135 +1160,183 @@ func TestKeeper_GetLiquidityAddSymmetryType(t *testing.T) {
 
 func TestKeeper_CalculatePoolUnits(t *testing.T) {
 	testcases := []struct {
-		name                 string
-		oldPoolUnits         sdk.Uint
-		nativeAssetBalance   sdk.Uint
-		externalAssetBalance sdk.Uint
-		nativeAssetAmount    sdk.Uint
-		externalAssetAmount  sdk.Uint
-		expectedPoolUnits    sdk.Uint
-		expectedLPunits      sdk.Uint
-		expectedSwapStatus   int
-		expectedSwapAmount   sdk.Uint
-		expectedError        error
+		name                  string
+		oldPoolUnits          sdk.Uint
+		nativeAssetBalance    sdk.Uint
+		externalAssetBalance  sdk.Uint
+		nativeAssetAmount     sdk.Uint
+		externalAssetAmount   sdk.Uint
+		sellNativeSwapFeeRate sdk.Dec
+		buyNativeSwapFeeRate  sdk.Dec
+		expectedPoolUnits     sdk.Uint
+		expectedLPunits       sdk.Uint
+		expectedSwapStatus    int
+		expectedSwapAmount    sdk.Uint
+		expectedError         error
 	}{
 		{
-			name:                 "empty pool",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.ZeroUint(),
-			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.NewUint(100),
-			externalAssetAmount:  sdk.NewUint(90),
-			expectedPoolUnits:    sdk.NewUint(100),
-			expectedLPunits:      sdk.NewUint(100),
-			expectedSwapStatus:   clpkeeper.NoSwap,
+			name:                  "empty pool",
+			oldPoolUnits:          sdk.ZeroUint(),
+			nativeAssetBalance:    sdk.ZeroUint(),
+			externalAssetBalance:  sdk.ZeroUint(),
+			nativeAssetAmount:     sdk.NewUint(100),
+			externalAssetAmount:   sdk.NewUint(90),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUint(100),
+			expectedLPunits:       sdk.NewUint(100),
+			expectedSwapStatus:    clpkeeper.NoSwap,
 		},
 		{
-			name:                 "empty pool - no external asset added",
-			oldPoolUnits:         sdk.ZeroUint(),
-			nativeAssetBalance:   sdk.ZeroUint(),
-			externalAssetBalance: sdk.ZeroUint(),
-			nativeAssetAmount:    sdk.NewUint(100),
-			externalAssetAmount:  sdk.ZeroUint(),
-			expectedError:        errors.New("amount is invalid"),
+			name:                  "empty pool - no external asset added",
+			oldPoolUnits:          sdk.ZeroUint(),
+			nativeAssetBalance:    sdk.ZeroUint(),
+			externalAssetBalance:  sdk.ZeroUint(),
+			nativeAssetAmount:     sdk.NewUint(100),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			externalAssetAmount:   sdk.ZeroUint(),
+			expectedError:         errors.New("amount is invalid"),
 		},
 		{
-			name:                 "add nothing",
-			oldPoolUnits:         sdk.NewUint(1000),
-			nativeAssetBalance:   sdk.NewUint(12327),
-			externalAssetBalance: sdk.NewUint(132233),
-			nativeAssetAmount:    sdk.ZeroUint(),
-			externalAssetAmount:  sdk.ZeroUint(),
-			expectedPoolUnits:    sdk.NewUint(1000),
-			expectedLPunits:      sdk.ZeroUint(),
-			expectedSwapStatus:   clpkeeper.NoSwap,
+			name:                  "add nothing",
+			oldPoolUnits:          sdk.NewUint(1000),
+			nativeAssetBalance:    sdk.NewUint(12327),
+			externalAssetBalance:  sdk.NewUint(132233),
+			nativeAssetAmount:     sdk.ZeroUint(),
+			externalAssetAmount:   sdk.ZeroUint(),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUint(1000),
+			expectedLPunits:       sdk.ZeroUint(),
+			expectedSwapStatus:    clpkeeper.NoSwap,
 		},
 		{
-			name:                 "positive symmetry",
-			oldPoolUnits:         sdk.NewUint(7656454334323412),
-			nativeAssetBalance:   sdk.NewUint(16767626535600),
-			externalAssetBalance: sdk.NewUint(2345454545400),
-			nativeAssetAmount:    sdk.ZeroUint(),
-			externalAssetAmount:  sdk.NewUint(4556664545),
-			expectedPoolUnits:    sdk.NewUint(7663887695258361),
-			expectedLPunits:      sdk.NewUint(7433360934949),
-			expectedSwapStatus:   clpkeeper.BuyNative,
-			expectedSwapAmount:   sdk.NewUint(2277340758),
+			name:                  "positive symmetry - zero native",
+			oldPoolUnits:          sdk.NewUint(7656454334323412),
+			nativeAssetBalance:    sdk.NewUint(16767626535600),
+			externalAssetBalance:  sdk.NewUint(2345454545400),
+			nativeAssetAmount:     sdk.ZeroUint(),
+			externalAssetAmount:   sdk.NewUint(4556664545),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUint(7663887695258361),
+			expectedLPunits:       sdk.NewUint(7433360934949),
+			expectedSwapStatus:    clpkeeper.BuyNative,
+			expectedSwapAmount:    sdk.NewUint(2277340758),
 		},
 		{
-			name:                 "symmetric",
-			oldPoolUnits:         sdk.NewUint(7656454334323412),
-			nativeAssetBalance:   sdk.NewUint(16767626535600),
-			externalAssetBalance: sdk.NewUint(2345454545400),
-			nativeAssetAmount:    sdk.NewUint(167676265356),
-			externalAssetAmount:  sdk.NewUint(23454545454),
-			expectedPoolUnits:    sdk.NewUint(7733018877666646),
-			expectedLPunits:      sdk.NewUint(76564543343234),
-			expectedSwapStatus:   clpkeeper.NoSwap,
+			name:                  "symmetric",
+			oldPoolUnits:          sdk.NewUint(7656454334323412),
+			nativeAssetBalance:    sdk.NewUint(16767626535600),
+			externalAssetBalance:  sdk.NewUint(2345454545400),
+			nativeAssetAmount:     sdk.NewUint(167676265356),
+			externalAssetAmount:   sdk.NewUint(23454545454),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUint(7733018877666646),
+			expectedLPunits:       sdk.NewUint(76564543343234),
+			expectedSwapStatus:    clpkeeper.NoSwap,
 		},
 		{
-			name:                 "negative symmetry - zero external",
-			oldPoolUnits:         sdk.NewUint(7656454334323412),
-			nativeAssetBalance:   sdk.NewUint(16767626535600),
-			externalAssetBalance: sdk.NewUint(2345454545400),
-			nativeAssetAmount:    sdk.NewUint(167676265356),
-			externalAssetAmount:  sdk.ZeroUint(),
-			expectedPoolUnits:    sdk.NewUint(7694639456903696),
-			expectedLPunits:      sdk.NewUint(38185122580284),
-			expectedSwapStatus:   clpkeeper.SellNative,
-			expectedSwapAmount:   sdk.NewUint(83633781363),
+			name:                  "negative symmetry - zero external",
+			oldPoolUnits:          sdk.NewUint(7656454334323412),
+			nativeAssetBalance:    sdk.NewUint(16767626535600),
+			externalAssetBalance:  sdk.NewUint(2345454545400),
+			nativeAssetAmount:     sdk.NewUint(167676265356),
+			externalAssetAmount:   sdk.ZeroUint(),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUint(7694639456903696),
+			expectedLPunits:       sdk.NewUint(38185122580284),
+			expectedSwapStatus:    clpkeeper.SellNative,
+			expectedSwapAmount:    sdk.NewUint(83633781363),
 		},
 		{
-			name:                 "positive symmetry - non zero external",
-			oldPoolUnits:         sdk.NewUint(7656454334323412),
-			nativeAssetBalance:   sdk.NewUint(16767626535600),
-			externalAssetBalance: sdk.NewUint(2345454545400),
-			nativeAssetAmount:    sdk.NewUint(167676265356),
-			externalAssetAmount:  sdk.NewUint(46798998888),
-			expectedPoolUnits:    sdk.NewUint(7771026137435008),
-			expectedLPunits:      sdk.NewUint(114571803111596),
-			expectedSwapStatus:   clpkeeper.BuyNative,
-			expectedSwapAmount:   sdk.NewUint(11528907497),
+			name:                  "positive symmetry - non zero external",
+			oldPoolUnits:          sdk.NewUint(7656454334323412),
+			nativeAssetBalance:    sdk.NewUint(16767626535600),
+			externalAssetBalance:  sdk.NewUint(2345454545400),
+			nativeAssetAmount:     sdk.NewUint(167676265356),
+			externalAssetAmount:   sdk.NewUint(46798998888),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUint(7771026137435008),
+			expectedLPunits:       sdk.NewUint(114571803111596),
+			expectedSwapStatus:    clpkeeper.BuyNative,
+			expectedSwapAmount:    sdk.NewUint(11528907497),
 		},
 		{
-			name:                 "very big - positive symmetry",
-			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
-			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-			nativeAssetAmount:    sdk.NewUint(0),
-			externalAssetAmount:  sdk.NewUint(1099511627776), // 2**40
-			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
-			expectedLPunits:      sdk.NewUint(549728324722),
-			expectedSwapStatus:   clpkeeper.BuyNative,
-			expectedSwapAmount:   sdk.NewUint(549783303053),
+			name:                  "very big - positive symmetry",
+			oldPoolUnits:          sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance:  sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:     sdk.NewUint(0),
+			externalAssetAmount:   sdk.NewUint(1099511627776), // 2**40
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
+			expectedLPunits:       sdk.NewUint(549728324722),
+			expectedSwapStatus:    clpkeeper.BuyNative,
+			expectedSwapAmount:    sdk.NewUint(549783303053),
 		},
 		{
-			name:                 "very big - symmetric",
-			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
-			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
-			externalAssetAmount:  sdk.NewUint(1099511627776),
-			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
-			expectedLPunits:      sdk.NewUint(1099511627776),
-			expectedSwapStatus:   clpkeeper.NoSwap,
+			name:                  "very big - symmetric",
+			oldPoolUnits:          sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance:  sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:     sdk.NewUint(1099511627776), // 2**40
+			externalAssetAmount:   sdk.NewUint(1099511627776),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
+			expectedLPunits:       sdk.NewUint(1099511627776),
+			expectedSwapStatus:    clpkeeper.NoSwap,
 		},
 		{
-			name:                 "very big - negative symmetry",
-			oldPoolUnits:         sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
-			nativeAssetBalance:   sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-			externalAssetBalance: sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
-			nativeAssetAmount:    sdk.NewUint(1099511627776), // 2**40
-			externalAssetAmount:  sdk.ZeroUint(),
-			expectedPoolUnits:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
-			expectedLPunits:      sdk.NewUint(549728324722),
-			expectedSwapStatus:   clpkeeper.SellNative,
-			expectedSwapAmount:   sdk.NewUint(549783303053),
+			name:                  "very big - negative symmetry",
+			oldPoolUnits:          sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"), //2**200
+			nativeAssetBalance:    sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			externalAssetBalance:  sdk.NewUintFromString("1606938044258990275541962092341162602522202993782792835301376"),
+			nativeAssetAmount:     sdk.NewUint(1099511627776), // 2**40
+			externalAssetAmount:   sdk.ZeroUint(),
+			sellNativeSwapFeeRate: sdk.NewDecWithPrec(1, 4),
+			buyNativeSwapFeeRate:  sdk.NewDecWithPrec(1, 4),
+			expectedPoolUnits:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993783342563626098"),
+			expectedLPunits:       sdk.NewUint(549728324722),
+			expectedSwapStatus:    clpkeeper.SellNative,
+			expectedSwapAmount:    sdk.NewUint(549783303053),
+		},
+		{
+			name:                  "swap fee rates = 1, zero external asset",
+			oldPoolUnits:          sdk.NewUint(7656454334323412),
+			nativeAssetBalance:    sdk.NewUint(16767626535600),
+			externalAssetBalance:  sdk.NewUint(2345454545400),
+			nativeAssetAmount:     sdk.NewUint(167676265356),
+			externalAssetAmount:   sdk.ZeroUint(),
+			sellNativeSwapFeeRate: sdk.OneDec(),
+			buyNativeSwapFeeRate:  sdk.OneDec(),
+			expectedPoolUnits:     sdk.NewUint(7656454334323412),
+			expectedLPunits:       sdk.NewUint(0),
+			expectedSwapStatus:    clpkeeper.SellNative,
+			expectedSwapAmount:    sdk.NewUint(167676265356),
+		},
+		{
+			name:                  "swap fee rates = 0, zero external asset",
+			oldPoolUnits:          sdk.NewUint(7656454334323412),
+			nativeAssetBalance:    sdk.NewUint(16767626535600),
+			externalAssetBalance:  sdk.NewUint(2345454545400),
+			nativeAssetAmount:     sdk.NewUint(167676265356),
+			externalAssetAmount:   sdk.ZeroUint(),
+			sellNativeSwapFeeRate: sdk.ZeroDec(),
+			buyNativeSwapFeeRate:  sdk.ZeroDec(),
+			expectedPoolUnits:     sdk.NewUint(7694641375874505),
+			expectedLPunits:       sdk.NewUint(38187041551093),
+			expectedSwapStatus:    clpkeeper.SellNative,
+			expectedSwapAmount:    sdk.NewUint(83629578818),
 		},
 	}
 
-	sellNativeSwapFeeRate := sdk.NewDecWithPrec(1, 4)
-	buyNativeSwapFeeRate := sdk.NewDecWithPrec(1, 4)
 	pmtpCurrentRunningRate := sdk.ZeroDec()
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1299,8 +1347,8 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 				tc.externalAssetBalance,
 				tc.nativeAssetAmount,
 				tc.externalAssetAmount,
-				sellNativeSwapFeeRate,
-				buyNativeSwapFeeRate,
+				tc.sellNativeSwapFeeRate,
+				tc.buyNativeSwapFeeRate,
 				pmtpCurrentRunningRate,
 			)
 
