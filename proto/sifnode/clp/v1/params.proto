@@ -96,9 +96,18 @@ message ProviderDistributionParams {
   repeated ProviderDistributionPeriod distribution_periods = 1;
 }
 
-message SwapFeeRate {
-    string swap_fee_rate = 1 [
+message SwapFeeParams {
+    string default_swap_fee_rate = 1 [
         (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
         (gogoproto.nullable) = false
     ];
+    repeated SwapFeeTokenParams token_params = 2;
+}
+
+message SwapFeeTokenParams {
+  string asset = 1;
+  string swap_fee_rate = 2 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+  ];
 }

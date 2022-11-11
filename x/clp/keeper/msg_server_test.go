@@ -228,6 +228,7 @@ func TestMsgServer_Swap(t *testing.T) {
 		decimals                        int64
 		address                         string
 		maxRowanLiquidityThresholdAsset string
+		swapFeeParams                   types.SwapFeeParams
 		nativeBalance                   sdk.Int
 		externalBalance                 sdk.Int
 		nativeAssetAmount               sdk.Uint
@@ -422,7 +423,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
 			maxRowanLiquidityThresholdAsset: "eth",
-			externalBalanceEnd:              sdk.NewInt(9749),
+			externalBalanceEnd:              sdk.NewInt(10500),
 			nativeBalanceEnd:                sdk.NewInt(9749),
 			expectedRunningThresholdEnd:     sdk.NewUint(498),
 			msg: &types.MsgSwap{
@@ -449,7 +450,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			currentRowanLiquidityThreshold:  sdk.NewUint(4000),
 			expectedRunningThresholdEnd:     sdk.NewUint(3500),
-			externalBalanceEnd:              sdk.NewInt(9750),
+			externalBalanceEnd:              sdk.NewInt(10498),
 			nativeBalanceEnd:                sdk.NewInt(9750),
 			maxRowanLiquidityThresholdAsset: "eth",
 			msg: &types.MsgSwap{
@@ -602,6 +603,98 @@ func TestMsgServer_Swap(t *testing.T) {
 				MinReceivingAmount: sdk.NewUint(0),
 			},
 		},
+		{
+			name:                            "eth:rowan - swap fee 5%",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(1000),
+			externalAssetAmount:             sdk.NewUint(1000),
+			poolUnits:                       sdk.NewUint(1000),
+			nativeBalanceEnd:                sdk.NewInt(10086),
+			externalBalanceEnd:              sdk.NewInt(9900),
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			expectedRunningThresholdEnd:     sdk.NewUint(1086),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "rowan",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 1), //10%
+					},
+					{
+						Asset:       "eth",
+						SwapFeeRate: sdk.NewDecWithPrec(5, 2), //5%
+					},
+					{
+						Asset:       "usdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 2), //2%
+					},
+				},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "eth"},
+				ReceivedAsset:      &types.Asset{Symbol: "rowan"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
+		{
+			name:                            "rowan:eth - swap fee 10%",
+			createBalance:                   true,
+			createPool:                      true,
+			createLPs:                       true,
+			poolAsset:                       "eth",
+			decimals:                        18,
+			address:                         "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			nativeBalance:                   sdk.NewInt(10000),
+			externalBalance:                 sdk.NewInt(10000),
+			nativeAssetAmount:               sdk.NewUint(1000),
+			externalAssetAmount:             sdk.NewUint(1000),
+			poolUnits:                       sdk.NewUint(1000),
+			nativeBalanceEnd:                sdk.NewInt(9900),
+			externalBalanceEnd:              sdk.NewInt(10081),
+			poolAssetPermissions:            []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			currentRowanLiquidityThreshold:  sdk.NewUint(1000),
+			expectedRunningThresholdEnd:     sdk.NewUint(910),
+			maxRowanLiquidityThresholdAsset: "rowan",
+			maxRowanLiquidityThreshold:      sdk.NewUint(2000),
+			swapFeeParams: types.SwapFeeParams{
+				DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3),
+				TokenParams: []*types.SwapFeeTokenParams{
+					{
+						Asset:       "rowan",
+						SwapFeeRate: sdk.NewDecWithPrec(1, 1), //10%
+					},
+					{
+						Asset:       "eth",
+						SwapFeeRate: sdk.NewDecWithPrec(5, 2), //5%
+					},
+					{
+						Asset:       "usdc",
+						SwapFeeRate: sdk.NewDecWithPrec(2, 2), //2%
+					},
+				},
+			},
+			msg: &types.MsgSwap{
+				Signer:             "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				SentAsset:          &types.Asset{Symbol: "rowan"},
+				ReceivedAsset:      &types.Asset{Symbol: "eth"},
+				SentAmount:         sdk.NewUint(100),
+				MinReceivingAmount: sdk.NewUint(1),
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -681,6 +774,7 @@ func TestMsgServer_Swap(t *testing.T) {
 			})
 
 			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(0))
+			app.ClpKeeper.SetSwapFeeParams(ctx, &tc.swapFeeParams)
 
 			liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
 			liquidityProtectionParam.MaxRowanLiquidityThresholdAsset = tc.maxRowanLiquidityThresholdAsset
@@ -703,19 +797,19 @@ func TestMsgServer_Swap(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			sentAssetBalanceRequest := banktypes.QueryBalanceRequest{
+			externalAssetBalanceRequest := banktypes.QueryBalanceRequest{
 				Address: tc.address,
-				Denom:   tc.msg.SentAsset.Symbol,
+				Denom:   tc.poolAsset,
 			}
 
-			sentAssetBalanceResponse, err := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &sentAssetBalanceRequest)
+			externalAssetBalanceResponse, err := app.BankKeeper.Balance(sdk.WrapSDKContext(ctx), &externalAssetBalanceRequest)
 			if err != nil {
 				t.Fatalf("err: %v", err)
 			}
 
-			sentAssetBalance := sentAssetBalanceResponse.Balance.Amount
+			externalAssetBalance := externalAssetBalanceResponse.Balance.Amount
 
-			require.Equal(t, tc.externalBalanceEnd.String(), sentAssetBalance.String())
+			require.Equal(t, tc.externalBalanceEnd.String(), externalAssetBalance.String())
 
 			nativeAssetBalanceRequest := banktypes.QueryBalanceRequest{
 				Address: tc.address,
@@ -1177,25 +1271,30 @@ func TestMsgServer_CreatePool(t *testing.T) {
 
 func TestMsgServer_AddLiquidity(t *testing.T) {
 	testcases := []struct {
-		name                   string
-		createBalance          bool
-		createPool             bool
-		createLPs              bool
-		poolAsset              string
-		externalDecimals       int64
-		address                string
-		nativeBalance          sdk.Int
-		externalBalance        sdk.Int
-		nativeAssetAmount      sdk.Uint
-		externalAssetAmount    sdk.Uint
-		poolUnits              sdk.Uint
-		poolAssetPermissions   []tokenregistrytypes.Permission
-		nativeAssetPermissions []tokenregistrytypes.Permission
-		msg                    *types.MsgAddLiquidity
-		expectedPoolUnits      sdk.Uint
-		expectedLPUnits        sdk.Uint
-		err                    error
-		errString              error
+		name                                   string
+		createBalance                          bool
+		createPool                             bool
+		createLPs                              bool
+		poolAsset                              string
+		address                                string
+		userNativeAssetBalance                 sdk.Int
+		userExternalAssetBalance               sdk.Int
+		poolNativeAssetBalance                 sdk.Uint
+		poolExternalAssetBalance               sdk.Uint
+		poolNativeLiabilities                  sdk.Uint
+		poolExternalLiabilities                sdk.Uint
+		poolUnits                              sdk.Uint
+		poolAssetPermissions                   []tokenregistrytypes.Permission
+		nativeAssetPermissions                 []tokenregistrytypes.Permission
+		msg                                    *types.MsgAddLiquidity
+		liquidityProtectionActive              bool
+		maxRowanLiquidityThreshold             sdk.Uint
+		currentRowanLiquidityThreshold         sdk.Uint
+		expectedPoolUnits                      sdk.Uint
+		expectedLPUnits                        sdk.Uint
+		err                                    error
+		errString                              error
+		expectedUpdatedRowanLiquidityThreshold sdk.Uint
 	}{
 		{
 			name:          "external asset token not supported",
@@ -1225,18 +1324,18 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			errString: errors.New("permission denied for denom"),
 		},
 		{
-			name:                 "pool does not exist",
-			createBalance:        true,
-			createPool:           false,
-			createLPs:            false,
-			poolAsset:            "eth",
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.NewInt(10000),
-			externalBalance:      sdk.NewInt(10000),
-			nativeAssetAmount:    sdk.NewUint(1000),
-			externalAssetAmount:  sdk.NewUint(1000),
-			poolUnits:            sdk.NewUint(1000),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "pool does not exist",
+			createBalance:            true,
+			createPool:               false,
+			createLPs:                false,
+			poolAsset:                "eth",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.NewInt(10000),
+			userExternalAssetBalance: sdk.NewInt(10000),
+			poolNativeAssetBalance:   sdk.NewUint(1000),
+			poolExternalAssetBalance: sdk.NewUint(1000),
+			poolUnits:                sdk.NewUint(1000),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "eth"},
@@ -1246,18 +1345,18 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			errString: errors.New("pool does not exist"),
 		},
 		{
-			name:                 "user does have enough balance of required coin",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "eth",
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.NewInt(10000),
-			externalBalance:      sdk.NewInt(10000),
-			nativeAssetAmount:    sdk.NewUint(1000),
-			externalAssetAmount:  sdk.NewUint(1000),
-			poolUnits:            sdk.NewUint(1000),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "user does have enough balance of required coin",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "eth",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.NewInt(10000),
+			userExternalAssetBalance: sdk.NewInt(10000),
+			poolNativeAssetBalance:   sdk.NewUint(1000),
+			poolExternalAssetBalance: sdk.NewUint(1000),
+			poolUnits:                sdk.NewUint(1000),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "eth"},
@@ -1267,206 +1366,363 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 			errString: errors.New("user does not have enough balance of the required coin: Unable to add liquidity"),
 		},
 		{
-			name:                 "successful",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "eth",
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			externalBalance:      sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			nativeAssetAmount:    sdk.NewUint(1000),
-			externalAssetAmount:  sdk.NewUint(1000),
-			poolUnits:            sdk.NewUint(1000),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "one side of pool empty - zero amount of external asset added",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "eth",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			poolNativeAssetBalance:   sdk.ZeroUint(),
+			poolExternalAssetBalance: sdk.NewUint(123),
+			poolUnits:                sdk.NewUint(1000),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "eth"},
+				NativeAssetAmount:   sdk.NewUint(100),
+				ExternalAssetAmount: sdk.ZeroUint(),
+			},
+			errString: errors.New("amount is invalid"),
+		},
+		{
+			name:                     "one side of pool empty - external and native asset added",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "eth",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			poolNativeAssetBalance:   sdk.ZeroUint(),
+			poolExternalAssetBalance: sdk.NewUint(123),
+			poolUnits:                sdk.NewUint(1000),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "eth"},
+				NativeAssetAmount:   sdk.NewUint(178),
+				ExternalAssetAmount: sdk.NewUint(156),
+			},
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUint(178),
+			expectedLPUnits:                        sdk.NewUint(178),
+		},
+		{
+			name:                     "success - symmetric",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "eth",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			poolNativeAssetBalance:   sdk.NewUint(1000),
+			poolExternalAssetBalance: sdk.NewUint(1000),
+			poolUnits:                sdk.NewUint(1000),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "eth"},
 				NativeAssetAmount:   sdk.NewUintFromString(types.PoolThrehold),
 				ExternalAssetAmount: sdk.NewUintFromString(types.PoolThrehold),
 			},
-			expectedPoolUnits: sdk.NewUintFromString("1000000000000001000"),
-			expectedLPUnits:   sdk.NewUintFromString("1000000000000000000"),
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUintFromString("1000000000000001000"),
+			expectedLPUnits:                        sdk.NewUintFromString("1000000000000000000"),
 		},
 		{
-			name:                 "native asset is 0",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "eth",
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			externalBalance:      sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			nativeAssetAmount:    sdk.ZeroUint(),
-			externalAssetAmount:  sdk.NewUint(1000),
-			poolUnits:            sdk.NewUint(1000),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			msg: &types.MsgAddLiquidity{
-				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				ExternalAsset:       &types.Asset{Symbol: "eth"},
-				NativeAssetAmount:   sdk.ZeroUint(),
-				ExternalAssetAmount: sdk.NewUintFromString(types.PoolThrehold),
-			},
-			errString: errors.New("0: insufficient funds"),
-		},
-		{
-			name:                 "external asset is 0",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "eth",
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			externalBalance:      sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			nativeAssetAmount:    sdk.NewUint(1000),
-			externalAssetAmount:  sdk.ZeroUint(),
-			poolUnits:            sdk.NewUint(1000),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			msg: &types.MsgAddLiquidity{
-				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				ExternalAsset:       &types.Asset{Symbol: "eth"},
-				NativeAssetAmount:   sdk.NewUintFromString(types.PoolThrehold),
-				ExternalAssetAmount: sdk.ZeroUint(),
-			},
-			errString: errors.New("0: insufficient funds"),
-		},
-		{
-			name:                 "external and native asset is 0",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "eth",
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			externalBalance:      sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
-			nativeAssetAmount:    sdk.ZeroUint(),
-			externalAssetAmount:  sdk.ZeroUint(),
-			poolUnits:            sdk.NewUint(1000),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
-			msg: &types.MsgAddLiquidity{
-				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-				ExternalAsset:       &types.Asset{Symbol: "eth"},
-				NativeAssetAmount:   sdk.ZeroUint(),
-				ExternalAssetAmount: sdk.ZeroUint(),
-			},
-			errString: errors.New("Tx amount is too low"),
-		},
-		{
-			name:                 "success",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "cusdc",
-			externalDecimals:     6,
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString("4000000000000000000")),
-			externalBalance:      sdk.Int(sdk.NewUint(68140)),
-			nativeAssetAmount:    sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetAmount:  sdk.NewUint(2674623482959),
-			poolUnits:            sdk.NewUintFromString("23662660550457383692937954"),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "success - nearly symmetric",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
-				NativeAssetAmount:   sdk.NewUintFromString("4000000000000000000"),
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
 				ExternalAssetAmount: sdk.NewUint(68140),
 			},
-			expectedPoolUnits: sdk.NewUintFromString("23662661153298835875523384"),
-			expectedLPUnits:   sdk.NewUintFromString("602841452182585430"),
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662661153298862513590992"),
+			expectedLPUnits:                        sdk.NewUintFromString("602841478820653038"),
 		},
 		{
-			// Same test as above but with external asset amount just below top limit
-			name:                 "success (normalized) ratios diff = 0.000000000000000499",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "cusdc",
-			externalDecimals:     6,
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString("4000000000000000000")),
-			externalBalance:      sdk.Int(sdk.NewUint(70140)),
-			nativeAssetAmount:    sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetAmount:  sdk.NewUint(2674623482959),
-			poolUnits:            sdk.NewUintFromString("23662660550457383692937954"),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "success - swap external",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
-				NativeAssetAmount:   sdk.NewUintFromString("4000000000000000000"),
-				ExternalAssetAmount: sdk.NewUint(70140),
+				NativeAssetAmount:   sdk.NewUint(0),
+				ExternalAssetAmount: sdk.NewUint(68140),
 			},
-			expectedPoolUnits: sdk.NewUintFromString("23662661162145935094484778"),
-			expectedLPUnits:   sdk.NewUintFromString("611688551401546824"),
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662660751003435747009552"),
+			expectedLPUnits:                        sdk.NewUintFromString("200546052054071598"),
 		},
 		{
-			// Same test as above but with external asset amount just above top limit
-			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "cusdc",
-			externalDecimals:     6,
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString("4000000000000000000")),
-			externalBalance:      sdk.Int(sdk.NewUint(70141)),
-			nativeAssetAmount:    sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetAmount:  sdk.NewUint(2674623482959),
-			poolUnits:            sdk.NewUintFromString("23662660550457383692937954"),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "success - swap native",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
-				NativeAssetAmount:   sdk.NewUintFromString("4000000000000000000"),
-				ExternalAssetAmount: sdk.NewUint(70141),
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
 			},
-			errString: errors.New("Cannot add liquidity with asymmetric ratio"),
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662660951949037742990437"),
+			expectedLPUnits:                        sdk.NewUintFromString("401491654050052483"),
 		},
 		{
-			// Same test as above but with external asset amount just above bottom limit
-			name:                 "success (normalized) ratios diff = 0.000000000000000499",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "cusdc",
-			externalDecimals:     6,
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString("4000000000000000000")),
-			externalBalance:      sdk.Int(sdk.NewUint(66141)),
-			nativeAssetAmount:    sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetAmount:  sdk.NewUint(2674623482959),
-			poolUnits:            sdk.NewUintFromString("23662660550457383692937954"),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "success - swap native - with liabilities",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.ZeroUint(),
+			poolExternalAssetBalance: sdk.ZeroUint(),
+			poolNativeLiabilities:    sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalLiabilities:  sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
-				NativeAssetAmount:   sdk.NewUintFromString("4000000000000000000"),
-				ExternalAssetAmount: sdk.NewUint(66141),
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
 			},
-			expectedPoolUnits: sdk.NewUintFromString("23662661144456159305055227"),
-			expectedLPUnits:   sdk.NewUintFromString("593998775612117273"),
+			liquidityProtectionActive:              false,
+			expectedUpdatedRowanLiquidityThreshold: sdk.ZeroUint(),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662660951949037742990437"),
+			expectedLPUnits:                        sdk.NewUintFromString("401491654050052483"),
 		},
 		{
-			// Same test as above but with external asset amount just below bottom limit
-			name:                 "failure (normalized) ratios diff = 0.000000000000000500",
-			createBalance:        true,
-			createPool:           true,
-			createLPs:            true,
-			poolAsset:            "cusdc",
-			externalDecimals:     6,
-			address:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-			nativeBalance:        sdk.Int(sdk.NewUintFromString("4000000000000000000")),
-			externalBalance:      sdk.Int(sdk.NewUint(66140)),
-			nativeAssetAmount:    sdk.NewUintFromString("157007500498726220240179086"),
-			externalAssetAmount:  sdk.NewUint(2674623482959),
-			poolUnits:            sdk.NewUintFromString("23662660550457383692937954"),
-			poolAssetPermissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			name:                     "success - symmetric - liquidity protection enabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "eth",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUintFromString(types.PoolThrehold)),
+			poolNativeAssetBalance:   sdk.NewUint(1000),
+			poolExternalAssetBalance: sdk.NewUint(1000),
+			poolUnits:                sdk.NewUint(1000),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "eth"},
+				NativeAssetAmount:   sdk.NewUintFromString(types.PoolThrehold),
+				ExternalAssetAmount: sdk.NewUintFromString(types.PoolThrehold),
+			},
+			liquidityProtectionActive:              true,
+			maxRowanLiquidityThreshold:             sdk.NewUint(1336005328924242545),
+			currentRowanLiquidityThreshold:         sdk.NewUint(10),
+			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(10),
+			expectedPoolUnits:                      sdk.NewUintFromString("1000000000000001000"),
+			expectedLPUnits:                        sdk.NewUintFromString("1000000000000000000"),
+		},
+		{
+			name:                     "success - swap external - liquidity protection enabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			msg: &types.MsgAddLiquidity{
 				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
 				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
-				NativeAssetAmount:   sdk.NewUintFromString("4000000000000000000"),
-				ExternalAssetAmount: sdk.NewUint(66140),
+				NativeAssetAmount:   sdk.NewUint(0),
+				ExternalAssetAmount: sdk.NewUint(68140),
 			},
-			errString: errors.New("Cannot add liquidity with asymmetric ratio"),
+			liquidityProtectionActive:              true,
+			maxRowanLiquidityThreshold:             sdk.NewUint(13360053289242425450),
+			currentRowanLiquidityThreshold:         sdk.NewUint(10),
+			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(1330659558593215210),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662660751003435747009552"),
+			expectedLPUnits:                        sdk.NewUintFromString("200546052054071598"),
+		},
+		{
+			name:                     "success - swap native- liquidity protection enabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
+			},
+			liquidityProtectionActive:              true,
+			maxRowanLiquidityThreshold:             sdk.NewUint(1336005328924242545),
+			currentRowanLiquidityThreshold:         sdk.NewUint(1336005328924242544),
+			expectedUpdatedRowanLiquidityThreshold: sdk.NewUint(4008015986772728),
+			expectedPoolUnits:                      sdk.NewUintFromString("23662660951949037742990437"),
+			expectedLPUnits:                        sdk.NewUintFromString("401491654050052483"),
+		},
+		{
+			name:                     "failure - swap native - liquidity protection enabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
+			},
+			liquidityProtectionActive:      true,
+			maxRowanLiquidityThreshold:     sdk.NewUint(1336005328924242545),
+			currentRowanLiquidityThreshold: sdk.NewUint(1336005328924242543),
+			errString:                      types.ErrReachedMaxRowanLiquidityThreshold,
+		},
+		{
+			name:                     "failure - swap external - sell external disabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_DISABLE_SELL},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(0),
+				ExternalAssetAmount: sdk.NewUint(68140),
+			},
+			liquidityProtectionActive: false,
+			errString:                 tokenregistrytypes.ErrNotAllowedToSellAsset,
+		},
+		{
+			name:                     "failure - swap external - buy native disabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_BUY},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(0),
+				ExternalAssetAmount: sdk.NewUint(68140),
+			},
+			liquidityProtectionActive: false,
+			errString:                 tokenregistrytypes.ErrNotAllowedToBuyAsset,
+		},
+		{
+			name:                     "failure - swap native - sell native disabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			nativeAssetPermissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_SELL},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
+			},
+			liquidityProtectionActive: false,
+			errString:                 tokenregistrytypes.ErrNotAllowedToSellAsset,
+		},
+		{
+			name:                     "failure - swap native - buy external disabled",
+			createBalance:            true,
+			createPool:               true,
+			createLPs:                true,
+			poolAsset:                "cusdc",
+			address:                  "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			userNativeAssetBalance:   sdk.Int(sdk.NewUint(4000000000000000000)),
+			userExternalAssetBalance: sdk.Int(sdk.NewUint(68140)),
+			poolNativeAssetBalance:   sdk.NewUintFromString("157007500498726220240179086"),
+			poolExternalAssetBalance: sdk.NewUint(2674623482959),
+			poolUnits:                sdk.NewUintFromString("23662660550457383692937954"),
+			poolAssetPermissions:     []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP, tokenregistrytypes.Permission_DISABLE_BUY},
+			msg: &types.MsgAddLiquidity{
+				Signer:              "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+				ExternalAsset:       &types.Asset{Symbol: "cusdc"},
+				NativeAssetAmount:   sdk.NewUint(4000000000000000000),
+				ExternalAssetAmount: sdk.ZeroUint(),
+			},
+			liquidityProtectionActive: false,
+			errString:                 tokenregistrytypes.ErrNotAllowedToBuyAsset,
 		},
 	}
 
@@ -1477,7 +1733,7 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 				trGs := &tokenregistrytypes.GenesisState{
 					Registry: &tokenregistrytypes.Registry{
 						Entries: []*tokenregistrytypes.RegistryEntry{
-							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: tc.externalDecimals, Permissions: tc.poolAssetPermissions},
+							{Denom: tc.poolAsset, BaseDenom: tc.poolAsset, Decimals: 18, Permissions: tc.poolAssetPermissions},
 							{Denom: "rowan", BaseDenom: "rowan", Decimals: 18, Permissions: tc.nativeAssetPermissions},
 						},
 					},
@@ -1490,8 +1746,8 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 						{
 							Address: tc.address,
 							Coins: sdk.Coins{
-								sdk.NewCoin(tc.poolAsset, tc.externalBalance),
-								sdk.NewCoin("rowan", tc.nativeBalance),
+								sdk.NewCoin(tc.poolAsset, tc.userExternalAssetBalance),
+								sdk.NewCoin("rowan", tc.userNativeAssetBalance),
 							},
 						},
 					}
@@ -1506,9 +1762,11 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 					pools := []*types.Pool{
 						{
 							ExternalAsset:        &types.Asset{Symbol: tc.poolAsset},
-							NativeAssetBalance:   tc.nativeAssetAmount,
-							ExternalAssetBalance: tc.externalAssetAmount,
+							NativeAssetBalance:   tc.poolNativeAssetBalance,
+							ExternalAssetBalance: tc.poolExternalAssetBalance,
 							PoolUnits:            tc.poolUnits,
+							NativeLiabilities:    tc.poolNativeLiabilities,
+							ExternalLiabilities:  tc.poolExternalLiabilities,
 						},
 					}
 					clpGs := types.DefaultGenesisState()
@@ -1536,6 +1794,14 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 
 			app.ClpKeeper.SetPmtpCurrentRunningRate(ctx, sdk.NewDec(1))
 
+			liqProParams := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
+			liqProParams.IsActive = tc.liquidityProtectionActive
+			liqProParams.MaxRowanLiquidityThreshold = tc.maxRowanLiquidityThreshold
+			liqProParams.MaxRowanLiquidityThresholdAsset = types.NativeSymbol
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, liqProParams)
+
+			app.ClpKeeper.SetLiquidityProtectionCurrentRowanLiquidityThreshold(ctx, tc.currentRowanLiquidityThreshold)
+
 			msgServer := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 
 			_, err := msgServer.AddLiquidity(sdk.WrapSDKContext(ctx), tc.msg)
@@ -1555,6 +1821,9 @@ func TestMsgServer_AddLiquidity(t *testing.T) {
 
 			require.Equal(t, tc.expectedPoolUnits.String(), pool.PoolUnits.String()) // compare strings so that the expected amounts can be read from the failure message
 			require.Equal(t, tc.expectedLPUnits.String(), lp.LiquidityProviderUnits.String())
+
+			updatedThreshold := app.ClpKeeper.GetLiquidityProtectionRateParams(ctx).CurrentRowanLiquidityThreshold
+			require.Equal(t, tc.expectedUpdatedRowanLiquidityThreshold.String(), updatedThreshold.String())
 		})
 	}
 }

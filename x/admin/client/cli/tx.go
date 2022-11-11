@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -20,6 +21,7 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdAdd(),
 		GetCmdRemove(),
+		GetCmdSetParams(),
 	)
 	return cmd
 }
@@ -116,6 +118,36 @@ func GetCmdRemove() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdSetParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-params",
+		Short: "Set parameters",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			fee := sdk.NewUintFromString(viper.GetString("submit-proposal-fee"))
+
+			msg := types.MsgSetParams{
+				Signer: clientCtx.GetFromAddress().String(),
+				Params: &types.Params{
+					SubmitProposalFee: fee,
+				},
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	cmd.Flags().String("submit-proposal-fee", "5000000000000000000000", "fee to submit proposals")
+	_ = cmd.MarkFlagRequired("submit-proposal-fee")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

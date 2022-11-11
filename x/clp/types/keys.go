@@ -40,7 +40,7 @@ var (
 	LiquidityProtectionRateParamsPrefix = []byte{0x09} // Key to store the Liquidity Protection rate params
 	ProviderDistributionParamsPrefix    = []byte{0x0a}
 	RewardsBlockDistributionPrefix      = []byte{0x0b}
-	SwapFeeRatePrefix                   = []byte{0x0c}
+	SwapFeeParamsPrefix                 = []byte{0x0c}
 	RemovalRequestPrefix                = []byte{0x0d}
 	RemovalQueuePrefix                  = []byte{0x0e}
 )
@@ -63,7 +63,7 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
-		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 7,
+		LiquidityRemovalLockPeriod:   0,
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
 		RewardPeriods:                nil,
 		RewardPeriodStartTime:        "",

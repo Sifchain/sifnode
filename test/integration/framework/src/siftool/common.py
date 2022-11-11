@@ -121,6 +121,7 @@ def disable_noisy_loggers():
     logging.getLogger("websockets").setLevel(logging.WARNING)
     logging.getLogger("web3").setLevel(logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("eth_hash").setLevel(logging.WARNING)
 
 def basic_logging_setup():
     import sys

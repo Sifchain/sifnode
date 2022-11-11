@@ -11,7 +11,7 @@ DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 GOFLAGS:=""
-GOTAGS:=
+GOTAGS:=ledger
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
@@ -21,7 +21,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(GOTAGS)'
 
-BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
+BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer ./cmd/siftest
 
 all: lint install
 

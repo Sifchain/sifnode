@@ -21,3 +21,10 @@ message AdminAccount {
   AdminType admin_type = 1;
   string admin_address = 2;
 }
+
+message Params {
+  string submit_proposal_fee = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
