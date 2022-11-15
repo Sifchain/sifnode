@@ -138,6 +138,26 @@ y'' = y + g.(x - x')
 
 Since the add liquidity process involves swapping then the Liquidity protection procedure must be applied.
 
+## CLI
+
+### Get Estimation of pool share
+
+```bash
+sifnoded query clp estimate-pool-share \
+  --externalAmount=0 \
+  --nativeAmount=1000000000000000000 \
+  --symbol ceth \
+  --output json
+```
+
+```json
+{
+	"percentage": "0.183227703974514619",
+	"native_asset_amount": "549683111923543857",
+	"external_asset_amount": "366455407949029238"
+}
+```
+
 ## References
 
 Detailed derivation of formulas https://hackmd.io/NjvaZY1qQiS17s_uEgZmTw?both
