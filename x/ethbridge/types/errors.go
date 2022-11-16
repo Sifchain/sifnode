@@ -19,5 +19,7 @@ var (
 	ErrInvalidSymbol          = sdkerrors.Register(ModuleName, 9, "symbol must be 1 character or more")
 	ErrInvalidBurnSymbol      = sdkerrors.Register(ModuleName, 10,
 		fmt.Sprintf("symbol of token to burn must be in the form %v{ethereumSymbol}", PeggedCoinPrefix))
-	ErrCethAmount = sdkerrors.Register(ModuleName, 11, "not enough ceth provided")
+	ErrCethAmount           = sdkerrors.Register(ModuleName, 11, "not enough ceth provided")
+	ErrNotEnoughPermissions = sdkerrors.Register(ModuleName, 12, "account does not have enough permissions")
+	ErrPaused               = sdkerrors.Register(ModuleName, 13, "transaction is paused")
 )

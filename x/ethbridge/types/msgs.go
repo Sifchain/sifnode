@@ -17,6 +17,33 @@ const (
 	lockGasCost = 60000000000 * 393000
 )
 
+var _ sdk.Msg = &MsgPause{}
+
+// Route should return the name of the module
+func (msg MsgPause) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgPause) Type() string { return "pause" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgPause) ValidateBasic() error {
+	if msg.GetSigner() == "" {
+		return sdkerrors.ErrInvalidAddress
+	}
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgPause) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgPause) GetSigners() []sdk.AccAddress {
+	signer := sdk.MustAccAddressFromBech32(msg.Signer)
+	return []sdk.AccAddress{signer}
+}
+
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	ethereumChainID int64, cosmosSender sdk.AccAddress,
@@ -77,11 +104,7 @@ func (msg MsgLock) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgLock) GetSigners() []sdk.AccAddress {
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		panic(err)
-	}
-
+	cosmosSender := sdk.MustAccAddressFromBech32(msg.CosmosSender)
 	return []sdk.AccAddress{cosmosSender}
 }
 
@@ -157,11 +180,7 @@ func (msg MsgBurn) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		panic(err)
-	}
-
+	cosmosSender := sdk.MustAccAddressFromBech32(msg.CosmosSender)
 	return []sdk.AccAddress{cosmosSender}
 }
 
@@ -318,11 +337,7 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		panic(err)
-	}
-
+	cosmosSender := sdk.MustAccAddressFromBech32(msg.CosmosSender)
 	return []sdk.AccAddress{cosmosSender}
 }
 
@@ -367,11 +382,7 @@ func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		panic(err)
-	}
-
+	cosmosSender := sdk.MustAccAddressFromBech32(msg.CosmosSender)
 	return []sdk.AccAddress{cosmosSender}
 }
 
@@ -424,10 +435,6 @@ func (msg *MsgSetBlacklist) ValidateBasic() error {
 }
 
 func (msg *MsgSetBlacklist) GetSigners() []sdk.AccAddress {
-	from, err := sdk.AccAddressFromBech32(msg.From)
-	if err != nil {
-		panic(err)
-	}
-
+	from := sdk.MustAccAddressFromBech32(msg.From)
 	return []sdk.AccAddress{from}
 }

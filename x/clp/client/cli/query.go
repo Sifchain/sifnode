@@ -3,15 +3,18 @@ package cli
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
 	//"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func GetQueryCmd(queryRoute string) *cobra.Command {
@@ -36,6 +39,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdLiquidityProtectionParams(queryRoute),
 		GetCmdProviderDistributionParams(queryRoute),
 		GetCmdSwapFeeParams(queryRoute),
+		GetCmdPoolShareEstimate(queryRoute),
 	)
 	return clpQueryCmd
 }
@@ -395,5 +399,53 @@ func GetCmdSwapFeeParams(queryRoute string) *cobra.Command {
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdPoolShareEstimate(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "estimate-pool-share",
+		Short: "Estimate the pool share of an add liquidity action",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
+			externalAmount := viper.GetString(FlagExternalAssetAmount)
+			nativeAmount := viper.GetString(FlagNativeAssetAmount)
+
+			result, err := queryClient.GetPoolShareEstimate(context.Background(), &types.PoolShareEstimateReq{
+				ExternalAsset:       &externalAsset,
+				NativeAssetAmount:   sdk.NewUintFromString(nativeAmount),
+				ExternalAssetAmount: sdk.NewUintFromString(externalAmount),
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(result)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsAssetSymbol)
+	cmd.Flags().AddFlagSet(FsExternalAssetAmount)
+	cmd.Flags().AddFlagSet(FsNativeAssetAmount)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagExternalAssetAmount); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	if err := cmd.MarkFlagRequired(FlagNativeAssetAmount); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }
