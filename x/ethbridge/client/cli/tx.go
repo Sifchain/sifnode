@@ -22,6 +22,7 @@ import (
 )
 
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
+//
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
