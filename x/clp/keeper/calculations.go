@@ -138,7 +138,7 @@ func CalculatePoolUnits(P, R, A, r, a sdk.Uint, sellNativeSwapFeeRate, buyNative
 		// we'll default to doing the same thing.
 
 		if a.IsZero() || r.IsZero() {
-			return sdk.Uint{}, sdk.Uint{}, 0, sdk.Uint{}, types.ErrInValidAmount
+			return sdk.Uint{}, sdk.Uint{}, NoSwap, sdk.Uint{}, types.ErrInValidAmount
 		}
 
 		return r, r, NoSwap, sdk.Uint{}, nil
