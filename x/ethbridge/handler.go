@@ -38,6 +38,10 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgSetBlacklist:
 			res, err := msgServer.SetBlacklist(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgPause:
+			res, err := msgServer.SetPause(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", sdk.MsgTypeURL(msg))
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
