@@ -23,6 +23,8 @@ func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier { //nol
 			return legacyQueryEthProphecy(ctx, cdc, req, keeper)
 		case types.QueryBlacklist:
 			return legacyQueryBlacklist(ctx, cdc, req, keeper)
+		case types.QueryPause:
+			return legacyQueryPause(ctx, cdc, req, keeper)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown ethbridge query endpoint")
 		}
@@ -58,5 +60,18 @@ func legacyQueryBlacklist(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.Re
 		return nil, err
 	}
 
+	return cdc.MarshalJSONIndent(response, "", "  ")
+}
+
+func legacyQueryPause(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) { //nolint
+	var req types.QueryPauseRequest
+	if err := cdc.UnmarshalJSON(query.Data, &req); err != nil {
+		return nil, sdkerrors.Wrap(types.ErrJSONMarshalling, fmt.Sprintf("failed to parse req: %s", err.Error()))
+	}
+	queryServer := NewQueryServer(keeper)
+	response, err := queryServer.GetPauseStatus(sdk.WrapSDKContext(ctx), &req)
+	if err != nil {
+		return nil, err
+	}
 	return cdc.MarshalJSONIndent(response, "", "  ")
 }

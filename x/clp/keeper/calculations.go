@@ -68,10 +68,10 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetDepth string,
 	//if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
 
-	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
-		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.RoundInt().BigInt()),
-		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt()),
-		sdk.NewUintFromBigInt(swapAmount.RoundInt().BigInt())
+	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.TruncateInt().BigInt()),
+		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.TruncateInt().BigInt()),
+		sdk.NewUintFromBigInt(lpUnitsLeft.TruncateInt().BigInt()),
+		sdk.NewUintFromBigInt(swapAmount.TruncateInt().BigInt())
 }
 
 // More details on the formula
@@ -597,4 +597,10 @@ func GetSwapFee(sentAmount sdk.Uint,
 		return sdk.ZeroUint()
 	}
 	return swapResult
+}
+
+func CalculateDiscountedSentAmount(sentAmount sdk.Uint, swapFeeRate sdk.Dec) sdk.Uint {
+	discountedSentAmount := sentAmount.Sub(sdk.Uint(sdk.NewDecFromBigInt(sentAmount.BigInt()).Mul(swapFeeRate).RoundInt()))
+
+	return discountedSentAmount
 }

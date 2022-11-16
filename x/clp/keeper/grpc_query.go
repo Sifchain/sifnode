@@ -274,3 +274,49 @@ func (k Querier) GetSwapFeeParams(c context.Context, _ *types.SwapFeeParamsReq) 
 
 	return &types.SwapFeeParamsRes{DefaultSwapFeeRate: swapFeeParams.DefaultSwapFeeRate, TokenParams: swapFeeParams.TokenParams}, nil
 }
+
+func (k Querier) GetPoolShareEstimate(c context.Context, req *types.PoolShareEstimateReq) (*types.PoolShareEstimateRes, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	pool, err := k.Keeper.GetPool(ctx, req.ExternalAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrPoolDoesNotExist
+	}
+
+	pmtpCurrentRunningRate := k.Keeper.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	sellNativeSwapFeeRate := k.Keeper.GetSwapFeeRate(ctx, types.GetSettlementAsset(), false)
+	buyNativeSwapFeeRate := k.Keeper.GetSwapFeeRate(ctx, *req.ExternalAsset, false)
+
+	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
+
+	newPoolUnits, lpUnits, _, _, err := CalculatePoolUnits(
+		pool.PoolUnits,
+		nativeAssetDepth,
+		externalAssetDepth,
+		req.NativeAssetAmount,
+		req.ExternalAssetAmount,
+		sellNativeSwapFeeRate,
+		buyNativeSwapFeeRate,
+		pmtpCurrentRunningRate)
+	if err != nil {
+		return nil, err
+	}
+
+	newPoolUnitsD := sdk.NewDecFromBigInt(newPoolUnits.BigInt())
+	lpUnitsD := sdk.NewDecFromBigInt(lpUnits.BigInt())
+
+	newNativeAssetDepthD := sdk.NewDecFromBigInt(nativeAssetDepth.Add(req.NativeAssetAmount).BigInt())
+	newExternalAssetDepthD := sdk.NewDecFromBigInt(externalAssetDepth.Add(req.ExternalAssetAmount).BigInt())
+
+	percentage := lpUnitsD.Quo(newPoolUnitsD)
+
+	nativeAssetAmountD := percentage.Mul(newNativeAssetDepthD)
+	externalAssetAmountD := percentage.Mul(newExternalAssetDepthD)
+
+	return &types.PoolShareEstimateRes{
+		Percentage:          percentage,
+		NativeAssetAmount:   sdk.NewUintFromBigInt(nativeAssetAmountD.TruncateInt().BigInt()),
+		ExternalAssetAmount: sdk.NewUintFromBigInt(externalAssetAmountD.TruncateInt().BigInt()),
+	}, nil
+
+}

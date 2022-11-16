@@ -16,6 +16,10 @@ type queryServer struct {
 	Keeper
 }
 
+func (srv queryServer) GetPauseStatus(ctx context.Context, _ *types.QueryPauseRequest) (*types.QueryPauseResponse, error) {
+	return &types.QueryPauseResponse{IsPaused: srv.Keeper.IsPaused(sdk.UnwrapSDKContext(ctx))}, nil
+}
+
 func (srv queryServer) GetBlacklist(ctx context.Context, _ *types.QueryBlacklistRequest) (*types.QueryBlacklistResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
