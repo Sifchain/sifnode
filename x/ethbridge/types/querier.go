@@ -8,6 +8,7 @@ import (
 const (
 	QueryEthProphecy = "prophecies"
 	QueryBlacklist   = "blacklist"
+	QueryPause       = "pause"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams

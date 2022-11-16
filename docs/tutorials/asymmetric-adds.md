@@ -67,7 +67,7 @@ returns:
 }
 ```
 
-3. Query akasha balances:
+4. Query akasha balances:
 
 ```bash
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)
@@ -76,7 +76,21 @@ sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)
 ceth: 500000000000000000000000
 rowan: 500000000000000000000000
 
-3. Add liquidity asymmetrically from akasha account to the ceth pool
+5. Query pool share estimation:
+
+```
+sifnoded query clp estimate-pool-share --externalAmount=0 --nativeAmount=1000000000000000000 --symbol ceth --output json
+```
+
+```json
+{
+	"percentage": "0.183227703974514619",
+	"native_asset_amount": "549683111923543857",
+	"external_asset_amount": "366455407949029238"
+}
+```
+
+6. Add liquidity asymmetrically from akasha account to the ceth pool
 
 ```bash
 sifnoded tx clp add-liquidity \
@@ -90,7 +104,7 @@ sifnoded tx clp add-liquidity \
   -y
 ```
 
-4. Query akasha balances:
+7. Query akasha balances:
 
 ```
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)
@@ -100,13 +114,13 @@ ceth: 500000000000000000000000
 rowan: 499998900000000000000000
 
 
-4. Query ceth lps:
+8. Query ceth lps:
 
 ```bash
 sifnoded q clp lplist ceth
 ```
 
-4. Remove the liquidity added by akasha in the previous step
+9. Remove the liquidity added by akasha in the previous step
 
 ```bash
 sifnoded tx clp remove-liquidity \
@@ -120,7 +134,7 @@ sifnoded tx clp remove-liquidity \
   -y
 ```
 
-5. Query akasha balances:
+10. Query akasha balances:
 
 ```bash
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)
@@ -129,13 +143,43 @@ sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)
 ceth: 500000366455407949029238
 rowan: 499999349683111923543856
 
+# Confirm share estimation calculation
+
+We'll confirm the pool share estimation in step five was correct. The estimated pool share was given as:
+
+```json
+{
+	"percentage": "0.183227703974514619",
+	"native_asset_amount": "549683111923543857",
+	"external_asset_amount": "366455407949029238"
+}
+```
+
+Before removing liquidity (but after adding liquidity) akasha's balances were:
+
+ceth: 500000000000000000000000
+rowan: 499998900000000000000000
+
+After removing liquidity akasha's balances were:
+
+ceth: 500000366455407949029238
+rowan: 499999349683111923543856
+
+The gain in ceth after removing liquidity equals, 500000366455407949029238 - 500000000000000000000000 = 366455407949029238. This equals the estimated
+external asset amount.
+
+The gain in rowan after removing liquidity equals, 499999349683111923543856 - 499998900000000000000000 = 449683111923543856. 100000000000000000rowan was spent on tx fees, so if we add this to the difference, 449683111923543856 + 100000000000000000 = 549683111923543856. This equals the estimated
+external asset amount.
+
+# Confirm correct pool accounting
+
 akasha started with 500000000000000000000000rowan and now has 499999349683111923543856rowan. So akasha has
 500000000000000000000000rowan - 499999349683111923543856rowan = 650316888076456144rowan less rowan.
 200000000000000000rowan was spent on tx fees. So 650316888076456144rowan - 200000000000000000rowan = 450316888076456144rowan
 was given to the pool by akasha. In return akasha has gained 500000366455407949029238 - 500000000000000000000000 = 366455407949029238ceth
 from the pool.
 
-6. Check akash's gains/losses are reflected in the pool balances
+11. Check akash's gains/losses are reflected in the pool balances
 
 ```
 sifnoded q clp pool ceth
@@ -158,17 +202,19 @@ external_asset_balance = original_balance - amount_gained_by_akasha
 
 Which equals the queried external asset pool balance.
 
+# Equivalence with swapping
+
 Has akasha had a "cheap" swap? How much would akasha have if instead of adding and removing from the pool
 they had simply swapped 450316888076456144rowan for ceth?
 
-7. Reset the chain
+12. Reset the chain
 
 ```bash
 make init
 make run
 ```
 
-8. Recreate the ceth pool
+13. Recreate the ceth pool
 
 ```bash
 sifnoded tx clp create-pool \
@@ -182,7 +228,7 @@ sifnoded tx clp create-pool \
   -y
 ```
 
-9. Swap 450316888076456144rowan for ceth from akasha:
+14. Swap 450316888076456144rowan for ceth from akasha:
 
 ```bash
 sifnoded tx clp swap \
@@ -197,7 +243,7 @@ sifnoded tx clp swap \
   -y
 ```
 
-5. Query akasha balances:
+15. Query akasha balances:
 
 ```bash
 sifnoded q bank balances $(sifnoded keys show akasha -a --keyring-backend=test)

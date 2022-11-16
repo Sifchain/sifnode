@@ -56,6 +56,9 @@ service Query {
   rpc GetSwapFeeParams(SwapFeeParamsReq) returns (SwapFeeParamsRes) {
     option (google.api.http).get = "/sifchain/clp/v1/swap_fee_rate";
   };
+  rpc GetPoolShareEstimate(PoolShareEstimateReq) returns (PoolShareEstimateRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/pool_share_estimate";
+  };
 }
 
 message PoolReq {
@@ -201,4 +204,31 @@ message SwapFeeParamsRes {
     (gogoproto.nullable) = false
   ];
   repeated SwapFeeTokenParams token_params = 2;
+}
+
+message PoolShareEstimateReq {
+  sifnode.clp.v1.Asset external_asset = 1;
+  string native_asset_amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string external_asset_amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message PoolShareEstimateRes {
+  string percentage = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string native_asset_amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string external_asset_amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
 }
