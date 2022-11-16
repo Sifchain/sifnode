@@ -63,7 +63,7 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
-		LiquidityRemovalLockPeriod:   0,
+		LiquidityRemovalLockPeriod:   0, // set to zero since it's now only used when starting a new chain e.g. localnet
 		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
 		RewardPeriods:                nil,
 		RewardPeriodStartTime:        "",
