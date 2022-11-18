@@ -146,6 +146,11 @@ func TestQuerier_GetPoolShareEstimate(t *testing.T) {
 		expectedExternalAssetAmount sdk.Uint
 		expectedNativeAssetAmount   sdk.Uint
 		expectedPercentage          sdk.Dec
+		expectedSwapStatus          types.SwapStatus
+		expectedSwapFee             sdk.Uint
+		expectedSwapFeeRate         sdk.Dec
+		expectedSwapAmount          sdk.Uint
+		expectedSwapResult          sdk.Uint
 		err                         error
 		errString                   error
 	}{
@@ -164,6 +169,11 @@ func TestQuerier_GetPoolShareEstimate(t *testing.T) {
 			expectedExternalAssetAmount: sdk.NewUint(200),
 			expectedNativeAssetAmount:   sdk.NewUint(200),
 			expectedPercentage:          sdk.MustNewDecFromStr("0.166666666666666667"),
+			expectedSwapStatus:          types.SwapStatus_NO_SWAP,
+			expectedSwapFee:             sdk.ZeroUint(),
+			expectedSwapFeeRate:         sdk.ZeroDec(),
+			expectedSwapAmount:          sdk.ZeroUint(),
+			expectedSwapResult:          sdk.ZeroUint(),
 		},
 		{
 			name:                        "asymmetric",
@@ -180,6 +190,11 @@ func TestQuerier_GetPoolShareEstimate(t *testing.T) {
 			expectedExternalAssetAmount: sdk.NewUint(115),
 			expectedNativeAssetAmount:   sdk.NewUint(138),
 			expectedPercentage:          sdk.MustNewDecFromStr("0.115826702033598585"),
+			expectedSwapStatus:          types.SwapStatus_SELL_NATIVE,
+			expectedSwapFee:             sdk.ZeroUint(),
+			expectedSwapFeeRate:         sdk.MustNewDecFromStr("0.003"),
+			expectedSwapAmount:          sdk.NewUint(61),
+			expectedSwapResult:          sdk.NewUint(114),
 		},
 	}
 
@@ -236,6 +251,11 @@ func TestQuerier_GetPoolShareEstimate(t *testing.T) {
 			require.Equal(t, tc.expectedExternalAssetAmount.String(), res.ExternalAssetAmount.String())
 			require.Equal(t, tc.expectedNativeAssetAmount.String(), res.NativeAssetAmount.String())
 			require.Equal(t, tc.expectedPercentage.String(), res.Percentage.String())
+			require.Equal(t, tc.expectedSwapStatus, res.SwapInfo.Status)
+			require.Equal(t, tc.expectedSwapFee.String(), res.SwapInfo.Fee.String())
+			require.Equal(t, tc.expectedSwapFeeRate.String(), res.SwapInfo.FeeRate.String())
+			require.Equal(t, tc.expectedSwapAmount.String(), res.SwapInfo.Amount.String())
+			require.Equal(t, tc.expectedSwapResult.String(), res.SwapInfo.Result.String())
 		})
 	}
 }

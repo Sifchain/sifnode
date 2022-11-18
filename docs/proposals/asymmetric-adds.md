@@ -154,9 +154,18 @@ sifnoded query clp estimate-pool-share \
 {
 	"percentage": "0.183227703974514619",
 	"native_asset_amount": "549683111923543857",
-	"external_asset_amount": "366455407949029238"
+	"external_asset_amount": "366455407949029238",
+	"swap_info": {
+		"status": "SELL_NATIVE",
+		"fee": "1102674246586848",
+		"fee_rate": "0.003000000000000000",
+		"amount": "450316888076456143",
+		"result": "366455407949029237"
+	}
 }
 ```
+
+Where `swap_info` `swap_status` is one of `NO_SWAP`, `SELL_NATIVe`, `BUY_NATIVE`. 
 
 ## References
 

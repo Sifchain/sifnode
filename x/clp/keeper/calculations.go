@@ -158,7 +158,7 @@ func CalculatePoolUnits(P, R, A, r, a sdk.Uint, sellNativeSwapFeeRate, buyNative
 	case Symmetric:
 		// R/A == r/a
 		poolUnits, lpUnits := CalculatePoolUnitsSymmetric(R, r, P)
-		return poolUnits, lpUnits, NoSwap, sdk.Uint{}, nil
+		return poolUnits, lpUnits, NoSwap, sdk.ZeroUint(), nil
 	case NeedMoreX:
 		// Need more external token to make R/A == r/a
 		swapAmount := CalculateNativeSwapAmountAsymmetric(R, A, r, a, &sellNativeSwapFeeRateR, &pmtpCurrentRunningRateR)

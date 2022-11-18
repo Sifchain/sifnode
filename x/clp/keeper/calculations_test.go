@@ -1237,6 +1237,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			expectedPoolUnits:     sdk.NewUint(7733018877666646),
 			expectedLPunits:       sdk.NewUint(76564543343234),
 			expectedSwapStatus:    clpkeeper.NoSwap,
+			expectedSwapAmount:    sdk.ZeroUint(),
 		},
 		{
 			name:                  "negative symmetry - zero external",
@@ -1292,6 +1293,7 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			expectedPoolUnits:     sdk.NewUintFromString("1606938044258990275541962092341162602522202993783892346929152"),
 			expectedLPunits:       sdk.NewUint(1099511627776),
 			expectedSwapStatus:    clpkeeper.NoSwap,
+			expectedSwapAmount:    sdk.ZeroUint(),
 		},
 		{
 			name:                  "very big - negative symmetry",
