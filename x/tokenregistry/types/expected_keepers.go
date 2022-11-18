@@ -30,6 +30,8 @@ type Keeper interface {
 	SetFirstDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor)
 	AddMultipleTokens(ctx sdk.Context, entries []*RegistryEntry)
 	RemoveMultipleTokens(ctx sdk.Context, denoms []string)
+	GetPeggy2Denom(ctx sdk.Context, peggy1_denom string) (string, bool)
+	SetPeggy2Denom(ctx sdk.Context, peggy1_denom string, peggy2_denom string)
 }
 
 type AccountKeeper interface {
