@@ -231,4 +231,35 @@ message PoolShareEstimateRes {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
+  SwapInfo swap_info = 4 [
+    (gogoproto.nullable) = false
+  ];
+
+}
+
+enum SwapStatus {
+  UNSPECIFIED = 0;
+  NO_SWAP = 1;
+  SELL_NATIVE = 2;
+  BUY_NATIVE = 3;
+}
+
+message SwapInfo {
+  SwapStatus status = 1;
+  string fee = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string fee_rate = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string result= 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
 }

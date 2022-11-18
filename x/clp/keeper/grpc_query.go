@@ -289,7 +289,7 @@ func (k Querier) GetPoolShareEstimate(c context.Context, req *types.PoolShareEst
 
 	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
 
-	newPoolUnits, lpUnits, _, _, err := CalculatePoolUnits(
+	newPoolUnits, lpUnits, swapStatus, swapAmount, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		nativeAssetDepth,
 		externalAssetDepth,
@@ -301,6 +301,8 @@ func (k Querier) GetPoolShareEstimate(c context.Context, req *types.PoolShareEst
 	if err != nil {
 		return nil, err
 	}
+
+	feeRate, swapResult, feeAmount, resSwapStatus := calculateSwapInfo(swapStatus, swapAmount, nativeAssetDepth, externalAssetDepth, sellNativeSwapFeeRate, buyNativeSwapFeeRate, pmtpCurrentRunningRate)
 
 	newPoolUnitsD := sdk.NewDecFromBigInt(newPoolUnits.BigInt())
 	lpUnitsD := sdk.NewDecFromBigInt(lpUnits.BigInt())
@@ -317,6 +319,28 @@ func (k Querier) GetPoolShareEstimate(c context.Context, req *types.PoolShareEst
 		Percentage:          percentage,
 		NativeAssetAmount:   sdk.NewUintFromBigInt(nativeAssetAmountD.TruncateInt().BigInt()),
 		ExternalAssetAmount: sdk.NewUintFromBigInt(externalAssetAmountD.TruncateInt().BigInt()),
+		SwapInfo: types.SwapInfo{
+			Status:  resSwapStatus,
+			Fee:     feeAmount,
+			FeeRate: feeRate,
+			Amount:  swapAmount,
+			Result:  swapResult,
+		},
 	}, nil
 
+}
+
+func calculateSwapInfo(swapStatus int, swapAmount, nativeAssetDepth, externalAssetDepth sdk.Uint, sellNativeSwapFeeRate, buyNativeSwapFeeRate, pmtpCurrentRunningRate sdk.Dec) (sdk.Dec, sdk.Uint, sdk.Uint, types.SwapStatus) {
+	switch swapStatus {
+	case NoSwap:
+		return sdk.ZeroDec(), sdk.ZeroUint(), sdk.ZeroUint(), types.SwapStatus_NO_SWAP
+	case SellNative:
+		swapResult, liquidityFee := CalcSwapResult(false, nativeAssetDepth, swapAmount, externalAssetDepth, pmtpCurrentRunningRate, sellNativeSwapFeeRate)
+		return sellNativeSwapFeeRate, swapResult, liquidityFee, types.SwapStatus_SELL_NATIVE
+	case BuyNative:
+		swapResult, liquidityFee := CalcSwapResult(true, externalAssetDepth, swapAmount, nativeAssetDepth, pmtpCurrentRunningRate, buyNativeSwapFeeRate)
+		return buyNativeSwapFeeRate, swapResult, liquidityFee, types.SwapStatus_BUY_NATIVE
+	default:
+		panic("expect not to reach here!")
+	}
 }
