@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"errors"
 	"fmt"
 	"strconv"
@@ -29,9 +30,32 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
+func (srv msgServer) SetPause(goCtx context.Context, msg *types.MsgPause) (*types.MsgPauseResponse, error) {
+	response := &types.MsgPauseResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !srv.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_ETHBRIDGE, signer) {
+		return response, types.ErrNotEnoughPermissions
+	}
+
+	srv.Keeper.SetPause(ctx, &types.Pause{IsPaused: msg.IsPaused})
+	return response, nil
+}
+
+func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
+	response := &types.MsgLockResponse{}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if srv.Keeper.IsPaused(ctx) {
+		return response, types.ErrPaused
+	}
 	logger := srv.Keeper.Logger(ctx)
+	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
+		return nil, errors.Errorf("pegged token %s can't be locked", msg.Symbol)
+	}
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.Lock, "msg", zap.Reflect("message", msg))
 
@@ -44,7 +68,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
@@ -57,7 +81,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
-		return nil, err
+		return response, err
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
@@ -102,12 +126,21 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 	})
 
-	return &types.MsgLockResponse{}, nil
+	return response, nil
 }
 
 func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
+	response := &types.MsgBurnResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
+	if srv.Keeper.IsPaused(ctx) {
+		return response, types.ErrPaused
+	}
+	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		logger.Error("Native token can't be burn.",
+			"tokenSymbol", msg.Symbol)
+		return response, errors.Errorf("native token %s can't be burned", msg.Symbol)
+	}
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.Burn, "msg", zap.Reflect("message", msg))
 
@@ -120,7 +153,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
@@ -137,7 +170,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
-		return nil, err
+		return response, err
 	}
 
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
@@ -197,7 +230,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		),
 	})
 
-	return &types.MsgBurnResponse{}, nil
+	return response, nil
+
 }
 
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {

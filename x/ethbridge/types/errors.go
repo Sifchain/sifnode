@@ -13,6 +13,10 @@ var (
 	ErrInvalidEthereumChainID = sdkerrors.Register(ModuleName, 6, "invalid ethereum chain id")
 	ErrInvalidAmount          = sdkerrors.Register(ModuleName, 7, "amount must be a valid integer > 0")
 	ErrInvalidSymbol          = sdkerrors.Register(ModuleName, 8, "symbol must be 1 character or more")
-	// Set as 11 because 9 and 10 are present on master branch
-	ErrBlacklistedAddress = sdkerrors.Register(ModuleName, 11, "Ethereum Address is in blocklist, cannot execute tx")
+	ErrInvalidBurnSymbol      = sdkerrors.Register(ModuleName, 9,
+		fmt.Sprintf("symbol of token to burn must be in the form %v{ethereumSymbol}", PeggedCoinPrefix))
+	ErrCethAmount           = sdkerrors.Register(ModuleName, 10, "not enough ceth provided")
+	ErrNotEnoughPermissions = sdkerrors.Register(ModuleName, 11, "account does not have enough permissions")
+	ErrPaused               = sdkerrors.Register(ModuleName, 12, "transaction is paused")
+	ErrBlacklistedAddress = sdkerrors.Register(ModuleName, 13, "Ethereum Address is in blocklist, cannot execute tx")
 )

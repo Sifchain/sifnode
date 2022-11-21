@@ -69,3 +69,7 @@ message GenesisState {
   repeated string peggy_tokens = 2;
   string crosschain_fee_receive_account = 3;
 }
+
+message Pause {
+  bool is_paused = 1;
+}

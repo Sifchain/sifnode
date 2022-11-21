@@ -14,6 +14,7 @@ const (
 	QueryPropheciesCompleted       = "propheciesCompleted"
 
 	QueryBlacklist = "blacklist"
+	QueryPause       = "pause"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams

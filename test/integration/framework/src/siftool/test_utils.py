@@ -288,6 +288,8 @@ class EnvCtx:
         self.ceth_symbol = ceth_symbol
         self.generic_erc20_contract = generic_erc20_contract
         self.available_test_eth_accounts = None
+        self.eth_faucet = eth_faucet
+        self.sifchain_ethbridge_admin_account = self.rowan_source
 
         # Defaults
         self.wait_for_sif_balance_change_default_timeout = 90
@@ -306,9 +308,15 @@ class EnvCtx:
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
-    def get_bridge_bank_sc(self):
+    def get_bridge_bank_sc(self) -> Contract:
         abi, _, address = self.abi_provider.get_descriptor("BridgeBank")
         assert address, "No address for BridgeBank"
+        result = self.w3_conn.eth.contract(address=address, abi=abi)
+        return result
+
+    def get_bridge_token_sc(self) -> Contract:
+        abi, _, address = self.abi_provider.get_descriptor("BridgeToken")
+        assert address, "No address for BridgeToken"
         result = self.w3_conn.eth.contract(address=address, abi=abi)
         return result
 
