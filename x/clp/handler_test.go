@@ -395,8 +395,7 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	ctx, app := test.CreateTestAppClp(false)
-	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
-	_, err = app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	_, err = app.TokenRegistryKeeper.GetRegistryEntry(ctx, pool.ExternalAsset.Symbol)
 	swapFeeRate := sdk.NewDecWithPrec(3, 3)
 	assert.NoError(t, err)
 	if asymmetry.IsPositive() {

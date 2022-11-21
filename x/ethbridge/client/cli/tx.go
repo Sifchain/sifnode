@@ -3,7 +3,6 @@ package cli
 import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/ethbridge/utils"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"

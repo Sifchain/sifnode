@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"context"
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"errors"
 	"fmt"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"strconv"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
@@ -46,16 +46,11 @@ func (srv msgServer) SetPause(goCtx context.Context, msg *types.MsgPause) (*type
 }
 
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
-	response := &types.MsgLockResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if srv.Keeper.IsPaused(ctx) {
-		return response, types.ErrPaused
+		return nil, types.ErrPaused
 	}
 	logger := srv.Keeper.Logger(ctx)
-	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("pegged token %s can't be locked", msg.Symbol)
-	}
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.Lock, "msg", zap.Reflect("message", msg))
 
@@ -68,7 +63,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
@@ -81,7 +76,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
-		return response, err
+		return nil, err
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
@@ -126,7 +121,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 	})
 
-	return response, nil
+	return &types.MsgLockResponse{}, nil
 }
 
 func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
@@ -135,11 +130,6 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	logger := srv.Keeper.Logger(ctx)
 	if srv.Keeper.IsPaused(ctx) {
 		return response, types.ErrPaused
-	}
-	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("Native token can't be burn.",
-			"tokenSymbol", msg.Symbol)
-		return response, errors.Errorf("native token %s can't be burned", msg.Symbol)
 	}
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.Burn, "msg", zap.Reflect("message", msg))

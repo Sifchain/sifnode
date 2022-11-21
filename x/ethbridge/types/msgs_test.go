@@ -13,8 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	crypto "github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -163,7 +161,7 @@ func TestMsgSetBlacklistValidateBasic(t *testing.T) {
 }
 
 func TestPauseMsgEmptySignerReturnsError(t *testing.T) {
-	msgPause := types.MsgPause{Signer: "", IsPaused: true}
+	msgPause := MsgPause{Signer: "", IsPaused: true}
 	err := msgPause.ValidateBasic()
 	assert.Error(t, err, sdkerrors.ErrInvalidAddress)
 }
