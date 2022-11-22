@@ -2,7 +2,7 @@ import argparse
 import sys
 import time
 
-from siftool import test_utils, run_env, cosmos
+from siftool import test_utils, run_env, cosmos, diagnostics, sifchain, frontend, test_utils2
 from siftool.run_env import Integrator, UIStackEnvironment, Peggy2Environment, IBCEnvironment, IntegrationTestsEnvironment
 from siftool.project import Project, killall, force_kill_processes
 from siftool.common import *
@@ -33,7 +33,12 @@ def main(argv):
     project = cmd.project
     log = siftool_logger(__name__)
     argparser = argparse.ArgumentParser()
-    if what == "project-init":
+    if what == "venv":
+        log.info("Using Python {}.{}.{}".format(sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
+        log.info("sys.path={}".format(repr(sys.path)))
+        log.info("Project root: {}".format(project.project_dir()))
+        log.info("Project virtual environment location: {}".format(project.get_project_venv_dir()))
+    elif what == "project-init":
         project.init()
     elif what == "clean":
         project.clean()
@@ -183,6 +188,28 @@ def main(argv):
         signer_addr, signer_private_key = siftool.eth.web3_create_account()
         ethereum_chain_id = 9999
         geth.init(ethereum_chain_id, [signer_addr], datadir)
+    elif what == "dump-block-times":
+        argparser.add_argument("--node", type=str, required=True)
+        argparser.add_argument("--file", type=str, required=True)
+        argparser.add_argument("--from-block", type=int)
+        argparser.add_argument("--to-block", type=int)
+        args = argparser.parse_args(argv[1:])
+        sifnoded = sifchain.Sifnoded(cmd, node=args.node)
+        from_block = args.from_block if args.from_block is not None else 1
+        to_block = args.to_block if args.to_block is not None else sifnoded.get_current_block()
+        block_times = diagnostics.get_block_times(sifnoded, from_block, to_block)
+        block_times = [(block_times[i][0], (block_times[i][1] - block_times[i - 1][1]).total_seconds())
+            for i in range(1, len(block_times))]
+        lines = ["{},{:.3f}".format(t[0], t[1]) for t in block_times]
+        with open(args.file, "w") as f:
+            f.write(joinlines(lines))
+    elif what == "create-wallets":
+        argparser.add_argument("count", type=int)
+        argparser.add_argument("--home", type=str)
+        args = argparser.parse_args(argv[1:])
+        test_utils2.PredefinedWallets.create(cmd, args.count, args.home)
+    elif what == "run-ui":
+        frontend.run_local_ui(cmd)
     else:
         raise Exception("Missing/unknown command")
 

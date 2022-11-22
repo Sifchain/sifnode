@@ -25,7 +25,7 @@ smart_contract_file=cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeR
 BUILD_TAGS ?= ${IMAGE_TAG}
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags "$(GOTAGS) ${BUILD_TAGS}"
 
-BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
+BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer ./cmd/siftest
 
  # You can regenerate proto_files with
 #	find . -name *.proto | sort | grep -v node_mo | grep -v test/integration | xargs echo

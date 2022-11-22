@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/ethbridge/utils"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -21,6 +22,7 @@ import (
 )
 
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
+//
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
@@ -419,6 +421,38 @@ func GetCmdSetBlacklist() *cobra.Command {
 
 			msg.From = clientCtx.FromAddress.String()
 
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdPause() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-pause [pause]",
+		Short: "pause or unpause Lock and Burn transactions",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			isPaused, err := utils.ParseStringToBool(args[0])
+			if err != nil {
+				return err
+			}
+			signer := clientCtx.GetFromAddress()
+			msg := types.MsgPause{
+				Signer:   signer.String(),
+				IsPaused: isPaused,
+			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

@@ -22,7 +22,7 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	addrs := sifapp.AddTestAddrs(app, ctx, 6, initTokens)
-	decorator := ante.AdjustGasPriceDecorator{}
+	decorator := ante.NewAdjustGasPriceDecorator(app.AdminKeeper)
 	highGasPrice := sdk.DecCoin{
 		Denom:  "rowan",
 		Amount: sdk.MustNewDecFromStr("0.5"),
@@ -76,7 +76,7 @@ func TestAdjustGasPriceDecorator_AnteHandle_MinFee(t *testing.T) {
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	addrs := sifapp.AddTestAddrs(app, ctx, 6, initTokens)
-	decorator := ante.AdjustGasPriceDecorator{}
+	decorator := ante.NewAdjustGasPriceDecorator(app.AdminKeeper)
 	highFee := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(100000000000000000))) // 0.1
 	lowFee := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(10000000000000000)))   // 0.01
 

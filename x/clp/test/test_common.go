@@ -55,6 +55,7 @@ func CreateTestAppClpWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) (
 			{Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 			{Denom: "atom", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
 			{Denom: "cusdc", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}},
+			{Denom: "rowan"},
 		},
 	})
 	app.ClpKeeper.SetPmtpRateParams(ctx, types.PmtpRateParams{

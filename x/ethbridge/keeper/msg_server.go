@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	"strconv"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
@@ -29,8 +30,26 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+func (srv msgServer) SetPause(goCtx context.Context, msg *types.MsgPause) (*types.MsgPauseResponse, error) {
+	response := &types.MsgPauseResponse{}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return response, err
+	}
+	if !srv.adminKeeper.IsAdminAccount(ctx, admintypes.AdminType_ETHBRIDGE, signer) {
+		return response, types.ErrNotEnoughPermissions
+	}
+
+	srv.Keeper.SetPause(ctx, &types.Pause{IsPaused: msg.IsPaused})
+	return response, nil
+}
+
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	if srv.Keeper.IsPaused(ctx) {
+		return nil, types.ErrPaused
+	}
 	logger := srv.Keeper.Logger(ctx)
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.Lock, "msg", zap.Reflect("message", msg))
@@ -106,8 +125,12 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 }
 
 func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
+	response := &types.MsgBurnResponse{}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
+	if srv.Keeper.IsPaused(ctx) {
+		return response, types.ErrPaused
+	}
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.Burn, "msg", zap.Reflect("message", msg))
 
@@ -120,7 +143,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return response, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
@@ -137,7 +160,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
-		return nil, err
+		return response, err
 	}
 
 	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
@@ -197,7 +220,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		),
 	})
 
-	return &types.MsgBurnResponse{}, nil
+	return response, nil
+
 }
 
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {

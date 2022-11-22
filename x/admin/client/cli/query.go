@@ -18,7 +18,7 @@ func GetQueryCmd() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	cmd.AddCommand(GetCmdAccounts())
+	cmd.AddCommand(GetCmdAccounts(), GetCmdParams())
 	return cmd
 }
 
@@ -34,6 +34,28 @@ func GetCmdAccounts() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.ListAccounts(context.Background(), &types.ListAccountsRequest{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(res))
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Short: "query params",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.GetParams(context.Background(), &types.GetParamsRequest{})
 			if err != nil {
 				return err
 			}
