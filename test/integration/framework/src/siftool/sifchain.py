@@ -1,9 +1,11 @@
 import base64
+import contextlib
 import json
 import time
 import grpc
 import re
-import web3
+import toml
+import web3  # TODO Remove dependency
 from typing import Mapping, Any, Tuple, AnyStr
 from siftool import command, cosmos, eth
 from siftool.common import *
@@ -56,78 +58,442 @@ def ondemand_import_generated_protobuf_sources():
     import cosmos.tx.v1beta1.service_pb2 as cosmos_pb
     import cosmos.tx.v1beta1.service_pb2_grpc as cosmos_pb_grpc
 
+def mnemonic_to_address(cmd: command.Command, mnemonic: Iterable[str]):
+    tmpdir = cmd.mktempdir()
+    sifnode = Sifnoded(cmd, home=tmpdir)
+    try:
+       return sifnode.keys_add("tmp", mnemonic)["address"]
+    finally:
+        cmd.rmdir(tmpdir)
+
+def sifnoded_parse_output_lines(stdout: str) -> Mapping:
+    # TODO Some values are like '""'
+    pat = re.compile("^(.*?): (.*)$")
+    result = {}
+    for line in stdout.splitlines():
+        m = pat.match(line)
+        result[m[1]] = m[2]
+    return result
+
+def format_pubkey(pubkey: JsonDict) -> str:
+    return "{{\"@type\":\"{}\",\"key\":\"{}\"}}".format(pubkey["@type"], pubkey["key"])
+
+def format_peer_address(node_id: str, hostname: str, p2p_port: int) -> str:
+    return "{}@{}:{}".format(node_id, hostname, p2p_port)
+
+def format_node_url(hostname: str, p2p_port: int) -> str:
+    return "tcp://{}:{}".format(hostname, p2p_port)
+
+# Use this to check the output of sifnoded commands if transaction was successful. This can only be used with
+# "--broadcast-mode block" when the stack trace is returned in standard output (json/yaml) field `raw_log`.
+# @TODO Sometimes, raw_log is also json file, c.f. Sifnoded.send()
+def check_raw_log(res: JsonDict):
+    if res["code"] == 0:
+        assert res["height"] != 0
+        return
+    lines = res["raw_log"].splitlines()
+    last_line = lines[-1]
+    raise SifnodedException(last_line)
+
+def create_rewards_descriptor(rewards_period_id: str, start_block: int, end_block: int,
+    multipliers: Iterable[Tuple[str, int]], allocation: int, reward_period_default_multiplier: float,
+    reward_period_distribute: bool, reward_period_mod: int
+) -> RewardsParams:
+    return {
+        "reward_period_id": rewards_period_id,
+        "reward_period_start_block": start_block,
+        "reward_period_end_block": end_block,
+        "reward_period_allocation": str(allocation),
+        "reward_period_pool_multipliers": [{
+            "pool_multiplier_asset": denom,
+            "multiplier": str(multiplier)
+        } for denom, multiplier in multipliers],
+        "reward_period_default_multiplier": str(reward_period_default_multiplier),
+        "reward_period_distribute": reward_period_distribute,
+        "reward_period_mod": reward_period_mod
+    }
+
+def create_lppd_params(start_block: int, end_block: int, rate: float, mod: int) -> LPPDParams:
+    return {
+        "distribution_period_block_rate": str(rate),
+        "distribution_period_start_block": start_block,
+        "distribution_period_end_block": end_block,
+        "distribution_period_mod": mod
+    }
+
 
 class Sifnoded:
-    def __init__(self, cmd, home: Optional[str] = None):
+    def __init__(self, cmd, /, home: Optional[str] = None, node: Optional[str] = None, chain_id: Optional[str] = None,
+        binary: Optional[str] = None
+    ):
         self.cmd = cmd
-        self.binary = "sifnoded"
+        self.binary = binary or "sifnoded"
         self.home = home
+        self.node = node
+        self.chain_id = chain_id
         self.keyring_backend = "test"
+
+        self.fees = sif_tx_fee_in_rowan
+        self.gas = None
+        self.gas_adjustment = 1.5
+        self.gas_prices = "0.5rowan"
+
+        # Some transactions such as adding tokens to token registry or adding liquidity pools need a lot of gas and
+        # will exceed the default implicit value of 200000.  According to Brandon the problem is in the code that loops
+        # over existing entries resulting in gas that is proportional to the number of existing entries.
+        self.high_gas = 200000 * 10000
+
+        # Firing transactions with "sifnoded tx bank send" in rapid succession does not work. This is currently a
+        # known limitation of Cosmos SDK, see https://github.com/cosmos/cosmos-sdk/issues/4186
+        # Instead, we take advantage of batching multiple denoms to single account with single send command (amounts
+        # separated by by comma: "sifnoded tx bank send ... 100denoma,100denomb,100denomc") and wait for destination
+        # account to show changes for all denoms after each send. But also batches don't work reliably if they are too
+        # big, so we limit the maximum batch size here.
+        self.max_send_batch_size = 5
+
+        self.broadcast_mode = None
         # self.sifnoded_burn_gas_cost = 16 * 10**10 * 393000  # see x/ethbridge/types/msgs.go for gas
         # self.sifnoded_lock_gas_cost = 16 * 10**10 * 393000
+        # TODO Rename, this is now shared among all callers of _paged_read()
+        self.get_balance_default_retries = 0
 
-    def init(self, moniker, chain_id):
-        args = [self.binary, "init", moniker, "--chain-id", chain_id]
+        # Defaults
+        self.wait_for_balance_change_default_timeout = 90
+        self.wait_for_balance_change_default_change_timeout = None
+        self.wait_for_balance_change_default_polling_time = 2
+
+    # Returns what looks like genesis file data
+    def init(self, moniker):
+        args = [self.binary, "init", moniker] + self._home_args() + self._chain_id_args()
         res = self.cmd.execst(args)
-        return json.loads(res[2])  # output is on stderr
+        return json.loads(stderr(res))
 
     def keys_list(self):
-        args = ["keys", "list", "--output", "json"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+        args = ["keys", "list", "--output", "json"] + self._home_args() + self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
         return json.loads(stdout(res))
 
     def keys_show(self, name, bech=None):
         args = ["keys", "show", name] + \
-            (["--bech", bech] if bech else [])
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+            (["--bech", bech] if bech else []) + \
+            self._home_args() + \
+            self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
         return yaml_load(stdout(res))
 
-    def get_val_address(self, moniker):
-        res = self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", moniker], keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+    def get_val_address(self, moniker) -> cosmos.BechAddress:
+        args = ["keys", "show", "-a", "--bech", "val", moniker] + self._home_args() + self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
         expected = exactly_one(stdout_lines(res))
         result = exactly_one(self.keys_show(moniker, bech="val"))["address"]
         assert result == expected
         return result
 
-    def keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Mapping[str, Any]:
+    def _keys_add(self, moniker: str, mnemonic: Optional[Iterable[str]] = None) -> Tuple[JsonDict, Iterable[str]]:
         if mnemonic is None:
-            res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend=self.keyring_backend,
-                 sifnoded_home=self.home, stdin=["y"])
-            _unused_mnemonic = stderr(res).splitlines()[-1].split(" ")
+            args = ["keys", "add", moniker] + self._home_args() + self._keyring_backend_args()
+            res = self.sifnoded_exec(args, stdin=["y"])
+            mnemonic = stderr(res).splitlines()[-1].split(" ")
         else:
-            res = self.sifnoded_exec(["keys", "add", moniker, "--recover"], keyring_backend=self.keyring_backend,
-                sifnoded_home=self.home, stdin=[" ".join(mnemonic)])
+            args = ["keys", "add", moniker, "--recover"] + self._home_args() + self._keyring_backend_args()
+            res = self.sifnoded_exec(args, stdin=[" ".join(mnemonic)])
+        account = exactly_one(yaml_load(stdout(res)))
+        return account, mnemonic
+
+    def keys_add(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> JsonDict:
+        moniker = self.__fill_in_moniker(moniker)
+        account, _ = self._keys_add(moniker, mnemonic=mnemonic)
+        return account
+
+    def generate_mnemonic(self) -> List[str]:
+        args = ["keys", "mnemonic"] + self._home_args() + self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
+        return exactly_one(stderr(res).splitlines()).split(" ")
+
+    def create_addr(self, moniker: Optional[str] = None, mnemonic: Optional[Iterable[str]] = None) -> cosmos.Address:
+        return self.keys_add(moniker=moniker, mnemonic=mnemonic)["address"]
+
+    def keys_add_multisig(self, moniker: Optional[str], signers: Iterable[cosmos.KeyName], multisig_threshold: int):
+        moniker = self.__fill_in_moniker(moniker)
+        args = ["keys", "add", moniker, "--multisig", ",".join(signers), "--multisig-threshold",
+            str(multisig_threshold)] + self._home_args() + self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
         account = exactly_one(yaml_load(stdout(res)))
         return account
 
+    def __fill_in_moniker(self, moniker):
+        return moniker if moniker else "temp-{}".format(random_string(10))
+
     def keys_delete(self, name: str):
-        self.cmd.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", self.keyring_backend], stdin=["y"], check_exit=False)
+        self.cmd.execst(["sifnoded", "keys", "delete", name] + self._home_args() + self._keyring_backend_args(),
+            stdin=["y"], check_exit=False)
+
+    def query_account(self, addr: cosmos.Address) -> JsonDict:
+        args = ["query", "auth", "account", addr, "--output", "json"] + self._node_args() + self._chain_id_args()
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))
+
+    def get_acct_seq(self, addr: cosmos.Address) -> Tuple[int, int]:
+        account = self.query_account(addr)
+        account_number = account["account_number"]
+        account_sequence = int(account["sequence"])
+        return account_number, account_sequence
 
     def add_genesis_account(self, sifnodeadmin_addr: cosmos.Address, tokens: cosmos.Balance):
         tokens_str = cosmos.balance_format(tokens)
-        self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str], sifnoded_home=self.home)
+        self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str] + self._home_args() + self._keyring_backend_args())
 
-    def add_genesis_validators(self, address: cosmos.Address):
-        args = ["sifnoded", "add-genesis-validators", address]
-        res = self.cmd.execst(args)
+    # TODO Obsolete
+    def add_genesis_account_directly_to_existing_genesis_json(self,
+        extra_balances: Mapping[cosmos.Address, cosmos.Balance]
+    ):
+        genesis = self.load_genesis_json()
+        self.add_accounts_to_existing_genesis(genesis, extra_balances)
+        self.save_genesis_json(genesis)
+
+    def add_accounts_to_existing_genesis(self, genesis: JsonDict, extra_balances: Mapping[cosmos.Address, cosmos.Balance]):
+        bank = genesis["app_state"]["bank"]
+        # genesis.json uses a bit different structure for balances so we need to convert to and from our balances.
+        # Whatever is in extra_balances will be added to the existing amounts.
+        # We must also update supply which must be the sum of all balances. We assume that it initially already is.
+        # Cosmos SDK wants coins to be sorted or it will panic during chain initialization.
+        balances = {b["address"]: {c["denom"]: int(c["amount"]) for c in b["coins"]} for b in bank["balances"]}
+        supply = {b["denom"]: int(b["amount"]) for b in bank["supply"]}
+        accounts = genesis["app_state"]["auth"]["accounts"]
+        for addr, bal in extra_balances.items():
+            b = cosmos.balance_add(balances.get(addr, {}), bal)
+            balances[addr] = b
+            supply = cosmos.balance_add(supply, bal)
+        accounts.extend([{
+          "@type": "/cosmos.auth.v1beta1.BaseAccount",
+          "address": addr,
+          "pub_key": None,
+          "account_number": "0",
+          "sequence": "0"
+        } for addr in set(balances).difference(set(x["address"] for x in accounts))])
+        bank["balances"] = [{"address": a, "coins": [{"denom": d, "amount": str(c[d])} for d in sorted(c)]} for a, c in balances.items()]
+        bank["supply"] = [{"denom": d, "amount": str(supply[d])} for d in sorted(supply)]
+
+    def load_genesis_json(self) -> JsonDict:
+        genesis_json_path = os.path.join(self.get_effective_home(), "config", "genesis.json")
+        return json.loads(self.cmd.read_text_file(genesis_json_path))
+
+    def save_genesis_json(self, genesis: JsonDict):
+        genesis_json_path = os.path.join(self.get_effective_home(), "config", "genesis.json")
+        self.cmd.write_text_file(genesis_json_path, json.dumps(genesis))
+
+    def load_app_toml(self) -> JsonDict:
+        app_toml_path = os.path.join(self.get_effective_home(), "config", "app.toml")
+        with open(app_toml_path, "r") as app_toml_file:
+            return toml.load(app_toml_file)
+
+    def save_app_toml(self, data: JsonDict):
+        app_toml_path = os.path.join(self.get_effective_home(), "config", "app.toml")
+        with open(app_toml_path, "w") as app_toml_file:
+            app_toml_file.write(toml.dumps(data))
+
+    def load_config_toml(self) -> JsonDict:
+        config_toml_path = os.path.join(self.get_effective_home(), "config", "config.toml")
+        with open(config_toml_path, "r") as config_toml_file:
+            return toml.load(config_toml_file)
+
+    def save_config_toml(self, data: JsonDict):
+        config_toml_path = os.path.join(self.get_effective_home(), "config", "config.toml")
+        with open(config_toml_path, "w") as config_toml_file:
+            config_toml_file.write(toml.dumps(data))
+
+    def enable_rpc_port(self):
+        app_toml = self.load_app_toml()
+        app_toml["api"]["enable"] = True
+        app_toml["api"]["address"] = format_node_url(ANY_ADDR, SIFNODED_DEFAULT_API_PORT)
+        self.save_app_toml(app_toml)
+
+    def get_effective_home(self) -> str:
+        return self.home if self.home is not None else self.cmd.get_user_home(".sifnoded")
+
+    def add_genesis_clp_admin(self, address: cosmos.Address):
+        args = ["add-genesis-clp-admin", address] + self._home_args() + self._keyring_backend_args()
+        self.sifnoded_exec(args)
+
+    # Modifies genesis.json and adds the address to .oracle.address_whitelist array.
+    def add_genesis_validators(self, address: cosmos.BechAddress):
+        args = ["add-genesis-validators", address] + self._home_args() + self._keyring_backend_args()
+        res = self.sifnoded_exec(args)
         return res
 
     # At the moment only on future/peggy2 branch, called from PeggyEnvironment
-    def add_genesis_validators_peggy(self, evm_network_descriptor: int, valoper: str, validator_power: int):
-        self.sifnoded_exec(["add-genesis-validators", str(evm_network_descriptor), valoper, str(validator_power)],
-            sifnoded_home=self.home)
+    def add_genesis_validators_peggy(self, evm_network_descriptor: int, valoper: cosmos.BechAddress, validator_power: int):
+        assert on_peggy2_branch
+        args = ["add-genesis-validators", str(evm_network_descriptor), valoper, str(validator_power)] + \
+            self._home_args()
+        self.sifnoded_exec(args)
 
     def set_genesis_oracle_admin(self, address):
-        self.sifnoded_exec(["set-genesis-oracle-admin", address], sifnoded_home=self.home)
+        self.sifnoded_exec(["set-genesis-oracle-admin", address] + self._home_args() + self._keyring_backend_args())
 
     def set_genesis_token_registry_admin(self, address):
-        self.sifnoded_exec(["set-genesis-token-registry-admin", address], sifnoded_home=self.home)
+        self.sifnoded_exec(["set-genesis-token-registry-admin", address] + self._home_args())
 
     def set_genesis_whitelister_admin(self, address):
-        self.sifnoded_exec(["set-genesis-whitelister-admin", address], sifnoded_home=self.home)
+        self.sifnoded_exec(["set-genesis-whitelister-admin", address] + self._home_args() + self._keyring_backend_args())
 
     def set_gen_denom_whitelist(self, denom_whitelist_file):
-        self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=self.home)
+        self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file] + self._home_args())
+
+    def tendermint_show_node_id(self) -> str:
+        args = ["tendermint", "show-node-id"] + self._home_args()
+        res = self.sifnoded_exec(args)
+        return exactly_one(stdout(res).splitlines())
+
+    def tendermint_show_validator(self):
+        args = ["tendermint", "show-validator"] + self._home_args()
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))
+
+    # self.node ("--node") should point to existing validator (i.e. node 0) which must be up.
+    # The balance of from_acct (from node 0's perspective) must be greater than the staking amount.
+    # amount must be a single denom, and must denominated as per config/app_state.toml::staking.params.bond_denom
+    # pubkey must be from "tendermint show validator", NOT from "keys add"
+    def staking_create_validator(self, amount: cosmos.Balance, pubkey: JsonDict, moniker: str, commission_rate: float,
+        commission_max_rate: float, commission_max_change_rate: float, min_self_delegation: int,
+        from_acct: cosmos.Address, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        assert len(amount) == 1  # Maybe not? We haven't seen staking with more than one denom yet...
+        assert cosmos.balance_exceeds(self.get_balance(from_acct), amount)
+        assert pubkey["@type"] == "/cosmos.crypto.ed25519.PubKey"
+        args = ["tx", "staking", "create-validator", "--amount", cosmos.balance_format(amount), "--pubkey",
+            format_pubkey(pubkey), "--moniker", moniker, "--commission-rate", str(commission_rate),
+            "--commission-max-rate", str(commission_max_rate), "--commission-max-change-rate",
+            str(commission_max_change_rate), "--min-self-delegation", str(min_self_delegation), "--from", from_acct] + \
+            self._home_args() + self._chain_id_args() + self._node_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def staking_delegate(self, validator_addr, amount: cosmos.Balance, from_addr: cosmos.Balance,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "staking", "delegate", validator_addr, cosmos.balance_format(amount), "--from", from_addr] + \
+            self._home_args() + self._keyring_backend_args() + self._node_args() + self._chain_id_args() + \
+            self._fees_args() + self._fees_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
+            self._yes_args()
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def staking_edit_validator(self, commission_rate: float, from_acct: cosmos.Address,
+        broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        args = ["tx", "staking", "edit-validator", "--from", from_acct, "--commission-rate", str(commission_rate)] + \
+            self._chain_id_args() + self._home_args() + self._node_args() + self._keyring_backend_args() + \
+            self._fees_args() + self._broadcast_mode_args(broadcast_mode) + self._yes_args()
+        res = self.sifnoded_exec(args)
+        return yaml_load(stdout(res))
+
+    def query_staking_validators(self) -> JsonObj:
+        args = ["query", "staking", "validators"] + self._home_args() + self._node_args()
+        res = self._paged_read(args, "validators")
+        return res
+
+    # See scripts/ibc/tokenregistration for more information and examples.
+    # JSON file can be generated with "sifnoded q tokenregistry generate"
+    def create_tokenregistry_entry(self, symbol: str, sifchain_symbol: str, decimals: int,
+        permissions: Iterable[str] = None
+    ) -> TokenRegistryParams:
+        permissions = permissions if permissions is not None else ["CLP", "IBCEXPORT", "IBCIMPORT"]
+        upper_symbol = symbol.upper()  # Like "USDT"
+        return {
+            "decimals": str(decimals),
+            "denom": sifchain_symbol,
+            "base_denom": sifchain_symbol,
+            "path": "",
+            "ibc_channel_id": "",
+            "ibc_counterparty_channel_id": "",
+            "display_name": upper_symbol,
+            "display_symbol": "",
+            "network": "",
+            "address": "",
+            "external_symbol": upper_symbol,
+            "transfer_limit": "",
+            "permissions": list(permissions),
+            "unit_denom": "",
+            "ibc_counterparty_denom": "",
+            "ibc_counterparty_chain_id": "",
+        }
+
+    # from_sif_addr has to be the address which was used at genesis time for "set-genesis-whitelister-admin".
+    # You need to have its private key in the test keyring.
+    # This is needed when creating pools for the token or when doing IBC transfers.
+    # If you are calling this for several tokens, you need to call it synchronously
+    # (i.e. wait_for_current_block_to_be_mined(), or broadcast_mode="block"). Otherwise this will silently fail.
+    # This is used in test_many_pools_and_liquidity_providers.py
+    def token_registry_register(self, entry: TokenRegistryParams, from_sif_addr: cosmos.Address,
+        account_seq: Optional[Tuple[int, int]] = None, broadcast_mode: Optional[str] = None
+    ) -> JsonDict:
+        # Check that we have the private key in test keyring. This will throw an exception if we don't.
+        assert self.keys_show(from_sif_addr)
+        # This command requires a single TokenRegistryEntry, even though the JSON file has "entries" as a list.
+        # If not: "Error: exactly one token entry must be specified in input file"
+        token_data = {"entries": [entry]}
+        with self._with_temp_json_file(token_data) as tmp_registry_json:
+            args = ["tx", "tokenregistry", "register", tmp_registry_json, "--from", from_sif_addr, "--output",
+                "json"] + self._home_args() + self._keyring_backend_args() + self._chain_id_args() + \
+                self._account_number_and_sequence_args(account_seq) + \
+                self._node_args() + self._high_gas_prices_args() + self._broadcast_mode_args(broadcast_mode=broadcast_mode) + \
+                self._yes_args()
+            res = self.sifnoded_exec(args)
+            res = json.loads(stdout(res))
+            # Example of successful output: {"height":"196804","txhash":"C8252E77BCD441A005666A4F3D76C99BD35F9CB49AA1BE44CBE2FFCC6AD6ADF4","codespace":"","code":0,"data":"0A270A252F7369666E6F64652E746F6B656E72656769737472792E76312E4D73675265676973746572","raw_log":"[{\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/sifnode.tokenregistry.v1.MsgRegister\"}]}]}]","logs":[{"msg_index":0,"log":"","events":[{"type":"message","attributes":[{"key":"action","value":"/sifnode.tokenregistry.v1.MsgRegister"}]}]}],"info":"","gas_wanted":"200000","gas_used":"115149","tx":null,"timestamp":""}
+            if res["raw_log"].startswith("signature verification failed"):
+                raise Exception(res["raw_log"])
+            if res["raw_log"].startswith("failed to execute message"):
+                raise Exception(res["raw_log"])
+            check_raw_log(res)
+            return res
+
+    def token_registry_register_batch(self, from_sif_addr: cosmos.Address, entries: Iterable[TokenRegistryParams]):
+        account_number, account_sequence = self.get_acct_seq(from_sif_addr)
+        token_registry_entries_before = set(e["denom"] for e in self.query_tokenregistry_entries())
+        for entry in entries:
+            res = self.token_registry_register(entry, from_sif_addr, account_seq=(account_number, account_sequence))
+            check_raw_log(res)
+            account_sequence += 1
+        self.wait_for_last_transaction_to_be_mined()
+        token_registry_entries_after = set(e["denom"] for e in self.query_tokenregistry_entries())
+        token_registry_entries_added = token_registry_entries_after.difference(token_registry_entries_before)
+        assert token_registry_entries_added == set(e["denom"] for e in entries), \
+            "Some tokenregistry registration have failed"
+
+    def query_tokenregistry_entries(self):
+        args = ["query", "tokenregistry", "entries"] + self._node_args() + self._chain_id_args()
+        res = self.sifnoded_exec(args)
+        return json.loads(stdout(res))["entries"]
+
+    # Creates file config/gentx/gentx-*.json
+    def gentx(self, name: str, stake: cosmos.Balance, keyring_dir: Optional[str] = None,
+        commission_rate: Optional[float] = None, commission_max_rate: Optional[float] = None,
+        commission_max_change_rate: Optional[float] = None\
+    ):
+        # TODO Make chain_id an attribute
+        args = ["gentx", name, cosmos.balance_format(stake)] + \
+            (["--keyring-dir", keyring_dir] if keyring_dir is not None else []) + \
+            (["--commission-rate", str(commission_rate)] if commission_rate is not None else []) + \
+            (["--commission-max-rate", str(commission_max_rate)] if commission_max_rate is not None else []) + \
+            (["--commission-max-change-rate", str(commission_max_change_rate)] if commission_max_change_rate is not None else []) + \
+            self._home_args() + self._keyring_backend_args() + self._chain_id_args()
+        res = self.sifnoded_exec(args)
+        return exactly_one(stderr(res).splitlines())
+
+    # Modifies genesis.json and adds .genutil.gen_txs (presumably from config/gentx/gentx-*.json)
+    def collect_gentx(self) -> JsonDict:
+        args = ["collect-gentxs"] + self._home_args()  # Must not use --keyring-backend
+        res = self.sifnoded_exec(args)
+        return json.loads(stderr(res))
+
+    def validate_genesis(self):
+        args = ["validate-genesis"] + self._home_args()  # Must not use --keyring-backend
+        res = self.sifnoded_exec(args)
+        res = exactly_one(stdout(res).splitlines())
+        assert res.endswith(" is a valid genesis file")
 
     # Pause the ethbridge module's Lock/Burn on an evm_network_descriptor
     def pause_peggy_bridge(self, admin_account_address) -> List[Mapping[str, Any]]:
@@ -179,46 +545,56 @@ class Sifnoded:
         from_account: cosmos.Address, chain_id: str
     ) -> List[Mapping[str, Any]]:
         args = ["tx", "tokenregistry", "set-registry", registry_path, "--gas-prices", sif_format_amount(*gas_prices),
-            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json",
-            "--yes"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
+            "--gas-adjustment", str(gas_adjustment), "--from", from_account, "--chain-id", chain_id, "--output", "json"] + \
+            self._home_args() + self._keyring_backend_args() + self._yes_args()
+        res = self.sifnoded_exec(args)
         return [json.loads(x) for x in stdout(res).splitlines()]
 
     def peggy2_set_cross_chain_fee(self, admin_account_address, network_id, ethereum_cross_chain_fee_token,
-        cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee, admin_account_name, chain_id, gas_prices,
+        cross_chain_fee_base, cross_chain_lock_fee, cross_chain_burn_fee, admin_account_name, gas_prices,
         gas_adjustment
     ):
         args = ["tx", "ethbridge", "set-cross-chain-fee", str(network_id),
             ethereum_cross_chain_fee_token, str(cross_chain_fee_base), str(cross_chain_lock_fee),
-            str(cross_chain_burn_fee), "--from", admin_account_name, "--chain-id", chain_id, "--gas-prices",
-            sif_format_amount(*gas_prices), "--gas-adjustment", str(gas_adjustment), "-y"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
-        return res
+            str(cross_chain_burn_fee), "--from", admin_account_name, "--gas-prices", sif_format_amount(*gas_prices),
+            "--gas-adjustment", str(gas_adjustment)] + self._home_args() + self._keyring_backend_args() + \
+            self._chain_id_args() + self._yes_args()
+        return self.sifnoded_exec(args)
 
-    def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, chain_id, consensus_needed):
+    def peggy2_update_consensus_needed(self, admin_account_address, hardhat_chain_id, consensus_needed):
         args = ["tx", "ethbridge", "update-consensus-needed", str(hardhat_chain_id),
-            str(consensus_needed), "--from", admin_account_address, "--chain-id", chain_id, "--gas-prices",
-            "0.5rowan", "--gas-adjustment", "1.5", "-y"]
-        res = self.sifnoded_exec(args, keyring_backend=self.keyring_backend, sifnoded_home=self.home)
-        return res
+            str(consensus_needed), "--from", admin_account_address] + self._home_args() + \
+               self._keyring_backend_args() + self._gas_prices_args() + self._chain_id_args() + self._yes_args()
+        return self.sifnoded_exec(args)
 
-    def sifnoded_start(self, tcp_url=None, minimum_gas_prices: Optional[GasFees] = None,
-        log_format_json: bool = False, log_file: Optional[IO] = None
+    # TODO Rename tcp_url to rpc_laddr + remove dependency on self.node
+    def sifnoded_start(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
+        log_format_json: bool = False, log_file: Optional[IO] = None, log_level: Optional[str] = None,
+        trace: bool = False, p2p_laddr: Optional[str] = None, grpc_address: Optional[str] = None,
+        grpc_web_address: Optional[str] = None, address: Optional[str] = None
     ):
-        sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, minimum_gas_prices=minimum_gas_prices,
-            log_format_json=log_format_json)
+        sifnoded_exec_args = self.build_start_cmd(tcp_url=tcp_url, p2p_laddr=p2p_laddr, grpc_address=grpc_address,
+            grpc_web_address=grpc_web_address, address=address, minimum_gas_prices=minimum_gas_prices,
+            log_format_json=log_format_json, log_level=log_level, trace=trace)
         return self.cmd.spawn_asynchronous_process(sifnoded_exec_args, log_file=log_file)
 
-    def build_start_cmd(self, tcp_url: Optional[str] = None, minimum_gas_prices: Optional[GasFees] = None,
-        log_format_json: bool = False, trace: bool = True
+    # TODO Rename tcp_url to rpc_laddr + remove dependency on self.node
+    def build_start_cmd(self, tcp_url: Optional[str] = None, p2p_laddr: Optional[str] = None,
+        grpc_address: Optional[str] = None, grpc_web_address: Optional[str] = None, address: Optional[str] = None,
+        minimum_gas_prices: Optional[GasFees] = None, log_format_json: bool = False, log_level: Optional[str] = None,
+        trace: bool = False
     ):
         args = [self.binary, "start"] + \
             (["--trace"] if trace else []) + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
-            (["--log_level", "debug"] if log_format_json else []) + \
+            (["--p2p.laddr", p2p_laddr] if p2p_laddr else []) + \
+            (["--grpc.address", grpc_address] if grpc_address else []) + \
+            (["--grpc-web.address", grpc_web_address] if grpc_web_address else []) + \
+            (["--address", address] if address else []) + \
+            (["--log_level", log_level] if log_level else []) + \
             (["--log_format", "json"] if log_format_json else []) + \
-            (["--home", self.home] if self.home else [])
+            self._home_args()
         return command.buildcmd(args)
 
     def send(self, from_sif_addr: cosmos.Address, to_sif_addr: cosmos.Address, amounts: cosmos.Balance,
@@ -706,39 +1082,56 @@ class Sifnoded:
             self.cmd.write_text_file(tmpfile, json.dumps(json_obj))
             yield tmpfile
 
-    def sifnoded_exec(self, args: List[str], sifnoded_home: Optional[str] = None,
-                      keyring_backend: Optional[str] = None, stdin: Union[str, bytes, Sequence[str], None] = None,
-                      cwd: Optional[str] = None, disable_log: bool = False
-                      ) -> command.ExecResult:
-        args = [self.binary] + args + \
-               (["--home", sifnoded_home] if sifnoded_home else []) + \
-               (["--keyring-backend", keyring_backend] if keyring_backend else [])
-        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log)
+    def sifnoded_exec(self, args: List[str], stdin: Union[str, bytes, Sequence[str], None] = None,
+        cwd: Optional[str] = None, disable_log: bool = False, check_exit: bool = True
+    ) -> command.ExecResult:
+        args = [self.binary] + args
+        res = self.cmd.execst(args, stdin=stdin, cwd=cwd, disable_log=disable_log, check_exit=check_exit)
         return res
+
+    # Block has to be mined, does not work for block 0
+    def get_block_results(self, height: Optional[int] = None):
+        path = "block_results{}".format("?height={}".format(height) if height is not None else "")
+        host, port = self._get_host_and_port()
+        return self._rpc_get(host, port, path)["result"]
+
+    def _get_host_and_port(self) -> Tuple[str, int]:
+        # TODO HACK
+        # TODO Refactor ports
+        # TODO Better store self.host and self.port and make self.node a calculated property
+        if self.node is None:
+            return LOCALHOST, SIFNODED_DEFAULT_RPC_PORT
+        else:
+            m = re.compile("^tcp://(.+):(.+)$").match(self.node)
+            assert m, "Not implemented"
+            host, port = m[1], int(m[2])
+            if host == ANY_ADDR:
+                host = LOCALHOST
+            return host, port
 
     def _rpc_get(self, host, port, relative_url):
         url = "http://{}:{}/{}".format(host, port, relative_url)
-        return json.loads(http_get(url).decode("UTF-8"))
-
-    def get_status(self, host, port):
-        return self._rpc_get(host, port, "node_info")
+        http_result_payload = http_get(url)
+        log.debug("Result for {}: {} bytes".format(url, len(http_result_payload)))
+        return json.loads(http_result_payload.decode("UTF-8"))
 
     def wait_for_last_transaction_to_be_mined(self, count: int = 1, disable_log: bool = True, timeout: int = 90):
-        # TODO return int(self._rpc_get(host, port, abci_info)["response"]["last_block_height"])
-        def latest_block_height():
-            args = ["status"]  # TODO --node
-            return int(json.loads(stderr(self.sifnoded_exec(args, disable_log=disable_log)))["SyncInfo"]["latest_block_height"])
         log.debug("Waiting for last sifnode transaction to be mined...")
         start_time = time.time()
-        initial_block = latest_block_height()
-        while latest_block_height() < initial_block + count:
+        initial_block = self.get_current_block()
+        while self.get_current_block() < initial_block + count:
             time.sleep(1)
             if time.time() - start_time > timeout:
                 raise Exception("Timeout expired while waiting for last sifnode transaction to be mined")
 
+    def wait_for_block(self, height: int):
+        while self.get_current_block() < height:
+            time.sleep(1)
+
+    # TODO Refactor wait_up() / _wait_up()
     def wait_up(self, host, port):
+        from urllib.error import URLError
         while True:
-            from urllib.error import URLError
             try:
                 return self.get_status(host, port)
             except URLError:
@@ -802,20 +1195,17 @@ class Sifnoded:
 
 # Refactoring in progress - this class is supposed to become the successor of class Sifnode.
 # It wraps node, home, chain_id, fees and keyring backend
+# TODO Remove 'ctx' (currently needed for cross-chain fees for Peggy2)
 class SifnodeClient:
-    def __init__(self, cmd: command.Command, ctx, node: Optional[str] = None, home:
-        Optional[str] = None, chain_id: Optional[str] = None, grpc_port: Optional[int] = None
+    def __init__(self, ctx, sifnode: Sifnoded, node: Optional[str] = None, chain_id: Optional[str] = None,
+        grpc_port: Optional[int] = None
     ):
-        self.cmd = cmd
+        self.sifnode = sifnode
         self.ctx = ctx  # TODO Remove (currently needed for cross-chain fees for Peggy2)
-        self.binary = "sifnoded"
-        self.node = node
-        self.home = home
-        self.chain_id = chain_id
         self.grpc_port = grpc_port
 
     def query_account(self, sif_addr):
-        result = json.loads(stdout(self.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
+        result = json.loads(stdout(self.sifnode.sifnoded_exec(["query", "account", sif_addr, "--output", "json"])))
         return result
 
     def query_tx(self, tx_hash: str) -> Optional[str]:
@@ -898,15 +1288,15 @@ class SifnodeClient:
                     "--network-descriptor", str(eth.ethereum_network_descriptor),  # Mandatory
                     "--from", from_sif_addr,  # Mandatory, either name from keyring or address
                     "--output", "json",
-                "-y"
                 ] + \
                 (["--generate-only"] if generate_only else []) + \
-            self._gas_prices_args() + \
-            self._home_args() + \
-            self._chain_id_args() + \
-            self._node_args() + \
-            (self._keyring_backend_args() if not generate_only else [])
-        res = self.sifnoded_exec(args)
+                self.sifnode._fees_args() + \
+                self.sifnode._home_args() + \
+                (self.sifnode._keyring_backend_args() if not generate_only else []) + \
+                self.sifnode._chain_id_args() + \
+                self.sifnode._node_args() + \
+                self.sifnode._yes_args()
+            res = self.sifnode.sifnoded_exec(args)
             result = json.loads(stdout(res))
             if not generate_only:
                 assert "failed to execute message" not in result["raw_log"]
@@ -1022,8 +1412,8 @@ class SifnodeClient:
         denom: str
     ):
         tx = self.send_from_sifchain_to_ethereum(from_sif_addr, to_eth_addr, amount, denom, generate_only=True)
-        signed_tx = self.sign_transaction(tx, from_sif_addr)
-        encoded_tx = self.encode_transaction(signed_tx)
+        signed_tx = self.sifnode.sign_transaction(tx, from_sif_addr)
+        encoded_tx = self.sifnode.encode_transaction(signed_tx)
         result = self.broadcast_tx(encoded_tx)
         return result
 
@@ -1061,7 +1451,8 @@ class SifnodeClient:
         # See https://docs.cosmos.network/v0.44/core/grpc_rest.html
         # See https://app.swaggerhub.com/apis/Ivan-Verchenko/sifnode-swagger-api/1.1.1
         # See https://raw.githubusercontent.com/Sifchain/sifchain-ui/develop/ui/core/swagger.yaml
-        return grpc.insecure_channel("127.0.0.1:9090")
+        return grpc.insecure_channel("{}:{}".format(LOCALHOST,
+            self.grpc_port if self.grpc_port is not None else SIFNODED_DEFAULT_GRPC_PORT))
 
     def broadcast_tx(self, encoded_tx: bytes):
         ondemand_import_generated_protobuf_sources()
@@ -1177,6 +1568,39 @@ class Ebrelayer:
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else []) + \
             (["--trace"] if trace else [])
         return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+
+
+class SifnodedException(Exception):
+    def __init__(self, message = None):
+        super().__init__(message)
+        self.message = message
+
+
+def is_min_commission_too_low_exception(e: Exception):
+    patt = re.compile("^validator commission [\d.]+ cannot be lower than minimum of [\d.]+: invalid request$")
+    return (type(e) == SifnodedException) and patt.match(e.message)
+
+
+def is_max_voting_power_limit_exceeded_exception(e: Exception):
+    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a validator whose "
+        "post-delegation voting power is more than [\d.]+%. Please delegate to a validator with less bonded tokens: "
+        "invalid request$")
+    return (type(e) == SifnodedException) and patt.match(e.message)
+
+
+class RateLimiter:
+    def __init__(self, sifnoded, max_tpb):
+        self.sifnoded = sifnoded
+        self.max_tpb = max_tpb
+        self.counter = 0
+
+    def limit(self):
+        if self.max_tpb == 0:
+            pass
+        self.counter += 1
+        if self.counter == self.max_tpb:
+            self.sifnoded.wait_for_last_transaction_to_be_mined()
+            self.counter = 0
 
 
 # This is probably useful for any program that uses web3 library in the same way
