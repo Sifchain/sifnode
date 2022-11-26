@@ -1337,6 +1337,20 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			expectedSwapStatus:    clpkeeper.SellNative,
 			expectedSwapAmount:    sdk.NewUint(83629578818),
 		},
+		{
+			name:                  "cadCad discrepancy",
+			oldPoolUnits:          sdk.NewUintFromString("82846769685679034593125202"),
+			nativeAssetBalance:    sdk.NewUintFromString("70342381533121790574002317"),
+			externalAssetBalance:  sdk.NewUint(596362536489),
+			nativeAssetAmount:     sdk.NewUintFromString("10000000000000000000000"),
+			externalAssetAmount:   sdk.ZeroUint(),
+			sellNativeSwapFeeRate: sdk.MustNewDecFromStr("0.300000000000000000"),
+			buyNativeSwapFeeRate:  sdk.MustNewDecFromStr("0.003000000000000000"),
+			expectedPoolUnits:     sdk.NewUintFromString("82851619066246417235332312"),
+			expectedLPunits:       sdk.NewUintFromString("4849380567382642207110"),
+			expectedSwapStatus:    clpkeeper.SellNative,
+			expectedSwapAmount:    sdk.NewUintFromString("5882211165927590245277"),
+		},
 	}
 
 	pmtpCurrentRunningRate := sdk.ZeroDec()
