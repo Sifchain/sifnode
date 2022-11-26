@@ -1344,12 +1344,12 @@ func TestKeeper_CalculatePoolUnits(t *testing.T) {
 			externalAssetBalance:  sdk.NewUint(596362536489),
 			nativeAssetAmount:     sdk.NewUintFromString("10000000000000000000000"),
 			externalAssetAmount:   sdk.ZeroUint(),
-			sellNativeSwapFeeRate: sdk.MustNewDecFromStr("0.300000000000000000"),
-			buyNativeSwapFeeRate:  sdk.MustNewDecFromStr("0.003000000000000000"),
-			expectedPoolUnits:     sdk.NewUintFromString("82851619066246417235332312"),
-			expectedLPunits:       sdk.NewUintFromString("4849380567382642207110"),
+			sellNativeSwapFeeRate: sdk.MustNewDecFromStr("0.900000000000000000"),
+			buyNativeSwapFeeRate:  sdk.MustNewDecFromStr("0.000000000000000000"),
+			expectedPoolUnits:     sdk.NewUintFromString("82847840255026522153334229"),
+			expectedLPunits:       sdk.NewUintFromString("1070569347487560209027"),
 			expectedSwapStatus:    clpkeeper.SellNative,
-			expectedSwapAmount:    sdk.NewUintFromString("5882211165927590245277"),
+			expectedSwapAmount:    sdk.NewUintFromString("9090898411349468379447"),
 		},
 	}
 
