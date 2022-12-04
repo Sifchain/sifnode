@@ -310,7 +310,7 @@ func sendBridgeClaimCmd() *cobra.Command {
 		Use:     "sendBridgeClaimCmd [validatorMoniker] [nonce] [amount] ",
 		Short:   "send bridge claim to sifchain",
 		Args:    cobra.ExactArgs(3),
-		Example: "replayEthereum lisa 0 100 --chain-id=peggy",
+		Example: "sendBridgeClaimCmd lisa 0 100 --chain-id=peggy",
 		RunE:    RunSendBridgeClaimCmd,
 	}
 
