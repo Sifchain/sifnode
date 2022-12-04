@@ -76,7 +76,5 @@ func RunSendBridgeClaimCmd(cmd *cobra.Command, args []string) error {
 	}
 	claims = append(claims, claim)
 
-	txs.RelayToCosmos(txFactory, claims, cliContext, sugaredLogger)
-
-	return nil
+	return txs.RelayToCosmos(txFactory, claims, cliContext, sugaredLogger)
 }
