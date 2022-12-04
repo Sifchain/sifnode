@@ -88,6 +88,7 @@ func buildRootCmd() *cobra.Command {
 		replayEthereumCmd(),
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
+		sendBridgeClaimCmd(),
 	)
 
 	return rootCmd
@@ -300,6 +301,22 @@ func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTransl
 	}
 
 	return symbolTranslator, nil
+}
+
+func sendBridgeClaimCmd() *cobra.Command {
+	//nolint:lll
+	sendBridgeClaimCmd := &cobra.Command{
+		// add amount as argument then we can use small amount for testing.
+		Use:     "sendBridgeClaimCmd [validatorMoniker] [nonce] [amount] ",
+		Short:   "send bridge claim to sifchain",
+		Args:    cobra.ExactArgs(3),
+		Example: "replayEthereum lisa 0 100 --chain-id=peggy",
+		RunE:    RunSendBridgeClaimCmd,
+	}
+
+	flags.AddTxFlagsToCmd(sendBridgeClaimCmd)
+
+	return sendBridgeClaimCmd
 }
 
 func main() {
