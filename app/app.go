@@ -471,13 +471,15 @@ func NewSifAppWithBlacklist(
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
-	// mockModule := ibcmock.NewAppModule(&app.IBCKeeper.PortKeeper)
+	mockModule := ibcmock.NewAppModule(&app.IBCKeeper.PortKeeper)
+	mockIBCModule := ibcmock.NewIBCModule(&mockModule, ibcmock.NewMockIBCApp(ibcmock.ModuleName, scopedIBCMockKeeper))
+
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 
 	transferIBCModule := transfer.NewIBCModule(app.TransferKeeper)
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
-	// ibcRouter.AddRoute(ibcmock.ModuleName, mockModule)
+	ibcRouter.AddRoute(ibcmock.ModuleName, mockIBCModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
