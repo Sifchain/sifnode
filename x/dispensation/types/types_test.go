@@ -9,7 +9,6 @@ import (
 )
 
 func TestQueryAllDistributionsResponse(t *testing.T) {
-
 	d := types.Distribution{
 		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING,
 		DistributionName: types.AttributeKeyDistributionName,
