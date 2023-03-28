@@ -38,7 +38,7 @@ make -C ${TEST_INTEGRATION_DIR}
 cp ${TEST_INTEGRATION_DIR}/.env.ciExample .env
 
 make -C $SMART_CONTRACTS_DIR clean-smartcontracts
-yarn --cwd $BASEDIR/smart-contracts install
+npm --prefix $BASEDIR/smart-contracts install
 
 # Startup ganache-cli (https://github.com/trufflesuite/ganache)
 #   Uses GANACHE_DB_DIR for the --db argument to the chain
