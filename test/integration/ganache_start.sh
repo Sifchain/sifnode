@@ -27,7 +27,7 @@ done
 
 # ganache really hates running in the background.  Put it in a tmux session to keep all its input code happy.
 # If you don't do this, ganache-cli will just exit.
-nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h 0.0.0.0 --mnemonic 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON > $GANACHE_LOG 2>&1"
+nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h :: --mnemonic 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON > $GANACHE_LOG 2>&1"
 
 # wait for ganache to come up
 sleep 5
