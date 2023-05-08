@@ -1348,13 +1348,13 @@ class SifnodedException(Exception):
 
 
 def is_min_commission_too_low_exception(e: Exception):
-    patt = re.compile("^validator commission [\d.]+ cannot be lower than minimum of [\d.]+: invalid request$")
+    patt = re.compile("^validator commission [\\d.]+ cannot be lower than minimum of [\\d.]+: invalid request$")
     return (type(e) == SifnodedException) and patt.match(e.message)
 
 
 def is_max_voting_power_limit_exceeded_exception(e: Exception):
-    patt = re.compile("^This validator has a voting power of [\d.]+%. Delegations not allowed to a validator whose "
-        "post-delegation voting power is more than [\d.]+%. Please delegate to a validator with less bonded tokens: "
+    patt = re.compile("^This validator has a voting power of [\\d.]+%. Delegations not allowed to a validator whose "
+        "post-delegation voting power is more than [\\d.]+%. Please delegate to a validator with less bonded tokens: "
         "invalid request$")
     return (type(e) == SifnodedException) and patt.match(e.message)
 
