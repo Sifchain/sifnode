@@ -80,7 +80,7 @@ def sifchain_denom_hash_to_token_contract_address(token_hash: str) -> Tuple[int,
     if not m:
         raise Exception("Invalid sifchain denom '{}'".format(token_hash))
     network_descriptor = int(m[1])
-    token_address = web3.Web3.toChecksumAddress(m[2])
+    token_address = web3.Web3.to_checksum_address(m[2])
     return network_descriptor, token_address
 
 # Deprecated
