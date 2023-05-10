@@ -131,9 +131,9 @@ def get_env_ctx_peggy2():
 
         # TODO We're mixing "OPERATOR" vs. "OWNER"
         # TODO Addressses from dot_env_vars are not in correct EIP55 "checksum" format
-        # operator_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
+        # operator_address = web3.Web3.to_checksum_address(dot_env_vars["ETH_ACCOUNT_OPERATOR_ADDRESS"])
         # operator_private_key = dot_env_vars["ETH_ACCOUNT_OPERATOR_PRIVATEKEY"][2:]
-        owner_address = web3.Web3.toChecksumAddress(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
+        owner_address = web3.Web3.to_checksum_address(dot_env_vars["ETH_ACCOUNT_OWNER_ADDRESS"])
         owner_private_key = dot_env_vars.get("ETH_ACCOUNT_OWNER_PRIVATEKEY")
         if (owner_private_key is not None) and (owner_private_key.startswith("0x")):
             owner_private_key = owner_private_key[2:]  # TODO Remove
@@ -320,7 +320,7 @@ def _get_overrides_for_smart_contract_addresses(env_vars):
         "BridgeToken": "BRIDGE_TOKEN_ADDRESS",  # Peggy1 only
         # Missing "Blocklist" missing (Peggy2 only)
     }
-    return dict(((k, web3.Web3.toChecksumAddress(env_vars[v])) for k, v in mappings.items() if v in env_vars))
+    return dict(((k, web3.Web3.to_checksum_address(env_vars[v])) for k, v in mappings.items() if v in env_vars))
 
 
 def sif_addr_to_evm_arg(sif_address):
@@ -408,7 +408,7 @@ class EnvCtx:
     def smart_contract_get_past_events(self, sc, event_name, from_block=None, to_block=None):
         from_block = from_block if from_block is not None else 1
         to_block = str(to_block) if to_block is not None else "latest"
-        filter = sc.events[event_name].createFilter(fromBlock=from_block, toBlock=to_block)
+        filter = sc.events[event_name].create_filter(fromBlock=from_block, toBlock=to_block)
         try:
             return filter.get_all_entries()
         finally:
@@ -534,7 +534,7 @@ class EnvCtx:
         for e in past_events:
             token_addr = e.args["_token"]
             value = e.args["_value"]
-            assert web3.Web3.toChecksumAddress(token_addr) == token_addr
+            assert web3.Web3.to_checksum_address(token_addr) == token_addr
             # Logically the whitelist only consists of entries that have the last value of True.
             # If the data is clean, then for each token_addr we should first see a True event, possibly
             # followed by alternating False and True. The last value is the active one.
@@ -605,7 +605,7 @@ class EnvCtx:
         # # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
         # # TODO Error handling
         # #      "web3.exceptions.ContractLogicError: execution reverted: SafeERC20: low-level call failed" in case that amount is more than what is available / what was "approved" to BridgeBank
-        # tx = bridge_bank.functions.lock(recipient, erc20_token_addr, amount).buildTransaction({
+        # tx = bridge_bank.functions.lock(recipient, erc20_token_addr, amount).build_transaction({
         #     "from": self.operator,
         #     "nonce": self.w3_conn.eth.get_transaction_count(self.operator)
         # })
@@ -787,7 +787,7 @@ class EnvCtx:
     # Peggy1-specific
     def set_ofac_blocklist_to(self, addrs):
         blocklist_sc = self.get_blocklist_sc()
-        addrs = [web3.Web3.toChecksumAddress(addr) for addr in addrs]
+        addrs = [web3.Web3.to_checksum_address(addr) for addr in addrs]
         existing_entries = blocklist_sc.functions.getFullList().call()
         to_add = [addr for addr in addrs if addr not in existing_entries]
         to_remove = [addr for addr in existing_entries if addr not in addrs]

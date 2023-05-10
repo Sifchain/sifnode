@@ -1,5 +1,5 @@
 import logging
-import web3
+import pytest
 
 import siftool_path
 from siftool import eth
@@ -24,7 +24,7 @@ max_tx_cost = max_tx_gas * max_gas_price
 def test_sanity_checks(ctx):
     ctx.sanity_check()
 
-def test_eth_fee_functions(ctx):
+def test_eth_fee_functions_1(ctx):
     e = ctx.eth.w3_conn.eth
     null_txn = {"to": eth.NULL_ADDRESS}
     gas_price = None
@@ -34,13 +34,6 @@ def test_eth_fee_functions(ctx):
         assert ctx.eth.is_contract_logic_error_method_not_found(ex)
     if gas_price is not None:
         assert gas_price > 1 * eth.GWEI
-    max_priority_fee = None
-    try:
-        max_priority_fee = e.max_priority_fee
-    except Exception as ex:
-        assert ctx.eth.is_contract_logic_error_method_not_found(ex, "eth_maxPriorityFeePerGas")
-    if max_priority_fee is not None:
-        assert max_priority_fee >= 1 * eth.GWEI
     fee_history = None
     try:
         fee_history = e.fee_history(1, "latest", [25])
@@ -60,16 +53,29 @@ def test_eth_fee_functions(ctx):
         assert e.estimate_gas(null_txn) == eth.MIN_TX_GAS
     assert gas_price is not None
     if ctx.eth.is_local_node:
-        assert max_priority_fee is None
         assert (fee_history is None) == (not is_hardhat)
         assert ctx.eth.gas_estimate_fn is None
         assert bool(ctx.eth.fixed_gas_args)
     else:
-        assert max_priority_fee is not None
         assert fee_history is not None
         assert ctx.eth.gas_estimate_fn is not None
         gas, max_fee_per_gas, max_priority_fee_per_gas, gas_price = ctx.eth.gas_estimate_fn(null_txn)
     return
+
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_eth_fee_functions_2(ctx):
+    e = ctx.eth.w3_conn.eth
+    max_priority_fee = None
+    try:
+        max_priority_fee = e.max_priority_fee
+    except Exception as ex:
+        assert ctx.eth.is_contract_logic_error_method_not_found(ex, "eth_maxPriorityFeePerGas")
+    if ctx.eth.is_local_node:
+        assert max_priority_fee is None
+    else:
+        assert max_priority_fee is not None
+        assert max_priority_fee >= 1 * eth.GWEI
+
 
 def test_send_ether(ctx):
     operator = ctx.operator

@@ -147,7 +147,7 @@ def default_accounts():
     # Format: [address, private_key]
     # Note: for compatibility with ganache, private keys should be stripped of "0x" prefix
     # (when you pass a private key to ebrelayer via ETHEREUM_PRIVATE_KEY, the key is treated as invalid)
-    return [[web3.Web3.toChecksumAddress(address), private_key] for address, private_key in [[
+    return [[web3.Web3.to_checksum_address(address), private_key] for address, private_key in [[
         "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
         "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
     ], [
