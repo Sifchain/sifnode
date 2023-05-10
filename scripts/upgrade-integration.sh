@@ -55,7 +55,7 @@ echo "hand inmate canvas head lunar naive increase recycle dog ecology inhale de
 
 #sifnoded keys add mkey --multisig sif,akasha --multisig-threshold 2 --keyring-backend=test
 
-sifnoded add-genesis-account $(sifnoded keys show sif -a --keyring-backend=test) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink,90000000000000000000ibc/96D7172B711F7F925DFC7579C6CCC3C80B762187215ABD082CDE99F81153DC80 --keyring-backend=test
+sifnoded add-genesis-account $(sifnoded keys show sif -a --keyring-backend=test) 50000000000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink,90000000000000000000ibc/96D7172B711F7F925DFC7579C6CCC3C80B762187215ABD082CDE99F81153DC80 --keyring-backend=test
 sifnoded add-genesis-account $(sifnoded keys show akasha -a --keyring-backend=test) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test
 
 #sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a --keyring-backend=test) --keyring-backend=test
@@ -83,6 +83,8 @@ git checkout $NewBinary
 rm -rf $GOPATH/bin/sifnoded
 make install
 cp $GOPATH/bin/sifnoded $GOPATH/bin/new/
+rm -rf $GOPATH/bin/sifnoded
+cp $GOPATH/bin/old/sifnoded $GOPATH/bin/
 
 
 # Setup cosmovisor
@@ -100,6 +102,8 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 cosmovisor start --home ~/.sifnoded/ --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9096 --grpc-web.address 0.0.0.0:9093 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:26657 >> sifnode.log 2>&1  &
 #sleep 7
 #sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
+sleep 7
+sifnoded tx dispensation claim ValidatorSubsidy --from sif --keyring-backend test --yes --chain-id localnet --fees=100000000000000000000000000rowan --yes
 sleep 7
 sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
 sleep 7

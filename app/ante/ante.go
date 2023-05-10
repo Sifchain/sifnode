@@ -8,7 +8,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -61,18 +60,6 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	submitProposalFee := adminParams.SubmitProposalFee
 
 	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
-		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
-		minGasPrice := sdk.DecCoin{
-			Denom:  "rowan",
-			Amount: sdk.MustNewDecFromStr("0.00000005"),
-		}
-		if !minGasPrice.IsValid() {
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
-		}
-		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
-		return next(ctx, tx, simulate)
-	}
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
 		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
