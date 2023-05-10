@@ -1,6 +1,6 @@
-grpcio-tools==1.47.0
-pytest==7.1.2
+grpcio-tools==1.54.0
+pytest==7.3.1
 PyYAML==6.0
 rusty-rlp==0.2.1
 toml==0.10.2
-web3==5.29.2
+web3==6.3.0
