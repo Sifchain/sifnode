@@ -15,7 +15,7 @@ def execst(args, cwd=None):
 
 
 def get_basedir():
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.dirname(__file__))))
+    return os.path.dirname(os.path.realpath(os.path.normpath(__file__)))
 
 
 def init_venv(venv_dir, requirements_txt):
