@@ -8,6 +8,7 @@ LegacyBalance = List[List[Union[int, str]]]  # e.g. [[3, "rowan"], [2, "ibc/xxxx
 Balance = Mapping[str, int]
 CompatBalance = Union[LegacyBalance, Balance]
 Address = str
+AccountName = str
 Bank = Mapping[Address, Balance]
 BechAddress = str
 KeyName = str  # Name of key in the keyring

@@ -59,7 +59,8 @@ class TestSifnodedEnvironment:
         assert_validators_working(env)
 
     def test_environment_setup_basic_4(self):
-        env = environments.SifnodedEnvironment(self.cmd, chain_id="sifchain-testnet-2", sifnoded_home_root=self.sifnoded_home_root)
+        env = environments.SifnodedEnvironment(self.cmd, chain_id="cownet-2", sifnoded_home_root=self.sifnoded_home_root)
+        assert len(env.node_info) == 0
         env.add_validator(moniker="ant")
         env.add_validator(moniker="bee")
         env.add_validator(moniker="cat")

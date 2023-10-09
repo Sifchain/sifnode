@@ -372,13 +372,13 @@ class Sifnoded:
             self._home_args()
         self.sifnoded_exec(args)
 
-    def set_genesis_oracle_admin(self, address):
+    def set_genesis_oracle_admin(self, address: Union[cosmos.AccountName, cosmos.Address]):
         self.sifnoded_exec(["set-genesis-oracle-admin", address] + self._home_args() + self._keyring_backend_args())
 
     def set_genesis_token_registry_admin(self, address):
         self.sifnoded_exec(["set-genesis-token-registry-admin", address] + self._home_args())
 
-    def set_genesis_whitelister_admin(self, address):
+    def set_genesis_whitelister_admin(self, address: Union[cosmos.AccountName, cosmos.Address]):
         self.sifnoded_exec(["set-genesis-whitelister-admin", address] + self._home_args() + self._keyring_backend_args())
 
     def set_gen_denom_whitelist(self, denom_whitelist_file):

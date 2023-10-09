@@ -38,7 +38,7 @@ class TestSifnodedCLIWrapper:
             clp_admin = validator0_admin
 
             sifnoded = sifchain.Sifnoded(self.cmd, home=tmpdir, chain_id=env.chain_id,
-                node=sifchain.format_node_url(env.node_info[0]["host"], env.node_info[0]["ports"]["rpc"]))
+                node=sifchain.format_node_url(env.node_info[0]["external_host"], env.node_info[0]["external_port"]))
             test_addr_actual_balance = sifnoded.get_balance(test_addr)
             assert test_addr_actual_balance == test_addr_balance
 
