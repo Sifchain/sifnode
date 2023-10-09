@@ -5,8 +5,9 @@ from siftool import sifchain, command, cosmos
 
 
 # Environment for load test test_many_pools_and_liquidity_providers and for testing min commission/max voting power
-# Just sifnode, no ethereum
-# Multi-node support
+# Supports multiple sifnoded validatos, no Ethereum support yet
+#
+#
 class SifnodedEnvironment:
     def __init__(self, cmd: command.Command, chain_id: Optional[str] = None, sifnoded_home_root: Optional[str] = None):
         self.cmd = cmd
@@ -28,7 +29,9 @@ class SifnodedEnvironment:
         staking_amount: Optional[int] = None, initial_balance: Optional[cosmos.Balance] = None,
         commission_rate: Optional[float] = None, commission_max_rate: Optional[float] = None,
         commission_max_change_rate: Optional[float] = None, min_self_delegation: Optional[int] = None,
-        ports: Mapping[str, int] = None, log_level: Optional[str] = None, log_file: Optional[str] = None
+        ports: Mapping[str, int] = None, pruning: Optional[str] = None, pruning_keep_recent: Optional[int] = None,
+        pruning_keep_every: Optional[int] = None, pruning_interval: Optional[int] = None,
+        log_level: Optional[str] = None, log_file: Optional[str] = None
     ):
         next_id = len(self.node_info)
 
@@ -59,6 +62,10 @@ class SifnodedEnvironment:
             "commission_max_change_rate": commission_max_change_rate,
             "min_self_delegation": min_self_delegation,
             "ports": ports,
+            "pruning": pruning,
+            "pruning_keep_recent": pruning_keep_recent,
+            "pruning_keep_every": pruning_keep_every,
+            "pruning_interval": pruning_interval,
             "log_level": log_level,
             "log_file": log_file,
         }
@@ -92,12 +99,11 @@ class SifnodedEnvironment:
     def ports_for_node(self, i: int) -> JsonDict:
         assert i < 10, "Change port configuration for 10 or more nodes"
         return {
-            "p2p": 10276 + i,
+            "api": 10131 + i,
             "grpc": 10909 + i,
             "grpc_web": 10919 + i,
-            "address": 10276 + i,
             "rpc": 10286 + i,
-            "api": 10131 + i,
+            "p2p": 10276 + i,
             "pprof": 10606 + i,
         }
 
@@ -192,7 +198,7 @@ class SifnodedEnvironment:
 
         self.sifnoded = sifchain.Sifnoded(self.cmd, home=self.keyring_dir, chain_id=self.chain_id,
             node=sifchain.format_node_url(self.node_info[0]["host"], self.node_info[0]["ports"]["rpc"]),
-            binary = self.node_info[0]["binary"])
+            binary=self.node_info[0]["binary"])
 
         self._state = 2
 
@@ -254,9 +260,20 @@ class SifnodedEnvironment:
         app_toml = sifnoded.load_app_toml()
         config_toml = sifnoded.load_config_toml()
         app_toml["minimum-gas-prices"] = sif_format_amount(0.5, ROWAN)
+        if node_info["pruning"] is not None:
+            app_toml["pruning"] = node_info["pruning"]
+        if node_info["pruning_keep_recent"] is not None:
+            app_toml["pruning-keep-recent"] = str(node_info["pruning_keep_recent"])
+        if node_info["pruning_keep_every"] is not None:
+            app_toml["pruning-keep-every"] = str(node_info["pruning_keep_every"])
+        if node_info["pruning_interval"] is not None:
+            app_toml["pruning-interval"] = str(node_info["pruning_interval"])
         app_toml['api']['enable'] = True
-        app_toml["api"]["address"] = sifchain.format_node_url(ANY_ADDR, node_info["ports"]["api"])
-        config_toml["log_level"] = node_info["log_level"]  # TODO Probably redundant
+        app_toml["api"]["address"] = sifchain.format_node_url(ANY_ADDR, node_info["ports"]["api"])  # default "tcp://0.0.0.0:1317"
+        app_toml["grpc"]["address"] = "{}:{}".format(ANY_ADDR, node_info["ports"]["grpc"])          # default "0.0.0.0:9090"
+        app_toml["grpc-web"]["address"] = "{}:{}".format(ANY_ADDR, node_info["ports"]["grpc_web"])  # default "0.0.0.0:9091"
+        config_toml["rpc"]["laddr"] = "tcp://{}:{}".format(ANY_ADDR, node_info["ports"]["rpc"])     # default "tcp://127.0.0.1:26657"
+        config_toml["p2p"]["laddr"] = "{}:{}".format(ANY_ADDR, node_info["ports"]["p2p"])           # default "tcp://0.0.0.0:26656"
         config_toml['p2p']["external_address"] = "{}:{}".format(node_info["host"], node_info["ports"]["p2p"])
         if peers:
             config_toml["p2p"]["persistent_peers"] = ",".join(peers)
@@ -265,6 +282,7 @@ class SifnodedEnvironment:
         config_toml['p2p']['allow_duplicate_ip'] = True
         config_toml["rpc"]["pprof_laddr"] = "{}:{}".format(LOCALHOST, node_info["ports"]["pprof"])
         config_toml['moniker'] = node_info["moniker"]
+        config_toml["log_level"] = node_info["log_level"]
         sifnoded.save_app_toml(app_toml)
         sifnoded.save_config_toml(config_toml)
 
@@ -279,17 +297,23 @@ class SifnodedEnvironment:
         node = sifchain.format_node_url(to_node_info["host"], to_node_info["ports"]["rpc"])
         return sifchain.Sifnoded(self.cmd, binary=binary, home=home, chain_id=self.chain_id, node=node)
 
+    # Returns a Sifnoded that uses a default binary with the "keyring" profile and pointing to specific validator.
+    def _client_for(self, node_index: int = 0) -> sifchain.Sifnoded:
+        to_node_info = self.node_info[node_index]
+        node = sifchain.format_node_url(to_node_info["host"], to_node_info["ports"]["rpc"])
+        return sifchain.Sifnoded(self.cmd, home=self.keyring_dir, chain_id=self.chain_id, node=node)
+
     def _sifnoded_start(self, node_info: JsonDict):
         sifnoded = self._sifnoded_for(node_info)
-        ports = node_info["ports"]
         log_file_path = node_info["log_file"]
-        log_level = node_info["log_level"]
         log_file = open(log_file_path, "w")
-        process = sifnoded.sifnoded_start(log_file=log_file, log_level=log_level, trace=True,
-            tcp_url="tcp://{}:{}".format(ANY_ADDR, ports["rpc"]), p2p_laddr="{}:{}".format(ANY_ADDR, ports["p2p"]),
-            grpc_address="{}:{}".format(ANY_ADDR, ports["grpc"]),
-            grpc_web_address="{}:{}".format(ANY_ADDR, ports["grpc_web"]),
-            address="tcp://{}:{}".format(ANY_ADDR, ports["address"]))
+        process = sifnoded.sifnoded_start(log_file=log_file, trace=True)
+        #   , log_level=log_level,
+        #     address="tcp://{}:{}".format(ANY_ADDR, ports["api"]),          # app.toml->api->address
+        #     grpc_address="{}:{}".format(ANY_ADDR, ports["grpc"]),          # app.toml->grpc->address
+        #     grpc_web_address="{}:{}".format(ANY_ADDR, ports["grpc_web"]),  # app.toml->grpc-web->address
+        #     tcp_url="tcp://{}:{}".format(ANY_ADDR, ports["rpc"]),          # config.toml->rpc->laddr
+        #     p2p_laddr="{}:{}".format(ANY_ADDR, ports["p2p"]))              # config.toml->p2p->laddr
         sifnoded._wait_up()
         return log_file, process
 
@@ -334,14 +358,14 @@ class SifnodedEnvironment:
         assert float(new_validator["commission"]["commission_rates"]["max_change_rate"]) == commission_max_change_rate
 
     def _create_validator_home(self, node_info: JsonDict):
-        # Create admin account. We want this account both in validator's home as well as in self.keyring_dir:
+        # Create admin account. We want this account both in validator's home and in self.keyring_dir:
         # - it has to be in validator's home because "set-genesis-oracle-admin" requires it and there is no separate
         #   "--keyring-dir" CLI option. Otherwise, we would prefer all accounts to be separated from validator home.
         # - because it is also in self.keyring_dir all admin names have to be unique.
         admin_name = node_info["admin_name"]
         admin_mnemonic = node_info.get("admin_mnemonic", None)
         sifnoded = sifchain.Sifnoded(self.cmd, home=self.keyring_dir)
-        admin_acct, admin_mnemonic = sifnoded._keys_add(admin_name, mnemonic=admin_mnemonic)
+        admin_acct, admin_mnemonic = sifnoded._keys_add(admin_name, mnemonic=admin_mnemonic)  # Creates if none given
         admin_addr = admin_acct["address"]
         node_info["admin_addr"] = admin_addr
 
