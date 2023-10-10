@@ -13,7 +13,7 @@ def test_transfer(env):
 
 
 def assert_validators_working(env):
-    expected_monikers = [node_info["moniker"] for node_info in env.node_info]
+    expected_monikers = [node_info["moniker"] for node_info in env.node_info if node_info["is_validator"]]
     assert set(get_validators(env)) == set(expected_monikers)
     number_of_nodes = len(env.node_info)
     for i in range(number_of_nodes):
@@ -52,13 +52,13 @@ class TestSifnodedEnvironment:
         prj = project.Project(self.cmd, project_dir())
         prj.pkill()
 
-    def test_environment_setup_basic_1(self):
+    def test_environment_setup_basic_1_validator(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
         env.add_validator()
         env.start()
         assert_validators_working(env)
 
-    def test_environment_setup_basic_4(self):
+    def test_environment_setup_basic_4_validators(self):
         env = environments.SifnodedEnvironment(self.cmd, chain_id="cownet-2", sifnoded_home_root=self.sifnoded_home_root)
         assert len(env.node_info) == 0
         env.add_validator(moniker="ant")
@@ -68,7 +68,16 @@ class TestSifnodedEnvironment:
         assert len(env.node_info) == 4
         env.start()
         assert_validators_working(env)
-        # env._sifnoded_for(env.node_info[0]).wait_for_block(15)
+
+    def test_environment_setup_mix_of_nodes_and_validators(self):
+        env = environments.SifnodedEnvironment(self.cmd, chain_id="cownet-2", sifnoded_home_root=self.sifnoded_home_root)
+        assert len(env.node_info) == 0
+        env.add_validator(moniker="ant", is_validator=True)
+        env.add_validator(moniker="bee", is_validator=False)
+        env.add_validator(moniker="cat", is_validator=True)
+        assert len(env.node_info) == 3
+        env.start()
+        assert_validators_working(env)
 
     def test_add_validator_before_and_after_start(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)

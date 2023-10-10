@@ -1092,7 +1092,7 @@ class Sifnoded:
         log.debug("Result for {}: {} bytes".format(url, len(http_result_payload)))
         return json.loads(http_result_payload.decode("UTF-8"))
 
-    def wait_for_last_transaction_to_be_mined(self, count: int = 1, disable_log: bool = True, timeout: int = 90):
+    def wait_for_last_transaction_to_be_mined(self, count: int = 1, timeout: int = 90):
         log.debug("Waiting for last sifnode transaction to be mined...")
         start_time = time.time()
         initial_block = self.get_current_block()
