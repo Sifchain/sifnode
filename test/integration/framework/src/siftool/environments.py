@@ -121,16 +121,16 @@ class SifnodedEnvironment:
             "pprof": 10606 + i,
         }
 
-    def init(self, faucet_balance: Optional[cosmos.Balance] = None, extra_accounts: Optional[cosmos.Bank] = None,
-        min_deposit: Optional[int] = None, genesis_clp_admin: Optional[cosmos.Address] = None,
-        genesis_oracle_admin: Optional[cosmos.Address] = None,
+    def init(self, faucet_balance: Optional[cosmos.Balance] = None, faucet_mnemonic: Optional[Sequence[str]] = None,
+        extra_accounts: Optional[cosmos.Bank] = None, min_deposit: Optional[int] = None,
+        genesis_clp_admin: Optional[cosmos.Address] = None, genesis_oracle_admin: Optional[cosmos.Address] = None,
         genesis_whitelister_admin: Optional[cosmos.Address] = None
     ):
         # We must have at least one validator defined. The fist validator will be the default (i.e. it will be a peer
         # for all others, it will be used as the source of genesis file, it will host the faucet account)
         assert self.node_info
 
-        self.faucet = self.sifnoded.create_addr("faucet")
+        self.faucet = self.sifnoded.create_addr("faucet", mnemonic=faucet_mnemonic)
         faucet_balance = faucet_balance if faucet_balance is not None else {ROWAN: 10**30, STAKE: 10**30}
 
         # Setup genesis on initial validator
