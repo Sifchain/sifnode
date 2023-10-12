@@ -113,10 +113,10 @@ class SifnodedEnvironment:
     def ports_for_node(self, i: int) -> JsonDict:
         assert i < 10, "Change port configuration for 10 or more nodes"
         return {
+            "rpc": 10286 + i,
             "api": 10131 + i,
             "grpc": 10909 + i,
             "grpc_web": 10919 + i,
-            "rpc": 10286 + i,
             "p2p": 10276 + i,
             "pprof": 10606 + i,
         }

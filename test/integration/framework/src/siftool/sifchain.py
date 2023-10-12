@@ -441,7 +441,7 @@ class Sifnoded:
     # See scripts/ibc/tokenregistration for more information and examples.
     # JSON file can be generated with "sifnoded q tokenregistry generate"
     def create_tokenregistry_entry(self, symbol: str, sifchain_symbol: str, decimals: int,
-        permissions: Iterable[str] = None
+        permissions: Iterable[str] = None, external_symbol: Optional[str] = None, display_name: Optional[str] = None
     ) -> TokenRegistryParams:
         permissions = permissions if permissions is not None else ["CLP", "IBCEXPORT", "IBCIMPORT"]
         upper_symbol = symbol.upper()  # Like "USDT"
@@ -452,11 +452,11 @@ class Sifnoded:
             "path": "",
             "ibc_channel_id": "",
             "ibc_counterparty_channel_id": "",
-            "display_name": upper_symbol,
+            "display_name": display_name if display_name is not None else upper_symbol,
             "display_symbol": "",
             "network": "",
             "address": "",
-            "external_symbol": upper_symbol,
+            "external_symbol": external_symbol if external_symbol is not None else upper_symbol,
             "transfer_limit": "",
             "permissions": list(permissions),
             "unit_denom": "",
