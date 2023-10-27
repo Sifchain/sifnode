@@ -6,7 +6,7 @@ import grpc
 import re
 import toml
 import web3  # TODO Remove dependency
-from typing import Mapping, Any, Tuple, AnyStr
+from typing import Mapping, Any, Tuple
 from siftool import command, cosmos, eth
 from siftool.common import *
 
@@ -1022,6 +1022,20 @@ class Sifnoded:
     def gov_submit_software_upgrade(self, version: str, from_acct: cosmos.Address, deposit: cosmos.Balance,
         upgrade_height: int, upgrade_info: str, title: str, description: str, broadcast_mode: Optional[str] = None
     ):
+        # Example:
+        # sifnoded tx gov submit-proposal software-upgrade 1.2.0-beta \
+        #     --title "Sifchain 1.2.0-beta Upgrade" \
+        #     --description "Sifchain 1.2.0-beta Upgrade" \
+        #     --upgrade-height BLOCK_HEIGHT \
+        #     --deposit 50000000000000000000000rowan \
+        #     --from ACCOUNT \
+        #     --keyring-backend test \
+        #     --chain-id=sifchain-1 \
+        #     --node https://sifchain-rpc.polkachu.com:443 \
+        #     --broadcast-mode block \
+        #     --fees 10000000000000000000000rowan \
+        #     --gas 200000 \
+        #     --yes
         args = ["tx", "gov", "submit-proposal", "software-upgrade", version, "--from", from_acct, "--deposit",
             cosmos.balance_format(deposit), "--upgrade-height", str(upgrade_height), "--upgrade-info", upgrade_info,
             "--title", title, "--description", description] + self._home_args() +  self._keyring_backend_args() + \

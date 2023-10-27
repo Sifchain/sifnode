@@ -168,14 +168,14 @@ class Project:
         self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(env)))
         self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(env))
 
-    def get_peruser_config_dir(self):
+    def get_peruser_config_dir(self) -> str:
         return self.cmd.get_user_home(".config", "siftool")
 
-    def get_user_env_vars(self):
+    def get_user_env_vars(self) -> JsonDict:
         env_file = os.environ["SIFTOOL_ENV_FILE"]
         return json.loads(self.cmd.read_text_file(env_file))
 
-    def read_peruser_config_file(self, name):
+    def read_peruser_config_file(self, name) -> Optional[JsonDict]:
         path = os.path.join(self.get_peruser_config_dir(), name + ".json")
         if self.cmd.exists(path):
             return json.loads(self.cmd.read_text_file(path))

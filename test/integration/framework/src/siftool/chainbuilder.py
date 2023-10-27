@@ -10,6 +10,9 @@ def __brutally_terminate_processes(cmd):
 
 # This is used for bulding sifchain-testnet-2
 def install_testnet(cmd: command.Command, base_dir: str, chain_id: str):
+    prj = project.Project(cmd)
+    mnemonics = prj.read_peruser_config_file("mnemonics.json")
+
     faucet_mnemonic = "fiction cousin fragile allow fruit slogan useless sting exile virus scale dress fatigue eight clay sort tape between cargo flag civil rude umbrella sing".split()
     node0_admin_mnemonic = "frog skin business valve fish fat glory syrup chicken skin slow ensure sun luggage wild click into paper swamp car ecology infant thought squeeze".split()
     node1_admin_mnemonic = "system faculty master promote among arrive dose zone cream fame barrel warm slice please creek puzzle boat excess rain lonely cupboard flame punch shed".split()

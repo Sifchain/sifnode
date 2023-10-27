@@ -17,6 +17,7 @@ class SifnodedEnvironment:
         self.chain_id = chain_id or "localnet"
         self.staking_denom = ROWAN
         self.default_binary = "sifnoded"
+        self.port_offset = 0
         self.node_info: List[JsonDict] = []
         self.clp_admin: Optional[cosmos.Address] = None
         self.oracle_admin: Optional[cosmos.Address] = None
@@ -113,12 +114,12 @@ class SifnodedEnvironment:
     def ports_for_node(self, i: int) -> JsonDict:
         assert i < 10, "Change port configuration for 10 or more nodes"
         return {
-            "rpc": 10286 + i,
-            "api": 10131 + i,
-            "grpc": 10909 + i,
-            "grpc_web": 10919 + i,
-            "p2p": 10276 + i,
-            "pprof": 10606 + i,
+            "rpc": 10286 + self.port_offset + i,
+            "api": 10131 + self.port_offset + i,
+            "grpc": 10909 + self.port_offset + i,
+            "grpc_web": 10919 + self.port_offset + i,
+            "p2p": 10276 + self.port_offset + i,
+            "pprof": 10606 + self.port_offset + i,
         }
 
     def init(self, faucet_balance: Optional[cosmos.Balance] = None, faucet_mnemonic: Optional[Sequence[str]] = None,
