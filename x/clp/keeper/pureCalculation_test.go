@@ -42,7 +42,8 @@ func TestKeeper_CanConvertMinDec(t *testing.T) {
 func genDec(t *rapid.T) sdk.Dec {
 	const numInt64 = 5 // 4 * 64bit = 256 bits at most; max size sdk.Dec
 
-	ints := rapid.ArrayOf(numInt64, genInt64ButZero()).Draw(t, "ints").([numInt64]int64)
+	// ints := rapid.ArrayOf(numInt64, genInt64ButZero()).Draw(t, "ints").([numInt64]int64)
+	ints := rapid.SliceOfN[int64](genInt64ButZero(), numInt64, numInt64).Draw(t, "ints")
 	dec := sdk.NewDec(ints[0])
 
 	for i := 1; i < numInt64-1; i++ {
@@ -54,7 +55,7 @@ func genDec(t *rapid.T) sdk.Dec {
 	return dec
 }
 
-func genInt64ButZero() *rapid.Generator {
+func genInt64ButZero() *rapid.Generator[int64] {
 	return rapid.OneOf(rapid.Int64Max(-1), rapid.Int64Min(1))
 }
 
