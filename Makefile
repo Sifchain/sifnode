@@ -13,6 +13,8 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bu
 GOFLAGS:=""
 GOTAGS:=ledger
 
+GO_VERSION := $(shell cat go.mod | grep -E 'go [0-9].[0-9]+' | cut -d ' ' -f 2)
+
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
@@ -122,3 +124,50 @@ proto-check-breaking:
 	# we should turn this back on after our first release
 	# $(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
 .PHONY: proto-check-breaking
+
+GORELEASER_IMAGE := ghcr.io/goreleaser/goreleaser-cross:v$(GO_VERSION)
+
+## release: Build binaries for all platforms and generate checksums
+ifdef GITHUB_TOKEN
+release:
+	docker run \
+		--rm \
+		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v `pwd`:/go/src/sifnoded \
+		-w /go/src/sifnoded \
+		$(GORELEASER_IMAGE) \
+		release \
+		--clean
+else
+release:
+	@echo "Error: GITHUB_TOKEN is not defined. Please define it before running 'make release'."
+endif
+
+## release-dry-run: Dry-run build process for all platforms and generate checksums
+release-dry-run:
+	docker run \
+		--rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v `pwd`:/go/src/sifnoded \
+		-w /go/src/sifnoded \
+		$(GORELEASER_IMAGE) \
+		release \
+		--clean \
+		--skip-publish
+
+## release-snapshot: Build snapshots for all platforms and generate checksums
+release-snapshot:
+	docker run \
+		--rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v `pwd`:/go/src/sifnoded \
+		-w /go/src/sifnoded \
+		$(GORELEASER_IMAGE) \
+		release \
+		--clean \
+		--snapshot \
+		--skip-validate \
+		--skip-publish
+
+.PHONY: release release-dry-run release-snapshot

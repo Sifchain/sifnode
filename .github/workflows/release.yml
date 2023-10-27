@@ -1,25 +1,52 @@
-name: Release
+# name: Release
 
+# on:
+#   release:
+#     types:
+#       - published
+
+# jobs:
+#   dispatch:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Get the tag
+#         id: release_tag
+#         run: echo ::set-output name=name::${GITHUB_REF/refs\/tags\//}
+
+#       - uses: convictional/trigger-workflow-and-wait@v1.6.1
+#         with:
+#           owner: sifchain
+#           repo: sifchain-chainops
+#           github_token: ${{ secrets.GIT_PAT }}
+#           workflow_file_name: sifnode-release.yml
+#           client_payload: '{ "release_tag": "${{ steps.release_tag.outputs.name }}" }'
+#           propagate_failure: false
+#           trigger_workflow: true
+#           wait_workflow: true
+
+# This workflow creates a release using goreleaser
+# via the 'make release' command.
+
+name: Create release
 on:
-  release:
-    types:
-      - published
-
+  push:
+    tags:
+      - v*
+permissions:
+  contents: write
 jobs:
-  dispatch:
+  release:
+    name: Create release
     runs-on: ubuntu-latest
     steps:
-      - name: Get the tag
-        id: release_tag
-        run: echo ::set-output name=name::${GITHUB_REF/refs\/tags\//}
-
-      - uses: convictional/trigger-workflow-and-wait@v1.6.1
+      - name: Check out repository code
+        uses: actions/checkout@v3
         with:
-          owner: sifchain
-          repo: sifchain-chainops
-          github_token: ${{ secrets.GIT_PAT }}
-          workflow_file_name: sifnode-release.yml
-          client_payload: '{ "release_tag": "${{ steps.release_tag.outputs.name }}" }'
-          propagate_failure: false
-          trigger_workflow: true
-          wait_workflow: true
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.release_tag }}
+      - name: Make release
+        run: |
+          sudo rm -rf dist
+          make release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
