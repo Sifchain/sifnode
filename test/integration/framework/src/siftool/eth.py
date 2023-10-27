@@ -61,7 +61,7 @@ def web3_wait_for_connection_up(w3_conn: web3.Web3, polling_time: int = 1, timeo
 def validate_address_and_private_key(addr: Optional[Address], private_key: Optional[PrivateKey]
 ) -> Tuple[Address, Optional[PrivateKey]]:
     a = web3.Web3().eth.account
-    addr = web3.Web3.toChecksumAddress(addr) if addr else None
+    addr = web3.Web3.to_checksum_address(addr) if addr else None
     if private_key:
         match_hex = re.match("^(0x)?([0-9a-fA-F]{64})$", private_key)
         private_key = match_hex[2].lower() if match_hex else _mnemonic_to_private_key(private_key)
@@ -105,14 +105,14 @@ class EthereumTxWrapper:
         # self.ethereum_network_descriptor = None
 
     def _get_private_key(self, addr):
-        addr = web3.Web3.toChecksumAddress(addr)
+        addr = web3.Web3.to_checksum_address(addr)
         if addr not in self.private_keys:
             raise Exception(f"No private key set for address {addr}")
         return self.private_keys[addr]
 
     def set_private_key(self, addr: Address, private_key: PrivateKey):
         a = web3.Web3().eth.account
-        addr = web3.Web3.toChecksumAddress(addr)
+        addr = web3.Web3.to_checksum_address(addr)
         if private_key is None:
             self.private_keys.pop(addr)  # Remove
         else:
@@ -254,7 +254,7 @@ class EthereumTxWrapper:
 
         if smart_contract_call_obj is not None:
             # With no gas/gasPrice
-            tx = smart_contract_call_obj.buildTransaction(tx)
+            tx = smart_contract_call_obj.build_transaction(tx)
 
         private_key = self._get_private_key(from_addr)
         signed_tx = self.w3_conn.eth.account.sign_transaction(tx, private_key=private_key)

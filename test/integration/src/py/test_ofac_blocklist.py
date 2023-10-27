@@ -43,7 +43,7 @@ def test_blocklist_eth(ctx):
 
     bridge_bank = ctx.get_bridge_bank_sc()
 
-    filter = bridge_bank.events.LogLock.createFilter(fromBlock="latest")
+    filter = bridge_bank.events.LogLock.create_filter(fromBlock="latest")
 
     # Valid negative test outcome: transaction rejected with the string "Address is blocklisted"
     def assert_blocked(addr):
@@ -123,7 +123,7 @@ def test_blocklist_erc20(ctx):
 
     to_sif_acct = ctx.create_sifchain_addr()
 
-    filter = bridge_bank.events.LogLock.createFilter(fromBlock="latest")
+    filter = bridge_bank.events.LogLock.create_filter(fromBlock="latest")
 
     def assert_blocked(addr):
         assert len(filter.get_new_entries()) == 0
