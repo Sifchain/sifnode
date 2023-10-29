@@ -18,7 +18,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8.10'                    
+          python-version: '3.8.10'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'v16.20.2'
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
