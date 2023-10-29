@@ -28,3 +28,7 @@ echo '. ~/.bash_profile' >> ~/.bashrc
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
 
 python3 -m pip install -r $(dirname $0)/framework/requirements.txt
+
+# Print versions to facilitate debugging
+python3 --version
+python3 -m pip freeze | sort
