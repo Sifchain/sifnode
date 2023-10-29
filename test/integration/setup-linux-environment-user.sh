@@ -27,5 +27,4 @@ echo '. ~/.bash_profile' >> ~/.bashrc
 . ~/.bash_profile
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
 
-python3 -m pip install -U pytest web3 grpcio-tools toml
-
+python3 -m pip install -r $(dirname $0)/framework/requirements.txt
