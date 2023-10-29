@@ -18,6 +18,20 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.lis
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
+#                            SCRIPT DEPRECATION WARNING
+#
+#
+#  This script, located at https://deb.nodesource.com/setup_X, used to
+#  install Node.js is deprecated now and will eventually be made inactive.
+#
+#  Please visit the NodeSource distributions Github and follow the
+#  instructions to migrate your repo.
+#  https://github.com/nodesource/distributions
+#
+#  The NodeSource Node.js Linux distributions GitHub repository contains
+#  information about which versions of Node.js and which Linux distributions
+#  are supported and how to install it.
+#  https://github.com/nodesource/distributions
 # nodejs
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt-get install -y nodejs
