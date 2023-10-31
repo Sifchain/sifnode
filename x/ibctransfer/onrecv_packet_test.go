@@ -1,16 +1,17 @@
 package ibctransfer_test
 
 import (
+	"testing"
+
 	app2 "github.com/Sifchain/sifnode/app"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
