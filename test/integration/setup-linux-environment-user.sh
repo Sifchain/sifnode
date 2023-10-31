@@ -15,11 +15,6 @@ npm install -g truffle @truffle/hdwallet-provider ganache-cli || true
 sudo npm install -g dotenv
 
 # set up environment vars in .bash_profile
-echo 'export GOPATH=$HOME/go' >> ~/.bash_profile
-echo 'export GOBIN=$GOPATH/bin' >> ~/.bash_profile
-echo 'export GOROOT=/usr/local/go' >> ~/.bash_profile
-echo 'export PATH=$GOROOT/bin:$PATH' >> ~/.bash_profile
-echo 'export PATH=$GOBIN:$PATH' >> ~/.bash_profile
 echo 'export PATH=$HOME/.npm-global/bin:$PATH' >> ~/.bash_profile
 
 echo '. ~/.bash_profile' >> ~/.bashrc
@@ -27,5 +22,8 @@ echo '. ~/.bash_profile' >> ~/.bashrc
 . ~/.bash_profile
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
 
-python3 -m pip install -U pytest web3 grpcio-tools toml
+python3 -m pip install -r $(dirname $0)/framework/requirements.txt
 
+# Print versions to facilitate debugging
+python3 --version
+python3 -m pip freeze | sort
