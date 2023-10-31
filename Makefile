@@ -1,27 +1,30 @@
-CHAINNET?=betanet
-BINARY?=sifnoded
-GOPATH?=$(shell go env GOPATH)
-GOBIN?=$(GOPATH)/bin
-NOW=$(shell date +'%Y-%m-%d_%T')
-COMMIT:=$(shell git log -1 --format='%H')
-VERSION:=$(shell cat version)
-IMAGE_TAG?=latest
+CHAINNET ?= betanet
+BINARY ?= sifnoded
+GOPATH ?= $(shell go env GOPATH)
+GOBIN ?= $(GOPATH)/bin
+NOW = $(shell date +'%Y-%m-%d_%T')
+COMMIT := $(shell git log -1 --format='%H')
+VERSION := $(shell cat version)
+IMAGE_TAG ?= latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
-GOFLAGS:=""
-GOTAGS:=ledger
+GOFLAGS := ""
+GOTAGS := ledger
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
+GO_VERSION := $(shell cat go.mod | grep -E 'go [0-9].[0-9]+' | cut -d ' ' -f 2)
+
+LDFLAGS = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
+		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(GOTAGS)
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(GOTAGS)'
+BUILD_FLAGS := -ldflags '$(LDFLAGS)' -tags '$(GOTAGS)'
 
-BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer ./cmd/siftest
+BINARIES = ./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer ./cmd/siftest
 
 all: lint install
 
@@ -88,8 +91,8 @@ rollback:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-protoVer=v0.3
-protoImageName=tendermintdev/sdk-proto-gen:$(protoVer)
+protoVer = v0.3
+protoImageName = tendermintdev/sdk-proto-gen:$(protoVer)
 
 proto-all: proto-format proto-lint proto-gen
 
@@ -122,3 +125,56 @@ proto-check-breaking:
 	# we should turn this back on after our first release
 	# $(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
 .PHONY: proto-check-breaking
+
+GORELEASER_IMAGE := ghcr.io/goreleaser/goreleaser-cross:v$(GO_VERSION)
+
+## release: Build binaries for all platforms and generate checksums
+ifdef GITHUB_TOKEN
+release:
+	docker run \
+		--rm \
+		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
+		-e LDFLAGS="$(LDFLAGS)" \
+		-e GOTAGS="$(GOTAGS)" \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v `pwd`:/go/src/sifnoded \
+		-w /go/src/sifnoded \
+		$(GORELEASER_IMAGE) \
+		release \
+		--clean
+else
+release:
+	@echo "Error: GITHUB_TOKEN is not defined. Please define it before running 'make release'."
+endif
+
+## release-dry-run: Dry-run build process for all platforms and generate checksums
+release-dry-run:
+	docker run \
+		--rm \
+		-e LDFLAGS="$(LDFLAGS)" \
+		-e GOTAGS="$(GOTAGS)" \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v `pwd`:/go/src/sifnoded \
+		-w /go/src/sifnoded \
+		$(GORELEASER_IMAGE) \
+		release \
+		--clean \
+		--skip-publish
+
+## release-snapshot: Build snapshots for all platforms and generate checksums
+release-snapshot:
+	docker run \
+		--rm \
+		-e LDFLAGS="$(LDFLAGS)" \
+		-e GOTAGS="$(GOTAGS)" \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v `pwd`:/go/src/sifnoded \
+		-w /go/src/sifnoded \
+		$(GORELEASER_IMAGE) \
+		release \
+		--clean \
+		--snapshot \
+		--skip-validate \
+		--skip-publish
+
+.PHONY: release release-dry-run release-snapshot

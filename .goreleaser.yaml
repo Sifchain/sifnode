@@ -1,0 +1,169 @@
+project_name: sifnoded
+env:
+  - CGO_ENABLED=1
+builds:
+  - id: sifnoded-darwin-amd64
+    main: ./cmd/sifnoded/main.go
+    binary: sifnoded
+    env:
+      - CC=o64-clang
+      - CGO_LDFLAGS=-L/lib
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
+      - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
+    tags:
+      - ledger
+  - id: sifnoded-darwin-arm64
+    main: ./cmd/sifnoded/main.go
+    binary: sifnoded
+    env:
+      - CC=oa64-clang
+      - CGO_LDFLAGS=-L/lib
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
+      - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
+    tags:
+      - ledger
+  - id: sifnoded-linux-amd64
+    main: ./cmd/sifnoded
+    binary: sifnoded
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=x86_64-linux-gnu-gcc
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
+      - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
+    tags:
+      - ledger
+  - id: sifnoded-linux-arm64
+    main: ./cmd/sifnoded
+    binary: sifnoded
+    goos:
+      - linux
+    goarch:
+      - arm64
+    env:
+      - CC=aarch64-linux-gnu-gcc
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
+      - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
+    tags:
+      - ledger
+universal_binaries:
+  - id: sifnoded-darwin-universal
+    ids:
+      - sifnoded-darwin-amd64
+      - sifnoded-darwin-arm64
+    replace: false
+archives:
+  - id: zipped
+    builds:
+      - sifnoded-darwin-universal
+      - sifnoded-linux-amd64
+      - sifnoded-linux-arm64
+      - sifnoded-darwin-amd64
+      - sifnoded-darwin-arm64
+    name_template: "{{.ProjectName}}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    format: tar.gz
+    files:
+      - none*
+  - id: binaries
+    builds:
+      - sifnoded-darwin-universal
+      - sifnoded-linux-amd64
+      - sifnoded-linux-arm64
+      - sifnoded-darwin-amd64
+      - sifnoded-darwin-arm64
+    name_template: "{{.ProjectName}}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    format: binary
+    files:
+      - none*
+checksum:
+  name_template: "sha256sum.txt"
+  algorithm: sha256
+# Docs: https://goreleaser.com/customization/changelog/
+changelog:
+  skip: true
+# Docs: https://goreleaser.com/customization/release/
+release:
+  github:
+    owner: sifchain
+    name: sifnode
+  replace_existing_draft: true
+  header: |
+    ## Overview
+
+    < DETAILS OF THE UPDATE >
+
+    ## 📦 Executable Files
+
+    Available binaries files for both Linux and Darwin (covering amd64 and arm64 architectures) are listed below. For Darwin users, a universal binary named `sifnoded-v{{ .Version }}-darwin-all` can be utilized for both amd64 and arm64.
+
+    #### 🛠 Compile from Source
+
+    If you wish to compile the software from its source, follow these steps:
+
+    ```bash
+    git clone https://github.com/sifchain/sifnode
+    cd sifchain && git checkout v{{ .Version }}
+    make install
+    ```
+
+    ## Updates & Enhancements
+
+    For a comprehensive list of modifications, refer to the changelog [here](https://github.com/sifchain/sifnode/blob/v{{ .Version }}/CHANGELOG.md).
+  name_template: "v{{.Version}}"
+  mode: replace
+  draft: true
+# Docs: https://goreleaser.com/customization/announce/
+# We could automatically announce the release in
+# - discord
+# - slack
+# - twitter
+# - webhooks
+# - telegram
+# - reddit
+#
+# announce:
+# discord:
+#   enabled: true
+#   message_template: 'New {{.Tag}} is out!'
