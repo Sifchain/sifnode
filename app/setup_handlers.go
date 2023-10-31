@@ -1,22 +1,17 @@
 package app
 
 import (
-	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const releaseVersion = "1.1.0-beta"
+const releaseVersion = "1.2.0-beta"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+	app.UpgradeKeeper.SetUpgradeHandler(releaseVersion, func(ctx sdk.Context, _ types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + releaseVersion)
-
-		app.AdminKeeper.SetParams(ctx, &admintypes.Params{
-			SubmitProposalFee: sdk.NewUintFromString("5000000000000000000000"),
-		})
 
 		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})

@@ -6,8 +6,8 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -24,12 +24,12 @@ func OnRecvPacketWhitelistConvert(
 ) channeltypes.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
+		acknowledgement := channeltypes.NewErrorAcknowledgement(err)
 		return acknowledgement
 	}
 	err := sdkTransferKeeper.OnRecvPacket(ctx, packet, data)
 	if err != nil {
-		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
+		acknowledgement := channeltypes.NewErrorAcknowledgement(err)
 		return acknowledgement
 	}
 	// Get the denom that will be minted by sdk transfer module,
@@ -41,7 +41,7 @@ func OnRecvPacketWhitelistConvert(
 	mintedDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenom)
 	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
-			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
+			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted"),
 		)
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
@@ -62,7 +62,7 @@ func OnRecvPacketWhitelistConvert(
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
 			acknowledgement := channeltypes.NewErrorAcknowledgement(
-				sdkerrors.Wrapf(sctransfertypes.ErrConvertingToUnitDenom, err.Error()).Error(),
+				sdkerrors.Wrapf(sctransfertypes.ErrConvertingToUnitDenom, err.Error()),
 			)
 			return acknowledgement
 		}

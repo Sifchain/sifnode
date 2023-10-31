@@ -7,6 +7,7 @@ package tokenregistrymocks
 import (
 	reflect "reflect"
 
+	keeper "github.com/Sifchain/sifnode/x/admin/keeper"
 	types "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
@@ -64,6 +65,20 @@ func (mr *MockKeeperMockRecorder) ExportGenesis(ctx interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportGenesis", reflect.TypeOf((*MockKeeper)(nil).ExportGenesis), ctx)
 }
 
+// GetAdminKeeper mocks base method.
+func (m *MockKeeper) GetAdminKeeper() keeper.Keeper {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdminKeeper")
+	ret0, _ := ret[0].(keeper.Keeper)
+	return ret0
+}
+
+// GetAdminKeeper indicates an expected call of GetAdminKeeper.
+func (mr *MockKeeperMockRecorder) GetAdminKeeper() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdminKeeper", reflect.TypeOf((*MockKeeper)(nil).GetAdminKeeper))
+}
+
 // GetEntry mocks base method.
 func (m *MockKeeper) GetEntry(registry types.Registry, denom string) (*types.RegistryEntry, error) {
 	m.ctrl.T.Helper()
@@ -107,20 +122,6 @@ func (mr *MockKeeperMockRecorder) InitGenesis(ctx, state interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitGenesis", reflect.TypeOf((*MockKeeper)(nil).InitGenesis), ctx, state)
 }
 
-// IsAdminAccount mocks base method.
-func (m *MockKeeper) IsAdminAccount(ctx types0.Context, adminAccount types0.AccAddress) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsAdminAccount", ctx, adminAccount)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsAdminAccount indicates an expected call of IsAdminAccount.
-func (mr *MockKeeperMockRecorder) IsAdminAccount(ctx, adminAccount interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdminAccount", reflect.TypeOf((*MockKeeper)(nil).IsAdminAccount), ctx, adminAccount)
-}
-
 // RemoveToken mocks base method.
 func (m *MockKeeper) RemoveToken(ctx types0.Context, denom string) {
 	m.ctrl.T.Helper()
@@ -133,16 +134,16 @@ func (mr *MockKeeperMockRecorder) RemoveToken(ctx, denom interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveToken", reflect.TypeOf((*MockKeeper)(nil).RemoveToken), ctx, denom)
 }
 
-// SetAdminAccount mocks base method.
-func (m *MockKeeper) SetAdminAccount(ctx types0.Context, adminAccount types0.AccAddress) {
+// SetRegistry mocks base method.
+func (m *MockKeeper) SetRegistry(ctx types0.Context, registry types.Registry) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAdminAccount", ctx, adminAccount)
+	m.ctrl.Call(m, "SetRegistry", ctx, registry)
 }
 
-// SetAdminAccount indicates an expected call of SetAdminAccount.
-func (mr *MockKeeperMockRecorder) SetAdminAccount(ctx, adminAccount interface{}) *gomock.Call {
+// SetRegistry indicates an expected call of SetRegistry.
+func (mr *MockKeeperMockRecorder) SetRegistry(ctx, registry interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAdminAccount", reflect.TypeOf((*MockKeeper)(nil).SetAdminAccount), ctx, adminAccount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRegistry", reflect.TypeOf((*MockKeeper)(nil).SetRegistry), ctx, registry)
 }
 
 // SetToken mocks base method.
@@ -155,4 +156,18 @@ func (m *MockKeeper) SetToken(ctx types0.Context, entry *types.RegistryEntry) {
 func (mr *MockKeeperMockRecorder) SetToken(ctx, entry interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockKeeper)(nil).SetToken), ctx, entry)
+}
+
+// StoreKey mocks base method.
+func (m *MockKeeper) StoreKey() types0.StoreKey {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StoreKey")
+	ret0, _ := ret[0].(types0.StoreKey)
+	return ret0
+}
+
+// StoreKey indicates an expected call of StoreKey.
+func (mr *MockKeeperMockRecorder) StoreKey() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreKey", reflect.TypeOf((*MockKeeper)(nil).StoreKey))
 }
