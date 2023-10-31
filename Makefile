@@ -1,29 +1,30 @@
-CHAINNET?=betanet
-BINARY?=sifnoded
-GOPATH?=$(shell go env GOPATH)
-GOBIN?=$(GOPATH)/bin
-NOW=$(shell date +'%Y-%m-%d_%T')
-COMMIT:=$(shell git log -1 --format='%H')
-VERSION:=$(shell cat version)
-IMAGE_TAG?=latest
+CHAINNET ?= betanet
+BINARY ?= sifnoded
+GOPATH ?= $(shell go env GOPATH)
+GOBIN ?= $(GOPATH)/bin
+NOW = $(shell date +'%Y-%m-%d_%T')
+COMMIT := $(shell git log -1 --format='%H')
+VERSION := $(shell cat version)
+IMAGE_TAG ?= latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER ?= docker
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
-GOFLAGS:=""
-GOTAGS:=ledger
+GOFLAGS := ""
+GOTAGS := ledger
 
 GO_VERSION := $(shell cat go.mod | grep -E 'go [0-9].[0-9]+' | cut -d ' ' -f 2)
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
+LDFLAGS = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
+		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(GOTAGS)
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(GOTAGS)'
+BUILD_FLAGS := -ldflags '$(LDFLAGS)' -tags '$(GOTAGS)'
 
-BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer ./cmd/siftest
+BINARIES = ./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer ./cmd/siftest
 
 all: lint install
 
@@ -90,8 +91,8 @@ rollback:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-protoVer=v0.3
-protoImageName=tendermintdev/sdk-proto-gen:$(protoVer)
+protoVer = v0.3
+protoImageName = tendermintdev/sdk-proto-gen:$(protoVer)
 
 proto-all: proto-format proto-lint proto-gen
 
@@ -133,6 +134,8 @@ release:
 	docker run \
 		--rm \
 		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
+		-e LDFLAGS="$(LDFLAGS)" \
+		-e GOTAGS="$(GOTAGS)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/sifnoded \
 		-w /go/src/sifnoded \
@@ -148,6 +151,8 @@ endif
 release-dry-run:
 	docker run \
 		--rm \
+		-e LDFLAGS="$(LDFLAGS)" \
+		-e GOTAGS="$(GOTAGS)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/sifnoded \
 		-w /go/src/sifnoded \
@@ -160,6 +165,8 @@ release-dry-run:
 release-snapshot:
 	docker run \
 		--rm \
+		-e LDFLAGS="$(LDFLAGS)" \
+		-e GOTAGS="$(GOTAGS)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/sifnoded \
 		-w /go/src/sifnoded \
