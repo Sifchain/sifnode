@@ -5,7 +5,6 @@ run:
 linters:
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - goconst
@@ -26,7 +25,6 @@ linters:
 #    - scopelint
     - exportloopref
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
@@ -58,7 +56,6 @@ issues:
         - staticcheck
     - path: test/
       linters:
-        - deadcode
         - unused
         - ineffassign
         - prealloc
