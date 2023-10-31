@@ -18,10 +18,6 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.lis
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
-# nodejs
-curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
 apt-get update
 
 apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev python3-pip parallel netcat uuid-runtime vim tmux rsync psmisc
@@ -32,7 +28,3 @@ groupadd -f docker
 usermod -aG docker ${dockeruser}
 
 curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod a+x /usr/local/bin/docker-compose
-
-# install go
-wget -O /tmp/go.tar.gz https://golang.org/dl/go1.18.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf /tmp/go.tar.gz
