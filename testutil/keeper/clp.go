@@ -6,11 +6,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 
-	// tmdb "github.com/cometbft/cometbft-db"
-	tmdb "github.com/tendermint/tm-db"
-	// "github.com/cometbft/cometbft/libs/log"
-	"github.com/tendermint/tendermint/libs/log"
-	// tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -19,7 +14,9 @@ import (
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmdb "github.com/tendermint/tm-db"
 )
 
 func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -44,7 +41,6 @@ func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
-		// memStoreKey,
 		nil,
 		nil,
 		nil,
