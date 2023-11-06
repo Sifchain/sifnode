@@ -35,7 +35,7 @@ func TestRewardsBucketGet(t *testing.T) {
 		)
 		require.True(t, found)
 		require.Equal(t,
-			nullify.Fill(&item),
+			nullify.Fill(&item), //nolint
 			nullify.Fill(&rst),
 		)
 	}

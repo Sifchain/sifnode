@@ -5,28 +5,32 @@ run:
 linters:
   enable:
     - bodyclose
-    - deadcode
-    - depguard
+    # WARN [runner] The linter 'deadcode' is deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
+    # - deadcode
+    # x/tokenregistry/client/cli/query.go:9:2: import 'github.com/cosmos/cosmos-sdk/client' is not allowed from list 'Main' (depguard)
+    # - depguard
     - dogsled
     - goconst
-#    - gocritic
-#    - gofmt
-#    - goimports
-#    - golint
-    - revive
+    # - gocritic
+    # - gofmt
+    # - goimports
+    # - golint
+    # x/clp/client/cli/query.go:49:17: unused-parameter: parameter 'queryRoute' seems to be unused, consider removing or renaming it as _ (revive)
+    # - revive
     - gosec
     - govet
     - ineffassign
-#    - interfacer
-# this is deprecated/obsolete
-#    - maligned
+    # - interfacer
+    # this is deprecated/obsolete
+    # - maligned
     - misspell
     - nakedret
     - prealloc
-#    - scopelint
+    # - scopelint
     - exportloopref
     - staticcheck
-    - structcheck
+    # WARN [runner] The linter 'structcheck' is deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
+    # - structcheck
     - stylecheck
     - typecheck
     - unconvert
@@ -63,7 +67,7 @@ issues:
         - ineffassign
         - prealloc
         - staticcheck
-# Not a real issue here, so ignore
+    # Not a real issue here, so ignore
     - path: x/clp/keeper/pureCalculation_test.go
       text: "G113:"
       linters:

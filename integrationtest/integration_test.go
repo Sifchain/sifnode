@@ -390,10 +390,10 @@ func TestIntegration(t *testing.T) {
 				return genesisState
 			})
 
-			app.ClpKeeper.SetRewardParams(ctx, &tc.Setup.RewardsParams)
-			app.ClpKeeper.SetLiquidityProtectionParams(ctx, &tc.Setup.ProtectionParams)
-			app.ClpKeeper.SetPmtpParams(ctx, &tc.Setup.ShiftingParams)
-			app.ClpKeeper.SetProviderDistributionParams(ctx, &tc.Setup.ProviderParams)
+			app.ClpKeeper.SetRewardParams(ctx, &tc.Setup.RewardsParams)                 //nolint
+			app.ClpKeeper.SetLiquidityProtectionParams(ctx, &tc.Setup.ProtectionParams) //nolint
+			app.ClpKeeper.SetPmtpParams(ctx, &tc.Setup.ShiftingParams)                  //nolint
+			app.ClpKeeper.SetProviderDistributionParams(ctx, &tc.Setup.ProviderParams)  //nolint
 
 			clpSrv := clpkeeper.NewMsgServerImpl(app.ClpKeeper)
 			marginSrv := marginkeeper.NewMsgServerImpl(app.MarginKeeper)

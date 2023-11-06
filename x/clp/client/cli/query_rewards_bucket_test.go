@@ -88,7 +88,7 @@ func TestShowRewardsBucket(t *testing.T) {
 				require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 				require.NotNil(t, resp.RewardsBucket)
 				require.Equal(t,
-					nullify.Fill(&tc.obj),
+					nullify.Fill(&tc.obj), //nolint
 					nullify.Fill(&resp.RewardsBucket),
 				)
 			}
