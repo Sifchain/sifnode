@@ -11,6 +11,8 @@ const (
 	QueryParams                = "params"
 	QueryRewardParams          = "rewardParams"
 	QueryPmtpParams            = "pmtpParams"
+	QueryRewardsBucket         = "rewardsBucket"
+	QueryRewardsBuckets        = "allRewardsBuckets"
 )
 
 func NewQueryReqGetPool(symbol string) PoolReq {

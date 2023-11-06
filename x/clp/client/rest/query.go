@@ -48,6 +48,14 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 		"/clp/params",
 		getParamsHandler(cliCtx),
 	).Methods("GET")
+	r.HandleFunc(
+		"/clp/getRewardsBucket",
+		getRewardsBucketHandler(cliCtx),
+	).Methods("GET")
+	r.HandleFunc(
+		"/clp/getRewardsBuckets",
+		getRewardsBucketsHandler(cliCtx),
+	).Methods("GET")
 }
 
 func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
@@ -221,7 +229,7 @@ func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 	}
 }
 
-//http://localhost:1317/clp/getLpList?symbol=catk
+// http://localhost:1317/clp/getLpList?symbol=catk
 func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
@@ -325,6 +333,86 @@ func getParamsHandler(cliCtx client.Context) http.HandlerFunc {
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParams)
 
 		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getRewardsBucketHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		//Generate Router
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryRewardsBucket)
+		//Generate Params
+		var params types.RewardsBucketReq
+		params.Denom = r.URL.Query().Get("denom")
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		res, height, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getRewardsBucketsHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryRewardsBuckets)
+
+		var err error
+		var limit, offset uint64
+
+		if r.URL.Query().Get("limit") != "" {
+			limit, err = strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		if r.URL.Query().Get("offset") != "" {
+			offset, err = strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		params := types.AllRewardsBucketReq{
+			Pagination: &query.PageRequest{
+				Limit:  limit,
+				Offset: offset,
+			},
+		}
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
