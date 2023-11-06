@@ -60,6 +60,10 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 	for _, lp := range data.LiquidityProviders {
 		k.SetLiquidityProvider(ctx, lp)
 	}
+	// Set all the rewardsBucket
+	for _, elem := range data.RewardsBucketList {
+		k.SetRewardsBucket(ctx, elem)
+	}
 	return []abci.ValidatorUpdate{}
 }
 
@@ -77,11 +81,13 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	for i, entry := range whiteList {
 		wl[i] = entry.String()
 	}
+	rewardsBucketList := keeper.GetAllRewardsBucket(ctx)
 	return types.GenesisState{
 		Params:             params,
 		AddressWhitelist:   wl,
 		PoolList:           poolList,
 		LiquidityProviders: liquidityProviders,
+		RewardsBucketList:  rewardsBucketList,
 	}
 }
 

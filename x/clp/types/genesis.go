@@ -7,19 +7,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-// NewGenesisState creates a new GenesisState instance
-func NewGenesisState(params Params) GenesisState {
-	return GenesisState{
-		Params: params,
-	}
-}
-
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() *GenesisState {
 	admin := GetDefaultCLPAdmin()
 	return &GenesisState{
-		Params:           DefaultParams(),
-		AddressWhitelist: []string{admin.String()},
+		Params:            DefaultParams(),
+		AddressWhitelist:  []string{admin.String()},
+		RewardsBucketList: []RewardsBucket{},
 	}
 }
 
@@ -32,4 +26,21 @@ func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]
 		}
 	}
 	return genesisState
+}
+
+// Validate performs basic genesis state validation returning an error upon any
+// failure.
+func (gs GenesisState) Validate() error {
+	// Check for duplicated index in rewardsBucket
+	rewardsBucketIndexMap := make(map[string]struct{})
+
+	for _, elem := range gs.RewardsBucketList {
+		index := string(RewardsBucketKey(elem.Denom))
+		if _, ok := rewardsBucketIndexMap[index]; ok {
+			return fmt.Errorf("duplicated index for rewardsBucket")
+		}
+		rewardsBucketIndexMap[index] = struct{}{}
+	}
+
+	return gs.Params.Validate()
 }

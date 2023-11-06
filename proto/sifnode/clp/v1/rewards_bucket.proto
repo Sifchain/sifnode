@@ -1,0 +1,17 @@
+syntax = "proto3";
+package sifnode.clp.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/clp/types";
+
+message RewardsBucket {
+  string denom = 1; 
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"amount\""
+  ];
+  
+}
+

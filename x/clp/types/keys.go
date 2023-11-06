@@ -16,6 +16,9 @@ const (
 	// RouterKey to be used for routing msgs
 	RouterKey = ModuleName
 
+	// MemStoreKey defines the in-memory store key
+	MemStoreKey = "mem_clp"
+
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
@@ -44,6 +47,10 @@ var (
 	RemovalRequestPrefix                = []byte{0x0d}
 	RemovalQueuePrefix                  = []byte{0x0e}
 )
+
+func KeyPrefix(p string) []byte {
+	return []byte(p)
+}
 
 // Generates a key for storing a specific pool
 // The key is of the format externalticker_nativeticker

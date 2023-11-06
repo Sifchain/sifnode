@@ -6,6 +6,7 @@ import "sifnode/clp/v1/types.proto";
 import "sifnode/clp/v1/params.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
+import "sifnode/clp/v1/rewards_bucket.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
@@ -59,6 +60,15 @@ service Query {
   rpc GetPoolShareEstimate(PoolShareEstimateReq) returns (PoolShareEstimateRes) {
     option (google.api.http).get = "/sifchain/clp/v1/pool_share_estimate";
   };
+  // Queries a list of RewardsBucket items.
+  rpc GetRewardsBucket    (RewardsBucketReq) returns (RewardsBucketRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/rewards_bucket/{denom}";
+  
+  }
+  rpc GetRewardsBucketAll (AllRewardsBucketReq) returns (AllRewardsBucketRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/clp/rewards_bucket";
+  
+  }
 }
 
 message PoolReq {
@@ -263,3 +273,21 @@ message SwapInfo {
     (gogoproto.nullable) = false
   ];
 }
+
+message RewardsBucketReq {
+  string denom = 1;
+}
+
+message RewardsBucketRes {
+  RewardsBucket rewards_bucket = 1 [(gogoproto.nullable) = false];
+}
+
+message AllRewardsBucketReq {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message AllRewardsBucketRes {
+  repeated RewardsBucket                          rewards_bucket = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination    = 2;
+}
+

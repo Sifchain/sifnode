@@ -6,6 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/query"
 
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -343,4 +344,49 @@ func calculateSwapInfo(swapStatus int, swapAmount, nativeAssetDepth, externalAss
 	default:
 		panic("expect not to reach here!")
 	}
+}
+
+func (k Querier) GetRewardsBucketAll(goCtx context.Context, req *types.AllRewardsBucketReq) (*types.AllRewardsBucketRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	var rewardsBuckets []types.RewardsBucket
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	store := ctx.KVStore(k.Keeper.storeKey)
+	rewardsBucketStore := prefix.NewStore(store, types.KeyPrefix(types.RewardsBucketKeyPrefix))
+
+	pageRes, err := query.Paginate(rewardsBucketStore, req.Pagination, func(key []byte, value []byte) error {
+		var rewardsBucket types.RewardsBucket
+		if err := k.Keeper.cdc.Unmarshal(value, &rewardsBucket); err != nil {
+			return err
+		}
+
+		rewardsBuckets = append(rewardsBuckets, rewardsBucket)
+		return nil
+	})
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.AllRewardsBucketRes{RewardsBucket: rewardsBuckets, Pagination: pageRes}, nil
+}
+
+func (k Querier) GetRewardsBucket(goCtx context.Context, req *types.RewardsBucketReq) (*types.RewardsBucketRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	val, found := k.Keeper.GetRewardsBucket(
+		ctx,
+		req.Denom,
+	)
+	if !found {
+		return nil, status.Error(codes.NotFound, "not found")
+	}
+
+	return &types.RewardsBucketRes{RewardsBucket: val}, nil
 }

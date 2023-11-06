@@ -86,3 +86,9 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
 
 	return nil
 }
+
+func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
+	m.keeper.SetRewardsBucket(ctx, types.RewardsBucket{})
+
+	return nil
+}
