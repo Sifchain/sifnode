@@ -7,7 +7,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	keepertest "github.com/Sifchain/sifnode/testutil/keeper"
+	"github.com/Sifchain/sifnode/testutil/nullify"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
@@ -90,4 +93,34 @@ func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)
 	return poolsCount, lpCount
+}
+
+func TestGenesis(t *testing.T) {
+	admin := types.GetDefaultCLPAdmin()
+
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+
+		AddressWhitelist: []string{admin.String()},
+
+		RewardsBucketList: []types.RewardsBucket{
+			{
+				Denom:  "0",
+				Amount: sdk.NewInt(1),
+			},
+			{
+				Denom:  "1",
+				Amount: sdk.NewInt(2),
+			},
+		},
+	}
+
+	k, ctx := keepertest.ClpKeeper(t)
+	clp.InitGenesis(ctx, *k, genesisState)
+	got := clp.ExportGenesis(ctx, *k)
+	require.NotNil(t, got)
+
+	nullify.Fill(got)
+
+	require.ElementsMatch(t, genesisState.RewardsBucketList, got.RewardsBucketList)
 }

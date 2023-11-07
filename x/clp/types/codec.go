@@ -21,6 +21,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 
 var (
 	amino     = codec.NewLegacyAmino()
+	Amino     = amino
 	ModuleCdc = codec.NewAminoCodec(amino)
 )
 

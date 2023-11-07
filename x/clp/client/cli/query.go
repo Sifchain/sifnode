@@ -40,6 +40,8 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdProviderDistributionParams(queryRoute),
 		GetCmdSwapFeeParams(queryRoute),
 		GetCmdPoolShareEstimate(queryRoute),
+		GetCmdListRewardsBucket(),
+		GetCmdShowRewardsBucket(),
 	)
 	return clpQueryCmd
 }
