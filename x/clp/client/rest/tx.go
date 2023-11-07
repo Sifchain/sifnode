@@ -37,6 +37,10 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
 		"/clp/decommissionPool",
 		decommissionPoolHandler(cliCtx),
 	).Methods("POST")
+	r.HandleFunc(
+		"/clp/addLiquidityToRewardsBucket",
+		addLiquidityToRewardsBucketHandler(cliCtx),
+	).Methods("POST")
 }
 
 type (
@@ -84,11 +88,16 @@ type (
 		SentAmount         sdk.Uint     `json:"sent_amount"`          // Amount of SentAsset being sent
 		MinReceivingAmount sdk.Uint     `json:"min_receiving_amount"` // Min amount specified by the user m the swap will not go through if the receiving amount drops below this value
 	}
+	AddLiquidityToRewardsBucketReq struct {
+		BaseReq rest.BaseReq `json:"base_req"`
+		Signer  string       `json:"signer"`  // User who is trying to add liquidity to the pool
+		Amounts sdk.Coins    `json:"amounts"` // Amounts of liquidity to add to rewards bucket
+	}
 )
 
-//   wallet  < - > abci <-mempool-> tendermint
-//   storage > tx
-//   /tx hash= []
+// wallet  < - > abci <-mempool-> tendermint
+// storage > tx
+// /tx hash= []
 func createPoolHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreatePoolReq
@@ -267,5 +276,35 @@ func swapHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, &msg)
+	}
+}
+
+func addLiquidityToRewardsBucketHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req AddLiquidityToRewardsBucketReq
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+
+		req.BaseReq = req.BaseReq.Sanitize()
+		if !req.BaseReq.ValidateBasic(w) {
+			return
+		}
+
+		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		msg := types.NewMsgAddLiquidityToRewardsBucketRequest(signer.String(), req.Amounts)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }

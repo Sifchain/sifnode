@@ -17,6 +17,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgSwap{}, "clp/Swap", nil)
 	cdc.RegisterConcrete(&MsgDecommissionPool{}, "clp/DecommissionPool", nil)
 	cdc.RegisterConcrete(&MsgUnlockLiquidityRequest{}, "clp/UnlockLiquidity", nil)
+	cdc.RegisterConcrete(&MsgAddLiquidityToRewardsBucketRequest{}, "clp/AddLiquidityToRewardsBucket", nil)
 }
 
 var (
@@ -41,6 +42,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgSwap{},
 		&MsgDecommissionPool{},
 		&MsgUnlockLiquidityRequest{},
+		&MsgAddLiquidityToRewardsBucketRequest{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

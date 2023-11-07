@@ -1,10 +1,14 @@
 package keeper_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+
 	sifapp "github.com/Sifchain/sifnode/app"
+	keepertest "github.com/Sifchain/sifnode/testutil/keeper"
 	admintest "github.com/Sifchain/sifnode/x/admin/test"
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
@@ -16,6 +20,17 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
+
+func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
+	k, ctx, _ := keepertest.ClpKeeper(t)
+	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
+}
+
+func TestMsgServer(t *testing.T) {
+	ms, ctx := setupMsgServer(t)
+	require.NotNil(t, ms)
+	require.NotNil(t, ctx)
+}
 
 func TestMsgServer_DecommissionPool(t *testing.T) {
 	testcases := []struct {

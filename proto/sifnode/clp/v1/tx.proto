@@ -2,6 +2,7 @@ syntax = "proto3";
 package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/base/coin.proto";
 import "sifnode/clp/v1/types.proto";
 import "sifnode/clp/v1/params.proto";
 
@@ -34,6 +35,7 @@ service Msg {
   rpc ModifyLiquidityProtectionRates(MsgModifyLiquidityProtectionRates) returns (MsgModifyLiquidityProtectionRatesResponse);
   rpc AddProviderDistributionPeriod(MsgAddProviderDistributionPeriodRequest) returns (MsgAddProviderDistributionPeriodResponse);
   rpc UpdateSwapFeeParams(MsgUpdateSwapFeeParamsRequest) returns (MsgUpdateSwapFeeParamsResponse);
+  rpc AddLiquidityToRewardsBucket (MsgAddLiquidityToRewardsBucketRequest) returns (MsgAddLiquidityToRewardsBucketResponse);
 }
 
 // message MsgUpdateStakingRewardParams{
@@ -281,3 +283,10 @@ message MsgUpdateSwapFeeParamsRequest {
 }
 
 message MsgUpdateSwapFeeParamsResponse {}
+
+message MsgAddLiquidityToRewardsBucketRequest {
+  string                   signer = 1;
+repeated cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgAddLiquidityToRewardsBucketResponse {}

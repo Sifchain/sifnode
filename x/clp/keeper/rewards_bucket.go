@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,4 +62,72 @@ func (k Keeper) GetAllRewardsBucket(ctx sdk.Context) (list []types.RewardsBucket
 	}
 
 	return
+}
+
+// AddToRewardsBucket adds an amount to a specific RewardsBucket in the store,
+// or creates a new RewardsBucket if one does not already exist for the denom.
+func (k Keeper) AddToRewardsBucket(ctx sdk.Context, denom string, amount sdk.Int) error {
+	if denom == "" {
+		return types.ErrDenomCantBeEmpty
+	}
+	if amount.IsNegative() {
+		return types.ErrAmountCantBeNegative
+	}
+
+	rewardsBucket, found := k.GetRewardsBucket(ctx, denom)
+	if !found {
+		// Initialize a new RewardsBucket if it does not exist
+		rewardsBucket = types.RewardsBucket{
+			Denom:  denom,
+			Amount: sdk.NewInt(0),
+		}
+	}
+
+	// Add the amount to the current or new rewards
+	newAmount := rewardsBucket.Amount.Add(amount)
+	rewardsBucket.Amount = newAmount
+
+	k.SetRewardsBucket(ctx, rewardsBucket)
+
+	return nil
+}
+
+// SubtractFromRewardsBucket subtracts an amount from a specific RewardsBucket in the store
+func (k Keeper) SubtractFromRewardsBucket(ctx sdk.Context, denom string, amount sdk.Int) error {
+	if denom == "" {
+		return types.ErrDenomCantBeEmpty
+	}
+	if amount.IsNegative() {
+		return types.ErrAmountCantBeNegative
+	}
+
+	rewardsBucket, found := k.GetRewardsBucket(ctx, denom)
+	if !found {
+		return fmt.Errorf(types.ErrRewardsBucketNotFound.Error(), denom)
+	}
+
+	// Check if the rewards bucket has enough to subtract
+	if rewardsBucket.Amount.LT(amount) {
+		return fmt.Errorf(types.ErrNotEnoughBalanceInRewardsBucket.Error(), denom)
+	}
+
+	// Subtract the amount from the current rewards
+	newAmount := rewardsBucket.Amount.Sub(amount)
+	rewardsBucket.Amount = newAmount
+
+	k.SetRewardsBucket(ctx, rewardsBucket)
+	return nil
+}
+
+// AddMultipleCoinsToRewardsBuckets adds multiple coin amounts to their respective RewardsBuckets
+func (k Keeper) AddMultipleCoinsToRewardsBuckets(ctx sdk.Context, coins sdk.Coins) (sdk.Coins, error) {
+	for _, coin := range coins {
+		err := k.AddToRewardsBucket(ctx, coin.Denom, coin.Amount)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// return a list of all the coins added to rewards buckets
+	return coins, nil
 }
