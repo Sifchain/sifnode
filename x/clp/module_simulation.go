@@ -23,7 +23,7 @@ var (
 )
 
 const (
-	opWeightMsgAddLiquidityToRewardsBucket = "op_weight_msg_add_liquidity_to_rewards_bucket"
+	opWeightMsgAddLiquidityToRewardsBucket = "op_weight_msg_add_liquidity_to_rewards_bucket" // nolint
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddLiquidityToRewardsBucket int = 100
 )
