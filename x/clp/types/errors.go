@@ -44,4 +44,8 @@ var (
 	ErrRemovalsBlockedByHealth                         = sdkerrors.Register(ModuleName, 42, "Cannot remove liquidity due to low pool health")
 	ErrBalanceModuleAccountCheck                       = sdkerrors.Register(ModuleName, 43, "Balance of module account check failed")
 	ErrUnitsCheck                                      = sdkerrors.Register(ModuleName, 44, "Pool vs LP units check failed")
+	ErrDenomCantBeEmpty                                = sdkerrors.Register(ModuleName, 45, "denom cannot be empty")
+	ErrAmountCantBeNegative                            = sdkerrors.Register(ModuleName, 46, "amount cannot be negative")
+	ErrRewardsBucketNotFound                           = sdkerrors.Register(ModuleName, 47, "rewards bucket not found for denom: %s")
+	ErrNotEnoughBalanceInRewardsBucket                 = sdkerrors.Register(ModuleName, 48, "not enough balance in rewards bucket for denom: %s")
 )

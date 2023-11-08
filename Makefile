@@ -66,6 +66,36 @@ tests:
 feature-tests:
 	@GOFLAGS=$(GOFLAGS) go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
+mocks:
+	@echo "Generating mocks"
+
+	# Check if mockery is available in $PATH, install it if not.
+	@if ! which mockery > /dev/null; then \
+		echo "mockery not found, installing version v2..."; \
+		go install github.com/vektra/mockery/v2; \
+	fi
+
+	# Check if mockgen is available in $PATH, install it if not.
+	@if ! which mockgen > /dev/null; then \
+		echo "mockgen not found, installing latest version..."; \
+		go install go.uber.org/mock/mockgen@latest; \
+	fi
+
+	# Check again if mockery is installed, fail if not found.
+	@if ! which mockery > /dev/null; then \
+		echo "Error: mockery could not be found or installed"; \
+		exit 1; \
+	fi
+
+	# Check again if mockgen is installed, fail if not found.
+	@if ! which mockgen > /dev/null; then \
+		echo "Error: mockgen could not be found or installed"; \
+		exit 1; \
+	fi
+
+	# Run go generate on all packages.
+	@go generate ./...
+
 run:
 	GOFLAGS=$(GOFLAGS) go run ./cmd/sifnoded start
 

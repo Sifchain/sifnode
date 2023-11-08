@@ -1,21 +1,33 @@
 package keeper_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
+	keepertest "github.com/Sifchain/sifnode/testutil/keeper"
 	admintest "github.com/Sifchain/sifnode/x/admin/test"
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/test"
+	"github.com/Sifchain/sifnode/x/clp/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Sifchain/sifnode/x/clp/test"
-	"github.com/Sifchain/sifnode/x/clp/types"
 )
+
+func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
+	k, ctx, _ := keepertest.ClpKeeper(t)
+	return clpkeeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
+}
+
+func TestMsgServer(t *testing.T) {
+	ms, ctx := setupMsgServer(t)
+	require.NotNil(t, ms)
+	require.NotNil(t, ctx)
+}
 
 func TestMsgServer_DecommissionPool(t *testing.T) {
 	testcases := []struct {

@@ -269,7 +269,7 @@ func TestQuerier_GetPoolShareEstimate(t *testing.T) {
 }
 
 func TestRewardsBucketQuerySingle(t *testing.T) {
-	keeper, ctx := keepertest.ClpKeeper(t)
+	keeper, ctx, _ := keepertest.ClpKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
 	querier := clpkeeper.Querier{Keeper: *keeper}
 	msgs := createNRewardsBucket(keeper, ctx, 2)
@@ -322,7 +322,7 @@ func TestRewardsBucketQuerySingle(t *testing.T) {
 }
 
 func TestRewardsBucketQueryPaginated(t *testing.T) {
-	keeper, ctx := keepertest.ClpKeeper(t)
+	keeper, ctx, _ := keepertest.ClpKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
 	querier := clpkeeper.Querier{Keeper: *keeper}
 	msgs := createNRewardsBucket(keeper, ctx, 5)

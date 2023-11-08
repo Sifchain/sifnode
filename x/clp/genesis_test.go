@@ -115,7 +115,7 @@ func TestGenesis(t *testing.T) {
 		},
 	}
 
-	k, ctx := keepertest.ClpKeeper(t)
+	k, ctx, _ := keepertest.ClpKeeper(t)
 	clp.InitGenesis(ctx, *k, genesisState)
 	got := clp.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

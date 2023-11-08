@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 
+	"github.com/Sifchain/sifnode/x/clp/types/mocks"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -19,7 +20,7 @@ import (
 	tmdb "github.com/tendermint/tm-db"
 )
 
-func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context, *mocks.BankKeeper) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -38,10 +39,13 @@ func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		"ClpParams",
 	)
+
+	bankKeeper := mocks.NewBankKeeper(t)
+
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
-		nil,
+		bankKeeper,
 		nil,
 		nil,
 		nil,
@@ -55,5 +59,5 @@ func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
 
-	return &k, ctx
+	return &k, ctx, bankKeeper
 }

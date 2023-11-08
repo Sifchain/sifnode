@@ -48,6 +48,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdModifyLiquidityProtectionRates(),
 		GetCmdSetProviderDistributionPeriods(),
 		GetCmdSetSwapFeeParams(),
+		CmdAddLiquidityToRewardsBucket(),
 	)
 
 	return clpTxCmd

@@ -22,6 +22,7 @@ const (
 	EventTypeQueueRemovalRequest                 = "queue_removal_request"
 	EventTypeDequeueRemovalRequest               = "dequeue_removal_request"
 	EventTypeProcessRemovalError                 = "process_removal_error"
+	EventTypeAddLiquidityToRewardsBucket         = "added_liquidity_to_rewards_bucket"
 	AttributeKeyThreshold                        = "min_threshold"
 	AttributeKeySwapAmount                       = "swap_amount"
 	AttributeKeyLiquidityFee                     = "liquidity_fee"
@@ -43,4 +44,6 @@ const (
 	AttributeProbiverDistributionAmount          = "lppd_distribution_amount"
 	AttributeProbiverDistributionReceiver        = "lppd_distribution_receiver"
 	AttributeKeyError                            = "error"
+	AttributeKeyDenom                            = "denom"
+	AttributeKeyAmount                           = "amount"
 )
