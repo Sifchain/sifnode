@@ -69,6 +69,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
+				"",
 			),
 			setupMsgServerCalls: func() {
 				msgSrv.EXPECT().Transfer(gomock.Any(), &sdktransfertypes.MsgTransfer{
@@ -96,6 +97,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
+				"",
 			),
 			setupBankKeeperCalls: func() {},
 			setupMsgServerCalls:  func() {},
@@ -113,6 +115,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
+				"",
 			),
 			setupBankKeeperCalls: func() {},
 			setupMsgServerCalls:  func() {},
@@ -130,6 +133,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
+				"",
 			),
 			setupBankKeeperCalls: func() {},
 			setupMsgServerCalls:  func() {},
