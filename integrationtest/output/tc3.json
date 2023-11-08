@@ -104,5 +104,52 @@
 			"liquidity_provider_units": "1000000000000000000000000000",
 			"liquidity_provider_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
 		}
-	}
+	},
+	"Positions": [
+		{
+			"address": "sif15ky9du8a2wlstz6fpx3p4mqpjyrm5cgp29yyze",
+			"collateral_asset": "rowan",
+			"collateral_amount": "500000000000000000000000",
+			"liabilities": "500000000000000000000000",
+			"interest_paid_collateral": "250000000000000000000000",
+			"interest_paid_custody": "248696839957",
+			"interest_unpaid_collateral": "0",
+			"custody_asset": "atom",
+			"custody_amount": "747325066399",
+			"leverage": "2.000000000000000000",
+			"mtp_health": "1.988006077400219765",
+			"position": 1,
+			"id": 3
+		},
+		{
+			"address": "sif15ky9du8a2wlstz6fpx3p4mqpjyrm5cgqhns3lt",
+			"collateral_asset": "cusdc",
+			"collateral_amount": "5000000000",
+			"liabilities": "5000000000",
+			"interest_paid_collateral": "3499999999",
+			"interest_paid_custody": "3489339220850824052524",
+			"interest_unpaid_collateral": "0",
+			"custody_asset": "rowan",
+			"custody_amount": "6480403411951809127957",
+			"leverage": "2.000000000000000000",
+			"mtp_health": "1.689840585800000000",
+			"position": 1,
+			"id": 2
+		},
+		{
+			"address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+			"collateral_asset": "cusdc",
+			"collateral_amount": "1000000000",
+			"liabilities": "1000000000",
+			"interest_paid_collateral": "899999999",
+			"interest_paid_custody": "897266729446045141572",
+			"interest_unpaid_collateral": "0",
+			"custody_asset": "rowan",
+			"custody_amount": "1096717318585858794620",
+			"leverage": "2.000000000000000000",
+			"mtp_health": "1.491076900000000000",
+			"position": 1,
+			"id": 1
+		}
+	]
 }

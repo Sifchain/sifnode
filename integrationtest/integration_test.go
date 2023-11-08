@@ -203,13 +203,31 @@ func TC2(t *testing.T) TestCase {
 				BorrowAsset:      "atom",
 				Position:         margintypes.Position_LONG,
 				Leverage:         sdk.NewDec(5),
-			}, /*
-				&clptypes.MsgAddLiquidity{
-					Signer:              address,
-					ExternalAsset:       &clptypes.Asset{Symbol: externalAsset},
-					NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000"), // 1000rowan
-					ExternalAssetAmount: sdk.NewUintFromString("1000000000"),
-				},*/
+			},
+			&clptypes.MsgAddLiquidity{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "atom"},
+				NativeAssetAmount:   sdk.NewUintFromString("1000000000000000000000000"), // 1000,000rowan
+				ExternalAssetAmount: sdk.NewUintFromString("0"),
+			},
+			&clptypes.MsgAddLiquidity{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "atom"},
+				NativeAssetAmount:   sdk.NewUintFromString("0"),
+				ExternalAssetAmount: sdk.NewUintFromString("1000000000"), //1000atom
+			},
+			&clptypes.MsgAddLiquidity{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "atom"},
+				NativeAssetAmount:   sdk.NewUintFromString("3000000000000000000000000"), // 3000,000rowan
+				ExternalAssetAmount: sdk.NewUintFromString("0"),
+			},
+			&clptypes.MsgAddLiquidity{
+				Signer:              address,
+				ExternalAsset:       &clptypes.Asset{Symbol: "atom"},
+				NativeAssetAmount:   sdk.NewUintFromString("0"),
+				ExternalAssetAmount: sdk.NewUintFromString("3000000000"), //3000atom
+			},
 		},
 	}
 
@@ -448,9 +466,10 @@ func endBlock(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, height int
 }
 
 type TestResults struct {
-	Accounts map[string]sdk.Coins `json:"accounts"`
-	Pools    map[string]clptypes.Pool
-	LPs      map[string]clptypes.LiquidityProvider
+	Accounts  map[string]sdk.Coins `json:"accounts"`
+	Pools     map[string]clptypes.Pool
+	LPs       map[string]clptypes.LiquidityProvider
+	Positions []margintypes.MTP
 }
 
 func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, tc TestCase) TestResults {
@@ -480,6 +499,8 @@ func getResults(t *testing.T, app *sifapp.SifchainApp, ctx sdk.Context, tc TestC
 	for _, lp := range lps {
 		results.LPs[string(clptypes.GetLiquidityProviderKey(lp.Asset.Symbol, lp.LiquidityProviderAddress))] = *lp
 	}
+
+	results.Positions = app.MarginKeeper.GetAllMTPS(ctx)
 
 	return results
 }
