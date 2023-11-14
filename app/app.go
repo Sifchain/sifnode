@@ -18,6 +18,9 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation"
 	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	epochs "github.com/Sifchain/sifnode/x/epochs"
+	epochskeeper "github.com/Sifchain/sifnode/x/epochs/keeper"
+	epochstypes "github.com/Sifchain/sifnode/x/epochs/types"
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -162,6 +165,7 @@ var (
 		tokenregistry.AppModuleBasic{},
 		admin.AppModuleBasic{},
 		vesting.AppModuleBasic{},
+		epochs.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -237,6 +241,7 @@ type SifchainApp struct {
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
 	AdminKeeper         adminkeeper.Keeper
+	EpochsKeeper        epochskeeper.Keeper
 
 	mm           *module.Manager
 	sm           *module.SimulationManager
@@ -286,6 +291,7 @@ func NewSifAppWithBlacklist(
 		tokenregistrytypes.StoreKey,
 		admintypes.StoreKey,
 		authzkeeper.StoreKey,
+		epochstypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -471,6 +477,12 @@ func NewSifAppWithBlacklist(
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
+
+	app.EpochsKeeper = *epochskeeper.NewKeeper(
+		appCodec,
+		keys[epochstypes.StoreKey],
+	)
+
 	mockModule := ibcmock.NewAppModule(&app.IBCKeeper.PortKeeper)
 	mockIBCModule := ibcmock.NewIBCModule(&mockModule, ibcmock.NewMockIBCApp(ibcmock.ModuleName, scopedIBCMockKeeper))
 
@@ -492,6 +504,18 @@ func NewSifAppWithBlacklist(
 	app.EvidenceKeeper = *evidenceKeeper
 	cfg := module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.configurator = cfg
+
+	/**** Module Hooks ****/
+
+	// register hooks after all modules have been initialized
+
+	app.EpochsKeeper = *app.EpochsKeeper.SetHooks(
+		epochskeeper.NewMultiEpochHooks(
+		// insert epoch hooks receivers here
+		// app.CLPKeeper.Hooks(),
+		),
+	)
+	epochsModule := epochs.NewAppModule(appCodec, app.EpochsKeeper)
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -526,6 +550,7 @@ func NewSifAppWithBlacklist(
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
 		admin.NewAppModule(app.AdminKeeper, &appCodec),
+		epochsModule,
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -533,8 +558,11 @@ func NewSifAppWithBlacklist(
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
+		// upgrades should be run first
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
+		// Note: epochs' begin should be "real" start of epochs, we keep epochs beginblock at the beginning
+		epochstypes.ModuleName,
 		minttypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -564,6 +592,8 @@ func NewSifAppWithBlacklist(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
+		// Note: epochs' endblock should be "real" end of epochs, we keep epochs endblock at the end
+		epochstypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -620,6 +650,7 @@ func NewSifAppWithBlacklist(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
+		epochstypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

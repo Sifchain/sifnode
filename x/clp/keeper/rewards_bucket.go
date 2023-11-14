@@ -21,7 +21,6 @@ func (k Keeper) SetRewardsBucket(ctx sdk.Context, rewardsBucket types.RewardsBuc
 func (k Keeper) GetRewardsBucket(
 	ctx sdk.Context,
 	denom string,
-
 ) (val types.RewardsBucket, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RewardsBucketKeyPrefix))
 
@@ -40,7 +39,6 @@ func (k Keeper) GetRewardsBucket(
 func (k Keeper) RemoveRewardsBucket(
 	ctx sdk.Context,
 	denom string,
-
 ) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RewardsBucketKeyPrefix))
 	store.Delete(types.RewardsBucketKey(
@@ -130,4 +128,14 @@ func (k Keeper) AddMultipleCoinsToRewardsBuckets(ctx sdk.Context, coins sdk.Coin
 
 	// return a list of all the coins added to rewards buckets
 	return coins, nil
+}
+
+func (k Keeper) ShouldDistributeRewards(ctx sdk.Context, epochIdentifier string) bool {
+	params := k.GetRewardsParams(ctx)
+	return epochIdentifier == params.RewardsEpochIdentifier
+}
+
+// DistributeLiquidityProviderRewards distributes rewards to a liquidity provider
+func (k Keeper) DistributeLiquidityProviderRewards(ctx sdk.Context, lp types.LiquidityProvider) error {
+	return nil
 }

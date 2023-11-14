@@ -17,6 +17,8 @@ message RewardParams {
   repeated RewardPeriod reward_periods = 4;
   string reward_period_start_time =
       5; // start time of the current (or last) reward period
+  uint64 rewards_lock_period = 6; // in blocks
+  string rewards_epoch_identifier = 7; // week, day, hour, etc
 }
 
 // These params are non-governable and are calculated on chain

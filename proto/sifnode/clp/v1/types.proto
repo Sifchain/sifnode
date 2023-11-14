@@ -90,6 +90,7 @@ message LiquidityProvider {
   ];
   string liquidity_provider_address = 3;
   repeated LiquidityUnlock unlocks = 4;
+  int64 last_updated_block = 5; // contains the block height of the last update
 }
 
 message LiquidityUnlock {

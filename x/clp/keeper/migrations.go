@@ -88,7 +88,22 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
+	// set rewards bucket
 	m.keeper.SetRewardsBucket(ctx, types.RewardsBucket{})
+
+	// set rewards params
+	m.keeper.SetRewardParams(ctx, types.GetDefaultRewardParams())
+
+	// loop over all the LPs and set their last_updated_block to the current block
+	// this will ensure that they get their rewards
+	all, err := m.keeper.GetAllLiquidityProviders(ctx)
+	if err != nil {
+		return err
+	}
+	for _, lp := range all {
+		lp.LastUpdatedBlock = ctx.BlockHeight()
+		m.keeper.SetLiquidityProvider(ctx, lp)
+	}
 
 	return nil
 }

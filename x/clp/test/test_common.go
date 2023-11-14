@@ -72,10 +72,11 @@ func CreateTestAppClpWithBlacklist(isCheckTx bool, blacklist []sdk.AccAddress) (
 		PmtpPeriodEndBlock:       2,
 	})
 	app.ClpKeeper.SetRewardParams(ctx, &types.RewardParams{
-		LiquidityRemovalLockPeriod:   0,
-		LiquidityRemovalCancelPeriod: 2,
+		LiquidityRemovalLockPeriod:   0, // 0 blocks
+		LiquidityRemovalCancelPeriod: 2, // 2 blocks
 		RewardPeriodStartTime:        "",
 		RewardPeriods:                nil,
+		RewardsLockPeriod:            12 * 60 * 24 * 14, // 14 days,
 	})
 	liquidityProtectionParam := app.ClpKeeper.GetLiquidityProtectionParams(ctx)
 	liquidityProtectionParam.MaxRowanLiquidityThreshold = sdk.ZeroUint()

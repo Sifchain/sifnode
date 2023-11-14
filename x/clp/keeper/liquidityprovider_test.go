@@ -108,3 +108,35 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 		require.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
 	}
 }
+
+// add tests for GetRewardsEligibleLiquidityProviders
+func TestKeeper_GetRewardsEligibleLiquidityProviders(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	pools, lpList := test.GeneratePoolsAndLPs(clpKeeper, ctx, tokens)
+	// update lp list to contain some lps that has a last updated block that is older
+	// than the current block height
+	for i := range lpList {
+		if (i % 2) == 0 {
+			continue
+		}
+		lpList[i].LastUpdatedBlock = ctx.BlockHeight() - int64(clpKeeper.GetRewardsParams(ctx).RewardsLockPeriod) - 1
+		clpKeeper.SetLiquidityProvider(ctx, &lpList[i])
+	}
+	// get rewards eligible lps
+	rewardsEligibleLps, err := clpKeeper.GetRewardsEligibleLiquidityProviders(ctx)
+	require.NoError(t, err)
+	// check that the rewards eligible lps map contains half the pools
+	require.Equal(t, len(pools)/2, len(rewardsEligibleLps))
+	// check that the rewards eligible lps map contains half the lps
+	for i, lp := range lpList {
+		asset := lp.Asset
+		assetLps := rewardsEligibleLps[*asset]
+		if (i % 2) == 0 {
+			require.NotContains(t, assetLps, &lp)
+		} else {
+			require.Contains(t, assetLps, &lp)
+		}
+	}
+}
