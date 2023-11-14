@@ -8,10 +8,16 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+)
+
+const (
+	// min gas price for rowan
+	MIN_GAS_PRICE_UROWAN = "100000000000000"       // 0.0001rowan
+	LOW_MIN_FEE_UROWAN   = "20000000000000000000"  // 20rowan
+	HIGH_MIN_FEE_UROWAN  = "200000000000000000000" // 200rowan
 )
 
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
@@ -60,19 +66,42 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	adminParams := r.adminKeeper.GetParams(ctx)
 	submitProposalFee := adminParams.SubmitProposalFee
 
-	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
-		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
-		minGasPrice := sdk.DecCoin{
-			Denom:  "rowan",
-			Amount: sdk.MustNewDecFromStr("0.00000005"),
-		}
-		if !minGasPrice.IsValid() {
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
-		}
-		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
-		return next(ctx, tx, simulate)
+	// Get the symbol of the settlement asset
+	settlementAssetSymbol := clptypes.GetSettlementAsset().Symbol
+
+	if !ctx.MinGasPrices().IsValid() {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
 	}
+
+	// Define the global minimum gas price
+	minGasPrice := sdk.DecCoin{
+		Denom:  settlementAssetSymbol,
+		Amount: sdk.MustNewDecFromStr(MIN_GAS_PRICE_UROWAN),
+	}
+	if !minGasPrice.IsValid() {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
+	}
+
+	// Get current minimum gas prices from context
+	currentMinGasPrices := ctx.MinGasPrices()
+
+	// Check and update context's minimum gas prices if necessary
+	if currentAssetPrice := currentMinGasPrices.AmountOf(settlementAssetSymbol); currentAssetPrice.LT(minGasPrice.Amount) {
+		// Replace the current minimum gas price with the new minimum gas price for the asset
+		updatedMinGasPrices := currentMinGasPrices.Sub(sdk.NewDecCoins().Add(sdk.NewDecCoinFromDec(settlementAssetSymbol, currentAssetPrice))).Add(minGasPrice)
+		ctx = ctx.WithMinGasPrices(updatedMinGasPrices)
+	}
+
+	highMinFee, ok := sdk.NewIntFromString(HIGH_MIN_FEE_UROWAN)
+	if !ok {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid high fee amount")
+	}
+	lowMinFee, ok := sdk.NewIntFromString(LOW_MIN_FEE_UROWAN)
+	if !ok {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid low fee amount")
+	}
+
+	msgs := tx.GetMsgs()
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
 		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
@@ -83,11 +112,11 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 			strings.Contains(msgTypeURLLower, "removeliquidity") ||
 			strings.Contains(msgTypeURLLower, "removeliquidityunits") ||
 			strings.Contains(msgTypeURLLower, "addliquidity") {
-			minFee = sdk.NewInt(100000000000000000) // 0.1
+			minFee = sdk.MaxInt(minFee, highMinFee)
 		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
-			minFee = sdk.NewInt(10000000000000000) // 0.01
+			minFee = sdk.MaxInt(minFee, lowMinFee)
 		} else if strings.Contains(msgTypeURLLower, "submitproposal") || strings.Contains(msgTypeURLLower, govtypes.TypeMsgSubmitProposal) {
-			minFee = sdk.NewIntFromBigInt(submitProposalFee.BigInt())
+			minFee = sdk.MaxInt(minFee, sdk.NewIntFromBigInt(submitProposalFee.BigInt()))
 		}
 	}
 	if minFee.Equal(sdk.ZeroInt()) {
@@ -98,12 +127,7 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "tx must be a FeeTx")
 	}
 	fees := feeTx.GetFee()
-	rowanFee := sdk.ZeroInt()
-	for j := range fees {
-		if clptypes.StringCompare(clptypes.GetSettlementAsset().Symbol, fees[j].Denom) {
-			rowanFee = fees[j].Amount
-		}
-	}
+	rowanFee := fees.AmountOf(settlementAssetSymbol)
 	if rowanFee.LTE(sdk.ZeroInt()) {
 		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "unsupported fee asset")
 	}

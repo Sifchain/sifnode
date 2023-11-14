@@ -23,15 +23,11 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	addrs := sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	decorator := ante.NewAdjustGasPriceDecorator(app.AdminKeeper)
-	highGasPrice := sdk.DecCoin{
+	gasPrice := sdk.DecCoin{
 		Denom:  "rowan",
-		Amount: sdk.MustNewDecFromStr("0.5"),
+		Amount: sdk.MustNewDecFromStr(ante.MIN_GAS_PRICE_UROWAN),
 	}
-	loweredGasPrice := sdk.DecCoin{
-		Denom:  "rowan",
-		Amount: sdk.MustNewDecFromStr("0.00000005"),
-	}
-	ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(highGasPrice))
+	// ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(highGasPrice))
 	dispensationCreateMsg := dispensationtypes.NewMsgCreateDistribution(addrs[0], dispensationtypes.DistributionType_DISTRIBUTION_TYPE_AIRDROP, []banktypes.Output{}, "")
 	dispensationRunMsg := dispensationtypes.NewMsgRunDistribution(addrs[0].String(), "airdrop", dispensationtypes.DistributionType_DISTRIBUTION_TYPE_AIRDROP, 10)
 	otherMsg := banktypes.NewMsgSend(addrs[0], addrs[1], sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewIntFromUint64(100))))
@@ -44,13 +40,13 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 		expectedGasPrice sdk.DecCoin
 		err              bool
 	}{
-		{"no messages", ctx, []sdk.Msg{}, highGasPrice, false},
-		{"dispensation create", ctx, []sdk.Msg{&dispensationCreateMsg}, loweredGasPrice, false},
-		{"dispensation create with extra msg", ctx, []sdk.Msg{&dispensationCreateMsg, otherMsg}, highGasPrice, true},
-		{"dispensation run", ctx, []sdk.Msg{&dispensationRunMsg}, loweredGasPrice, false},
-		{"dispensation run with extra msg", ctx, []sdk.Msg{&dispensationRunMsg, otherMsg}, highGasPrice, true},
-		{"other message without dispensation", ctx, []sdk.Msg{otherMsg}, highGasPrice, true},
-		{"other messages without dispensation", ctx, []sdk.Msg{otherMsg, otherMsg}, highGasPrice, true},
+		{"no messages", ctx, []sdk.Msg{}, gasPrice, false},
+		{"dispensation create", ctx, []sdk.Msg{&dispensationCreateMsg}, gasPrice, false},
+		{"dispensation create with extra msg", ctx, []sdk.Msg{&dispensationCreateMsg, otherMsg}, gasPrice, true},
+		{"dispensation run", ctx, []sdk.Msg{&dispensationRunMsg}, gasPrice, false},
+		{"dispensation run with extra msg", ctx, []sdk.Msg{&dispensationRunMsg, otherMsg}, gasPrice, true},
+		{"other message without dispensation", ctx, []sdk.Msg{otherMsg}, gasPrice, true},
+		{"other messages without dispensation", ctx, []sdk.Msg{otherMsg, otherMsg}, gasPrice, true},
 	}
 	for _, tc := range tt {
 		tc := tc
@@ -77,8 +73,10 @@ func TestAdjustGasPriceDecorator_AnteHandle_MinFee(t *testing.T) {
 	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	addrs := sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	decorator := ante.NewAdjustGasPriceDecorator(app.AdminKeeper)
-	highFee := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(100000000000000000))) // 0.1
-	lowFee := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(10000000000000000)))   // 0.01
+	highFeeInt, _ := sdk.NewIntFromString(ante.HIGH_MIN_FEE_UROWAN)
+	lowFeeInt, _ := sdk.NewIntFromString(ante.LOW_MIN_FEE_UROWAN)
+	highFee := sdk.NewCoins(sdk.NewCoin("rowan", highFeeInt))
+	lowFee := sdk.NewCoins(sdk.NewCoin("rowan", lowFeeInt))
 
 	sendMsg := banktypes.NewMsgSend(addrs[0], addrs[1], sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewIntFromUint64(100))))
 	addLiquidityMsg := &clptypes.MsgAddLiquidity{}
