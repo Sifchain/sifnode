@@ -20,6 +20,10 @@ def killall(processes):
             p.wait()
 
 
+def get_project(cmd: Command):
+    return Project(cmd, project_dir())
+
+
 class Project:
     """Represents a checked out copy of a project in a particular directory."""
 

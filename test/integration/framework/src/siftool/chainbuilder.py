@@ -4,20 +4,18 @@ from siftool import common, command, environments, project, sifchain
 
 
 def __brutally_terminate_processes(cmd):
-    prj = project.Project(cmd, common.project_dir())
-    prj.pkill()
+    project.get_project().pkill()
 
 
 # This is used for bulding sifchain-testnet-2
 def install_testnet(cmd: command.Command, base_dir: str, chain_id: str):
-    prj = project.Project(cmd)
-    mnemonics = prj.read_peruser_config_file("mnemonics.json")
-
-    faucet_mnemonic = "fiction cousin fragile allow fruit slogan useless sting exile virus scale dress fatigue eight clay sort tape between cargo flag civil rude umbrella sing".split()
-    node0_admin_mnemonic = "frog skin business valve fish fat glory syrup chicken skin slow ensure sun luggage wild click into paper swamp car ecology infant thought squeeze".split()
-    node1_admin_mnemonic = "system faculty master promote among arrive dose zone cream fame barrel warm slice please creek puzzle boat excess rain lonely cupboard flame punch shed".split()
-    node2_admin_mnemonic = "box fix inmate zoo night model inject gesture inquiry slice treat curve reopen portion absent adjust toilet lyrics resist same goddess dad damage sort".split()
-    node3_admin_mnemonic = "hundred usual invite burger chat final collect acquire magnet repair upon venue initial ride street other tail vanish bicycle soap icon camp tragic material".split()
+    prj = project.get_project(cmd)
+    mnemonics = prj.read_peruser_config_file("mnemonics")
+    faucet_mnemonic = mnemonics["sif1zk8wxg65k6702hu9lrxqqnf8vn74ykznf5e7hk"]
+    node0_admin_mnemonic = mnemonics["sif1kkfa9f2h933uj0u6dexcnucjen6m32vh0jlnq6"]
+    node1_admin_mnemonic = mnemonics["sif1q0ahne0jkuxf2lj52c35evt6kglsyqlcenwtuk"]
+    node2_admin_mnemonic = mnemonics["sif1m0dh2e4vyle6svxjukp7e688n340uzqprf4k77"]
+    node3_admin_mnemonic = mnemonics["sif1q3s9pxvxze0vwkwa34x3jukgumnaefnq24zs36"]
     external_host = "147.135.105.196"
     extra_denoms = {"testtoken-{}".format(i): 10**30 for i in range(0)}  # Caner: we don't want any dummy tokens on testnet
     env = environments.SifnodedEnvironment(cmd, chain_id=chain_id, sifnoded_home_root=base_dir)
