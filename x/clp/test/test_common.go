@@ -135,7 +135,7 @@ func GenerateRandomLPWithUnitsAndAsset(poolUnitss []uint64, asset types.Asset) [
 	lpList := make([]*types.LiquidityProvider, len(poolUnitss))
 	for i, poolUnits := range poolUnitss {
 		address := GenerateAddress2(fmt.Sprintf("%d%d%d%d", i, i, i, i))
-		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address, 0)
 		lpList[i] = &lp
 	}
 
@@ -152,7 +152,7 @@ func GenerateRandomLPWithUnits(poolUnitss []uint64) []*types.LiquidityProvider {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(TrimFirstRune(externalToken))
 		address := GenerateAddress(fmt.Sprintf("%d", i))
-		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address)
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(poolUnits), address, 0)
 		lpList[i] = &lp
 	}
 
@@ -214,19 +214,19 @@ func GeneratePoolsSetLPs(keeper clpkeeper.Keeper, ctx sdk.Context, nPools, nLPs 
 	return poolList
 }
 
-func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
-	var lpList []types.LiquidityProvider
+func GenerateRandomLP(numberOfLp int) []*types.LiquidityProvider {
+	var lpList []*types.LiquidityProvider
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(TrimFirstRune(externalToken))
-		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+		lpAddress, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		if err != nil {
 			panic(err)
 		}
-		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddess)
-		lpList = append(lpList, lp)
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddress, 0)
+		lpList = append(lpList, &lp)
 	}
 	return lpList
 }
@@ -243,11 +243,11 @@ func GeneratePoolsAndLPs(keeper clpkeeper.Keeper, ctx sdk.Context, tokens []stri
 			panic(err)
 		}
 		poolList = append(poolList, pool)
-		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+		lpAddress, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		if err != nil {
 			panic(err)
 		}
-		lp := types.NewLiquidityProvider(&externalAsset, sdk.NewUint(1), lpAddess)
+		lp := types.NewLiquidityProvider(&externalAsset, sdk.NewUint(1), lpAddress, 0)
 		keeper.SetLiquidityProvider(ctx, &lp)
 		lpList = append(lpList, lp)
 	}

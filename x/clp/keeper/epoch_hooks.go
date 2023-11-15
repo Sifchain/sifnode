@@ -8,16 +8,18 @@ import (
 // BeforeEpochStart performs a no-op
 func (k Keeper) BeforeEpochStart(_ sdk.Context, _ string, _ int64) {}
 
-// AfterEpochEnd distributes available rewards from rewards bucket to liquidity pools
+// AfterEpochEnd distributes available rewards from rewards bucket to liquidity providers
 func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) {
 	if !k.ShouldDistributeRewards(ctx, epochIdentifier) {
 		return
 	}
+
 	rewardsEligibleLps, err := k.GetRewardsEligibleLiquidityProviders(ctx)
 	if err != nil {
 		ctx.Logger().Error("unable to get rewards eligible liquidity providers", "error", err)
 		return
 	}
+
 	for asset, assetLps := range rewardsEligibleLps {
 		// get reward bucket for given asset
 		rewardsBucket, found := k.GetRewardsBucket(ctx, asset.Symbol)
@@ -25,9 +27,12 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 			ctx.Logger().Error("unable to get rewards bucket", "asset", asset.Symbol)
 			continue
 		}
-		_ = rewardsBucket
-		for _, lp := range assetLps {
-			err := k.DistributeLiquidityProviderRewards(ctx, *lp)
+
+		rewardShares := k.CalculateRewardShareForLiquidityProviders(ctx, assetLps)
+		rewardAmounts := k.CalculateRewardAmountForLiquidityProviders(ctx, rewardShares, rewardsBucket.Amount)
+
+		for i, lp := range assetLps {
+			err := k.DistributeLiquidityProviderRewards(ctx, lp, asset.Symbol, rewardAmounts[i])
 			if err != nil {
 				ctx.Logger().Error("unable to distribute liquidity provider rewards", "error", err)
 			}

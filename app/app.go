@@ -350,22 +350,22 @@ func NewSifAppWithBlacklist(
 		appCodec, keys[feegrant.StoreKey], app.AccountKeeper,
 	)
 
-	stakingKeeper := stakingkeeper.NewKeeper(
+	app.StakingKeeper = stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
 	)
 
 	app.MintKeeper = mintkeeper.NewKeeper(
-		appCodec, keys[minttypes.StoreKey], app.GetSubspace(minttypes.ModuleName), &stakingKeeper,
+		appCodec, keys[minttypes.StoreKey], app.GetSubspace(minttypes.ModuleName), &app.StakingKeeper,
 		app.AccountKeeper, app.BankKeeper, authtypes.FeeCollectorName,
 	)
 
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
-		&stakingKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
+		&app.StakingKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
-		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
+		appCodec, keys[slashingtypes.StoreKey], &app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
 	/*
 	   Invariants are certain conditions which are checked , which should hold true to certify the network is not byzantine .
@@ -410,12 +410,6 @@ func NewSifAppWithBlacklist(
 		app.GetSubspace(margintypes.ModuleName),
 	)
 
-	// register the staking hooks
-	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.StakingKeeper = *stakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
-	)
-
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
@@ -426,7 +420,7 @@ func NewSifAppWithBlacklist(
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-	govKeeper := govkeeper.NewKeeper(
+	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec,
 		keys[govtypes.StoreKey],
 		app.GetSubspace(govtypes.ModuleName),
@@ -434,11 +428,6 @@ func NewSifAppWithBlacklist(
 		app.BankKeeper,
 		app.StakingKeeper,
 		govRouter,
-	)
-	app.GovKeeper = *govKeeper.SetHooks(
-		govtypes.NewMultiGovHooks(
-		// register governance hooks
-		),
 	)
 
 	// Create Transfer Keepers
@@ -509,10 +498,25 @@ func NewSifAppWithBlacklist(
 
 	// register hooks after all modules have been initialized
 
+	// register the staking hooks
+	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
+	app.StakingKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(
+			app.DistrKeeper.Hooks(),
+			app.SlashingKeeper.Hooks(),
+		),
+	)
+
+	app.GovKeeper.SetHooks(
+		govtypes.NewMultiGovHooks(
+		// register governance hooks
+		),
+	)
+
 	app.EpochsKeeper = *app.EpochsKeeper.SetHooks(
 		epochskeeper.NewMultiEpochHooks(
-		// insert epoch hooks receivers here
-		// app.CLPKeeper.Hooks(),
+			// insert epoch hooks receivers here
+			app.ClpKeeper.Hooks(),
 		),
 	)
 	epochsModule := epochs.NewAppModule(appCodec, app.EpochsKeeper)

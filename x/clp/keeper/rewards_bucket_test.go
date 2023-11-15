@@ -8,6 +8,7 @@ import (
 	keepertest "github.com/Sifchain/sifnode/testutil/keeper"
 	"github.com/Sifchain/sifnode/testutil/nullify"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -172,4 +173,135 @@ func TestSubtractFromRewardsBucket_Errors(t *testing.T) {
 	err = keeper.SubtractFromRewardsBucket(ctx, "atom", sdk.NewInt(10))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), fmt.Errorf(types.ErrNotEnoughBalanceInRewardsBucket.Error(), "atom").Error())
+}
+
+// ShouldDistributeRewards returns true if the epoch identifier is not in the list of already distributed epochs
+func TestShouldDistributeRewards(t *testing.T) {
+	keeper, ctx, _ := keepertest.ClpKeeper(t)
+
+	params := keeper.GetRewardsParams(ctx)
+
+	// Check if the rewards epoch should be distributed
+	require.True(t, keeper.ShouldDistributeRewards(ctx, params.RewardsEpochIdentifier))
+
+	// Check if the rewards epoch should be distributed with a wrong epoch identifier
+	require.False(t, keeper.ShouldDistributeRewards(ctx, "wrong_epoch_identifier"))
+}
+
+// DistributeLiquidityProviderRewards distributes rewards to a liquidity provider
+func TestDistributeLiquidityProviderRewards(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+
+	asset := types.NewAsset("cusdc")
+
+	// Create a liquidity provider
+	lpAddress, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+	require.NoError(t, err)
+	lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddress, ctx.BlockHeight())
+	clpKeeper.SetLiquidityProvider(ctx, &lp)
+
+	// Create a RewardsBucket with a denom and amount
+	initialAmount := sdk.NewInt(100)
+	rewardsBucket := types.RewardsBucket{
+		Denom:  asset.Symbol,
+		Amount: initialAmount,
+	}
+	clpKeeper.SetRewardsBucket(ctx, rewardsBucket)
+
+	// mint coins to the module account
+	err = app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(
+		sdk.NewCoin(asset.Symbol, initialAmount),
+	))
+	require.NoError(t, err)
+
+	// check module balance
+	moduleBalance := app.BankKeeper.GetBalance(ctx, types.GetCLPModuleAddress(), asset.Symbol)
+	require.Equal(t, initialAmount, moduleBalance.Amount)
+
+	// check account balance
+	preBalance := app.BankKeeper.GetBalance(ctx, lpAddress, asset.Symbol)
+	require.Equal(t, sdk.ZeroInt(), preBalance.Amount)
+
+	// Distribute rewards to the liquidity provider
+	err = clpKeeper.DistributeLiquidityProviderRewards(ctx, &lp, asset.Symbol, initialAmount)
+	require.NoError(t, err)
+
+	// check account balance
+	postBalance := app.BankKeeper.GetBalance(ctx, lpAddress, asset.Symbol)
+	require.Equal(t, preBalance.Amount.Add(initialAmount), postBalance.Amount)
+
+	// Check distributed rewards got subtracted from the rewards bucket
+	storedRewardsBucket, found := clpKeeper.GetRewardsBucket(ctx, asset.Symbol)
+	require.True(t, found)
+	require.Equal(t, sdk.ZeroInt(), storedRewardsBucket.Amount)
+}
+
+// CalculateRewardShareForLiquidityProviders calculates the reward share for each liquidity provider
+func TestCalculateRewardShareForLiquidityProviders(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+
+	// Create a liquidity provider
+	lps := test.GenerateRandomLP(10)
+	for _, lp := range lps {
+		clpKeeper.SetLiquidityProvider(ctx, lp)
+	}
+
+	// Calculate reward share for liquidity providers
+	rewardShares := clpKeeper.CalculateRewardShareForLiquidityProviders(ctx, lps)
+
+	// Check if the rewards amount is correct
+	require.Equal(t, []sdk.Dec{
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+		sdk.MustNewDecFromStr("0.1"),
+	}, rewardShares)
+}
+
+// CalculateRewardAmountForLiquidityProviders calculates the reward amount for each liquidity provider
+func TestCalculateRewardAmountForLiquidityProviders(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+
+	// Create a RewardsBucket with a denom and amount
+	initialAmount := sdk.NewInt(100)
+	rewardsBucket := types.RewardsBucket{
+		Denom:  "atom",
+		Amount: initialAmount,
+	}
+	clpKeeper.SetRewardsBucket(ctx, rewardsBucket)
+
+	// Create a liquidity provider
+	lps := test.GenerateRandomLP(10)
+	for _, lp := range lps {
+		clpKeeper.SetLiquidityProvider(ctx, lp)
+	}
+
+	// Calculate reward share for liquidity providers
+	rewardShares := clpKeeper.CalculateRewardShareForLiquidityProviders(ctx, lps)
+
+	// Calculate reward amount for liquidity providers
+	rewardAmounts := clpKeeper.CalculateRewardAmountForLiquidityProviders(ctx, rewardShares, rewardsBucket.Amount)
+
+	// Check if the rewards amount is correct
+	require.Equal(t, []sdk.Int{
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+		sdk.NewInt(10),
+	}, rewardAmounts)
 }

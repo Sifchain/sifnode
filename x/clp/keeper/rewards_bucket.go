@@ -136,6 +136,57 @@ func (k Keeper) ShouldDistributeRewards(ctx sdk.Context, epochIdentifier string)
 }
 
 // DistributeLiquidityProviderRewards distributes rewards to a liquidity provider
-func (k Keeper) DistributeLiquidityProviderRewards(ctx sdk.Context, lp types.LiquidityProvider) error {
+func (k Keeper) DistributeLiquidityProviderRewards(ctx sdk.Context, lp *types.LiquidityProvider, asset string, rewardAmount sdk.Int) error {
+	// get the liquidity provider address
+	lpAddress, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+	if err != nil {
+		return err
+	}
+
+	// distribute rewards to the liquidity provider
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpAddress, sdk.NewCoins(sdk.NewCoin(asset, rewardAmount)))
+	if err != nil {
+		return err
+	}
+
+	// substract the reward amount from the rewards bucket
+	err = k.SubtractFromRewardsBucket(ctx, asset, rewardAmount)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// calculate the reward share for each liquidity provider
+func (k Keeper) CalculateRewardShareForLiquidityProviders(
+	ctx sdk.Context,
+	lps []*types.LiquidityProvider,
+) []sdk.Dec {
+	// sum up the liquidity provider total units
+	totalUnits := sdk.ZeroInt()
+	for _, lp := range lps {
+		totalUnits = totalUnits.Add(sdk.NewIntFromBigInt(lp.LiquidityProviderUnits.BigInt()))
+	}
+
+	// create a list of the reward share based on lp units and totalUnits
+	rewardShares := make([]sdk.Dec, len(lps))
+	for i, lp := range lps {
+		rewardShares[i] = sdk.NewDecFromInt(sdk.NewIntFromBigInt(lp.LiquidityProviderUnits.BigInt())).Quo(sdk.NewDecFromInt(totalUnits))
+	}
+
+	return rewardShares
+}
+
+// CalculateRewardAmountForLiquidityProviders calculates the reward amount for each liquidity provider
+func (k Keeper) CalculateRewardAmountForLiquidityProviders(
+	ctx sdk.Context,
+	rewardShares []sdk.Dec,
+	rewardsBucketAmount sdk.Int,
+) []sdk.Int {
+	rewardAmounts := make([]sdk.Int, len(rewardShares))
+	for i, rewardShare := range rewardShares {
+		rewardAmounts[i] = rewardShare.MulInt(rewardsBucketAmount).TruncateInt()
+	}
+	return rewardAmounts
 }

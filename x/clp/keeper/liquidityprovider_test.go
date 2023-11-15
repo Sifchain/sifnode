@@ -19,7 +19,7 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
-	clpKeeper.SetLiquidityProvider(ctx, &lp)
+	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
@@ -32,7 +32,7 @@ func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
-	clpKeeper.SetLiquidityProvider(ctx, &lp)
+	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
@@ -51,7 +51,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	lpList := test.GenerateRandomLP(10)
 	for i := range lpList {
 		lp := lpList[i]
-		clpKeeper.SetLiquidityProvider(ctx, &lp)
+		clpKeeper.SetLiquidityProvider(ctx, lp)
 	}
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
