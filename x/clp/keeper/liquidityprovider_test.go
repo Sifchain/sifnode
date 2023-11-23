@@ -22,10 +22,10 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
-	assert.Equal(t, getlp, lp)
+	assert.Equal(t, getlp, *lp)
 	lpList, _, err := clpKeeper.GetLiquidityProvidersForAssetPaginated(ctx, *lp.Asset, &query.PageRequest{})
 	assert.NoError(t, err)
-	assert.Equal(t, &lp, lpList[0])
+	assert.Equal(t, lp, lpList[0])
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
@@ -35,7 +35,7 @@ func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
-	assert.Equal(t, getlp, lp)
+	assert.Equal(t, getlp, *lp)
 	assert.True(t, clpKeeper.GetLiquidityProviderIterator(ctx).Valid())
 	clpKeeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	_, err = clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
