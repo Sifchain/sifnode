@@ -149,7 +149,7 @@ func (k Keeper) DistributeLiquidityProviderRewards(ctx sdk.Context, lp *types.Li
 		return err
 	}
 
-	// substract the reward amount from the rewards bucket
+	// subtract the reward amount from the rewards bucket
 	err = k.SubtractFromRewardsBucket(ctx, asset, rewardAmount)
 	if err != nil {
 		return err

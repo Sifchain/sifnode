@@ -134,9 +134,9 @@ func TestKeeper_GetRewardsEligibleLiquidityProviders(t *testing.T) {
 		asset := lp.Asset
 		assetLps := rewardsEligibleLps[*asset]
 		if (i % 2) == 0 {
-			require.NotContains(t, assetLps, &lp)
+			require.NotContains(t, assetLps, &lp) //nolint:gosec
 		} else {
-			require.Contains(t, assetLps, &lp)
+			require.Contains(t, assetLps, &lp) //nolint:gosec
 		}
 	}
 }
