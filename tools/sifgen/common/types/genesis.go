@@ -445,6 +445,10 @@ type Transfer struct {
 	Params      TransferParams `json:"params"`
 }
 
+type Epochs struct {
+	Epochs []interface{} `json:"epochs"`
+}
+
 type AppState struct {
 	Upgrade       struct{}      `json:"upgrade"`
 	Ethbridge     struct{}      `json:"ethbridge"`
@@ -469,6 +473,7 @@ type AppState struct {
 	Crisis        Crisis        `json:"crisis"`
 	TokenRegistry TokenRegistry `json:"tokenregistry"`
 	Admin         Admin         `json:"admin"`
+	Epochs        Epochs        `json:"epochs"`
 }
 
 type Genesis struct {
