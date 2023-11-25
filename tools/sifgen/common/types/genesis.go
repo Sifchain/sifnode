@@ -446,13 +446,13 @@ type Transfer struct {
 }
 
 type EpochInfos []struct {
-	Identifier              string `json:"identifier"`
-	StartTime               string `json:"start_time"`
-	Duration                string `json:"duration"`
-	CurrentEpoch            int64  `json:"current_epoch"`
-	CurrentEpochStartTime   string `json:"current_epoch_start_time"`
-	EpochCountingStarted    bool   `json:"epoch_counting_started"`
-	CurrentEpochStartHeight int64  `json:"current_epoch_start_height"`
+	Identifier              string      `json:"identifier"`
+	StartTime               string      `json:"start_time"`
+	Duration                string      `json:"duration"`
+	CurrentEpoch            json.Number `json:"current_epoch"`
+	CurrentEpochStartTime   string      `json:"current_epoch_start_time"`
+	EpochCountingStarted    bool        `json:"epoch_counting_started"`
+	CurrentEpochStartHeight json.Number `json:"current_epoch_start_height"`
 }
 
 type Epochs struct {
