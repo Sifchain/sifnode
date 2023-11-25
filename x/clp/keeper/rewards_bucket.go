@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // SetRewardsBucket set a specific rewardsBucket in the store from its index
@@ -135,6 +136,11 @@ func (k Keeper) ShouldDistributeRewards(ctx sdk.Context, epochIdentifier string)
 	return epochIdentifier == params.RewardsEpochIdentifier
 }
 
+func (k Keeper) ShouldDistributeRewardsToLPWallet(ctx sdk.Context) bool {
+	params := k.GetRewardsParams(ctx)
+	return params.RewardsDistribute
+}
+
 // DistributeLiquidityProviderRewards distributes rewards to a liquidity provider
 func (k Keeper) DistributeLiquidityProviderRewards(ctx sdk.Context, lp *types.LiquidityProvider, asset string, rewardAmount sdk.Int) error {
 	// get the liquidity provider address
@@ -189,4 +195,61 @@ func (k Keeper) CalculateRewardAmountForLiquidityProviders(
 		rewardAmounts[i] = rewardShare.MulInt(rewardsBucketAmount).TruncateInt()
 	}
 	return rewardAmounts
+}
+
+// AddRewardAmountToLiquidityPool adds a new reward amount to a liquidity pool
+func (k Keeper) AddRewardAmountToLiquidityPool(ctx sdk.Context, liquidityProvider *types.LiquidityProvider, asset types.Asset, rewardAmount sdk.Int) error {
+	if liquidityProvider.Asset.Equals(asset) == false {
+		return types.ErrInValidAsset
+	}
+
+	pool, err := k.GetPool(ctx, asset.Symbol)
+	if err != nil {
+		return types.ErrPoolDoesNotExist
+	}
+
+	nativeAssetDepth, externalAssetDepth := pool.ExtractDebt(pool.NativeAssetBalance, pool.ExternalAssetBalance, false)
+
+	pmtpCurrentRunningRate := k.GetPmtpRateParams(ctx).PmtpCurrentRunningRate
+	sellNativeSwapFeeRate := k.GetSwapFeeRate(ctx, types.GetSettlementAsset(), false)
+	buyNativeSwapFeeRate := k.GetSwapFeeRate(ctx, asset, false)
+
+	newPoolUnits, lpUnits, _, _, err := CalculatePoolUnits(
+		pool.PoolUnits,
+		nativeAssetDepth,
+		externalAssetDepth,
+		sdk.ZeroUint(),
+		sdk.Uint(rewardAmount),
+		sellNativeSwapFeeRate,
+		buyNativeSwapFeeRate,
+		pmtpCurrentRunningRate)
+	if err != nil {
+		return err
+	}
+
+	// Update pool total share units
+	pool.PoolUnits = newPoolUnits
+
+	// Add to external asset balance
+	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(sdk.Uint(rewardAmount))
+
+	// Subtract from rewards bucket
+	err = k.SubtractFromRewardsBucket(ctx, asset.Symbol, rewardAmount)
+	if err != nil {
+		return err
+	}
+
+	// Update LP units
+	liquidityProvider.LiquidityProviderUnits = liquidityProvider.LiquidityProviderUnits.Add(lpUnits)
+
+	// Save new pool balances
+	err = k.SetPool(ctx, &pool)
+	if err != nil {
+		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
+
+	// Save LP
+	k.SetLiquidityProvider(ctx, liquidityProvider)
+
+	return nil
 }

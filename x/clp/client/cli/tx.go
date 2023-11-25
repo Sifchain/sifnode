@@ -111,6 +111,7 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 				LiquidityRemovalLockPeriod:   viper.GetUint64(FlagLiquidityRemovalLockPeriod),
 				RewardsLockPeriod:            viper.GetUint64(FlagRewardsLockPeriod),
 				RewardsEpochIdentifier:       viper.GetString(FlagRewardsEpochIdentifier),
+				RewardsDistribute:            viper.GetBool(FlagRewardsDistribute),
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -122,6 +123,7 @@ func GetCmdUpdateRewardParams() *cobra.Command {
 	cmd.Flags().AddFlagSet(FsLiquidityRemovalLockPeriod)
 	cmd.Flags().AddFlagSet(FsRewardsLockPeriod)
 	cmd.Flags().AddFlagSet(FsRewardsEpochIdentifier)
+	cmd.Flags().AddFlagSet(FsRewardsDistribute)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

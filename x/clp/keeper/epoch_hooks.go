@@ -32,9 +32,16 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 		rewardAmounts := k.CalculateRewardAmountForLiquidityProviders(ctx, rewardShares, rewardsBucket.Amount)
 
 		for i, lp := range assetLps {
-			err := k.DistributeLiquidityProviderRewards(ctx, lp, asset.Symbol, rewardAmounts[i])
-			if err != nil {
-				ctx.Logger().Error("unable to distribute liquidity provider rewards", "error", err)
+			if k.ShouldDistributeRewardsToLPWallet(ctx) {
+				err := k.DistributeLiquidityProviderRewards(ctx, lp, asset.Symbol, rewardAmounts[i])
+				if err != nil {
+					ctx.Logger().Error("unable to distribute liquidity provider rewards", "error", err)
+				}
+			} else {
+				err := k.AddRewardAmountToLiquidityPool(ctx, lp, asset, rewardAmounts[i])
+				if err != nil {
+					ctx.Logger().Error("unable to add reward amount to liquidity pool", "error", err)
+				}
 			}
 		}
 	}

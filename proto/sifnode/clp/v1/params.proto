@@ -19,6 +19,7 @@ message RewardParams {
       5; // start time of the current (or last) reward period
   uint64 rewards_lock_period = 6; // in blocks
   string rewards_epoch_identifier = 7; // week, day, hour, etc
+  bool rewards_distribute = 8; // true if reward bucket should be distributed
 }
 
 // These params are non-governable and are calculated on chain

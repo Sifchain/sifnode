@@ -188,6 +188,22 @@ func TestShouldDistributeRewards(t *testing.T) {
 	require.False(t, keeper.ShouldDistributeRewards(ctx, "wrong_epoch_identifier"))
 }
 
+// ShouldDistributeRewardsToLPWallet returns true if the rewards distribute to LP wallet parameter is true
+func TestShouldDistributeRewardsToLPWallet(t *testing.T) {
+	keeper, ctx, _ := keepertest.ClpKeeper(t)
+
+	// Check if the rewards should be distributed to LP wallet is set to default false value
+	require.False(t, keeper.ShouldDistributeRewardsToLPWallet(ctx))
+
+	// set distribute rewards to lp addresses
+	rewardsParams := types.GetDefaultRewardParams()
+	rewardsParams.RewardsDistribute = true
+	keeper.SetRewardParams(ctx, rewardsParams)
+
+	// Check if the rewards should be distributed to LP wallet is set to true
+	require.True(t, keeper.ShouldDistributeRewardsToLPWallet(ctx))
+}
+
 // DistributeLiquidityProviderRewards distributes rewards to a liquidity provider
 func TestDistributeLiquidityProviderRewards(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
