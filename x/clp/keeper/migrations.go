@@ -96,12 +96,14 @@ func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
 
 	// loop over all the LPs and set their last_updated_block to the current block
 	// this will ensure that they get their rewards
+	// and initialize the reward amount array
 	all, err := m.keeper.GetAllLiquidityProviders(ctx)
 	if err != nil {
 		return err
 	}
 	for _, lp := range all {
 		lp.LastUpdatedBlock = ctx.BlockHeight()
+		lp.RewardAmount = sdk.NewCoins()
 		m.keeper.SetLiquidityProvider(ctx, lp)
 	}
 

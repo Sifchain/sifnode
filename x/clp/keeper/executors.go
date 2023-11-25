@@ -121,6 +121,8 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
+	// Set LP’s LastUpdatedBlock to current block height
+	lp.LastUpdatedBlock = ctx.BlockHeight()
 	// Save LP
 	k.SetLiquidityProvider(ctx, &lp)
 	return &lp, err

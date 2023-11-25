@@ -43,6 +43,12 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 					ctx.Logger().Error("unable to add reward amount to liquidity pool", "error", err)
 				}
 			}
+
+			// increment lp reward amount
+			lp.RewardAmount = lp.RewardAmount.Add(sdk.NewCoin(asset.Symbol, rewardAmounts[i]))
+
+			// update the liquidity provider
+			k.SetLiquidityProvider(ctx, lp)
 		}
 	}
 }

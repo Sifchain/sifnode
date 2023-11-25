@@ -66,6 +66,7 @@ func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidi
 		LiquidityProviderUnits:   liquidityProviderUnits,
 		LiquidityProviderAddress: liquidityProviderAddress.String(),
 		LastUpdatedBlock:         lastUpdatedBlock,
+		RewardAmount:             nil,
 	}
 }
 

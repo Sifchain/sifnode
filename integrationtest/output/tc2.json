@@ -60,7 +60,8 @@
       },
       "liquidity_provider_units": "1000000000000000000000000000",
       "liquidity_provider_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-      "last_updated_block": 0
+      "last_updated_block": 0,
+      "reward_amount": null
     }
   }
 }

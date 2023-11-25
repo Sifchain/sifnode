@@ -117,6 +117,7 @@ func TestAfterEpochEnd_AddToLiquidityPool(t *testing.T) {
 		LiquidityProviderAddress: signer.String(),
 		Unlocks:                  nil,
 		LastUpdatedBlock:         ctx.BlockHeight(),
+		RewardAmount:             nil,
 	}, lp)
 
 	// set last updated block to be before the rewards lock period
@@ -169,6 +170,7 @@ func TestAfterEpochEnd_AddToLiquidityPool(t *testing.T) {
 	lp, err = clpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer.String())
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewUint(1), lp.LiquidityProviderUnits)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(asset.Symbol, initialAmount)), lp.RewardAmount)
 }
 
 func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testing.T) {
@@ -233,6 +235,7 @@ func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testi
 		LiquidityProviderAddress: signer1.String(),
 		Unlocks:                  nil,
 		LastUpdatedBlock:         ctx.BlockHeight(),
+		RewardAmount:             nil,
 	}, lp1)
 
 	// create liquidity provider 2
@@ -313,11 +316,13 @@ func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testi
 	lp1, err = clpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer1.String())
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewUint(100), lp1.LiquidityProviderUnits)
+	require.Nil(t, lp1.RewardAmount)
 
 	// check liquidity provider units 2
 	lp2, err = clpKeeper.GetLiquidityProvider(ctx, asset.Symbol, signer2.String())
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewUint(128), lp2.LiquidityProviderUnits)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(asset.Symbol, initialAmount)), lp2.RewardAmount)
 
 	// check if pool units changed
 	updatedPool, err := clpKeeper.GetPool(ctx, asset.Symbol)
