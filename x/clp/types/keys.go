@@ -76,7 +76,7 @@ func GetDefaultRewardParams() *RewardParams {
 		RewardPeriods:                nil,
 		RewardPeriodStartTime:        "",
 		RewardsLockPeriod:            12 * 60 * 24 * 14, // 14 days
-		RewardsEpochIdentifier:       epochstypes.DayEpochID,
+		RewardsEpochIdentifier:       epochstypes.HourEpochID,
 		RewardsDistribute:            false,
 	}
 }
