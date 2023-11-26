@@ -98,6 +98,7 @@ func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
 	pools := m.keeper.GetPools(ctx)
 	for _, pool := range pools {
 		pool.RewardAmountExternal = sdk.ZeroUint()
+		// nolint:errcheck
 		m.keeper.SetPool(ctx, pool)
 	}
 
