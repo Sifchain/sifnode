@@ -1456,6 +1456,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1489,6 +1490,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 			errString: errors.New("not enough received asset tokens to swap"),
 		},
@@ -1524,6 +1526,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1556,6 +1559,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1588,6 +1592,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1620,6 +1625,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1652,6 +1658,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1684,6 +1691,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1716,6 +1724,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1748,6 +1757,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1780,6 +1790,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1812,6 +1823,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1844,6 +1856,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1876,6 +1889,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1908,6 +1922,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1940,6 +1955,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -1972,6 +1988,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2004,6 +2021,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2036,6 +2054,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2068,6 +2087,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2100,6 +2120,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2132,6 +2153,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2164,6 +2186,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			},
 		},
 		{
@@ -2242,6 +2265,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 						SwapPriceNative:               &SwapPriceNative,
 						SwapPriceExternal:             &SwapPriceExternal,
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
+						RewardAmountExternal:          sdk.ZeroUint(),
 					},
 				}
 				lps := []*types.LiquidityProvider{
@@ -2288,6 +2312,7 @@ func TestKeeper_SwapOneFromGenesis(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			})
 
 			var swapAmount sdk.Uint

@@ -32,7 +32,8 @@
       "unsettled_external_liabilities": "0",
       "unsettled_native_liabilities": "2023304519940209643",
       "block_interest_native": "0",
-      "block_interest_external": "4390203"
+      "block_interest_external": "4390203",
+      "reward_amount_external": "0"
     }
   },
   "LPs": {

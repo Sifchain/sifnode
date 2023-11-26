@@ -94,6 +94,13 @@ func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
 	// set rewards params
 	m.keeper.SetRewardParams(ctx, types.GetDefaultRewardParams())
 
+	// loop over all the pools and set the reward amount external field to zero
+	pools := m.keeper.GetPools(ctx)
+	for _, pool := range pools {
+		pool.RewardAmountExternal = sdk.ZeroUint()
+		m.keeper.SetPool(ctx, pool)
+	}
+
 	// loop over all the LPs and set their last_updated_block to the current block
 	// this will ensure that they get their rewards
 	// and initialize the reward amount array

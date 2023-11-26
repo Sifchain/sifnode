@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/Sifchain/sifnode/x/clp/types"
 	epochstypes "github.com/Sifchain/sifnode/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -16,7 +17,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 
 	rewardsEligibleLps, err := k.GetRewardsEligibleLiquidityProviders(ctx)
 	if err != nil {
-		ctx.Logger().Error("unable to get rewards eligible liquidity providers", "error", err)
+		ctx.Logger().Error(types.ErrUnableToGetRewardsEligibleLiquidityProviders.Error(), "error", err)
 		return
 	}
 
@@ -24,7 +25,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 		// get reward bucket for given asset
 		rewardsBucket, found := k.GetRewardsBucket(ctx, asset.Symbol)
 		if !found {
-			ctx.Logger().Error("unable to get rewards bucket", "asset", asset.Symbol)
+			ctx.Logger().Error(types.ErrRewardsBucketNotFound.Error(), "asset", asset.Symbol)
 			continue
 		}
 
@@ -35,12 +36,12 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 			if k.ShouldDistributeRewardsToLPWallet(ctx) {
 				err := k.DistributeLiquidityProviderRewards(ctx, lp, asset.Symbol, rewardAmounts[i])
 				if err != nil {
-					ctx.Logger().Error("unable to distribute liquidity provider rewards", "error", err)
+					ctx.Logger().Error(types.ErrUnableToDistributeLPRewards.Error(), "error", err)
 				}
 			} else {
 				err := k.AddRewardAmountToLiquidityPool(ctx, lp, asset, rewardAmounts[i])
 				if err != nil {
-					ctx.Logger().Error("unable to add reward amount to liquidity pool", "error", err)
+					ctx.Logger().Error(types.ErrUnableToAddRewardAmountToLiquidityPool.Error(), "error", err)
 				}
 			}
 
@@ -49,6 +50,19 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 
 			// update the liquidity provider
 			k.SetLiquidityProvider(ctx, lp)
+		}
+
+		// increment pool reward amount
+		pool, err := k.GetPool(ctx, asset.Symbol)
+		if err != nil {
+			ctx.Logger().Error(types.ErrPoolDoesNotExist.Error(), "error", err)
+			continue
+		}
+		pool.RewardAmountExternal = pool.RewardAmountExternal.Add(sdk.NewUintFromBigInt(rewardsBucket.Amount.BigInt()))
+		err = k.SetPool(ctx, &pool)
+		if err != nil {
+			ctx.Logger().Error(types.ErrUnableToSetPool.Error(), "error", err)
+			continue
 		}
 	}
 }

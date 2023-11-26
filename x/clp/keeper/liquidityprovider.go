@@ -201,11 +201,11 @@ func (k Keeper) GetRewardsEligibleLiquidityProviders(ctx sdk.Context) (map[types
 		return nil, err
 	}
 
-	return partitionLPsbyAsset(k.filterLiquidityProviders(ctx, all)), nil
+	return partitionLPsbyAsset(k.filterLiquidityProvidersByLockPeriod(ctx, all)), nil
 }
 
-// filterLiquidityProviders should only keep the LPs where their last updated block is at least 100000 blocks old from current block height
-func (k Keeper) filterLiquidityProviders(ctx sdk.Context, lps []*types.LiquidityProvider) []*types.LiquidityProvider {
+// filterLiquidityProvidersByLockPeriod should only keep the LPs where their last updated block is at least `lockPeriod` blocks old from current block height
+func (k Keeper) filterLiquidityProvidersByLockPeriod(ctx sdk.Context, lps []*types.LiquidityProvider) []*types.LiquidityProvider {
 	// get reward param lock period
 	lockPeriod := k.GetRewardsParams(ctx).RewardsLockPeriod
 	var filtered []*types.LiquidityProvider

@@ -107,6 +107,7 @@ func TestAfterEpochEnd_AddToLiquidityPool(t *testing.T) {
 		UnsettledNativeLiabilities:    sdk.ZeroUint(),
 		BlockInterestNative:           sdk.ZeroUint(),
 		BlockInterestExternal:         sdk.ZeroUint(),
+		RewardAmountExternal:          sdk.ZeroUint(),
 	}, *pool)
 
 	// create liquidity provider
@@ -171,6 +172,11 @@ func TestAfterEpochEnd_AddToLiquidityPool(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewUint(1), lp.LiquidityProviderUnits)
 	require.Equal(t, sdk.NewCoins(sdk.NewCoin(asset.Symbol, initialAmount)), lp.RewardAmount)
+
+	// check pool reward amount external
+	poolUpdated, err := clpKeeper.GetPool(ctx, asset.Symbol)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewUintFromBigInt(initialAmount.BigInt()), poolUpdated.RewardAmountExternal)
 }
 
 func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testing.T) {
@@ -225,6 +231,7 @@ func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testi
 		UnsettledNativeLiabilities:    sdk.ZeroUint(),
 		BlockInterestNative:           sdk.ZeroUint(),
 		BlockInterestExternal:         sdk.ZeroUint(),
+		RewardAmountExternal:          sdk.ZeroUint(),
 	}, *pool)
 
 	// create liquidity provider 1
@@ -330,4 +337,9 @@ func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testi
 	require.Equal(t, sdk.NewUint(200), updatedPool.NativeAssetBalance)
 	require.Equal(t, sdk.NewUint(300), updatedPool.ExternalAssetBalance)
 	require.Equal(t, sdk.NewUint(228), updatedPool.PoolUnits)
+
+	// check pool reward amount external
+	poolUpdated, err := clpKeeper.GetPool(ctx, asset.Symbol)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewUintFromBigInt(initialAmount.BigInt()), poolUpdated.RewardAmountExternal)
 }

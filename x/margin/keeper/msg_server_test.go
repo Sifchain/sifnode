@@ -1001,6 +1001,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			}
 
 			openPool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
@@ -1037,6 +1038,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 				SwapPriceNative:               &SwapPriceNative,
 				SwapPriceExternal:             &SwapPriceExternal,
 				RewardPeriodNativeDistributed: sdk.ZeroUint(),
+				RewardAmountExternal:          sdk.ZeroUint(),
 			}
 
 			closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, tt.externalAsset)
@@ -1988,6 +1990,7 @@ func TestKeeper_EC(t *testing.T) {
 						SwapPriceNative:               &SwapPriceNative,
 						SwapPriceExternal:             &SwapPriceExternal,
 						RewardPeriodNativeDistributed: sdk.ZeroUint(),
+						RewardAmountExternal:          sdk.ZeroUint(),
 					}
 					closePool, _ := marginKeeper.ClpKeeper().GetPool(ctx, ec.externalAsset)
 					require.Equal(t, closeExpectedPool, closePool)
