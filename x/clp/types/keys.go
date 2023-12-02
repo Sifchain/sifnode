@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	epochstypes "github.com/Sifchain/sifnode/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -70,10 +71,13 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
-		LiquidityRemovalLockPeriod:   0, // set to zero since it's now only used when starting a new chain e.g. localnet
-		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 30,
+		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 50, // 50 days
+		LiquidityRemovalCancelPeriod: 12 * 60 * 6,       // 6 hours
 		RewardPeriods:                nil,
 		RewardPeriodStartTime:        "",
+		RewardsLockPeriod:            12 * 60 * 24 * 14, // 14 days
+		RewardsEpochIdentifier:       epochstypes.HourEpochID,
+		RewardsDistribute:            false,
 	}
 }
 

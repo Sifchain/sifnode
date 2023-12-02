@@ -35,7 +35,7 @@ func TestKeeper_Errors(t *testing.T) {
 	assert.Equal(t, len(getpools), 0, "No pool added")
 	lp := test.GenerateRandomLP(1)[0]
 	lp.Asset.Symbol = ""
-	clpKeeper.SetLiquidityProvider(ctx, &lp)
+	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)

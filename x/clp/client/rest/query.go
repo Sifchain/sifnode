@@ -97,11 +97,11 @@ func getLiquidityProviderHandler(cliCtx client.Context) http.HandlerFunc {
 		var params types.LiquidityProviderReq
 		params.Symbol = r.URL.Query().Get("symbol")
 		addressString := r.URL.Query().Get("lpAddress")
-		lpAddess, err := sdk.AccAddressFromBech32(addressString)
+		lpAddress, err := sdk.AccAddressFromBech32(addressString)
 		if err != nil {
 			return
 		}
-		params.LpAddress = lpAddess.String()
+		params.LpAddress = lpAddress.String()
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

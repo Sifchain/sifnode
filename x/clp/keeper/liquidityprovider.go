@@ -16,6 +16,10 @@ func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp *types.LiquidityProvide
 	if !lp.Validate() {
 		return
 	}
+	// if lp last updated block is 0, set it to current block height
+	if lp.LastUpdatedBlock == 0 {
+		lp.LastUpdatedBlock = ctx.BlockHeight()
+	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetLiquidityProviderKey(lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	store.Set(key, k.cdc.MustMarshal(lp))
@@ -188,4 +192,27 @@ func (k Keeper) GetAllLiquidityProvidersPaginated(ctx sdk.Context,
 		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
 	}
 	return lpList, pageRes, nil
+}
+
+// function that uses GetAllLiquidityProvidersPartitions to get all LPs by asset and filter out the ones that are not eligible for rewards, return a partitioned map of LPs
+func (k Keeper) GetRewardsEligibleLiquidityProviders(ctx sdk.Context) (map[types.Asset][]*types.LiquidityProvider, error) {
+	all, err := k.GetAllLiquidityProviders(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return partitionLPsbyAsset(k.filterLiquidityProvidersByLockPeriod(ctx, all)), nil
+}
+
+// filterLiquidityProvidersByLockPeriod should only keep the LPs where their last updated block is at least `lockPeriod` blocks old from current block height
+func (k Keeper) filterLiquidityProvidersByLockPeriod(ctx sdk.Context, lps []*types.LiquidityProvider) []*types.LiquidityProvider {
+	// get reward param lock period
+	lockPeriod := k.GetRewardsParams(ctx).RewardsLockPeriod
+	var filtered []*types.LiquidityProvider
+	for _, lp := range lps {
+		if lp.LastUpdatedBlock < (ctx.BlockHeight() - int64(lockPeriod)) {
+			filtered = append(filtered, lp)
+		}
+	}
+	return filtered
 }

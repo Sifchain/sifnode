@@ -60,8 +60,14 @@ func (l LiquidityProvider) Validate() bool {
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider
-func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
-	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress.String()}
+func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidityProviderAddress sdk.AccAddress, lastUpdatedBlock int64) LiquidityProvider {
+	return LiquidityProvider{
+		Asset:                    asset,
+		LiquidityProviderUnits:   liquidityProviderUnits,
+		LiquidityProviderAddress: liquidityProviderAddress.String(),
+		LastUpdatedBlock:         lastUpdatedBlock,
+		RewardAmount:             nil,
+	}
 }
 
 // ----------------------------------------------------------------------------

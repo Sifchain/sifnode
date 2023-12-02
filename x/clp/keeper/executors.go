@@ -52,7 +52,7 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 }
 
 func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpunits sdk.Uint, lpaddress sdk.AccAddress) types.LiquidityProvider {
-	lp := types.NewLiquidityProvider(asset, lpunits, lpaddress)
+	lp := types.NewLiquidityProvider(asset, lpunits, lpaddress, ctx.BlockHeight())
 	k.SetLiquidityProvider(ctx, &lp)
 
 	return lp
@@ -121,6 +121,8 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
+	// Set LP’s LastUpdatedBlock to current block height
+	lp.LastUpdatedBlock = ctx.BlockHeight()
 	// Save LP
 	k.SetLiquidityProvider(ctx, &lp)
 	return &lp, err

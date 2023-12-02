@@ -19,23 +19,23 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
-	clpKeeper.SetLiquidityProvider(ctx, &lp)
+	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
-	assert.Equal(t, getlp, lp)
+	assert.Equal(t, getlp, *lp)
 	lpList, _, err := clpKeeper.GetLiquidityProvidersForAssetPaginated(ctx, *lp.Asset, &query.PageRequest{})
 	assert.NoError(t, err)
-	assert.Equal(t, &lp, lpList[0])
+	assert.Equal(t, lp, lpList[0])
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
-	clpKeeper.SetLiquidityProvider(ctx, &lp)
+	clpKeeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
-	assert.Equal(t, getlp, lp)
+	assert.Equal(t, getlp, *lp)
 	assert.True(t, clpKeeper.GetLiquidityProviderIterator(ctx).Valid())
 	clpKeeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	_, err = clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
@@ -51,7 +51,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	lpList := test.GenerateRandomLP(10)
 	for i := range lpList {
 		lp := lpList[i]
-		clpKeeper.SetLiquidityProvider(ctx, &lp)
+		clpKeeper.SetLiquidityProvider(ctx, lp)
 	}
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
@@ -106,5 +106,37 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 		require.Equal(t, assetList[i], lpData.LiquidityProvider.Asset)
 		require.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
 		require.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
+	}
+}
+
+// add tests for GetRewardsEligibleLiquidityProviders
+func TestKeeper_GetRewardsEligibleLiquidityProviders(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	pools, lpList := test.GeneratePoolsAndLPs(clpKeeper, ctx, tokens)
+	// update lp list to contain some lps that has a last updated block that is older
+	// than the current block height
+	for i := range lpList {
+		if (i % 2) == 0 {
+			continue
+		}
+		lpList[i].LastUpdatedBlock = ctx.BlockHeight() - int64(clpKeeper.GetRewardsParams(ctx).RewardsLockPeriod) - 1
+		clpKeeper.SetLiquidityProvider(ctx, &lpList[i])
+	}
+	// get rewards eligible lps
+	rewardsEligibleLps, err := clpKeeper.GetRewardsEligibleLiquidityProviders(ctx)
+	require.NoError(t, err)
+	// check that the rewards eligible lps map contains half the pools
+	require.Equal(t, len(pools)/2, len(rewardsEligibleLps))
+	// check that the rewards eligible lps map contains half the lps
+	for i, lp := range lpList {
+		asset := lp.Asset
+		assetLps := rewardsEligibleLps[*asset]
+		if (i % 2) == 0 {
+			require.NotContains(t, assetLps, &lp) //nolint:gosec
+		} else {
+			require.Contains(t, assetLps, &lp) //nolint:gosec
+		}
 	}
 }

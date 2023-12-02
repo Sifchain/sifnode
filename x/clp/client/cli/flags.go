@@ -18,6 +18,9 @@ const (
 	FlagMinimumReceivingAmount          = "minReceivingAmount"
 	FlagLiquidityRemovalLockPeriod      = "lockPeriod"
 	FlagLiquidityRemovalCancelPeriod    = "cancelPeriod"
+	FlagRewardsLockPeriod               = "rewardsLockPeriod"
+	FlagRewardsEpochIdentifier          = "rewardsEpochIdentifier"
+	FlagRewardsDistribute               = "rewardsDistribute"
 	FlagDefaultMultiplier               = "defaultMultiplier"
 	FlagRewardPeriods                   = "path"
 	FlagBlockRate                       = "blockRate"
@@ -56,6 +59,9 @@ var (
 	FsMinReceivingAmount              = flag.NewFlagSet("", flag.ContinueOnError)
 	FsLiquidityRemovalLockPeriod      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsLiquidityRemovalCancelPeriod    = flag.NewFlagSet("", flag.ContinueOnError)
+	FsRewardsLockPeriod               = flag.NewFlagSet("", flag.ContinueOnError)
+	FsRewardsEpochIdentifier          = flag.NewFlagSet("", flag.ContinueOnError)
+	FsRewardsDistribute               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsDefaultMultiplier               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsFlagRewardPeriods               = flag.NewFlagSet("", flag.ContinueOnError)
 	FsBlockRate                       = flag.NewFlagSet("", flag.ContinueOnError)
@@ -102,6 +108,9 @@ func init() {
 	FsFlagNewPolicy.String(FlagNewPolicy, "", "Set a new policy / Modify existing policy")
 	FsLiquidityRemovalLockPeriod.String(FlagLiquidityRemovalLockPeriod, "", "Lock Period")
 	FsLiquidityRemovalCancelPeriod.String(FlagLiquidityRemovalCancelPeriod, "", "Unlock Period")
+	FsRewardsLockPeriod.String(FlagRewardsLockPeriod, "", "Rewards Lock Period")
+	FsRewardsEpochIdentifier.String(FlagRewardsEpochIdentifier, "", "Rewards Epoch Identifier")
+	FsRewardsDistribute.String(FlagRewardsDistribute, "", "Rewards Distribute")
 	FsDefaultMultiplier.String(FlagDefaultMultiplier, "", "Pool Multiplier")
 	FsFlagRewardPeriods.String(FlagRewardPeriods, "", "Path to Json File containing reward periods")
 	FsFlagMintParams.String(FlagMintParams, "", "Inflation")

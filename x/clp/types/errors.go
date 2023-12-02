@@ -48,4 +48,7 @@ var (
 	ErrAmountCantBeNegative                            = sdkerrors.Register(ModuleName, 46, "amount cannot be negative")
 	ErrRewardsBucketNotFound                           = sdkerrors.Register(ModuleName, 47, "rewards bucket not found for denom: %s")
 	ErrNotEnoughBalanceInRewardsBucket                 = sdkerrors.Register(ModuleName, 48, "not enough balance in rewards bucket for denom: %s")
+	ErrUnableToGetRewardsEligibleLiquidityProviders    = sdkerrors.Register(ModuleName, 49, "unable to get rewards eligible liquidity providers")
+	ErrUnableToDistributeLPRewards                     = sdkerrors.Register(ModuleName, 50, "unable to distribute liquidity provider rewards")
+	ErrUnableToAddRewardAmountToLiquidityPool          = sdkerrors.Register(ModuleName, 51, "unable to add reward amount to liquidity pool")
 )

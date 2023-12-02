@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp/types/mocks"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -21,6 +22,8 @@ import (
 )
 
 func ClpKeeper(t testing.TB) (*keeper.Keeper, sdk.Context, *mocks.BankKeeper) {
+	app.SetConfig(false)
+
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
