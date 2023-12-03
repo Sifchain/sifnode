@@ -88,9 +88,6 @@ func (m Migrator) MigrateToVer4(ctx sdk.Context) error {
 }
 
 func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
-	// set rewards bucket
-	m.keeper.SetRewardsBucket(ctx, types.RewardsBucket{})
-
 	// set rewards params
 	m.keeper.SetRewardParams(ctx, types.GetDefaultRewardParams())
 
