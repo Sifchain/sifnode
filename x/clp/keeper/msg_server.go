@@ -107,6 +107,9 @@ func (k msgServer) UpdateRewardsParams(goCtx context.Context, msg *types.MsgUpda
 	params := k.GetRewardsParams(ctx)
 	params.LiquidityRemovalLockPeriod = msg.LiquidityRemovalLockPeriod
 	params.LiquidityRemovalCancelPeriod = msg.LiquidityRemovalCancelPeriod
+	params.RewardsDistribute = msg.RewardsDistribute
+	params.RewardsEpochIdentifier = msg.RewardsEpochIdentifier
+	params.RewardsLockPeriod = msg.RewardsLockPeriod
 	k.SetRewardParams(ctx, params)
 	return response, err
 }
