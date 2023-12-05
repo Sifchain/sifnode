@@ -151,6 +151,7 @@ func TestScenarios(t *testing.T) {
 
 						expectedState.Pool.SwapPriceNative = &expectedState.SwapPriceNative
 						expectedState.Pool.SwapPriceExternal = &expectedState.SwapPriceExternal
+						expectedState.Pool.RewardAmountExternal = sdk.ZeroUint()
 
 						// explicitly test swap prices before testing pool - makes debugging easier
 						require.Equal(t, &expectedState.SwapPriceNative, got.SwapPriceNative)

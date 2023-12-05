@@ -445,6 +445,20 @@ type Transfer struct {
 	Params      TransferParams `json:"params"`
 }
 
+type EpochInfos []struct {
+	Identifier              string      `json:"identifier"`
+	StartTime               string      `json:"start_time"`
+	Duration                string      `json:"duration"`
+	CurrentEpoch            json.Number `json:"current_epoch"`
+	CurrentEpochStartTime   string      `json:"current_epoch_start_time"`
+	EpochCountingStarted    bool        `json:"epoch_counting_started"`
+	CurrentEpochStartHeight json.Number `json:"current_epoch_start_height"`
+}
+
+type Epochs struct {
+	Epochs EpochInfos `json:"epochs"`
+}
+
 type AppState struct {
 	Upgrade       struct{}      `json:"upgrade"`
 	Ethbridge     struct{}      `json:"ethbridge"`
@@ -469,6 +483,7 @@ type AppState struct {
 	Crisis        Crisis        `json:"crisis"`
 	TokenRegistry TokenRegistry `json:"tokenregistry"`
 	Admin         Admin         `json:"admin"`
+	Epochs        Epochs        `json:"epochs"`
 }
 
 type Genesis struct {

@@ -200,6 +200,9 @@ message MsgUpdateRewardsParamsRequest {
   string signer = 1 [ (gogoproto.moretags) = "yaml:\"signer\"" ];
   uint64 liquidity_removal_lock_period = 2;   // in blocks
   uint64 liquidity_removal_cancel_period = 3; // in blocks
+  uint64 rewards_lock_period = 4; // in blocks
+  string rewards_epoch_identifier = 5; // week, day, hour, etc
+  bool rewards_distribute = 6; // true or false
 }
 
 message MsgUpdateRewardsParamsResponse {}

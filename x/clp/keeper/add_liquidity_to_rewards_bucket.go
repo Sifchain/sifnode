@@ -6,16 +6,20 @@ import (
 )
 
 func (k Keeper) AddLiquidityToRewardsBucket(ctx sdk.Context, signer string, amounts sdk.Coins) (sdk.Coins, error) {
+	addr, err := sdk.AccAddressFromBech32(signer)
+	if err != nil {
+		return nil, err
+	}
+
 	// check that the sender has all the coins in the wallet
 	for _, coin := range amounts {
-		if !k.bankKeeper.HasBalance(ctx, sdk.AccAddress(signer), coin) {
+		if !k.bankKeeper.HasBalance(ctx, addr, coin) {
 			return nil, types.ErrBalanceNotAvailable
 		}
 	}
 
 	// send from user to module
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sdk.AccAddress(signer), types.ModuleName, amounts)
-	if err != nil {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, amounts); err != nil {
 		return nil, err
 	}
 

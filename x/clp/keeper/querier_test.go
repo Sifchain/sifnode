@@ -357,6 +357,6 @@ func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool
 		}
 	}
 	lp := test.GenerateRandomLP(1)[0]
-	keeper.SetLiquidityProvider(ctx, &lp)
-	return pool, pools, lp
+	keeper.SetLiquidityProvider(ctx, lp)
+	return pool, pools, *lp
 }

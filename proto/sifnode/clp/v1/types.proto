@@ -3,6 +3,7 @@ syntax = "proto3";
 package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/base/coin.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/clp/types";
 
@@ -79,6 +80,12 @@ message Pool {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
+  // the amount of external asset rewards distributed to liquidity providers from reward buckets
+  string reward_amount_external = 19 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"reward_amount_external\""
+  ];
 }
 
 message LiquidityProvider {
@@ -90,6 +97,12 @@ message LiquidityProvider {
   ];
   string liquidity_provider_address = 3;
   repeated LiquidityUnlock unlocks = 4;
+  int64 last_updated_block = 5; // contains the block height of the last update
+  // distributed or added to liquidity provider shares rewards
+  repeated cosmos.base.v1beta1.Coin reward_amount = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
 }
 
 message LiquidityUnlock {
