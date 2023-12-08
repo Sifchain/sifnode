@@ -6,7 +6,7 @@ func filterAccounts(accounts []Account, filterAddresses []string) []Account {
 		filterMap[addr] = struct{}{}
 	}
 
-	var newAccounts []Account
+	newAccounts := []Account{}
 	for _, account := range accounts {
 		if shouldFilterAccount(account, filterMap) {
 			continue

@@ -11,7 +11,7 @@ func filterBalances(balances []banktypes.Balance, filterAddresses []string) ([]b
 		filterMap[addr] = struct{}{}
 	}
 
-	var newBalances []banktypes.Balance
+	newBalances := []banktypes.Balance{}
 	var coinsToRemove sdk.Coins
 	for _, balance := range balances {
 		if _, exists := filterMap[balance.Address]; exists {

@@ -300,6 +300,7 @@ type CLP struct {
 	Params             CLPParams     `json:"params"`
 	PoolList           []interface{} `json:"pool_list"`
 	LiquidityProviders []interface{} `json:"liquidity_providers"`
+	RewardsBucketList  []interface{} `json:"rewards_bucket_list,omitempty"` // omitted for now
 }
 
 type Margin struct {
