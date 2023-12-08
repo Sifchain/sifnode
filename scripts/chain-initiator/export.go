@@ -17,7 +17,7 @@ func export(cmdPath, homePath, genesisFilePath string) {
 	}
 
 	// Write the output to the specified file
-	err = ioutil.WriteFile(genesisFilePath, output, 0644)
+	err = ioutil.WriteFile(genesisFilePath, output, 0644) // nolint: gosec
 	if err != nil {
 		log.Fatalf("Failed to write output to file: %v", err)
 	}
