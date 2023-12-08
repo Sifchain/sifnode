@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func start(cmdPath, homePath string) {
+func start(cmdPath, homePath string) *exec.Cmd {
 	// Command and arguments
 	args := []string{"start", "--home", homePath}
 
@@ -17,8 +17,12 @@ func start(cmdPath, homePath string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	// Execute the command and stream the output
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Command execution failed: %v", err)
-	}
+	// Execute the command and stream the output in a goroutine to avoid blocking
+	go func() {
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("Command execution failed: %v", err)
+		}
+	}()
+
+	return cmd
 }

@@ -5,9 +5,9 @@ import (
 	"os/exec"
 )
 
-func genTx(cmdPath, name, balance, chainId, homePath, keyringBackend string) {
+func genTx(cmdPath, name, amount, chainId, homePath, keyringBackend string) {
 	// Command and arguments
-	args := []string{"gentx", name, balance + "rowan", "--chain-id", chainId, "--home", homePath, "--keyring-backend", keyringBackend}
+	args := []string{"gentx", name, amount + "rowan", "--chain-id", chainId, "--home", homePath, "--keyring-backend", keyringBackend}
 
 	// Execute the command
 	if err := exec.Command(cmdPath, args...).Run(); err != nil {
@@ -15,5 +15,5 @@ func genTx(cmdPath, name, balance, chainId, homePath, keyringBackend string) {
 	}
 
 	// If execution reaches here, the command was successful
-	log.Printf("gen tx with name %s, balance: %s, chain id %s, home path %s and keyring backend %s successfully", name, balance, chainId, homePath, keyringBackend)
+	log.Printf("gen tx with name %s, amount: %s, chain id %s, home path %s and keyring backend %s successfully", name, amount, chainId, homePath, keyringBackend)
 }
