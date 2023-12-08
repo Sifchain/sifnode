@@ -20,8 +20,8 @@ func listenForSignals(cmd *exec.Cmd) {
 	if cmd != nil && cmd.Process != nil {
 		err := cmd.Process.Kill()
 		if err != nil {
-			log.Fatalf("Failed to kill process: %v", err)
+			log.Fatalf(Red+"Failed to kill process: %v", err)
 		}
-		log.Println("Process killed successfully")
+		log.Println(Yellow + "Process killed successfully")
 	}
 }

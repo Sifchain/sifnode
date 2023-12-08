@@ -20,7 +20,7 @@ func start(cmdPath, homePath string) *exec.Cmd {
 	// Execute the command and stream the output in a goroutine to avoid blocking
 	go func() {
 		if err := cmd.Run(); err != nil {
-			log.Fatalf("Command execution failed: %v", err)
+			log.Fatalf(Red+"Command execution failed: %v", err)
 		}
 	}()
 

@@ -368,3 +368,10 @@ type StatusOutput struct {
 		LatestBlockHeight string `json:"latest_block_height"`
 	} `json:"SyncInfo"`
 }
+
+// Colors
+const (
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+)

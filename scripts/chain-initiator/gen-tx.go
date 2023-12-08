@@ -11,9 +11,9 @@ func genTx(cmdPath, name, amount, chainId, homePath, keyringBackend string) {
 
 	// Execute the command
 	if err := exec.Command(cmdPath, args...).Run(); err != nil {
-		log.Fatalf("Command execution failed: %v", err)
+		log.Fatalf(Red+"Command execution failed: %v", err)
 	}
 
 	// If execution reaches here, the command was successful
-	log.Printf("gen tx with name %s, amount: %s, chain id %s, home path %s and keyring backend %s successfully", name, amount, chainId, homePath, keyringBackend)
+	log.Printf(Yellow+"gen tx with name %s, amount: %s, chain id %s, home path %s and keyring backend %s successfully", name, amount, chainId, homePath, keyringBackend)
 }

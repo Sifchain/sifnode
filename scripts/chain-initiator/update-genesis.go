@@ -10,13 +10,13 @@ import (
 func updateGenesis(validatorBalance, homePath string) {
 	genesis, err := readGenesisFile(genesisFilePath)
 	if err != nil {
-		log.Fatalf("Error reading genesis file: %v", err)
+		log.Fatalf(Red+"Error reading genesis file: %v", err)
 	}
 
 	genesisInitFilePath := homePath + "/config/genesis.json"
 	genesisInit, err := readGenesisFile(genesisInitFilePath)
 	if err != nil {
-		log.Fatalf("Error reading initial genesis file: %v", err)
+		log.Fatalf(Red+"Error reading initial genesis file: %v", err)
 	}
 
 	filterAccountAddresses := []string{
@@ -36,7 +36,7 @@ func updateGenesis(validatorBalance, homePath string) {
 
 	newValidatorBalance, ok := sdk.NewIntFromString(validatorBalance)
 	if !ok {
-		panic("invalid number")
+		panic(Red + "invalid number")
 	}
 	newValidatorBalanceCoin := sdk.NewCoin("rowan", newValidatorBalance)
 
@@ -61,8 +61,12 @@ func updateGenesis(validatorBalance, homePath string) {
 	// set genutil from genesisInit
 	genesis.AppState.Genutil = genesisInit.AppState.Genutil
 
+	// update voting period
+	genesis.AppState.Gov.VotingParams.VotingPeriod = "60s"
+	genesis.AppState.Gov.DepositParams.MaxDepositPeriod = "60s"
+
 	outputFilePath := homePath + "/config/genesis.json"
 	if err := writeGenesisFile(outputFilePath, genesis); err != nil {
-		log.Fatalf("Error writing genesis file: %v", err)
+		log.Fatalf(Red+"Error writing genesis file: %v", err)
 	}
 }

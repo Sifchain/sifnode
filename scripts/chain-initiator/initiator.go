@@ -28,62 +28,70 @@ func main() {
 		Args:  cobra.ExactArgs(2), // Expect exactly 1 argument
 		Run: func(cmd *cobra.Command, args []string) {
 			snapshotUrl, newVersion := getArgs(args)
-			_ = snapshotUrl
-			homePath, cmdPath := getFlags(cmd)
+			homePath, cmdPath, skipSnapshot, skipChainInit, skipNodeStart := getFlags(cmd)
 
 			// set address prefix
 			app.SetConfig(false)
 
-			// remove home path
-			removeHome(homePath)
+			if !skipSnapshot {
+				// remove home path
+				removeHome(homePath)
 
-			// init chain
-			initChain(cmdPath, moniker, chainId, homePath)
+				// init chain
+				initChain(cmdPath, moniker, chainId, homePath)
 
-			// retrieve the snapshot
-			retrieveSnapshot(snapshotUrl, homePath)
+				// retrieve the snapshot
+				retrieveSnapshot(snapshotUrl, homePath)
 
-			// export genesis file
-			export(cmdPath, homePath, genesisFilePath)
+				// export genesis file
+				export(cmdPath, homePath, genesisFilePath)
+			}
 
-			// remove home path
-			removeHome(homePath)
+			if !skipChainInit {
+				// remove home path
+				removeHome(homePath)
 
-			// init chain
-			initChain(cmdPath, moniker, chainId, homePath)
+				// init chain
+				initChain(cmdPath, moniker, chainId, homePath)
 
-			// add validator key
-			validatorAddress := addKey(cmdPath, validatorKeyName, homePath, keyringBackend)
+				// add validator key
+				validatorAddress := addKey(cmdPath, validatorKeyName, homePath, keyringBackend)
 
-			// add genesis account
-			addGenesisAccount(cmdPath, validatorAddress, validatorBalance, homePath)
+				// add genesis account
+				addGenesisAccount(cmdPath, validatorAddress, validatorBalance, homePath)
 
-			// generate genesis tx
-			genTx(cmdPath, validatorKeyName, validatorSelfDelegation, chainId, homePath, keyringBackend)
+				// generate genesis tx
+				genTx(cmdPath, validatorKeyName, validatorSelfDelegation, chainId, homePath, keyringBackend)
 
-			// collect genesis txs
-			collectGentxs(cmdPath, homePath)
+				// collect genesis txs
+				collectGentxs(cmdPath, homePath)
 
-			// validate genesis
-			validateGenesis(cmdPath, homePath)
+				// validate genesis
+				validateGenesis(cmdPath, homePath)
 
-			// update genesis
-			updateGenesis(validatorBalance, homePath)
+				// update genesis
+				updateGenesis(validatorBalance, homePath)
+			}
 
-			// start chain
-			startCmd := start(cmdPath, homePath)
+			if !skipNodeStart {
+				// start chain
+				startCmd := start(cmdPath, homePath)
 
-			// wait for node to start
-			waitForNodeToStart(node)
+				// wait for node to start
+				waitForNodeToStart(node)
 
-			// query and calculate upgrade block height
-			upgradeBlockHeight := queryAndCalcUpgradeBlockHeight(cmdPath, node)
+				// wait for next block
+				waitForNextBlock(cmdPath, node)
 
-			// submit upgrade proposal
-			submitUpgradeProposal(cmdPath, validatorKeyName, newVersion, upgradeBlockHeight, homePath, keyringBackend, chainId, node, broadcastMode)
+				// query and calculate upgrade block height
+				upgradeBlockHeight := queryAndCalcUpgradeBlockHeight(cmdPath, node)
 
-			// listen for signals
-			listenForSignals(startCmd)
+				// submit upgrade proposal
+				submitUpgradeProposal(cmdPath, validatorKeyName, newVersion, upgradeBlockHeight, homePath, keyringBackend, chainId, node, broadcastMode)
+
+				// listen for signals
+				listenForSignals(startCmd)
+			}
 		},
 	}
 
@@ -92,8 +100,11 @@ func main() {
 
 	rootCmd.PersistentFlags().String(flagCmd, homeEnv+"/go/bin/sifnoded", "path to sifnoded")
 	rootCmd.PersistentFlags().String(flagHome, homeEnv+"/.sifnoded", "home directory")
+	rootCmd.PersistentFlags().Bool(flagSkipSnapshot, false, "skip snapshot retrieval")
+	rootCmd.PersistentFlags().Bool(flagSkipChainInit, false, "skip chain init")
+	rootCmd.PersistentFlags().Bool(flagSkipNodeStart, false, "skip node start")
 
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("Error executing command: %v", err)
+		log.Fatalf(Red+"Error executing command: %v", err)
 	}
 }

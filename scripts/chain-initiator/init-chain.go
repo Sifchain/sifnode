@@ -11,9 +11,9 @@ func initChain(cmdPath, moniker, chainId, homePath string) {
 
 	// Execute the command
 	if err := exec.Command(cmdPath, args...).Run(); err != nil {
-		log.Fatalf("Command execution failed: %v", err)
+		log.Fatalf(Red+"Command execution failed: %v", err)
 	}
 
 	// If execution reaches here, the command was successful
-	log.Printf("init chain with moniker %s, chain id %s and home path: %s successfully", moniker, chainId, homePath)
+	log.Printf(Yellow+"init chain with moniker %s, chain id %s and home path: %s successfully", moniker, chainId, homePath)
 }

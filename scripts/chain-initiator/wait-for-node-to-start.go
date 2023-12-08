@@ -12,10 +12,10 @@ func waitForNodeToStart(node string) {
 	// Wait for the node to be running with timout
 	for !isNodeRunning(node) {
 		if time.Since(start) > timeout {
-			log.Fatalf("Node did not start within the specified timeout")
+			log.Fatalf(Red + "Node did not start within the specified timeout")
 		}
-		log.Println("Waiting for node to start...")
+		log.Println(Yellow + "Waiting for node to start...")
 		time.Sleep(5 * time.Second)
 	}
-	log.Println("Node is running.")
+	log.Println(Yellow + "Node is running.")
 }

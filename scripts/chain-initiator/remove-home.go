@@ -11,9 +11,9 @@ func removeHome(homePath string) {
 
 	// Execute the command
 	if err := exec.Command("rm", args...).Run(); err != nil {
-		log.Fatalf("Command execution failed: %v", err)
+		log.Fatalf(Red+"Command execution failed: %v", err)
 	}
 
 	// If execution reaches here, the command was successful
-	log.Printf("removed home path %s successfully", homePath)
+	log.Printf(Yellow+"removed home path %s successfully", homePath)
 }

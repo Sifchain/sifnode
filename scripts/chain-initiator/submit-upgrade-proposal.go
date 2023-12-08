@@ -38,14 +38,10 @@ func submitUpgradeProposal(cmdPath, name, newVersion, upgradeHeight, homePath, k
 	}
 
 	// Execute the command
-	output, err := exec.Command(cmdPath, args...).CombinedOutput()
-	if err != nil {
-		log.Fatalf("Command execution failed: %v", err)
+	if err := exec.Command(cmdPath, args...).Run(); err != nil {
+		log.Fatalf(Red+"Command execution failed: %v", err)
 	}
 
-	// print the output
-	log.Printf("%s", output)
-
 	// If execution reaches here, the command was successful
-	log.Printf("Submitted upgrade proposal: %s, upgrade block height: %s", newVersion, upgradeHeight)
+	log.Printf(Yellow+"Submitted upgrade proposal: %s, upgrade block height: %s", newVersion, upgradeHeight)
 }

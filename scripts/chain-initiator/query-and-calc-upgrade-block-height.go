@@ -7,12 +7,15 @@ import (
 
 func queryAndCalcUpgradeBlockHeight(cmdPath, node string) string {
 	// query block height
-	blockHeight := queryBlockHeight(cmdPath, node)
+	blockHeight, err := queryBlockHeight(cmdPath, node)
+	if err != nil {
+		log.Fatalf(Red+"Failed to query block height: %v", err)
+	}
 
 	// Convert blockHeight from string to int
 	blockHeightInt, err := strconv.Atoi(blockHeight)
 	if err != nil {
-		log.Fatalf("Failed to convert blockHeight to integer: %v", err)
+		log.Fatalf(Red+"Failed to convert blockHeight to integer: %v", err)
 	}
 
 	// set upgrade block height

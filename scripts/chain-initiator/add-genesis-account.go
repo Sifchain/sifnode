@@ -11,9 +11,9 @@ func addGenesisAccount(cmdPath, address, balance, homePath string) {
 
 	// Execute the command
 	if err := exec.Command(cmdPath, args...).Run(); err != nil {
-		log.Fatalf("Command execution failed: %v", err)
+		log.Fatalf(Red+"Command execution failed: %v", err)
 	}
 
 	// If execution reaches here, the command was successful
-	log.Printf("add genesis account with address %s, balance: %s and home path %s successfully", address, balance, homePath)
+	log.Printf(Yellow+"add genesis account with address %s, balance: %s and home path %s successfully", address, balance, homePath)
 }
