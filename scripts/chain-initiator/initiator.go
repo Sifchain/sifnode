@@ -15,21 +15,34 @@ const (
 	keyringBackend   = "test"
 	validatorKeyName = "validator"
 	validatorBalance = "4000000000000000000000000000"
+	genesisFilePath  = "/tmp/genesis.json"
 )
 
 func main() {
 	var rootCmd = &cobra.Command{
-		Use:   "initiator [cmd_path] [home_path] [genesis_file_path]",
+		Use:   "initiator [cmd_path] [home_path] [snapshot_url]]",
 		Short: "Chain Initiator is a tool for modifying genesis files",
 		Long:  `A tool for performing various operations on genesis files of a blockchain setup.`,
 		Args:  cobra.ExactArgs(3), // Expect exactly two arguments
 		Run: func(cmd *cobra.Command, args []string) {
-			cmdPath := args[0]         // sifnoded
-			homePath := args[1]        // /tmp/node
-			genesisFilePath := args[2] // /tmp/genesis.json
+			cmdPath := args[0]     // sifnoded
+			homePath := args[1]    // /tmp/node
+			snapshotUrl := args[2] // https://snapshots.polkachu.com/snapshots/sifchain/sifchain_15048938.tar.lz4
 
 			// set address prefix
 			app.SetConfig(false)
+
+			// remove home path
+			removeHome(homePath)
+
+			// init chain
+			initChain(cmdPath, moniker, chainId, homePath)
+
+			// retrieve the snapshot
+			retrieveSnapshot(snapshotUrl, homePath)
+
+			// export genesis file
+			export(cmdPath, homePath, genesisFilePath)
 
 			// remove home path
 			removeHome(homePath)
