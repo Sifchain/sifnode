@@ -13,11 +13,37 @@ import (
 	"strings"
 )
 
-func downloadAndRunVersion(binaryURL string, skipDownload bool) (path string, version string, err error) {
+func isURL(str string) bool {
+	return strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://")
+}
+
+func downloadAndRunVersion(binaryPathOrURL string, skipDownload bool) (path string, version string, err error) {
+	if !isURL(binaryPathOrURL) {
+		// If the input is a local path
+		path = binaryPathOrURL
+
+		// Check if the path exists
+		if _, err = os.Stat(path); os.IsNotExist(err) {
+			err = errors.New(fmt.Sprintf("binary file does not exist at the specified path: %v", path))
+			return
+		}
+
+		// Run the command 'binary version'
+		cmd := exec.Command(path, "version")
+		var versionOutput []byte
+		versionOutput, err = cmd.CombinedOutput()
+		if err != nil {
+			return
+		}
+		version = strings.TrimSpace(string(versionOutput))
+
+		return
+	}
+
 	if skipDownload {
 		// Extract version from the URL
 		re := regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?`)
-		versionMatches := re.FindStringSubmatch(binaryURL)
+		versionMatches := re.FindStringSubmatch(binaryPathOrURL)
 		if len(versionMatches) == 0 {
 			err = errors.New("no version found in URL")
 			return
@@ -41,7 +67,7 @@ func downloadAndRunVersion(binaryURL string, skipDownload bool) (path string, ve
 	}
 
 	// Download the binary
-	resp, err := http.Get(binaryURL) // nolint: gosec
+	resp, err := http.Get(binaryPathOrURL) // nolint: gosec
 	if err != nil {
 		return
 	}
