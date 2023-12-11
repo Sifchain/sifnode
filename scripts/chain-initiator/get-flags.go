@@ -1,3 +1,4 @@
+// nolint: nakedret
 package main
 
 import (

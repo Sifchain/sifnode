@@ -1,3 +1,4 @@
+// nolint: nakedret
 package main
 
 import (
@@ -40,7 +41,7 @@ func downloadAndRunVersion(binaryURL string, skipDownload bool) (path string, ve
 	}
 
 	// Download the binary
-	resp, err := http.Get(binaryURL)
+	resp, err := http.Get(binaryURL) // nolint: gosec
 	if err != nil {
 		return
 	}
