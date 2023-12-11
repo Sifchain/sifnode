@@ -20,7 +20,8 @@ func waitForNextBlock(cmdPath, node string) {
 				break
 			}
 		}
-		time.Sleep(5 * time.Second) // Wait 5 second before retrying
+		log.Println(Yellow + "Waiting for current block height...")
+		time.Sleep(5 * time.Second) // Wait 5 seconds before retrying
 	}
 
 	log.Printf(Yellow+"Current Block Height: %d", currentBlockHeight)
@@ -35,7 +36,8 @@ func waitForNextBlock(cmdPath, node string) {
 				break
 			}
 		}
-		time.Sleep(5 * time.Second) // Wait a second before retrying
+		log.Println(Yellow + "Waiting for next block height...")
+		time.Sleep(5 * time.Second) // Wait 5 seconds before retrying
 	}
 
 	log.Printf(Yellow+"New Block Height: %d", newBlockHeight)

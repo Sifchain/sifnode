@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -17,11 +16,5 @@ func listenForSignals(cmd *exec.Cmd) {
 	<-sigChan
 
 	// Stop the process when a signal is received
-	if cmd != nil && cmd.Process != nil {
-		err := cmd.Process.Kill()
-		if err != nil {
-			log.Fatalf(Red+"Failed to kill process: %v", err)
-		}
-		log.Println(Yellow + "Process killed successfully")
-	}
+	stop(cmd)
 }

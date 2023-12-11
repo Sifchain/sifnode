@@ -369,6 +369,13 @@ type StatusOutput struct {
 	} `json:"SyncInfo"`
 }
 
+// ProposalsOutput represents the JSON structure of the output from the query proposals command
+type ProposalsOutput struct {
+	Proposals []struct {
+		ProposalId string `json:"proposal_id"`
+	} `json:"proposals"`
+}
+
 // Colors
 const (
 	Red    = "\033[31m"

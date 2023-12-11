@@ -7,7 +7,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-func updateGenesis(validatorBalance, homePath string) {
+func updateGenesis(validatorBalance, homePath, genesisFilePath string) {
 	genesis, err := readGenesisFile(genesisFilePath)
 	if err != nil {
 		log.Fatalf(Red+"Error reading genesis file: %v", err)
@@ -62,8 +62,8 @@ func updateGenesis(validatorBalance, homePath string) {
 	genesis.AppState.Genutil = genesisInit.AppState.Genutil
 
 	// update voting period
-	genesis.AppState.Gov.VotingParams.VotingPeriod = "60s"
-	genesis.AppState.Gov.DepositParams.MaxDepositPeriod = "60s"
+	genesis.AppState.Gov.VotingParams.VotingPeriod = "10s"
+	genesis.AppState.Gov.DepositParams.MaxDepositPeriod = "10s"
 
 	outputFilePath := homePath + "/config/genesis.json"
 	if err := writeGenesisFile(outputFilePath, genesis); err != nil {

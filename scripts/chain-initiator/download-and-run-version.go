@@ -1,0 +1,87 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/exec"
+	"regexp"
+	"strings"
+)
+
+func downloadAndRunVersion(binaryURL string, skipDownload bool) (path string, version string, err error) {
+	if skipDownload {
+		// Extract version from the URL
+		re := regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?`)
+		versionMatches := re.FindStringSubmatch(binaryURL)
+		if len(versionMatches) == 0 {
+			err = errors.New("no version found in URL")
+			return
+		}
+		version = versionMatches[0]
+
+		// Remove the "v" prefix if present
+		if strings.HasPrefix(version, "v") {
+			version = strings.TrimPrefix(version, "v")
+		}
+
+		// Set the binary path based on the version
+		path = "/tmp/sifnoded-" + version
+
+		// Check if the path exists
+		if _, err = os.Stat(path); os.IsNotExist(err) {
+			err = errors.New(fmt.Sprintf("binary file does not exist at the specified path: %v", path))
+		}
+
+		return
+	}
+
+	// Download the binary
+	resp, err := http.Get(binaryURL)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	// Create a temporary file
+	tmpFile, err := ioutil.TempFile("", "binary-*")
+	if err != nil {
+		return
+	}
+	tmpFilePath := tmpFile.Name()
+	defer os.Remove(tmpFilePath) // Clean up
+
+	// Write the downloaded content to the file
+	_, err = io.Copy(tmpFile, resp.Body)
+	tmpFile.Close()
+	if err != nil {
+		return
+	}
+
+	// Make the file executable
+	err = os.Chmod(tmpFilePath, 0755)
+	if err != nil {
+		return
+	}
+
+	// Run the command 'binary version'
+	cmd := exec.Command(tmpFilePath, "version")
+	versionOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return
+	}
+	version = strings.TrimSpace(string(versionOutput))
+
+	// Rename the temporary file
+	newFilePath := "/tmp/sifnoded-" + version
+	err = os.Rename(tmpFilePath, newFilePath)
+	if err != nil {
+		return
+	}
+	path = newFilePath
+
+	return
+}
