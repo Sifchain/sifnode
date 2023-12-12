@@ -71,8 +71,8 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 
 func GetDefaultRewardParams() *RewardParams {
 	return &RewardParams{
-		LiquidityRemovalLockPeriod:   12 * 60 * 24 * 50, // 50 days
-		LiquidityRemovalCancelPeriod: 12 * 60 * 6,       // 6 hours
+		LiquidityRemovalLockPeriod:   12 * 60 * 5,       // 5 hours
+		LiquidityRemovalCancelPeriod: 12 * 60 * 24 * 50, // 50 days
 		RewardPeriods:                nil,
 		RewardPeriodStartTime:        "",
 		RewardsLockPeriod:            12 * 60 * 24 * 14, // 14 days
