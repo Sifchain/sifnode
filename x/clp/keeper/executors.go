@@ -191,6 +191,8 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		k.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	} else {
 		lp.LiquidityProviderUnits = lpUnitsLeft
+		// Set LP’s LastUpdatedBlock to current block height
+		lp.LastUpdatedBlock = ctx.BlockHeight()
 		k.SetLiquidityProvider(ctx, &lp)
 	}
 	return nil
