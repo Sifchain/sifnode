@@ -19,7 +19,7 @@ builds:
       - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
       - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
       - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
-      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
     tags:
@@ -41,7 +41,7 @@ builds:
       - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
       - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
       - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
-      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
     tags:
@@ -62,7 +62,7 @@ builds:
       - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
       - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
       - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
-      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
     tags:
@@ -83,7 +83,7 @@ builds:
       - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
       - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
       - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
-      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=ledger
     tags:
