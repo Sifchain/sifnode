@@ -23,7 +23,6 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 		return oracletypes.ErrNotAdminAccount
 	}
 
-	store := ctx.KVStore(k.storeKey)
 	// Process removals
 	var removals []string
 	iter := k.getStoreIterator(ctx)
@@ -49,12 +48,24 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	}
 
 	for _, address := range removals {
-		store.Delete(append(types.BlacklistPrefix, []byte(address)...))
+		k.DeleteBlacklistAddress(ctx, address)
 	}
 	for _, address := range msg.Addresses {
-		store.Set(append(types.BlacklistPrefix, []byte(address)...), []byte(address))
+		k.SetBlacklistAddress(ctx, address)
 	}
 
+	return nil
+}
+
+func (k Keeper) SetBlacklistAddress(ctx sdk.Context, address string) error {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(append(types.BlacklistPrefix, []byte(address)...), []byte(address))
+	return nil
+}
+
+func (k Keeper) DeleteBlacklistAddress(ctx sdk.Context, address string) error {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(append(types.BlacklistPrefix, []byte(address)...))
 	return nil
 }
 

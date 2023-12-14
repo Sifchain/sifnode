@@ -113,8 +113,8 @@ func (k Keeper) GetMTPIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.MTPPrefix)
 }
 
-func (k Keeper) GetAllMTPS(ctx sdk.Context) []types.MTP {
-	var mtpList []types.MTP
+func (k Keeper) GetAllMTPS(ctx sdk.Context) []*types.MTP {
+	var mtpList []*types.MTP
 	iterator := k.GetMTPIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -127,7 +127,7 @@ func (k Keeper) GetAllMTPS(ctx sdk.Context) []types.MTP {
 		var mtp types.MTP
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		mtpList = append(mtpList, mtp)
+		mtpList = append(mtpList, &mtp)
 	}
 	return mtpList
 }

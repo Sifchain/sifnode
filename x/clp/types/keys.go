@@ -99,6 +99,12 @@ func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
 	}
 }
 
+func GetDefaultProviderDistributionParams() *ProviderDistributionParams {
+	return &ProviderDistributionParams{
+		DistributionPeriods: nil,
+	}
+}
+
 // GetRemovalRequestKey generates a key to store a removal request,
 // the key is in the format: lpaddress_id
 func GetRemovalRequestKey(request RemovalRequest) []byte {

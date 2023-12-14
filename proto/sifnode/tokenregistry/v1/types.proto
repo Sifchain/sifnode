@@ -4,10 +4,6 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
 
-message GenesisState {
-  Registry registry = 2;
-}
-
 message Registry { repeated RegistryEntry entries = 1; }
 
 enum Permission {

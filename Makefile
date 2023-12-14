@@ -1,10 +1,10 @@
-CHAINNET ?= betanet
+CHAINNET ?= mainnet
 BINARY ?= sifnoded
 GOPATH ?= $(shell go env GOPATH)
 GOBIN ?= $(GOPATH)/bin
 NOW = $(shell date +'%Y-%m-%d_%T')
 COMMIT := $(shell git log -1 --format='%H')
-VERSION := $(shell cat version)
+VERSION := $(shell git describe --match 'v*' --abbrev=8 --tags | sed 's/-g/-/' | sed 's/-[0-9]*-/-/')
 IMAGE_TAG ?= latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER ?= docker

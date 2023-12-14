@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
@@ -266,7 +267,14 @@ func NewSifAppWithBlacklist(
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 	bApp := baseapp.NewBaseApp(appName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
+
+	// FIXME: This adjustment enables the version command to function correctly with the existing version of Sifnode.
+	// It's intended as a short-term measure and should be eliminated following the planned overhaul of the version command.
+	if !strings.HasPrefix(version.Version, "v") {
+		version.Version = "v" + version.Version
+	}
 	bApp.SetVersion(version.Version)
+
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 	keys := sdk.NewKVStoreKeys(
 		authtypes.StoreKey,
