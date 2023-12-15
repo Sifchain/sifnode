@@ -24,9 +24,10 @@ def do_currency_test(
         solidity_json_path,
 ):
     amount = amount_in_wei(9)
+    currencyAmount = amount_in_wei(10000)
     logging.info(f"create new currency")
     new_currency = test_utilities.create_new_currency(
-        amount,
+        currencyAmount,
         new_currency_symbol,
         new_currency_symbol,
         18,

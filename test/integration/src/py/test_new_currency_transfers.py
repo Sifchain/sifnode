@@ -34,8 +34,9 @@ def test_can_create_a_new_token_and_peg_it(
     new_account_key = ("a" + get_shell_output("uuidgen").replace("-", ""))[:token_length]
     token_name = new_account_key
     amount = amount_in_wei(9)
+    currencyAmount = amount_in_wei(10000)
     new_currency = create_new_currency(
-        amount=amount,
+        amount=currencyAmount,
         symbol=new_account_key,
         token_name=token_name,
         decimals=18,
