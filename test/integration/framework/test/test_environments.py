@@ -1,4 +1,3 @@
-import contextlib
 from siftool.common import *
 from siftool import command, environments, project, sifchain, cosmos
 
@@ -13,10 +12,31 @@ def test_transfer(env):
     sifnoded.send_and_check(env.faucet, sifnoded.create_addr(), {sifchain.ROWAN: 10 ** sifchain.ROWAN_DECIMALS})
 
 
-def assert_validators_working(env, expected_monikers):
-    assert set(get_validators(env)) == expected_monikers
-    for i in range(len(env.node_info)):
-        test_transfer(env)
+def assert_validators_working(env):
+    expected_monikers = [node_info["moniker"] for node_info in env.node_info if node_info["is_validator"]]
+    assert set(get_validators(env)) == set(expected_monikers)
+    number_of_nodes = len(env.node_info)
+    for i in range(number_of_nodes):
+        # Send transactions using "keyring" profile that has all the private keys, but is directed at a particular node.
+        # Cross check balaces on all nodes.
+        sifnoded = env._client_for(i)
+        from_address = env.faucet
+        to_address = sifnoded.create_addr()  # This pollutes "client" keyring with temporary addresses, but we don't care
+        from_balance_before = sifnoded.get_balance(from_address)
+        to_balance_before = sifnoded.get_balance(to_address)
+        for j in range(number_of_nodes):
+            sifnoded_crosscheck = env._client_for(j)
+            assert cosmos.balance_equal(sifnoded_crosscheck.get_balance(from_address), from_balance_before)
+            assert cosmos.balance_equal(sifnoded_crosscheck.get_balance(to_address), to_balance_before)
+        sifnoded.send_and_check(from_address, to_address, {sifchain.ROWAN: 10 ** sifchain.ROWAN_DECIMALS})
+        at_block = sifnoded.get_current_block()
+        from_balance_after = sifnoded.get_balance(from_address)
+        to_balance_after = sifnoded.get_balance(to_address)
+        for j in range(number_of_nodes):
+            sifnoded_crosscheck = env._client_for(j)
+            sifnoded_crosscheck.wait_for_block(at_block)  # Make sure the change has propagated
+            assert cosmos.balance_equal(sifnoded_crosscheck.get_balance(from_address), from_balance_after)
+            assert cosmos.balance_equal(sifnoded_crosscheck.get_balance(to_address), to_balance_after)
 
 
 class TestSifnodedEnvironment:
@@ -32,20 +52,44 @@ class TestSifnodedEnvironment:
         prj = project.Project(self.cmd, project_dir())
         prj.pkill()
 
-    def test_environment_setup_basic(self):
+    def test_environment_setup_basic_1_validator(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
         env.add_validator()
         env.start()
-        assert_validators_working(env, set("sifnoded-{}".format(i) for i in range(1)))
+        assert_validators_working(env)
+
+    def test_environment_setup_basic_4_validators(self):
+        env = environments.SifnodedEnvironment(self.cmd, chain_id="cownet-2", sifnoded_home_root=self.sifnoded_home_root)
+        assert len(env.node_info) == 0
+        env.add_validator(moniker="ant")
+        env.add_validator(moniker="bee")
+        env.add_validator(moniker="cat")
+        env.add_validator(moniker="dog")
+        assert len(env.node_info) == 4
+        env.start()
+        assert_validators_working(env)
+
+    def test_environment_setup_mix_of_nodes_and_validators(self):
+        env = environments.SifnodedEnvironment(self.cmd, chain_id="cownet-2", sifnoded_home_root=self.sifnoded_home_root)
+        assert len(env.node_info) == 0
+        env.add_validator(moniker="ant", is_validator=True)
+        env.add_validator(moniker="bee", is_validator=False)
+        env.add_validator(moniker="cat", is_validator=True)
+        assert len(env.node_info) == 3
+        env.start()
+        assert_validators_working(env)
 
     def test_add_validator_before_and_after_start(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)
+        assert len(env.node_info) == 0
         env.add_validator()
         env.add_validator()
+        assert len(env.node_info) == 2
         env.init()
         env.start()
         env.add_validator()
-        assert_validators_working(env, set("sifnoded-{}".format(i) for i in range(3)))
+        assert len(env.node_info) == 3
+        assert_validators_working(env)
 
     def test_environment_fails_to_start_if_commission_rate_is_over_max(self):
         env = environments.SifnodedEnvironment(self.cmd, sifnoded_home_root=self.sifnoded_home_root)

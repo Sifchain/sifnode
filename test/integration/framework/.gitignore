@@ -1,4 +1,5 @@
 /venv/
 /build/
 /src/siftool/__pycache__/
+/test/__pycache__/
 /.lock
