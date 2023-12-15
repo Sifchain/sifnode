@@ -50,11 +50,6 @@ func downloadAndRunVersion(binaryPathOrURL string, skipDownload bool) (path stri
 		}
 		version = versionMatches[0]
 
-		// Remove the "v" prefix if present
-		if strings.HasPrefix(version, "v") {
-			version = strings.TrimPrefix(version, "v")
-		}
-
 		// Set the binary path based on the version
 		path = "/tmp/sifnoded-" + version
 

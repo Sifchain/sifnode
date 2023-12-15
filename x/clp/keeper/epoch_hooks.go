@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	epochstypes "github.com/Sifchain/sifnode/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,9 +27,10 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) 
 		// get reward bucket for given asset
 		rewardsBucket, found := k.GetRewardsBucket(ctx, asset.Symbol)
 		if !found {
-			ctx.Logger().Error(types.ErrRewardsBucketNotFound.Error(), "asset", asset.Symbol)
 			continue
 		}
+
+		k.Logger(ctx).Info(fmt.Sprintf("rewards bucket not found for denom: %s", asset.Symbol))
 
 		rewardShares := k.CalculateRewardShareForLiquidityProviders(ctx, assetLps)
 		rewardAmounts := k.CalculateRewardAmountForLiquidityProviders(ctx, rewardShares, rewardsBucket.Amount)

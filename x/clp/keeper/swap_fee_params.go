@@ -15,7 +15,7 @@ func (k Keeper) GetSwapFeeParams(ctx sdk.Context) types.SwapFeeParams {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.SwapFeeParamsPrefix)
 	if bz == nil {
-		return types.SwapFeeParams{DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3)} //0.003
+		return *types.GetDefaultSwapFeeParams()
 	}
 	k.cdc.MustUnmarshal(bz, &params)
 	return params

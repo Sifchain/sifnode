@@ -7,32 +7,29 @@ import (
 )
 
 func (k Keeper) InitGenesis(ctx sdk.Context, data types.GenesisState) []abci.ValidatorUpdate {
+	// Set initial Margin parameters
 	k.SetParams(ctx, data.Params)
+
+	// Set all the mtps
+	for _, mtp := range data.MtpList {
+		err := k.SetMTP(ctx, mtp)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	return []abci.ValidatorUpdate{}
 }
 
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+	// Retrieve the Margin parameters
+	params := k.GetParams(ctx)
+
+	// Retrieve all the mtps
+	mtps := k.GetAllMTPS(ctx)
+
 	return &types.GenesisState{
-		Params: &types.Params{
-			LeverageMax:                              k.GetMaxLeverageParam(ctx),
-			InterestRateMax:                          k.GetInterestRateMax(ctx),
-			InterestRateMin:                          k.GetInterestRateMin(ctx),
-			InterestRateIncrease:                     k.GetInterestRateIncrease(ctx),
-			InterestRateDecrease:                     k.GetInterestRateDecrease(ctx),
-			HealthGainFactor:                         k.GetHealthGainFactor(ctx),
-			EpochLength:                              k.GetEpochLength(ctx),
-			ForceCloseFundPercentage:                 k.GetForceCloseFundPercentage(ctx),
-			ForceCloseFundAddress:                    k.GetForceCloseFundAddress(ctx).String(),
-			IncrementalInterestPaymentFundPercentage: k.GetIncrementalInterestPaymentFundPercentage(ctx),
-			IncrementalInterestPaymentFundAddress:    k.GetIncrementalInterestPaymentFundAddress(ctx).String(),
-			PoolOpenThreshold:                        k.GetPoolOpenThreshold(ctx),
-			RemovalQueueThreshold:                    k.GetRemovalQueueThreshold(ctx),
-			MaxOpenPositions:                         k.GetMaxOpenPositions(ctx),
-			Pools:                                    k.GetEnabledPools(ctx),
-			SqModifier:                               k.GetSqModifier(ctx),
-			SafetyFactor:                             k.GetSafetyFactor(ctx),
-			RowanCollateralEnabled:                   k.IsRowanCollateralEnabled(ctx),
-		},
+		Params:  &params,
+		MtpList: mtps,
 	}
 }

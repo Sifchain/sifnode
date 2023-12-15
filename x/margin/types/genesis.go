@@ -27,5 +27,6 @@ func DefaultGenesis() *GenesisState {
 			WhitelistingEnabled:                      false,
 			RowanCollateralEnabled:                   true,
 		},
+		MtpList: []*MTP{},
 	}
 }

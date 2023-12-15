@@ -11,9 +11,19 @@ import (
 func DefaultGenesisState() *GenesisState {
 	admin := GetDefaultCLPAdmin()
 	return &GenesisState{
-		Params:            DefaultParams(),
-		AddressWhitelist:  []string{admin.String()},
-		RewardsBucketList: []RewardsBucket{},
+		Params:                        DefaultParams(),
+		AddressWhitelist:              []string{admin.String()},
+		PoolList:                      []*Pool{},
+		LiquidityProviders:            []*LiquidityProvider{},
+		RewardsBucketList:             []RewardsBucket{},
+		RewardParams:                  *GetDefaultRewardParams(),
+		PmtpParams:                    *GetDefaultPmtpParams(),
+		PmtpEpoch:                     PmtpEpoch{},
+		PmtpRateParams:                PmtpRateParams{},
+		LiquidityProtectionParams:     *GetDefaultLiquidityProtectionParams(),
+		LiquidityProtectionRateParams: LiquidityProtectionRateParams{},
+		SwapFeeParams:                 *GetDefaultSwapFeeParams(),
+		ProviderDistributionParams:    *GetDefaultProviderDistributionParams(),
 	}
 }
 

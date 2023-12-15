@@ -9,7 +9,12 @@ import (
 )
 
 func DefaultGenesis() *types.GenesisState {
-	return &types.GenesisState{}
+	return &types.GenesisState{
+		CethReceiveAccount: "",
+		PeggyTokens:        []string{},
+		Blacklist:          []string{},
+		Pause:              &types.Pause{IsPaused: false},
+	}
 }
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
@@ -29,16 +34,35 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		}
 	}
 
+	// Set blacklisted addresses
+	for _, address := range data.Blacklist {
+		keeper.SetBlacklistAddress(ctx, address)
+	}
+
+	// Set pause
+	if data.Pause != nil {
+		keeper.SetPause(ctx, data.Pause)
+	} else {
+		keeper.SetPause(ctx, &types.Pause{IsPaused: false})
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	peggyTokens := keeper.GetPeggyToken(ctx)
 	receiveAccount := keeper.GetCethReceiverAccount(ctx)
+	blacklist := keeper.GetBlacklist(ctx)
+	isPaused := keeper.IsPaused(ctx)
+
+	// create pause
+	pause := types.Pause{IsPaused: isPaused}
 
 	return &types.GenesisState{
 		PeggyTokens:        peggyTokens.Tokens,
 		CethReceiveAccount: receiveAccount.String(),
+		Blacklist:          blacklist,
+		Pause:              &pause,
 	}
 }
 

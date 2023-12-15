@@ -838,6 +838,8 @@ func TestKeeper_OpenClose(t *testing.T) {
 			ctx, app := test.CreateTestAppMargin(false)
 			marginKeeper := app.MarginKeeper
 
+			app.ClpKeeper.SetSwapFeeParams(ctx, clptypes.GetDefaultSwapFeeParams())
+
 			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 				Denom:       tt.externalAsset,
 				Decimals:    18,
@@ -1155,6 +1157,8 @@ func TestKeeper_OpenThenClose(t *testing.T) {
 	})
 	marginKeeper := app.MarginKeeper
 	msgServer := keeper.NewMsgServerImpl(marginKeeper)
+
+	app.ClpKeeper.SetSwapFeeParams(ctx, clptypes.GetDefaultSwapFeeParams())
 
 	msgOpen := types.MsgOpen{
 		Signer:           signer,
@@ -1873,6 +1877,8 @@ func TestKeeper_EC(t *testing.T) {
 			})
 			marginKeeper := app.MarginKeeper
 			msgServer := keeper.NewMsgServerImpl(marginKeeper)
+
+			app.ClpKeeper.SetSwapFeeParams(ctx, clptypes.GetDefaultSwapFeeParams())
 
 			for i, chunkItem := range testItem.chunks {
 				i := i

@@ -1,0 +1,65 @@
+syntax = "proto3";
+package sifnode.margin.v1;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/margin/types";
+
+message Params {
+    string leverage_max = 1 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string interest_rate_max = 2 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string interest_rate_min = 3 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string interest_rate_increase = 4 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string interest_rate_decrease = 5 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string health_gain_factor = 6 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    int64 epoch_length = 7;
+    repeated string pools = 8;
+    string removal_queue_threshold = 10 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    uint64 max_open_positions = 11;
+    string pool_open_threshold = 12 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string force_close_fund_percentage = 13 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string force_close_fund_address = 14;
+    string incremental_interest_payment_fund_percentage = 15 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string incremental_interest_payment_fund_address = 16;
+    string sq_modifier = 17 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    string safety_factor = 18 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+      (gogoproto.nullable) = false
+    ];
+    repeated string closed_pools = 19;
+    bool incremental_interest_payment_enabled = 20;
+    bool whitelisting_enabled = 21;
+    bool rowan_collateral_enabled = 22;
+  }

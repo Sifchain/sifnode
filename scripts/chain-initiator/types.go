@@ -7,8 +7,8 @@ import (
 	admintypes "github.com/Sifchain/sifnode/x/admin/types"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
-
-	// epochstypes "github.com/Sifchain/sifnode/x/epochs/types"
+	epochstypes "github.com/Sifchain/sifnode/x/epochs/types"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -19,8 +19,6 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-
-	// genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -30,6 +28,7 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v4/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctypes "github.com/cosmos/ibc-go/v4/modules/core/types"
+	// genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 )
 
 type Genesis struct {
@@ -68,31 +67,37 @@ type Block struct {
 }
 
 type AppState struct {
-	Admin        Admin                    `json:"admin"`
-	Auth         Auth                     `json:"auth"`
-	AuthZ        authz.GenesisState       `json:"authz"`
-	Bank         banktypes.GenesisState   `json:"bank"`
-	Capability   Capability               `json:"capability"`
-	CLP          CLP                      `json:"clp"`
-	Crisis       crisistypes.GenesisState `json:"crisis"`
-	Dispensation Dispensation             `json:"dispensation"`
-	Distribution Distribution             `json:"distribution"`
-	// Epochs        epochstypes.GenesisState   `json:"epochs"`
-	Ethbridge     struct{}                   `json:"ethbridge"`
-	Evidence      EvidenceState              `json:"evidence"`
-	Genutil       Genutil                    `json:"genutil"`
-	Gov           Gov                        `json:"gov"`
-	Ibc           Ibc                        `json:"ibc"`
-	Margin        Margin                     `json:"margin"`
-	Mint          Mint                       `json:"mint"`
-	Oracle        Oracle                     `json:"oracle"`
-	Params        interface{}                `json:"params"`
-	Slashing      Slashing                   `json:"slashing"`
-	Staking       Staking                    `json:"staking"`
-	TokenRegistry TokenRegistry              `json:"tokenregistry"`
-	Transfer      transfertypes.GenesisState `json:"transfer"`
-	Upgrade       struct{}                   `json:"upgrade"`
+	Admin         Admin                       `json:"admin"`
+	Auth          Auth                        `json:"auth"`
+	AuthZ         authz.GenesisState          `json:"authz"`
+	Bank          banktypes.GenesisState      `json:"bank"`
+	Capability    Capability                  `json:"capability"`
+	CLP           CLP                         `json:"clp"`
+	Crisis        crisistypes.GenesisState    `json:"crisis"`
+	Dispensation  Dispensation                `json:"dispensation"`
+	Distribution  Distribution                `json:"distribution"`
+	Epochs        Epochs                      `json:"epochs"`
+	Ethbridge     ethbridgetypes.GenesisState `json:"ethbridge"`
+	Evidence      EvidenceState               `json:"evidence"`
+	Genutil       Genutil                     `json:"genutil"`
+	Gov           Gov                         `json:"gov"`
+	Ibc           Ibc                         `json:"ibc"`
+	Margin        Margin                      `json:"margin"`
+	Mint          Mint                        `json:"mint"`
+	Oracle        Oracle                      `json:"oracle"`
+	Params        interface{}                 `json:"params"`
+	Slashing      Slashing                    `json:"slashing"`
+	Staking       Staking                     `json:"staking"`
+	TokenRegistry TokenRegistry               `json:"tokenregistry"`
+	Transfer      transfertypes.GenesisState  `json:"transfer"`
+	Upgrade       struct{}                    `json:"upgrade"`
 	// Include other fields as needed
+}
+
+type Epochs struct {
+	epochstypes.GenesisState
+
+	Epochs []interface{} `json:"epochs"`
 }
 
 type Genutil struct {
@@ -288,19 +293,63 @@ type ChannelGenesis struct {
 	NextChannelSequence json.Number   `json:"next_channel_sequence"`
 }
 
+type CLP struct {
+	clptypes.GenesisState
+
+	Params                        CLPParams                              `json:"params"`
+	PoolList                      []interface{}                          `json:"pool_list"`
+	LiquidityProviders            []interface{}                          `json:"liquidity_providers"`
+	RewardsBucketList             []interface{}                          `json:"rewards_bucket_list"`
+	RewardParams                  CLPRewardParams                        `json:"reward_params,omitempty"`
+	PmtpParams                    CLPPmtpParams                          `json:"pmtp_params,omitempty"`
+	PmtpEpoch                     CLPPmtpEpoch                           `json:"pmtp_epoch,omitempty"`
+	PmtpRateParams                clptypes.PmtpRateParams                `json:"pmtp_rate_params,omitempty"`
+	LiquidityProtectionParams     CLPLiquidityProtectionParams           `json:"liquidity_protection_params,omitempty"`
+	LiquidityProtectionRateParams clptypes.LiquidityProtectionRateParams `json:"liquidity_protection_rate_params,omitempty"`
+	SwapFeeParams                 clptypes.SwapFeeParams                 `json:"swap_fee_params,omitempty"`
+	ProviderDistributionParams    CLPProviderDistributionParams          `json:"provider_distribution_params,omitempty"`
+}
+
+type CLPProviderDistributionParams struct {
+	clptypes.ProviderDistributionParams
+
+	DistributionPeriods []interface{} `json:"distribution_periods"`
+}
+
 type CLPParams struct {
 	clptypes.Params
 
 	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
 }
 
-type CLP struct {
-	clptypes.GenesisState
+type CLPRewardParams struct {
+	clptypes.RewardParams
 
-	Params             CLPParams     `json:"params"`
-	PoolList           []interface{} `json:"pool_list"`
-	LiquidityProviders []interface{} `json:"liquidity_providers"`
-	RewardsBucketList  []interface{} `json:"rewards_bucket_list,omitempty"` // omitted for now
+	LiquidityRemovalLockPeriod   json.Number   `json:"liquidity_removal_lock_period"`
+	LiquidityRemovalCancelPeriod json.Number   `json:"liquidity_removal_cancel_period"`
+	RewardPeriods                []interface{} `json:"reward_periods"`
+	RewardsLockPeriod            json.Number   `json:"rewards_lock_period"`
+}
+
+type CLPPmtpParams struct {
+	clptypes.PmtpParams
+
+	PmtpPeriodEpochLength json.Number `json:"pmtp_period_epoch_length"`
+	PmtpPeriodStartBlock  json.Number `json:"pmtp_period_start_block"`
+	PmtpPeriodEndBlock    json.Number `json:"pmtp_period_end_block"`
+}
+
+type CLPPmtpEpoch struct {
+	clptypes.PmtpEpoch
+
+	EpochCounter json.Number `json:"epoch_counter"`
+	BlockCounter json.Number `json:"block_counter"`
+}
+
+type CLPLiquidityProtectionParams struct {
+	clptypes.LiquidityProtectionParams
+
+	EpochLength json.Number `json:"epoch_length"`
 }
 
 type Margin struct {

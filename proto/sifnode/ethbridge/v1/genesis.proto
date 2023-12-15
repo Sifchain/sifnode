@@ -1,0 +1,15 @@
+syntax = "proto3";
+package sifnode.ethbridge.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/ethbridge/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
+
+// GenesisState for ethbridge
+message GenesisState {
+    string ceth_receive_account = 1;
+    repeated string peggy_tokens = 2;
+    repeated string blacklist = 3;
+    Pause pause = 4;
+}

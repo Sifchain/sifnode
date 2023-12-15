@@ -3,16 +3,9 @@ package main
 import (
 	"log"
 	"os/exec"
-	"strings"
 )
 
 func submitUpgradeProposal(cmdPath, name, newVersion, upgradeHeight, homePath, keyringBackend, chainId, node, broadcastMode string) {
-	planName := newVersion
-	// Remove the "v" prefix if present
-	if strings.HasPrefix(planName, "v") {
-		planName = strings.TrimPrefix(planName, "v")
-	}
-
 	// Command and arguments
 	args := []string{
 		"tx",
@@ -20,7 +13,7 @@ func submitUpgradeProposal(cmdPath, name, newVersion, upgradeHeight, homePath, k
 		// "submit-legacy-proposal", // not available in v0.45.x
 		"submit-proposal",
 		"software-upgrade",
-		planName,
+		newVersion,
 		"--title", newVersion,
 		"--description", newVersion,
 		"--upgrade-height", upgradeHeight,

@@ -99,6 +99,18 @@ func GetDefaultLiquidityProtectionParams() *LiquidityProtectionParams {
 	}
 }
 
+func GetDefaultProviderDistributionParams() *ProviderDistributionParams {
+	return &ProviderDistributionParams{
+		DistributionPeriods: nil,
+	}
+}
+
+func GetDefaultSwapFeeParams() *SwapFeeParams {
+	return &SwapFeeParams{
+		DefaultSwapFeeRate: sdk.NewDecWithPrec(3, 3), // 0.003
+	}
+}
+
 // GetRemovalRequestKey generates a key to store a removal request,
 // the key is in the format: lpaddress_id
 func GetRemovalRequestKey(request RemovalRequest) []byte {
