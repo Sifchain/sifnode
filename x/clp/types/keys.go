@@ -27,7 +27,7 @@ const (
 	PoolThrehold        = "1000000000000000000"
 	NativeAssetDecimals = 18
 
-	MaxSymbolLength = 71
+	MaxSymbolLength = 70
 	MaxWbasis       = 10000
 )
 
