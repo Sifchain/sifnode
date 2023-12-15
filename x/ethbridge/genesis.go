@@ -9,7 +9,12 @@ import (
 )
 
 func DefaultGenesis() *types.GenesisState {
-	return &types.GenesisState{}
+	return &types.GenesisState{
+		CethReceiveAccount: "",
+		PeggyTokens:        []string{},
+		Blacklist:          []string{},
+		Pause:              &types.Pause{IsPaused: false},
+	}
 }
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
