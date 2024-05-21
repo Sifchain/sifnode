@@ -6,7 +6,7 @@ import grpc
 import re
 import toml
 import web3  # TODO Remove dependency
-from typing import Mapping, Any, Tuple, AnyStr
+from typing import Mapping, Any, Tuple
 from siftool import command, cosmos, eth
 from siftool.common import *
 
@@ -372,13 +372,13 @@ class Sifnoded:
             self._home_args()
         self.sifnoded_exec(args)
 
-    def set_genesis_oracle_admin(self, address):
+    def set_genesis_oracle_admin(self, address: Union[cosmos.AccountName, cosmos.Address]):
         self.sifnoded_exec(["set-genesis-oracle-admin", address] + self._home_args() + self._keyring_backend_args())
 
     def set_genesis_token_registry_admin(self, address):
         self.sifnoded_exec(["set-genesis-token-registry-admin", address] + self._home_args())
 
-    def set_genesis_whitelister_admin(self, address):
+    def set_genesis_whitelister_admin(self, address: Union[cosmos.AccountName, cosmos.Address]):
         self.sifnoded_exec(["set-genesis-whitelister-admin", address] + self._home_args() + self._keyring_backend_args())
 
     def set_gen_denom_whitelist(self, denom_whitelist_file):
@@ -441,7 +441,7 @@ class Sifnoded:
     # See scripts/ibc/tokenregistration for more information and examples.
     # JSON file can be generated with "sifnoded q tokenregistry generate"
     def create_tokenregistry_entry(self, symbol: str, sifchain_symbol: str, decimals: int,
-        permissions: Iterable[str] = None
+        permissions: Iterable[str] = None, external_symbol: Optional[str] = None, display_name: Optional[str] = None
     ) -> TokenRegistryParams:
         permissions = permissions if permissions is not None else ["CLP", "IBCEXPORT", "IBCIMPORT"]
         upper_symbol = symbol.upper()  # Like "USDT"
@@ -452,11 +452,11 @@ class Sifnoded:
             "path": "",
             "ibc_channel_id": "",
             "ibc_counterparty_channel_id": "",
-            "display_name": upper_symbol,
+            "display_name": display_name if display_name is not None else upper_symbol,
             "display_symbol": "",
             "network": "",
             "address": "",
-            "external_symbol": upper_symbol,
+            "external_symbol": external_symbol if external_symbol is not None else upper_symbol,
             "transfer_limit": "",
             "permissions": list(permissions),
             "unit_denom": "",
@@ -1022,6 +1022,20 @@ class Sifnoded:
     def gov_submit_software_upgrade(self, version: str, from_acct: cosmos.Address, deposit: cosmos.Balance,
         upgrade_height: int, upgrade_info: str, title: str, description: str, broadcast_mode: Optional[str] = None
     ):
+        # Example:
+        # sifnoded tx gov submit-proposal software-upgrade 1.2.0-beta \
+        #     --title "Sifchain 1.2.0-beta Upgrade" \
+        #     --description "Sifchain 1.2.0-beta Upgrade" \
+        #     --upgrade-height BLOCK_HEIGHT \
+        #     --deposit 50000000000000000000000rowan \
+        #     --from ACCOUNT \
+        #     --keyring-backend test \
+        #     --chain-id=sifchain-1 \
+        #     --node https://sifchain-rpc.polkachu.com:443 \
+        #     --broadcast-mode block \
+        #     --fees 10000000000000000000000rowan \
+        #     --gas 200000 \
+        #     --yes
         args = ["tx", "gov", "submit-proposal", "software-upgrade", version, "--from", from_acct, "--deposit",
             cosmos.balance_format(deposit), "--upgrade-height", str(upgrade_height), "--upgrade-info", upgrade_info,
             "--title", title, "--description", description] + self._home_args() +  self._keyring_backend_args() + \
@@ -1092,7 +1106,7 @@ class Sifnoded:
         log.debug("Result for {}: {} bytes".format(url, len(http_result_payload)))
         return json.loads(http_result_payload.decode("UTF-8"))
 
-    def wait_for_last_transaction_to_be_mined(self, count: int = 1, disable_log: bool = True, timeout: int = 90):
+    def wait_for_last_transaction_to_be_mined(self, count: int = 1, timeout: int = 90):
         log.debug("Waiting for last sifnode transaction to be mined...")
         start_time = time.time()
         initial_block = self.get_current_block()

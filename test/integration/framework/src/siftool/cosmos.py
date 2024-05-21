@@ -8,6 +8,7 @@ LegacyBalance = List[List[Union[int, str]]]  # e.g. [[3, "rowan"], [2, "ibc/xxxx
 Balance = Mapping[str, int]
 CompatBalance = Union[LegacyBalance, Balance]
 Address = str
+AccountName = str
 Bank = Mapping[Address, Balance]
 BechAddress = str
 KeyName = str  # Name of key in the keyring
@@ -132,8 +133,18 @@ def transfer(cmd, channel, address, amount, from_addr, chain_id, node, gas_price
     args = [akash_binary, "tx", "ibc-transfer", "transfer", "transfer", channel,
         address, amount, "--from", from_addr, "--keyring-backend", keyring_backend,
         "--chain-id", chain_id, "--node", node, "-y", "--gas-prices", gas_prices,
-        "--gas", gas, "--packet-timeout-timestam[", str(packet_timeout_timestamp)]
+        "--gas", gas, "--packet-timeout-timestamp", str(packet_timeout_timestamp)]
     res = cmd.execst(args)
     return res
 
 # </editor-fold>
+
+
+# Example: "channel-141", "uosmo" -> "ibc/14F9BC3E44B8A9C1BE1FB08980FAB87034C9905EF17CF2F5008FC085218811CC"
+# The channel_id is for the side that is receiving the denom (not the counterparty).
+# See https://tutorials.cosmos.network/tutorials/6-ibc-dev/
+def derive_ibc_denom_hash(channel: str, denom: str) -> str:
+    port = "transfer"  # Seems to be a constant for IBC token transfers
+    s = "{}/{}/{}".format(port, channel, denom)
+    import hashlib
+    return "ibc/{}".format(hashlib.sha256(s.encode("UTF-8")).digest().hex().upper())
