@@ -57,6 +57,7 @@ func (k Keeper) EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool) {
 func (k Keeper) EmitFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(paymentType,
 		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("payment_amount", takeAmount.String()),
 		sdk.NewAttribute("payment_asset", takeAsset),
 	))
