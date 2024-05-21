@@ -3,6 +3,7 @@ package ante
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authz "github.com/cosmos/cosmos-sdk/x/authz"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -56,6 +57,18 @@ func (vcd ValidateMinCommissionDecorator) getValidator(ctx sdk.Context, bech32Va
 
 func (vcd ValidateMinCommissionDecorator) validateMsg(ctx sdk.Context, msg sdk.Msg) error {
 	switch msg := msg.(type) {
+	case *authz.MsgExec:
+		msgs, err := msg.GetMessages()
+		if err != nil {
+			return err
+		}
+
+		for _, msg := range msgs {
+			err := vcd.validateMsg(ctx, msg)
+			if err != nil {
+				return err
+			}
+		}
 	case *stakingtypes.MsgCreateValidator:
 		if msg.Commission.Rate.LT(MinCommission) {
 			return sdkerrors.Wrapf(
