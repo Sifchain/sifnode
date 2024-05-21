@@ -1,22 +1,25 @@
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-etherscan"
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat";
 
-// require('solidity-coverage');
-// require("hardhat-gas-reporter");
-// require('hardhat-contract-sizer');
+import "solidity-coverage";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
 
 const envconfig = dotenv.config();
 
+const forkingEnabled = Boolean(process.env["USE_FORKING"] ?? false)
 const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com";
 const ropstenUrl = process.env["ROPSTEN_URL"] ?? "https://example.com";
 
 const activePrivateKey = process.env["ACTIVE_PRIVATE_KEY"] ?? "0xabcd";
 const keyList = activePrivateKey.indexOf(",") ? activePrivateKey.split(",") : [activePrivateKey];
+const accounts = activePrivateKey === "0xabcd" ? [] : keyList
 
 const config: HardhatUserConfig = {
   networks: {
@@ -24,18 +27,19 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: false,
       chainId: 1,
       forking: {
+        enabled: forkingEnabled,
         url: mainnetUrl,
         blockNumber: 14258314,
       },
     },
     ropsten: {
       url: ropstenUrl,
-      accounts: keyList,
+      accounts: accounts,
       gas: 2000000,
     },
     mainnet: {
       url: mainnetUrl,
-      accounts: keyList,
+      accounts: accounts,
       gas: 2000000,
     },
   },
@@ -43,6 +47,15 @@ const config: HardhatUserConfig = {
     compilers: [
       {
         version: "0.8.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.8.17",
         settings: {
           optimizer: {
             enabled: true,
