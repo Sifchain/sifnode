@@ -1,8 +1,10 @@
 package keeper_test
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -2142,4 +2144,33 @@ func TestKeeper_AddUpExistingMTP(t *testing.T) {
 	fmt.Println(openExpectedMTP)
 	fmt.Println(openMTP)
 	require.Equal(t, openExpectedMTP, openMTP)
+}
+
+type SimulationMainRow struct {
+	Block    string
+	LPNumber string
+	RRunning string
+
+	NativeBalance       string
+	ExternalBalance     string
+	NativeCustody       string
+	ExternalCustody     string
+	NativeLiabilities   string
+	ExternalLiabilities string
+	NativePrice         string
+}
+
+func TestKeeper_Simulation1Main(t *testing.T) {
+	f, err := os.Open("../test/mtp Simulation Cases - 1 - Main.csv")
+	require.NoError(t, err)
+
+	defer f.Close()
+
+	csvReader := csv.NewReader(f)
+	data, err := csvReader.ReadAll()
+	require.NoError(t, err)
+
+	for _, line := range data[8:] {
+		require.Equal(t, "0", line[0])
+	}
 }
