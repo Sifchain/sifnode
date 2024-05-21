@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -16,14 +17,10 @@ func TestQueryEntries(t *testing.T) {
 		Denom:    "rowan",
 		Decimals: 18,
 	})
-	expectedRegistry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	querier := keeper.NewLegacyQuerier(app.TokenRegistryKeeper)
 	bz, err := app.AppCodec().MarshalJSON(&types.QueryEntriesRequest{})
 	require.NoError(t, err)
 	resBz, err := querier(ctx, []string{types.QueryEntries}, abci.RequestQuery{Data: bz})
-	require.NoError(t, err)
-	res := types.QueryEntriesResponse{}
-	app.AppCodec().MustUnmarshalJSON(resBz, &res)
-	require.Len(t, res.Registry.Entries, 1)
-	require.Equal(t, &expectedRegistry, res.Registry)
+	require.Nil(t, resBz)
+	require.ErrorIs(t, err, sdkerrors.Wrap(sdkerrors.ErrNotSupported, "Token Registry Legacy Querier No Longer Available"))
 }

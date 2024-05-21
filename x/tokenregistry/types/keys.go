@@ -1,3 +1,3 @@
 package types
 
-var WhitelistStorePrefix = []byte{0x01}
+var TokenDenomPrefix = []byte{0x01}
