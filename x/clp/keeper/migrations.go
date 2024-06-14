@@ -114,3 +114,9 @@ func (m Migrator) MigrateToVer5(ctx sdk.Context) error {
 
 	return nil
 }
+
+func (m Migrator) MigrateToVer6(ctx sdk.Context) error {
+	m.keeper.SetProviderDistributionParams(ctx, types.GetDefaultProviderDistributionParams())
+
+	return nil
+}

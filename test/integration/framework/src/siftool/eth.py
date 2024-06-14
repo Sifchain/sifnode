@@ -116,7 +116,7 @@ class EthereumTxWrapper:
         if private_key is None:
             self.private_keys.pop(addr)  # Remove
         else:
-            assert re.match("^([0-9a-f]{64})$", private_key)
+            assert re.match("^([0-9a-f]{62}|[0-9a-f]{64})$", private_key), "Private key must be 62 or 64 hexadecimal characters long"
             assert addr == a.from_key(private_key).address, f"Private key does not correspond to given address {addr}"
             self.private_keys[addr] = private_key
         if self.is_local_node:

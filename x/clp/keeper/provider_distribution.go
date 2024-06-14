@@ -13,28 +13,33 @@ type LpRowanMap map[string]sdk.Uint
 type LpPoolMap map[string][]LPPool
 
 func (k Keeper) ProviderDistributionPolicyRun(ctx sdk.Context) {
-	a, b, c := k.doProviderDistribution(ctx)
-	k.TransferProviderDistribution(ctx, a, b, c)
+	a, b, c, d := k.doProviderDistribution(ctx)
+	k.TransferProviderDistribution(ctx, a, b, c, d)
 }
 
-func (k Keeper) doProviderDistribution(ctx sdk.Context) (PoolRowanMap, LpRowanMap, LpPoolMap) {
+func (k Keeper) doProviderDistribution(ctx sdk.Context) (PoolRowanMap, LpRowanMap, LpPoolMap, bool) {
 	blockHeight := ctx.BlockHeight()
 	params := k.GetProviderDistributionParams(ctx)
 	if params == nil {
-		return make(PoolRowanMap), make(LpRowanMap), make(LpPoolMap)
+		return make(PoolRowanMap), make(LpRowanMap), make(LpPoolMap), false
 	}
 
 	period := FindProviderDistributionPeriod(blockHeight, params.DistributionPeriods)
 	if period == nil {
-		return make(PoolRowanMap), make(LpRowanMap), make(LpPoolMap)
+		return make(PoolRowanMap), make(LpRowanMap), make(LpPoolMap), false
 	}
 
 	allPools := k.GetPools(ctx)
-	return k.CollectProviderDistributions(ctx, allPools, period.DistributionPeriodBlockRate)
+	poolRowanMap, lpRowanMap, lpPoolMap := k.CollectProviderDistributions(ctx, allPools, period.DistributionPeriodBlockRate)
+	return poolRowanMap, lpRowanMap, lpPoolMap, period.DistributionPeriodBurn
 }
 
-func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap) {
-	k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd/liquidity_provider_payout_error", "lppd/distribution")
+func (k Keeper) TransferProviderDistribution(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, burnRowan bool) {
+	if burnRowan {
+		k.TransferWheatToLiquidityProviders(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd/liquidity_provider_payout_error", "lppd/distribution")
+	} else {
+		k.TransferProviderDistributionGeneric(ctx, poolRowanMap, lpRowanMap, lpPoolMap, "lppd/liquidity_provider_payout_error", "lppd/distribution")
+	}
 
 	for pool, sub := range poolRowanMap {
 		// will never fail
@@ -58,6 +63,51 @@ func (k Keeper) TransferProviderDistributionGeneric(ctx sdk.Context, poolRowanMa
 		} else {
 			fireDistributeSuccessEvent(ctx, lpAddress, lpPoolMap[lpAddress], totalRowan, successEventType)
 		}
+	}
+}
+
+// transfer wheat to liquidity providers
+func (k Keeper) TransferWheatToLiquidityProviders(ctx sdk.Context, poolRowanMap PoolRowanMap, lpRowanMap LpRowanMap, lpPoolMap LpPoolMap, typeStr string, successEventType string) {
+	for lpAddress, totalRowan := range lpRowanMap {
+		addr, _ := sdk.AccAddressFromBech32(lpAddress) // We know this can't fail as we previously filtered out invalid strings
+		wheatCoin := sdk.NewCoin(types.WheatSymbol, sdk.NewIntFromBigInt(totalRowan.BigInt()))
+
+		// first mint equivalent amount of rowan in wheat within the module account
+		if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(wheatCoin)); err != nil {
+			fireLPPayoutErrorEvent(ctx, addr, typeStr, err)
+
+			for _, lpPool := range lpPoolMap[lpAddress] {
+				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
+			}
+
+			continue
+		}
+
+		// second send wheat amount to the liquidity provider
+		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(wheatCoin)); err != nil {
+			fireLPPayoutErrorEvent(ctx, addr, typeStr, err)
+
+			for _, lpPool := range lpPoolMap[lpAddress] {
+				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
+			}
+
+			continue
+		}
+
+		rowanCoin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(totalRowan.BigInt()))
+
+		// third burn equivalent amount of rowan in the module account
+		if err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(rowanCoin)); err != nil {
+			fireLPPayoutErrorEvent(ctx, addr, typeStr, err)
+
+			for _, lpPool := range lpPoolMap[lpAddress] {
+				poolRowanMap[lpPool.Pool] = poolRowanMap[lpPool.Pool].Sub(lpPool.Amount)
+			}
+
+			continue
+		}
+
+		fireDistributeSuccessEvent(ctx, lpAddress, lpPoolMap[lpAddress], totalRowan, successEventType)
 	}
 }
 
@@ -100,7 +150,7 @@ func fireLPPayoutErrorEvent(ctx sdk.Context, address sdk.AccAddress, typeStr str
 	ctx.EventManager().EmitEvents(sdk.Events{failureEvent})
 }
 
-//nolint
+// nolint
 func fireDistributionEvent(ctx sdk.Context, amount sdk.Uint, to sdk.Address) {
 	coin := sdk.NewCoin(types.NativeSymbol, sdk.NewIntFromBigInt(amount.BigInt()))
 	distribtionEvent := sdk.NewEvent(

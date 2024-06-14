@@ -150,6 +150,10 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	if err != nil {
 		panic(err)
 	}
+	err = cfg.RegisterMigration(types.ModuleName, 5, m.MigrateToVer6)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // InitGenesis performs genesis initialization for the clp module. It returns
@@ -179,4 +183,4 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	return EndBlocker(ctx, am.keeper)
 }
 
-func (AppModule) ConsensusVersion() uint64 { return 5 }
+func (AppModule) ConsensusVersion() uint64 { return 6 }

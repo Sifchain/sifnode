@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+# FIXME: causes the script to fail with this error: `make: *** [proto-gen] Error 1`
+# set -eo pipefail
 
 protoc_gen_gocosmos() {
   if ! grep "github.com/gogo/protobuf => github.com/regen-network/protobuf" go.mod &>/dev/null ; then

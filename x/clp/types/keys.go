@@ -24,6 +24,7 @@ const (
 	QuerierRoute = ModuleName
 
 	NativeSymbol        = "rowan"
+	WheatSymbol         = "wheat"
 	PoolThrehold        = "1000000000000000000"
 	NativeAssetDecimals = 18
 

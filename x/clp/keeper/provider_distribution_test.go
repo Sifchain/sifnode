@@ -111,7 +111,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	rowanToDistribute2 := keeper.CollectProviderDistribution(ctx, &pool2, poolDepthRowan, blockRate, sdk.NewUint(totalPoolUnits), lpsFiltered, lpRowanMap, lpPoolMap)
 	poolRowanMap[&pool2] = rowanToDistribute2
 
-	app.ClpKeeper.TransferProviderDistribution(ctx, poolRowanMap, lpRowanMap, lpPoolMap)
+	app.ClpKeeper.TransferProviderDistribution(ctx, poolRowanMap, lpRowanMap, lpPoolMap, false)
 
 	// pool empty after all LPs got paid
 	poolStored, _ := app.ClpKeeper.GetPool(ctx, assetStr)
@@ -120,7 +120,7 @@ func TestKeeper_CollectProviderDistributionAndEvents(t *testing.T) {
 	require.Subset(t, ctx.EventManager().Events(), createDistributeEvent(lps[len(lps)-1].LiquidityProviderAddress))
 }
 
-//nolint
+// nolint
 func createDistributeEvent(address string) []sdk.Event {
 	return []sdk.Event{sdk.NewEvent("lppd/distribution",
 		sdk.NewAttribute("recipient", address),
