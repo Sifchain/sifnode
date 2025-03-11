@@ -42,8 +42,7 @@ func TestIsBlacklisted(t *testing.T) {
 	adminAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	for _, tc := range tt {
-		tc := tc
-		app, ctx := test.CreateTestApp(false)
+				app, ctx := test.CreateTestApp(false)
 		admin := admintypes.AdminAccount{
 			AdminType:    admintypes.AdminType_ETHBRIDGE,
 			AdminAddress: adminAddress.String(),
@@ -106,8 +105,7 @@ func TestSetBlacklist(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range tt {
-		tc := tc
-		app, ctx := test.CreateTestApp(false)
+				app, ctx := test.CreateTestApp(false)
 		admin := admintypes.AdminAccount{
 			AdminType:    admintypes.AdminType_ETHBRIDGE,
 			AdminAddress: adminAddress.String(),

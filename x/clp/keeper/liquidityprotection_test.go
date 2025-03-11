@@ -43,8 +43,7 @@ func TestKeeper_GetNativePrice(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 
 				if tc.createPool {
@@ -110,8 +109,7 @@ func TestKeeper_IsBlockedByLiquidityProtection(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			app, ctx := test.CreateTestApp(false)
 
 			liquidityProtectionRateParams := app.ClpKeeper.GetLiquidityProtectionRateParams(ctx)
@@ -186,8 +184,7 @@ func TestKeeper_MustUpdateLiquidityProtectionThreshold(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			app, ctx := test.CreateTestApp(false)
 
 			liquidityProtectionParams := app.ClpKeeper.GetLiquidityProtectionParams(ctx)

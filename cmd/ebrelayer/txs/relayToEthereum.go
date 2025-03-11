@@ -168,7 +168,8 @@ func InitRelayConfig(
 	sugaredLogger.Infow("final gas price after adjustment.",
 		"finalGasPrice", gasPrice)
 
-	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
+	// Using SetUint64 to avoid potential integer overflow when converting uint64 to int64
+	transactOptsAuth.Nonce = new(big.Int).SetUint64(nonce)
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice

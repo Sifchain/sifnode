@@ -22,14 +22,37 @@ import (
 func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntry *tokenregistrytypes.RegistryEntry,
 	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
-	po := uint64(sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals)
+	var po uint64
+	if sendRegistryEntry.Decimals >= sendAsRegistryEntry.Decimals {
+		po = uint64(sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals) // nolint: gosec
+	} else {
+		// If sendRegistryEntry.Decimals < sendAsRegistryEntry.Decimals, we'd have a negative value
+		// which would cause overflow when converting to uint64.
+		// In this case, we'll use IncreasePrecision instead of ReducePrecision below
+		po = uint64(sendAsRegistryEntry.Decimals - sendRegistryEntry.Decimals) // nolint: gosec
+	}
+	
 	decAmount := sdk.NewDecFromInt(msg.Token.Amount)
-	convAmountDec := ReducePrecision(decAmount, po)
+	var convAmountDec sdk.Dec
+	
+	if sendRegistryEntry.Decimals >= sendAsRegistryEntry.Decimals {
+		convAmountDec = ReducePrecision(decAmount, po)
+	} else {
+		convAmountDec = IncreasePrecision(decAmount, po)
+	}
+	
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and Sifchain tokens with corresponding denoms and amounts
 	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterpartyDenom, convAmount)
-	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
-	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
+	
+	// adjust precision to ensure amount deducted from address is the same that gets sent
+	var tokenAmountDec sdk.Dec
+	if sendRegistryEntry.Decimals >= sendAsRegistryEntry.Decimals {
+		tokenAmountDec = IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
+	} else {
+		tokenAmountDec = ReducePrecision(sdk.NewDecFromInt(convAmount), po)
+	}
+	
 	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
 	token := sdk.NewCoin(msg.Token.Denom, tokenAmount)
 	return token, convToken
@@ -132,7 +155,7 @@ func ExecConvForIncomingCoins(
 	convAmount := amount
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals) // nolint: gosec
 		// This is the reduced precision xToken coming in , so we know for sure conversion to uint64 will not cause problems
 		convAmount, err = ConvertIncomingCoins(data.Amount, diff)
 		if err != nil {

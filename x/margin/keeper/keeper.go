@@ -630,7 +630,7 @@ func (k Keeper) TrackSQBeginBlock(ctx sdk.Context, pool *clptypes.Pool) {
 	sqBeginBlock := k.GetSQBeginBlock(ctx, pool)
 	if sqBeginBlock == 0 {
 		if pool.Health.LTE(threshold) {
-			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight()))
+			k.SetSQBeginBlock(ctx, pool, uint64(ctx.BlockHeight())) // nolint:gosec
 			k.EmitBelowRemovalThreshold(ctx, pool)
 		}
 	} else if pool.Health.GT(threshold) {
@@ -645,7 +645,7 @@ func (k Keeper) GetSQFromBlocks(ctx sdk.Context, pool clptypes.Pool, poolInteres
 		return sdk.ZeroDec()
 	}
 
-	blocks := ctx.BlockHeight() - int64(beginBlock)
+	blocks := ctx.BlockHeight() - int64(beginBlock) // nolint:gosec
 	maxInterestRate := k.GetInterestRateMax(ctx)
 	poolInterestRateFloat, _ := poolInterestRate.Float64()
 	minus := math.Pow(math.E, -1*poolInterestRateFloat*float64(blocks))

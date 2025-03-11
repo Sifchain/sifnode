@@ -298,8 +298,7 @@ func (s *IntegrationTestSuite) TestB_OpenLongMTP() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
+		
 		_, err := s.network.WaitForHeight(tc.height)
 		s.Require().NoError(err)
 

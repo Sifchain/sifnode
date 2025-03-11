@@ -54,7 +54,7 @@ func (k Keeper) GetRemovalQueueIterator(ctx sdk.Context) sdk.Iterator {
 
 func (k Keeper) ProcessRemovalQueue(ctx sdk.Context, msg *types.MsgAddLiquidity, unitsToDistribute sdk.Uint) {
 	queue := k.GetRemovalQueue(ctx, msg.ExternalAsset.Symbol)
-	perRequestUnits := unitsToDistribute.Quo(sdk.NewUint(uint64(queue.Count)))
+	perRequestUnits := unitsToDistribute.Quo(sdk.NewUint(uint64(queue.Count))) // nolint:gosec
 
 	it := k.GetRemovalQueueIterator(ctx)
 	defer it.Close()

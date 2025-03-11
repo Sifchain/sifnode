@@ -207,8 +207,7 @@ func TestQuerier_GetPoolShareEstimate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				trGs := &tokenregistrytypes.GenesisState{
 					Registry: &tokenregistrytypes.Registry{
@@ -340,7 +339,7 @@ func TestRewardsBucketQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := querier.GetRewardsBucketAll(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := querier.GetRewardsBucketAll(wctx, request(nil, uint64(i), uint64(step), false)) // nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.RewardsBucket), step)
 			require.Subset(t,
@@ -353,7 +352,7 @@ func TestRewardsBucketQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(msgs); i += step {
-			resp, err := querier.GetRewardsBucketAll(wctx, request(next, 0, uint64(step), false))
+			resp, err := querier.GetRewardsBucketAll(wctx, request(next, 0, uint64(step), false)) // nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.RewardsBucket), step)
 			require.Subset(t,
@@ -366,7 +365,7 @@ func TestRewardsBucketQueryPaginated(t *testing.T) {
 	t.Run("Total", func(t *testing.T) {
 		resp, err := querier.GetRewardsBucketAll(wctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
-		require.Equal(t, len(msgs), int(resp.Pagination.Total))
+		require.Equal(t, len(msgs), int(resp.Pagination.Total)) // nolint:gosec
 		require.ElementsMatch(t,
 			nullify.Fill(msgs),
 			nullify.Fill(resp.RewardsBucket),

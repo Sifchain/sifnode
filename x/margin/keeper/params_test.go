@@ -79,8 +79,7 @@ func TestKeeper_ParamGetter(t *testing.T) {
 	}
 
 	for _, tt := range paramGetterTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			got := tt.method(ctx)
 
 			require.Equal(t, got, tt.want)

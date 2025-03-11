@@ -46,9 +46,19 @@ func (k Keeper) PolicyCalculations(ctx sdk.Context) sdk.Dec {
 	rateParams := k.GetPmtpRateParams(ctx)
 	pmtpPeriodBlockRate := rateParams.PmtpPeriodBlockRate
 	pmtpInterPolicyRate := rateParams.PmtpInterPolicyRate
-	// compute running rate
-	pmtpCurrentRunningRate := (sdk.NewDec(1).Add(pmtpPeriodBlockRate)).Power(uint64(currentHeight - pmtpPeriodStartBlock + 1)).Sub(sdk.NewDec(1))
+	
+	// Calculate power value safely without unsafe int64->uint64 conversion
+	var powerValue uint64 = 1 // Default to 1
+	if currentHeight >= pmtpPeriodStartBlock {
+		difference := currentHeight - pmtpPeriodStartBlock + 1
+		// Safely convert the difference to uint64 only when we know it's non-negative
+		powerValue = uint64(difference)  // nolint: gosec
+	}
+	
+	// compute running rate using the safe power value
+	pmtpCurrentRunningRate := (sdk.NewDec(1).Add(pmtpPeriodBlockRate)).Power(powerValue).Sub(sdk.NewDec(1))
 	pmtpCurrentRunningRate = pmtpCurrentRunningRate.Add(pmtpInterPolicyRate)
+	
 	// set running rate
 	k.SetPmtpCurrentRunningRate(ctx, pmtpCurrentRunningRate)
 	return pmtpCurrentRunningRate

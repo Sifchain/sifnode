@@ -27,7 +27,7 @@ linters:
     - nakedret
     - prealloc
     # - scopelint
-    - exportloopref
+    - copyloopvar
     - staticcheck
     # WARN [runner] The linter 'structcheck' is deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
     # - structcheck

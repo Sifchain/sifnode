@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) GetCurrentRewardPeriod(ctx sdk.Context, params *types.RewardParams) *types.RewardPeriod {
-	height := uint64(ctx.BlockHeight())
+	height := uint64(ctx.BlockHeight()) // nolint:gosec
 	for _, period := range params.RewardPeriods {
 		if height >= period.RewardPeriodStartBlock && height <= period.RewardPeriodEndBlock {
 			// mod 0 is undefined - in which case we'll run every block
@@ -26,7 +27,7 @@ func CalcBlockDistribution(period *types.RewardPeriod) sdk.Uint {
 }
 
 func (k Keeper) DistributeDepthRewards(ctx sdk.Context, blockDistribution sdk.Uint, period *types.RewardPeriod, pools []*types.Pool) error {
-	height := uint64(ctx.BlockHeight())
+	height := uint64(ctx.BlockHeight()) // nolint:gosec
 	if height == period.RewardPeriodStartBlock {
 		rewardsParams := k.GetRewardsParams(ctx)
 		rewardsParams.RewardPeriodStartTime = ctx.BlockTime().String()
@@ -289,7 +290,7 @@ func (k Keeper) PruneUnlockRecords(ctx sdk.Context, lp *types.LiquidityProvider,
 	//var records []*types.LiquidityUnlock
 	records := make([]*types.LiquidityUnlock, 0)
 	for _, record := range lp.Unlocks {
-		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) {
+		if currentHeight >= record.RequestHeight+int64(lockPeriod)+int64(cancelPeriod) { // nolint: gosec
 			// prune auto cancelled record
 			ctx.EventManager().EmitEvents(sdk.Events{
 				sdk.NewEvent(

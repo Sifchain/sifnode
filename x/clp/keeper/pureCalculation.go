@@ -66,7 +66,7 @@ func IsAnyZero(inputs []sdk.Uint) bool {
 }
 
 func Int64ToUint8Safe(x int64) (uint8, error) {
-	trial := uint8(x)
+	trial := uint8(x) // nolint:gosec
 	if int64(trial) != x {
 		return 0, types.ErrTypeCast
 	}

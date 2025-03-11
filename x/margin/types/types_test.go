@@ -50,8 +50,7 @@ func TestTypes_MtpValidate(t *testing.T) {
 		},
 	}
 	for _, tt := range validateTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			got := tt.mtp.Validate()
 
 			if tt.errString != nil {

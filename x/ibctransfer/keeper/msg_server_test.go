@@ -136,8 +136,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 		},
 	}
 	for _, tc := range tt {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			tc.setupMsgServerCalls()
 			tc.setupBankKeeperCalls()
 			srv := keeper.NewMsgServerImpl(tc.msgSrv, tc.bankKeeper, app.TokenRegistryKeeper)

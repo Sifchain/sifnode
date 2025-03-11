@@ -70,7 +70,7 @@ func (k msgServer) Open(goCtx context.Context, msg *types.MsgOpen) (*types.MsgOp
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventOpen,
-		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("id", strconv.FormatUint(mtp.Id, 10)),
 		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
@@ -109,7 +109,7 @@ func (k msgServer) Close(goCtx context.Context, msg *types.MsgClose) (*types.Msg
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventClose,
-		sdk.NewAttribute("id", strconv.FormatInt(int64(closedMtp.Id), 10)),
+		sdk.NewAttribute("id", strconv.FormatUint(closedMtp.Id, 10)),
 		sdk.NewAttribute("position", closedMtp.Position.String()),
 		sdk.NewAttribute("address", closedMtp.Address),
 		sdk.NewAttribute("collateral_asset", closedMtp.CollateralAsset),

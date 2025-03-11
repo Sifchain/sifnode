@@ -68,11 +68,11 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 	pools, lpList := test.GeneratePoolsAndLPs(clpKeeper, ctx, tokens)
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
-	assetList, pageRes, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: uint64(queryLimit)})
+	assetList, pageRes, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: uint64(queryLimit)}) // nolint: gosec
 	require.NoError(t, err)
 	require.Len(t, assetList, queryLimit)
 	require.NotNil(t, pageRes.NextKey)
-	assetList, pageRes, err = clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Key: pageRes.NextKey, Limit: uint64(queryLimit)})
+	assetList, pageRes, err = clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Key: pageRes.NextKey, Limit: uint64(queryLimit)}) // nolint: gosec
 	require.NoError(t, err)
 	require.Len(t, assetList, len(tokens)-queryLimit)
 	require.Nil(t, pageRes.NextKey)
@@ -104,8 +104,8 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 		require.Contains(t, lpList, *lpData.LiquidityProvider)
 		require.Equal(t, lpList[0].LiquidityProviderAddress, lpData.LiquidityProvider.LiquidityProviderAddress)
 		require.Equal(t, assetList[i], lpData.LiquidityProvider.Asset)
-		require.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
-		require.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
+		require.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance) // nolint: gosec
+		require.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance) // nolint: gosec
 	}
 }
 
@@ -121,7 +121,7 @@ func TestKeeper_GetRewardsEligibleLiquidityProviders(t *testing.T) {
 		if (i % 2) == 0 {
 			continue
 		}
-		lpList[i].LastUpdatedBlock = ctx.BlockHeight() - int64(clpKeeper.GetRewardsParams(ctx).RewardsLockPeriod) - 1
+		lpList[i].LastUpdatedBlock = ctx.BlockHeight() - int64(clpKeeper.GetRewardsParams(ctx).RewardsLockPeriod) - 1 // nolint:gosec
 		clpKeeper.SetLiquidityProvider(ctx, &lpList[i])
 	}
 	// get rewards eligible lps

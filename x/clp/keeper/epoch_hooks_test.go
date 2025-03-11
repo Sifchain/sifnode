@@ -43,7 +43,7 @@ func TestAfterEpochEnd_DistributeToLPWallets(t *testing.T) {
 	// Create a liquidity provider
 	lpAddress, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 	require.NoError(t, err)
-	lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddress, ctx.BlockHeight()-int64(rewardsParams.RewardsLockPeriod)-1)
+	lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddress, ctx.BlockHeight()-int64(rewardsParams.RewardsLockPeriod)-1) // nolint:gosec
 	clpKeeper.SetLiquidityProvider(ctx, &lp)
 
 	// check account balance
@@ -122,7 +122,7 @@ func TestAfterEpochEnd_AddToLiquidityPool(t *testing.T) {
 	}, lp)
 
 	// set last updated block to be before the rewards lock period
-	lp.LastUpdatedBlock = ctx.BlockHeight() - int64(rewardsParams.RewardsLockPeriod) - 1
+	lp.LastUpdatedBlock = ctx.BlockHeight() - int64(rewardsParams.RewardsLockPeriod) - 1 // nolint:gosec
 	clpKeeper.SetLiquidityProvider(ctx, &lp)
 
 	lps, err := clpKeeper.GetAllLiquidityProviders(ctx)
@@ -266,7 +266,7 @@ func TestAfterEpochEnd_AddToLiquidityPoolWithMultipleLiquidityProviders(t *testi
 	lp2 := *lp2ptr
 
 	// set last updated block to be before the rewards lock period
-	lp2.LastUpdatedBlock = ctx.BlockHeight() - int64(rewardsParams.RewardsLockPeriod) - 1
+	lp2.LastUpdatedBlock = ctx.BlockHeight() - int64(rewardsParams.RewardsLockPeriod) - 1 // nolint:gosec
 	clpKeeper.SetLiquidityProvider(ctx, &lp2)
 
 	lps, err := clpKeeper.GetAllLiquidityProviders(ctx)

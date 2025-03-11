@@ -58,8 +58,7 @@ func TestMsgServer_AdminCloseAll(t *testing.T) {
 		},
 	}
 	for _, tt := range table {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			asset := clptypes.Asset{Symbol: tt.poolAsset}
 
 			ctx, app := test.CreateTestAppMarginFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {

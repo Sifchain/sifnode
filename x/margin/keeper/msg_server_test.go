@@ -138,8 +138,7 @@ func TestKeeper_Open(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppMargin(false)
 			marginKeeper := app.MarginKeeper
 
@@ -358,8 +357,7 @@ func TestKeeper_Close(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppMargin(false)
 			marginKeeper := app.MarginKeeper
 
@@ -649,8 +647,7 @@ func TestKeeper_ForceClose(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			asset := clptypes.Asset{Symbol: tt.poolAsset}
 
 			ctx, app := test.CreateTestAppMarginFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
@@ -833,8 +830,7 @@ func TestKeeper_OpenClose(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app := test.CreateTestAppMargin(false)
 			marginKeeper := app.MarginKeeper
 
@@ -1761,12 +1757,9 @@ func TestKeeper_EC(t *testing.T) {
 	nativeAsset := clptypes.NativeSymbol
 
 	for _, ec := range table {
-		ec := ec
 		asset := clptypes.Asset{Symbol: ec.externalAsset}
 
 		for _, testItem := range ec.tests {
-			testItem := testItem
-
 			ctx, app := test.CreateTestAppMarginFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 				gs2 := &tokenregistrytypes.GenesisState{
 					Registry: &tokenregistrytypes.Registry{
@@ -1881,8 +1874,6 @@ func TestKeeper_EC(t *testing.T) {
 			app.ClpKeeper.SetSwapFeeParams(ctx, clptypes.GetDefaultSwapFeeParams())
 
 			for i, chunkItem := range testItem.chunks {
-				i := i
-				chunkItem := chunkItem
 				name := fmt.Sprintf("%v, X_A=%v, Y_A=%v, delta x=%v%%", ec.name, testItem.X_A, testItem.Y_A, chunkItem.chunk)
 				t.Run(name, func(t *testing.T) {
 					msgOpen := types.MsgOpen{
@@ -1895,7 +1886,7 @@ func TestKeeper_EC(t *testing.T) {
 					}
 					msgClose := types.MsgClose{
 						Signer: signer,
-						Id:     uint64(i + 1),
+						Id:     uint64(i + 1), // nolint:gosec
 					}
 
 					marginKeeper.WhitelistAddress(ctx, msgOpen.Signer)
@@ -1929,9 +1920,9 @@ func TestKeeper_EC(t *testing.T) {
 						Leverage:                 sdk.NewDec(2),
 						MtpHealth:                chunkItem.mtpHealth,
 						Position:                 types.Position_LONG,
-						Id:                       uint64(i + 1),
+						Id:                       uint64(i + 1), // nolint:gosec
 					}
-					openMTP, err := marginKeeper.GetMTP(ctx, signer, uint64(i+1))
+					openMTP, err := marginKeeper.GetMTP(ctx, signer, uint64(i+1)) // nolint:gosec
 					require.NoError(t, err)
 					require.NotNil(t, openMTP)
 					require.NotNil(t, openExpectedMTP)

@@ -53,7 +53,6 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 		{"other messages without dispensation", ctx, []sdk.Msg{otherMsg, otherMsg}, highGasPrice, true},
 	}
 	for _, tc := range tt {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tx := legacytx.StdTx{
 				Msgs:          tc.msgs,
@@ -108,7 +107,6 @@ func TestAdjustGasPriceDecorator_AnteHandle_MinFee(t *testing.T) {
 		{"low fee - transfer", ctx, lowFee, []sdk.Msg{transferMsg}, false},
 	}
 	for _, tc := range tt {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tx := legacytx.StdTx{
 				Msgs: tc.msgs,

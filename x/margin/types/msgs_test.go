@@ -26,7 +26,6 @@ func TestTypes_ValidateAsset(t *testing.T) {
 		},
 	}
 	for _, tt := range validateTests {
-		tt := tt
 		t.Run(fmt.Sprintf("asset: %v", tt.asset), func(t *testing.T) {
 			got := types.Validate(tt.asset)
 			require.Equal(t, got, tt.valid)
@@ -103,7 +102,6 @@ func TestTypes_MsgOpenValidateBasic(t *testing.T) {
 		},
 	}
 	for _, tt := range validateBasicTests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.msgOpen.ValidateBasic()
 
@@ -152,7 +150,6 @@ func TestTypes_MsgOpenGetSigners(t *testing.T) {
 		},
 	}
 	for _, tt := range getSignersTests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
@@ -196,7 +193,6 @@ func TestTypes_MsgCloseValidateBasic(t *testing.T) {
 		},
 	}
 	for _, tt := range validateBasicTests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.msgClose.ValidateBasic()
 
@@ -245,7 +241,6 @@ func TestTypes_MsgCloseGetSigners(t *testing.T) {
 		},
 	}
 	for _, tt := range getSignersTests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
@@ -289,7 +284,6 @@ func TestTypes_MsgForceCloseValidateBasic(t *testing.T) {
 		},
 	}
 	for _, tt := range validateBasicTests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.msgForceClose.ValidateBasic()
 
@@ -338,8 +332,7 @@ func TestTypes_MsgForceCloseGetSigners(t *testing.T) {
 		},
 	}
 	for _, tt := range getSignersTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			if tt.errString != "" {
 				require.PanicsWithError(t, tt.errString, func() {
 					tt.msgForceClose.GetSigners()

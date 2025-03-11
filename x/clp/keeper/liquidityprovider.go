@@ -209,8 +209,12 @@ func (k Keeper) filterLiquidityProvidersByLockPeriod(ctx sdk.Context, lps []*typ
 	// get reward param lock period
 	lockPeriod := k.GetRewardsParams(ctx).RewardsLockPeriod
 	var filtered []*types.LiquidityProvider
+	currentHeight := ctx.BlockHeight()
+	
 	for _, lp := range lps {
-		if lp.LastUpdatedBlock < (ctx.BlockHeight() - int64(lockPeriod)) {
+		// Safe comparison without type conversion
+		// If lockPeriod is too large or currentHeight is too small, this condition will be false
+		if lockPeriod <= uint64(math.MaxInt64) && lp.LastUpdatedBlock < currentHeight - int64(lockPeriod) {
 			filtered = append(filtered, lp)
 		}
 	}

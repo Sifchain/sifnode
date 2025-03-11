@@ -145,8 +145,7 @@ func TestUseUnlockedLiquidity(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			app, ctx := test.CreateTestApp(false)
 			ctx = ctx.WithBlockHeight(tc.height)
 			params := app.ClpKeeper.GetRewardsParams(ctx)

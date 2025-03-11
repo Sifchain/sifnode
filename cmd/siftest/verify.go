@@ -62,7 +62,7 @@ func GetVerifyAdd() *cobra.Command {
 func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmount, externalAmount sdk.Uint, externalAsset string) error {
 	// Lookup wallet balances before remove
 	// Lookup wallet balances after remove
-	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1))) // nolint: gosec
 	extBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   externalAsset,
@@ -80,7 +80,7 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 
 	// Lookup LP units before remove
 	// Lookup LP units after remove
-	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1))) // nolint: gosec
 	lpBefore, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
 		Symbol:    externalAsset,
 		LpAddress: from,
@@ -145,7 +145,7 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 	}
 
 	// Lookup wallet balances after
-	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height))) // nolint: gosec
 	extAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   externalAsset,
@@ -162,7 +162,7 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 	}
 
 	// Lookup LP after
-	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height))) // nolint: gosec
 	lpAfter, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
 		Symbol:    externalAsset,
 		LpAddress: from,
@@ -203,7 +203,7 @@ func VerifyAdd(clientCtx client.Context, from string, height uint64, nativeAmoun
 	fmt.Printf("LP units after %s \n", lpAfter.LiquidityProvider.LiquidityProviderUnits.String())
 	fmt.Printf("LP units diff %s (expected: %s unexpected: %s)\n", lpUnitsDiff.String(), lpUnits.String(), lpUnitsDiff.Sub(sdk.NewIntFromBigInt(lpUnits.BigInt())))
 
-	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height))) // nolint: gosec
 	poolAfter, err := clpQueryClient.GetPool(context.Background(), &clptypes.PoolReq{Symbol: externalAsset})
 	if err != nil {
 		return err
@@ -284,7 +284,7 @@ func GetVerifyRemove() *cobra.Command {
 func VerifyRemove(clientCtx client.Context, from string, height uint64, units sdk.Uint, externalAsset string) error {
 	// Lookup wallet balances before remove
 	// Lookup wallet balances after remove
-	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	bankQueryClient := banktypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1))) // nolint: gosec
 	extBefore, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   externalAsset,
@@ -302,7 +302,7 @@ func VerifyRemove(clientCtx client.Context, from string, height uint64, units sd
 
 	// Lookup LP units before remove
 	// Lookup LP units after remove
-	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1)))
+	clpQueryClient := clptypes.NewQueryClient(clientCtx.WithHeight(int64(height - 1))) // nolint: gosec
 	lpBefore, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
 		Symbol:    externalAsset,
 		LpAddress: from,
@@ -325,7 +325,7 @@ func VerifyRemove(clientCtx client.Context, from string, height uint64, units sd
 		units)
 
 	// Lookup wallet balances after
-	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	bankQueryClient = banktypes.NewQueryClient(clientCtx.WithHeight(int64(height))) // nolint: gosec
 	extAfter, err := bankQueryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: from,
 		Denom:   externalAsset,
@@ -342,7 +342,7 @@ func VerifyRemove(clientCtx client.Context, from string, height uint64, units sd
 	}
 
 	// Lookup LP after
-	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height)))
+	clpQueryClient = clptypes.NewQueryClient(clientCtx.WithHeight(int64(height))) // nolint: gosec
 	lpAfter, err := clpQueryClient.GetLiquidityProvider(context.Background(), &clptypes.LiquidityProviderReq{
 		Symbol:    externalAsset,
 		LpAddress: from,
@@ -415,7 +415,7 @@ func GetVerifyClose() *cobra.Command {
 
 			err = VerifyClose(clientCtx,
 				viper.GetString("from"),
-				int64(viper.GetUint64("height")),
+				int64(viper.GetUint64("height")), // nolint:gosec
 				viper.GetUint64("id"))
 			if err != nil {
 				panic(err)

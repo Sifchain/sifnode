@@ -85,8 +85,7 @@ func TestKeeper_GetSwapFeeRate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 
 			ctx, app := test.CreateTestAppClp(false)
 

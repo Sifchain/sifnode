@@ -75,8 +75,7 @@ func TestKeeper_NewLegacyHandler(t *testing.T) {
 	}
 
 	for _, tt := range newLegacyHandlerTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			_, got := handler(ctx, tt.msg)
 
 			if tt.errString != nil {

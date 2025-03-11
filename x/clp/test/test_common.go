@@ -192,7 +192,7 @@ func GeneratePoolsSetLPs(keeper clpkeeper.Keeper, ctx sdk.Context, nPools, nLPs 
 		poolUnits := make([]uint64, nLPs)
 		totalPoolUnits := sdk.ZeroUint()
 		for i := 0; i < nLPs; i++ {
-			val := uint64(rand.Int31())
+			val := uint64(rand.Int31()) // nolint:gosec
 			poolUnits[i] = val
 			totalPoolUnits = totalPoolUnits.Add(sdk.NewUint(val))
 		}
@@ -202,7 +202,7 @@ func GeneratePoolsSetLPs(keeper clpkeeper.Keeper, ctx sdk.Context, nPools, nLPs 
 			keeper.SetLiquidityProvider(ctx, lp)
 		}
 
-		pool := types.NewPool(&externalAsset, sdk.NewUint(100000000000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), totalPoolUnits)
+		pool := types.NewPool(&externalAsset, sdk.NewUint(100000000000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), totalPoolUnits) // nolint:gosec
 		err := keeper.SetPool(ctx, &pool)
 		if err != nil {
 			panic(err)
@@ -237,7 +237,7 @@ func GeneratePoolsAndLPs(keeper clpkeeper.Keeper, ctx sdk.Context, tokens []stri
 	for i := 0; i < len(tokens); i++ {
 		externalToken := tokens[i]
 		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
-		pool := types.NewPool(&externalAsset, sdk.NewUint(1000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), sdk.NewUint(1))
+		pool := types.NewPool(&externalAsset, sdk.NewUint(1000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), sdk.NewUint(1)) // nolint:gosec
 		err := keeper.SetPool(ctx, &pool)
 		if err != nil {
 			panic(err)

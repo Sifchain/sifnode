@@ -55,7 +55,6 @@ func TestScenarios(t *testing.T) {
 	require.Nil(t, err, "error occurred during unmarshalling. Error: %s", err)
 
 	for _, tc := range scenarios {
-		tc := tc
 		ctx, app := test.CreateTestAppClpFromGenesis(false, func(app *sifapp.SifchainApp, genesisState sifapp.GenesisState) sifapp.GenesisState {
 			trGs := &tokenregistrytypes.GenesisState{
 				Registry: &tokenregistrytypes.Registry{

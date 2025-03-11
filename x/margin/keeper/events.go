@@ -10,7 +10,7 @@ import (
 
 func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.Uint, closer string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventForceClose,
-		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("id", strconv.FormatUint(mtp.Id, 10)),
 		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
@@ -30,7 +30,7 @@ func (k Keeper) EmitForceClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.
 
 func (k Keeper) EmitAdminClose(ctx sdk.Context, mtp *types.MTP, repayAmount sdk.Uint, closer string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventAdminClose,
-		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("id", strconv.FormatUint(mtp.Id, 10)),
 		sdk.NewAttribute("position", mtp.Position.String()),
 		sdk.NewAttribute("address", mtp.Address),
 		sdk.NewAttribute("collateral_asset", mtp.CollateralAsset),
@@ -56,7 +56,7 @@ func (k Keeper) EmitAdminCloseAll(ctx sdk.Context, takeMarginFund bool) {
 
 func (k Keeper) EmitFundPayment(ctx sdk.Context, mtp *types.MTP, takeAmount sdk.Uint, takeAsset string, paymentType string) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(paymentType,
-		sdk.NewAttribute("id", strconv.FormatInt(int64(mtp.Id), 10)),
+		sdk.NewAttribute("id", strconv.FormatUint(mtp.Id, 10)),
 		sdk.NewAttribute("payment_amount", takeAmount.String()),
 		sdk.NewAttribute("payment_asset", takeAsset),
 	))

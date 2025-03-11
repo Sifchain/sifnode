@@ -57,8 +57,7 @@ func TestKeeper_SetMTP(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, _, marginKeeper := initKeeper(t)
 			got := marginKeeper.SetMTP(ctx, &tt.mtp)
 
@@ -214,8 +213,7 @@ func TestKeeper_CLPSwap(t *testing.T) {
 	}
 
 	for _, tt := range custodySwapTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
 			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
@@ -351,8 +349,7 @@ func TestKeeper_Borrow(t *testing.T) {
 	}
 
 	for _, tt := range borrowTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
 			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
@@ -518,8 +515,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 	}
 
 	for _, tt := range updateMTPHealthTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
 			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
@@ -804,8 +800,7 @@ func TestKeeper_Repay(t *testing.T) {
 	}
 
 	for _, tt := range repayTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
 			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
@@ -959,8 +954,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 	}
 
 	for _, tt := range interestRateComputationTests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+				t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
 			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{

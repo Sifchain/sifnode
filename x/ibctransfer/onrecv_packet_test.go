@@ -43,7 +43,7 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 	entry1c, err := app.TokenRegistryKeeper.GetEntry(registry, entry1.UnitDenom)
 	require.NoError(t, err)
 	require.True(t, entry1c.Decimals > entry1.Decimals)
-	diff := uint64(entry1c.Decimals - entry1.Decimals)
+	diff := uint64(entry1c.Decimals - entry1.Decimals) // nolint:gosec
 	convAmount, err := helpers.ConvertIncomingCoins("1000000000000", diff)
 	require.NoError(t, err)
 	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
@@ -79,7 +79,7 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 	entry1c, err := app.TokenRegistryKeeper.GetEntry(registry, entry1.UnitDenom)
 	require.NoError(t, err)
 	require.True(t, entry1c.Decimals > entry1.Decimals)
-	diff := uint64(entry1c.Decimals - entry1.Decimals)
+	diff := uint64(entry1c.Decimals - entry1.Decimals) // nolint:gosec
 	convAmount, err := helpers.ConvertIncomingCoins("1000000000000", diff)
 	require.NoError(t, err)
 	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
@@ -246,7 +246,7 @@ func TestOnRecvPacketV2(t *testing.T) {
 	err = app2.AddCoinsToAccount(sctransfertypes.ModuleName, app.BankKeeper, ctx, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", intAmount)))
 	require.NoError(t, err)
 
-	diff := uint64(convertToDenomEntry.Decimals - mintedXRowanEntry.Decimals)
+	diff := uint64(convertToDenomEntry.Decimals - mintedXRowanEntry.Decimals) // nolint:gosec
 	// This is the reduced precision xToken coming in , so we know for sure conversion to uint64 will not cause problems
 	convAmount, err := helpers.ConvertIncomingCoins(xRowanV2Amount, diff)
 	require.NoError(t, err)

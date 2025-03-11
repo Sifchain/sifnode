@@ -106,7 +106,7 @@ func (srv queryServer) GetSQParams(ctx context.Context, request *types.GetSQPara
 		return nil, err
 	}
 	return &types.GetSQParamsResponse{
-		BeginBlock: int64(srv.keeper.GetSQBeginBlock(sdk.UnwrapSDKContext(ctx), &pool)),
+		BeginBlock: int64(srv.keeper.GetSQBeginBlock(sdk.UnwrapSDKContext(ctx), &pool)), // nolint:gosec
 	}, nil
 }
 

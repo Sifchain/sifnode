@@ -94,8 +94,7 @@ func TestKeeper_RatToDec(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 
 			var rat big.Rat
 			rat.SetFrac(tc.num, tc.denom)
@@ -171,8 +170,7 @@ func TestKeeper_Int64ToUint8Safe(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 
 			y, err := clpkeeper.Int64ToUint8Safe(tc.x)
 
@@ -212,8 +210,7 @@ func TestKeeper_Abs(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 
 			y := clpkeeper.Abs(tc.x)
 
@@ -251,8 +248,7 @@ func TestKeeper_DecToRat(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			y := clpkeeper.DecToRat(&tc.dec)
 
 			require.Equal(t, tc.expected.String(), y.String())
@@ -288,8 +284,7 @@ func TestKeeper_RatIntQuo(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			y := clpkeeper.RatIntQuo(&tc.rat)
 
 			require.Equal(t, tc.expected.String(), y.String())
@@ -321,8 +316,7 @@ func TestKeeper_ApproxRatSquareRoot(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
+				t.Run(tc.name, func(t *testing.T) {
 			y := clpkeeper.ApproxRatSquareRoot(&tc.x)
 
 			require.Equal(t, tc.expected.String(), y.String())

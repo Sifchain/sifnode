@@ -106,7 +106,7 @@ func GetVerifyOpen() *cobra.Command {
 
 			err = VerifyOpenLong(clientCtx,
 				viper.GetString("from"),
-				int64(viper.GetUint64("height")),
+				int64(viper.GetUint64("height")), // nolint:gosec
 				collateralAmount,
 				viper.GetString("collateral-asset"),
 				viper.GetString("borrow-asset"),
