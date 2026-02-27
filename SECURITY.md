@@ -26,4 +26,4 @@ We’ll try to keep you informed about our progress throughout the process.
 * Public disclosure of a vulnerability makes it ineligible for a bounty. If the user reports the vulnerability to other security teams (e.g. Ethereum or Cosmos) but reports to Sifchain with considerable delay, then Sifchain may reduce or cancel the bounty.
 * Users who violate the rules of participation will not receive bug bounty payouts and may be temporarily suspended or banned from the bug bounty program.
 
-For more information check Sifchain bounty program policy at [ImmuneFi](https://immunefi.com/bounty/sifchain/)
+##For more information check Sifchain bounty program policy at [ImmuneFi](https://immunefi.com/bounty/sifchain/)
