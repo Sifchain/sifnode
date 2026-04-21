@@ -1,0 +1,22 @@
+[31m[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mBackend initialization required, please run "terraform init"[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mReason: Initial configuration of the requested backend "gcs"
+[31m│[0m [0m
+[31m│[0m [0mThe "backend" is the interface that Terraform uses to store state,
+[31m│[0m [0mperform operations, etc. If this message is showing up, it means that the
+[31m│[0m [0mTerraform configuration you're using is using a custom configuration for
+[31m│[0m [0mthe Terraform backend.
+[31m│[0m [0m
+[31m│[0m [0mChanges to backend configurations require reinitialization. This allows
+[31m│[0m [0mTerraform to set up the new configuration, copy existing state, etc. Please
+[31m│[0m [0mrun
+[31m│[0m [0m"terraform init" with either the "-reconfigure" or "-migrate-state" flags
+[31m│[0m [0mto
+[31m│[0m [0muse the current configuration.
+[31m│[0m [0m
+[31m│[0m [0mIf the change reason above is incorrect, please verify your configuration
+[31m│[0m [0mhasn't changed and try again. At this point, no changes to your existing
+[31m│[0m [0mconfiguration or state have been made.
+[31m╵[0m[0m
+[0m[0m
