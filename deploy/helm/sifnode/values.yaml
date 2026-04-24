@@ -1,0 +1,6 @@
+# sifnode Helm Chart Values
+# ── Provider ─────────────────────────────────────────────────
+# Deployment environment: "aws" (default) or "gke"
+provider: aws
+
+

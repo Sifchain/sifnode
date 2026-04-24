@@ -1,0 +1,50 @@
+# GKE-specific values for sifnode Helm chart
+# Override with: helm install -f values_gke.yaml
+
+# Deployment environment: "gke" or "aws" (default: aws for backward compatibility)
+provider: gke
+
+# GKE-specific persistence configuration
+persistence:
+  enabled: true
+  size: 50Gi
+  accessMode: ReadWriteOnce
+  storageClass: gke-ssd  # Created by GKE Terraform
+
+# GKE node configuration
+nodeSelector:
+  cloud.google.com/gke-nodepool: sifnode-pool
+
+# GKE service configuration  
+service:
+  type: LoadBalancer
+  port: 26656
+  annotations:
+    cloud.google.com/load-balancer-type: Internal  # Change to External if needed
+
+# GKE ingress configuration (optional)
+ingress:
+  enabled: false
+  annotations:
+    kubernetes.io/ingress.class: gce
+
+# GKE IAM workload identity
+serviceAccount:
+  annotations:
+    iam.gke.io/gcp-service-account: ""  # Set to your GCP SA email
+
+# Resource allocation for GKE (e2-standard-2)
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+
+# GKE autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
