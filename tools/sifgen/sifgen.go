@@ -1,12 +1,14 @@
 package sifgen
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
 
 	"github.com/MakeNowJust/heredoc"
-
+	"github.com/serfersac/sifnode/gcp" // Import the GCP provider
+	sifgentypes "github.com/serfersac/sifnode/tools/sifgen/common/types" // Import the common types
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
 	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
@@ -15,12 +17,27 @@ import (
 
 type Sifgen struct {
 	chainID *string
+	providers map[string]sifgentypes.Provider
 }
 
 func NewSifgen(chainID *string) Sifgen {
-	return Sifgen{
+	s := Sifgen{
 		chainID: chainID,
+		providers: make(map[string]sifgentypes.Provider),
 	}
+	// Register GCP provider
+	ctx := context.Background() // Use a background context for initial provider setup
+	gcpProvider, err := gcp.NewGCPProvider(ctx, "sifchain-devnet-307421", "asia-east1-a") // TODO: Make projectID and zone configurable
+	if err != nil {
+		log.Fatalf("Failed to create GCP provider: %v", err)
+	}
+	s.RegisterProvider("gcp", gcpProvider)
+	return s
+}
+
+// RegisterProvider registers a new cloud provider.
+func (s *Sifgen) RegisterProvider(name string, provider sifgentypes.Provider) {
+	s.providers[name] = provider
 }
 
 func (s Sifgen) NewNetwork(keyringBackend string) *network.Network {
@@ -30,9 +47,16 @@ func (s Sifgen) NewNetwork(keyringBackend string) *network.Network {
 	}
 }
 
-func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string, outputFile string) {
+func (s Sifgen) NetworkCreate(ctx context.Context, count int, outputDir, startingIPAddress, providerName, outputFile string) {
+	provider, ok := s.providers[providerName]
+	if !ok {
+		log.Fatalf("Provider '%s' not found", providerName)
+	}
+
 	net := network.NewNetwork(*s.chainID)
-	summary, err := net.Build(count, outputDir, startingIPAddress)
+	// Assuming net.Build can take a provider to create nodes
+	// This part needs further integration with the existing network.Build logic
+	summary, err := net.Build(ctx, count, outputDir, startingIPAddress, provider)
 	if err != nil {
 		log.Fatal(err)
 		return

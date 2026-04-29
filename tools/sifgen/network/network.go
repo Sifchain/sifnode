@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context" // Add context import
 	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
+	sifgentypes "github.com/serfersac/sifnode/tools/sifgen/common/types" // Import the common types
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
 	"github.com/Sifchain/sifnode/tools/sifgen/network/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
@@ -18,11 +20,23 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+
+
 type Network struct {
 	ChainID    string
 	CLI        utils.CLI
 	BondAmount string
 	MintAmount string
+	Provider   sifgentypes.Provider // Add Provider field
+}
+
+// NewNetwork creates a new Network instance.
+func NewNetwork(chainID string, provider sifgentypes.Provider) *Network {
+	return &Network{
+		ChainID: chainID,
+		CLI:     utils.NewCLI(chainID, keyring.BackendTest),
+		Provider: provider,
+	}
 }
 
 func Reset(chainID, networkDir string) error {
@@ -54,14 +68,9 @@ func Reset(chainID, networkDir string) error {
 	return nil
 }
 
-func NewNetwork(chainID string) *Network {
-	return &Network{
-		ChainID: chainID,
-		CLI:     utils.NewCLI(chainID, keyring.BackendTest),
-	}
-}
 
-func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, error) {
+
+func (n *Network) Build(ctx context.Context, count int, outputDir, seedIPv4Addr string) (*string, error) { // Added ctx
 	if err := n.CLI.Reset([]string{outputDir}); err != nil {
 		return nil, err
 	}
@@ -76,7 +85,21 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	}
 
 	gentxDir := fmt.Sprintf("%s/%s", outputDir, GentxsDir)
-	validators := n.initValidators(count, outputDir, seedIPv4Addr)
+	
+	var validators []*Validator
+	for i := 0; i < count; i++ {
+		nodeName := fmt.Sprintf("sifnode-validator-%d", i)
+		cloudNode, err := n.Provider.CreateNode(ctx, nodeName) // Use n.Provider
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cloud node %s: %w", nodeName, err)
+		}
+		
+		validator := NewValidator(outputDir, n.ChainID, i == 0, cloudNode.IP) // Assuming first node is seed
+		validator.Moniker = cloudNode.Name
+		validator.IPv4Address = cloudNode.IP
+		// Set other validator fields from cloudNode if available
+		validators = append(validators, validator)
+	}
 
 	for _, validator := range validators {
 		appDirs := []string{validator.NodeHomeDir}
