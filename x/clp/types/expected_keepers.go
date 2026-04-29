@@ -41,3 +41,10 @@ type TokenRegistryKeeper interface {
 type AdminKeeper interface {
 	IsAdminAccount(ctx sdk.Context, moduleName admintypes.AdminType, adminAccount sdk.AccAddress) bool
 }
+
+
+type PmtpKeeper interface {
+	SetPmtpParams(ctx sdk.Context, params *PmtpParams)
+	GetPmtpParams(ctx sdk.Context) *PmtpParams
+}
+

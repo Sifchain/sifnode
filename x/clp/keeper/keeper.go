@@ -25,6 +25,7 @@ type Keeper struct {
 	mintKeeper          mintkeeper.Keeper
 	getMarginKeeper     func() margintypes.Keeper
 	paramstore          paramtypes.Subspace
+	PmtpKeeper          types.PmtpKeeper
 }
 
 // NewKeeper creates a clp keeper
@@ -45,6 +46,11 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, bankkeeper types.BankKee
 		getMarginKeeper:     getMarginKeeper,
 		paramstore:          ps,
 	}
+
+
+	keeper.PmtpKeeper = keeper
+
+
 	return keeper
 }
 

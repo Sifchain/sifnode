@@ -7,6 +7,12 @@ const (
 	EventTypeDecommissionPool                    = "decommission_pool"
 	EventTypeAddNewPmtpPolicy                    = "pmtp_new_policy"
 	EventTypeEndPmtpPolicy                       = "pmtp_end_policy"
+
+
+	EventTypeUpdatePmtpParams = "pmtp_update_params"
+
+
+
 	EventTypeCreateLiquidityProvider             = "created_new_liquidity_provider"
 	EventTypeAddLiquidity                        = "added_liquidity"
 	EventTypeRemoveLiquidity                     = "removed_liquidity"
@@ -26,11 +32,16 @@ const (
 	AttributeKeyThreshold                        = "min_threshold"
 	AttributeKeySwapAmount                       = "swap_amount"
 	AttributeKeyLiquidityFee                     = "liquidity_fee"
-	AttributeKeyPriceImpact                      = "price_impact"
-	AttributeKeyInPool                           = "in_pool"
-	AttributeKeyOutPool                          = "out_pool"
-	AttributePmtpBlockRate                       = "pmtp_block_rate"
-	AttributePmtpCurrentRunningRate              = "pmtp_current_running_rate"
+
+
+
+	AttributeKeyPmtpPeriodStartBlock    = "pmtp_period_start_block"
+	AttributeKeyPmtpPeriodEndBlock      = "pmtp_period_end_block"
+	AttributeKeyPmtpBlockRate           = "pmtp_block_rate"
+	AttributeKeyPmtpCurrentRunningRate  = "pmtp_current_running_rate"
+	AttributeKeyPmtpInterimAsset        = "pmtp_interim_asset"
+	AttributeKeyPmtpCurrentDepth        = "pmtp_current_depth"
+	AttributeKeyPmtpFarmingFeeRate      = "pmtp_farming_fee_rate"
 	AttributeKeyPool                             = "pool"
 	AttributeKeyHeight                           = "height"
 	AttributeKeyLiquidityProvider                = "liquidity_provider"
