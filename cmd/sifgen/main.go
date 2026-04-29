@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context" // Add context import
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -56,22 +57,27 @@ func networkCmd() *cobra.Command {
 	}
 }
 
+
+
 func networkCreateCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "create [chain-id] [validator-count] [output-dir] [seed-ip-address] [output-file]",
 		Short: "Create a new network.",
-		Args:  cobra.MinimumNArgs(4),
+		Args:  cobra.MinimumNArgs(5), // Changed to 5 args due to new provider flag
 		Run: func(cmd *cobra.Command, args []string) {
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
 			keyringBackend, _ := cmd.Flags().GetString("keyring-backend")
+			cloudProvider, _ := cmd.Flags().GetString("cloud-provider") // Get cloud-provider flag
 
 			count, _ := strconv.Atoi(args[1])
-			network := sifgen.NewSifgen(&args[0]).NewNetwork(keyringBackend)
+			sifgenInstance := sifgen.NewSifgen(&args[0])
+			network := sifgenInstance.NewNetwork(keyringBackend, cloudProvider) // Pass cloudProvider
 			network.BondAmount = bondAmount
 			network.MintAmount = mintAmount
 
-			summary, err := network.Build(count, args[2], args[3])
+			ctx := context.Background() // Create a new context
+			summary, err := network.Build(ctx, count, args[2], args[3]) // Pass context to Build
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -81,6 +87,8 @@ func networkCreateCmd() *cobra.Command {
 			}
 		},
 	}
+	cmd.Flags().String("cloud-provider", "", "Cloud provider to use (e.g., 'gcp')") // Define the flag
+	return cmd
 }
 
 func networkResetCmd() *cobra.Command {
