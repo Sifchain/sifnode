@@ -19,6 +19,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/client/rest"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -43,8 +44,11 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolin
 // RegisterInterfaces registers the module's interface types
 func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registry)
-}
 
+
+func (b AppModuleBasic) RegisterProposalType(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&types.UpdatePmtpParamsProposal{}, "sifnode/UpdatePmtpParamsProposal", nil)
+}
 // DefaultGenesis returns default genesis state as raw bytes for the clp
 // module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
@@ -92,14 +96,16 @@ type AppModule struct {
 
 	keeper     keeper.Keeper
 	bankKeeper types.BankKeeper
+	govRouter  govtypes.Router
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, govRouter govtypes.Router) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
 		bankKeeper:     bankKeeper,
+		govRouter:      govRouter,
 	}
 }
 
@@ -157,6 +163,8 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
+
+	am.govRouter.AddRoute(types.RouterKey, keeper.NewClpProposalHandler(am.keeper))
 
 	return InitGenesis(ctx, am.keeper, genesisState)
 }

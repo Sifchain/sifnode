@@ -18,7 +18,9 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgDecommissionPool{}, "clp/DecommissionPool", nil)
 	cdc.RegisterConcrete(&MsgUnlockLiquidityRequest{}, "clp/UnlockLiquidity", nil)
 	cdc.RegisterConcrete(&MsgAddLiquidityToRewardsBucketRequest{}, "clp/AddLiquidityToRewardsBucket", nil)
-}
+
+	cdc.RegisterConcrete(&UpdatePmtpParamsProposal{}, "clp/UpdatePmtpParamsProposal", nil)
+
 
 var (
 	amino     = codec.NewLegacyAmino()
