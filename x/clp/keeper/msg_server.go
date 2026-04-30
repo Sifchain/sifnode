@@ -458,6 +458,97 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	// Basic validation
+	if msg.SentAmount.IsZero() || msg.SentAmount.IsNegative() {
+		return nil, types.ErrSwapAmountTooSmall
+	}
+	// TODO: should we check also the min amount?
+	if msg.MinReceivingAmount.IsZero() || msg.MinReceivingAmount.IsNegative() {
+		return nil, types.ErrSwapAmountTooSmall
+	}
+	// Check assets
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	sAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.SentAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrTokenNotSupported
+	}
+	rAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ReceivedAsset.Symbol)
+	if err != nil {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(sAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
+	if k.tokenRegistryKeeper.CheckEntryPermissions(sAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_SELL}) {
+		return nil, tokenregistrytypes.ErrNotAllowedToSellAsset
+	}
+	if k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_DISABLE_BUY}) {
+		return nil, tokenregistrytypes.ErrNotAllowedToBuyAsset
+	}
+	// Get pool
+	var pool types.Pool
+	if types.StringCompare(msg.SentAsset.Symbol, types.NativeSymbol) {
+		pool, err = k.GetPool(ctx, msg.ReceivedAsset.Symbol)
+	} else {
+		pool, err = k.GetPool(ctx, msg.SentAsset.Symbol)
+	}
+	if err != nil {
+		return nil, err
+	}
+	// Check balances and fees
+	err = k.CheckPoolHealth(ctx, pool)
+	if err != nil {
+		return nil, err
+	}
+	expectedSwapFee := k.GetSwapFeeRate(ctx, *msg.SentAsset, false)
+	err = k.CheckSwapFee(ctx, pool, *msg.ReceivedAsset, false, expectedSwapFee)
+	if err != nil {
+		return nil, err
+	}
+	// Price impact
+	err = k.CheckPriceImpact(ctx, pool, *msg.ReceivedAsset, msg.SentAmount)
+	if err != nil {
+		return nil, err
+}
+	// Execute swap
+	swapAmount, err := k.CLPCalcSwap(ctx, msg.SentAmount, *msg.ReceivedAsset, pool, false)
+	if err != nil {
+		return nil, err
+	}
+	// Final checks
+	err = k.CheckSentAmount(swapAmount, msg.MinReceivingAmount, *msg.ReceivedAsset)
+	if err != nil {
+		return nil, err
+	}
+	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	// Finalize swap
+	err = k.ExecuteSwap(ctx, msg.SentAsset, msg.ReceivedAsset, msg.SentAmount, swapAmount, signer, pool)
+	if err != nil {
+		return nil, err
+	}
+	// Emit events
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeSwap,
+			sdk.NewAttribute(types.AttributeKeySentAmount, msg.SentAmount.String()),
+			sdk.NewAttribute(types.AttributeKeySentAsset, msg.SentAsset.Symbol),
+			sdk.NewAttribute(types.AttributeKeyReceivedAmount, swapAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyPool, pool.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
+		),
+	})
+	return &types.MsgSwapResponse{}, nil
+
 	var (
 		priceImpact sdk.Uint
 	)

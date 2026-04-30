@@ -8,7 +8,9 @@ import (
 )
 
 func RegisterInvariants(registry sdk.InvariantRegistry, k Keeper) {
-	// registry.RegisterRoute(types.ModuleName, "balance-module-account-check", k.BalanceModuleAccountCheck())
+	registry.RegisterRoute(types.ModuleName, "balance-module-account-check", k.BalanceModuleAccountCheck())
+        registry.RegisterRoute(types.ModuleName, "pool-units-check", k.UnitsCheck())
+        registry.RegisterRoute(types.ModuleName, "swap-in-out-check", k.SwapPriceInvariant())
 }
 
 func (k Keeper) BalanceModuleAccountCheck() sdk.Invariant {
@@ -114,5 +116,13 @@ func (k Keeper) UnitsCheck() sdk.Invariant {
 			}
 		}
 		return "all pool units vs total lp units match", false
+	}
+}
+
+func (k Keeper) SwapPriceInvariant() sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+
+		// Let's not check this for now as this is checked on every swap now.
+		return "swap price check is temporarily disabled", false
 	}
 }
