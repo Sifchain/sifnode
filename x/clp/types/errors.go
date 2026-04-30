@@ -52,3 +52,5 @@ var (
 	ErrUnableToDistributeLPRewards                     = sdkerrors.Register(ModuleName, 50, "unable to distribute liquidity provider rewards")
 	ErrUnableToAddRewardAmountToLiquidityPool          = sdkerrors.Register(ModuleName, 51, "unable to add reward amount to liquidity pool")
 )
+		ErrSwapAmountTooSmall                              = sdkerrors.Register(ModuleName, 52, "swap amount is too small")
+		ErrPoolNotHealthy                                  = sdkerrors.Register(ModuleName, 53, "pool is not healthy")
