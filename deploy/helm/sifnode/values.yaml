@@ -1,0 +1,56 @@
+global:
+  cloudProvider: aws
+
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+image:
+  repository: sifchain/sifnoded
+  pullPolicy: Always
+  tag: "testnet"
+
+sifnode:
+  env:
+    chainnet:
+    moniker:
+    genesisURL:
+    peerAddress:
+    mnemonic: ""
+  service:
+    type: LoadBalancer
+    annotations: {}
+
+service:
+  type: LoadBalancer
+  port: 26656
+
+persistence:
+  enabled: true
+  size: 500Gi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: sifnode.local
+      paths: []
+  tls: []
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

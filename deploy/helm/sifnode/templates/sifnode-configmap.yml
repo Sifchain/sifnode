@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sifnode.fullname" . }}-scripts
+data:
+  external-ip.sh: |
+    #!/bin/sh
+
+    apk add --no-cache bind-tools >/dev/null 2>&1 || true
+
+    SERVICE=$1
+    CONFIGMAP=$2
+
+    external_ip=""
+
+    while [ -z "$external_ip" ]; do
+      echo "Waiting for load balancer external endpoint..."
+      external_ip=$(kubectl get svc "$SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+      if [ -z "$external_ip" ]; then
+        hostname=$(kubectl get svc "$SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        [ ! -z "$hostname" ] && external_ip=$(dig +short "$hostname" | sort | head -1)
+      fi
+      [ -z "$external_ip" ] && sleep 10
+    done
+
+    kubectl create configmap "$CONFIGMAP" --from-literal=externalIP="$external_ip" --dry-run=client -o yaml | kubectl apply -f -
