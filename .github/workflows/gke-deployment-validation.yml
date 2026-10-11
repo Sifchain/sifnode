@@ -1,0 +1,24 @@
+name: GKE deployment validation
+
+on:
+  pull_request:
+    paths:
+      - 'deploy/gke/**'
+      - '.github/workflows/gke-deployment-validation.yml'
+
+jobs:
+  validate-gke-scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Validate deployment script syntax
+        run: bash -n deploy/gke/deploy_gke.sh
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive deploy/gke/terraform
+      - name: Initialize Terraform without cloud changes
+        working-directory: deploy/gke/terraform
+        run: terraform init -backend=false
+      - name: Validate Terraform configuration
+        working-directory: deploy/gke/terraform
+        run: terraform validate
