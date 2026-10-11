@@ -1,33 +1,44 @@
 # Sifnode on Google Kubernetes Engine (GKE)
 
-This directory provides an independent GKE deployment path for bounty #524. It intentionally keeps the deployment provider-neutral: Terraform provisions GKE, while Kubernetes manifests deploy the node.
+Independent implementation for bounty #524. The bundle provides Terraform infrastructure, Kubernetes workload definitions, a guarded deployment CLI, and pull-request validation.
 
-## Quick start
-
-1. Authenticate with Google Cloud and select a project.
-2. Create the cluster with `terraform -chdir=deploy/gke/terraform init && terraform -chdir=deploy/gke/terraform apply`.
-3. Fetch credentials with `gcloud container clusters get-credentials` using the Terraform outputs.
-4. Copy `deploy/gke/kubernetes/sifnode.env.example` to a local environment file and set the chain/network values.
-5. Run `deploy/gke/deploy_gke.sh`.
-
-The script supports `apply`, `status`, and `destroy`, and refuses destructive operations unless explicitly requested.
-
-## Configuration
-
-Required environment variables are documented in `kubernetes/sifnode.env.example`. Secrets are supplied through the environment and are never committed to the repository.
-
-The default storage class is `standard-rwo`, which maps to GKE's CSI-backed persistent disk implementation. The node exposes Tendermint RPC/P2P ports and the Cosmos REST port through a LoadBalancer service.
-
-## Validation
-
-Before applying infrastructure, run:
+## 1. Provision GKE
 
 ```bash
-deploy/gke/deploy_gke.sh validate
+cp deploy/gke/terraform/terraform.tfvars.example deploy/gke/terraform/terraform.tfvars
+# edit project_id
+terraform -chdir=deploy/gke/terraform init
+terraform -chdir=deploy/gke/terraform plan
+terraform -chdir=deploy/gke/terraform apply
 ```
 
-This checks required local tools, required environment variables, and Kubernetes manifest rendering prerequisites without changing cloud resources.
+Then run the `get_credentials_command` Terraform output.
 
-## Payment contact
+## 2. Configure the node
+
+```bash
+cp deploy/gke/kubernetes/sifnode.env.example deploy/gke/kubernetes/sifnode.env
+# set CHAINNET, MONIKER, GENESIS_URL and MNEMONIC
+```
+
+`MNEMONIC` is consumed only from the local environment file and is converted into a Kubernetes Secret by the deployment script. Do not commit the local environment file.
+
+## 3. Deploy
+
+```bash
+bash deploy/gke/deploy_gke.sh validate
+bash deploy/gke/deploy_gke.sh apply
+bash deploy/gke/deploy_gke.sh status
+```
+
+The lifecycle CLI supports `validate`, `apply`, `status`, and guarded `destroy`. Destruction requires `CONFIRM_DESTROY=yes`.
+
+## Architecture
+
+Terraform creates a regional VPC-native GKE cluster, dedicated subnet with pod/service secondary ranges, Cloud NAT for private node egress, Workload Identity, and the GKE persistent-disk CSI integration. Kubernetes then runs Sifnode with a persistent volume and exposes P2P, RPC, and API ports through a LoadBalancer service.
+
+A GitHub Actions workflow runs shell syntax validation and Terraform formatting/validation for every change under `deploy/gke`.
+
+## Bounty/payment contact
 
 For bounty submission/payment administration, the contributor may provide: https://www.paypal.com/paypalme/my/profile
