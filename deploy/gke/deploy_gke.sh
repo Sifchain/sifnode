@@ -5,6 +5,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 K8S_DIR="$ROOT_DIR/kubernetes"
 ENV_FILE="${SIFNODE_GKE_ENV:-$K8S_DIR/sifnode.env}"
 NAMESPACE="${SIFNODE_NAMESPACE:-sifnode}"
+CLUSTER_NAME="${SIFNODE_GKE_CLUSTER:-sifnode-gke}"
+GCP_REGION="${SIFNODE_GKE_REGION:-${GOOGLE_REGION:-}}"
+GCP_PROJECT="${SIFNODE_GKE_PROJECT:-${GOOGLE_CLOUD_PROJECT:-}}"
 ACTION="${1:-status}"
 
 need() {
@@ -21,6 +24,16 @@ load_env() {
   : "${GENESIS_URL:?GENESIS_URL is required}"
   : "${MNEMONIC:?MNEMONIC is required}"
   : "${PEER_ADDRESS:=}"
+  [[ "$EXTERNAL_IP" != "CHANGE_ME" ]] || { echo "EXTERNAL_IP must be configured" >&2; exit 2; }
+  [[ "$MNEMONIC" != "CHANGE_ME" ]] || { echo "MNEMONIC must be configured" >&2; exit 2; }
+}
+
+connect_cluster() {
+  [[ -n "$GCP_REGION" ]] || { echo "SIFNODE_GKE_REGION/GOOGLE_REGION is required" >&2; exit 2; }
+  [[ -n "$GCP_PROJECT" ]] || { echo "SIFNODE_GKE_PROJECT/GOOGLE_CLOUD_PROJECT is required" >&2; exit 2; }
+  gcloud container clusters get-credentials "$CLUSTER_NAME" \
+    --region "$GCP_REGION" \
+    --project "$GCP_PROJECT" >/dev/null
 }
 
 validate() {
@@ -37,6 +50,7 @@ validate() {
 
 apply() {
   validate
+  connect_cluster
   kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
   kubectl create configmap sifnode-config \
@@ -55,6 +69,7 @@ apply() {
 
   kubectl apply -n "$NAMESPACE" -f "$K8S_DIR/sifnode.yaml"
   kubectl -n "$NAMESPACE" rollout status deployment/sifnode --timeout=15m
+  kubectl -n "$NAMESPACE" wait --for=condition=available deployment/sifnode --timeout=2m
   echo "Sifnode is running on GKE"
 }
 
