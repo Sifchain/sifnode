@@ -17,9 +17,9 @@ load_env() {
   set -a; source "$ENV_FILE"; set +a
   : "${CHAINNET:?CHAINNET is required}"
   : "${MONIKER:?MONIKER is required}"
+  : "${EXTERNAL_IP:?EXTERNAL_IP is required; use a reserved GCP address or the service address}"
   : "${GENESIS_URL:?GENESIS_URL is required}"
   : "${MNEMONIC:?MNEMONIC is required}"
-  : "${EXTERNAL_IP:=}"
   : "${PEER_ADDRESS:=}"
 }
 
