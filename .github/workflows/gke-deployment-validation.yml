@@ -22,3 +22,5 @@ jobs:
       - name: Validate Terraform configuration
         working-directory: deploy/gke/terraform
         run: terraform validate
+      - name: Validate Kubernetes manifests
+        run: kubectl create --dry-run=client -f deploy/gke/kubernetes/sifnode.yaml -o yaml >/dev/null
