@@ -1,14 +1,4 @@
 apiVersion: v1
-kind: Secret
-metadata:
-  name: sifnode
-  labels:
-    app: sifnode
-type: Opaque
-stringData:
-  mnemonic: "REPLACE_ME"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: sifnode-data
