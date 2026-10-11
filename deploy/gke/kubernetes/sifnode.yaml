@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sifnode
+  labels:
+    app: sifnode
+type: Opaque
+stringData:
+  mnemonic: "REPLACE_ME"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sifnode-data
+  labels:
+    app: sifnode
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: standard-rwo
+  resources:
+    requests:
+      storage: 500Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sifnode
+  labels:
+    app: sifnode
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sifnode
+  template:
+    metadata:
+      labels:
+        app: sifnode
+    spec:
+      securityContext:
+        fsGroup: 0
+      containers:
+        - name: sifnode
+          image: sifchain/sifnoded:testnet
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-ec"]
+          args:
+            - >-
+              sifgen node create "${CHAINNET}" "${MONIKER}" "${MNEMONIC}"
+              "${EXTERNAL_IP}" "${PEER_ADDRESS}" "${GENESIS_URL}" || true;
+              exec sifnoded start --rpc.laddr tcp://0.0.0.0:26657
+          env:
+            - name: CHAINNET
+              valueFrom:
+                configMapKeyRef:
+                  name: sifnode-config
+                  key: chainnet
+            - name: MONIKER
+              valueFrom:
+                configMapKeyRef:
+                  name: sifnode-config
+                  key: moniker
+            - name: EXTERNAL_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: sifnode-config
+                  key: external_ip
+            - name: PEER_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: sifnode-config
+                  key: peer_address
+            - name: GENESIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: sifnode-config
+                  key: genesis_url
+            - name: MNEMONIC
+              valueFrom:
+                secretKeyRef:
+                  name: sifnode
+                  key: mnemonic
+          ports:
+            - name: p2p
+              containerPort: 26656
+            - name: rpc
+              containerPort: 26657
+            - name: api
+              containerPort: 1317
+          readinessProbe:
+            tcpSocket:
+              port: 26657
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 26657
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+          volumeMounts:
+            - name: data
+              mountPath: /root
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: sifnode-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sifnode
+  labels:
+    app: sifnode
+spec:
+  type: LoadBalancer
+  selector:
+    app: sifnode
+  ports:
+    - name: p2p
+      port: 26656
+      targetPort: 26656
+    - name: rpc
+      port: 26657
+      targetPort: 26657
+    - name: api
+      port: 1317
+      targetPort: 1317
