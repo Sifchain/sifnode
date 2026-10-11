@@ -12,16 +12,24 @@ terraform -chdir=deploy/gke/terraform plan
 terraform -chdir=deploy/gke/terraform apply
 ```
 
-Then run the `get_credentials_command` Terraform output.
+The lifecycle script can now establish cluster credentials itself. Set the cluster connection variables before `apply`:
+
+```bash
+export SIFNODE_GKE_PROJECT=<gcp-project-id>
+export SIFNODE_GKE_REGION=<gcp-region>
+export SIFNODE_GKE_CLUSTER=<cluster-name>
+```
+
+Equivalent `GOOGLE_CLOUD_PROJECT` and `GOOGLE_REGION` variables are also accepted. This removes the need to manually copy the Terraform `get_credentials_command` into a separate shell step.
 
 ## 2. Configure the node
 
 ```bash
 cp deploy/gke/kubernetes/sifnode.env.example deploy/gke/kubernetes/sifnode.env
-# set CHAINNET, MONIKER, GENESIS_URL and MNEMONIC
+# set CHAINNET, MONIKER, EXTERNAL_IP, GENESIS_URL and MNEMONIC
 ```
 
-`MNEMONIC` is consumed only from the local environment file and is converted into a Kubernetes Secret by the deployment script. Do not commit the local environment file.
+`MNEMONIC` is consumed only from the local environment file and is converted into a Kubernetes Secret by the deployment script. Do not commit the local environment file. Placeholder values are rejected before deployment.
 
 ## 3. Deploy
 
@@ -31,7 +39,9 @@ bash deploy/gke/deploy_gke.sh apply
 bash deploy/gke/deploy_gke.sh status
 ```
 
-The lifecycle CLI supports `validate`, `apply`, `status`, and guarded `destroy`. Destruction requires `CONFIRM_DESTROY=yes`.
+`apply` automatically runs `gcloud container clusters get-credentials`, creates/updates the namespace and configuration, applies the workload, waits for rollout, and then verifies the Deployment is available. The lifecycle CLI supports `validate`, `apply`, `status`, and guarded `destroy`. Destruction requires `CONFIRM_DESTROY=yes`.
+
+`status` is intentionally read-only and only requires `kubectl`; it does not require the local secret file or cloud credentials.
 
 ## Architecture
 
