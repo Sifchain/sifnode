@@ -38,8 +38,13 @@ spec:
           command: ["/bin/sh", "-ec"]
           args:
             - >-
-              sifgen node create "${CHAINNET}" "${MONIKER}" "${MNEMONIC}"
-              "${EXTERNAL_IP}" "${PEER_ADDRESS}" "${GENESIS_URL}" || true;
+              if [ ! -s /root/.sifnoded/config/genesis.json ]; then
+                echo "Initializing sifnode state...";
+                sifgen node create "${CHAINNET}" "${MONIKER}" "${MNEMONIC}"
+                "${EXTERNAL_IP}" "${PEER_ADDRESS}" "${GENESIS_URL}";
+              else
+                echo "Existing sifnode state detected; skipping initialization.";
+              fi;
               exec sifnoded start --rpc.laddr tcp://0.0.0.0:26657
           env:
             - name: CHAINNET
