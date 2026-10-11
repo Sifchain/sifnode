@@ -19,6 +19,8 @@ load_env() {
   : "${MONIKER:?MONIKER is required}"
   : "${GENESIS_URL:?GENESIS_URL is required}"
   : "${MNEMONIC:?MNEMONIC is required}"
+  : "${EXTERNAL_IP:=}"
+  : "${PEER_ADDRESS:=}"
 }
 
 validate() {
@@ -36,14 +38,22 @@ validate() {
 apply() {
   validate
   kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
-  kubectl apply -n "$NAMESPACE" -f "$K8S_DIR/sifnode.yaml"
-  kubectl apply -n "$NAMESPACE" -f "$K8S_DIR/configmap.yaml"
+
+  kubectl create configmap sifnode-config \
+    --namespace "$NAMESPACE" \
+    --from-literal=chainnet="$CHAINNET" \
+    --from-literal=moniker="$MONIKER" \
+    --from-literal=external_ip="$EXTERNAL_IP" \
+    --from-literal=peer_address="$PEER_ADDRESS" \
+    --from-literal=genesis_url="$GENESIS_URL" \
+    --dry-run=client -o yaml | kubectl apply -f -
 
   kubectl create secret generic sifnode \
     --namespace "$NAMESPACE" \
     --from-literal=mnemonic="$MNEMONIC" \
     --dry-run=client -o yaml | kubectl apply -f -
 
+  kubectl apply -n "$NAMESPACE" -f "$K8S_DIR/sifnode.yaml"
   kubectl -n "$NAMESPACE" rollout status deployment/sifnode --timeout=15m
   echo "Sifnode is running on GKE"
 }
