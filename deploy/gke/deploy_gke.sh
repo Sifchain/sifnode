@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 K8S_DIR="$ROOT_DIR/kubernetes"
+TF_DIR="$ROOT_DIR/terraform"
 ENV_FILE="${SIFNODE_GKE_ENV:-$K8S_DIR/sifnode.env}"
 NAMESPACE="${SIFNODE_NAMESPACE:-sifnode}"
 CLUSTER_NAME="${SIFNODE_GKE_CLUSTER:-sifnode-gke}"
@@ -45,7 +46,25 @@ validate() {
   gcloud auth list --filter=status:ACTIVE --format='value(account)' | grep -q . || {
     echo "no active gcloud account; run gcloud auth login" >&2; exit 2;
   }
-  echo "GKE deployment prerequisites: OK"
+
+  terraform -chdir="$TF_DIR" fmt -check -recursive >/dev/null
+  terraform -chdir="$TF_DIR" init -backend=false -input=false >/dev/null
+  terraform -chdir="$TF_DIR" validate >/dev/null
+  kubectl create --dry-run=client -f "$K8S_DIR/sifnode.yaml" -o yaml >/dev/null
+  echo "GKE deployment prerequisites and manifests: OK"
+}
+
+plan() {
+  need terraform
+  load_env
+  terraform -chdir="$TF_DIR" init -backend=false -input=false >/dev/null
+  terraform -chdir="$TF_DIR" plan -input=false
+}
+
+provision() {
+  validate
+  terraform -chdir="$TF_DIR" apply -input=false -auto-approve
+  connect_cluster
 }
 
 apply() {
@@ -87,10 +106,22 @@ destroy() {
   kubectl delete namespace "$NAMESPACE" --ignore-not-found
 }
 
+destroy_infra() {
+  need terraform
+  if [[ "${CONFIRM_DESTROY:-}" != "yes" ]]; then
+    echo "Refusing destructive action. Re-run with CONFIRM_DESTROY=yes." >&2
+    exit 2
+  fi
+  terraform -chdir="$TF_DIR" destroy -input=false -auto-approve
+}
+
 case "$ACTION" in
   validate) validate ;;
+  plan) plan ;;
+  provision) provision ;;
   apply) apply ;;
   status) status ;;
   destroy) destroy ;;
-  *) echo "usage: $0 {validate|apply|status|destroy}" >&2; exit 2 ;;
+  destroy-infra) destroy_infra ;;
+  *) echo "usage: $0 {validate|plan|provision|apply|status|destroy|destroy-infra}" >&2; exit 2 ;;
 esac
