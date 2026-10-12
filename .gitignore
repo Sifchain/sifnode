@@ -24,6 +24,8 @@ venv/
 
 deploy
 
+deploy/gke/kubernetes/sifnode.env
+
 smart-contracts/combined.log
 smart-contracts/yarn-error.log
 test/integration/output.json

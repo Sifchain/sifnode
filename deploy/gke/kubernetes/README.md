@@ -1,0 +1,1 @@
+The checked-in manifests are intentionally secret-free except for the explicit placeholder in the bootstrap Secret. `deploy_gke.sh` replaces that Secret from the local `sifnode.env` before the workload is started. Keep `sifnode.env` private.

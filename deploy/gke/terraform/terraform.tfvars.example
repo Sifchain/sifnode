@@ -1,0 +1,6 @@
+project_id       = "your-gcp-project-id"
+region           = "us-central1"
+cluster_name     = "sifnode"
+node_machine_type = "e2-standard-4"
+node_count       = 2
+disk_size_gb     = 100
