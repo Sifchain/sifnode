@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "sifnode.name" . }}
+  labels:
+    {{- include "sifnode.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "sifnode.name" . }}-headless
+  # Never run two copies of a validator's signing key against the same chain.
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "sifnode.labels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/init: {{ .Files.Get "scripts/init.sh" | sha256sum }}
+      labels:
+        {{- include "sifnode.labels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 120
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh", "/scripts/init.sh"]
+          env:
+            - name: CHAIN_ID
+              value: {{ .Values.chain.id | quote }}
+            - name: MONIKER
+              value: {{ .Values.chain.moniker | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: genesis
+              mountPath: /genesis
+              readOnly: true
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: sifnode
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sifnoded"]
+          args:
+            - start
+            - --home=/data
+            - --rpc.laddr=tcp://0.0.0.0:26657
+            - --p2p.laddr=tcp://0.0.0.0:26656
+            - {{ printf "--p2p.persistent_peers=%s" .Values.chain.persistentPeers | quote }}
+            - {{ printf "--p2p.external-address=%s" .Values.chain.externalAddress | quote }}
+            - {{ printf "--minimum-gas-prices=%s" .Values.chain.minimumGasPrices | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: p2p
+              containerPort: 26656
+            - name: rpc
+              containerPort: 26657
+          startupProbe:
+            tcpSocket:
+              port: rpc
+            periodSeconds: 10
+            failureThreshold: 180
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: rpc
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: rpc
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: genesis
+          {{- if .Values.genesis.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.genesis.existingClaim }}
+            readOnly: true
+          {{- else }}
+          configMap:
+            name: {{ .Values.genesis.existingConfigMap }}
+          {{- end }}
+        - name: scripts
+          configMap:
+            name: {{ include "sifnode.name" . }}-scripts
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.persistence.existingClaim }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if not .Values.persistence.existingClaim }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ include "sifnode.storageClass" . | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+  {{- end }}

@@ -1,0 +1,46 @@
+cloudProvider: azure
+
+# Use the image and version recommended for the target network. No implicit latest tag.
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+chain:
+  id: ""
+  moniker: sifnode
+  persistentPeers: ""
+  # Set after the public P2P service receives an IP, e.g. 203.0.113.10:26656.
+  externalAddress: ""
+  minimumGasPrices: 0.5rowan
+
+# Create this ConfigMap separately from an operator-reviewed genesis.json.
+# Keep validator signing keys on the volume; never place them in Helm values.
+genesis:
+  existingConfigMap: ""
+  # For genesis files larger than the ConfigMap limit, mount a pre-populated PVC.
+  existingClaim: ""
+
+persistence:
+  size: 500Gi
+  # Empty selects managed-csi-premium on Azure, or a chart-created gp3 class on AWS.
+  storageClassName: ""
+  existingClaim: ""
+
+service:
+  type: LoadBalancer
+  annotations: {}
+  # Restrict incoming P2P traffic if desired. RPC is a separate ClusterIP service.
+  loadBalancerSourceRanges: []
+
+resources:
+  requests:
+    cpu: "2"
+    memory: 4Gi
+  limits:
+    memory: 12Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

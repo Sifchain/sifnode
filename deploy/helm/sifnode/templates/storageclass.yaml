@@ -1,0 +1,15 @@
+{{- if and (eq .Values.cloudProvider "aws") (not .Values.persistence.storageClassName) (not .Values.persistence.existingClaim) }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ include "sifnode.storageClass" . }}
+  labels:
+    {{- include "sifnode.labels" . | nindent 4 }}
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+{{- end }}

@@ -22,7 +22,11 @@ nohup.out
 relayerdb
 venv/
 
-deploy
+deploy/**/.terraform/
+deploy/**/terraform.tfstate*
+deploy/**/crash.log
+deploy/**/kubeconfig*
+deploy/**/__pycache__/
 
 smart-contracts/combined.log
 smart-contracts/yarn-error.log

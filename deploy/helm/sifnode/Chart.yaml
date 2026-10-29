@@ -1,0 +1,5 @@
+apiVersion: v2
+name: sifnode
+description: A single persistent Sifchain node on AKS or EKS
+type: application
+version: 0.1.0
